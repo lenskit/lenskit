@@ -39,7 +39,7 @@ import javax.annotation.Nullable;
  * @compat Public
  * @since 0.11
  */
-public final class VectorEntry {
+public final class VectorEntry implements Cloneable {
     /**
      * The state of an entry in a sparse vector.
      *
@@ -162,5 +162,16 @@ public final class VectorEntry {
     @Nullable
     SparseVector getVector() {
         return vector;
+    }
+
+    @Override
+    public VectorEntry clone() {
+        VectorEntry e;
+        try {
+            e = (VectorEntry) super.clone();
+        } catch (CloneNotSupportedException exc) {
+            throw new AssertionError(); // This cannot happen
+        }
+        return e;
     }
 }

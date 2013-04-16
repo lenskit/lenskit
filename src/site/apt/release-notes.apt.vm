@@ -36,6 +36,9 @@ LensKit Release Notes
   * <<Incompatible change>>: moved abstract and simple/score-based implementations of basic
     recommender components to the new package <<<o.g.l.basic>>>.  This should only be incompatible
     for people implementing new LensKit components.
+
+  * Replaced <<<LongScoredList>>> with a list of <<<ScoredId>>> objects in Item-Item
+    model construction to support side channels (#issue(219)).
   
   []
 

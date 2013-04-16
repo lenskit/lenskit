@@ -20,24 +20,19 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import it.unimi.dsi.fastutil.*;
+import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongArraySet;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
+import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Map;
-
 import org.grouplens.lenskit.collections.BitSetIterator;
 import org.grouplens.lenskit.collections.MoreArrays;
 import org.grouplens.lenskit.symbols.Symbol;
 
+import java.io.Serializable;
+import java.util.*;
 /**
  * Mutable version of sparse vector.
  *
@@ -319,7 +314,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * removed from the key set.
      *
      * @param key The key to clear.
+     * @deprecated Use {@link #unset(long)} instead.
      */
+    @Deprecated
     public void clear(long key) {
         final int idx = findIndex(key);
         if (idx >= 0) {
@@ -332,12 +329,32 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @param e The entry to clear.
      * @see #clear(long)
+     * @deprecated Use {@link #unset(VectorEntry)} instead.
      */
+    @Deprecated
     public void clear(VectorEntry e) {
         if (e.getVector() != this) {
             throw new IllegalArgumentException("clearing vector from wrong entry");
         }
         usedKeys.clear(e.getIndex());
+    }
+
+    /**
+     * Unset the value for a key. The key remains in the key domain, but is
+     * removed from the key set.
+     * @param key The key to unset.
+     */
+    public void unset(long key) {
+        clear(key);
+    }
+
+    /**
+     * Unset the value for a vector entry. The key remains in the domain, but
+     * is removed from the key set.
+     * @param e The entry to unset.
+     */
+    public void unset(VectorEntry e) {
+        clear(e);
     }
 
     /**
@@ -486,7 +503,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
     @Override
     public MutableSparseVector mutableCopy() {
-        double[] nvs = Arrays.copyOf(values, domainSize);
+        double[] nvs = java.util.Arrays.copyOf(values, domainSize);
         BitSet nbs = (BitSet) usedKeys.clone();
 
         return new MutableSparseVector(keys, nvs, domainSize, nbs, copyOfChannelMap());
@@ -534,18 +551,80 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @return An immutable vector built from this vector's data.
      */
-    private ImmutableSparseVector immutable(boolean freeze) {
-        ImmutableSparseVector isv;
-        double[] nvs = (!isMutable || freeze) ? values : Arrays.copyOf(values, domainSize);
+    public ImmutableSparseVector immutable(boolean freeze) {
+        long[] keyDomain;
+        if (freeze && usedKeys.cardinality() == keys.length) {
+            keyDomain = keys;
+        } else {
+            keyDomain = keySet().toLongArray();
+        }
+
+        return immutable(freeze, keyDomain);
+    }
+
+    /**
+     * Construct an immutable sparse vector from this vector's data.
+     *
+     * {@var freeze} indicates whether this (mutable) vector should be
+     * frozen as a side effect of generating the immutable form of the
+     * vector.  If it is okay to freeze this mutable vector, then
+     * parts of the mutable vector may be used to efficiently form the
+     * new immutable vector.  Otherwise, the parts of the mutable
+     * vector must be copied, to ensure immutability.
+     * <p>
+     * {@var freeze} applies
+     * also to the channels: any channels of this mutable vector may
+     * also be frozen if the vector is frozen, to avoid copying them.
+     * <p>
+     * {@var keyDomain} is the key domain for the new immutable sparse
+     * vector, which should be the key set of the original vector.
+     *
+     * @return An immutable vector built from this vector's data.
+     */
+    private ImmutableSparseVector immutable(boolean freeze, long[] keyDomain) {
+        double[] nvs;
+        BitSet newUsedKeys;
+
+        if (keyDomain == keys) {
+            assert freeze;
+            nvs = values;
+            newUsedKeys = usedKeys;
+        } else {
+            nvs = new double[keyDomain.length];
+            newUsedKeys = new BitSet(keyDomain.length);
+
+            int i = 0;
+            int j = 0;
+            while (i < nvs.length && j < domainSize) {
+                if (keyDomain[i] == keys[j]) {
+                    nvs[i] = values[j];
+                    if (usedKeys.get(j)) {
+                        newUsedKeys.set(i);
+                    }
+                    i++;
+                    j++;
+                } else if (keys[j] < keyDomain[i]) {
+                    j++;
+                } else {
+                    throw new AssertionError("Key domain of new immutable vector must " +
+                                             "be subset of original domain");
+                }
+            }
+        }
+
         Map<Symbol, ImmutableSparseVector> newChannelMap =
-                new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
+                new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>(channelMap.size());
         // We recursively generate immutable versions of all channels.  If freeze
         // is true, these versions will be made without copying.
         for (Map.Entry<Symbol, MutableSparseVector> entry : channelMap.entrySet()) {
-            newChannelMap.put(entry.getKey(), entry.getValue().immutable(freeze));
+            newChannelMap.put(entry.getKey(), entry.getValue().immutable(freeze, keyDomain));
         }
-        isv = new ImmutableSparseVector(keys, nvs, domainSize, usedKeys, newChannelMap);
-        if (freeze) { isMutable = false; }
+
+        ImmutableSparseVector isv =
+                new ImmutableSparseVector(keyDomain, nvs, keyDomain.length, newUsedKeys, newChannelMap);
+        if (freeze) {
+            isMutable = false;
+        }
         return isv;
     }
 
@@ -621,6 +700,26 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
+     * Create a new {@code MutableSparseVector} from unsorted key and value
+     * arrays. The provided arrays will be modified and should not be used
+     * by the client after this operation has completed. The key domain of
+     * the new {@code MutableSparseVector} will be the same as {@code keys}.
+     *
+     * @param keys Array of entry keys. This should be duplicate-free.
+     * @param values The values of the vector, in key order.
+     * @return A sparse vector backed by the provided arrays.
+     * @throws IllegalArgumentException if there is a problem with the provided
+     *                                  arrays (length mismatch, etc.).
+     */
+    public static MutableSparseVector wrapUnsorted(long[] keys, double[] values) {
+        IdComparator comparator = new IdComparator(keys);
+        ParallelSwapper swapper = new ParallelSwapper(keys, values);
+        Arrays.quickSort(0, keys.length, comparator, swapper);
+
+        return MutableSparseVector.wrap(keys, values);
+    }
+
+    /**
      * Remove the channel stored under a particular symbol.
      *
      * @param channelSymbol the symbol under which the channel was
@@ -670,7 +769,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
-     * Add a channel to thie vector, even if there is already a
+     * Add a channel to the vector, even if there is already a
      * channel with the same symbol.  The new channel will be empty,
      * and will have the same key domain as this vector.
      *
@@ -730,4 +829,44 @@ public final class MutableSparseVector extends SparseVector implements Serializa
                                                    channelSymbol.getName());
     }
 
+    @Override
+    public Set<Symbol> getChannels() {
+        return channelMap.keySet();
+    }
+
+    private static class IdComparator extends AbstractIntComparator {
+
+        private long[] keys;
+
+        public IdComparator(long[] keys) {
+            this.keys = keys;
+        }
+
+        @Override
+        public int compare(int i, int i2) {
+            return LongComparators.NATURAL_COMPARATOR.compare(keys[i], keys[i2]);
+        }
+    }
+
+    private static class ParallelSwapper implements Swapper {
+
+        private long[] keys;
+        private double[] values;
+
+        public ParallelSwapper(long[] keys, double[] values) {
+            this.keys = keys;
+            this.values = values;
+        }
+
+        @Override
+        public void swap(int i, int i2) {
+            long lTemp = keys[i];
+            keys[i] = keys[i2];
+            keys[i2] = lTemp;
+
+            double dTemp = values[i];
+            values[i] = values[i2];
+            values[i2] = dTemp;
+        }
+    }
 }

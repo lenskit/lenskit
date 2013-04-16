@@ -18,31 +18,36 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.transform.truncate;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.transform.threshold.Threshold;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
-import javax.inject.Singleton;
 import java.io.Serializable;
 
 /**
- * Neighborhood scorer that computes the sum of neighborhood similarities.
- *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * A {@code VectorTruncator} that will retain entries with values
+ * that are accepted by some {@code Threshold}.
  */
 @Shareable
-@Singleton
-public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Serializable {
+public class ThresholdTruncator implements VectorTruncator, Serializable {
+
     private static final long serialVersionUID = 1L;
 
+    private final Threshold threshold;
+
+    public ThresholdTruncator(Threshold threshold) {
+        this.threshold = threshold;
+    }
+
     @Override
-    public double score(SparseVector neighbors, SparseVector scores) {
-		if (neighbors.isEmpty()) {
-			return Double.NaN;
-		}        
-        return neighbors.sum();
+    public void truncate(MutableSparseVector v) {
+        for (VectorEntry e : v.fast()) {
+            if (!threshold.retain(e.getValue())) {
+                v.unset(e);
+            }
+        }
     }
 }

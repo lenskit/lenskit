@@ -21,8 +21,14 @@
 package org.grouplens.lenskit.util;
 
 import it.unimi.dsi.fastutil.doubles.DoubleComparators;
-import org.grouplens.lenskit.collections.ScoredLongArrayList;
-import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.scored.ScoredIdBuilder;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Scored item accumulator with no upper bound.
@@ -30,7 +36,12 @@ import org.grouplens.lenskit.collections.ScoredLongList;
  * @author Michael Ekstrand
  */
 public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulator {
-    private ScoredLongArrayList scores;
+    private List<ScoredId> scores;
+    private ScoredIdBuilder builder;
+
+    public UnlimitedScoredItemAccumulator() {
+        builder = new ScoredIdBuilder();
+    }
 
     @Override
     public boolean isEmpty() {
@@ -45,20 +56,44 @@ public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulat
     @Override
     public void put(long item, double score) {
         if (scores == null) {
-            scores = new ScoredLongArrayList();
+            scores = new ArrayList<ScoredId>();
         }
-        scores.add(item, score);
+        scores.add(builder.setId(item).setScore(score).build());
     }
 
     @Override
-    public ScoredLongList finish() {
+    public List<ScoredId> finish() {
         if (scores == null) {
-            return new ScoredLongArrayList();
+            return new ArrayList<ScoredId>();
         }
 
-        scores.sort(DoubleComparators.OPPOSITE_COMPARATOR);
-        ScoredLongList r = scores;
+        Collections.sort(scores, new Comparator<ScoredId>() {
+            @Override
+            public int compare(ScoredId o1, ScoredId o2) {
+                return DoubleComparators.OPPOSITE_COMPARATOR.compare(o1.getScore(), o2.getScore());
+            }
+        });
+
+        List<ScoredId> r = scores;
         scores = null;
         return r;
+    }
+
+    @Override
+    public MutableSparseVector finishVector() {
+        if (scores == null) {
+            return new MutableSparseVector();
+        }
+
+        long[] keys = new long[scores.size()];
+        double [] values = new double[scores.size()];
+        int i = 0;
+        for (ScoredId id : scores) {
+            keys[i] = id.getId();
+            values[i] = id.getScore();
+            i++;
+        }
+        scores = null;
+        return MutableSparseVector.wrapUnsorted(keys, values);
     }
 }

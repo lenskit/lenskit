@@ -18,43 +18,36 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.transform.truncate;
 
-import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.transform.threshold.RealThreshold;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.junit.Test;
 
-import javax.inject.Singleton;
-import java.io.Serializable;
-import java.util.List;
+import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
-import static java.lang.Math.abs;
+public class TestThresholdTruncator {
 
-/**
- * Neighborhood scorer that computes the weighted average of neighbor scores.
- *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- */
-@Shareable
-@Singleton
-public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final double EPSILON = 1.0e-6;
 
-    @Override
-    public double score(SparseVector neighbors, SparseVector scores) {
-        double sum = 0;
-        double weight = 0;
-        for (VectorEntry e : neighbors.fast(VectorEntry.State.SET)) {
-            long oi = e.getKey();
-            double sim = e.getValue();
-            weight += abs(sim);
-            sum += sim * scores.get(oi);
+    @Test
+    public void testTruncate() {
+        long[] keys = {1, 2, 3, 4};
+        double[] values = {1.0, 2.0, 3.0, 4.0};
+        MutableSparseVector v = MutableSparseVector.wrap(keys, values);
+
+        VectorTruncator truncator = new ThresholdTruncator(new RealThreshold(3.5));
+        truncator.truncate(v);
+
+        int numSeen = 0;
+        for (VectorEntry e : v.fast(VectorEntry.State.SET)) {
+            assertThat(e.getKey(), equalTo(4L));
+            assertThat(e.getValue(), closeTo(4.0, EPSILON));
+            numSeen++;
         }
-        if (weight > 0) {
-            return sum / weight;
-        } else {
-            return Double.NaN;
-        }
+        assertThat(numSeen, equalTo(1));
     }
 }

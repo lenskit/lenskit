@@ -20,7 +20,10 @@
  */
 package org.grouplens.lenskit.util;
 
-import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+
+import java.util.List;
 
 /**
  * Accumulate a sorted list of scored items.
@@ -62,5 +65,16 @@ public interface ScoredItemAccumulator {
      *
      * @return The sorted, scored list of items.
      */
-    ScoredLongList finish();
+    List<ScoredId> finish();
+
+    /**
+     * Accumulate the scores into a mutable sparse vector and
+     * reset the accumulator.
+     *
+     * <p>After this method is called, the accumulator is ready for another
+     * accumulation.
+     *
+     * @return A MutableSparseVector of items.
+     */
+    MutableSparseVector finishVector();
 }

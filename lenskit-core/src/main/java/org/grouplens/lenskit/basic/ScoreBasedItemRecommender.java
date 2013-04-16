@@ -125,7 +125,7 @@ public class ScoreBasedItemRecommender extends AbstractItemRecommender {
             accum.put(pred.getKey(), v);
         }
 
-        return accum.finish();
+        return new ScoredLongArrayList(accum.finish());
     }
 
     /**

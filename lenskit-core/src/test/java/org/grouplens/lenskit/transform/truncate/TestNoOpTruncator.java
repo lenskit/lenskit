@@ -18,31 +18,35 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.transform.truncate;
 
-import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.junit.Test;
 
-import javax.inject.Singleton;
-import java.io.Serializable;
+import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
-/**
- * Neighborhood scorer that computes the sum of neighborhood similarities.
- *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- */
-@Shareable
-@Singleton
-public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Serializable {
-    private static final long serialVersionUID = 1L;
+public class TestNoOpTruncator {
 
-    @Override
-    public double score(SparseVector neighbors, SparseVector scores) {
-		if (neighbors.isEmpty()) {
-			return Double.NaN;
-		}        
-        return neighbors.sum();
+    private static final double EPSILON = 1.0e-6;
+
+    @Test
+    public void testSimpleTruncate() {
+        long[] keys = {1, 2, 3, 4};
+        double[] values = {1.0, 2.0, 3.0, 4.0};
+        MutableSparseVector v = MutableSparseVector.wrap(keys, values);
+
+        VectorTruncator truncator = new NoOpTruncator();
+        truncator.truncate(v);
+
+        long i = 1;
+        for (VectorEntry e : v.fast(VectorEntry.State.SET)) {
+            assertThat(e.getKey(), equalTo(i));
+            assertThat(e.getValue(), closeTo(i, EPSILON));
+            i++;
+        }
+        assertThat(i, equalTo(5L));
     }
 }

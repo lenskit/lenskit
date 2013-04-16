@@ -20,18 +20,20 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import static org.grouplens.common.test.MoreMatchers.notANumber;
-import static org.junit.Assert.assertThat;
-
-import org.grouplens.lenskit.collections.ScoredLongArrayList;
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.scored.ScoredIdBuilder;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.junit.Assert.assertThat;
 
 public class TestSimilaritySumNeighborhoodScorer {
     SimilaritySumNeighborhoodScorer scorer;
@@ -47,35 +49,36 @@ public class TestSimilaritySumNeighborhoodScorer {
 
     @Test
     public void testEmpty() {
-        ScoredLongList nbrs = new ScoredLongArrayList();
+        SparseVector nbrs = new MutableSparseVector();
         SparseVector scores = new MutableSparseVector();
         assertThat(scorer.score(nbrs, scores), notANumber());
     }
 
     @Test
     public void testEmptyNbrs() {
-        ScoredLongList nbrs = new ScoredLongArrayList();
+        SparseVector nbrs = new MutableSparseVector();
         SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
         assertThat(scorer.score(nbrs, scores), notANumber());
     }
 
     @Test
     public void testOneNbr() {
-        ScoredLongList nbrs = new ScoredLongArrayList();
-        nbrs.add(5, 1.0);
+        long[] keys = {5};
+        double[] values = {1.0};
+        SparseVector nbrs = MutableSparseVector.wrap(keys, values).freeze();
         SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
         assertThat(scorer.score(nbrs, scores), closeTo(1.0));
     }
 
     @Test
     public void testMultipleNeighbors() {
-        ScoredLongList nbrs = new ScoredLongArrayList();
-        nbrs.add(5, 1.0);
-        nbrs.add(7, 0.92);
-        nbrs.add(2, 0.5);
-        long[] keys = {2, 3, 5, 7};
-        double[] ratings = {3.7, 4.2, 1.2, 7.8};
-        SparseVector scores = MutableSparseVector.wrap(keys, ratings).freeze();
+        long[] neighborKeys = {2, 5, 7};
+        double[] neighborValues = {0.5, 1.0, 0.92};
+        SparseVector nbrs = MutableSparseVector.wrap(neighborKeys, neighborValues).freeze();
+
+        long[] scoreKeys = {2, 3, 5, 7};
+        double[] scoreValues = {3.7, 4.2, 1.2, 7.8};
+        SparseVector scores = MutableSparseVector.wrap(scoreKeys, scoreValues).freeze();
         assertThat(scorer.score(nbrs, scores), closeTo(2.42));
     }
 }
