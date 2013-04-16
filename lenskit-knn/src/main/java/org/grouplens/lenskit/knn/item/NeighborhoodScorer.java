@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
@@ -41,11 +40,11 @@ public interface NeighborhoodScorer {
      * Compute a score based on similar neighbors and their corresponding
      * scores.
      *
-     * @param neighbors A list of neighbors with similarity measures.
+     * @param neighbors A vector of neighbors with similarity measures.
      * @param scores    A vector of item scores. It should contain a score for
      *                  every item in {@var neighbors}.
      * @return An accumulated score from the neighbors, or {@link Double#NaN} if
      *         no score could be computed.
      */
-    double score(ScoredLongList neighbors, SparseVector scores);
+    double score(SparseVector neighbors, SparseVector scores);
 }

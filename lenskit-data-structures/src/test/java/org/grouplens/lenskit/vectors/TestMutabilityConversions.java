@@ -66,9 +66,7 @@ public class TestMutabilityConversions {
         assertThat(isvSimple.size(), equalTo(2));
 
         MutableSparseVector reSimple = isvSimple.mutableCopy();
-        assertThat(reSimple.size(), equalTo(2));
-        assertThat(reSimple.set(3, 77), notANumber());
-        assertThat(reSimple.size(), equalTo(3));  // changed!
+        assertThat(reSimple.size(), equalTo(2)); // unchanged
         assertThat(isvSimple.size(), equalTo(2)); // unchanged
         assertThat(simple.size(), equalTo(2));       // unchanged
     }

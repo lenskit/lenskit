@@ -20,14 +20,13 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -74,20 +73,18 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
             final long item = e.getKey();
 
             // find all potential neighbors
-            // FIXME: Take advantage of the fact that the neighborhood is sorted
-            ScoredLongList neighbors = model.getNeighbors(item);
+            ImmutableSparseVector neighbors = model.getNeighbors(item);
             final int nnbrs = neighbors.size();
 
             // filter and truncate the neighborhood
-            ScoredLongListIterator niter = neighbors.iterator();
-            while (niter.hasNext()) {
-                long oi = niter.nextLong();
-                double score = niter.getScore();
+            for (VectorEntry neighbor : neighbors.fast()) {
+                long oi = neighbor.getKey();
+                double score = neighbor.getValue();
                 if (userData.containsKey(oi)) {
                     accum.put(oi, score);
                 }
             }
-            neighbors = accum.finish();
+            neighbors = accum.finishVector().freeze();
             if (logger.isTraceEnabled()) { // conditional to avoid alloc
                 logger.trace("using {} of {} neighbors for {}",
                              new Object[]{neighbors.size(), nnbrs, item});

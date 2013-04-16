@@ -18,31 +18,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.transform.truncate;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 
-import javax.inject.Singleton;
 import java.io.Serializable;
 
 /**
- * Neighborhood scorer that computes the sum of neighborhood similarities.
- *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * A {@code VectorTruncator} that does not actually perform any truncation.
+ * Any input vector is left unchanged.
  */
 @Shareable
-@Singleton
-public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Serializable {
+public class NoOpTruncator implements VectorTruncator, Serializable {
+
     private static final long serialVersionUID = 1L;
 
     @Override
-    public double score(SparseVector neighbors, SparseVector scores) {
-		if (neighbors.isEmpty()) {
-			return Double.NaN;
-		}        
-        return neighbors.sum();
-    }
+    public void truncate(MutableSparseVector v) {}
 }
