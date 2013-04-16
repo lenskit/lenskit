@@ -144,6 +144,7 @@ public class EvalCLIOptions {
         return configFile;
     }
 
+    @SuppressWarnings({"EI_EXPOSE_REP", "MethodReturnsInternalArray"})
     public String[] getArgs() {
         return args;
     }

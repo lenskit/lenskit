@@ -280,7 +280,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      * @return The array of elements.
      * @see #toLongArray()
      */
-    @SuppressWarnings("EI_EXPOSE_REP")
+    @SuppressWarnings({"EI_EXPOSE_REP", "MethodReturnsInternalArray"})
     public long[] unsafeArray() {
         if (start == 0 && end == data.length && mask == null) {
             return data;

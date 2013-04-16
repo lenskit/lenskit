@@ -25,6 +25,7 @@ import org.grouplens.lenskit.core.Shareable;
 import com.google.common.base.Preconditions;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Abstract quantizer implementation using a pre-generated array of possible
@@ -36,6 +37,10 @@ import java.io.Serializable;
 public class ValueArrayQuantizer implements Quantizer, Serializable {
     private static final long serialVersionUID = 2150927895689488171L;
 
+    /**
+     * The values to quantize to.  Subclasses must not modify this array after the object
+     * has been constructed.
+     */
     protected final double[] values;
 
     /**
@@ -50,7 +55,7 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
 
     @Override
     public double[] getValues() {
-        return values;
+        return Arrays.copyOf(values, values.length);
     }
 
     @Override
