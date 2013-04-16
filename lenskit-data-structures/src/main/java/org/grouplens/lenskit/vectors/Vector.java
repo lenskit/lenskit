@@ -76,7 +76,6 @@ public abstract class Vector implements Serializable {
     public final double norm() {
         if (norm == null) {
             double ssq = 0;
-            final int sz = data.length;
             for (double v : data) {
                 ssq += v * v;
             }
