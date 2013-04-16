@@ -62,7 +62,8 @@ public abstract class AbstractCommand<T> implements Command<T> {
     /**
      * {@inheritDoc}
      * <p>This implementation returns the {@link #name} field, throwing
-     * {@link IllegalStateException} if it is {@code null}.
+     * {@link IllegalStateException} if it is {@code null}.  Commands should override it to provide
+     * default derived names if they support such a concept.
      */
     @Override @Nonnull
     public String getName() {
@@ -75,14 +76,4 @@ public abstract class AbstractCommand<T> implements Command<T> {
 
     @Override
     public abstract T call() throws CommandException;
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        return sb.append(getClass().getSimpleName())
-                 .append('(')
-                 .append(getName())
-                 .append(')')
-                 .toString();
-    }
 }

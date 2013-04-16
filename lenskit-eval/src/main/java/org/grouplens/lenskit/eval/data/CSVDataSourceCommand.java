@@ -26,6 +26,7 @@ import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractCommand;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 
 /**
@@ -41,14 +42,11 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
     Function<DAOFactory, DAOFactory> wrapper;
 
     public CSVDataSourceCommand() {
-        super("CSVSource");
+        this(null);
     }
 
     public CSVDataSourceCommand(String name) {
         super(name);
-        if (name != null) {
-            setName(name);
-        }
     }
 
     /**
@@ -61,6 +59,16 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
     public CSVDataSourceCommand setName(String name) {
         this.name = name;
         return this;
+    }
+
+    @Nonnull
+    @Override
+    public String getName() {
+        if (name == null) {
+            return inputFile.getName();
+        } else {
+            return name;
+        }
     }
 
     /**
@@ -124,7 +132,6 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
      *
      * @return The configured data source.
      */
-
     @Override
     public CSVDataSource call() {
         // if no name, use the file name
