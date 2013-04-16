@@ -218,7 +218,7 @@ public class EvalScriptEngine {
         try {
             Properties props = new Properties();
             props.load(istr);
-            Object pv = props.get("command").toString();
+            Object pv = props.get("command");
             String className = pv == null ? null : pv.toString();
             if (className == null) {
                 return null;
