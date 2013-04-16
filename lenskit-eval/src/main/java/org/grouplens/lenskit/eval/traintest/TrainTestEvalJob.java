@@ -119,7 +119,7 @@ public class TrainTestEvalJob implements Job {
         int ncols = 2;
         for (TestUserMetric eval : evals) {
             if (eval.getColumnLabels() != null) {
-                ncols += eval.getColumnLabels().length;
+                ncols += eval.getColumnLabels().size();
             }
         }
         outputColumnCount = ncols;

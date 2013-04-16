@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
+import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
@@ -30,6 +31,8 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 import static java.lang.Math.sqrt;
 
 /**
@@ -39,8 +42,8 @@ import static java.lang.Math.sqrt;
  */
 public class RMSEPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(RMSEPredictMetric.class);
-    private static final String[] COLUMNS = {"RMSE.ByRating", "RMSE.ByUser"};
-    private static final String[] USER_COLUMNS = {"RMSE"};
+    private static final ImmutableList<String> COLUMNS = ImmutableList.of("RMSE.ByRating", "RMSE.ByUser");
+    private static final ImmutableList<String> USER_COLUMNS = ImmutableList.of("RMSE");
 
     @Override
     public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
@@ -48,12 +51,12 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
     }
 
     @Override
-    public String[] getColumnLabels() {
+    public List<String> getColumnLabels() {
         return COLUMNS;
     }
 
     @Override
-    public String[] getUserColumnLabels() {
+    public List<String> getUserColumnLabels() {
         return USER_COLUMNS;
     }
 

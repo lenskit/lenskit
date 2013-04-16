@@ -293,7 +293,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         output.addColumn("TestTime");
 
         for (TestUserMetric ev : metrics) {
-            String[] columnLabels = ev.getColumnLabels();
+            List<String> columnLabels = ev.getColumnLabels();
             if (columnLabels != null) {
                 for (String c : columnLabels) {
                     output.addColumn(c);
@@ -308,7 +308,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         TableLayoutBuilder perUser = master.clone();
 
         for (TestUserMetric ev : metrics) {
-            String[] userColumnLabels = ev.getUserColumnLabels();
+            List<String> userColumnLabels = ev.getUserColumnLabels();
             if (userColumnLabels != null) {
                 for (String c : userColumnLabels) {
                     perUser.addColumn(c);

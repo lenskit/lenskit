@@ -24,6 +24,8 @@ import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand;
 
+import java.util.List;
+
 /**
  * Interface for prediction and recommendation accuracy evaluators. Evaluators
  * produce accumulators which in turn accumulate recommendation statistics, returning
@@ -58,7 +60,7 @@ public interface TestUserMetric extends Metric<TrainTestEvalCommand> {
      * @return The labels for this evaluator's output, used as column headers when
      *         outputting the results table.
      */
-    String[] getColumnLabels();
+    List<String> getColumnLabels();
 
     /**
      * Get labels for the per-user columns output by this evaluator.
@@ -67,5 +69,5 @@ public interface TestUserMetric extends Metric<TrainTestEvalCommand> {
      *         when outputting the results table.
      * @see TestUserMetricAccumulator#evaluate(org.grouplens.lenskit.eval.traintest.TestUser)
      */
-    String[] getUserColumnLabels();
+    List<String> getUserColumnLabels();
 }
