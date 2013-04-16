@@ -592,19 +592,23 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         } else {
             nvs = new double[keyDomain.length];
             newUsedKeys = new BitSet(keyDomain.length);
+
             int i = 0;
             int j = 0;
-            while (i < nvs.length) {
-                // Skip over irrelevant entries in original, using fact that arrays are sorted
-                while (keys[j] < keyDomain[i]) {
+            while (i < nvs.length && j < keys.length) {
+                if (keyDomain[i] == keys[j]) {
+                    nvs[i] = values[j];
+                    if (usedKeys.get(j)) {
+                        newUsedKeys.set(i);
+                    }
+                    i++;
                     j++;
+                } else if (keys[j] < keyDomain[i]) {
+                    j++;
+                } else {
+                    throw new AssertionError("Key domain of new immutable vector must " +
+                                             "be subset of original domain");
                 }
-                nvs[i] = values[j];
-                if (usedKeys.get(j)) {
-                    newUsedKeys.set(i);
-                }
-                i++;
-                j++;
             }
         }
 

@@ -153,4 +153,64 @@ public class TestUnion {
         }
         assertThat(i, equalTo(7L));
     }
+
+    @Test
+    public void testInterleave1() {
+        long[] keys1 = {1, 3, 5};
+        double[] values1 = {1.0, 3.0, 5.0};
+        SparseVector v1 = MutableSparseVector.wrap(keys1, values1);
+
+        long[] keys2 = {2, 4, 6};
+        double[] values2 = {2.0, 4.0, 6.0};
+        SparseVector v2 = MutableSparseVector.wrap(keys2, values2);
+
+        long i = 1;
+        for (Pair<VectorEntry, VectorEntry> p : Vectors.union(v1, v2)) {
+            if (i % 2 == 0) {
+                assertThat(p.getLeft(), nullValue());
+
+                assertThat(p.getRight().getKey(), equalTo(i));
+                assertThat(p.getRight().getValue(), closeTo(i, EPSILON));
+            } else {
+                assertThat(p.getLeft().getKey(), equalTo(i));
+                assertThat(p.getLeft().getValue(), closeTo(i, EPSILON));
+
+                assertThat(p.getRight(), nullValue());
+            }
+
+            i++;
+        }
+    }
+
+   @Test
+    public void testInterleave2() {
+        long[] keys1 = {1, 3, 5};
+        double[] values1 = {1.0, 3.0, 5.0};
+        SparseVector v1 = MutableSparseVector.wrap(keys1, values1);
+
+       long[] keys2 = {2, 3, 4};
+       double[] values2 = {2.0, 3.0, 4.0};
+       SparseVector v2 = MutableSparseVector.wrap(keys2, values2);
+
+       long i = 1;
+       for (Pair<VectorEntry,VectorEntry> p : Vectors.union(v1, v2)) {
+           if (i == 1 || i == 5) {
+               assertThat(p.getLeft().getKey(), equalTo(i));
+               assertThat(p.getLeft().getValue(), closeTo(i, EPSILON));
+
+               assertThat(p.getRight(), nullValue());
+           } else if (i == 2 || i == 4) {
+               assertThat(p.getLeft(), nullValue());
+                       assertThat(p.getRight().getKey(), equalTo(i));
+               assertThat(p.getRight().getValue(), closeTo(i, EPSILON));
+           } else {
+               assertThat(p.getLeft().getKey(), equalTo(i));
+               assertThat(p.getLeft().getValue(), closeTo(i, EPSILON));
+                       assertThat(p.getRight().getKey(), equalTo(i));
+               assertThat(p.getRight().getValue(), closeTo(i, EPSILON));
+           }
+
+           i++;
+       }
+   }
 }

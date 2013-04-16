@@ -20,12 +20,15 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.Pointer;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -39,14 +42,24 @@ public final class Vectors {
      * Private constructor. This class is meant to be used
      * via its static methods, not instantiated.
      */
-    private Vectors() {
-    }
+    private Vectors() {}
 
-    public static Iterable<Pair<VectorEntry,VectorEntry>> union(final SparseVector v1, final SparseVector v2) {
-        return new Iterable<Pair<VectorEntry, VectorEntry>>() {
+    private static final Function<Pair<VectorEntry,VectorEntry>, ImmutablePair<VectorEntry,VectorEntry>>
+            IMMUTABLE_PAIR_COPY = new Function<Pair<VectorEntry, VectorEntry>,
+                                               ImmutablePair<VectorEntry, VectorEntry>>() {
+
+        @Nullable
+        @Override
+        public ImmutablePair<VectorEntry, VectorEntry> apply(@Nullable Pair<VectorEntry, VectorEntry> p) {
+            return ImmutablePair.of(p.getLeft(), p.getRight());
+        }
+    };
+
+    public static Iterable<ImmutablePair<VectorEntry,VectorEntry>> union(final SparseVector v1, final SparseVector v2) {
+        return new Iterable<ImmutablePair<VectorEntry, VectorEntry>>() {
             @Override
-            public Iterator<Pair<VectorEntry, VectorEntry>> iterator() {
-                return new PairIterImpl(v1, v2);
+            public Iterator<ImmutablePair<VectorEntry, VectorEntry>> iterator() {
+                return Iterators.transform(new FastPairIterImpl(v1, v2), IMMUTABLE_PAIR_COPY);
             }
         };
     }
@@ -58,59 +71,6 @@ public final class Vectors {
                 return new FastPairIterImpl(v1, v2);
             }
         };
-    }
-
-    private static class PairIterImpl implements Iterator<Pair<VectorEntry,VectorEntry>> {
-
-        private Pointer<VectorEntry> p1;
-        private Pointer<VectorEntry> p2;
-
-        public PairIterImpl(SparseVector v1, SparseVector v2) {
-            p1 = CollectionUtils.pointer(v1.iterator());
-            p2 = CollectionUtils.pointer(v2.iterator());
-        }
-
-        @Override
-        public boolean hasNext() {
-            return !p1.isAtEnd() || !p2.isAtEnd();
-        }
-
-        @Override
-        public Pair<VectorEntry, VectorEntry> next() {
-            if (!p1.isAtEnd() && !p2.isAtEnd()) {
-                if (p1.get().getKey() < p2.get().getKey()) {
-                    VectorEntry e = p1.get();
-                    p1.advance();
-                    return new ImmutablePair<VectorEntry, VectorEntry>(e, null);
-                } else if (p2.get().getKey() < p1.get().getKey()) {
-                    VectorEntry e = p2.get();
-                    p2.advance();
-                    return new ImmutablePair<VectorEntry, VectorEntry>(null, e);
-                } else {
-                    VectorEntry e1 = p1.get();
-                    p1.advance();
-                    VectorEntry e2 = p2.get();
-                    p2.advance();
-
-                    return new ImmutablePair<VectorEntry, VectorEntry>(e1, e2);
-                }
-            } else if (!p1.isAtEnd()) {
-                VectorEntry e = p1.get();
-                p1.advance();
-                return new ImmutablePair<VectorEntry, VectorEntry>(e, null);
-            } else if (!p2.isAtEnd()) {
-                VectorEntry e = p2.get();
-                p2.advance();
-                return new ImmutablePair<VectorEntry, VectorEntry>(null, e);
-            } else {
-                throw new NoSuchElementException();
-            }
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
     }
 
     private static class FastPairIterImpl implements Iterator<Pair<VectorEntry,VectorEntry>> {
