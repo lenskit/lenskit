@@ -24,6 +24,7 @@ import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.BaselineItemScorer
 import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor
+import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.event.SimpleRating
 import org.grouplens.lenskit.eval.config.ConfigTestBase
@@ -66,5 +67,25 @@ class TrainModelCommandTest extends ConfigTestBase {
         assertThat(v.get(1), closeTo(4.0d, 1.0e-5d))
         assertThat(v.get(2), closeTo(4.0d, 1.0e-5d))
         assertThat(v.get(4), closeTo(4.0d, 1.0e-5d))
+    }
+
+    @Test
+    void testTrainModelWithName() {
+        def obj = eval {
+            trainModel("foobar") {
+                algorithm {
+                    bind ItemScorer to BaselineItemScorer
+                    bind BaselinePredictor to ItemUserMeanPredictor
+                }
+                input dataSource
+                action {
+                    assertThat(it.itemScorer, notNullValue());
+                    assertThat(it.ratingPredictor, notNullValue());
+                    assertThat(it.get(BaselinePredictor), notNullValue());
+                    return it.itemScorer.baseline
+                }
+            }
+        }
+        assertThat(obj, instanceOf(ItemUserMeanPredictor))
     }
 }

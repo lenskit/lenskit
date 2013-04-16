@@ -75,4 +75,14 @@ public abstract class AbstractCommand<T> implements Command<T> {
 
     @Override
     public abstract T call() throws CommandException;
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        return sb.append(getClass().getSimpleName())
+                 .append('(')
+                 .append(getName())
+                 .append(')')
+                 .toString();
+    }
 }
