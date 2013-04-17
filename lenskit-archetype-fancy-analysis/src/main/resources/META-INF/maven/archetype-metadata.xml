@@ -29,6 +29,7 @@
         <include>src/eval/*.groovy</include>
         <include>src/eval/*.R</include>
         <include>src/main/latex/*/*.tex</include>
+        <include>src/main/latex/*/*.bib</include>
       </includes>
     </fileSet>
   </fileSets>

@@ -77,14 +77,6 @@ public class EvalScriptMojo extends AbstractMojo {
     private MavenSession mavenSession;
 
     /**
-     * Location of the output class directory for this project's
-     * build.  Used to extend the ClassLoader so it can find the
-     * compiled classes when the script is running.
-     */
-    @Parameter(property = "project.build.outputDirectory")
-    private File buildDirectory;
-
-    /**
      * Name of recommender script. If none is given and scriptFiles
      * is not configured, default to use "eval.groovy"
      *
@@ -126,7 +118,7 @@ public class EvalScriptMojo extends AbstractMojo {
      * Turn on to force eval steps to run.
      */
     @SuppressWarnings("FieldCanBeLocal")
-    @Parameter(property="lenskit.eval.force")
+    @Parameter(property=EvalConfig.FORCE_PROPERTY)
     private boolean force = false;
 
     /**
@@ -136,7 +128,7 @@ public class EvalScriptMojo extends AbstractMojo {
      * To do that, run with <tt>mvn -Dlenskit.eval.skip=true</tt>.
      */
     @SuppressWarnings("FieldCanBeLocal")
-    @Parameter(property = "lenskit.eval.skip")
+    @Parameter(property = EvalConfig.SKIP_PROPERTY)
     private boolean skip = false;
 
     @Override
@@ -159,34 +151,27 @@ public class EvalScriptMojo extends AbstractMojo {
     }
 
     private void doExecute() throws MojoExecutionException {
-        // Before we can run, we get a new class loader that is a copy
-        // of our class loader, with the build directory added to it.
-        // That way the scripts can use classes that are compiled into
-        // the build directory.
-        URL buildUrl;
-        try {
-            buildUrl = buildDirectory.toURI().toURL();
-            getLog().info("build directory " + buildUrl.toString());
-        } catch (MalformedURLException e1) {
-            throw new MojoExecutionException("Cannot build URL for build directory");
-        }
-        ClassLoader loader = makeClassLoader();
-        // We put these properties into the new properties object in reverse order of importance.
-        // The later properties override the earlier ones.
-        // First the system properties.  Then the maven project properties.  
-        // Then the special properties for this MOJO.  Then the maven session
-        // user properties.  These last are the -D definitions from the command-line,
-        // which can thus override any other property for this evaluation.
+        // We put these properties into the new properties object in
+        // reverse order of importance.  The later properties override
+        // the earlier ones.  First the system properties.  Then the
+        // maven project properties.  Then the maven session user
+        // properties.  These last are the -D definitions from the
+        // command-line, which can thus override any other property
+        // for this evaluation.  Then the special properties for this
+        // MOJO, which can be set as arguments in the .pom file.  If
+        // they are set in the .pom file, according to Maven logic
+        // they should override any other attempt to set them, so they
+        // come last.
         Properties properties = new Properties();
         properties.putAll(System.getProperties());
         properties.putAll(mavenProject.getProperties());
+        properties.putAll(mavenSession.getProjectBuildingRequest().getUserProperties());
         properties.setProperty(EvalConfig.DATA_DIR_PROPERTY, dataDir);
         properties.setProperty(EvalConfig.ANALYSIS_DIR_PROPERTY, analysisDir);
         properties.setProperty(EvalConfig.THREAD_COUNT_PROPERTY,
                                Integer.toString(threadCount));
         properties.setProperty(EvalConfig.FORCE_PROPERTY,
                                Boolean.toString(force));
-        properties.putAll(mavenSession.getProjectBuildingRequest().getUserProperties());
 
         if (getLog().isDebugEnabled()) {
             properties.list(System.out);
@@ -194,6 +179,8 @@ public class EvalScriptMojo extends AbstractMojo {
             mavenSession.getProjectBuildingRequest().getUserProperties().list(System.out);
             System.getProperties().list(System.out);
         }
+
+        ClassLoader loader = makeClassLoader();
         if (getLog().isDebugEnabled()) dumpClassLoader(loader);
         EvalScriptEngine engine = new EvalScriptEngine(loader, properties);
 

@@ -38,6 +38,7 @@ import java.util.Properties;
  */
 public class EvalConfig {
     public static final String FORCE_PROPERTY = "lenskit.eval.force";
+    public static final String SKIP_PROPERTY = "lenskit.eval.skip";
     public static final String EVAL_SCRIPT_PROPERTY = "lenskit.eval.script";
     public static final String EVAL_SCRIPTFILES_PROPERTY = "lenskit.eval.scripts";
     public static final String DATA_DIR_PROPERTY = "lenskit.eval.dataDir";
