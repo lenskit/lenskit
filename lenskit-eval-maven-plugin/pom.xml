@@ -83,6 +83,7 @@
         <artifactId>maven-invoker-plugin</artifactId>
         <version>1.8</version>
         <configuration>
+          <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
           <postBuildHookScript>verify.groovy</postBuildHookScript>
           <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
           <goals>
@@ -92,6 +93,7 @@
         <executions>
           <execution>
             <goals>
+              <goal>install</goal>
               <goal>integration-test</goal>
               <goal>verify</goal>
             </goals>
