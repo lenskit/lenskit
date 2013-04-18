@@ -41,6 +41,10 @@ public abstract class Vector implements Serializable {
     private transient volatile Double norm;
     private transient volatile Double sum;
 
+    /**
+     * Construct a vector from a backing array. The array is not copied.
+     * @param d The backing array.
+     */
     Vector(double[] d) {
         data = d;
     }
