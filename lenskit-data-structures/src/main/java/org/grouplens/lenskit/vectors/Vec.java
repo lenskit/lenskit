@@ -33,7 +33,7 @@ import static java.lang.Math.sqrt;
  *
  * @compat Experimental — this interface may change in future versions of LensKit.
  */
-public abstract class Vector implements Serializable {
+public abstract class Vec implements Serializable {
     private static final long serialVersionUID = 1L;
 
     final double[] data;
@@ -45,7 +45,7 @@ public abstract class Vector implements Serializable {
      * Construct a vector from a backing array. The array is not copied.
      * @param d The backing array.
      */
-    Vector(double[] d) {
+    Vec(double[] d) {
         data = d;
     }
 
@@ -113,7 +113,7 @@ public abstract class Vector implements Serializable {
      * @return The dot product of this vector and {@code other}.
      * @throws IllegalArgumentException if {@code other.size() != this.size()}.
      */
-    public final double dot(Vector other) {
+    public final double dot(Vec other) {
         final int sz = data.length;
         Preconditions.checkArgument(sz == other.size(), "incompatible vector dimensions");
         double s = 0;
@@ -128,24 +128,24 @@ public abstract class Vector implements Serializable {
      * it is not changed.
      * @return The immutable vector.
      */
-    public ImmutableVector immutable() {
-        return ImmutableVector.make(data);
+    public ImmutableVec immutable() {
+        return ImmutableVec.make(data);
     }
 
     /**
      * Get a mutable copy of this vector.
      * @return A mutable copy of this vector.
      */
-    public MutableVector mutableCopy() {
-        return MutableVector.wrap(Arrays.copyOf(data, data.length));
+    public MutableVec mutableCopy() {
+        return MutableVec.wrap(Arrays.copyOf(data, data.length));
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == this) {
             return true;
-        } else if (o instanceof Vector) {
-            return Arrays.equals(data, ((Vector) o).data);
+        } else if (o instanceof Vec) {
+            return Arrays.equals(data, ((Vec) o).data);
         } else {
             return false;
         }

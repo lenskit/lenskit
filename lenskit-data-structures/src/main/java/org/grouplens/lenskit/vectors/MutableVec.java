@@ -23,12 +23,12 @@ package org.grouplens.lenskit.vectors;
 import com.google.common.base.Preconditions;
 
 /**
- * Mutable {@link org.grouplens.lenskit.vectors.Vector}.  This vector can be modified and is not
+ * Mutable {@link Vec}.  This vector can be modified and is not
  * thread-safe.
  *
  * @compat Experimental — this interface may change in future versions of LensKit.
  */
-public class MutableVector extends Vector {
+public class MutableVec extends Vec {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -36,7 +36,7 @@ public class MutableVector extends Vector {
      *
      * @param dim The dimension of the vector.
      */
-    public MutableVector(int dim) {
+    public MutableVec(int dim) {
         this(new double[dim]);
     }
 
@@ -44,7 +44,7 @@ public class MutableVector extends Vector {
      * Construct a new vector. The array is <b>not</b> copied.
      * @param v The backing array.
      */
-    private MutableVector(double[] v) {
+    private MutableVec(double[] v) {
         super(v);
     }
 
@@ -54,8 +54,8 @@ public class MutableVector extends Vector {
      * @param data The data array.
      * @return A vector backed by {@code data}.
      */
-    public static MutableVector wrap(double[] data) {
-        return new MutableVector(data);
+    public static MutableVec wrap(double[] data) {
+        return new MutableVec(data);
     }
 
     /**
@@ -78,7 +78,7 @@ public class MutableVector extends Vector {
      * @param v The other vector.
      * @throws IllegalArgumentException if {@code v} has a different dimension than this vector.
      */
-    public void add(Vector v) {
+    public void add(Vec v) {
         Preconditions.checkArgument(v.size() == size(), "incompatible vector dimensions");
         clearCaches();
         final int sz = size();

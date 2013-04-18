@@ -20,25 +20,23 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import com.google.common.base.Preconditions;
-
 import javax.annotation.concurrent.Immutable;
 import java.util.Arrays;
 
 /**
- * Immutable {@link Vector}.  This vector cannot be modified (by anyone) and is thread-safe.
+ * Immutable {@link Vec}.  This vector cannot be modified (by anyone) and is thread-safe.
  *
  * @compat Experimental — this interface may change in future versions of LensKit.
  */
 @Immutable
-public class ImmutableVector extends Vector {
+public class ImmutableVec extends Vec {
     private static final long serialVersionUID = 1L;
 
     /**
      * Construct a new immutable vector.
      * @param v The vector's contents. This array is copied for safety.
      */
-    private ImmutableVector(double[] v) {
+    private ImmutableVec(double[] v) {
         super(Arrays.copyOf(v, v.length));
     }
 
@@ -48,12 +46,12 @@ public class ImmutableVector extends Vector {
      * @param data The data array.
      * @return A vector containing the data in {@code data}.
      */
-    public static ImmutableVector make(double[] data) {
-        return new ImmutableVector(data);
+    public static ImmutableVec make(double[] data) {
+        return new ImmutableVec(data);
     }
 
     @Override
-    public ImmutableVector immutable() {
+    public ImmutableVec immutable() {
         return this;
     }
 }

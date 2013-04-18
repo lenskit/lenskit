@@ -27,12 +27,12 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-public class TestVector {
-    final Vector empty = ImmutableVector.make(new double[0]);
-    final Vector single = ImmutableVector.make(new double[]{3.5});
-    final Vector v1 = ImmutableVector.make(new double[]{1,3,5});
-    final Vector v1c = ImmutableVector.make(new double[]{1,3,5,7}, 3);
-    final Vector v2 = ImmutableVector.make(new double[]{2,3,4});
+public class TestVec {
+    final Vec empty = ImmutableVec.make(new double[0]);
+    final Vec single = ImmutableVec.make(new double[]{3.5});
+    final Vec v1 = ImmutableVec.make(new double[]{1, 3, 5});
+    final Vec v1c = ImmutableVec.make(new double[]{1, 3, 5, 7}, 3);
+    final Vec v2 = ImmutableVec.make(new double[]{2, 3, 4});
 
     @Test
     public void testDim() {
@@ -101,7 +101,7 @@ public class TestVector {
 
     @Test
     public void testMutate() {
-        MutableVector mv = v1.mutableCopy();
+        MutableVec mv = v1.mutableCopy();
         assertThat(mv.sum(), closeTo(9));
         assertThat(mv, allOf(equalTo(v1),
                              not(sameInstance(v1))));
@@ -114,17 +114,17 @@ public class TestVector {
 
     @Test
     public void testImmutable() {
-        MutableVector mv = v1.mutableCopy();
+        MutableVec mv = v1.mutableCopy();
         mv.set(1, 2);
-        Vector iv1 = mv.immutable();
-        assertThat(iv1, equalTo((Vector) mv));
-        assertThat(iv1, instanceOf(ImmutableVector.class));
+        Vec iv1 = mv.immutable();
+        assertThat(iv1, equalTo((Vec) mv));
+        assertThat(iv1, instanceOf(ImmutableVec.class));
         assertThat(iv1.immutable(), sameInstance(iv1));
     }
 
     @Test
     public void testAdd() {
-        MutableVector mv = MutableVector.wrap(new double[]{3, 2, 5});
+        MutableVec mv = MutableVec.wrap(new double[]{3, 2, 5});
         assertThat(mv.sum(), closeTo(10));
         mv.add(v1);
         assertThat(mv.get(0), closeTo(4));
@@ -135,7 +135,7 @@ public class TestVector {
 
     @Test
     public void testScale() {
-        MutableVector mv = MutableVector.wrap(new double[]{1, 2, 3});
+        MutableVec mv = MutableVec.wrap(new double[]{1, 2, 3});
         assertThat(mv.sum(), closeTo(6));
         mv.scale(2);
         assertThat(mv.sum(), closeTo(12));
@@ -146,7 +146,7 @@ public class TestVector {
 
     @Test
     public void testNewMutableVector() {
-        MutableVector v = new MutableVector(5);
+        MutableVec v = new MutableVec(5);
         assertThat(v.size(), equalTo(5));
         for (int i = 0; i < 5; i++) {
             assertThat(v.get(i), closeTo(0));
