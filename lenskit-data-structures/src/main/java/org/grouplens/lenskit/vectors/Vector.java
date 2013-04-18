@@ -107,7 +107,7 @@ public abstract class Vector implements Serializable {
      */
     public final double dot(Vector other) {
         final int sz = data.length;
-        Preconditions.checkArgument(sz == other.dim());
+        Preconditions.checkArgument(sz == other.dim(), "incompatible vector dimensions");
         double s = 0;
         for (int i = 0; i < sz; i++) {
             s += data[i] * other.data[i];
@@ -121,7 +121,7 @@ public abstract class Vector implements Serializable {
      * @return The immutable vector.
      */
     public ImmutableVector immutable() {
-        return new ImmutableVector(Arrays.copyOf(data, data.length));
+        return ImmutableVector.make(data);
     }
 
     /**
@@ -129,7 +129,7 @@ public abstract class Vector implements Serializable {
      * @return A mutable copy of this vector.
      */
     public MutableVector mutableCopy() {
-        return new MutableVector(Arrays.copyOf(data, data.length));
+        return MutableVector.wrap(Arrays.copyOf(data, data.length));
     }
 
     @Override

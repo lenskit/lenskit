@@ -32,20 +32,14 @@ import java.util.Arrays;
  */
 @Immutable
 public class ImmutableVector extends Vector {
-    ImmutableVector(double[] v) {
-        super(v);
-    }
+    private static final long serialVersionUID = 1L;
 
     /**
-     * Create a new vector from data in an array.  The array is copied for safety.
-     *
-     * @param data The data array.
-     * @param length The number of elements to use, starting from the first.
-     * @return A vector containing the data in {@code data}.
+     * Construct a new immutable vector.
+     * @param v The vector's contents. This array is copied for safety.
      */
-    public static ImmutableVector make(double[] data, int length) {
-        Preconditions.checkArgument(data.length >= length, "length mismatch");
-        return new ImmutableVector(Arrays.copyOf(data, length));
+    private ImmutableVector(double[] v) {
+        super(Arrays.copyOf(v, v.length));
     }
 
     /**
@@ -55,7 +49,7 @@ public class ImmutableVector extends Vector {
      * @return A vector containing the data in {@code data}.
      */
     public static ImmutableVector make(double[] data) {
-        return make(data, data.length);
+        return new ImmutableVector(data);
     }
 
     @Override

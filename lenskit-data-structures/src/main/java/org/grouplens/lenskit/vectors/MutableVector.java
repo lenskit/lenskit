@@ -29,6 +29,8 @@ import com.google.common.base.Preconditions;
  * @compat Experimental — this interface may change in future versions of LensKit.
  */
 public class MutableVector extends Vector {
+    private static final long serialVersionUID = 1L;
+
     /**
      * Construct a new mutable vector.  The vector is initialized to all 0's.
      *
@@ -38,7 +40,11 @@ public class MutableVector extends Vector {
         this(new double[dim]);
     }
 
-    MutableVector(double[] v) {
+    /**
+     * Construct a new vector. The array is <b>not</b> copied.
+     * @param v The backing array.
+     */
+    private MutableVector(double[] v) {
         super(v);
     }
 
