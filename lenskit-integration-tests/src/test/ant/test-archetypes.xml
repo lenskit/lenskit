@@ -39,7 +39,7 @@
         <arg value="-Dtest.repo.directory=${test.repo.directory}"/>
         <arg value="-Dgrouplens.mldata.acknowledge=${grouplens.mldata.acknowledge}"/>
         <arg value="-Dlenskit.eval.threadCount=${lenskit.eval.threadCount}"/>
-        <arg value="lenskit-analyze"/>
+        <arg value="lenskit-publish"/>
       </artifact:mvn>
     </sequential>
   </macrodef>
