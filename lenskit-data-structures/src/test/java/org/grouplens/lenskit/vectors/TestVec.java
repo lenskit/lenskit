@@ -31,7 +31,7 @@ public class TestVec {
     final Vec empty = ImmutableVec.make(new double[0]);
     final Vec single = ImmutableVec.make(new double[]{3.5});
     final Vec v1 = ImmutableVec.make(new double[]{1, 3, 5});
-    final Vec v1c = ImmutableVec.make(new double[]{1, 3, 5, 7}, 3);
+    final Vec v1c = ImmutableVec.make(new double[]{1, 3, 5});
     final Vec v2 = ImmutableVec.make(new double[]{2, 3, 4});
 
     @Test
