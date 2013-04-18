@@ -40,21 +40,20 @@ import javax.inject.Provider;
  * {@code SlopeOneItemScorer}.
  */
 public class SlopeOneModelBuilder implements Provider<SlopeOneModel> {
-    private final DataAccessObject dao;
-    private final BaselinePredictor baseline;
+    private final SlopeOneModelDataAccumulator accumulator;
+
+    private final BaselinePredictor predictor;
     private final ItemItemBuildContextFactory contextFactory;
-    private final double damping;
 
     @Inject
     public SlopeOneModelBuilder(@Transient @Nonnull DataAccessObject dao,
-                                @Nullable BaselinePredictor baseline,
+                                @Nullable BaselinePredictor predictor,
                                 @Transient ItemItemBuildContextFactory contextFactory,
                                 @Damping double damping) {
 
-        this.dao = dao;
-        this.baseline = baseline;
+        this.predictor = predictor;
         this.contextFactory = contextFactory;
-        this.damping = damping;
+        accumulator = new SlopeOneModelDataAccumulator(damping, dao);
     }
 
     /**
@@ -62,15 +61,12 @@ public class SlopeOneModelBuilder implements Provider<SlopeOneModel> {
      */
     @Override
     public SlopeOneModel get() {
-        Indexer itemIndex = new Indexer();
-        SlopeOneModelDataAccumulator accumulator = new SlopeOneModelDataAccumulator(damping, itemIndex, dao);
         ItemItemBuildContext buildContext = contextFactory.buildContext();
         for (ItemItemBuildContext.ItemVecPair pair : buildContext.getItemPairs()) {
             if (pair.itemId1 != pair.itemId2) {
                 accumulator.putItemPair(pair.itemId1, pair.vec1, pair.itemId2, pair.vec2);
             }
         }
-        return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(),
-                                 baseline, itemIndex);
+        return new SlopeOneModel(accumulator.buildMatrix(), predictor);
     }
 }
