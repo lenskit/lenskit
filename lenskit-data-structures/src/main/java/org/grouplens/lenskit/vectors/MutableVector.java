@@ -66,7 +66,7 @@ public class MutableVector extends Vector {
      * @throws IllegalArgumentException if {@code i} is not a valid index in this vector.
      */
     public double set(int i, double v) {
-        Preconditions.checkElementIndex(i, dim());
+        Preconditions.checkElementIndex(i, size());
         markModified();
         final double old = data[i];
         data[i] = v;
@@ -79,9 +79,9 @@ public class MutableVector extends Vector {
      * @throws IllegalArgumentException if {@code v} has a different dimension than this vector.
      */
     public void add(Vector v) {
-        Preconditions.checkArgument(v.dim() == dim(), "incompatible vector dimensions");
+        Preconditions.checkArgument(v.size() == size(), "incompatible vector dimensions");
         markModified();
-        final int sz = dim();
+        final int sz = size();
         for (int i = 0; i < sz; i++) {
             data[i] += v.data[i];
         }
@@ -93,7 +93,7 @@ public class MutableVector extends Vector {
      */
     public void scale(double s) {
         markModified();
-        final int sz = dim();
+        final int sz = size();
         for (int i = 0; i < sz; i++) {
             data[i] *= s;
         }

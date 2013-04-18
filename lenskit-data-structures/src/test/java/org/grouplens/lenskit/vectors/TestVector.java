@@ -36,10 +36,10 @@ public class TestVector {
 
     @Test
     public void testDim() {
-        assertThat(empty.dim(), equalTo(0));
-        assertThat(single.dim(), equalTo(1));
-        assertThat(v2.dim(), equalTo(3));
-        assertThat(v1c.dim(), equalTo(3));
+        assertThat(empty.size(), equalTo(0));
+        assertThat(single.size(), equalTo(1));
+        assertThat(v2.size(), equalTo(3));
+        assertThat(v1c.size(), equalTo(3));
     }
 
     @Test
@@ -147,7 +147,7 @@ public class TestVector {
     @Test
     public void testNewMutableVector() {
         MutableVector v = new MutableVector(5);
-        assertThat(v.dim(), equalTo(5));
+        assertThat(v.size(), equalTo(5));
         for (int i = 0; i < 5; i++) {
             assertThat(v.get(i), closeTo(0));
         }

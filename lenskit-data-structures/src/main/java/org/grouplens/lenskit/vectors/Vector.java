@@ -29,7 +29,7 @@ import static java.lang.Math.sqrt;
 
 /**
  * A real vector.  This is a read-only view of a vector of doubles.  It is backed by an array,
- * and contains values associated with indices [0,{@link #dim()}).
+ * and contains values associated with indices [0,{@link #size()}).
  *
  * @compat Experimental — this interface may change in future versions of LensKit.
  */
@@ -54,7 +54,7 @@ public abstract class Vector implements Serializable {
      * Get the value from the vector at the specified position.
      * @param i The index into the vector.
      * @return The value at index {@code i}.
-     * @throws IllegalArgumentException if {@code i} is not in the range [0,{@link #dim()}).
+     * @throws IllegalArgumentException if {@code i} is not in the range [0,{@link #size()}).
      */
     public final double get(int i) {
         Preconditions.checkElementIndex(i, data.length);
@@ -65,7 +65,7 @@ public abstract class Vector implements Serializable {
      * Get the dimension of this vector (the number of elements).
      * @return The number of elements in the vector.
      */
-    public final int dim() {
+    public final int size() {
         return data.length;
     }
 
@@ -103,11 +103,11 @@ public abstract class Vector implements Serializable {
      * Compute the dot product of this vector with another.
      * @param other The other vector.
      * @return The dot product of this vector and {@code other}.
-     * @throws IllegalArgumentException if {@code other.dim() != this.dim()}.
+     * @throws IllegalArgumentException if {@code other.size() != this.size()}.
      */
     public final double dot(Vector other) {
         final int sz = data.length;
-        Preconditions.checkArgument(sz == other.dim(), "incompatible vector dimensions");
+        Preconditions.checkArgument(sz == other.size(), "incompatible vector dimensions");
         double s = 0;
         for (int i = 0; i < sz; i++) {
             s += data[i] * other.data[i];
