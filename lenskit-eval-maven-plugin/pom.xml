@@ -97,6 +97,13 @@
             </goals>
           </execution>
         </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <version>1.3</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>

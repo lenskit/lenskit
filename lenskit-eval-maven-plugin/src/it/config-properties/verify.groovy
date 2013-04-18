@@ -1,9 +1,10 @@
+import static org.hamcrest.MatcherAssert.assertThat
+import static org.hamcrest.Matchers.*
+
 File file = new File("${basedir}/target/analysis", "out.txt")
 File dataPath = new File("${basedir}/data")
-if (!file.isFile()) {
-    throw new FileNotFoundException("could not find out.txt")
-}
-def text = file.getText()
-if (text != dataPath.getAbsolutePath()) {
-    throw new RuntimeException("invalid data path: " + text)
-}
+
+assertThat("output file existence", file.isFile(), equalTo(true))
+assertThat("output file text",
+           file.getText(),
+           equalTo(dataPath.getAbsolutePath()))

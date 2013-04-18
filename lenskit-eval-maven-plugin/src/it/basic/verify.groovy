@@ -1,8 +1,9 @@
+import static org.hamcrest.MatcherAssert.assertThat
+import static org.hamcrest.Matchers.*
+
 File file = new File(basedir, "out.txt")
-if (!file.isFile()) {
-    throw new FileNotFoundException("could not find out.txt")
-}
-def text = file.getText()
-if (text != "test ran") {
-    throw new RuntimeException("invalid source text: " + text)
-}
+
+assertThat("output file existence",
+           file.isFile(), equalTo(true));
+assertThat("output file text",
+           file.getText(), equalTo("test ran!"))
