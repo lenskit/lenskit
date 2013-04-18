@@ -28,7 +28,7 @@
  * Sparse vectors map arbitrary long keys to values sparsely and efficiently.  The keys can
  * be negative.
  *
- * <p>Each vector comes in three flavors: read-only ({@link Vector} and {@link SparseVector});
+ * <p>Each vector comes in three flavors. Read-only vectors ({@link Vector} and {@link SparseVector});
  * this type is the base of the remaining types for each vector, and provides a read-only
  * interface to the vector.  Immutable vectors ({@link ImmutableVector}
  * and {@link ImmutableSparseVector}) are immutable and cannot be
