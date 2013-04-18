@@ -31,6 +31,8 @@ import org.grouplens.lenskit.util.Index;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import java.io.Serializable;
+
 /**
  * A model for a {@link SlopeOneItemScorer} or {@link WeightedSlopeOneItemScorer}.
  * Stores calculated deviation values and number of co-rating users for each item pair.
@@ -39,7 +41,9 @@ import org.grouplens.lenskit.vectors.SparseVector;
  */
 @DefaultProvider(SlopeOneModelBuilder.class)
 @Shareable
-public class SlopeOneModel {
+public class SlopeOneModel implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private final Long2ObjectMap<ImmutableSparseVector> matrix;
     private final BaselinePredictor baseline;
@@ -80,16 +84,16 @@ public class SlopeOneModel {
             if (row == null) {
                 return 0;
             } else {
-                double coratings = row.channel(CORATINGS_SYMBOL).get(item2);
-                return Double.isNaN(coratings) ? 0 : (int)coratings;
+                double coratings = row.channel(CORATINGS_SYMBOL).get(item2, 0);
+                return (int) coratings;
             }
         } else {
             SparseVector row = matrix.get(item2);
             if (row == null) {
                 return 0;
             } else {
-                double coratings = row.channel(CORATINGS_SYMBOL).get(item1);
-                return Double.isNaN(coratings) ? 0 : (int)coratings;
+                double coratings = row.channel(CORATINGS_SYMBOL).get(item1, 0);
+                return (int) coratings;
             }
         }
     }

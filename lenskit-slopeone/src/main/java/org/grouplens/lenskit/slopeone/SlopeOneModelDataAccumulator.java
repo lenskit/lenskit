@@ -59,6 +59,10 @@ public class SlopeOneModelDataAccumulator {
      * @param itemVec2 The rating vector of the second item.
      */
     public void putItemPair(long id1, SparseVector itemVec1, long id2, SparseVector itemVec2) {
+        if (workMatrix == null) {
+            throw new IllegalStateException("Model is already built");
+        }
+
         // to profit from matrix symmetry, always store by the lesser id
         if (id1 < id2) {
             int coratings = 0;
@@ -79,6 +83,10 @@ public class SlopeOneModelDataAccumulator {
      *         a {@code SlopeOneItemScorer}.
      */
     public Long2ObjectMap<ImmutableSparseVector> buildMatrix() {
+        if (workMatrix == null) {
+            throw new IllegalStateException("Model is already built");
+        }
+
         Long2ObjectMap<ImmutableSparseVector> matrix =
                 new Long2ObjectOpenHashMap<ImmutableSparseVector>(workMatrix.size());
 
@@ -93,6 +101,8 @@ public class SlopeOneModelDataAccumulator {
         for (Map.Entry<Long, MutableSparseVector> e : workMatrix.entrySet()) {
             matrix.put(e.getKey(), e.getValue().freeze());
         }
+
+        workMatrix = null;
         return matrix;
     }
 }
