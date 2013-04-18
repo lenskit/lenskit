@@ -45,7 +45,11 @@ public abstract class Vector implements Serializable {
         data = d;
     }
 
-    void markModified() {
+    /**
+     * Clear cached values (sum, norm, etc.). This must be called by mutable subclasses whenever
+     * they modify the vector to invalidate the cached sums.
+     */
+    void clearCaches() {
         norm = null;
         sum = null;
     }

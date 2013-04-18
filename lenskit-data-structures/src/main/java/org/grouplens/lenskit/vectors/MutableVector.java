@@ -67,7 +67,7 @@ public class MutableVector extends Vector {
      */
     public double set(int i, double v) {
         Preconditions.checkElementIndex(i, size());
-        markModified();
+        clearCaches();
         final double old = data[i];
         data[i] = v;
         return old;
@@ -80,7 +80,7 @@ public class MutableVector extends Vector {
      */
     public void add(Vector v) {
         Preconditions.checkArgument(v.size() == size(), "incompatible vector dimensions");
-        markModified();
+        clearCaches();
         final int sz = size();
         for (int i = 0; i < sz; i++) {
             data[i] += v.data[i];
@@ -92,7 +92,7 @@ public class MutableVector extends Vector {
      * @param s The scalar to multiply this vector by.
      */
     public void scale(double s) {
-        markModified();
+        clearCaches();
         final int sz = size();
         for (int i = 0; i < sz; i++) {
             data[i] *= s;
