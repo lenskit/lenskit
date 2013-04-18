@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.grouplens.lenskit.tests</groupId>
-  <artifactId>test-eval-config-properties</artifactId>
+  <artifactId>test-eval-script-set</artifactId>
   <version>@project.version@</version>
   <name>Script Set Eval Mojo Test</name>
   <description>Test the eval mojo's support for script sets.</description>
