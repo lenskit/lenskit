@@ -6,4 +6,4 @@ File file = new File(basedir, "out.txt")
 assertThat("output file existence",
            file.isFile(), equalTo(true));
 assertThat("output file text",
-           file.getText(), equalTo("test ran!"))
+           file.getText(), equalTo("test ran"))

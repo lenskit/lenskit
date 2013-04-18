@@ -6,8 +6,8 @@
   <groupId>org.grouplens.lenskit.tests</groupId>
   <artifactId>test-eval-config-properties</artifactId>
   <version>@project.version@</version>
-  <name>Config Properties Test</name>
-  <description>Test the eval mojo using model properties to configure its behavior.</description>
+  <name>Script Set Eval Mojo Test</name>
+  <description>Test the eval mojo's support for script sets.</description>
 
   <properties>
     <lenskit.eval.analysisDir>${project.build.directory}/analysis</lenskit.eval.analysisDir>
@@ -21,6 +21,14 @@
         <groupId>org.grouplens.lenskit</groupId>
         <version>@project.version@</version>
         <extensions>true</extensions>
+        <configuration>
+          <scriptFiles>
+            <directory>${basedir}/src/eval</directory>
+            <includes>
+              <include>*.groovy</include>
+            </includes>
+          </scriptFiles>
+        </configuration>
       </plugin>
     </plugins>
   </build>
