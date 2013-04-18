@@ -20,8 +20,6 @@
  */
 package org.grouplens.lenskit.core;
 
-import com.google.common.collect.Sets;
-
 import javax.annotation.processing.*;
 import javax.inject.Qualifier;
 import javax.lang.model.SourceVersion;
