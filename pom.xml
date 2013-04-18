@@ -247,12 +247,16 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>2.5.1</version>
+          <version>3.1</version>
           <configuration>
             <source>1.6</source>
             <target>1.6</target>
             <showWarnings>true</showWarnings>
             <showDeprecation>true</showDeprecation>
+            <compilerArguments>
+              <Xlint/>
+            </compilerArguments>
+            <fork>true</fork>
           </configuration>
         </plugin>
 
@@ -611,16 +615,6 @@
       </properties>
       <build>
         <plugins>
-
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <compilerArguments>
-                <Xlint/>
-              </compilerArguments>
-            </configuration>
-          </plugin>
 
           <plugin>
             <groupId>com.mycila.maven-license-plugin</groupId>
