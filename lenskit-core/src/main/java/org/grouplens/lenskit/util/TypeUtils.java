@@ -94,7 +94,7 @@ public class TypeUtils {
     }
 
     /**
-     * Function that casts classes to specified types.  Nulls are passed through.
+     * Function that casts classes to specified types.  This function does not accept nulls.
      *
      * @param supertype A class known to be a valid supertype for any argument.
      */
@@ -103,7 +103,7 @@ public class TypeUtils {
             @Override
             public Class<? extends T> apply(Class<?> input) {
                 if (input == null) {
-                    return null;
+                    throw new NullPointerException("null class");
                 } else {
                     return input.asSubclass(supertype);
                 }
@@ -112,7 +112,7 @@ public class TypeUtils {
     }
 
     /**
-     * Function that gets the class for its argument.  Nulls are passed through.
+     * Function that gets the class for its argument.  This function does not accept nulls.
      *
      * @param supertype A class known to be a valid supertype for any argument.
      */
@@ -121,7 +121,7 @@ public class TypeUtils {
             @Override
             public Class<? extends T> apply(T input) {
                 if (input == null) {
-                    return null;
+                    throw new NullPointerException("null class");
                 } else {
                     return input.getClass().asSubclass(supertype);
                 }
