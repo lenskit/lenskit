@@ -86,6 +86,7 @@
           <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
           <postBuildHookScript>verify.groovy</postBuildHookScript>
           <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+          <settingsFile>src/it/settings.xml</settingsFile>
           <goals>
             <goal>lenskit-publish</goal>
           </goals>
