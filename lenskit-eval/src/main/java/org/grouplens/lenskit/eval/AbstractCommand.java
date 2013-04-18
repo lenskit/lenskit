@@ -28,7 +28,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * The abstract class of Command.
+ * Base class to simplify writing {@link Command}s.
  *
  * @author Shuo Chang<schang@cs.umn.edu>
  */
@@ -36,16 +36,32 @@ public abstract class AbstractCommand<T> implements Command<T> {
     @Nullable protected String name;
     private EvalConfig config;
 
-    public AbstractCommand(String name) {
+    /**
+     * Initialize a command.
+     * @param name The command's name.
+     */
+    protected AbstractCommand(@Nullable String name) {
         this.name = name;
     }
 
+    /**
+     * Set the configuration in use for this command.  The evaluation framework automatically
+     * calls this method, it is not necessary to call it manually.
+     *
+     * @param cfg The configuration.
+     * @return The command (for chaining).
+     */
     public AbstractCommand<T> setConfig(@Nonnull EvalConfig cfg) {
         Preconditions.checkNotNull(cfg, "configuration cannot be null");
         config = cfg;
         return this;
     }
 
+    /**
+     * Get the command's configuration.
+     *
+     * @return The command's configuration object.
+     */
     @Nonnull
     public EvalConfig getConfig() {
         if (config == null) {
@@ -54,6 +70,12 @@ public abstract class AbstractCommand<T> implements Command<T> {
         return config;
     }
 
+    /**
+     * Set this command's name.
+     *
+     * @param name The new name.
+     * @return The command (for chaining).
+     */
     public AbstractCommand<T> setName(String name) {
         this.name = name;
         return this;
