@@ -255,6 +255,7 @@
             <showDeprecation>true</showDeprecation>
             <compilerArguments>
               <Xlint/>
+              <Xlint:-processing/>
             </compilerArguments>
             <fork>true</fork>
           </configuration>
