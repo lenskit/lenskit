@@ -99,7 +99,7 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         if (domain != null) {
             factory.bind(PreferenceDomain.class).to(domain);
         }
-        logger.info("dumping graph {}", name);
+        logger.info("dumping graph {}", getName());
         Graph initial = factory.getInitialGraph(daoType);
         logger.debug("graph has {} nodes", initial.getNodes().size());
         Graph unshared = factory.simulateInstantiation(initial);
