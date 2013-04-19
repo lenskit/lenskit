@@ -20,17 +20,21 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold
 
-import static org.junit.Assert.*
 import static org.hamcrest.Matchers.*
-import com.google.common.io.Files
-import org.grouplens.lenskit.eval.config.ConfigTestBase
-import org.junit.Test
-import org.grouplens.lenskit.eval.data.CSVDataSource
-import org.junit.Ignore
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet
-import org.junit.Before
-import org.junit.After
+import static org.junit.Assert.*
+
+import org.grouplens.lenskit.cursors.Cursors
 import org.grouplens.lenskit.data.dao.DAOFactory
+import org.grouplens.lenskit.data.dao.DataAccessObject
+import org.grouplens.lenskit.data.event.Rating
+import org.grouplens.lenskit.eval.config.ConfigTestBase
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet
+import org.junit.After
+import org.junit.Before
+import org.junit.Ignore
+import org.junit.Test
+
+import com.google.common.io.Files
 
 /**
  * Test crossfold configuration
@@ -80,6 +84,36 @@ class TestCrossfoldConfig extends ConfigTestBase {
         assertThat(tt[1].name, equalTo("tempRatings.1"))
         assertThat(tt[2].attributes.get("Partition"), equalTo(2))
         assertThat(tt[3].testFactory, instanceOf(DAOFactory))
+    }
+    
+    @Test
+    void testCrossfoldByRatings() {
+        def obj = eval {
+            crossfold("tempRatings") {
+                source file
+                partitions 5
+                flag false
+                train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
+                test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
+            }
+        }
+        assertThat(obj.size(), equalTo(5))
+        assertThat(obj[1], instanceOf(TTDataSet))
+        def tt = obj as List<TTDataSet>
+        assertThat(tt[1].name, equalTo("tempRatings.1"))
+        assertThat(tt[2].attributes.get("Partition"), equalTo(2))
+        assertThat(tt[3].testFactory, instanceOf(DAOFactory))
+        for (TTDataSet data: tt) {
+            DAOFactory factory = data.getTestFactory();
+            DataAccessObject daoSnap = factory.snapshot();
+            try{
+                List<Rating> ratings = Cursors.makeList(daoSnap.getEvents(Rating.class));
+         
+                assertThat(ratings.size(), equalTo(2))
+            } finally{
+                daoSnap.close();
+            }
+        }
     }
 
     @Test @Ignore("wrapper functions not supported")
