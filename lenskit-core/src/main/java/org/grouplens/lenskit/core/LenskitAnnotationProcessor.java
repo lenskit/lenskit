@@ -131,10 +131,6 @@ public class LenskitAnnotationProcessor extends AbstractProcessor {
             if (q == null) {
                 warning(param, "parameter %s is not annotated as a qualifier", param);
             }
-            Retention rp = param.getAnnotation(Retention.class);
-            if (rp == null || rp.value() != RetentionPolicy.RUNTIME) {
-                warning(param, "parameter %s does not have runtime retention", param);
-            }
         }
     }
 }
