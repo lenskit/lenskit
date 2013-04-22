@@ -597,10 +597,6 @@
     </profile>
 
     <profile>
-      <id>smoketest</id>
-    </profile>
-
-    <profile>
       <id>lint</id>
       <activation>
         <property>
