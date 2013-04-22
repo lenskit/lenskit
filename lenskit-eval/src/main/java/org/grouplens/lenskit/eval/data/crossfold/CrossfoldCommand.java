@@ -47,6 +47,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -71,6 +72,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     private Order<Rating> order = new RandomOrder<Rating>();
     private PartitionAlgorithm<Rating> partition = new HoldoutNPartition<Rating>(10);
     private boolean isForced;
+    private boolean splitUsers = true;
 
     @Nullable
     private Function<DAOFactory, DAOFactory> wrapper;
@@ -214,6 +216,10 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         return this;
     }
 
+    public void setSplitUsers(boolean splitUsers) {
+        this.splitUsers = splitUsers;
+    }
+
     /**
      * Get the visible name of this crossfold split.
      *
@@ -274,6 +280,10 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         return isForced || getConfig().force();
     }
 
+    public boolean getSplitUsers() {
+        return splitUsers;
+    }
+
     /**
      * Run the crossfold command. Write the partition files to the disk by reading in the source file.
      *
@@ -297,26 +307,9 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
                 return getTTFiles();
             }
         }
-        DAOFactory factory = source.getDAOFactory();
-        DataAccessObject dao = factory.create();
-        Long2IntMap splits;
-        try {
-            splits = splitUsers(dao);
-        } finally {
-            dao.close();
-        }
-        Holdout mode = this.getHoldout();
-        DataAccessObject daoSnap = factory.snapshot();
-        try {
-            logger.info("splitting data source {} to {} partitions",
-                        getName(), partitionCount);
-            createTTFiles(daoSnap, mode, splits);
-        } finally {
-            daoSnap.close();
-        }
+        createTTFiles();
         return getTTFiles();
     }
-
 
     /**
      * Get the list of files satisfying the specified name pattern
@@ -333,15 +326,12 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     }
 
     /**
-     * Create the split files from the DAO using specified holdout method.
+     * Write train-test split files
      *
-     * @param dao    The DAO of the data source file
-     * @param mode   Holdout mode
-     * @param splits The map of user id to the split number of all the users
      * @throws org.grouplens.lenskit.eval.CommandException
      *          Any error
      */
-    protected void createTTFiles(DataAccessObject dao, Holdout mode, Long2IntMap splits) throws CommandException {
+    protected void createTTFiles() throws CommandException {
         File[] trainFiles = getFiles(getTrainPattern());
         File[] testFiles = getFiles(getTestPattern());
         TableWriter[] trainWriters = new TableWriter[partitionCount];
@@ -357,38 +347,96 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
                     throw new CommandException("Error creating train test file writer", e);
                 }
             }
-            Cursor<UserHistory<Rating>> historyCursor = dao.getUserHistories(Rating.class);
+            DAOFactory factory = source.getDAOFactory();
+            DataAccessObject daoSnap = factory.snapshot();
             try {
-                for (UserHistory<Rating> history : historyCursor) {
-                    int foldNum = splits.get(history.getUserId());
-                    List<Rating> ratings = new ArrayList<Rating>(history);
-                    final int p = mode.partition(ratings, random);
-                    final int n = ratings.size();
-
-                    for (int f = 0; f < partitionCount; f++) {
-                        if (f == foldNum) {
-                            for (int j = p; j < n; j++) {
-                                writeRating(testWriters[f], ratings.get(j));
-                            }
-                            for (int j = 0; j < p; j++) {
-                                writeRating(trainWriters[f], ratings.get(j));
-                            }
-                        } else {
-                            for (Rating rating : ratings) {
-                                writeRating(trainWriters[f], rating);
-                            }
-                        }
-                    }
-
+                if (getSplitUsers()) {                   
+                    writeTTFilesByUsers(trainWriters, testWriters, daoSnap);
+                } else {                    
+                    writeTTFilesByRatings(trainWriters, testWriters, daoSnap);
                 }
-            } catch (IOException e) {
-                throw new CommandException("Error writing to the train test files", e);
             } finally {
-                historyCursor.close();
+                daoSnap.close();
             }
         } finally {
             LKFileUtils.close(logger, trainWriters);
             LKFileUtils.close(logger, testWriters);
+        }
+    }
+    
+    /**
+     * Write the split files by Users from the DAO using specified holdout method
+     * 
+     * @param trainWriters The tableWriter that write train files
+     * @param testWriters  The tableWriter that writ test files
+     * @param dao The DAO of the data source file
+     * @throws CommandException
+     */
+    protected void writeTTFilesByUsers(TableWriter[] trainWriters, TableWriter[] testWriters,
+                                        DataAccessObject dao) throws CommandException {
+        logger.info("splitting data source {} to {} partitions by users",
+                    getName(), partitionCount);
+        Cursor<UserHistory<Rating>> historyCursor = dao.getUserHistories(Rating.class);
+        Long2IntMap splits = splitUsers(dao);
+        Holdout mode = this.getHoldout();
+        try {
+            for (UserHistory<Rating> history : historyCursor) {
+                int foldNum = splits.get(history.getUserId());
+                List<Rating> ratings = new ArrayList<Rating>(history);
+                final int p = mode.partition(ratings, random);
+                final int n = ratings.size();
+
+                for (int f = 0; f < partitionCount; f++) {
+                    if (f == foldNum) {
+                        for (int j = 0; j < p; j++) {
+                            writeRating(trainWriters[f], ratings.get(j));
+                        }
+                        for (int j = p; j < n; j++) {
+                            writeRating(testWriters[f], ratings.get(j));
+                        }
+                    } else {
+                        for (Rating rating : ratings) {
+                            writeRating(trainWriters[f], rating);
+                        }
+                    }
+                }
+
+            }
+        } catch (IOException e) {
+            throw new CommandException("Error writing to the train test files", e);
+        } finally {
+            historyCursor.close();
+        }
+    }
+    
+    /**
+     * Write the split files by Ratings from the DAO
+     * 
+     * @param trainWriters The tableWriter that write train files
+     * @param testWriters  The tableWriter that writ test files
+     * @param dao The DAO of the data source file
+     * @throws CommandException
+     */
+    protected void writeTTFilesByRatings(TableWriter[] trainWriters, TableWriter[] testWriters, 
+                                          DataAccessObject dao) throws CommandException {
+        logger.info("splitting data source {} to {} partitions by ratings",
+                    getName(), partitionCount);
+        ArrayList<Rating> ratings = Cursors.makeList(dao.getEvents(Rating.class));
+        Collections.shuffle(ratings);
+        try {
+            final int n = ratings.size();
+            for (int i = 0; i < n; i++) {
+                for (int f = 0; f < partitionCount; f++) {
+                    int foldNum = i % partitionCount;
+                    if (f == foldNum) {
+                        writeRating(testWriters[f], ratings.get(i));
+                    } else {
+                        writeRating(trainWriters[f], ratings.get(i));
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new CommandException("Error writing to the train test files", e);
         }
     }
 
@@ -429,7 +477,12 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         logger.info("Partitioned {} users", userMap.size());
         return userMap;
     }
-
+    
+    /**
+     * Get the train-test splits as data sets.
+     * 
+     * @return List<TTDataSet> The partition files stored as a list of TTDataSet
+     */
     public List<TTDataSet> getTTFiles() {
         List<TTDataSet> dataSets = new ArrayList<TTDataSet>(partitionCount);
         File[] trainFiles = getFiles(getTrainPattern());
