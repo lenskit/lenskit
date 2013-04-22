@@ -380,6 +380,8 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      */
     protected void writeTTFilesByUsers(TableWriter[] trainWriters, TableWriter[] testWriters,
                                         DataAccessObject dao) throws CommandException {
+        logger.info("splitting data source {} to {} partitions by users",
+                    getName(), partitionCount);
         Cursor<UserHistory<Rating>> historyCursor = dao.getUserHistories(Rating.class);
         Long2IntMap splits = splitUsers(dao);
         Holdout mode = this.getHoldout();
@@ -411,8 +413,6 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         } finally {
             historyCursor.close();
         }
-        logger.info("splitting data source {} to {} partitions by users",
-                    getName(), partitionCount);
     }
     
     /**
@@ -425,7 +425,9 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      */
     protected void writeTTFilesByRatings(TableWriter[] trainWriters, TableWriter[] testWriters, 
                                           DataAccessObject dao) throws CommandException {
-        List<Rating> ratings = Cursors.makeList(dao.getEvents(Rating.class));
+        logger.info("splitting data source {} to {} partitions by ratings",
+                    getName(), partitionCount);
+        ArrayList<Rating> ratings = Cursors.makeList(dao.getEvents(Rating.class));
         Collections.shuffle(ratings);
         try {
             final int n = ratings.size();
@@ -442,8 +444,6 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         } catch (IOException e) {
             throw new CommandException("Error writing to the train test files", e);
         }
-        logger.info("splitting data source {} to {} partitions by ratings",
-                    getName(), partitionCount);
     }
 
     /**
