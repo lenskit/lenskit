@@ -10,26 +10,21 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>lenskit-test</artifactId>
-  <name>LensKit Test Utilities</name>
-  <description>Utilities for testing LensKit.</description>
+  <artifactId>lenskit-parent</artifactId>
+  <packaging>pom</packaging>
+  <name>LensKit Parent Module</name>
+  <description>
+    This module is the parent of most LensKit modules. It is to allow common things like testing
+    configuration to be inherited. Once Maven supports POM mixins, that should be used instead of
+    this module inheritance.
+  </description>
 
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
-      <scope>compile</scope>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-test</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
-
 </project>

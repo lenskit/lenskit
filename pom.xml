@@ -59,6 +59,8 @@
   </distributionManagement>
 
   <modules>
+    <module>lenskit-test</module>
+    <module>lenskit-parent</module>
     <module>lenskit-api</module>
     <module>lenskit-data-structures</module>
     <module>lenskit-core</module>
@@ -71,7 +73,6 @@
     <module>lenskit-archetype-simple-analysis</module>
     <module>lenskit-archetype-fancy-analysis</module>
     <module>lenskit-integration-tests</module>
-    <module>lenskit-test</module>
   </modules>
 
   <repositories>
@@ -195,11 +196,6 @@
         <groupId>org.hamcrest</groupId>
         <artifactId>hamcrest-library</artifactId>
         <version>1.3</version>
-      </dependency>
-      <dependency>
-        <groupId>org.grouplens.lenskit</groupId>
-        <artifactId>lenskit-test</artifactId>
-        <version>${project.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
