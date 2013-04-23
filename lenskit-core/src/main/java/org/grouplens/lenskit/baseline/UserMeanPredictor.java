@@ -43,7 +43,7 @@ import static java.lang.Math.abs;
  * actually computing the average offset from the global mean and adding back
  * the global mean for the returned prediction.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultProvider(UserMeanPredictor.Builder.class)
 @Shareable
@@ -53,7 +53,7 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
     /**
      * A builder that creates UserMeanPredictors.
      *
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder implements Provider<UserMeanPredictor> {
         private double smoothing = 0;

@@ -29,7 +29,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * Algorithm for scoring items given an item-item model and neighborhood scorer.
  * Used by {@link ItemItemScorer} and {@link ItemItemGlobalScorer} to score items.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 @DefaultImplementation(DefaultItemScoreAlgorithm.class)

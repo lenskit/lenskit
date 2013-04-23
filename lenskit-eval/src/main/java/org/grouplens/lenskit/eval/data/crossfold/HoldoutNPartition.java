@@ -28,7 +28,7 @@ import java.util.List;
  * Partition the last part of list by holding out a fixed number of elements.
  *
  * @param <E>
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class HoldoutNPartition<E> implements PartitionAlgorithm<E> {
 

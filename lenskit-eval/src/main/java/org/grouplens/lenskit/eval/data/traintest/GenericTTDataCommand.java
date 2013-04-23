@@ -28,7 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
     private DataSource trainingData;

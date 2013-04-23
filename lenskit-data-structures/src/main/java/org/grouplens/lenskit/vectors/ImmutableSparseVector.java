@@ -37,7 +37,7 @@ import org.grouplens.lenskit.symbols.Symbol;
  * Immutable sparse vectors. These vectors cannot be changed, even by other
  * code, and are therefore safe to store and are thread-safe.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 @Immutable

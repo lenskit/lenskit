@@ -37,7 +37,7 @@ import java.util.Collection;
  * #predict(org.grouplens.lenskit.data.UserHistory, MutableSparseVector)}. It also delegates all
  * deprecated {@code score} methods to their corresponding {@code predict} methods.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class AbstractRatingPredictor implements RatingPredictor {
     /**

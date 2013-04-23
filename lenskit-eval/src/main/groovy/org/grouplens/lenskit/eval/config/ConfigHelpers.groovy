@@ -34,7 +34,7 @@ import org.grouplens.lenskit.eval.Command
  * <p>
  * <b>Warning</b>: here be dragons!
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 class ConfigHelpers {

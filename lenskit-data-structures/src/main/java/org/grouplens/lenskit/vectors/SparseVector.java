@@ -71,7 +71,7 @@ import com.google.common.primitives.Longs;
  * vectors that are guaranteed to be unchanging, see
  * {@link ImmutableSparseVector}.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public abstract class SparseVector implements Iterable<VectorEntry>, Serializable {

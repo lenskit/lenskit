@@ -44,7 +44,7 @@ import javax.annotation.Nullable;
  * .to(MeanVarianceNormalizer.class);
  * }
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see VectorNormalizer
  * @since 0.11
  */

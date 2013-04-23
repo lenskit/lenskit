@@ -28,7 +28,7 @@ import com.google.common.base.Function;
 /**
  * Implementation of transformed cursors.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see Cursors#transform(Cursor, Function)
  */
 class TransformedCursor<S, T> extends AbstractCursor<T> {

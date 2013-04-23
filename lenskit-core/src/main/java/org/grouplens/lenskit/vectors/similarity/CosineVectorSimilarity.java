@@ -30,7 +30,7 @@ import java.io.Serializable;
 /**
  * Cosine similarity for vectors.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class CosineVectorSimilarity implements VectorSimilarity, Serializable {

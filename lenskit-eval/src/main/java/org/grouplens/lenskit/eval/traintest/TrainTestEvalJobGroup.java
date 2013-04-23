@@ -44,7 +44,7 @@ import java.util.concurrent.Callable;
 /**
  * Run train-test evaluations of several algorithms over a data set.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
 public class TrainTestEvalJobGroup implements JobGroup {

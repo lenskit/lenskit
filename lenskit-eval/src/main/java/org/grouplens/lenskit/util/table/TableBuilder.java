@@ -29,8 +29,8 @@ import java.util.List;
 /**
  * Builder to construct tables.
  *
- * @author Shuo Chang
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TableBuilder implements Builder<Table>, TableWriter {
     private final TableLayout layout;

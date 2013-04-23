@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 /**
  * Interface for train-test data sets.  This is a single train-test pair.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
 @BuilderCommand(GenericTTDataCommand.class)

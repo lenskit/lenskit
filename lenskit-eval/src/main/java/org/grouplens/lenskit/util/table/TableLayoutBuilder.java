@@ -28,7 +28,7 @@ import java.util.LinkedHashSet;
 /**
  * Construct a layout for a table.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {

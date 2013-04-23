@@ -26,7 +26,7 @@ import org.apache.tools.ant.DirectoryScanner
 /**
  * Base class for evaluator configuration scripts. It contains the metaclass
  * machinery to set up evaluation taskMap.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 abstract class EvalScript extends Script {

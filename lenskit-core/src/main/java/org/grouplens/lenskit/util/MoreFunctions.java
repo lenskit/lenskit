@@ -26,7 +26,7 @@ import com.google.common.base.Functions;
 /**
  * Additional function utilities to go with {@link Functions}.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.9
  */
 public final class MoreFunctions {

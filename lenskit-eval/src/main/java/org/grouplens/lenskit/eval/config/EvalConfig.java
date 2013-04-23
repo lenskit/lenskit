@@ -33,7 +33,7 @@ import java.util.Properties;
  * in to the Groovy evaluation script under a special name, so the
  * script can use it to pull properties out.
  *
- * @author John Riedl
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
  */
 public class EvalConfig {

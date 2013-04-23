@@ -35,7 +35,7 @@ import java.util.Iterator;
  * provides access to item vectors and the item universe for use in  building
  * up the model in the accumulator.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see ItemItemModelBuilder
  */
 public class ItemItemBuildContext {

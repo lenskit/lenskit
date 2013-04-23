@@ -47,7 +47,7 @@ import java.io.Serializable;
 /**
  * Generate baseline predictions with regularization.
  *
- * @author Ark Xu <xuxxx728@umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultProvider(LeastSquaresPredictor.Builder.class)
 @Shareable

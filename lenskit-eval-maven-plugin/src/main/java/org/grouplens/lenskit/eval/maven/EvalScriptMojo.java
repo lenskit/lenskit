@@ -52,7 +52,7 @@ import java.util.Properties;
 /**
  * Run a LensKit evaluation script.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Mojo(name = "run-eval",
       requiresDependencyResolution = ResolutionScope.RUNTIME,

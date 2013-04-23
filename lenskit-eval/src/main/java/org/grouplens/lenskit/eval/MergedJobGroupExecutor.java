@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * Run the jobs from a set of job groups in a single work queue, allowing the
  * groups to overlap.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class MergedJobGroupExecutor implements JobGroupExecutor {
     private static final Logger logger = LoggerFactory.getLogger(MergedJobGroupExecutor.class);
@@ -152,7 +152,7 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
      * Run a job, calling {@link MergedJobGroupExecutor#jobStarting(Job)} and
      * {@link MergedJobGroupExecutor#jobFinished(Job)} before and after.
      *
-     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     private class JobTask implements Runnable {
         final Job job;

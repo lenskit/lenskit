@@ -38,7 +38,7 @@ import com.google.common.collect.Lists;
  * Execute job groups sequentially. Used to implement
  * {@link IsolationLevel#JOB_GROUP}.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
 public class SequentialJobGroupExecutor implements JobGroupExecutor {

@@ -36,7 +36,7 @@ import com.google.common.base.Predicate;
  * computed properties of themselves.
  *
  * @param <E> The type of event this history contains.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 @ThreadSafe

@@ -47,7 +47,7 @@ import java.util.Map;
  * Symbols are hashable, because they are singletons, so the default hashCode
  * based on Object address should work.
  *
- * @author John Riedl <riedl@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public final class Symbol {

@@ -27,7 +27,7 @@ import java.util.Iterator;
  * Base class to make {@link Cursor}s easier to implement.
  *
  * @param <T> The type of value returned by this cursor.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public abstract class AbstractCursor<T> implements Cursor<T> {

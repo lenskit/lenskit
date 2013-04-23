@@ -40,7 +40,7 @@ import org.grouplens.lenskit.util.table.writer.TableWriter;
  * The mode of the subsample file. It can be chosen as Ratings, Items or Users so that
  * the data source file can be subsampled according to Rating, Item or User. 
  *
- * @author Lingfei He<Lingfei@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 
 public enum SubsampleMode {

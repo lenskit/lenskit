@@ -35,7 +35,7 @@ import java.util.Properties;
 /**
  * Parse & present command line options for running the evaluator.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public class EvalCLIOptions {

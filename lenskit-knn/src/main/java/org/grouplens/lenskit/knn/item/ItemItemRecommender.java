@@ -30,7 +30,7 @@ import javax.inject.Inject;
  * Recommend items using item-item collaborative filtering.
  *
  * @deprecated Just use {@link ScoreBasedItemRecommender} instead.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Deprecated
 public class ItemItemRecommender extends ScoreBasedItemRecommender {

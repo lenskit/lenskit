@@ -42,7 +42,7 @@ import static java.lang.Math.sqrt;
  * Shapira, B., and Kantor, P. (eds.), <i>RecommenderEngine Systems Handbook</i>,
  * Springer. 2010, pp. 107-144.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class PearsonCorrelation implements VectorSimilarity, Serializable {

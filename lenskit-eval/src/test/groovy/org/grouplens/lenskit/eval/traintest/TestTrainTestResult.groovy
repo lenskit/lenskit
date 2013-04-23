@@ -41,7 +41,7 @@ import org.grouplens.lenskit.util.table.TableImpl
 /**
  * Test the result returned by the trainTest
  *
- * @author Shuo Chang<schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  *
  */
 class TestTrainTestResult extends ConfigTestBase {

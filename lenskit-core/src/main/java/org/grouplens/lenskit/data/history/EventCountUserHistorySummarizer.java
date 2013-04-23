@@ -38,7 +38,7 @@ import javax.inject.Singleton;
  * Summarize a history by counting all events referencing an item.  The history
  * can be filtered by type prior to counting.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 @Singleton

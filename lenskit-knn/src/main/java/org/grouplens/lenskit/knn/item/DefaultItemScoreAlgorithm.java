@@ -40,7 +40,7 @@ import java.io.Serializable;
  * Default item scoring algorithm. It uses up to {@link NeighborhoodSize} neighbors to
  * score each item.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializable {

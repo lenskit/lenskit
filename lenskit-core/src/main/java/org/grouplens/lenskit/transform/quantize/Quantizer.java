@@ -24,7 +24,7 @@ package org.grouplens.lenskit.transform.quantize;
  * Quantize real values into discrete values. Used to do things like map floating point
  * ratings or predictions to discrete rating values.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface Quantizer {
     /**

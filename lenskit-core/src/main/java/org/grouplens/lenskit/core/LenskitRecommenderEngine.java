@@ -39,7 +39,7 @@ import java.io.*;
  * LensKit implementation of a recommender engine.  It uses containers set up by
  * the {@link LenskitRecommenderEngineFactory} to set up recommender sessions.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  * @see LenskitRecommenderEngineFactory
  * @see LenskitRecommender

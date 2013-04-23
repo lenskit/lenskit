@@ -37,7 +37,7 @@ import javax.inject.Inject;
  * {@link org.grouplens.lenskit.ItemScorer}.  The scores are clamped to the preference domain
  * but otherwise unmodified.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
  */
 public final class SimpleRatingPredictor extends AbstractRatingPredictor {

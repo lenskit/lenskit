@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
 /**
  * Implementation of {@link Cursor} that simply wraps an iterator.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class IteratorCursor<T> extends AbstractCursor<T> {
     private Iterator<? extends T> iterator;

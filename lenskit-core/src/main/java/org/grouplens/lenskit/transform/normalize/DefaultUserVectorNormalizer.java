@@ -32,7 +32,7 @@ import java.io.Serializable;
 /**
  * Default user vector normalizer that delegates to a generic {@link VectorNormalizer}.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
 @Shareable

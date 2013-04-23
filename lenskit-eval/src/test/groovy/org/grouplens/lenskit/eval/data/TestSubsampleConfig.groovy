@@ -50,7 +50,7 @@ import org.grouplens.lenskit.data.pref.SimplePreference;
 
 /**
  * Test subsample configuration
- * @author Lingfei He
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class TestSubsampleConfig extends ConfigTestBase {
 

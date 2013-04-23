@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 /**
  * Data source for a single data set.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @BuilderCommand(CSVDataSourceCommand.class)
 public interface DataSource {

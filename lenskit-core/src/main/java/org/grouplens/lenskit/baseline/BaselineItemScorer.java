@@ -36,7 +36,7 @@ import java.util.Collection;
  * {@link org.grouplens.lenskit.ItemScorer} that delegates to the baseline predictor. This allows
  * baseline predictors to be used as rating predictors in their own right.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see BaselinePredictor
  */
 public class BaselineItemScorer extends AbstractItemScorer {

@@ -22,5 +22,5 @@ package org.grouplens.lenskit.eval.config
 
 /**
  * Empty Groovy script for test purposes.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */

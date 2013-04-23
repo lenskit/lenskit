@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval;
 /**
  * The exception thrown from the failure of call() in Commmand
  *
- * @author Shuo Chang<schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class CommandException extends Exception {
     private static final long serialVersionUID = -9073424874249517829L;

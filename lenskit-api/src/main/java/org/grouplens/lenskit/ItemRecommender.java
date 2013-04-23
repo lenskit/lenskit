@@ -56,7 +56,7 @@ import org.grouplens.lenskit.data.UserHistory;
  * this respect can manually provide the sets they need respected.
  * </p>
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public interface ItemRecommender {

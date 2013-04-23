@@ -54,8 +54,7 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
  * where <i>b<sub>i</sub></i> is the item's average rating (less the global
  * mean µ).
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @author Michael Ludwig <mludwig@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultProvider(ItemMeanPredictor.Builder.class)
 @Shareable
@@ -63,7 +62,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
     /**
      * A builder to create ItemMeanPredictors.
      *
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder implements Provider<ItemMeanPredictor> {
         private double damping = 0;

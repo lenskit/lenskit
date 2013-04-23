@@ -29,7 +29,7 @@ import javax.inject.Inject;
  * Quantizer that uses a range and precision to determine discrete values.
  * Values are rounded to the closest discrete value.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class PreferenceDomainQuantizer extends ValueArrayQuantizer {

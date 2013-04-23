@@ -26,7 +26,7 @@ import java.lang.annotation.*;
 /**
  * A type of event, such as events to count in a history summarizer.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Qualifier
 @Retention(RetentionPolicy.RUNTIME)

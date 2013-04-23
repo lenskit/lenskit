@@ -52,8 +52,7 @@ import org.slf4j.LoggerFactory;
  * Users of this model will usually call the Provider's get method to create
  * a suitable model.  The model can be kept around until recomputation is necessary.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @author John Riedl <riedl@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 @DefaultProvider(ItemMeanModel.Provider.class)

@@ -26,7 +26,7 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
  * Factory to create new DAOs. This is used when something needs to be able to
  * create DAOs at will.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public interface DAOFactory {

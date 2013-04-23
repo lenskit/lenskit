@@ -43,7 +43,7 @@ import javax.annotation.Nonnull;
  * not have such a requirement.
  *
  * @param <T> The type of data returned by the cursor
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public interface Cursor<T> extends Iterable<T>, Closeable {

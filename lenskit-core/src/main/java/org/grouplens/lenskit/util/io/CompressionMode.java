@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.util.io;
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public enum CompressionMode {
     /**

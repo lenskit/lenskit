@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Default implementation of the SQL statement factory.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @SuppressWarnings("unused")
 public class BasicSQLStatementFactory implements SQLStatementFactory {

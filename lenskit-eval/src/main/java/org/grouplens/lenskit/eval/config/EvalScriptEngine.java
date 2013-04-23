@@ -45,7 +45,7 @@ import java.util.*;
  * Load and process configuration files. Also provides helper methods used by the
  * configuration scripts to locate & invoke methods.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public class EvalScriptEngine {

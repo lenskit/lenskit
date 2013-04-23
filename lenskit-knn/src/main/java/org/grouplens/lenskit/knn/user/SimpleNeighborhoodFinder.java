@@ -58,7 +58,7 @@ import static java.lang.Math.max;
  * <p>Currently, this cache is never cleared. This should probably be changed
  * sometime.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializable {
     private static final long serialVersionUID = -6324767320394518347L;

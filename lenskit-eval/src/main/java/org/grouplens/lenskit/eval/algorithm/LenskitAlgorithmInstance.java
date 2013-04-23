@@ -49,7 +49,7 @@ import java.util.Map;
 /**
  * An instance of a recommender algorithm to be benchmarked.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @BuilderCommand(LenskitAlgorithmInstanceCommand.class)
 public class LenskitAlgorithmInstance implements AlgorithmInstance {

@@ -42,7 +42,7 @@ import java.util.Collection;
  * This class is also misnamed; it generates general item scores, not just rating
  * predictions.
  *
- * @author Michael Ludwig
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see BaselineItemScorer
  */
 public interface BaselinePredictor extends Serializable {

@@ -28,7 +28,7 @@ import org.grouplens.lenskit.symbols.Symbol;
 import org.junit.Test;
 
 /**
- * @author John Riedl <riedl@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestImmutableSparseVectorChannels {
     Symbol fooSymbol = Symbol.of("foo");

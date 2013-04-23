@@ -39,7 +39,7 @@ import static it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet;
  * Various helper methods for working with collections (particularly Fastutil
  * collections).
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public final class CollectionUtils {
@@ -135,7 +135,7 @@ public final class CollectionUtils {
      * Wrapper class that implements a {@link LongCollection} by delegating to
      * a {@link Collection}.
      *
-     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     private static class LongCollectionWrapper implements LongCollection {
         protected final Collection<Long> base;

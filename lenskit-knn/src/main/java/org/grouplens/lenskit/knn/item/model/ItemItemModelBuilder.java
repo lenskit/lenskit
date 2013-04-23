@@ -47,7 +47,7 @@ import javax.inject.Provider;
  * This builder takes a very simple approach. It does not allow for vector
  * normalization and truncates on the fly.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @NotThreadSafe
 public class ItemItemModelBuilder implements Provider<ItemItemModel> {

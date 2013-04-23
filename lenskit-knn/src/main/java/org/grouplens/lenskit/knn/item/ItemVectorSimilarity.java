@@ -30,7 +30,7 @@ import java.io.Serializable;
 /**
  * Implementation of {@link ItemSimilarity} that delegates to a vector similarity.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class ItemVectorSimilarity implements ItemSimilarity, Serializable {

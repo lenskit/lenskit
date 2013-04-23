@@ -26,7 +26,7 @@ import org.grouplens.lenskit.data.pref.Preference;
  * Rating implementation for mutation by fast iterators. It is used in
  * {@link org.grouplens.lenskit.data.dao.DelimitedTextRatingCursor} and similar places.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class MutableRating implements Rating {
     private long eid;

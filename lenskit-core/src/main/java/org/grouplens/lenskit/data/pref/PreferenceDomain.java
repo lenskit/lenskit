@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
 /**
  * An object describing the domain of preference data, used in ratings and predictions.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 @DefaultNull

@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval.config
 import org.grouplens.lenskit.core.LenskitConfigContext
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class ContextConfigDelegate {
     LenskitConfigContext context

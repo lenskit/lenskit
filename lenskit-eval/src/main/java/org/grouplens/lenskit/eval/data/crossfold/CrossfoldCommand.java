@@ -54,7 +54,7 @@ import java.util.Random;
 /**
  * The command to build and run a crossfold on the data source file and output the partition files
  *
- * @author Shuo Chang<schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 
 public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {

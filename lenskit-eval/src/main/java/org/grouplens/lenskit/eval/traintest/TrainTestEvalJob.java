@@ -55,7 +55,7 @@ import java.util.List;
 /**
  * Run a single train-test evaluation of a single algorithm.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
 public class TrainTestEvalJob implements Job {

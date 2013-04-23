@@ -38,7 +38,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * score methods to collection-based ones, and {@link #score(long, MutableSparseVector)}
  * to {@link #score(UserHistory, MutableSparseVector)}.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class AbstractItemScorer implements ItemScorer {
     /**

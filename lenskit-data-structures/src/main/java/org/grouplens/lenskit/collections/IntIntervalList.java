@@ -29,7 +29,7 @@ import java.io.Serializable;
 /**
  * Efficient representation of intervals as an integer list.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public class IntIntervalList extends AbstractIntList implements Serializable {

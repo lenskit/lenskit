@@ -34,7 +34,7 @@ import java.io.Serializable;
 /**
  * Similarity function using Spearman rank correlation.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {

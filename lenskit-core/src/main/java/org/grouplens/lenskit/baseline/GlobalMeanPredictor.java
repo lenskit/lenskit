@@ -34,8 +34,7 @@ import org.grouplens.lenskit.data.pref.Preference;
 /**
  * Rating scorer that predicts the global mean rating for all items.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @author Michael Ludwig <mludwig@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultProvider(GlobalMeanPredictor.Builder.class)
 @Shareable
@@ -43,7 +42,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
     /**
      * A default builder used to create GlobalMeanPredictors.
      *
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder implements Provider<GlobalMeanPredictor> {
         private DataAccessObject dao;

@@ -38,7 +38,7 @@ import static java.lang.Math.sqrt;
 /**
  * Evaluate a recommender's prediction accuracy with RMSE.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class RMSEPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(RMSEPredictMetric.class);

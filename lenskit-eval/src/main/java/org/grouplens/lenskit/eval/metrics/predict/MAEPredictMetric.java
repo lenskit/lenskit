@@ -44,7 +44,7 @@ import static java.lang.Math.abs;
  * <emph>by-user</emph>, where the MAE is computed per-user and then averaged
  * over all users.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class MAEPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(MAEPredictMetric.class);

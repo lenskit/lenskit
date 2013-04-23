@@ -46,7 +46,7 @@ import static org.junit.Assert.assertThat;
 /**
  * Do major tests on the FunkSVD recommender.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestFunkSVDBuildSerialize extends ML100KTestSuite {
     @SuppressWarnings("unchecked")

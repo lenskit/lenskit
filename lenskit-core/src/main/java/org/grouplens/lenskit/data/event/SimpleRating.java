@@ -35,7 +35,7 @@ import org.grouplens.lenskit.data.pref.SimplePreference;
  * <p>This implementation only supports set ratings; for null ratings (unrate
  * events), use {@link SimpleNullRating}.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 @Immutable

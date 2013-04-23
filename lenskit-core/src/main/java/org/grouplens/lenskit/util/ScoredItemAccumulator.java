@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Accumulate a sorted list of scored items.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface ScoredItemAccumulator {
     /**

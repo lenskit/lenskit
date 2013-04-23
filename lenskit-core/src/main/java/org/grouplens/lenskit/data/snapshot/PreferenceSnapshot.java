@@ -54,7 +54,7 @@ import java.io.Closeable;
  * and user IDs to consecutive, 0-based indices. The indices <strong>may
  * differ</strong> from one build context to another.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @ThreadSafe
 @DefaultImplementation(PackedPreferenceSnapshot.class)

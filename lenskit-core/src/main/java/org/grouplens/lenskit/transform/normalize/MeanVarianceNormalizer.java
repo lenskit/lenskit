@@ -54,7 +54,7 @@ import java.io.Serializable;
  * use default constructor) for no smoothing. The 'global variance' parameter
  * only pertains to smoothing, and is unnecessary otherwise.
  *
- * @author Stefan Nelson-Lindall <stefan@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultProvider(MeanVarianceNormalizer.Builder.class)
 @Shareable
@@ -65,7 +65,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
      * A Builder for UserVarianceNormalizers that computes the variance from a
      * RatingBuildContext.
      *
-     * @author Michael Ludwig
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder implements Provider<MeanVarianceNormalizer> {
         private final double damping;

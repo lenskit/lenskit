@@ -34,7 +34,7 @@ import org.junit.Test;
 import com.google.common.collect.Iterators;
 
 /**
- * @author John Riedl <riedl@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestMutableSparseVectorChannels {
     Symbol fooSymbol = Symbol.of("foo");

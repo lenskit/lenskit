@@ -31,7 +31,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestRatings {
     @Test

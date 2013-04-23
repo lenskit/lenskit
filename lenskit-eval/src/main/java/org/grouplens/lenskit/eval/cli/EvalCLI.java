@@ -34,7 +34,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * Main entry point to run the evaluator from the command line
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
 public class EvalCLI {

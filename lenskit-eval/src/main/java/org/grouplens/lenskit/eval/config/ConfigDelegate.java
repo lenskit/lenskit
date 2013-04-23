@@ -34,7 +34,7 @@ import java.lang.annotation.*;
  * constructor is highly recommended, as otherwise there isn't a good way to make
  * the command available to the delegate.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 @Documented

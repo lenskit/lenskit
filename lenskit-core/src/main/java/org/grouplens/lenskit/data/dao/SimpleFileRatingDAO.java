@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * Rating-only data source backed by a simple delimited file.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public class SimpleFileRatingDAO extends AbstractDataAccessObject {

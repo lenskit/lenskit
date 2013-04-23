@@ -50,7 +50,7 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
  *
  * <p>It supports mean smoothing (see {@link Damping}).
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultProvider(ItemUserMeanPredictor.Builder.class)
 @Shareable
@@ -58,7 +58,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
     /**
      * A builder that creates ItemUserMeanPredictors.
      *
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder implements Provider<ItemUserMeanPredictor> {
         private double damping = 0;

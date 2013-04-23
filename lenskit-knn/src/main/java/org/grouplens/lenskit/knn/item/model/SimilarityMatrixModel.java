@@ -45,7 +45,7 @@ import java.util.List;
  * should use the same normalizations used by the builder to make use of the
  * similarity scores.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 @DefaultProvider(ItemItemModelBuilder.class)

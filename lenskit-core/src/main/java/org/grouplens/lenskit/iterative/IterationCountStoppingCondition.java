@@ -30,7 +30,7 @@ import java.io.Serializable;
 /**
  * Stop once the iteration count has reached a value.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Immutable
 @Shareable

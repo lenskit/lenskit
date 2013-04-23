@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * A view of a column of a table.
  *
- * @author Shuo Chang<schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface Column extends List<Object> {
     /**

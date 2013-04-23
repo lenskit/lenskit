@@ -53,7 +53,7 @@ import javax.annotation.WillCloseWhenClosed;
  * Rating DAO backed by a JDBC connection.  This DAO can only store rating data;
  * no other events are supported.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class JDBCRatingDAO extends AbstractDataAccessObject {
     /**

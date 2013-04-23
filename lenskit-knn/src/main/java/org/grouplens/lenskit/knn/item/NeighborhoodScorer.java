@@ -32,7 +32,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * scores are available, and truncated to the neighborhood size, so all functions
  * implementing this interface need to do is accumulate scores.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultImplementation(WeightedAverageNeighborhoodScorer.class)
 public interface NeighborhoodScorer {

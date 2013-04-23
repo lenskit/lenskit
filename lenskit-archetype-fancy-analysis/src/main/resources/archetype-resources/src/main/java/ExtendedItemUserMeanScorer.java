@@ -48,17 +48,10 @@ import org.slf4j.LoggerFactory;
  *
  * <p>It supports mean smoothing (see {@link Damping}).
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @author John Riedl <riedl@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class ExtendedItemUserMeanScorer extends AbstractItemScorer {
-    /**
-     * A builder that creates ItemUserMeanPredictors.
-     *
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
-     */
-
     @SuppressWarnings("unused")
     private static final long serialVersionUID = 22L;
     private static final Logger logger = LoggerFactory.getLogger(ExtendedItemUserMeanScorer.class);

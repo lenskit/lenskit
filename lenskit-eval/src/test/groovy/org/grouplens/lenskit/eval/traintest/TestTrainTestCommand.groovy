@@ -48,7 +48,7 @@ import static org.hamcrest.Matchers.hasItem
 /**
  * Tests for train-test configurations; they also serve to test the command delegate
  * framework.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class TestTrainTestCommand {
     EvalScriptEngine engine

@@ -54,7 +54,7 @@ import javax.inject.Provider;
  * <a href="http://www.timelydevelopment.com/demos/NetflixPrize.aspx">Timely
  * Development's sample code</a>.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @NotThreadSafe
 public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {

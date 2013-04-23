@@ -36,7 +36,7 @@ import java.util.Iterator;
  * Those loops benefit from fast iterators.
  *
  * @param <E> The type of value in the fast collection.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public interface FastCollection<E> extends Collection<E> {

@@ -27,7 +27,7 @@ import org.grouplens.lenskit.eval.config.ContextConfigDelegate
 
 /**
  * Groovy delegate for configuring {@code AlgorithmInstanceCommand}s.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 class AlgorithmInstanceCommandDelegate extends ContextConfigDelegate {

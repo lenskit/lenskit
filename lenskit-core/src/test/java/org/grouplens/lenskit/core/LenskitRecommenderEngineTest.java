@@ -52,7 +52,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class LenskitRecommenderEngineTest {
     private LenskitRecommenderEngineFactory factory;

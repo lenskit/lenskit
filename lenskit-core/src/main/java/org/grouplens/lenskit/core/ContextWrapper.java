@@ -29,7 +29,7 @@ import java.lang.annotation.Annotation;
 /**
  * Wrap a Grapht context to make a LensKit context.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see 1.0
  */
 public class ContextWrapper extends AbstractConfigContext {

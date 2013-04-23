@@ -50,7 +50,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * The command that run the algorithm instance and output the prediction result file and the evaluation result file
  *
- * @author Shuo Chang<schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalCommand.class);

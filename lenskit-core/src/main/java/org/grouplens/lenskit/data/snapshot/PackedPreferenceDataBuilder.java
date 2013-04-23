@@ -34,7 +34,7 @@ import static org.grouplens.lenskit.data.snapshot.PackedPreferenceData.*;
 /**
  * Build a packed rating data structure.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
 class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {

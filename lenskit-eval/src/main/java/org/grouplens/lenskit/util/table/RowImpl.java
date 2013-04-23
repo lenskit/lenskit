@@ -35,7 +35,7 @@ import java.util.Map;
 /**
  * Implementation of a single table row.
  *
- * @author Shuo Chang<schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class RowImpl implements Row {
     private final ArrayList<Object> row;

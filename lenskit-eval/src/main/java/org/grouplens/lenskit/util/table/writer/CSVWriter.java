@@ -38,7 +38,7 @@ import org.grouplens.lenskit.util.table.TableLayout;
 /**
  * Implementation of {@link TableWriter} for CSV files.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class CSVWriter implements TableWriter {
     private Writer writer;

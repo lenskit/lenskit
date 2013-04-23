@@ -31,7 +31,7 @@ import java.io.Serializable;
 /**
  * Stop when absolute delta drops below a threshold.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
 @Immutable
