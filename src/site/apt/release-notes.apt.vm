@@ -52,6 +52,8 @@ LensKit Release Notes
     * <<<@EventType>>> is now in <<<o.g.l.data.event>>>.
 
     * <<<@SigWeightThreshold>>> is now in <<<o.g.l.vectors.similarity>>>.
+
+    * <<<@ThresholdValue>>> is now in <<<o.g.l.transform.threshold>>>.
   
   []
 
