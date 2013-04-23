@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>\${groupId}</groupId>
@@ -16,23 +16,23 @@
 
     <!-- The version of LensKit for your project -->
     <!-- Note that we use project.version to pick up the version from the 
-      source tree this archetype is being built from. -->
+	 source tree this archetype is being built from. -->
     <lenskit.version>${project.version}</lenskit.version>
 
     <!-- The location of the Rscript executable. The default is to search 
-      for Rscript in your PATH. If you need to override this, it should probably 
-      be done in ~/.m2/settings.xml rather than here. -->
+	 for Rscript in your PATH. If you need to override this, it should probably 
+	 be done in ~/.m2/settings.xml rather than here. -->
     <rscript.executable>Rscript</rscript.executable>
 
     <!-- Uncomment and change below to 'yes' if you accept the MovieLens 
-      data terms of service. <grouplens.mldata.acknowledge>no</grouplens.mldata.acknowledge> -->
+	 data terms of service. <grouplens.mldata.acknowledge>no</grouplens.mldata.acknowledge> -->
   </properties>
 
   <dependencies>
 
     <!-- You will automatically get a version of LensKit for your project, 
-      pulled in transitively by the lenskit-eval-maven-plugin. The version you 
-      get is based on the version of the archetype you used to create this project. -->
+	 pulled in transitively by the lenskit-eval-maven-plugin. The version you 
+	 get is based on the version of the archetype you used to create this project. -->
 
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>
@@ -60,11 +60,11 @@
   </dependencies>
 
   <!-- Now we specify the build that will actually execute to make our project 
-    do something cool. The build is a collection of plugins that we execute to 
-    do the work. Note that we run the evaluations using the lenskit-lifecycle, 
-    because we use the lenskit-eval-maven-plugin. The phases of this lifecycle 
-    are lenskit-pre-eval, lenskit-eval, lenskit-post-eval, and lenskit-analyze, 
-    in that order. -->
+       do something cool. The build is a collection of plugins that we execute to 
+       do the work. Note that we run the evaluations using the lenskit-lifecycle, 
+       because we use the lenskit-eval-maven-plugin. The phases of this lifecycle 
+       are lenskit-pre-eval, lenskit-eval, lenskit-post-eval, and lenskit-analyze, 
+       in that order. -->
 
   <build>
     <plugins>
@@ -81,7 +81,7 @@
       </plugin>
 
       <!-- This use of the ant plugin first creates the data directory and 
-        then fetches the ml-100k dataset. -->
+	   then fetches the ml-100k dataset. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -108,7 +108,7 @@
             <configuration>
               <target>
                 <ant antfile="get-data.xml" target="prepare-100k"
-                  dir="\${lenskit.eval.scriptDir}" />
+		     dir="\${lenskit.eval.scriptDir}" />
               </target>
             </configuration>
           </execution>
@@ -116,79 +116,46 @@
       </plugin>
 
       <!-- Run the lenskit eval plugin that does the work of evaluating the 
-        recommenders you are comparing, by running your Groovy script. -->
+	   recommenders you are comparing, by running your Groovy script. -->
       <plugin>
         <artifactId>lenskit-eval-maven-plugin</artifactId>
         <groupId>org.grouplens.lenskit</groupId>
         <version>\${lenskit.version}</version>
         <extensions>true</extensions>
+
+	<!-- The default execution for the lenskit-eval-maven-plugin
+	     will run the run-eval goal in the lenskit-eval phase to
+	     run your Groovy script to evaluate the recommenders you
+	     are comparing.  The configuration here configures the
+	     plugin, including all of its MOJOs.  -->
+
+	<configuration>
+	  <script>${lenskit.eval.scriptDir}/eval.groovy</script>
+	  <analysisScript>${lenskit.eval.scriptDir}/chart.R</analysisScript>
+	  <dataDir>${lenskit.eval.dataDir}</dataDir>
+	  <analysisDir>${lenskit.eval.analysisDir}</analysisDir>
+	</configuration>
+
         <executions>
 
-          <!-- Run the Groovy script to evaluate the recommenders you are 
-            comparing. -->
-          <execution>
-            <id>run-groovy</id>
-            <phase>lenskit-eval</phase>
-            <goals>
-              <goal>run-eval</goal>
-            </goals>
-            <configuration>
-              <script>${lenskit.eval.scriptDir}/eval.groovy</script>
-              <dataDir>${lenskit.eval.dataDir}</dataDir>
-              <analysisDir>${lenskit.eval.analysisDir}</analysisDir>
-            </configuration>
-          </execution>
+          <!-- This execution runs the run-r goal from the
+	       lenskit-eval-maven-plugin to perform R data analysis to
+	       produce the graphs from our runs. -->
 
-          <!-- This execution runs the R data analysis to produce the graphs 
-            from our runs. -->
-          <execution>
-            <id>run-r</id>
-            <phase>lenskit-analyze</phase>
-            <goals>
-              <goal>run-r</goal>
-            </goals>
-            <configuration>
-              <rscriptExecutable>${rscript.executable}</rscriptExecutable>
-              <workingDir>${lenskit.eval.analysisDir}</workingDir>
-              <script>${lenskit.eval.scriptDir}/chart.R</script>
-            </configuration>
-          </execution>
+	  <execution>
+	    <id>run-r</id>
+	    <phase>lenskit-analyze</phase>
+	    <goals>
+	      <goal>run-r</goal>
+	    </goals>
+	  </execution>
 
         </executions>
 
-      </plugin>
-
-
-      <plugin>
-        <artifactId>exec-maven-plugin</artifactId>
-        <groupId>org.codehaus.mojo</groupId>
-        <version>1.2.1</version>
-        <executions>
-
-          <!-- This execution is for the R data analysis to produce the graphs 
-            from our runs. We use an execution so we can tie this plugin to the appropriate 
-            phase of the lenskit lifecycle. -->
-
-          <execution>
-            <id>default-cli</id>
-            <phase>lenskit-analyze</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <configuration>
-              <executable>${rscript.executable}</executable>
-              <workingDirectory>${lenskit.eval.analysisDir}</workingDirectory>
-              <arguments>
-                <argument>${lenskit.eval.scriptDir}/chart.R</argument>
-              </arguments>
-            </configuration>
-          </execution>
-
-        </executions>
       </plugin>
 
       <!-- This plugin runs LaTeX to produce the PDF version of our paper. 
-        We tie this plugin to the appropriate phase of the lenskit lifecycle. -->
+	   We tie this plugin to the appropriate phase of the lenskit lifecycle. -->
 
       <plugin>
         <groupId>org.codehaus.mojo</groupId>

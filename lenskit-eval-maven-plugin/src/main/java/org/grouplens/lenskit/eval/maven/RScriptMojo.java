@@ -14,6 +14,7 @@
  * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.grouplens.lenskit.eval.maven;
+import org.grouplens.lenskit.eval.config.EvalConfig;
 
 import static org.apache.commons.exec.CommandLine.parse;
 import static org.apache.commons.io.FileUtils.copyFile;
@@ -42,8 +43,6 @@ import org.apache.maven.project.MavenProject;
 @Mojo(name = "run-r",
         requiresDependencyResolution = ResolutionScope.RUNTIME,
         threadSafe = true)
-@Execute(lifecycle = "",
-        phase = LifecyclePhase.PACKAGE)
 public class RScriptMojo extends AbstractMojo {
     /**
      * The project. Gives access to Maven state.
@@ -65,9 +64,9 @@ public class RScriptMojo extends AbstractMojo {
      * Name of R script.
      * 
      */
-    @Parameter(property = "rscript.file",
+    @Parameter(property = "lenskit.analyze.script",
             defaultValue = "chart.R")
-    private String script;
+    private String analysisScript;
 
     /**
      * Name or path to executable Rscript program.
@@ -80,14 +79,14 @@ public class RScriptMojo extends AbstractMojo {
     /**
      * Location of output data from the eval script.
      */
-    @Parameter(property = "rscript.working.directory",
-            defaultValue = ".")
-    private String workingDir;
+    @Parameter(property = EvalConfig.ANALYSIS_DIR_PROPERTY,
+	       defaultValue = ".")
+    private String analysisDir;
 
     @Override
     public void execute() throws MojoExecutionException {
-        getLog().info("The working directory is " + workingDir);
-        getLog().info("The script is " + script);
+        getLog().info("The analysis directory is " + analysisDir);
+        getLog().info("The analysisScript is " + analysisScript);
         getLog().info("The R executable is " + rscriptExecutable);
         
         MavenLogAppender.setLog(getLog());
@@ -102,8 +101,8 @@ public class RScriptMojo extends AbstractMojo {
         // Copy the script file into the working directory.  We could just execute
         // it from its original location, but it will be easier for our users to 
         // have the copy from the src directory next to its results in target.
-        File scriptFile = new File(script);
-        File scriptCopy = new File(workingDir, scriptFile.getName());
+        File scriptFile = new File(analysisScript);
+        File scriptCopy = new File(analysisDir, scriptFile.getName());
         try {
             if (! scriptFile.getCanonicalPath().equals(scriptCopy.getCanonicalPath())) {
                 copyFile(scriptFile, scriptCopy);
@@ -123,7 +122,7 @@ public class RScriptMojo extends AbstractMojo {
 
         // Execute the command line, in the working directory.
         final DefaultExecutor executor = new DefaultExecutor();
-        executor.setWorkingDirectory(new File(workingDir));
+        executor.setWorkingDirectory(new File(analysisDir));
         try {
             if (executor.execute(command) != 0) {
                 throw new MojoExecutionException( "Error code returned for: " + command.toString() );
