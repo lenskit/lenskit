@@ -1,6 +1,4 @@
-<project
-  xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
@@ -13,17 +11,17 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- The version of LensKit for your project -->
-    <!-- Note that we use project.version to pick up the version from the source tree this 
-      archetype is being built from. -->
+    <!-- Note that we use project.version to pick up the version from the 
+      source tree this archetype is being built from. -->
     <lenskit.version>${project.version}</lenskit.version>
 
-    <!-- The location of the Rscript executable. The default is to search for Rscript
-         in your PATH. If you need to override this, it should probably be done in
-         ~/.m2/settings.xml rather than here. -->
+    <!-- The location of the Rscript executable. The default is to search 
+      for Rscript in your PATH. If you need to override this, it should probably 
+      be done in ~/.m2/settings.xml rather than here. -->
     <rscript.executable>Rscript</rscript.executable>
 
-    <!-- Uncomment and change below to 'yes' if you accept the MovieLens data terms of service. 
-      <grouplens.mldata.acknowledge>no</grouplens.mldata.acknowledge> -->
+    <!-- Uncomment and change below to 'yes' if you accept the MovieLens 
+      data terms of service. <grouplens.mldata.acknowledge>no</grouplens.mldata.acknowledge> -->
   </properties>
 
   <dependencies>
@@ -71,9 +69,9 @@
           <target>1.6</target>
         </configuration>
       </plugin>
-      
-      <!-- This use of the ant plugin first creates the data directory and then fetches the 
-        ml-100k dataset. -->
+
+      <!-- This use of the ant plugin first creates the data directory and 
+        then fetches the ml-100k dataset. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -87,9 +85,7 @@
             </goals>
             <configuration>
               <target>
-                <ant
-                  antfile="get-data.xml"
-                  target="prepare-100k"
+                <ant antfile="get-data.xml" target="prepare-100k"
                   dir="\${basedir}" />
               </target>
             </configuration>
@@ -97,39 +93,37 @@
         </executions>
       </plugin>
 
-      <!-- Run the lenskit eval plugin that does the work of evaluating the 
-        recommenders you are comparing, by running your Groovy script. -->
+      <!-- Run the lenskit eval plugin that executes Groovy and R scripts. -->
       <plugin>
         <artifactId>lenskit-eval-maven-plugin</artifactId>
         <groupId>org.grouplens.lenskit</groupId>
         <version>\${lenskit.version}</version>
         <extensions>true</extensions>
-        <configuration>
-          <script>eval-simple.groovy</script>
-        </configuration>
-      </plugin>
-
-      <!-- This plugin executes the R data analysis to produce the graphs 
-        from our runs. We use an execution so we can tie this plugin to the appropriate 
-        phase of the lenskit lifecycle. -->
-      <plugin>
-        <artifactId>exec-maven-plugin</artifactId>
-        <groupId>org.codehaus.mojo</groupId>
-        <version>1.2.1</version>
         <executions>
+
+          <!-- Run the Groovy script to evaluate the recommenders you are 
+            comparing. -->
           <execution>
-            <id>default-cli</id>
-            <phase>lenskit-analyze</phase>
+            <id>run-groovy</id>
+            <phase>lenskit-eval</phase>
             <goals>
-              <goal>exec</goal>
+              <goal>run-eval</goal>
             </goals>
             <configuration>
-              <executable>${rscript.executable}</executable>
-              <arguments>
-                <argument>chart.R</argument>
-              </arguments>
+              <script>eval-simple.groovy</script>
             </configuration>
           </execution>
+
+          <!-- This execution runs the R data analysis to produce the graphs 
+            from our runs. -->
+          <execution>
+            <id>run-r</id>
+            <phase>lenskit-analyze</phase>
+            <goals>
+              <goal>run-r</goal>
+            </goals>
+          </execution>
+
         </executions>
       </plugin>
 

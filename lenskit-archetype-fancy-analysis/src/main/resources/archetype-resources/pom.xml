@@ -122,12 +122,42 @@
         <groupId>org.grouplens.lenskit</groupId>
         <version>\${lenskit.version}</version>
         <extensions>true</extensions>
-        <configuration>
-          <script>\${lenskit.eval.scriptDir}/eval.groovy</script>
-          <dataDir>\${lenskit.eval.dataDir}</dataDir>
-          <analysisDir>\${lenskit.eval.analysisDir}</analysisDir>
-        </configuration>
+        <executions>
+
+          <!-- Run the Groovy script to evaluate the recommenders you are 
+            comparing. -->
+          <execution>
+            <id>run-groovy</id>
+            <phase>lenskit-eval</phase>
+            <goals>
+              <goal>run-eval</goal>
+            </goals>
+            <configuration>
+              <script>${lenskit.eval.scriptDir}/eval.groovy</script>
+              <dataDir>${lenskit.eval.dataDir}</dataDir>
+              <analysisDir>${lenskit.eval.analysisDir}</analysisDir>
+            </configuration>
+          </execution>
+
+          <!-- This execution runs the R data analysis to produce the graphs 
+            from our runs. -->
+          <execution>
+            <id>run-r</id>
+            <phase>lenskit-analyze</phase>
+            <goals>
+              <goal>run-r</goal>
+            </goals>
+            <configuration>
+              <rscriptExecutable>${rscript.executable}</rscriptExecutable>
+              <workingDir>${lenskit.eval.analysisDir}</workingDir>
+              <script>${lenskit.eval.scriptDir}/chart.R</script>
+            </configuration>
+          </execution>
+
+        </executions>
+
       </plugin>
+
 
       <plugin>
         <artifactId>exec-maven-plugin</artifactId>
