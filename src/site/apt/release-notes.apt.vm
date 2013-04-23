@@ -50,6 +50,8 @@ LensKit Release Notes
     * Slope One deviation damping is now configured with <<<o.g.l.slopeone.Damping>>>.
 
     * <<<@EventType>>> is now in <<<o.g.l.data.event>>>.
+
+    * <<<@SigWeightThreshold>>> is now in <<<o.g.l.vectors.similarity>>>.
   
   []
 
