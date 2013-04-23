@@ -18,28 +18,16 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.params;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import javax.inject.Qualifier;
+package org.grouplens.lenskit.slopeone;
 
 import org.grouplens.grapht.annotation.DefaultDouble;
 import org.grouplens.lenskit.core.Parameter;
 
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
+
 /**
- * Smoothing parameter for mean baselines.
- *
- * <p>
- * The smoothing enabled by this parameter is based on <a
- * href="http://sifter.org/~simon/journal/20061211.html">FunkSVD</a>. The idea
- * is to bias item or user means towards the global mean based on how many items
- * or users are involved. So, if the global mean is \(\mu\) and smoothing \(\gamma\),
- * the mean of some values is \[\frac{\gamma\mu + \sum r}{\gamma + n}\]
+ * Damping parameter for Slope-One deviations.
  */
 @Documented
 @DefaultDouble(0.0)
