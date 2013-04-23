@@ -44,6 +44,8 @@ LensKit Release Notes
     (#issue(219)):
 
     * Similarity damping is now configured with <<<o.g.l.vectors.similarity.SimilarityDamping>>>.
+
+    * Baseline (and normalizer) damping is now configured with <<<o.g.l.baseline.MeanDamping>>>.
   
   []
 

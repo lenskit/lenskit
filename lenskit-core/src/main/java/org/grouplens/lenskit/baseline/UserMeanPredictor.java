@@ -24,7 +24,6 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -67,7 +66,7 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
          */
         @Inject
         public Builder(@Transient DataAccessObject dao,
-                       @Damping double damping) {
+                       @MeanDamping double damping) {
             this.dao = dao;
             smoothing = damping;
         }

@@ -25,13 +25,13 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
+import org.grouplens.lenskit.baseline.MeanDamping;
+import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.iterative.params.IterationCount;
 import org.grouplens.lenskit.mf.funksvd.params.FeatureCount;
-import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.test.ML100KTestSuite;
 import org.junit.Test;
 
@@ -62,7 +62,7 @@ public class TestFunkSVDBuildSerialize extends ML100KTestSuite {
         factory.set(FeatureCount.class).to(10);
         factory.set(IterationCount.class).to(10);
         factory.within(ItemUserMeanPredictor.class)
-               .set(Damping.class)
+               .set(MeanDamping.class)
                .to(25);
 
         LenskitRecommenderEngine engine = factory.create();

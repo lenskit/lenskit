@@ -27,7 +27,6 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.knn.item.model.NormalizingItemItemModelBuilder;
 import org.grouplens.lenskit.knn.params.NeighborhoodSize;
-import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.DefaultItemVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
@@ -35,6 +34,7 @@ import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.truncate.NoOpTruncator;
 import org.grouplens.lenskit.transform.truncate.VectorTruncator;
 import org.grouplens.lenskit.vectors.similarity.CosineVectorSimilarity;
+import org.grouplens.lenskit.vectors.similarity.SimilarityDamping;
 import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
 
 public class TestNormalizingItemItemAccuracy extends TestItemItemAccuracy {
@@ -57,7 +57,7 @@ public class TestNormalizingItemItemAccuracy extends TestItemItemAccuracy {
                 .bind(VectorSimilarity.class)
                 .to(CosineVectorSimilarity.class);
         factory.in(ItemSimilarity.class)
-                .set(Damping.class)
+                .set(SimilarityDamping.class)
                 .to(100.0);
         factory.set(NeighborhoodSize.class).to(30);
     }

@@ -31,7 +31,6 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -77,7 +76,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
          */
         @Inject
         public Builder(@Transient DataAccessObject dao,
-                       @Damping double damping) {
+                       @MeanDamping double damping) {
             this.dao = dao;
             this.damping = damping;
         }

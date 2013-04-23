@@ -22,13 +22,13 @@ package org.grouplens.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import org.grouplens.grapht.annotation.DefaultProvider;
+import org.grouplens.lenskit.baseline.MeanDamping;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -80,7 +80,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
          */
         @Inject
         public Builder(@Transient DataAccessObject dao,
-                       @Damping double d) {
+                       @MeanDamping double d) {
             this.dao = dao;
             damping = d;
         }
