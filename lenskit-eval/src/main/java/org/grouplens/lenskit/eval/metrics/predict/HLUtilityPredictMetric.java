@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
+import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
@@ -31,9 +32,11 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 public class HLUtilityPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(HLUtilityPredictMetric.class);
-    private static final String[] COLUMNS = {"HLUtility"};
+    private static final List<String> COLUMNS = ImmutableList.of("HLUtility");
 
     private double alpha;
 
@@ -51,12 +54,12 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
     }
 
     @Override
-    public String[] getColumnLabels() {
+    public List<String> getColumnLabels() {
         return COLUMNS;
     }
 
     @Override
-    public String[] getUserColumnLabels() {
+    public List<String> getUserColumnLabels() {
         return COLUMNS;
     }
 

@@ -172,7 +172,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
             logger.debug("Opening {}", file.getPath());
             input = LKFileUtils.openInput(file, compression);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException(e);
         }
         BufferedReader buf;
         try {

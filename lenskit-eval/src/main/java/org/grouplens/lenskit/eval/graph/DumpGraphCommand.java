@@ -53,11 +53,20 @@ public class DumpGraphCommand extends AbstractCommand<File> {
 
 
     public DumpGraphCommand() {
-        this("dumpGraph");
+        this(null);
     }
 
     public DumpGraphCommand(String name) {
         super(name);
+    }
+
+    @Override
+    public String getName() {
+        if (name == null) {
+            return algorithm.getName();
+        } else {
+            return name;
+        }
     }
 
     public DumpGraphCommand setAlgorithm(LenskitAlgorithmInstance algorithm) {

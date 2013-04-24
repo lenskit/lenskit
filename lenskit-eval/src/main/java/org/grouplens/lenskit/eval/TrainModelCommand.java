@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.io.Closer;
+import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.data.dao.DAOFactory;
@@ -30,6 +31,8 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.util.LogContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +41,7 @@ import java.io.IOException;
  * Train a recommender algorithm and process it with a function.
  */
 public class TrainModelCommand<T> extends AbstractCommand<T> {
+    private static final Logger logger = LoggerFactory.getLogger(TrainModelCommand.class);
 
     private LenskitAlgorithmInstance algorithm;
     private File writeFile;
@@ -103,18 +107,24 @@ public class TrainModelCommand<T> extends AbstractCommand<T> {
         try {
             context.put("lenskit.eval.command.class", getName());
             context.put("lenskit.eval.command.name", getName());
+            context.put("lenskit.eval.algorithm.name", algorithm.getName());
             Closer closer = Closer.create();
             try {
                 DAOFactory daoFactory = inputData.getDAOFactory();
                 DataAccessObject dao = closer.register(daoFactory.snapshot());
                 // TODO Support serializing the recommender
                 LenskitRecommender rec;
+                StopWatch timer = new StopWatch();
+                timer.start();
                 try {
+                    logger.info("{}: building recommender {}", getName(), algorithm.getName());
                     rec = closer.register(algorithm.buildRecommender(
                             dao, null, inputData.getPreferenceDomain(), false));
                 } catch (RecommenderBuildException e) {
                     throw new CommandException(getName() + ": error building recommender", e);
                 }
+                timer.stop();
+                logger.info("{}: trained in {}", getName(), timer);
                 return action.apply(rec);
             } catch (Throwable th) {
                 throw closer.rethrow(th, CommandException.class);

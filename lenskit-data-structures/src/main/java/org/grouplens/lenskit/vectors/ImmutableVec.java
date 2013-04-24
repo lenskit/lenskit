@@ -18,21 +18,40 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval;
+package org.grouplens.lenskit.vectors;
 
-import javax.annotation.Nonnull;
-import java.util.concurrent.Callable;
+import javax.annotation.concurrent.Immutable;
+import java.util.Arrays;
 
 /**
- * A command of evaluation task, which is exposed to the evaluation configuration script.
- * So the command can be called dynamically.
+ * Immutable {@link Vec}.  This vector cannot be modified (by anyone) and is thread-safe.
  *
- * @author Shuo Chang <schang@cs.umn.edu>
+ * @compat Experimental — this interface may change in future versions of LensKit.
  */
-public interface Command<T> extends Callable<T> {
+@Immutable
+public class ImmutableVec extends Vec {
+    private static final long serialVersionUID = 1L;
 
-    @Nonnull
-    String getName();
+    /**
+     * Construct a new immutable vector.
+     * @param v The vector's contents. This array is copied for safety.
+     */
+    private ImmutableVec(double[] v) {
+        super(Arrays.copyOf(v, v.length));
+    }
 
-    T call() throws CommandException;
+    /**
+     * Create a new vector from data in an array.  The array is copied for safety.
+     *
+     * @param data The data array.
+     * @return A vector containing the data in {@code data}.
+     */
+    public static ImmutableVec make(double[] data) {
+        return new ImmutableVec(data);
+    }
+
+    @Override
+    public ImmutableVec immutable() {
+        return this;
+    }
 }

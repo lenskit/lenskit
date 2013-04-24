@@ -18,21 +18,25 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval;
-
-import javax.annotation.Nonnull;
-import java.util.concurrent.Callable;
+package org.grouplens.lenskit.data.dao;
 
 /**
- * A command of evaluation task, which is exposed to the evaluation configuration script.
- * So the command can be called dynamically.
- *
- * @author Shuo Chang <schang@cs.umn.edu>
+ * An error occurred during data access. This exception is used to wrap exceptions raised
+ * in data access logic.
  */
-public interface Command<T> extends Callable<T> {
+public class DataAccessException extends RuntimeException {
+    public DataAccessException() {
+    }
 
-    @Nonnull
-    String getName();
+    public DataAccessException(String message) {
+        super(message);
+    }
 
-    T call() throws CommandException;
+    public DataAccessException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public DataAccessException(Throwable cause) {
+        super(cause);
+    }
 }

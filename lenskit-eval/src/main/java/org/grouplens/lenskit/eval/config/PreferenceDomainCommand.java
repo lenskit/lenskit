@@ -35,6 +35,10 @@ public class PreferenceDomainCommand extends AbstractCommand<PreferenceDomain> {
     private Double max;
     private Double precision;
 
+    public PreferenceDomainCommand() {
+        super("preferenceDomain");
+    }
+
     public boolean hasMinimum() {
         return min != null;
     }

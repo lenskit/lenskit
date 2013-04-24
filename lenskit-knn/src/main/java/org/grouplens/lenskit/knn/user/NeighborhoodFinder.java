@@ -52,5 +52,5 @@ public interface NeighborhoodFinder {
      *         we can find neighboring users.
      */
     Long2ObjectMap<? extends Collection<Neighbor>> findNeighbors(
-            @Nonnull UserHistory<? extends Event> user, @Nullable LongSet items);
+            @Nonnull UserHistory<? extends Event> user, @Nonnull LongSet items);
 }
