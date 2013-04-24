@@ -247,7 +247,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     }
 
     /**
-     * Get the rating for the entry's key
+     * Get the value for the entry's key
      * @param e A {@code VectorEntry} with the key to look up
      * @return the key's value (or {@link Double#NaN} if no such value exists)
      */

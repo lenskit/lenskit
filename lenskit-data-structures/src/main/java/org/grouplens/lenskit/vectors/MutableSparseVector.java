@@ -290,6 +290,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
             throw new IllegalArgumentException("entry is not associated with a vector");
         } else if (evec.keys != this.keys) {
             throw new IllegalArgumentException("entry does not have safe key domain");
+        } else if (entry.getKey() != keys[entry.getIndex()]) {
+            throw new IllegalArgumentException("entry does not have the correct key for its index");
         }
 
         final int idx = entry.getIndex();
@@ -365,7 +367,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
-     * Add a value to the specified entry. The value must be in the key set.
+     * Add a value to the specified entry. The key must be in the key set, and must have a value.
      *
      * @param key   The key whose value should be added.
      * @param value The value to increase it by.
