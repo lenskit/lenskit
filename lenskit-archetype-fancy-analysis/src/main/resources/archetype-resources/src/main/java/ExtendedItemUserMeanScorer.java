@@ -30,7 +30,7 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.params.Damping;
+import org.grouplens.lenskit.baseline.MeanDamping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -67,7 +67,7 @@ public class ExtendedItemUserMeanScorer extends AbstractItemScorer {
      */
     @Inject
     public ExtendedItemUserMeanScorer(DataAccessObject dao, ItemMeanModel inModel,
-                                      @Damping double inUserDamping) {
+                                      @MeanDamping double inUserDamping) {
         super(dao);
         model = inModel;
         userDamping = inUserDamping;
