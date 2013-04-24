@@ -57,6 +57,10 @@ import java.util.Properties;
 @Mojo(name = "run-eval",
       requiresDependencyResolution = ResolutionScope.RUNTIME,
       threadSafe = true)
+// This @Execute should not really be needed, since this MOJO is designed for the
+// LensKit lifecycle ... BUT by inserting this MOJO into the traditional lifecycle
+// also we get the benefit that the Java files in the src tree get built before
+// the LensKit lifecycle runs.
 @Execute(lifecycle = "",
          phase = LifecyclePhase.PACKAGE)
 public class EvalScriptMojo extends AbstractMojo {

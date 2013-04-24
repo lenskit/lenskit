@@ -109,8 +109,6 @@
 	<configuration>
 	  <script>eval-simple.groovy</script>
 	  <analysisScript>chart.R</analysisScript>
-	  <dataDir>${lenskit.eval.dataDir}</dataDir>
-	  <analysisDir>${lenskit.eval.analysisDir}</analysisDir>
 	</configuration>
 
         <executions>

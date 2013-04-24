@@ -89,15 +89,6 @@ public class RScriptMojo extends AbstractMojo {
         getLog().info("The analysisScript is " + analysisScript);
         getLog().info("The R executable is " + rscriptExecutable);
         
-        MavenLogAppender.setLog(getLog());
-        try {
-            doExecute();
-        } finally {
-            MavenLogAppender.removeLog();
-        }
-    }
-
-    private void doExecute() throws MojoExecutionException {
         // Copy the script file into the working directory.  We could just execute
         // it from its original location, but it will be easier for our users to 
         // have the copy from the src directory next to its results in target.
@@ -116,9 +107,7 @@ public class RScriptMojo extends AbstractMojo {
         final CommandLine command =
             parse(rscriptExecutable)
                 .addArgument(scriptCopy.getAbsolutePath());
-        if (getLog().isInfoEnabled()) {
-            getLog().debug("command: " + command);
-        }    
+        getLog().debug("command: " + command);  
 
         // Execute the command line, in the working directory.
         final DefaultExecutor executor = new DefaultExecutor();

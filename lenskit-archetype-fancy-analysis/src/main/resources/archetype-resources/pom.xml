@@ -132,8 +132,6 @@
 	<configuration>
 	  <script>${lenskit.eval.scriptDir}/eval.groovy</script>
 	  <analysisScript>${lenskit.eval.scriptDir}/chart.R</analysisScript>
-	  <dataDir>${lenskit.eval.dataDir}</dataDir>
-	  <analysisDir>${lenskit.eval.analysisDir}</analysisDir>
 	</configuration>
 
         <executions>
