@@ -2,9 +2,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.grouplens.lenskit</groupId>
-    <artifactId>lenskit</artifactId>
+    <artifactId>lenskit-parent</artifactId>
     <version>1.1-SNAPSHOT</version>
-    <relativePath>..</relativePath>
+    <relativePath>../lenskit-parent</relativePath>
   </parent>
   <artifactId>lenskit-eval</artifactId>
   <name>LensKit Evaluation Framework</name>
@@ -104,72 +104,4 @@
       <artifactId>ant</artifactId>
     </dependency>
   </dependencies>
-
-  <profiles>
-    <profile>
-      <id>smoketest</id>
-      <build>
-        <plugins>
-
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>fetch-mldata</id>
-                <phase>pre-integration-test</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <configuration>
-                  <target>
-                    <property name="project.build.directory" value="${project.build.directory}" />
-                    <property name="grouplens.mldata.acknowledge" value="${grouplens.mldata.acknowledge}" />
-                    <ant antfile="src/integration-test/setup.xml" target="prepare-100k" />
-                  </target>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
-            <artifactId>exec-maven-plugin</artifactId>
-            <groupId>org.codehaus.mojo</groupId>
-            <version>1.2.1</version>
-            <executions>
-              <execution>
-                <id>run-eval</id>
-                <phase>integration-test</phase>
-                <goals>
-                  <goal>java</goal>
-                </goals>
-                <configuration>
-                  <mainClass>org.grouplens.lenskit.eval.cli.EvalCLI</mainClass>
-                  <systemProperties>
-                    <systemProperty>
-                      <key>scripts.directory</key>
-                      <value>${basedir}/src/integration-test</value>
-                    </systemProperty>
-                    <systemProperty>
-                      <key>project.build.directory</key>
-                      <value>${project.build.directory}</value>
-                    </systemProperty>
-                    <systemProperty>
-                      <key>lenskit.eval.throwErrors</key>
-                      <value>true</value>
-                    </systemProperty>
-                  </systemProperties>
-                  <arguments>
-                    <argument>-f</argument>
-                    <argument>${basedir}/src/integration-test/eval.groovy</argument>
-                  </arguments>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>

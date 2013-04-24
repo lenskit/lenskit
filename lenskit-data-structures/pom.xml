@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>lenskit</artifactId>
+    <artifactId>lenskit-parent</artifactId>
     <groupId>org.grouplens.lenskit</groupId>
     <version>1.1-SNAPSHOT</version>
-    <relativePath>..</relativePath>
+    <relativePath>../lenskit-parent</relativePath>
   </parent>
   <artifactId>lenskit-data-structures</artifactId>
   <name>LensKit Data Structures</name>
@@ -21,11 +21,6 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.grouplens.common</groupId>
-      <artifactId>common-test</artifactId>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

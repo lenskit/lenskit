@@ -23,7 +23,6 @@ package org.grouplens.lenskit.collections;
 import it.unimi.dsi.fastutil.doubles.DoubleComparators;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.longs.LongListIterator;
-import static org.grouplens.common.test.MoreMatchers.notANumber;
 
 import org.junit.Test;
 
@@ -34,6 +33,7 @@ import java.util.NoSuchElementException;
 import static java.lang.Double.isNaN;
 import static java.lang.Math.E;
 import static java.lang.Math.PI;
+import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.junit.Assert.*;
 
 /**

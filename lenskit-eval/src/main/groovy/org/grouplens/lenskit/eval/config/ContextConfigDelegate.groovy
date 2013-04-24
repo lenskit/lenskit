@@ -42,7 +42,7 @@ class ContextConfigDelegate {
             block = args[args.length - 1]
             reals = Arrays.copyOf(args, args.length - 1)
         }
-        LenskitConfigContext ctx = context.metaClass.invokeMethod(context, "in", reals)
+        LenskitConfigContext ctx = context.metaClass.invokeMethod(context, "within", reals)
         if (block != null) {
             use(ConfigHelpers) {
                 block.callWithDelegate(new ContextConfigDelegate(ctx))

@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import java.util.Set;
 
-import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 

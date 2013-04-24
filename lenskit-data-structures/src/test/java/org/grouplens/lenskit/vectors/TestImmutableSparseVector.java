@@ -23,7 +23,7 @@ package org.grouplens.lenskit.vectors;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import org.junit.Test;
 
-import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;

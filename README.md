@@ -36,6 +36,10 @@ and dependencies.  The other modules are as follows:
 
 * `lenskit-api` -- the common, public recommender API exposed by LensKit, independent
   of its actual implementations.
+* `lenskit-test` -- infrastructure and helper code for testing.
+* `lenskit-parent` -- infrastructure module that is the parent of most modules other than
+  `lenskit-test`.  This is mostly to provide a common build and test environment for the
+  rest of LensKit.  If you create a new module, make this module its parent.
 * `lenskit-data-structures` -- common data structures used by LensKit.
   These are split from `-core` so the API can depend on them.
 * `lenskit-core` -- the core support code and configuration facilities for
@@ -47,8 +51,8 @@ and dependencies.  The other modules are as follows:
 * `lenskit-slopeone` -- Slope-One recommenders.
 * `lenskit-eval` -- the evaluation framework and APIs, along with a command line
   evaluation runner.
-* `lenskit-eval-demo` -- a set of example scripts for configuring and running LensKit
-  offline evaluations.
+* `lenskit-eval-maven-plugin` -- a Maven plugin for running LensKit algorithm evaluations
+  and experiments.
 * `lenskit-package` -- a metapackage for preparing binary distributions, including
   scripts for running the evaluator.
 * `lenskit-archetype-fancy-analysis` and `lenskit-archetype-simple-analysis` -- archetypes for creating user projects using LensKit.
