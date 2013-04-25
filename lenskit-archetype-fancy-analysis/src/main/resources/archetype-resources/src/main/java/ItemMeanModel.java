@@ -30,13 +30,13 @@ import java.util.Iterator;
 import javax.inject.Inject;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
+import org.grouplens.lenskit.baseline.MeanDamping;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.params.Damping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
  * These offsets can be used for predictions by calling the {@link getGlobalMean} 
  * and {@link getItemOffsets} methods.
  *
- * <p>These computations support mean smoothing (see {@link Damping}).
+ * <p>These computations support mean smoothing (see {@link MeanDamping}).
  * 
  * Users of this model will usually call the Provider's get method to create
  * a suitable model.  The model can be kept around until recomputation is necessary.
@@ -93,7 +93,7 @@ public class ItemMeanModel implements Serializable {
          *            towards the global mean.
          */
         @Inject
-        public Provider(@Transient DataAccessObject dao, @Damping double d) {
+        public Provider(@Transient DataAccessObject dao, @MeanDamping double d) {
             this.dao = dao;
             damping = d;
         }

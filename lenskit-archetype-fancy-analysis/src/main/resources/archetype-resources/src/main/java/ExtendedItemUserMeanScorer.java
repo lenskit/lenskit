@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * mean <i>mu</i>), and <i>b<sub>u</sub></i> is the user's average offset (the average
  * difference between their ratings and the item-mean baseline).
  *
- * <p>It supports mean smoothing (see {@link Damping}).
+ * <p>It supports mean smoothing (see {@link MeanDamping}).
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
