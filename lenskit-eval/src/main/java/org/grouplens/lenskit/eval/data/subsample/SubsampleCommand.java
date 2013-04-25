@@ -54,7 +54,7 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
     private File output;
     
     public SubsampleCommand() {
-        super("Subsample");
+        super("subsample");
     }
 
     public SubsampleCommand(String name) {
@@ -80,9 +80,8 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
     /**
      * Configure the output file name for the out put subsample File.
      *
-     * @param pat The subsample file name pattern.
-     * @return The SubsampleCommand object  (for chaining)
-     * @see #setTrain(String)
+     * @param name The name of the subsampled output file.
+     * @return The command object  (for chaining).
      */
     public SubsampleCommand setOutput(String name) {
         output = new File(name);

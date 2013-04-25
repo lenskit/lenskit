@@ -22,10 +22,16 @@ package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.Index;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
+
+import java.io.Serializable;
 
 /**
  * A model for a {@link SlopeOneItemScorer} or {@link WeightedSlopeOneItemScorer}.
@@ -35,38 +41,37 @@ import org.grouplens.lenskit.util.Index;
  */
 @DefaultProvider(SlopeOneModelBuilder.class)
 @Shareable
-public class SlopeOneModel {
+public class SlopeOneModel implements Serializable {
 
-    private final Long2IntMap[] coMatrix;
-    private final Long2DoubleMap[] devMatrix;
+    private static final long serialVersionUID = 1L;
+
+    private final Long2ObjectMap<ImmutableSparseVector> matrix;
     private final BaselinePredictor baseline;
-    private final Index itemIndex;
 
-    public SlopeOneModel(Long2IntMap[] coMatrix, Long2DoubleMap[] devMatrix,
-                         BaselinePredictor predictor, Index itemIndex) {
+    public static final Symbol CORATINGS_SYMBOL = Symbol.of("coratings");
 
-        this.coMatrix = coMatrix;
-        this.devMatrix = devMatrix;
+    public SlopeOneModel(Long2ObjectMap<ImmutableSparseVector> matrix, BaselinePredictor predictor) {
+
+        this.matrix = matrix;
         baseline = predictor;
-        this.itemIndex = itemIndex;
     }
 
     public double getDeviation(long item1, long item2) {
         if (item1 == item2) {
             return 0;
         } else if (item1 < item2) {
-            int index = itemIndex.getIndex(item1);
-            if (index < 0) {
+            SparseVector row = matrix.get(item1);
+            if (row == null) {
                 return Double.NaN;
             } else {
-                return devMatrix[index].get(item2);
+                return row.get(item2);
             }
         } else {
-            int index = itemIndex.getIndex(item2);
-            if (index < 0) {
+            SparseVector row = matrix.get(item2);
+            if (row == null) {
                 return Double.NaN;
             } else {
-                return -devMatrix[index].get(item1);
+                return -row.get(item1);
             }
         }
     }
@@ -75,27 +80,25 @@ public class SlopeOneModel {
         if (item1 == item2) {
             return 0;
         } else if (item1 < item2) {
-            int index = itemIndex.getIndex(item1);
-            if (index < 0) {
+            SparseVector row = matrix.get(item1);
+            if (row == null) {
                 return 0;
             } else {
-                return coMatrix[index].get(item2);
+                double coratings = row.channel(CORATINGS_SYMBOL).get(item2, 0);
+                return (int) coratings;
             }
         } else {
-            int index = itemIndex.getIndex(item2);
-            if (index < 0) {
+            SparseVector row = matrix.get(item2);
+            if (row == null) {
                 return 0;
             } else {
-                return coMatrix[index].get(item1);
+                double coratings = row.channel(CORATINGS_SYMBOL).get(item1, 0);
+                return (int) coratings;
             }
         }
     }
 
     public BaselinePredictor getBaselinePredictor() {
         return baseline;
-    }
-
-    public Index getItemIndex() {
-        return itemIndex;
     }
 }

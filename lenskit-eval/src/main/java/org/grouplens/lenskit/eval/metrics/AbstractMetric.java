@@ -29,10 +29,12 @@ package org.grouplens.lenskit.eval.metrics;
 public abstract class AbstractMetric<E> implements Metric<E> {
     private E currentEvaluation;
 
+    @Override
     public void startEvaluation(E eval) {
         currentEvaluation = eval;
     }
 
+    @Override
     public void finishEvaluation() {
         currentEvaluation = null;
     }

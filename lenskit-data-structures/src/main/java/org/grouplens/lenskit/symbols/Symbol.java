@@ -57,12 +57,6 @@ public final class Symbol {
     // Variables unique to each instance
     private final String strSymbol;    // The name of the symbol, which is the string used to create it.
 
-    // The only constructors are private, so Symbols can only be created
-    // through the public interface.
-    private Symbol() {
-        this("");
-    }
-
     // The only constructor is private, so Symbols can only be created
     // through the public interface.
     private Symbol(String name) {

@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.eval.maven;
 
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -56,6 +57,10 @@ import java.util.Properties;
 @Mojo(name = "run-eval",
       requiresDependencyResolution = ResolutionScope.RUNTIME,
       threadSafe = true)
+// This @Execute should not really be needed, since this MOJO is designed for the
+// LensKit lifecycle ... BUT by inserting this MOJO into the traditional lifecycle
+// also we get the benefit that the Java files in the src tree get built before
+// the LensKit lifecycle runs.
 @Execute(lifecycle = "",
          phase = LifecyclePhase.PACKAGE)
 public class EvalScriptMojo extends AbstractMojo {
@@ -65,22 +70,22 @@ public class EvalScriptMojo extends AbstractMojo {
     @Parameter(property="project",
                required=true,
                readonly=true)
-    private MavenProject project;
+    private MavenProject mavenProject;
 
     /**
-     * Location of the output class directory for this project's
-     * build.  Used to extend the ClassLoader so it can find the
-     * compiled classes when the script is running.
+     * The session.  Gives access to Maven session state.
      */
-    @Parameter(property="project.build.outputDirectory")
-    private File buildDirectory;
+    @Parameter(property="session",
+               required=true,
+               readonly=true)
+    private MavenSession mavenSession;
 
     /**
      * Name of recommender script. If none is given and scriptFiles
      * is not configured, default to use "eval.groovy"
      *
      */
-    @Parameter(property="lenskit.eval.script",
+    @Parameter(property = EvalConfig.EVAL_SCRIPT_PROPERTY,
                 defaultValue = "eval.groovy")
     private String script;
 
@@ -88,21 +93,21 @@ public class EvalScriptMojo extends AbstractMojo {
      *  Pattern of the set of evaluation files. If this is configured,
      *  scriptFiles takes precedence over script.
      */
-    @Parameter(property = "lenskit.eval.scriptFiles")
+    @Parameter(property = EvalConfig.EVAL_SCRIPTFILES_PROPERTY)
     private FileSet scriptFiles;
 
     /**
      * Location of input data; any train-test sets will be placed
      * here, too.
      */
-    @Parameter(property="lenskit.eval.dataDir",
+    @Parameter(property=EvalConfig.DATA_DIR_PROPERTY,
                defaultValue=".")
     private String dataDir;
 
     /**
      * Location of output data from the eval script.
      */
-    @Parameter(property="lenskit.eval.analysisDir",
+    @Parameter(property=EvalConfig.ANALYSIS_DIR_PROPERTY,
                defaultValue=".")
     private String analysisDir;
 
@@ -110,14 +115,14 @@ public class EvalScriptMojo extends AbstractMojo {
      * The number of evaluation threads to run.  A thread count of 0 uses as many threads
      * as there are available processors.
      */
-    @Parameter(property="lenskit.eval.threadCount")
+    @Parameter(property=EvalConfig.THREAD_COUNT_PROPERTY)
     private int threadCount = 1;
 
     /**
      * Turn on to force eval steps to run.
      */
     @SuppressWarnings("FieldCanBeLocal")
-    @Parameter(property="lenskit.eval.force")
+    @Parameter(property=EvalConfig.FORCE_PROPERTY)
     private boolean force = false;
 
     /**
@@ -127,7 +132,7 @@ public class EvalScriptMojo extends AbstractMojo {
      * To do that, run with <tt>mvn -Dlenskit.eval.skip=true</tt>.
      */
     @SuppressWarnings("FieldCanBeLocal")
-    @Parameter(property = "lenskit.eval.skip")
+    @Parameter(property = EvalConfig.SKIP_PROPERTY)
     private boolean skip = false;
 
     @Override
@@ -150,26 +155,37 @@ public class EvalScriptMojo extends AbstractMojo {
     }
 
     private void doExecute() throws MojoExecutionException {
-        // Before we can run, we get a new class loader that is a copy
-        // of our class loader, with the build directory added to it.
-        // That way the scripts can use classes that are compiled into
-        // the build directory.
-        URL buildUrl;
-        try {
-            buildUrl = buildDirectory.toURI().toURL();
-            getLog().info("build directory " + buildUrl.toString());
-        } catch (MalformedURLException e1) {
-            throw new MojoExecutionException("Cannot build URL for build directory");
-        }
-        ClassLoader loader = makeClassLoader();
-        Properties properties = new Properties(project.getProperties());
-        properties.setProperty("lenskit.eval.dataDir", dataDir);
-        properties.setProperty("lenskit.eval.analysisDir", analysisDir);
+        // We put these properties into the new properties object in
+        // reverse order of importance.  The later properties override
+        // the earlier ones.  First the system properties.  Then the
+        // maven project properties.  Then the maven session user
+        // properties.  These last are the -D definitions from the
+        // command-line, which can thus override any other property
+        // for this evaluation.  Then the special properties for this
+        // MOJO, which can be set as arguments in the .pom file.  If
+        // they are set in the .pom file, according to Maven logic
+        // they should override any other attempt to set them, so they
+        // come last.
+        Properties properties = new Properties();
+        properties.putAll(System.getProperties());
+        properties.putAll(mavenProject.getProperties());
+        properties.putAll(mavenSession.getProjectBuildingRequest().getUserProperties());
+        properties.setProperty(EvalConfig.DATA_DIR_PROPERTY, dataDir);
+        properties.setProperty(EvalConfig.ANALYSIS_DIR_PROPERTY, analysisDir);
         properties.setProperty(EvalConfig.THREAD_COUNT_PROPERTY,
                                Integer.toString(threadCount));
         properties.setProperty(EvalConfig.FORCE_PROPERTY,
                                Boolean.toString(force));
-        dumpClassLoader(loader);
+
+        if (getLog().isDebugEnabled()) {
+            properties.list(System.out);
+            mavenProject.getProperties().list(System.out);
+            mavenSession.getProjectBuildingRequest().getUserProperties().list(System.out);
+            System.getProperties().list(System.out);
+        }
+
+        ClassLoader loader = makeClassLoader();
+        if (getLog().isDebugEnabled()) dumpClassLoader(loader);
         EvalScriptEngine engine = new EvalScriptEngine(loader, properties);
 
         List<File> files = new ArrayList<File>();
@@ -236,7 +252,7 @@ public class EvalScriptMojo extends AbstractMojo {
     private ClassLoader makeClassLoader() throws MojoExecutionException {
         final List<URL> urls = new ArrayList<URL>();
         try {
-            for (String cp: project.getRuntimeClasspathElements()) {
+            for (String cp: mavenProject.getRuntimeClasspathElements()) {
                 urls.add(new File(cp).toURI().toURL());
             }
         } catch (DependencyResolutionRequiredException e) {

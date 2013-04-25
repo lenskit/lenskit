@@ -74,7 +74,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * The command built has the name "train-test-eval"
      */
     public SimpleEvalCommand(){
-        super("train-test-builder");
+        super("simple-eval");
         result = new TrainTestEvalCommand("train-test-eval");
         init();
     }

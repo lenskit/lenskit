@@ -44,7 +44,6 @@ public class SlopeOneModelBuilder implements Provider<SlopeOneModel> {
 
     private final BaselinePredictor predictor;
     private final ItemItemBuildContextFactory contextFactory;
-    private final Indexer itemIndex;
 
     @Inject
     public SlopeOneModelBuilder(@Transient @Nonnull DataAccessObject dao,
@@ -54,8 +53,7 @@ public class SlopeOneModelBuilder implements Provider<SlopeOneModel> {
 
         this.predictor = predictor;
         this.contextFactory = contextFactory;
-        itemIndex = new Indexer();
-        accumulator = new SlopeOneModelDataAccumulator(damping, itemIndex, dao);
+        accumulator = new SlopeOneModelDataAccumulator(damping, dao);
     }
 
     /**
@@ -69,7 +67,6 @@ public class SlopeOneModelBuilder implements Provider<SlopeOneModel> {
                 accumulator.putItemPair(pair.itemId1, pair.vec1, pair.itemId2, pair.vec2);
             }
         }
-        return new SlopeOneModel(accumulator.buildCoratingMatrix(), accumulator.buildDeviationMatrix(),
-                                 predictor, itemIndex);
+        return new SlopeOneModel(accumulator.buildMatrix(), predictor);
     }
 }

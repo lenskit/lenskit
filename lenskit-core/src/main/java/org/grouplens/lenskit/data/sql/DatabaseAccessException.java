@@ -18,21 +18,26 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval;
+package org.grouplens.lenskit.data.sql;
 
-import javax.annotation.Nonnull;
-import java.util.concurrent.Callable;
+import org.grouplens.lenskit.data.dao.DataAccessException;
 
 /**
- * A command of evaluation task, which is exposed to the evaluation configuration script.
- * So the command can be called dynamically.
- *
- * @author Shuo Chang <schang@cs.umn.edu>
+ * A database error occurred in the database-backed DAO.
  */
-public interface Command<T> extends Callable<T> {
+public class DatabaseAccessException extends DataAccessException {
+    public DatabaseAccessException() {
+    }
 
-    @Nonnull
-    String getName();
+    public DatabaseAccessException(String message) {
+        super(message);
+    }
 
-    T call() throws CommandException;
+    public DatabaseAccessException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public DatabaseAccessException(Throwable cause) {
+        super(cause);
+    }
 }

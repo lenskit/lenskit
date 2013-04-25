@@ -23,8 +23,8 @@ package org.grouplens.lenskit.vectors;
 import javax.annotation.Nullable;
 
 /**
- * An entry in a vector. This represents the key-value pair at one entry
- * in a vector, similar to {@link java.util.Map.Entry} does for maps.
+ * An entry in a sparse vector. This represents the key-value pair at one entry
+ * in a sparse vector, similar to {@link java.util.Map.Entry} does for maps.
  * <p>
  * The entry class does not support a public setValue method; to set the
  * value at an entry on a mutable sparse vector, use

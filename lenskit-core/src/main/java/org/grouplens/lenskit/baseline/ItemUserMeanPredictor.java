@@ -34,6 +34,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import java.util.Collection;
 
 import static org.grouplens.lenskit.vectors.VectorEntry.State;
@@ -51,7 +52,7 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
  *
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  */
-@DefaultProvider(ItemUserMeanPredictor.Provider.class)
+@DefaultProvider(ItemUserMeanPredictor.Builder.class)
 @Shareable
 public class ItemUserMeanPredictor extends ItemMeanPredictor {
     /**
@@ -59,7 +60,7 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
      *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Provider implements javax.inject.Provider<ItemUserMeanPredictor> {
+    public static class Builder implements Provider<ItemUserMeanPredictor> {
         private double damping = 0;
         private DataAccessObject dao;
 
@@ -71,8 +72,8 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
          *            towards the global mean.
          */
         @Inject
-        public Provider(@Transient DataAccessObject dao,
-                        @Damping double d) {
+        public Builder(@Transient DataAccessObject dao,
+                       @Damping double d) {
             this.dao = dao;
             damping = d;
         }
@@ -81,8 +82,12 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
         public ItemUserMeanPredictor get() {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
             Cursor<Rating> ratings = dao.getEvents(Rating.class);
-            double globalMean = computeItemAverages(ratings.fast().iterator(), damping, itemMeans);
-            ratings.close();
+            double globalMean;
+            try {
+                 globalMean = computeItemAverages(ratings.fast().iterator(), damping, itemMeans);
+            } finally {
+                ratings.close();
+            }
 
             return new ItemUserMeanPredictor(itemMeans, globalMean, damping);
         }

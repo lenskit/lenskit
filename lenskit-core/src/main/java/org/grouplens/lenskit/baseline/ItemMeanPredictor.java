@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import java.io.Serializable;
 import java.util.Iterator;
 
@@ -56,7 +57,7 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
  * @author Michael Ludwig <mludwig@cs.umn.edu>
  */
-@DefaultProvider(ItemMeanPredictor.Provider.class)
+@DefaultProvider(ItemMeanPredictor.Builder.class)
 @Shareable
 public class ItemMeanPredictor extends AbstractBaselinePredictor {
     /**
@@ -64,7 +65,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
      *
      * @author Michael Ludwig <mludwig@cs.umn.edu>
      */
-    public static class Provider implements javax.inject.Provider<ItemMeanPredictor> {
+    public static class Builder implements Provider<ItemMeanPredictor> {
         private double damping = 0;
         private DataAccessObject dao;
 
@@ -76,8 +77,8 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
          *                global mean.
          */
         @Inject
-        public Provider(@Transient DataAccessObject dao,
-                        @Damping double damping) {
+        public Builder(@Transient DataAccessObject dao,
+                       @Damping double damping) {
             this.dao = dao;
             this.damping = damping;
         }
@@ -86,10 +87,13 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
         public ItemMeanPredictor get() {
             Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
             Cursor<Rating> ratings = dao.getEvents(Rating.class);
-            double globalMean = computeItemAverages(
-                    ratings.fast().iterator(),
-                    damping, itemMeans);
-            ratings.close();
+            double globalMean;
+            try {
+                globalMean = computeItemAverages(ratings.fast().iterator(),
+                                                 damping, itemMeans);
+            } finally {
+                ratings.close();
+            }
 
             return new ItemMeanPredictor(itemMeans, globalMean, damping);
         }
@@ -130,6 +134,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
      * item means in a single pass through the data source.
      *
      * @param ratings         The collection of preferences the averages are based on.
+     *                        This can be a fast iterator.
      * @param itemMeansResult A map in which the means should be stored.
      * @param damping         The damping term.
      * @return The global mean rating. The item means are stored in
