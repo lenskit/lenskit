@@ -26,7 +26,7 @@ import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.knn.item.model.NormalizingItemItemModelBuilder;
-import org.grouplens.lenskit.knn.params.NeighborhoodSize;
+import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.DefaultItemVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;

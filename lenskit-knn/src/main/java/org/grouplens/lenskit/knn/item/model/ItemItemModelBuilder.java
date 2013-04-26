@@ -27,7 +27,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
-import org.grouplens.lenskit.knn.params.ModelSize;
+import org.grouplens.lenskit.knn.item.ModelSize;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;

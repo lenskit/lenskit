@@ -40,7 +40,7 @@ LensKit Release Notes
   * Replaced <<<LongScoredList>>> with a list of <<<ScoredId>>> objects in Item-Item
     model construction to support side channels (#issue(219)).
 
-  * <<Config change>>: Removed <<<o.g.l.params>>> package, moving parameters to saner locations
+  * <<Config change>>: Removed dedicated <<<params>>> packages, moving parameters to saner locations
     (#issue(219)):
 
     * Similarity damping is now configured with <<<o.g.l.vectors.similarity.SimilarityDamping>>>.
@@ -54,6 +54,10 @@ LensKit Release Notes
     * <<<@SigWeightThreshold>>> is now in <<<o.g.l.vectors.similarity>>>.
 
     * <<<@ThresholdValue>>> is now in <<<o.g.l.transform.threshold>>>.
+
+    * Item-item model size is now configured with <<<o.g.l.knn.item.ModelSize>>>.
+
+    * k-NN neighborhood sizes are now configured with <<<o.g.l.knn.NeighborhoodSize>>>.
   
   []
 

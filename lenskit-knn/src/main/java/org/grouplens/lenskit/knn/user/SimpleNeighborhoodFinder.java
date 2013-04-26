@@ -29,7 +29,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.knn.params.NeighborhoodSize;
+import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;

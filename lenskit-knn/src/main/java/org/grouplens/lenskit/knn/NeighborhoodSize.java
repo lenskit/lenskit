@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.params;
+package org.grouplens.lenskit.knn;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -32,15 +32,14 @@ import org.grouplens.grapht.annotation.DefaultInteger;
 import org.grouplens.lenskit.core.Parameter;
 
 /**
- * Number of neighbors to retain in the similarity matrix.  Only the <i>n</i> most
- * similar neighbors are retained for each item in model build. If 0, then all
- * neighbors are retained.
+ * Number of neighbors to consider when building a prediction.  Used by both
+ * user-user and item-item CF. If 0, then all neighbors are used.
  */
 @Documented
-@DefaultInteger(0)
+@DefaultInteger(30)
 @Parameter(Integer.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ModelSize {
+public @interface NeighborhoodSize {
 }

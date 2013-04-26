@@ -24,7 +24,7 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.knn.params.NeighborhoodSize;
+import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.test.CrossfoldTestSuite;
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
