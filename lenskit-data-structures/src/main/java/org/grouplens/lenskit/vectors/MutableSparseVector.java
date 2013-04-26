@@ -260,10 +260,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     public double set(long key, double value) {
         checkMutable();
         final int idx = findIndex(key);
-        if (idx < 0) {
-            throw new IllegalArgumentException("Cannot set a key that is not in the domain.  key="
-                                                       + key);
-        }
         return setAt(idx, value);
     }
 
@@ -323,6 +319,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         final int idx = findIndex(key);
         if (idx >= 0) {
             usedKeys.clear(idx);
+        } else {
+            throw new IllegalArgumentException("unset should only be used on keys that are in the key domain");
         }
     }
 
@@ -345,6 +343,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * Unset the value for a key. The key remains in the key domain, but is
      * removed from the key set.
      * @param key The key to unset.
+     * @throws IllegalArgumentException if the key is not in the key domain.
      */
     public void unset(long key) {
         clear(key);
@@ -368,6 +367,10 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
     /**
      * Add a value to the specified entry. The key must be in the key set, and must have a value.
+     * 
+     * Note that the return value on a missing key will be changed in 2.0 to throwing an IllegalArgumentException
+     * so code should not rely on Double.NaN coming back.  In general, this function should only be called
+     * on keys that are in the key set and that already have a value.
      *
      * @param key   The key whose value should be added.
      * @param value The value to increase it by.
@@ -587,8 +590,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         double[] nvs;
         BitSet newUsedKeys;
 
-        if (keyDomain == keys) {
-            assert freeze;
+        // can't easily test the fourth condition below, because no public method
+        // does it this way.
+        if (keyDomain == keys && freeze) {
             nvs = values;
             newUsedKeys = usedKeys;
         } else {
@@ -608,6 +612,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
                 } else if (keys[j] < keyDomain[i]) {
                     j++;
                 } else {
+                    // untestable
                     throw new AssertionError("Key domain of new immutable vector must " +
                                              "be subset of original domain");
                 }
@@ -672,6 +677,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         if (values.length < size) {
             throw new IllegalArgumentException("value array too short");
         }
+        if (keys.length < size) {
+            throw new IllegalArgumentException("key array too short");
+        }
         if (!MoreArrays.isSorted(keys, 0, size)) {
             throw new IllegalArgumentException("item array not sorted");
         }
@@ -680,25 +688,18 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
     /**
      * Wrap key and value array lists in a mutable sparse vector. Don't modify
-     * the original lists once this has been called!
+     * the original lists once this has been called!  There must be at least
+     * as many values as keys.  The value list will be truncated to the length
+     * of the key list.
      *
      * @param keyList   The list of keys
      * @param valueList The list of values
      * @return A backed by the backing stores of the provided lists.
      */
     public static MutableSparseVector wrap(LongArrayList keyList, DoubleArrayList valueList) {
-        if (valueList.size() < keyList.size()) {
-            throw new IllegalArgumentException("Value list too short");
-        }
-
         long[] keys = keyList.elements();
         double[] values = valueList.elements();
-
-        if (!MoreArrays.isSorted(keys, 0, keyList.size())) {
-            throw new IllegalArgumentException("key array not sorted");
-        }
-
-        return new MutableSparseVector(keys, values, keyList.size());
+        return MutableSparseVector.wrap(keys, values, keyList.size());
     }
 
     /**
