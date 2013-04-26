@@ -47,7 +47,7 @@ LensKit Release Notes
 
     * Baseline (and normalizer) damping is now configured with <<<o.g.l.baseline.MeanDamping>>>.
 
-    * Slope One deviation damping is now configured with <<<o.g.l.slopeone.Damping>>>.
+    * Slope One deviation damping is now configured with <<<o.g.l.slopeone.DeviationDamping>>>.
 
     * <<<@EventType>>> is now in <<<o.g.l.data.event>>>.
 

@@ -47,7 +47,7 @@ public class SlopeOneModelBuilder implements Provider<SlopeOneModel> {
     public SlopeOneModelBuilder(@Transient @Nonnull DataAccessObject dao,
                                 @Nullable BaselinePredictor predictor,
                                 @Transient ItemItemBuildContextFactory contextFactory,
-                                @Damping double damping) {
+                                @DeviationDamping double damping) {
 
         this.predictor = predictor;
         this.contextFactory = contextFactory;
