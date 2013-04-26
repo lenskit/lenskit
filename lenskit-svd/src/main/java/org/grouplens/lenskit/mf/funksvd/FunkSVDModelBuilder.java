@@ -31,7 +31,6 @@ import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
-import org.grouplens.lenskit.mf.funksvd.params.FeatureCount;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;

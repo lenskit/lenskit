@@ -58,6 +58,8 @@ LensKit Release Notes
     * Item-item model size is now configured with <<<o.g.l.knn.item.ModelSize>>>.
 
     * k-NN neighborhood sizes are now configured with <<<o.g.l.knn.NeighborhoodSize>>>.
+
+    * FunkSVD feature count is now configured with <<<o.g.l.funksvd.FeatureCount>>>.
   
   []
 

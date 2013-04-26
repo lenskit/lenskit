@@ -31,7 +31,6 @@ import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.iterative.params.IterationCount;
-import org.grouplens.lenskit.mf.funksvd.params.FeatureCount;
 import org.grouplens.lenskit.test.ML100KTestSuite;
 import org.junit.Test;
 
