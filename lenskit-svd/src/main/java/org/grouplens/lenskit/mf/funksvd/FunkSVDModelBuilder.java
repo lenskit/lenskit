@@ -20,10 +20,15 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
@@ -98,19 +103,26 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
         double[] estimates = initializeEstimates(snapshot, baseline);
         ClampingFunction clamp = rule.getClampingFunction();
 
+        IntList icounts = new IntArrayList(featureCount);
+        DoubleList ierr = new DoubleArrayList(featureCount);
+
         for (int f = 0; f < featureCount; f++) {
-            trainFeature(estimates, ratings, f, userFeatures[f], itemFeatures[f]);
+            Pair<Integer,Double> info = trainFeature(estimates, ratings, f, userFeatures[f], itemFeatures[f]);
+            icounts.add(info.getLeft());
+            ierr.add(info.getRight());
 
             // Update each rating's cached value to accommodate the feature values.
             updateRatingEstimates(estimates, ratings, userFeatures[f], itemFeatures[f], clamp);
         }
 
         return new FunkSVDModel(featureCount, itemFeatures, userFeatures,
-                                rule.getClampingFunction(), snapshot.itemIndex(), snapshot.userIndex(), baseline);
+                                rule.getClampingFunction(),
+                                snapshot.itemIndex(), snapshot.userIndex(),
+                                baseline, icounts, ierr);
     }
 
 
-    private void trainFeature(double[] estimates, FastCollection<IndexedPreference> ratings,
+    private Pair<Integer,Double> trainFeature(double[] estimates, FastCollection<IndexedPreference> ratings,
                               int feature, double[] ufvs, double[] ifvs) {
         logger.trace("Training feature {}", feature);
 
@@ -141,6 +153,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
         timer.stop();
         logger.debug("Finished feature {} in {} epochs (took {})",
                      feature, controller.getIterationCount(), timer);
+        return Pair.of(controller.getIterationCount(), rmse);
     }
 
     private double doFeatureIteration(double[] estimates, FastCollection<IndexedPreference> ratings,
