@@ -64,12 +64,10 @@ import javax.inject.Provider;
 public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     private static Logger logger = LoggerFactory.getLogger(FunkSVDModelBuilder.class);
 
-    // The default value for feature values - isn't supposed to matter much
-    private static final double DEFAULT_FEATURE_VALUE = 0.1;
-
     private final int featureCount;
     private final BaselinePredictor baseline;
     private final PreferenceSnapshot snapshot;
+    private final double initialValue;
 
     private FunkSVDUpdateRule rule;
 
@@ -77,8 +75,10 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     public FunkSVDModelBuilder(@Transient @Nonnull PreferenceSnapshot snapshot,
                                @Transient @Nonnull FunkSVDUpdateRule rule,
                                @Nonnull BaselinePredictor baseline,
-                               @FeatureCount int featureCount) {
+                               @FeatureCount int featureCount,
+                               @InitialFeatureValue double initVal) {
         this.featureCount = featureCount;
+        this.initialValue = initVal;
         this.baseline = baseline;
         this.snapshot = snapshot;
         this.rule = rule;
@@ -127,14 +127,14 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
         logger.trace("Training feature {}", feature);
 
         // Fetch and initialize the arrays for this feature
-        DoubleArrays.fill(ufvs, DEFAULT_FEATURE_VALUE);
-        DoubleArrays.fill(ifvs, DEFAULT_FEATURE_VALUE);
+        DoubleArrays.fill(ufvs, initialValue);
+        DoubleArrays.fill(ifvs, initialValue);
 
         // We assume that all subsequent features have DEFAULT_FEATURE_VALUE
         // We can therefore pre-compute the "trailing" prediction value, as it
         // will be the same for all ratings for this feature.
         final double trail = (featureCount - feature - 1)
-                * DEFAULT_FEATURE_VALUE * DEFAULT_FEATURE_VALUE;
+                * initialValue * initialValue;
 
         // Initialize our counters and error tracking
         StopWatch timer = new StopWatch();

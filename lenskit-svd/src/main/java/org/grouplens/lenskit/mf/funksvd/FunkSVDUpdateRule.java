@@ -37,10 +37,11 @@ import java.io.Serializable;
  */
 @Shareable
 public final class FunkSVDUpdateRule implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     private final double learningRate;
     private final double trainingRegularization;
+    private final boolean useTrailingEstimate;
     private final ClampingFunction clampingFunction;
     private final StoppingCondition stoppingCondition;
 
@@ -55,12 +56,14 @@ public final class FunkSVDUpdateRule implements Serializable {
     @Inject
     public FunkSVDUpdateRule(@LearningRate double lrate,
                              @RegularizationTerm double reg,
+                             @UseTrailingEstimate boolean trail,
                              ClampingFunction clamp,
                              StoppingCondition stop) {
         learningRate = lrate;
         trainingRegularization = reg;
         clampingFunction = clamp;
         stoppingCondition = stop;
+        useTrailingEstimate = trail;
     }
 
     public double getLearningRate() {
@@ -103,8 +106,10 @@ public final class FunkSVDUpdateRule implements Serializable {
         // Clamp the prediction first
         pred = clampingFunction.apply(uid, iid, pred);
 
-        // Add the trailing value, then clamp the result again
-        pred = clampingFunction.apply(uid, iid, pred + trail);
+        if (useTrailingEstimate) {
+            // Add the trailing value, then clamp the result again
+            pred = clampingFunction.apply(uid, iid, pred + trail);
+        }
 
         // Compute the err and store this value
         return rating - pred;
