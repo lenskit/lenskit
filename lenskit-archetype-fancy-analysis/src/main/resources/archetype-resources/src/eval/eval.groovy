@@ -1,6 +1,6 @@
 import org.grouplens.lenskit.eval.data.crossfold.RandomOrder
 
-import org.grouplens.lenskit.knn.params.*
+import org.grouplens.lenskit.knn.NeighborhoodSize
 import org.grouplens.lenskit.knn.item.*
 import org.grouplens.lenskit.knn.user.*
 
