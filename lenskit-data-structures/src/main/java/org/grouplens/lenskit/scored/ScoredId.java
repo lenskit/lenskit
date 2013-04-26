@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.scored;
 
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import java.util.Set;
 
@@ -51,12 +52,27 @@ public interface ScoredId {
     Set<Symbol> getChannels();
 
     /**
+     * Determine the typed symbols associated with all typed side channels of a {@code ScoredId}.
+     * @return A set of {@code  TypedSymbol} objects, each of which maps to a value in
+     * one of the {@code ScoredId}'s typed side channels.
+     */
+    Set<TypedSymbol<?>> getTypedChannels();
+
+    /**
      * Retrieve the value stored in the {@code ScoredId}'s side channel
      * associated with a specific symbol.
      * @param s The side channel's symbol.
      * @return The value of the appropriate side channel.
      */
     double channel(Symbol s);
+    
+    /**
+     * Retrieve the value stored in the {@code ScoredId}'s typed side channel
+     * associated with a specific symbol.
+     * @param s The typed side channel's typed symbol.
+     * @return The value of the appropriate side channel.
+     */
+    <K> K channel(TypedSymbol<K> s);
 
     /**
      * Determine if a {@code ScoredId} has a specific channel.
@@ -65,4 +81,12 @@ public interface ScoredId {
      * with this symbol, {@code false} otherwise.
      */
     boolean hasChannel(Symbol s);
+    
+    /**
+     * Determine if a {@code ScoredId} has a specific typed channel.
+     * @param s The typed side channel's symbol.
+     * @return {@code true} if the {@code ScoredId} has a channel associated
+     * with this symbol, {@code false} otherwise.
+     */
+    boolean hasChannel(TypedSymbol<?> s);
 }

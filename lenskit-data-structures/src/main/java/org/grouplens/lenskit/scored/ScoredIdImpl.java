@@ -22,7 +22,11 @@ package org.grouplens.lenskit.scored;
 
 import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -33,16 +37,26 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
     private final long id;
     private final double score;
     Reference2DoubleMap<Symbol> channelMap;
+    Reference2ObjectMap<TypedSymbol<?>, ?> typedChannelMap;
 
     public ScoredIdImpl(long id, double score) {
-        this(id, score, null);
+        this(id, score, null, null);
     }
 
-    public ScoredIdImpl(long id, double score, Reference2DoubleMap<Symbol> channelMap) {
+    /**
+     * @param typedChannelMap a map from TypedSymbol<K> to the object in that side channel. 
+     *                        It is assumed that for each key TypedSymbol<K> in the map that the value
+     *                        is of type K.  
+     */
+    public ScoredIdImpl(long id, double score, Reference2DoubleMap<Symbol> channelMap, 
+            Reference2ObjectMap<TypedSymbol<?>, ?> typedChannelMap) {
         this.id = id;
         this.score = score;
         if (channelMap != null) {
-            this.channelMap = new Reference2DoubleArrayMap(channelMap);
+            this.channelMap = new Reference2DoubleArrayMap<Symbol>(channelMap);
+        }
+        if (typedChannelMap != null) {
+            this.typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>();
         }
     }
 
@@ -62,6 +76,11 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
     }
 
     @Override
+    public boolean hasChannel(TypedSymbol<?> s) {
+        return typedChannelMap != null && typedChannelMap.containsKey(s);
+    }
+
+    @Override
     public double channel(Symbol s) {
         if (hasChannel(s)) {
             return channelMap.get(s);
@@ -69,8 +88,22 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
         throw new IllegalArgumentException("No existing channel under name " + s.getName());
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public <K> K channel(TypedSymbol<K> s) {
+        if (hasChannel(s)) {
+            return (K) typedChannelMap.get(s);
+        }
+        throw new IllegalArgumentException("No existing typed channel under name " + s.getName());
+    }
+
     @Override
     public Set<Symbol> getChannels() {
         return channelMap.keySet();
+    }
+
+    @Override
+    public Set<TypedSymbol<?>> getTypedChannels() {
+        return typedChannelMap.keySet();
     }
 }
