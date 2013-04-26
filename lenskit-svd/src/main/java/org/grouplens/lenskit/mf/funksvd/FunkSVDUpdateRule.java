@@ -23,8 +23,8 @@ package org.grouplens.lenskit.mf.funksvd;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
-import org.grouplens.lenskit.iterative.params.LearningRate;
-import org.grouplens.lenskit.iterative.params.RegularizationTerm;
+import org.grouplens.lenskit.iterative.LearningRate;
+import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 
 import javax.inject.Inject;

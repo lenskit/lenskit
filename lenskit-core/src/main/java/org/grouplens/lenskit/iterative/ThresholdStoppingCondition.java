@@ -21,8 +21,6 @@
 package org.grouplens.lenskit.iterative;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.iterative.params.MinimumIterations;
-import org.grouplens.lenskit.iterative.params.StoppingThreshold;
 
 import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;

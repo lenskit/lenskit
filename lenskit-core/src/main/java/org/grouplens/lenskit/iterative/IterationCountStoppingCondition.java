@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.iterative;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.iterative.params.IterationCount;
 
 import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
