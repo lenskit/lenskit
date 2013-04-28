@@ -375,5 +375,43 @@ public abstract class SparseVectorTestCommon {
         assertFalse(simpleVector2().equals(simpleVector()));
         assertFalse(emptyVector().equals(singleton()));
     }
+    
+    @Test
+    public void testVectorEntryMethods() {
+        SparseVector simple = simpleVector();
+        VectorEntry ve = new VectorEntry(simple, 0, 3, 33, true);
+        assertThat(simple.get(3), closeTo(1.5));
+        assertThat(ve.getValue(), closeTo(33));  // the VectorEntry is bogus
+        assertThat(simple.get(ve), closeTo(1.5));
+        
+        VectorEntry veBogus = new VectorEntry(null, -1, 3, 33, true);
+        try {
+            simple.get(veBogus);
+            fail("Should throw an IllegalArgumentException because the vector entry has a bogus index");
+        } catch (IllegalArgumentException iae) { /* skip */
+        }
+
+        VectorEntry veNull = new VectorEntry(null, 0, 3, 33, true);
+        try {
+            simple.get(veNull);
+            fail("Should throw an IllegalArgumentException because the vector entry is not attached to this sparse vector");
+        } catch (IllegalArgumentException iae) { /* skip */
+        }
+        
+        VectorEntry veBogusKey = new VectorEntry(simple, 0, 22, 33, true);
+        try {
+            simple.get(veBogusKey);
+            fail("Should throw an IllegalArgumentException because the vector entry has a bogus key");
+        } catch (IllegalArgumentException iae) { /* skip */
+        }
+
+        VectorEntry veBogusKeyDomain = new VectorEntry(simpleVector2(), 0, 3, 1.5, true);
+        try {
+            simple.get(veBogusKeyDomain);
+            fail("Should throw an IllegalArgumentException because the vector entry has a different key domain from the vector");
+        } catch (IllegalArgumentException iae) { /* skip */
+        }
+    }
+
 
 }

@@ -15,24 +15,30 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Sets;
-
+import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.longs.Long2DoubleArrayMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongSet;
+
+import java.util.BitSet;
+import java.util.Set;
 
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Set;
-
-import static org.grouplens.common.test.MoreMatchers.notANumber;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Sets;
 
 /**
  * @author Michael Ekstrand <ekstrand@cs.umn.edu>
@@ -73,6 +79,85 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(v1.get(3), closeTo(77));
         assertThat(v2.get(3), closeTo(1.5));
     }
+
+    // Ensure that the constructors work too.
+    @Test
+    public void testConstructor() {
+        long[] keys = { 3, 5, 8 };
+        double[] values = { 2, 2.3, 1.7 };
+ 
+        MutableSparseVector v1 = new MutableSparseVector(keys, values);
+        assertThat(v1.set(3, 77), closeTo(2));
+        assertThat(v1.get(3), closeTo(77));
+    }
+
+    // Ensure that the constructors work too.
+    @Test
+    public void testNotSortedConstructor() {
+        long[] keys = { 3, 8, 5 };
+        double[] values = { 2, 2.3, 1.7 };
+ 
+        @SuppressWarnings("unused")
+        MutableSparseVector v1;
+        try {
+            v1 = new MutableSparseVector(keys, values);
+            fail("Should throw an exception since the keys are not sorted");
+        } catch(IllegalArgumentException iae) { /* good */ }
+    }
+    
+    // Ensure that the constructors work too.
+    @Test
+    public void testNotSortedUsedConstructor() {
+        long[] keys = { 3, 8, 5 };
+        double[] values = { 2, 2.3, 1.7 };
+        BitSet used = new BitSet();
+        used.set(3);
+        used.set(8);
+        used.set(5);
+        
+        @SuppressWarnings("unused")
+        MutableSparseVector v1;
+        try {
+            v1 = new MutableSparseVector(keys, values, keys.length, used);
+            fail("Should throw an exception since the keys are not sorted");
+        } catch(IllegalArgumentException iae) { /* good */ }
+    }
+    
+    // Ensure that the constructors work too.
+    @Test
+    public void testUsedConstructor() {
+        long[] keys = { 3, 5, 8 };
+        double[] values = { 2, 2.3, 1.7 };
+        BitSet used = new BitSet();
+        used.set(0);
+        used.set(2);
+
+        MutableSparseVector v1;
+        v1 = new MutableSparseVector(keys, values, keys.length, used);
+        assertThat(v1.get(3), closeTo(2));
+        assertThat(v1.get(8), closeTo(1.7));
+        assertThat(v1.get(5), notANumber());
+    }
+
+    // Ensure that the constructors work too.
+    @Test
+    public void testMapConstructor() {
+        Long2DoubleMap map = new Long2DoubleArrayMap();
+        long[] keys = { 3, 7, 8 };
+        double[] values = { 1.5, 3.5, 2 };
+        for (int i = 0; i < keys.length; i++) {
+            map.put(keys[i], values[i]);
+        }
+        
+        MutableSparseVector msv = new MutableSparseVector(map);
+
+        assertThat(msv.get(3), closeTo(1.5));
+        assertThat(msv.get(7), closeTo(3.5));
+        assertThat(msv.get(8), closeTo(2));
+    }
+
+
+
 
     @Test
     public void testCopy() {
@@ -356,6 +441,16 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(msv.get(9), closeTo(0.42));
     }
     
+    @Test
+    public void testWrapUnsorted() {
+        long[] keys = { 7, 3, 9 };
+        double[] values = { Math.E, Math.PI, 0.42 };
+        MutableSparseVector msv = MutableSparseVector.wrapUnsorted(keys, values);
+        assertThat(msv.get(3), closeTo(Math.PI));
+        assertThat(msv.get(7), closeTo(Math.E));
+        assertThat(msv.get(9), closeTo(0.42));
+    }
+
     @Test
     public void testWrapTooLong() {
         long[] keys = { 3, 7, 9, 11 };
