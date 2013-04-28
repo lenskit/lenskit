@@ -84,10 +84,10 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * Construct a new vector from the contents of a map. The key domain is the
      * key set of the map.  Therefore, no new keys can be added to this vector.
      *
-     * @param ratings A map providing the values for the vector.
+     * @param keyValueMap A map providing the values for the vector.
      */
-    public MutableSparseVector(Long2DoubleMap ratings) {
-        super(ratings);
+    public MutableSparseVector(Long2DoubleMap keyValueMap) {
+        super(keyValueMap);
         channelMap = new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
     }
 
@@ -773,8 +773,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
     /**
      * Add a channel to the vector, even if there is already a
-     * channel with the same symbol.  The new channel will be empty,
-     * and will have the same key domain as this vector.
+     * channel with the same symbol.  If there already was such a channel
+     * it will be unchanged; otherwise a new empty channel will be created
+     * with the same key domain as this vector.
      *
      * @param channelSymbol the symbol under which this new channel
      *                      should be created.

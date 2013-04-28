@@ -101,7 +101,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
 
     /**
      * Construct a new vector from existing arrays.  It is assumed that the keys
-     * are sorted and duplicate-free, and that the values is the same length. The
+     * are sorted and duplicate-free, and that the values array is the same length. The
      * key array is the key domain, and all keys are considered used.
      * No new keys can be added to this vector.  Clients should call
      * the wrap() method rather than directly calling this constructor.
@@ -109,6 +109,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @param ks The array of keys backing this vector. They must be sorted.
      * @param vs The array of values backing this vector.
      */
+    // hard to test because it's not used externally
     SparseVector(long[] ks, double[] vs) {
         this(ks, vs, ks.length);
     }
@@ -126,7 +127,9 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @param length Number of items to actually use.
      */
     SparseVector(long[] ks, double[] vs, int length) {
-        assert MoreArrays.isSorted(ks, 0, length);
+        if (! MoreArrays.isSorted(ks, 0, length)) {
+            throw new IllegalArgumentException("The input array of keys must be in sorted order.");
+        }
         keys = ks;
         values = vs;
         domainSize = length;
@@ -150,7 +153,9 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @param used   The used entry set.
      */
     SparseVector(long[] ks, double[] vs, int length, BitSet used) {
-        assert MoreArrays.isSorted(ks, 0, length);
+        if (! MoreArrays.isSorted(ks, 0, length)) {
+            throw new IllegalArgumentException("The input array of keys must be in sorted order.");
+        }
         keys = ks;
         values = vs;
         domainSize = length;
@@ -161,18 +166,19 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * Construct a new vector from the contents of a map. The key domain is the
      * key set of the map.  Therefore, no new keys can be added to this vector.
      *
-     * @param ratings A map providing the values for the vector.
+     * @param keyValueMap A map providing the values for the vector.
      */
-    SparseVector(Long2DoubleMap ratings) {
-        keys = ratings.keySet().toLongArray();
+    SparseVector(Long2DoubleMap keyValueMap) {
+        keys = keyValueMap.keySet().toLongArray();
         domainSize = keys.length;
         Arrays.sort(keys);
-        assert keys.length == ratings.size();
+        // untestable assertions, assuming Arrays works.
+        assert keys.length == keyValueMap.size();
         assert MoreArrays.isSorted(keys, 0, domainSize);
         values = new double[keys.length];
         final int len = keys.length;
         for (int i = 0; i < len; i++) {
-            values[i] = ratings.get(keys[i]);
+            values[i] = keyValueMap.get(keys[i]);
         }
         usedKeys = new BitSet(domainSize);
         usedKeys.set(0, domainSize);
