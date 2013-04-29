@@ -338,10 +338,6 @@
         <!-- Don't inherit top-level-only site settings. Inherited settings
           will go in pluginManagement. -->
         <inherited>false</inherited>
-
-        <configuration>
-          <templateFile>src/site/site.vm</templateFile>
-        </configuration>
       </plugin>
 
       <!-- Build the SASS style sheet for the site. -->
@@ -411,6 +407,7 @@
               <report>dependency-convergence</report>
               <report>dependency-management</report>
               <report>plugins</report>
+              <report>plugin-management</report>
             </reports>
           </reportSet>
         </reportSets>

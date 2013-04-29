@@ -18,20 +18,20 @@
       <item name="LensKit (Recommender Implementation)"
             href="index.html"/>
     </breadcrumbs>
-    <menu name="LensKit">
-      <item name="About" href="index.html"/>
-      <item name="Download" href="download.html">
-        <item name="Download Options" href="download.html"/>
-        <item name="Release Notes" href="release-notes.html"/>
-      </item>
-      <item name="Documentation" href="documentation.html">
-        <item name="Overview" href="documentation.html"/>
-        <item name="Getting Started" href="getting-started.html"/>
-        <item name="Evaluating" href="evaluating.html"/>
-        <item name="API Reference" href="apidocs/"/>
-      </item>
-      <item name="Research" href="research.html"/>
-    </menu>
+    <!--<menu name="LensKit">-->
+      <!--<item name="About" href="index.html"/>-->
+      <!--<item name="Download" href="download.html">-->
+        <!--<item name="Download Options" href="download.html"/>-->
+        <!--<item name="Release Notes" href="release-notes.html"/>-->
+      <!--</item>-->
+      <!--<item name="Documentation" href="documentation.html">-->
+        <!--<item name="Overview" href="documentation.html"/>-->
+        <!--<item name="Getting Started" href="getting-started.html"/>-->
+        <!--<item name="Evaluating" href="evaluating.html"/>-->
+        <!--<item name="API Reference" href="apidocs/"/>-->
+      <!--</item>-->
+      <!--<item name="Research" href="research.html"/>-->
+    <!--</menu>-->
     <!-- <menu ref="modules"/> -->
     <!-- <menu ref="reports" inherit="bottom"/> -->
   </body>
