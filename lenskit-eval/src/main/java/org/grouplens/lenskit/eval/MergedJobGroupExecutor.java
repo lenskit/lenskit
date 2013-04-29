@@ -166,8 +166,9 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
             jobStarting(job);
             try {
                 job.run();
-            } catch (RuntimeException e) {
-                throw e;
+            } catch (Exception e) {
+                logger.error("Error running {}", job.getName(), e);
+                throw new RuntimeException("Error running " + job.getName(), e);
             } finally {
                 jobFinished(job);
             }

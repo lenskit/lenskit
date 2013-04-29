@@ -66,7 +66,9 @@ public class SequentialJobGroupExecutor implements JobGroupExecutor {
                 public void run() {
                     try {
                         job.run();
-                    } catch (RuntimeException e) {
+                    } catch (Exception e) {
+                        logger.error("Error running {}", job.getName(), e);
+                        throw new RuntimeException("Error running " + job.getName(), e);
                     }
                 }
             };
