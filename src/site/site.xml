@@ -8,6 +8,7 @@
     <artifactId>maven-fluido-skin</artifactId>
     <version>1.3.0</version>
   </skin>
+  <publishDate position="none"/>
   <version position="right"/>
   <poweredBy/>
   <bannerLeft>
@@ -32,6 +33,6 @@
       <item name="JavaDoc" href="apidocs"/>
     </menu>
     <menu ref="modules"/>
-    <menu ref="reports" inherit="bottom"/>
+    <menu name="Module Info" ref="reports" inherit="bottom"/>
   </body>
 </project>
