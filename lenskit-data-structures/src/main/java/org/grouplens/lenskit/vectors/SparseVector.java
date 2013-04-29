@@ -37,6 +37,7 @@ import java.util.*;
 import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.collections.*;
 import org.grouplens.lenskit.scored.AbstractScoredId;
 import org.grouplens.lenskit.scored.ScoredId;
@@ -82,22 +83,6 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     protected double[] values;
     protected final int domainSize; // How much of the key space is
     // actually used by this vector.
-
-    private transient volatile Double norm;
-    private transient volatile Double sum;
-    private transient volatile Double mean;
-    private transient volatile Integer hashCode;
-
-    /**
-     * Clear all cached/memoized values. This must be called any time the vector
-     * is modified.
-     */
-    protected void clearCachedValues() {
-        norm = null;
-        sum = null;
-        mean = null;
-        hashCode = null;
-    }
 
     /**
      * Construct a new vector from existing arrays.  It is assumed that the keys
@@ -257,8 +242,16 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @param e A {@code VectorEntry} with the key to look up
      * @return the key's value (or {@link Double#NaN} if no such value exists)
      */
-    public double get(VectorEntry e) {
-        return get(e.getKey());
+    public double get(VectorEntry entry) {
+        final SparseVector evec = entry.getVector();
+        if (evec == null) {
+            throw new IllegalArgumentException("entry is not associated with a vector");
+        } else if (evec.keys != this.keys) {
+            throw new IllegalArgumentException("entry does not have safe key domain");
+        } else if (entry.getKey() != keys[entry.getIndex()]) {
+            throw new IllegalArgumentException("entry does not have the correct key for its index");
+        }
+        return get(entry.getKey());
     }
 
     /**
@@ -298,7 +291,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
             iter = new IntIntervalList(0, domainSize).iterator();
             break;
         }
-        default:
+        default: // should be impossible
             throw new IllegalArgumentException("invalid entry state");
         }
         return new FastIterImpl(iter);
@@ -443,7 +436,8 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     }
 
     /**
-     * Get the keys of this vector sorted by value.
+     * Get the keys of this vector sorted by the value of the items
+     * stored for each key.
      *
      * @param decreasing If {@var true}, sort in decreasing order.
      * @return The sorted list of keys of this vector.
@@ -509,16 +503,14 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @return The L2 norm of the vector
      */
     public double norm() {
-        if (norm == null) {
-            double ssq = 0;
-            DoubleIterator iter = values().iterator();
-            while (iter.hasNext()) {
-                double v = iter.nextDouble();
-                ssq += v * v;
-            }
-            norm = Math.sqrt(ssq);
+        double ssq = 0;
+        DoubleIterator iter = values().iterator();
+        while (iter.hasNext()) {
+            double v = iter.nextDouble();
+            ssq += v * v;
         }
-        return norm;
+        double result = Math.sqrt(ssq);
+        return result;
     }
 
     /**
@@ -527,15 +519,12 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @return the sum of the vector's values
      */
     public double sum() {
-        if (sum == null) {
-            double s = 0;
-            DoubleIterator iter = values().iterator();
-            while (iter.hasNext()) {
-                s += iter.nextDouble();
-            }
-            sum = s;
+        double result = 0;
+        DoubleIterator iter = values().iterator();
+        while (iter.hasNext()) {
+            result += iter.nextDouble();
         }
-        return sum;
+        return result;
     }
 
     /**
@@ -544,11 +533,9 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @return the mean of the vector
      */
     public double mean() {
-        if (mean == null) {
-            final int sz = size();
-            mean = sz > 0 ? sum() / sz : 0;
-        }
-        return mean;
+        final int sz = size();
+        double result = sz > 0 ? sum() / sz : 0;
+        return result;
     }
 
     /**
@@ -605,8 +592,9 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
                 if (!this.keySet().equals(vo.keySet())) {
                     return false;        // same keys
                 }
-                for (Vectors.EntryPair pair : Vectors.pairedFast(this, vo)) { // same values
-                    if (pair.getValue1() != pair.getValue2()) { return false; }
+                for (Pair<VectorEntry, VectorEntry> pair : Vectors.fastUnion(this, vo)) { // same values
+                    if (Double.doubleToLongBits(pair.getLeft().getValue()) != 
+                            Double.doubleToLongBits(pair.getRight().getValue())) { return false; }
                 }
                 return true;
             }
@@ -617,10 +605,8 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
 
     @Override
     public int hashCode() {
-        if (hashCode == null) {
-            hashCode = keySet().hashCode() ^ values().hashCode();
-        }
-        return hashCode;
+        int result = keySet().hashCode() ^ values().hashCode();
+        return result;
     }
 
     /**

@@ -239,7 +239,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         if (idx >= 0) {
             final double v = usedKeys.get(idx) ? values[idx] : Double.NaN;
             values[idx] = value;
-            clearCachedValues();
             usedKeys.set(idx);
             return v;
         } else {
@@ -380,7 +379,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         checkMutable();
         final int idx = findIndex(key);
         if (idx >= 0 && usedKeys.get(idx)) {
-            clearCachedValues();
             values[idx] += value;
             return values[idx];
         } else {
@@ -399,7 +397,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void subtract(final SparseVector other) {
         checkMutable();
-        clearCachedValues();
         int i = 0;
         for (VectorEntry oe : other.fast()) {
             final long k = oe.getKey();
@@ -426,7 +423,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void add(final SparseVector other) {
         checkMutable();
-        clearCachedValues();
         int i = 0;
         for (VectorEntry oe : other.fast()) {
             final long k = oe.getKey();
@@ -456,7 +452,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void set(final SparseVector other) {
         checkMutable();
-        clearCachedValues();
         int i = 0;
         for (VectorEntry oe : other.fast()) {
             final long k = oe.getKey();
@@ -480,7 +475,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param s The scalar to rescale the vector by.
      */
     public void scale(double s) {
-        clearCachedValues();
         BitSetIterator iter = new BitSetIterator(usedKeys, 0, domainSize);
         while (iter.hasNext()) {
             int i = iter.nextInt();

@@ -703,4 +703,62 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
             assertThat(ve.getValue(), closeTo(33));
         }
     }
+    
+    // We already have tests that keysByValue works as long as the values are unique.
+    // Here we extend those tests to make sure non-unique values sort as expected. (By key, that is.)
+    @Test
+    public void testSortedKeys() {
+        long[] keys = { 3, 5, 8 };
+        double[] values = { 1.7, 2.3, 1.7 };
+        MutableSparseVector msv = MutableSparseVector.wrap(keys, values);
+
+        assertArrayEquals(new long[]{3, 8, 5}, msv.keysByValue().toLongArray());
+        assertArrayEquals(new long[]{5, 3, 8}, msv.keysByValue(true).toLongArray());
+    }
+    
+    @Test
+    public void testCachedValues() {
+        /**
+         * Test method for
+         * {@link org.grouplens.lenskit.vectors.MutableSparseVector#norm()}.
+         */
+        // MSVs no longer cache their values, but we're keeping these tests
+        // since they helped discover the danger!
+        MutableSparseVector simple = simpleVector();
+        simple.set(3, 3);
+        assertThat(simple.norm(), closeTo(5.0249378105));
+
+        /**
+         * Test method for
+         * {@link org.grouplens.lenskit.vectors.MutableSparseVector#sum()}.
+         */
+        simple = simpleVector();
+        simple.set(3, 3);
+        assertThat(simple.sum(), closeTo(8.5));
+        
+        simple.unset(3);
+        assertThat(simple.sum(), closeTo(5.5));
+        
+        simple.fill(7);
+        assertThat(simple.sum(), closeTo(21));
+
+        /**
+         * Test method for
+         * {@link org.grouplens.lenskit.vectors.MutableSparseVector#mean()}.
+         */
+        simple = simpleVector();
+        assertThat(simpleVector().mean(), closeTo(7.0 / 3));
+
+    }
+
+    @Test
+    public void testPartialEquals() {
+        // We add this test here where it is easier to change a part of a sparse vector,
+        // rather than in SparseVector common.
+        MutableSparseVector msv = simpleVector();
+        MutableSparseVector msv2 = simpleVector();
+        msv2.set(7, 77);
+        assertFalse(msv.equals(msv2));
+        assertFalse(msv2.equals(msv));
+    }
 }
