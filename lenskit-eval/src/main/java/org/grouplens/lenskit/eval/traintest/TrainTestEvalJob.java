@@ -131,6 +131,11 @@ public class TrainTestEvalJob implements Job {
     }
 
     @Override
+    public String getDescription() {
+        return algorithm.toString() + " on " + data.getName();
+    }
+
+    @Override
     public void run() {
         TableWriter userTable = null;
         TableWriter predictTable = null;

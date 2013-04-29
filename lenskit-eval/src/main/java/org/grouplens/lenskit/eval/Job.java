@@ -39,6 +39,11 @@ public interface Job extends Runnable {
     String getName();
 
     /**
+     * Get a description for this job.
+     */
+    String getDescription();
+
+    /**
      * Run this job.
      */
     @Override
