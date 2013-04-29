@@ -203,6 +203,7 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
                 sb.append(e.getKey())
                   .append("=")
                   .append(e.getValue().toString());
+                first = false;
             }
             sb.append("]");
         }

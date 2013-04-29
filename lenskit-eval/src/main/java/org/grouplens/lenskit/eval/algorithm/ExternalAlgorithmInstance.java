@@ -89,6 +89,29 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
         return command;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ExternalAlgorithm(")
+          .append(getName())
+          .append(")");
+        if (!attributes.isEmpty()) {
+            sb.append("[");
+            boolean first = true;
+            for (Map.Entry<String,Object> e: attributes.entrySet()) {
+                if (!first) {
+                    sb.append(", ");
+                }
+                sb.append(e.getKey())
+                  .append("=")
+                  .append(e.getValue().toString());
+                first = false;
+            }
+            sb.append("]");
+        }
+        return sb.toString();
+    }
+
     private File trainingFile(TTDataSet data) {
         try {
             GenericTTDataSet gds = (GenericTTDataSet) data;
@@ -286,27 +309,5 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
                 logger.error("IO error reading error stream", e);
             }
         }
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("ExternalAlgorithm(")
-          .append(getName())
-          .append(")");
-        if (!attributes.isEmpty()) {
-            sb.append("[");
-            boolean first = true;
-            for (Map.Entry<String,Object> e: attributes.entrySet()) {
-                if (!first) {
-                    sb.append(", ");
-                }
-                sb.append(e.getKey())
-                  .append("=")
-                  .append(e.getValue().toString());
-            }
-            sb.append("]");
-        }
-        return sb.toString();
     }
 }
