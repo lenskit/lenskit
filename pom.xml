@@ -39,7 +39,7 @@
     <copyrightHolder>Regents of the University of Minnesota</copyrightHolder>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <lenskit.web.url>http://lenskit.grouplens.org</lenskit.web.url>
+    <lenskit.web.url>http://lenskit.grouplens.org/maven-site/</lenskit.web.url>
     <lenskit.web.path>file:///web/research/lenskit.grouplens.org/</lenskit.web.path>
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
     <javadoc.cite.database>${basedir}/etc/references.rdf</javadoc.cite.database>
@@ -299,11 +299,6 @@
           <artifactId>maven-archetype-plugin</artifactId>
           <version>2.2</version>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-plugin-plugin</artifactId>
-          <version>3.1</version>
-        </plugin>
 
         <!-- Site generation -->
         <plugin>
@@ -333,35 +328,11 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <!-- Don't inherit top-level-only site settings. Inherited settings
-          will go in pluginManagement. -->
-        <inherited>false</inherited>
-      </plugin>
-
-      <!-- Build the SASS style sheet for the site. -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
-            <id>compile-sass</id>
-            <phase>pre-site</phase> <!-- to make sure it's done before the site -->
-            <goals><goal>run</goal></goals>
             <inherited>false</inherited>
-            <configuration>
-              <target>
-                <mkdir dir="${project.build.directory}/site"/>
-                <exec executable="sass">
-                  <arg value="--no-cache"/>
-                  <arg value="-t"/>
-                  <arg value="compact"/>
-                  <arg value="src/site/scss/main.scss"/>
-                  <arg value="${project.build.directory}/site/main.css"/>
-                </exec>
-              </target>
-            </configuration>
+            <goals><goal>attach-descriptor</goal></goals>
           </execution>
         </executions>
       </plugin>
@@ -404,10 +375,21 @@
             <reports>
               <report>index</report>
               <report>dependencies</report>
+              <report>dependency-info</report>
               <report>dependency-convergence</report>
               <report>dependency-management</report>
               <report>plugins</report>
               <report>plugin-management</report>
+              <report>summary</report>
+            </reports>
+          </reportSet>
+          <reportSet>
+            <id>parent-info</id>
+            <inherited>false</inherited>
+            <reports>
+              <report>modules</report>
+              <report>issue-tracking</report>
+              <report>scm</report>
             </reports>
           </reportSet>
         </reportSets>
@@ -508,13 +490,13 @@
               </groups>
             </configuration>
           </reportSet>
+          <reportSet>
+            <id>child</id>
+            <reports>
+              <report>javadoc</report>
+            </reports>
+          </reportSet>
         </reportSets>
-      </plugin>
-
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>jdepend-maven-plugin</artifactId>
-        <version>2.0-beta-2</version>
       </plugin>
     </plugins>
   </reporting>
