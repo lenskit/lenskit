@@ -186,4 +186,26 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
             recommender.close();
         }
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("LenskitAlgorithm(")
+          .append(getName())
+          .append(")");
+        if (!attributes.isEmpty()) {
+            sb.append("[");
+            boolean first = true;
+            for (Map.Entry<String,Object> e: attributes.entrySet()) {
+                if (!first) {
+                    sb.append(", ");
+                }
+                sb.append(e.getKey())
+                  .append("=")
+                  .append(e.getValue().toString());
+            }
+            sb.append("]");
+        }
+        return sb.toString();
+    }
 }
