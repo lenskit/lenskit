@@ -10,7 +10,7 @@
     <relativePath>..</relativePath>
   </parent>
   <artifactId>lenskit-archetype-fancy-analysis</artifactId>
-  <name>Archetype - lenskit-archetype-fancy-analysis</name>
+  <name>Fancy Experiment Archetype</name>
   <packaging>maven-archetype</packaging>
 
   <build>
