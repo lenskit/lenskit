@@ -40,7 +40,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <lenskit.web.url>http://lenskit.grouplens.org/maven-site/</lenskit.web.url>
-    <lenskit.web.path>file:///web/research/lenskit.grouplens.org/</lenskit.web.path>
+    <lenskit.web.path>file:///web/research/lenskit.grouplens.org/maven-site/</lenskit.web.path>
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
     <javadoc.cite.database>${basedir}/etc/references.rdf</javadoc.cite.database>
     <groovy.version>1.8.6</groovy.version>
