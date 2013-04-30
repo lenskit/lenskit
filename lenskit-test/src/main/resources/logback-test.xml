@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
   <appender name="TESTFILE" class="ch.qos.logback.core.FileAppender">
-    <file>target/test.log</file>
+    <file>${log.file:-target/test.log}</file>
+    <append>true</append>
     <encoder>
       <pattern>%-5level %logger{24} - %msg%n</pattern>
     </encoder>
