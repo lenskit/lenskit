@@ -35,6 +35,20 @@ public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
     private LinkedHashSet<String> columns = new LinkedHashSet<String>();
 
     /**
+     * Construct a new builder that is a copy of an existing layout.
+     *
+     * @param layout The layout to copy.
+     * @return A new builder containing all columns in the layout.
+     */
+    public static TableLayoutBuilder copy(TableLayout layout) {
+        TableLayoutBuilder bld = new TableLayoutBuilder();
+        for (String col: layout.getColumns()) {
+            bld.addColumn(col);
+        }
+        return bld;
+    }
+
+    /**
      * Add a column to the table layout.  Each column must have a unique, non-null
      * name.
      *

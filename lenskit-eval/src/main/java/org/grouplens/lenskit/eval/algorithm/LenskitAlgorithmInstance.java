@@ -182,6 +182,11 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
         }
 
         @Override
+        public LenskitRecommender getRecommender() {
+            return recommender;
+        }
+
+        @Override
         public void close() {
             recommender.close();
         }

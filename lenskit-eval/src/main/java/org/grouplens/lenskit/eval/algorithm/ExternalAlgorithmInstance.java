@@ -25,6 +25,7 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.ScoredLongList;
@@ -280,6 +281,11 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
 
         @Override
         public ScoredLongList getRecommendations(long uid, LongSet testItems, int n) {
+            return null;
+        }
+
+        @Override
+        public Recommender getRecommender() {
             return null;
         }
 
