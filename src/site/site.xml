@@ -3,14 +3,19 @@
          xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0
                              http://maven.apache.org/xsd/decoration-1.0.0.xsd"
          name="LensKit Recommender Implementation">
-  <!-- <skin> -->
-  <!--   <groupId>org.grouplens.common</groupId> -->
-  <!--   <artifactId>grouplens-skin</artifactId> -->
-  <!--   <version>4-SNAPSHOT</version> -->
-  <!-- </skin> -->
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>1.3.0</version>
+  </skin>
+  <publishDate position="none"/>
   <version position="right"/>
-  <publishDate position="right"/>
   <poweredBy/>
+  <bannerLeft>
+    <name>LensKit</name>
+    <src>http://lenskit.grouplens.org/logo.png</src>
+    <href>http://lenskit.grouplens.org</href>
+  </bannerLeft>
   <body>
     <breadcrumbs>
       <item name="GroupLens Research"
@@ -18,21 +23,17 @@
       <item name="LensKit (Recommender Implementation)"
             href="index.html"/>
     </breadcrumbs>
-    <menu name="LensKit">
-      <item name="About" href="index.html"/>
-      <item name="Download" href="download.html">
-        <item name="Download Options" href="download.html"/>
-        <item name="Release Notes" href="release-notes.html"/>
-      </item>
-      <item name="Documentation" href="documentation.html">
-        <item name="Overview" href="documentation.html"/>
-        <item name="Getting Started" href="getting-started.html"/>
-        <item name="Evaluating" href="evaluating.html"/>
-        <item name="API Reference" href="apidocs/"/>
-      </item>
-      <item name="Research" href="research.html"/>
+    <menu name="LensKit" inherit="top">
+      <item name="Home Page" href="http://lenskit.grouplens.org"/>
+      <item name="BitBucket" href="http://bitbucket.org/grouplens/lenskit"/>
     </menu>
-    <!-- <menu ref="modules"/> -->
-    <!-- <menu ref="reports" inherit="bottom"/> -->
+    <menu name="Documentation">
+      <item name="Getting Started" href="http://bitbucket.org/grouplens/lenskit/wiki/GettingStarted"/>
+      <item name="Manual" href="http://bitbucket.org/grouplens/lenskit/wiki/Manual"/>
+      <item name="Release Notes" href="release-notes.html"/>
+      <item name="JavaDoc" href="apidocs"/>
+    </menu>
+    <menu ref="modules"/>
+    <menu name="Module Info" ref="reports" inherit="bottom"/>
   </body>
 </project>

@@ -3,9 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.grouplens.lenskit</groupId>
-    <artifactId>lenskit-parent</artifactId>
+    <artifactId>lenskit</artifactId>
     <version>1.1-SNAPSHOT</version>
-    <relativePath>../lenskit-parent</relativePath>
+    <relativePath>..</relativePath>
   </parent>
 
   <artifactId>lenskit-eval-maven-plugin</artifactId>
@@ -68,6 +68,13 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-test</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -77,6 +84,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
+        <version>3.2</version>
         <configuration>
           <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
         </configuration>
@@ -127,7 +135,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.2</version>
       </plugin>
     </plugins>
   </reporting>
