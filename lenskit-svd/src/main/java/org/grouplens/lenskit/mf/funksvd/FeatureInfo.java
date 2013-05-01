@@ -26,6 +26,7 @@ import java.io.Serializable;
  * Information about a feature.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 1.1
  */
 public class FeatureInfo implements Serializable {
     private static final long serialVersionUID = 1L;
