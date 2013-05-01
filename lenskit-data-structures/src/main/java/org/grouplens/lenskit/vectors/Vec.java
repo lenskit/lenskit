@@ -108,6 +108,16 @@ public abstract class Vec implements Serializable {
     }
 
     /**
+     * Get the mean of this vector.
+     *
+     * @return The mean of the elements of the vector (or {@link Double#NaN} if the vector is
+     *         empty).
+     */
+    public final double mean() {
+        return sum() / size();
+    }
+
+    /**
      * Compute the dot product of this vector with another.
      * @param other The other vector.
      * @return The dot product of this vector and {@code other}.

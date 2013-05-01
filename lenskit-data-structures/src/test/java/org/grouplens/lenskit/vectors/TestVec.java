@@ -22,6 +22,7 @@ package org.grouplens.lenskit.vectors;
 
 import org.junit.Test;
 
+import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.grouplens.lenskit.vectors.SparseVectorTestCommon.closeTo;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -69,6 +70,13 @@ public class TestVec {
         assertThat(empty.norm(), closeTo(0));
         assertThat(single.norm(), closeTo(3.5));
         assertThat(v1.norm(), closeTo(5.9160798));
+    }
+
+    @Test
+    public void testMean() {
+        assertThat(empty.mean(), notANumber());
+        assertThat(single.mean(), closeTo(3.5));
+        assertThat(v1.mean(), closeTo(3));
     }
 
     @Test

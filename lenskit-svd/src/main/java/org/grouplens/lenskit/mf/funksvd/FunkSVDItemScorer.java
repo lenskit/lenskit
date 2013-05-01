@@ -136,7 +136,10 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
 
         double[] uprefs;
         if (uidx < 0) {
-            uprefs = DoubleArrays.copy(model.averUserFeatures);
+            uprefs = new double[model.featureCount];
+            for (int i = 0; i < model.featureCount; i++) {
+                uprefs[i] = model.getFeatureInfo(i).getUserAverage();
+            }
         } else {
             uprefs = new double[featureCount];
             for (int i = 0; i < featureCount; i++) {

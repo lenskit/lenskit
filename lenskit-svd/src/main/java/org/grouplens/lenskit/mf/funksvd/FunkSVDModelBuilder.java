@@ -20,25 +20,12 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.longs.LongCollection;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import org.apache.commons.lang3.time.StopWatch;
-import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.iterative.TrainingLoopController;
-import org.grouplens.lenskit.transform.clamp.ClampingFunction;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +33,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * SVD recommender builder using gradient descent (Funk SVD).
@@ -99,8 +88,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
 
         TrainingEstimator estimates = rule.makeEstimator(snapshot);
 
-        IntList icounts = new IntArrayList(featureCount);
-        DoubleList ierr = new DoubleArrayList(featureCount);
+        List<FeatureInfo> featureInfo = new ArrayList<FeatureInfo>(featureCount);
 
         for (int f = 0; f < featureCount; f++) {
             logger.trace("Training feature {}", f);
@@ -113,11 +101,10 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
             DoubleArrays.fill(userFeatures[f], initialValue);
             DoubleArrays.fill(itemFeatures[f], initialValue);
 
-            Pair<Integer,Double> info = rule.trainFeature(estimates, ratings,
-                                                          userFeatures[f], itemFeatures[f],
-                                                          trail);
-            icounts.add(info.getLeft());
-            ierr.add(info.getRight());
+            FeatureInfo info = rule.trainFeature(estimates, ratings,
+                                                 userFeatures[f], itemFeatures[f],
+                                                 trail);
+            featureInfo.add(info);
 
             // Update each rating's cached value to accommodate the feature values.
             estimates.update(userFeatures[f], itemFeatures[f]);
@@ -126,6 +113,6 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
         return new FunkSVDModel(featureCount, itemFeatures, userFeatures,
                                 rule.getClampingFunction(),
                                 snapshot.itemIndex(), snapshot.userIndex(),
-                                baseline, icounts, ierr);
+                                baseline, featureInfo);
     }
 }

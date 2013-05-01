@@ -21,18 +21,18 @@
 package org.grouplens.lenskit.mf.funksvd;
 
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.iterative.StoppingCondition;
-import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
+import org.grouplens.lenskit.iterative.StoppingCondition;
+import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
+import org.grouplens.lenskit.vectors.MutableVec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,11 +169,11 @@ public final class FunkSVDUpdateRule implements Serializable {
      * @param ufvs The user feature values.
      * @param ifvs The item feature values.
      * @param trail The trailing value.
-     * @return A pair of the iteration count and the final RMSE of the training round.
+     * @return The training information of this feature.
      */
-    public Pair<Integer,Double> trainFeature(TrainingEstimator estimates,
-                                              FastCollection<IndexedPreference> ratings,
-                                              double[] ufvs, double[] ifvs, double trail) {
+    public FeatureInfo trainFeature(TrainingEstimator estimates,
+                                    FastCollection<IndexedPreference> ratings,
+                                    double[] ufvs, double[] ifvs, double trail) {
         // Initialize our counters and error tracking
         StopWatch timer = new StopWatch();
         timer.start();
@@ -188,7 +188,11 @@ public final class FunkSVDUpdateRule implements Serializable {
 
         timer.stop();
         logger.debug("Finished feature in {} epochs (took {})", controller.getIterationCount(), timer);
-        return Pair.of(controller.getIterationCount(), rmse);
+
+        return new FeatureInfo(MutableVec.wrap(ufvs).mean(),
+                               MutableVec.wrap(ufvs).mean(),
+                               controller.getIterationCount(),
+                               rmse, controller.getLastDelta());
     }
 
     private double doFeatureIteration(TrainingEstimator estimates,
