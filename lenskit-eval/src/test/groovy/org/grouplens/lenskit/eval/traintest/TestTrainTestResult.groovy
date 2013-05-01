@@ -93,6 +93,5 @@ class TestTrainTestResult extends ConfigTestBase {
             }
         }
         assertThat(result, instanceOf(TableImpl))
-
     }
 }

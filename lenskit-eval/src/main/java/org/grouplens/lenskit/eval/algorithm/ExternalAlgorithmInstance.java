@@ -34,6 +34,7 @@ import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.config.BuilderCommand;
 import org.grouplens.lenskit.eval.data.CSVDataSource;
@@ -172,7 +173,8 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
     }
 
     @Override
-    public RecommenderInstance makeTestableRecommender(TTDataSet data, Supplier<SharedPreferenceSnapshot> snapshot) throws RecommenderBuildException {
+    public RecommenderInstance makeTestableRecommender(TTDataSet data, Supplier<SharedPreferenceSnapshot> snapshot,
+                                                       ExecutionInfo info) throws RecommenderBuildException {
         final File train = trainingFile(data);
         final File test = testFile(data);
         final File output = new File(workDir,

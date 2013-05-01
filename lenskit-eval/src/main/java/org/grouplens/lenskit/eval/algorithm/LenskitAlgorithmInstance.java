@@ -32,9 +32,9 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.config.BuilderCommand;
-import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -107,7 +107,7 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
 
     public LenskitRecommender buildRecommender(DataAccessObject dao,
                                                @Nullable final Supplier<? extends PreferenceSnapshot> sharedSnapshot,
-                                               PreferenceDomain dom,
+                                               PreferenceDomain dom, ExecutionInfo info,
                                                boolean shouldClose) throws RecommenderBuildException {
         try {
             // Copy the factory & set up a shared rating snapshot
@@ -127,6 +127,10 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
                 fac2.bind(PreferenceSnapshot.class).toProvider(prv);
             }
 
+            if (info != null) {
+                fac2.bind(ExecutionInfo.class).to(info);
+            }
+
             LenskitRecommenderEngine engine = fac2.create(dao);
 
             return engine.open(dao, shouldClose);
@@ -144,10 +148,13 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
     }
 
     @Override
-    public RecommenderInstance makeTestableRecommender(TTDataSet data, Supplier<SharedPreferenceSnapshot> snapshot) throws RecommenderBuildException {
+    public RecommenderInstance makeTestableRecommender(TTDataSet data,
+                                                       Supplier<SharedPreferenceSnapshot> snapshot,
+                                                       ExecutionInfo info) throws RecommenderBuildException {
         return new RecInstance(buildRecommender(data.getTrainFactory().create(),
                                                 snapshot,
                                                 data.getPreferenceDomain(),
+                                                info,
                                                 true));
     }
 

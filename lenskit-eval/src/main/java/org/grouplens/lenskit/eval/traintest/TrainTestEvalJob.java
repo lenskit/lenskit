@@ -33,6 +33,7 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
@@ -142,10 +143,12 @@ public class TrainTestEvalJob implements Job {
 
             List<Object> outputRow = Lists.newArrayList();
 
+            ExecutionInfo execInfo = buildExecInfo();
+
             logger.info("Building {}", algorithm.getName());
             StopWatch buildTimer = new StopWatch();
             buildTimer.start();
-            RecommenderInstance rec = algorithm.makeTestableRecommender(data, snapshot);
+            RecommenderInstance rec = algorithm.makeTestableRecommender(data, snapshot, execInfo);
             buildTimer.stop();
             logger.info("Built {} in {}", algorithm.getName(), buildTimer);
 
@@ -231,6 +234,15 @@ public class TrainTestEvalJob implements Job {
         } finally {
             LKFileUtils.close(userTable, predictTable);
         }
+    }
+
+    private ExecutionInfo buildExecInfo() {
+        ExecutionInfo.Builder bld = new ExecutionInfo.Builder();
+        bld.setAlgoName(algorithm.getName())
+           .setAlgoAttributes(algorithm.getAttributes())
+           .setDataName(data.getName())
+           .setDataAttributes(data.getAttributes());
+        return bld.build();
     }
 
     private void writePredictions(TableWriter predictTable, long uid, SparseVector ratings, SparseVector predictions) {
