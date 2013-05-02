@@ -106,6 +106,7 @@
           <postBuildHookScript>verify.groovy</postBuildHookScript>
           <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
           <settingsFile>src/it/settings.xml</settingsFile>
+          <mergeUserSettings>true</mergeUserSettings>
           <goals>
             <goal>lenskit-publish</goal>
           </goals>
