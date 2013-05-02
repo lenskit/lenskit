@@ -83,6 +83,7 @@ public class IterationCountStoppingCondition implements StoppingCondition, Seria
         @Override
         public boolean keepTraining(double error) {
             lastDelta = oldError - error;
+            oldError = error;
             if (iterations >= iterCount) {
                 return false;
             } else {
