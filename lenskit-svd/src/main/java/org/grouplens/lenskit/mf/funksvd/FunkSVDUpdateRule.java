@@ -33,6 +33,7 @@ import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.vectors.MutableVec;
+import org.grouplens.lenskit.vectors.Vec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -189,8 +190,11 @@ public final class FunkSVDUpdateRule implements Serializable {
         timer.stop();
         logger.debug("Finished feature in {} epochs (took {})", controller.getIterationCount(), timer);
 
-        return new FeatureInfo(MutableVec.wrap(ufvs).mean(),
-                               MutableVec.wrap(ufvs).mean(),
+        Vec ufv = MutableVec.wrap(ufvs);
+        Vec ifv = MutableVec.wrap(ifvs);
+
+        return new FeatureInfo(ufv.mean(), ifv.mean(),
+                               ufv.norm() * ifv.norm(),
                                controller.getIterationCount(),
                                rmse, controller.getLastDelta());
     }

@@ -33,13 +33,15 @@ public class FeatureInfo implements Serializable {
 
     private final double userAverage;
     private final double itemAverage;
+    private final double singularValue;
     private final int iterCount;
     private final double lastRMSE;
     private final double lastDeltaRMSE;
 
-    public FeatureInfo(double uavg, double iavg, int niters, double rmse, double delta) {
+    public FeatureInfo(double uavg, double iavg, double sval, int niters, double rmse, double delta) {
         userAverage = uavg;
         itemAverage = iavg;
+        singularValue = sval;
         iterCount = niters;
         lastRMSE = rmse;
         lastDeltaRMSE = delta;
@@ -88,5 +90,14 @@ public class FeatureInfo implements Serializable {
      */
     public double getItemAverage() {
         return itemAverage;
+    }
+
+    /**
+     * Get the singular value of this feature.
+     *
+     * @return The singular value (weight) of the feature.
+     */
+    public double getSingularValue() {
+        return singularValue;
     }
 }
