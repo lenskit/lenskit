@@ -500,7 +500,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
 
             dataSets.add(tt.setTest(testCommand.call())
                            .setTrain(trainCommand.call())
-                           .setAttribute("DataSet", name)
+                           .setAttribute("DataSet", getName())
                            .setAttribute("Partition", i)
                            .call());
         }
