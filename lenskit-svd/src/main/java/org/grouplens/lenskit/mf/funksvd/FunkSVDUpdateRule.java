@@ -170,11 +170,13 @@ public final class FunkSVDUpdateRule implements Serializable {
      * @param ufvs The user feature values.
      * @param ifvs The item feature values.
      * @param trail The trailing value.
+     * @param fib The feature info builder.
      * @return The training information of this feature.
      */
-    public FeatureInfo trainFeature(TrainingEstimator estimates,
-                                    FastCollection<IndexedPreference> ratings,
-                                    double[] ufvs, double[] ifvs, double trail) {
+    public void trainFeature(TrainingEstimator estimates,
+                             FastCollection<IndexedPreference> ratings,
+                             double[] ufvs, double[] ifvs, double trail,
+                             FeatureInfo.Builder fib) {
         // Initialize our counters and error tracking
         StopWatch timer = new StopWatch();
         timer.start();
@@ -193,10 +195,14 @@ public final class FunkSVDUpdateRule implements Serializable {
         Vec ufv = MutableVec.wrap(ufvs);
         Vec ifv = MutableVec.wrap(ifvs);
 
-        return new FeatureInfo(ufv.mean(), ifv.mean(),
-                               ufv.norm() * ifv.norm(),
-                               controller.getIterationCount(),
-                               rmse, controller.getLastDelta());
+        if (fib != null) {
+            fib.setUserAverage(ufv.mean())
+               .setItemAverage(ifv.mean())
+               .setSingularValue(ufv.norm() * ifv.norm())
+               .setIterCount(controller.getIterationCount())
+               .setLastRMSE(rmse)
+               .setLastDeltaRMSE(controller.getLastDelta());
+        }
     }
 
     private double doFeatureIteration(TrainingEstimator estimates,

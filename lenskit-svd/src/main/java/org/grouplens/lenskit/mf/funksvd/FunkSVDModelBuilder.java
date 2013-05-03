@@ -101,10 +101,12 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
             DoubleArrays.fill(userFeatures[f], initialValue);
             DoubleArrays.fill(itemFeatures[f], initialValue);
 
-            FeatureInfo info = rule.trainFeature(estimates, ratings,
-                                                 userFeatures[f], itemFeatures[f],
-                                                 trail);
-            featureInfo.add(info);
+            FeatureInfo.Builder fib = new FeatureInfo.Builder();
+            rule.trainFeature(estimates, ratings,
+                              userFeatures[f], itemFeatures[f],
+                              trail, fib);
+
+            featureInfo.add(fib.build());
 
             // Update each rating's cached value to accommodate the feature values.
             estimates.update(userFeatures[f], itemFeatures[f]);

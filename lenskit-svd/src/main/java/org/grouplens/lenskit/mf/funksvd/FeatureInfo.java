@@ -47,6 +47,7 @@ public class FeatureInfo implements Serializable {
         lastDeltaRMSE = delta;
     }
 
+    //region Getters
     /**
      * Get the iteration count for the feature.
      *
@@ -99,5 +100,78 @@ public class FeatureInfo implements Serializable {
      */
     public double getSingularValue() {
         return singularValue;
+    }
+    //endregion
+
+    /**
+     * Helper class to build feature info.
+     */
+    public static class Builder implements org.apache.commons.lang3.builder.Builder<FeatureInfo> {
+        private double userAverage;
+        private double itemAverage;
+        private double singularValue;
+        private int iterCount;
+        private double lastRMSE;
+        private double lastDeltaRMSE;
+
+        @Override
+        public FeatureInfo build() {
+            return new FeatureInfo(userAverage, itemAverage, singularValue, iterCount,
+                                   lastRMSE, lastDeltaRMSE);
+        }
+
+        public double getUserAverage() {
+            return userAverage;
+        }
+
+        public Builder setUserAverage(double userAverage) {
+            this.userAverage = userAverage;
+            return this;
+        }
+
+        public double getItemAverage() {
+            return itemAverage;
+        }
+
+        public Builder setItemAverage(double itemAverage) {
+            this.itemAverage = itemAverage;
+            return this;
+        }
+
+        public double getSingularValue() {
+            return singularValue;
+        }
+
+        public Builder setSingularValue(double singularValue) {
+            this.singularValue = singularValue;
+            return this;
+        }
+
+        public int getIterCount() {
+            return iterCount;
+        }
+
+        public Builder setIterCount(int iterCount) {
+            this.iterCount = iterCount;
+            return this;
+        }
+
+        public double getLastRMSE() {
+            return lastRMSE;
+        }
+
+        public Builder setLastRMSE(double lastRMSE) {
+            this.lastRMSE = lastRMSE;
+            return this;
+        }
+
+        public double getLastDeltaRMSE() {
+            return lastDeltaRMSE;
+        }
+
+        public Builder setLastDeltaRMSE(double lastDeltaRMSE) {
+            this.lastDeltaRMSE = lastDeltaRMSE;
+            return this;
+        }
     }
 }
