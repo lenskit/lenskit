@@ -25,7 +25,6 @@ import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceCommand;
 import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.data.GenericDataSource;
-import org.grouplens.lenskit.eval.data.crossfold.CrossfoldCommand;
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric;
