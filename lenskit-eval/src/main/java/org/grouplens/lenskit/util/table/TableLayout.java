@@ -20,12 +20,11 @@
  */
 package org.grouplens.lenskit.util.table;
 
+import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -36,11 +35,11 @@ import java.util.List;
  * @since 0.10
  */
 public class TableLayout {
-    private List<String> names;
-    private Object2IntMap<String> indexes;
+    private final List<String> names;
+    private final Object2IntMap<String> indexes;
 
     TableLayout(Collection<String> colNames) {
-        names = new ArrayList<String>(colNames);
+        names = ImmutableList.copyOf(colNames);
         indexes = new Object2IntOpenHashMap<String>(names.size());
         for (String col: names) {
             indexes.put(col, indexes.size());
@@ -55,7 +54,7 @@ public class TableLayout {
      * @return The headers of the columns in the table layout.
      */
     public List<String> getColumns() {
-        return Collections.unmodifiableList(names);
+        return names;
     }
 
     /**

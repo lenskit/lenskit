@@ -313,7 +313,8 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         for (TTDataSet ds : dataSources) {
             for (String attr : ds.getAttributes().keySet()) {
                 if (!dataColumns.containsKey(attr)) {
-                    dataColumns.put(attr, master.addColumn(attr));
+                    dataColumns.put(attr, master.getColumnCount());
+                    master.addColumn(attr);
                 }
             }
         }
@@ -322,7 +323,8 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         for (AlgorithmInstance algo : algorithms) {
             for (String attr : algo.getAttributes().keySet()) {
                 if (!algoColumns.containsKey(attr)) {
-                    algoColumns.put(attr, master.addColumn(attr));
+                    algoColumns.put(attr, master.getColumnCount());
+                    master.addColumn(attr);
                 }
             }
         }

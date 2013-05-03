@@ -67,4 +67,32 @@ public class TableLayoutTest {
             /* no-op, expected */
         }
     }
+
+    @Test
+    public void testIsolate() {
+        builder.addColumn("foo");
+        builder.addColumn("bar");
+        TableLayout layout = builder.build();
+        builder.addColumn("wombat");
+        assertThat(layout.getColumnCount(),
+                   equalTo(2));
+        assertThat(layout.getColumns(),
+                   contains("foo", "bar"));
+        TableLayout l2 = builder.build();
+        assertThat(l2.getColumns(),
+                   contains("foo", "bar", "wombat"));
+    }
+
+    @Test
+    public void testCopy() {
+        builder.addColumn("foo");
+        builder.addColumn("bar");
+        TableLayout layout = builder.build();
+
+        TableLayout l2 = TableLayoutBuilder.copy(layout).addColumn("wombat").build();
+        assertThat(l2.getColumnCount(),
+                   equalTo(3));
+        assertThat(l2.getColumns(),
+                   contains("foo", "bar", "wombat"));
+    }
 }

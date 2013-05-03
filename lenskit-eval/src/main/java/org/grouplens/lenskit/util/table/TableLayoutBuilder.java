@@ -53,19 +53,18 @@ public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
      * name.
      *
      * @param name The column name.
-     * @return The index of the column. Columns are indexed from 0.
+     * @return The builder, for chaining.
      * @throws IllegalArgumentException if the column already exists.
      */
-    public int addColumn(String name) {
+    public TableLayoutBuilder addColumn(String name) {
         if (name == null) {
             throw new IllegalArgumentException("column name cannot be null");
         }
         if (columns.contains(name)) {
             throw new IllegalArgumentException("column " + name + " already exists");
         }
-        int i = columns.size();
         columns.add(name);
-        return i;
+        return this;
     }
 
     /**
