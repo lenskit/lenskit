@@ -38,7 +38,7 @@ public class FeatureInfo implements Serializable {
     private final double lastRMSE;
     private final double lastDeltaRMSE;
 
-    public FeatureInfo(double uavg, double iavg, double sval, int niters, double rmse, double delta) {
+    private FeatureInfo(double uavg, double iavg, double sval, int niters, double rmse, double delta) {
         userAverage = uavg;
         itemAverage = iavg;
         singularValue = sval;
