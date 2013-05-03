@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -162,10 +163,7 @@ public class TrainTestEvalJob implements Job {
             testTimer.start();
             List<TestUserMetricAccumulator> evalAccums = new ArrayList<TestUserMetricAccumulator>(evaluators.size());
 
-            Object[] userRow = null;
-            if (userTable != null) {
-                userRow = new Object[userTable.getLayout().getColumnCount()];
-            }
+            List<Object> userRow = new ArrayList<Object>();
 
             DataAccessObject testDao = data.getTestFactory().create();
             try {
@@ -179,6 +177,9 @@ public class TrainTestEvalJob implements Job {
                 Cursor<UserHistory<Event>> userProfiles = testDao.getUserHistories();
                 try {
                     for (UserHistory<Event> p : userProfiles) {
+                        assert userRow.isEmpty();
+                        userRow.add(p.getUserId());
+
                         long uid = p.getUserId();
                         LongSet testItems = p.itemSet();
 
@@ -191,22 +192,20 @@ public class TrainTestEvalJob implements Job {
 
                         TestUser test = new TestUser(uid, hist, testHist, preds, recs);
 
-                        int upos = 0;
                         for (TestUserMetricAccumulator accum : evalAccums) {
                             Object[] ures = accum.evaluate(test);
-                            if (ures != null && userRow != null) {
-                                System.arraycopy(ures, 0,
-                                                 userRow, upos, ures.length);
-                                upos += ures.length;
+                            if (ures != null) {
+                                userRow.addAll(Arrays.asList(ures));
                             }
                         }
-                        if (userRow != null) {
+                        if (userTable != null) {
                             try {
                                 userTable.writeRow(userRow);
                             } catch (IOException e) {
                                 throw new RuntimeException("error writing user row", e);
                             }
                         }
+                        userRow.clear();
 
                         if (predictTable != null) {
                             writePredictions(predictTable, uid,

@@ -355,6 +355,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
 
     private TableLayout layoutUserTable(TableLayoutBuilder master) {
         TableLayoutBuilder perUser = master.clone();
+        perUser.addColumn("User");
 
         for (TestUserMetric ev : metrics) {
             List<String> userColumnLabels = ev.getUserColumnLabels();
