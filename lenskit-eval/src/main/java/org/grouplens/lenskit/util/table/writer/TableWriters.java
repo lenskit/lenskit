@@ -20,6 +20,9 @@
  */
 package org.grouplens.lenskit.util.table.writer;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Utility methods for table writers.
  *
@@ -34,11 +37,26 @@ public final class TableWriters {
      * @param base   The base table writer for output.
      * @param prefix The values of the leading columns in this table writer.
      * @return A table writer with
+     *         {@code base.getColumnCount() - prefix.size()} columns. Each
+     *         row is prefixed with the values in {@var prefix}.
+     * @since 1.1
+     */
+    public static TableWriter prefixed(TableWriter base, List<?> prefix) {
+        return new PrefixedTableWriter(base, prefix);
+    }
+
+    /**
+     * Create a table writer that writes data with common leading columns to an
+     * underlying table writer.
+     *
+     * @param base   The base table writer for output.
+     * @param prefix The values of the leading columns in this table writer.
+     * @return A table writer with
      *         {@code base.getColumnCount() - prefix.length} columns. Each
      *         row is prefixed with the values in {@var prefix}.
      * @since 0.8
      */
-    public static TableWriter prefixed(TableWriter base, Object[] prefix) {
-        return new PrefixedTableWriter(base, prefix);
+    public static TableWriter prefixed(TableWriter base, Object... prefix) {
+        return prefixed(base, Arrays.asList(prefix));
     }
 }

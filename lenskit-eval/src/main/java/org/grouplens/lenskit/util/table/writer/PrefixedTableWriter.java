@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.util.table.writer;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.grouplens.lenskit.util.table.TableLayout;
 import org.grouplens.lenskit.util.table.TableLayoutBuilder;
 
@@ -34,8 +35,8 @@ import java.util.List;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class PrefixedTableWriter implements TableWriter {
-    private Object[] rowData; // contains fixed values; other columns re-used
+class PrefixedTableWriter extends AbstractTableWriter {
+    private ObjectArrayList<Object> rowData;
     private int fixedColumns;
     private TableLayout layout;
     private TableWriter baseWriter;
@@ -43,20 +44,22 @@ class PrefixedTableWriter implements TableWriter {
     /**
      * Construct a new prefixed table writer.
      *
-     * @param writer The underlying table writer to write to.
+     * @param writer The underlying table writer to write to.  This writer is <b>not</b> closed
+     *               when the prefixed writer is closed.
      * @param values The initial values to write. Each row written to this table
      *               writer is written to the base writer with these values prefixed.
      */
-    public PrefixedTableWriter(TableWriter writer, Object[] values) {
+    public PrefixedTableWriter(TableWriter writer, List<?> values) {
         baseWriter = writer;
         TableLayout baseLayout = writer.getLayout();
-        if (values.length > baseLayout.getColumnCount()) {
+        if (values.size() > baseLayout.getColumnCount()) {
             throw new IllegalArgumentException("Value array too wide");
         }
 
-        rowData = Arrays.copyOf(values, baseLayout.getColumnCount());
+        rowData = new ObjectArrayList<Object>(writer.getLayout().getColumnCount());
+        rowData.addAll(values);
 
-        fixedColumns = values.length;
+        fixedColumns = values.size();
 
         TableLayoutBuilder bld = new TableLayoutBuilder();
         List<String> bheaders = baseLayout.getColumns();
@@ -64,6 +67,7 @@ class PrefixedTableWriter implements TableWriter {
             bld.addColumn(h);
         }
         layout = bld.build();
+        assert layout.getColumnCount() + rowData.size() == writer.getLayout().getColumnCount();
     }
 
     @Override
@@ -72,21 +76,21 @@ class PrefixedTableWriter implements TableWriter {
     }
 
     @Override
-    public synchronized void writeRow(Object[] row) throws IOException {
-        if (row.length != layout.getColumnCount()) {
+    public synchronized void writeRow(List<?> row) throws IOException {
+        if (row.size() != layout.getColumnCount()) {
             throw new IllegalArgumentException("Row too wide");
         }
 
-        // blit row data to end of re-used array
-        System.arraycopy(row, 0, rowData, fixedColumns, row.length);
-        // fill remaining elements with null
-        Arrays.fill(rowData, fixedColumns + row.length, rowData.length, null);
-        // and write the row
-        baseWriter.writeRow(rowData);
-    }
+        // Add the data to the row
+        assert rowData.size() == fixedColumns;
+        rowData.addAll(row);
 
-    @Override
-    public void close() throws IOException {
-        /* no-op */
+        try {
+            // write the row
+            baseWriter.writeRow(rowData);
+        } finally {
+            // reset the row
+            rowData.removeElements(fixedColumns, rowData.size());
+        }
     }
 }

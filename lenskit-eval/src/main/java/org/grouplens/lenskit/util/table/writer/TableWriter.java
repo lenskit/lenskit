@@ -24,6 +24,7 @@ import org.grouplens.lenskit.util.table.TableLayout;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.List;
 
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -36,7 +37,6 @@ import javax.annotation.concurrent.ThreadSafe;
  * underlying output.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @see TableWriterBuilder
  */
 @ThreadSafe
 public interface TableWriter extends Closeable {
@@ -56,7 +56,19 @@ public interface TableWriter extends Closeable {
      * @throws IOException              if an error occurs writing the row.
      * @throws IllegalArgumentException if {@code row} has the incorrect number of columns.
      */
-    void writeRow(Object[] row) throws IOException;
+    void writeRow(Object... row) throws IOException;
+
+    /**
+     * Write a row to the table. This method is thread-safe.
+     *
+     * @param row A row of values.  If the table requires more columns, the remaining columns are
+     *            empty. The row is copied if necessary; the caller is free to re-use the same array
+     *            for future calls.
+     * @throws IOException              if an error occurs writing the row.
+     * @throws IllegalArgumentException if {@code row} has the incorrect number of columns.
+     * @since 1.1
+     */
+    void writeRow(List<?> row) throws IOException;
 
     /**
      * Finish the table.  Depending on how it was constructed, some underlying

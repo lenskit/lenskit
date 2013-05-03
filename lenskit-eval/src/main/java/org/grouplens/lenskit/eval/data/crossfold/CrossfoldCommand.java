@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.eval.data.crossfold;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
@@ -448,13 +449,13 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      * @throws IOException The writer IO error
      */
     protected void writeRating(TableWriter writer, Rating rating) throws IOException {
-        String[] row = new String[4];
-        row[0] = Long.toString(rating.getUserId());
-        row[1] = Long.toString(rating.getItemId());
         Preference pref = rating.getPreference();
-        row[2] = pref != null ? Double.toString(pref.getValue()) : "NaN";
-        row[3] = Long.toString(rating.getTimestamp());
-        writer.writeRow(row);
+        writer.writeRow(Lists.newArrayList(
+                Long.toString(rating.getUserId()),
+                Long.toString(rating.getItemId()),
+                (pref != null ? Double.toString(pref.getValue()) : "NaN"),
+                Long.toString(rating.getTimestamp())
+        ));
     }
 
     /**
