@@ -20,6 +20,10 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.doubles.DoubleLists;
+
 import java.io.Serializable;
 
 /**
@@ -31,30 +35,46 @@ import java.io.Serializable;
 public class FeatureInfo implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private final int feature;
     private final double userAverage;
     private final double itemAverage;
     private final double singularValue;
-    private final int iterCount;
-    private final double lastRMSE;
-    private final double lastDeltaRMSE;
+    private final DoubleList trainingErrors;
 
-    private FeatureInfo(double uavg, double iavg, double sval, int niters, double rmse, double delta) {
+    private FeatureInfo(int f, double uavg, double iavg, double sval,
+                        DoubleList errors) {
+        feature = f;
         userAverage = uavg;
         itemAverage = iavg;
         singularValue = sval;
-        iterCount = niters;
-        lastRMSE = rmse;
-        lastDeltaRMSE = delta;
+        trainingErrors = new DoubleArrayList(errors);
     }
 
     //region Getters
+    /**
+     * Get the feature number.
+     *
+     * @return The feature number.
+     */
+    public int getFeature() {
+        return feature;
+    }
+
     /**
      * Get the iteration count for the feature.
      *
      * @return The number of iterations used to train the feature.
      */
     public int getIterCount() {
-        return iterCount;
+        return trainingErrors.size();
+    }
+
+    /**
+     * Get the training error for each iteration.
+     * @return The training error for each iteration.
+     */
+    public DoubleList getTrainingErrors() {
+        return DoubleLists.unmodifiable(trainingErrors);
     }
 
     /**
@@ -63,7 +83,7 @@ public class FeatureInfo implements Serializable {
      * @return The RMSE of the last iteration training this feature.
      */
     public double getLastRMSE() {
-        return lastRMSE;
+        return trainingErrors.get(trainingErrors.size() - 1);
     }
 
     /**
@@ -72,7 +92,8 @@ public class FeatureInfo implements Serializable {
      * @return The RMSE improvement in the last training round of this feature.
      */
     public double getLastDeltaRMSE() {
-        return lastDeltaRMSE;
+        int n = trainingErrors.size();
+        return trainingErrors.get(n-2) - trainingErrors.get(n-1);
     }
 
     /**
@@ -107,17 +128,31 @@ public class FeatureInfo implements Serializable {
      * Helper class to build feature info.
      */
     public static class Builder implements org.apache.commons.lang3.builder.Builder<FeatureInfo> {
+        private final int feature;
         private double userAverage;
         private double itemAverage;
         private double singularValue;
-        private int iterCount;
-        private double lastRMSE;
-        private double lastDeltaRMSE;
+        private DoubleList trainingError = new DoubleArrayList();
+
+        /**
+         * Construct a new builder.
+         * @param f The feature number.
+         */
+        public Builder(int f) {
+            feature = f;
+        }
+
+        /**
+         * Get the feature's number.
+         * @return The feature's number.
+         */
+        public int getFeature() {
+            return feature;
+        }
 
         @Override
         public FeatureInfo build() {
-            return new FeatureInfo(userAverage, itemAverage, singularValue, iterCount,
-                                   lastRMSE, lastDeltaRMSE);
+            return new FeatureInfo(feature, userAverage, itemAverage, singularValue, trainingError);
         }
 
         public double getUserAverage() {
@@ -142,35 +177,23 @@ public class FeatureInfo implements Serializable {
             return singularValue;
         }
 
+        /**
+         * Set the singular value for this feature.
+         * @param singularValue The feature's singular value.
+         * @return The builder (for chaining).
+         */
         public Builder setSingularValue(double singularValue) {
             this.singularValue = singularValue;
             return this;
         }
 
-        public int getIterCount() {
-            return iterCount;
-        }
-
-        public Builder setIterCount(int iterCount) {
-            this.iterCount = iterCount;
-            return this;
-        }
-
-        public double getLastRMSE() {
-            return lastRMSE;
-        }
-
-        public Builder setLastRMSE(double lastRMSE) {
-            this.lastRMSE = lastRMSE;
-            return this;
-        }
-
-        public double getLastDeltaRMSE() {
-            return lastDeltaRMSE;
-        }
-
-        public Builder setLastDeltaRMSE(double lastDeltaRMSE) {
-            this.lastDeltaRMSE = lastDeltaRMSE;
+        /**
+         * Add the error for a training round.
+         * @param err The error for the training round.
+         * @return The builder (for chaining).
+         */
+        public Builder addTrainingRound(double err) {
+            trainingError.add(err);
             return this;
         }
     }

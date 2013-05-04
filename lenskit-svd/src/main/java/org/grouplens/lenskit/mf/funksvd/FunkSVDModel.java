@@ -41,7 +41,7 @@ import java.util.List;
 @DefaultProvider(FunkSVDModelBuilder.class)
 @Shareable
 public class FunkSVDModel implements Serializable {
-    private static final long serialVersionUID = -5797099617512506185L;
+    private static final long serialVersionUID = 2L;
 
     /**
      * Number of features in the vector.
@@ -113,11 +113,28 @@ public class FunkSVDModel implements Serializable {
     }
 
     /**
+     * Get the model's feature count.
+     *
+     * @return The model's feature count.
+     */
+    public int getFeatureCount() {
+        return featureCount;
+    }
+
+    /**
      * Get the {@link FeatureInfo} for a particular feature.
      * @param f The feature number.
      * @return The feature's summary information.
      */
     public FeatureInfo getFeatureInfo(int f) {
         return featureInfo.get(f);
+    }
+
+    /**
+     * Get the metadata about all features.
+     * @return The feature metadata.
+     */
+    public List<FeatureInfo> getFeatureInfo() {
+        return featureInfo;
     }
 }

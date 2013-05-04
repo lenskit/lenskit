@@ -21,11 +21,15 @@
 package org.grouplens.lenskit.mf.funksvd;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
+import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.grouplens.lenskit.iterative.TrainingLoopController;
+import org.grouplens.lenskit.vectors.MutableVec;
+import org.grouplens.lenskit.vectors.Vec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,12 +105,10 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
             DoubleArrays.fill(userFeatures[f], initialValue);
             DoubleArrays.fill(itemFeatures[f], initialValue);
 
-            FeatureInfo.Builder fib = new FeatureInfo.Builder();
-            rule.trainFeature(estimates, ratings,
-                              userFeatures[f], itemFeatures[f],
-                              trail, fib);
-
-            featureInfo.add(fib.build());
+            FeatureInfo info = trainFeature(f, estimates, ratings,
+                                            userFeatures[f], itemFeatures[f],
+                                            trail);
+            featureInfo.add(info);
 
             // Update each rating's cached value to accommodate the feature values.
             estimates.update(userFeatures[f], itemFeatures[f]);
@@ -116,5 +118,45 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
                                 rule.getClampingFunction(),
                                 snapshot.itemIndex(), snapshot.userIndex(),
                                 baseline, featureInfo);
+    }
+
+    /**
+     * Train a feature using a collection of ratings.
+     *
+     * @param f The feature number.
+     * @param estimates The current estimator.
+     * @param ratings The rating collection.
+     * @param ufvs The user feature values.
+     * @param ifvs The item feature values.
+     * @param trail The trailing value.
+     * @return The training information of this feature.
+     */
+    FeatureInfo trainFeature(int f, TrainingEstimator estimates,
+                             FastCollection<IndexedPreference> ratings,
+                             double[] ufvs, double[] ifvs, double trail) {
+        FeatureInfo.Builder fib = new FeatureInfo.Builder(f);
+        StopWatch timer = new StopWatch();
+        timer.start();
+        double rmse = Double.MAX_VALUE;
+        TrainingLoopController controller = rule.getTrainingLoopController();
+        while (controller.keepTraining(rmse)) {
+            rmse = rule.doFeatureIteration(estimates, ratings, ufvs, ifvs, trail);
+            fib.addTrainingRound(rmse);
+
+            logger.trace("iteration {} finished with RMSE {}", controller.getIterationCount(), rmse);
+        }
+
+        timer.stop();
+        logger.debug("Finished feature in {} epochs (took {})", controller.getIterationCount(), timer);
+
+        if (fib != null) {
+            Vec ufv = MutableVec.wrap(ufvs);
+            Vec ifv = MutableVec.wrap(ifvs);
+
+            fib.setUserAverage(ufv.mean())
+               .setItemAverage(ifv.mean())
+               .setSingularValue(ufv.norm() * ifv.norm());
+        }
+        return fib.build();
     }
 }

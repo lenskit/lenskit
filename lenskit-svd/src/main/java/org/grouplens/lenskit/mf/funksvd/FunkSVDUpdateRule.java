@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
@@ -32,8 +31,6 @@ import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
-import org.grouplens.lenskit.vectors.MutableVec;
-import org.grouplens.lenskit.vectors.Vec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -163,51 +160,18 @@ public final class FunkSVDUpdateRule implements Serializable {
     }
 
     /**
-     * Train a feature using a collection of ratings.
+     * Do a single feature iteration.
      *
-     * @param estimates The current estimator.
-     * @param ratings The rating collection.
+     * @param estimates The estimates.
+     * @param ratings The ratings to train on.
      * @param ufvs The user feature values.
      * @param ifvs The item feature values.
-     * @param trail The trailing value.
-     * @param fib The feature info builder.
-     * @return The training information of this feature.
+     * @param trail The trailing values.
+     * @return The RMSE of the feature iteration.
      */
-    public void trainFeature(TrainingEstimator estimates,
-                             FastCollection<IndexedPreference> ratings,
-                             double[] ufvs, double[] ifvs, double trail,
-                             FeatureInfo.Builder fib) {
-        // Initialize our counters and error tracking
-        StopWatch timer = new StopWatch();
-        timer.start();
-
-        double rmse = Double.MAX_VALUE;
-        TrainingLoopController controller = getTrainingLoopController();
-        while (controller.keepTraining(rmse)) {
-            rmse = doFeatureIteration(estimates, ratings, ufvs, ifvs, trail);
-
-            logger.trace("iteration {} finished with RMSE {}", controller.getIterationCount(), rmse);
-        }
-
-        timer.stop();
-        logger.debug("Finished feature in {} epochs (took {})", controller.getIterationCount(), timer);
-
-        Vec ufv = MutableVec.wrap(ufvs);
-        Vec ifv = MutableVec.wrap(ifvs);
-
-        if (fib != null) {
-            fib.setUserAverage(ufv.mean())
-               .setItemAverage(ifv.mean())
-               .setSingularValue(ufv.norm() * ifv.norm())
-               .setIterCount(controller.getIterationCount())
-               .setLastRMSE(rmse)
-               .setLastDeltaRMSE(controller.getLastDelta());
-        }
-    }
-
-    private double doFeatureIteration(TrainingEstimator estimates,
-                                      FastCollection<IndexedPreference> ratings,
-                                      double[] ufvs, double[] ifvs, double trail) {
+    public double doFeatureIteration(TrainingEstimator estimates,
+                                     FastCollection<IndexedPreference> ratings,
+                                     double[] ufvs, double[] ifvs, double trail) {
         double sse = 0;
         int n = 0;
 
