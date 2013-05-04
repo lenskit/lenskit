@@ -26,6 +26,8 @@ import org.junit.Before;
 
 import java.io.File;
 
+import static org.junit.Assume.assumeTrue;
+
 /**
  * Base class for integration tests using the ML-100K data set.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -42,12 +44,10 @@ public class ML100KTestSuite {
         if (null == dataDirName) dataDirName = "data/ml-100k";
         File dataDir = new File(dataDirName);
         File inputFile = new File(dataDir, INPUT_FILE_NAME);
-        if (! inputFile.exists()) {  
-                throw new IllegalStateException("must either put an unzipped copy of the MovieLens dataset in the "
-                        + dataDirName + " directory\n "
-                        + " or configure " + ML100K_PROPERTY
-                        + " to point to an unzipped version of the MovieLens dataset");
-        }
+        /* If this assumption fails, put an unzipped copy of the MovieLens data set
+         * in the data directory (specified by the lenskit.movielens.100k property, or
+         * in the data/ml-100k directory. */
+        assumeTrue("ML data set should be available", inputFile.exists());
         daoFactory = SimpleFileRatingDAO.Factory.caching(inputFile, "\t");
     }
 }
