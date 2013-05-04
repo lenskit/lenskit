@@ -87,8 +87,8 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
         logger.debug("Learning rate is {}", rule.getLearningRate());
         logger.debug("Regularization term is {}", rule.getTrainingRegularization());
 
-        FastCollection<IndexedPreference> ratings = snapshot.getRatings();
-        logger.debug("Building SVD with {} features for {} ratings", featureCount, ratings.size());
+        logger.debug("Building SVD with {} features for {} ratings",
+                     featureCount, snapshot.getRatings().size());
 
         TrainingEstimator estimates = rule.makeEstimator(snapshot);
 
@@ -96,6 +96,8 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
 
         for (int f = 0; f < featureCount; f++) {
             logger.trace("Training feature {}", f);
+            StopWatch timer = new StopWatch();
+            timer.start();
             // We assume that all subsequent features have initialValue
             // We can therefore pre-compute the "trailing" prediction value, as it
             // will be the same for all ratings for this feature.
@@ -105,13 +107,16 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
             DoubleArrays.fill(userFeatures[f], initialValue);
             DoubleArrays.fill(itemFeatures[f], initialValue);
 
-            FeatureInfo info = trainFeature(f, estimates, ratings,
+            FeatureInfo info = trainFeature(f, estimates,
                                             userFeatures[f], itemFeatures[f],
                                             trail);
             featureInfo.add(info);
 
             // Update each rating's cached value to accommodate the feature values.
             estimates.update(userFeatures[f], itemFeatures[f]);
+
+            timer.stop();
+            logger.debug("Finished feature {} in {}", f, timer);
         }
 
         return new FunkSVDModel(featureCount, itemFeatures, userFeatures,
@@ -125,20 +130,18 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      *
      * @param f The feature number.
      * @param estimates The current estimator.
-     * @param ratings The rating collection.
      * @param ufvs The user feature values.
      * @param ifvs The item feature values.
      * @param trail The trailing value.
      * @return The training information of this feature.
      */
-    FeatureInfo trainFeature(int f, TrainingEstimator estimates,
-                             FastCollection<IndexedPreference> ratings,
-                             double[] ufvs, double[] ifvs, double trail) {
+    protected FeatureInfo trainFeature(int f, TrainingEstimator estimates,
+                                       double[] ufvs, double[] ifvs, double trail) {
         FeatureInfo.Builder fib = new FeatureInfo.Builder(f);
-        StopWatch timer = new StopWatch();
-        timer.start();
+
         double rmse = Double.MAX_VALUE;
         TrainingLoopController controller = rule.getTrainingLoopController();
+        FastCollection<IndexedPreference> ratings = snapshot.getRatings();
         while (controller.keepTraining(rmse)) {
             rmse = rule.doFeatureIteration(estimates, ratings, ufvs, ifvs, trail);
             fib.addTrainingRound(rmse);
@@ -146,17 +149,23 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
             logger.trace("iteration {} finished with RMSE {}", controller.getIterationCount(), rmse);
         }
 
-        timer.stop();
-        logger.debug("Finished feature in {} epochs (took {})", controller.getIterationCount(), timer);
+        summarizeFeature(ufvs, ifvs, fib);
 
-        if (fib != null) {
-            Vec ufv = MutableVec.wrap(ufvs);
-            Vec ifv = MutableVec.wrap(ifvs);
-
-            fib.setUserAverage(ufv.mean())
-               .setItemAverage(ifv.mean())
-               .setSingularValue(ufv.norm() * ifv.norm());
-        }
         return fib.build();
+    }
+
+    /**
+     * Add a feature's summary to the feature info builder.
+     *
+     * @param ufvs The user values.
+     * @param ifvs The item values.
+     * @param fib The feature info builder.
+     */
+    protected void summarizeFeature(double[] ufvs, double[] ifvs, FeatureInfo.Builder fib) {
+        Vec ufv = MutableVec.wrap(ufvs);
+        Vec ifv = MutableVec.wrap(ifvs);
+        fib.setUserAverage(ufv.mean())
+           .setItemAverage(ifv.mean())
+           .setSingularValue(ufv.norm() * ifv.norm());
     }
 }
