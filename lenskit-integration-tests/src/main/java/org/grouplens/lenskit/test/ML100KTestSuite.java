@@ -25,6 +25,7 @@ import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
 import org.junit.Before;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 import static org.junit.Assume.assumeTrue;
 
@@ -39,15 +40,19 @@ public class ML100KTestSuite {
     protected DAOFactory daoFactory;
 
     @Before
-    public void createDAOFactory() {
-        String dataDirName = System.getProperty(ML100K_PROPERTY);
-        if (null == dataDirName) dataDirName = "data/ml-100k";
-        File dataDir = new File(dataDirName);
-        File inputFile = new File(dataDir, INPUT_FILE_NAME);
-        /* If this assumption fails, put an unzipped copy of the MovieLens data set
-         * in the data directory (specified by the lenskit.movielens.100k property, or
-         * in the data/ml-100k directory. */
-        assumeTrue("ML data set should be available", inputFile.exists());
+    public void createDAOFactory() throws FileNotFoundException {
+        final String dataProp = System.getProperty(ML100K_PROPERTY);
+        final File dataDir = dataProp != null ? new File(dataProp) : new File("data/ml-100k");
+        final File inputFile = new File(dataDir, INPUT_FILE_NAME);
+        if (dataProp == null) {
+            /* If this assumption fails, put an unzipped copy of the MovieLens data set
+             * in the data directory (specified by the lenskit.movielens.100k property, or
+             * in the data/ml-100k directory. */
+            assumeTrue("ML data set should be available", inputFile.exists());
+        } else if (!inputFile.exists()) {
+            // if the property is set, fail fatally if it doesn't work
+            throw new FileNotFoundException("ML data set at " + inputFile);
+        }
         daoFactory = SimpleFileRatingDAO.Factory.caching(inputFile, "\t");
     }
 }
