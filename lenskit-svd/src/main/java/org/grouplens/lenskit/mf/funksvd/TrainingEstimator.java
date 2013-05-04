@@ -33,14 +33,17 @@ import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
  * Rating estimates used while training the predictor.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 1.1
  */
-final class TrainingEstimator {
+public final class TrainingEstimator {
     private final FastCollection<IndexedPreference> ratings;
     private final ClampingFunction clamp;
     private final double[] estimates;
 
     /**
-     * Create the set of training data.
+     * Initialize the training estimator.
      *
      * @param snap     The preference snapshot.
      * @param baseline The baseline predictor.

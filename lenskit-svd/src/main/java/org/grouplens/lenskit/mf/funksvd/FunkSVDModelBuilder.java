@@ -23,6 +23,7 @@ package org.grouplens.lenskit.mf.funksvd;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
@@ -34,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.NotThreadSafe;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.ArrayList;
@@ -53,16 +53,15 @@ import java.util.List;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@NotThreadSafe
 public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     private static Logger logger = LoggerFactory.getLogger(FunkSVDModelBuilder.class);
 
-    private final int featureCount;
-    private final BaselinePredictor baseline;
-    private final PreferenceSnapshot snapshot;
-    private final double initialValue;
+    protected final int featureCount;
+    protected final BaselinePredictor baseline;
+    protected final PreferenceSnapshot snapshot;
+    protected final double initialValue;
 
-    private FunkSVDUpdateRule rule;
+    protected final FunkSVDUpdateRule rule;
 
     @Inject
     public FunkSVDModelBuilder(@Transient @Nonnull PreferenceSnapshot snapshot,
@@ -107,10 +106,10 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
             DoubleArrays.fill(userFeatures[f], initialValue);
             DoubleArrays.fill(itemFeatures[f], initialValue);
 
-            FeatureInfo info = trainFeature(f, estimates,
-                                            userFeatures[f], itemFeatures[f],
-                                            trail);
-            featureInfo.add(info);
+            FeatureInfo.Builder fib = new FeatureInfo.Builder(f);
+            trainFeature(estimates, userFeatures[f], itemFeatures[f], trail, fib);
+            summarizeFeature(userFeatures[f], itemFeatures[f], fib);
+            featureInfo.add(fib.build());
 
             // Update each rating's cached value to accommodate the feature values.
             estimates.update(userFeatures[f], itemFeatures[f]);
@@ -126,32 +125,75 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     }
 
     /**
-     * Train a feature using a collection of ratings.
+     * Train a feature using a collection of ratings.  This method iteratively calls {@link
+     * #doFeatureIteration(TrainingEstimator, FastCollection, double[], double[], double)} to train
+     * the feature.  It can be overridden to customize the feature training strategy.
      *
-     * @param f The feature number.
-     * @param estimates The current estimator.
-     * @param ufvs The user feature values.
-     * @param ifvs The item feature values.
-     * @param trail The trailing value.
-     * @return The training information of this feature.
+     * @param estimates The current estimator.  This method is <b>not</b> expected to update the
+     *                  estimator.
+     * @param ufvs      The user feature values.  This has been initialized to the initial value,
+     *                  and may be reused between features.
+     * @param ifvs      The item feature values.  This has been initialized to the initial value,
+     *                  and may be reused between features.
+     * @param trail     The trailing value.
+     * @param fib       The feature info builder. This method is only expected to add information
+     *                  about its training rounds to the builder; the caller takes care of feature
+     *                  number and summary data.
+     * @see {@link #doFeatureIteration(TrainingEstimator, FastCollection, double[], double[],
+     *      double)}
+     * @see {@link #summarizeFeature(double[], double[], FeatureInfo.Builder)}
      */
-    protected FeatureInfo trainFeature(int f, TrainingEstimator estimates,
-                                       double[] ufvs, double[] ifvs, double trail) {
-        FeatureInfo.Builder fib = new FeatureInfo.Builder(f);
-
+    protected void trainFeature(TrainingEstimator estimates,
+                                double[] ufvs, double[] ifvs, double trail,
+                                FeatureInfo.Builder fib) {
         double rmse = Double.MAX_VALUE;
         TrainingLoopController controller = rule.getTrainingLoopController();
         FastCollection<IndexedPreference> ratings = snapshot.getRatings();
         while (controller.keepTraining(rmse)) {
-            rmse = rule.doFeatureIteration(estimates, ratings, ufvs, ifvs, trail);
+            rmse = doFeatureIteration(estimates, ratings, ufvs, ifvs, trail);
             fib.addTrainingRound(rmse);
-
             logger.trace("iteration {} finished with RMSE {}", controller.getIterationCount(), rmse);
         }
+    }
 
-        summarizeFeature(ufvs, ifvs, fib);
+    /**
+     * Do a single feature iteration.
+     *
+     * @param estimates The estimates.
+     * @param ratings   The ratings to train on.
+     * @param ufvs      The user feature values.
+     * @param ifvs      The item feature values.
+     * @param trail     The trailing values.
+     * @return The RMSE of the feature iteration.
+     */
+    protected double doFeatureIteration(TrainingEstimator estimates,
+                                        FastCollection<IndexedPreference> ratings,
+                                        double[] ufvs, double[] ifvs, double trail) {
+        double sse = 0;
+        int n = 0;
 
-        return fib.build();
+        for (IndexedPreference r : CollectionUtils.fast(ratings)) {
+            final int uidx = r.getUserIndex();
+            final int iidx = r.getItemIndex();
+
+            // Step 1: Save the old feature values before computing the new ones
+            final double ouf = ufvs[uidx];
+            final double oif = ifvs[iidx];
+
+            // Step 2: Compute the error
+            final double err = rule.computeError(r.getUserId(), r.getItemId(),
+                                                 trail, estimates.get(r),
+                                                 r.getValue(), ouf, oif);
+
+            // Step 3: Update feature values
+            ufvs[uidx] += rule.userUpdate(err, ouf, oif);
+            ifvs[iidx] += rule.itemUpdate(err, ouf, oif);
+
+            sse += err * err;
+            n += 1;
+        }
+
+        return Math.sqrt(sse / n);
     }
 
     /**
@@ -159,7 +201,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      *
      * @param ufvs The user values.
      * @param ifvs The item values.
-     * @param fib The feature info builder.
+     * @param fib  The feature info builder.
      */
     protected void summarizeFeature(double[] ufvs, double[] ifvs, FeatureInfo.Builder fib) {
         Vec ufv = MutableVec.wrap(ufvs);

@@ -21,10 +21,7 @@
 package org.grouplens.lenskit.mf.funksvd;
 
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
@@ -45,7 +42,6 @@ import java.io.Serializable;
 @Shareable
 public final class FunkSVDUpdateRule implements Serializable {
     private static final long serialVersionUID = 2L;
-    private static final Logger logger = LoggerFactory.getLogger(FunkSVDUpdateRule.class);
 
     private final double learningRate;
     private final double trainingRegularization;
@@ -157,45 +153,5 @@ public final class FunkSVDUpdateRule implements Serializable {
     public double itemUpdate(double err, double ufv, double ifv) {
         double delta = err * ufv - trainingRegularization * ifv;
         return delta * learningRate;
-    }
-
-    /**
-     * Do a single feature iteration.
-     *
-     * @param estimates The estimates.
-     * @param ratings The ratings to train on.
-     * @param ufvs The user feature values.
-     * @param ifvs The item feature values.
-     * @param trail The trailing values.
-     * @return The RMSE of the feature iteration.
-     */
-    public double doFeatureIteration(TrainingEstimator estimates,
-                                     FastCollection<IndexedPreference> ratings,
-                                     double[] ufvs, double[] ifvs, double trail) {
-        double sse = 0;
-        int n = 0;
-
-        for (IndexedPreference r: CollectionUtils.fast(ratings)) {
-            final int uidx = r.getUserIndex();
-            final int iidx = r.getItemIndex();
-
-            // Step 1: Save the old feature values before computing the new ones
-            final double ouf = ufvs[uidx];
-            final double oif = ifvs[iidx];
-
-            // Step 2: Compute the error
-            final double err = computeError(r.getUserId(), r.getItemId(),
-                                            trail, estimates.get(r),
-                                            r.getValue(), ouf, oif);
-
-            // Step 3: Update feature values
-            ufvs[uidx] += userUpdate(err, ouf, oif);
-            ifvs[iidx] += itemUpdate(err, ouf, oif);
-
-            sse += err * err;
-            n += 1;
-        }
-
-        return Math.sqrt(sse / n);
     }
 }
