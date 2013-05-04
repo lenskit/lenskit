@@ -32,7 +32,8 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
- * Rating estimates used while training the predictor.
+ * Rating estimates used while training the predictor.  An estimator can be constructed
+ * using {@link FunkSVDUpdateRule#makeEstimator(PreferenceSnapshot)}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
@@ -49,7 +50,7 @@ public final class TrainingEstimator {
      * @param baseline The baseline predictor.
      * @param cf       The clamping function.
      */
-    public TrainingEstimator(PreferenceSnapshot snap, BaselinePredictor baseline, ClampingFunction cf) {
+    TrainingEstimator(PreferenceSnapshot snap, BaselinePredictor baseline, ClampingFunction cf) {
         ratings = snap.getRatings();
         clamp = cf;
         estimates = new double[ratings.size()];
