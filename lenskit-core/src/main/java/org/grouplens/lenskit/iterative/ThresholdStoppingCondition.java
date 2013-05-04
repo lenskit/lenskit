@@ -101,11 +101,10 @@ public class ThresholdStoppingCondition implements StoppingCondition, Serializab
     private class Controller implements TrainingLoopController {
         private int iterations = 0;
         private double oldError = Double.POSITIVE_INFINITY;
-        private double lastDelta = Double.NaN;
 
         @Override
         public boolean keepTraining(double error) {
-            lastDelta = oldError - error;
+            double lastDelta = oldError - error;
             if (iterations >= minIterations && Math.abs(lastDelta) < threshold) {
                 return false;
             } else {
@@ -113,11 +112,6 @@ public class ThresholdStoppingCondition implements StoppingCondition, Serializab
                 oldError = error;
                 return true;
             }
-        }
-
-        @Override
-        public double getLastDelta() {
-            return lastDelta;
         }
 
         @Override

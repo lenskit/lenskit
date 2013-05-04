@@ -33,15 +33,6 @@ public interface TrainingLoopController {
     boolean keepTraining(double error);
 
     /**
-     * Get the last training error delta.
-     *
-     * @return The difference in error between the last two calls to {@link #keepTraining(double)}.
-     *         The return value is undefined {@link #keepTraining(double)} has not been called at
-     *         least twice, but will usually be NaN or infinite.
-     */
-    double getLastDelta();
-
-    /**
      * Get the current iteration count.
      *
      * @return the number of iterations done so far.
