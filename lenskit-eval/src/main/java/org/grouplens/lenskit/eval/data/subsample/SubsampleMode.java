@@ -27,13 +27,13 @@ import it.unimi.dsi.fastutil.longs.LongLists;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Random;
 
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 
 /**
@@ -46,12 +46,12 @@ import org.grouplens.lenskit.util.table.writer.TableWriter;
 public enum SubsampleMode {
     RATING {
         @Override
-        public void doSample(DataAccessObject dao, TableWriter output, double fraction) throws IOException {
+        public void doSample(DataAccessObject dao, TableWriter output, double fraction, EvalConfig config) throws IOException {
             List<Rating> ratings = Cursors.makeList(dao.getEvents(Rating.class));
             final int n = ratings.size();
             final int m = (int)(fraction * n);
             for (int i = 0; i < m; i++) {
-                int j = random.nextInt(n-1-i) + i;
+                int j = config.getRandom().nextInt(n-1-i) + i;
                 final Rating rating = ratings.get(j);
                 ratings.set(j, ratings.get(i));        
                 writeRating(output, rating);     
@@ -60,9 +60,9 @@ public enum SubsampleMode {
     },
     ITEM {
         @Override
-        public void doSample(DataAccessObject dao, TableWriter output, double fraction) throws IOException {
+        public void doSample(DataAccessObject dao, TableWriter output, double fraction, EvalConfig config) throws IOException {
             LongArrayList itemList = Cursors.makeList(dao.getItems());
-            LongLists.shuffle(itemList, random);
+            LongLists.shuffle(itemList, config.getRandom());
             final int n = itemList.size();
             final int m = (int)(fraction * n);
             LongIterator iter = itemList.subList(0, m).iterator();
@@ -81,9 +81,9 @@ public enum SubsampleMode {
     },
     USER {
         @Override
-        public void doSample(DataAccessObject dao, TableWriter output, double fraction) throws IOException {
+        public void doSample(DataAccessObject dao, TableWriter output, double fraction, EvalConfig config) throws IOException {
             LongArrayList userList = Cursors.makeList(dao.getUsers());
-            LongLists.shuffle(userList, random);
+            LongLists.shuffle(userList, config.getRandom());
             final int n = userList.size();
             final int m = (int)(fraction * n);
             LongIterator iter = userList.subList(0, m).iterator();
@@ -100,7 +100,6 @@ public enum SubsampleMode {
             }
         }
     };
-    private static final Random random = new Random();
     
     /**
      * Write a random subset of all objects chosen by mode to the output file.
@@ -111,7 +110,7 @@ public enum SubsampleMode {
      * @throws org.grouplens.lenskit.eval.CommandException
      *          Any error
      */
-    public abstract void doSample(DataAccessObject dao, TableWriter output, double fraction) throws IOException;
+    public abstract void doSample(DataAccessObject dao, TableWriter output, double fraction, EvalConfig config) throws IOException;
 
     /**
      * Writing a rating event to the file using table output

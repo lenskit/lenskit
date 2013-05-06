@@ -24,6 +24,7 @@ import org.apache.commons.lang3.BooleanUtils;
 
 import javax.annotation.Nullable;
 import java.util.Properties;
+import java.util.Random;
 
 /**
  * The class that represents the set of properties passed in to a
@@ -43,6 +44,8 @@ public class EvalConfig {
     public static final String ANALYSIS_DIR_PROPERTY = "lenskit.eval.analysisDir";
     public static final String THREAD_COUNT_PROPERTY = "lenskit.eval.threadCount";
 
+    private Random random = new Random();
+    
     private Properties properties;
 
     public EvalConfig() {
@@ -53,6 +56,10 @@ public class EvalConfig {
         properties = (Properties) props.clone();
     }
 
+    public void setRandom(Random random) {
+        this.random = random;
+    }
+    
     /**
      * Get the value of a property.
      *
@@ -112,6 +119,15 @@ public class EvalConfig {
 
     public int getThreadCount() {
         return Integer.parseInt(get(THREAD_COUNT_PROPERTY, "1"));
+    }
+
+    /**
+     * Get the random number generator
+     * 
+     * @return the random object
+     */
+    public Random getRandom() {
+        return random;
     }
 
 }

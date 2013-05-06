@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 import javax.annotation.Nullable;
 
@@ -65,8 +64,6 @@ import com.google.common.base.Function;
 
 public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     private static final Logger logger = LoggerFactory.getLogger(CrossfoldCommand.class);
-
-    private static final Random random = new Random();
 
     private DataSource source;
     private int partitionCount = 5;
@@ -389,7 +386,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
             for (UserHistory<Rating> history : historyCursor) {
                 int foldNum = splits.get(history.getUserId());
                 List<Rating> ratings = new ArrayList<Rating>(history);
-                final int p = mode.partition(ratings, random);
+                final int p = mode.partition(ratings, getConfig().getRandom());
                 final int n = ratings.size();
 
                 for (int f = 0; f < partitionCount; f++) {
@@ -472,7 +469,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     protected Long2IntMap splitUsers(DataAccessObject dao) {
         Long2IntMap userMap = new Long2IntOpenHashMap();
         LongArrayList users = Cursors.makeList(dao.getUsers());
-        LongLists.shuffle(users, random);
+        LongLists.shuffle(users, getConfig().getRandom());
         LongListIterator iter = users.listIterator();
         while (iter.hasNext()) {
             final int idx = iter.nextIndex();
