@@ -74,6 +74,8 @@ LensKit Release Notes
   * Deprecated algorithm-specific item recommenders in favor of using
     <<<ScoreBasedItemRecommender>>> directly.
 
+  * <<Config change>>: Changed the default value for <<<MinimumIterations>>> to 10.
+
   * <<Config change>>: Refactored the item-item recommender to get rid of
     <<<ItemItemModelBackedScorer>>>, simplifying the class hierarchy and configuration.
     Configurations must now specify the <<<ItemItemScorer>>> or <<<ItemItemRatingPredictor>>>;
@@ -89,7 +91,7 @@ LensKit Release Notes
     * <<<MinimumIterations>>> is moved to the new package.
 
     * Threshold stopping conditions now use <<<StoppingThreshold>>> in this package instead
-      of <<<ThresholdValue>>>.  If you configure the threshold valud, update your configuration
+      of <<<ThresholdValue>>>.  If you configure the threshold value, update your configuration
       accordingly.
 
     * The FunkSVD <<<LearningRate>>> and <<<RegularizationTerm>>> have been moved to

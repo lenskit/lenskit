@@ -30,7 +30,7 @@ import java.lang.annotation.*;
  * The minimum number of iterations to use.
  */
 @Documented
-@DefaultInteger(25)
+@DefaultInteger(10)
 @Parameter(Integer.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
