@@ -71,8 +71,8 @@ public class CSVWriter extends AbstractTableWriter {
 
     @Override
     public synchronized void writeRow(List<?> row) throws IOException {
-        if (layout != null && row.size() != layout.getColumnCount()) {
-            throw new IllegalArgumentException("row too long");
+        if (layout != null) {
+            checkRowWidth(row.size());
         }
 
         boolean first = true;

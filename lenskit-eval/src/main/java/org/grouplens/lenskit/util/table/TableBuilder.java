@@ -89,6 +89,7 @@ public class TableBuilder extends AbstractTableWriter implements Builder<Table> 
      * @since 1.1
      */
     public synchronized void addRow(Object... row) {
+        checkRowWidth(row.length);
         rows.add(new RowImpl(layout, row));
     }
 

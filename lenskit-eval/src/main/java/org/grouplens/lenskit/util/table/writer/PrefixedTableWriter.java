@@ -77,9 +77,7 @@ class PrefixedTableWriter extends AbstractTableWriter {
 
     @Override
     public synchronized void writeRow(List<?> row) throws IOException {
-        if (row.size() != layout.getColumnCount()) {
-            throw new IllegalArgumentException("Row too wide");
-        }
+        checkRowWidth(row.size());
 
         // Add the data to the row
         assert rowData.size() == fixedColumns;

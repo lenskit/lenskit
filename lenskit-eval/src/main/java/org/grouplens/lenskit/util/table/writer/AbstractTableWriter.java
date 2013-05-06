@@ -40,6 +40,21 @@ public abstract class AbstractTableWriter implements TableWriter {
     }
 
     /**
+     * Check the width of a row to see if it is too wide.  This formats the exception
+     * with a helpful error message.
+     *
+     * @param width The row width.
+     * @throws IllegalArgumentException if the row is too wide.
+     */
+    protected void checkRowWidth(int width) {
+        if (width != getLayout().getColumnCount()) {
+            String msg = String.format("incorrect row size (got %d of %d expected columns)",
+                                       width, getLayout().getColumnCount());
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
+    /**
      * No-op close implementaiton.
      */
     @Override
