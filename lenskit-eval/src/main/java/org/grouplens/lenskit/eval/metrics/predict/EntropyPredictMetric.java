@@ -35,6 +35,7 @@ import org.grouplens.lenskit.vectors.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -76,6 +77,7 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
             quantizer = new PreferenceDomainQuantizer(preferenceDomain);
         }
 
+        @Nonnull
         @Override
         public String[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
@@ -103,10 +105,11 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
                         Double.toString(info)
                 };
             } else {
-                return null;
+                return new String[3];
             }
         }
 
+        @Nonnull
         @Override
         public String[] finalResults() {
             logger.info("H(rating|user): {}", ratingEntropySum / nusers);

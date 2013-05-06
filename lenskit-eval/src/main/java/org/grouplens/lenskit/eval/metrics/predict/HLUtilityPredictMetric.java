@@ -32,6 +32,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 public class HLUtilityPredictMetric extends AbstractTestUserMetric {
@@ -80,11 +81,13 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
         double total = 0;
         int nusers = 0;
 
+        @Nonnull
         @Override
         public Object[] evaluate(TestUser user) {
             return evaluatePredictions(user.getTestRatings(), user.getPredictions());
         }
 
+        @Nonnull
         Object[] evaluatePredictions(SparseVector ratings, SparseVector predictions) {
             LongList ideal = ratings.keysByValue(true);
             LongList actual = predictions.keysByValue(true);
@@ -96,6 +99,7 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
             return new Object[]{u};
         }
 
+        @Nonnull
         @Override
         public Object[] finalResults() {
             double v = total / nusers;
