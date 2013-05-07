@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.grouplens.lenskit.tests</groupId>
+  <artifactId>test-eval-config-properties</artifactId>
+  <version>@project.version@</version>
+  <name>Config Properties Test</name>
+  <description>Test the eval mojo using model properties to configure its behavior.</description>
+
+  <properties>
+    <lenskit.eval.analysisDir>${project.build.directory}/analysis</lenskit.eval.analysisDir>
+    <lenskit.eval.dataDir>${basedir}/data</lenskit.eval.dataDir>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <version>1.3</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>lenskit-eval-maven-plugin</artifactId>
+        <groupId>org.grouplens.lenskit</groupId>
+        <version>@project.version@</version>
+        <extensions>true</extensions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
