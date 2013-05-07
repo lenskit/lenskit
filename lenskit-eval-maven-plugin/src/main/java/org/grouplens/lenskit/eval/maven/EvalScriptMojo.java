@@ -144,7 +144,6 @@ public class EvalScriptMojo extends AbstractMojo {
         getLog().info("Running with thread count " + threadCount);
         getLog().info("The data directory is " + dataDir);
         getLog().info("The analysis directory is " + analysisDir);
-        getLog().info("The script is " + script);
 
         MavenLogAppender.setLog(getLog());
         try {
@@ -194,7 +193,7 @@ public class EvalScriptMojo extends AbstractMojo {
         } catch (IOException e) {
             getLog().error("Error reading in scriptFiles");
         } catch (NullPointerException e) {
-            getLog().info("ScriptFiles not configured");
+            getLog().debug("no scriptFiles");
         }
         if(files.isEmpty()) {
             files.add(new File(script));
