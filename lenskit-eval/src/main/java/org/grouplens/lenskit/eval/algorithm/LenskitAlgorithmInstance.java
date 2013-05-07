@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.algorithm;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.ItemRecommender;
@@ -207,16 +208,9 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
           .append(")");
         if (!attributes.isEmpty()) {
             sb.append("[");
-            boolean first = true;
-            for (Map.Entry<String,Object> e: attributes.entrySet()) {
-                if (!first) {
-                    sb.append(", ");
-                }
-                sb.append(e.getKey())
-                  .append("=")
-                  .append(e.getValue().toString());
-                first = false;
-            }
+            Joiner.on(", ")
+                  .withKeyValueSeparator("=")
+                  .appendTo(sb, attributes);
             sb.append("]");
         }
         return sb.toString();
