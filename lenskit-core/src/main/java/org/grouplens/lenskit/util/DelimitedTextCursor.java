@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 /**
  * Cursor that reads rows of delimited text from a scanner.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public class DelimitedTextCursor extends AbstractPollingCursor<String[]> {

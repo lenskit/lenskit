@@ -24,7 +24,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * @author Matthias.Balke <matthias.balke@tu-dortmund.de>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
 public class AverageAccumulatorTest {

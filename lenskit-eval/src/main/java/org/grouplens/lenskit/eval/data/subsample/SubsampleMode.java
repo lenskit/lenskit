@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.longs.LongLists;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Random;
 
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
@@ -40,7 +41,7 @@ import org.grouplens.lenskit.util.table.writer.TableWriter;
  * The mode of the subsample file. It can be chosen as Ratings, Items or Users so that
  * the data source file can be subsampled according to Rating, Item or User. 
  *
- * @author Lingfei He<Lingfei@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 
 public enum SubsampleMode {
@@ -48,10 +49,11 @@ public enum SubsampleMode {
         @Override
         public void doSample(DataAccessObject dao, TableWriter output, double fraction, EvalConfig config) throws IOException {
             List<Rating> ratings = Cursors.makeList(dao.getEvents(Rating.class));
+            final Random random = config.getRandom();
             final int n = ratings.size();
             final int m = (int)(fraction * n);
             for (int i = 0; i < m; i++) {
-                int j = config.getRandom().nextInt(n-1-i) + i;
+                int j = random.nextInt(n-1-i) + i;
                 final Rating rating = ratings.get(j);
                 ratings.set(j, ratings.get(i));        
                 writeRating(output, rating);     

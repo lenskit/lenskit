@@ -28,7 +28,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * Compute the similarity between two objects (typically rating vectors). It is often
  * composed with an {@link ItemVectorSimilarity} or {@link UserVectorSimilarity}.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultImplementation(CosineVectorSimilarity.class)
 public interface VectorSimilarity {

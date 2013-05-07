@@ -29,7 +29,7 @@ import java.lang.annotation.Annotation;
 /**
  * LensKit-specific augmentations of the Grapht context interface.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  * @since 1.0
  */

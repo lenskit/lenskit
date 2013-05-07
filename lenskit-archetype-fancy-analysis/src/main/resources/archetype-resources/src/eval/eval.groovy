@@ -1,6 +1,6 @@
 import org.grouplens.lenskit.eval.data.crossfold.RandomOrder
 
-import org.grouplens.lenskit.knn.params.*
+import org.grouplens.lenskit.knn.NeighborhoodSize
 import org.grouplens.lenskit.knn.item.*
 import org.grouplens.lenskit.knn.user.*
 
@@ -36,7 +36,7 @@ def itemitem = algorithm("ItemItem") {
 
     // apply some Bayesian smoothing to the mean values
     within(ItemUserMeanPredictor) {
-        set Damping to 25.0d
+        set MeanDamping to 25.0d
     }
 }
 
@@ -60,7 +60,7 @@ def useruser = algorithm("UserUser") {
 
     // and apply some Bayesian damping to the baseline
     within(ItemUserMeanPredictor) {
-        set Damping to 25.0d
+        set MeanDamping to 25.0d
     }
 }
 
@@ -69,7 +69,7 @@ def extended = algorithm("ExtendedItemUserMean") {
 }
 
 dumpGraph {
-    output "${config.analysisDir}/extended.gv"
+    output "${config.analysisDir}/extended.dot"
     algorithm extended
 }
 

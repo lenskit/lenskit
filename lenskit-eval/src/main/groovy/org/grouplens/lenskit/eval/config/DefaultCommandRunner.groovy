@@ -21,6 +21,9 @@
 package org.grouplens.lenskit.eval.config
 
 import org.grouplens.lenskit.eval.Command
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 import javax.annotation.Nullable
 import javax.annotation.Nonnull
 
@@ -28,9 +31,10 @@ import javax.annotation.Nonnull
  * Default runner for commands.
  *
  * @since 1.0
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class DefaultCommandRunner implements CommandRunner {
+    private static final Logger logger = LoggerFactory.getLogger(DefaultCommandRunner)
     protected final EvalScriptEngine engine
 
     DefaultCommandRunner(EvalScriptEngine eng) {
@@ -68,6 +72,7 @@ class DefaultCommandRunner implements CommandRunner {
      * @param cl The closure.
      */
     protected <V> V invokeClosure(@Nonnull Closure<V> closure) {
+        logger.debug("configuring command")
         closure.call()
     }
 
@@ -77,6 +82,7 @@ class DefaultCommandRunner implements CommandRunner {
      * @return The return value of the command.
      */
     protected <V> V callCommand(@Nonnull Command<V> cmd) {
+        logger.debug("invoking command {}", cmd.name)
         return cmd.call();
     }
 
@@ -96,6 +102,7 @@ class DefaultCommandRunner implements CommandRunner {
     @Override
     <V> V invoke(@Nonnull Command<V> command,
                  @Nullable Closure<?> closure) {
+        logger.debug("preparing and invoking command {}", command)
         if (closure != null) {
             def dlg = getDelegate(command)
             attachDelegate(closure, dlg)

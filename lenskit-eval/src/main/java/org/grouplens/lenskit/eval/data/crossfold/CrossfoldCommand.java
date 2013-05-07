@@ -371,8 +371,6 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      * @param trainWriters The tableWriter that write train files
      * @param testWriters  The tableWriter that writ test files
      * @param dao The DAO of the data source file
-     * @param mode The houdout mode
-     * @param splits The map of user id to the split number of all the users
      * @throws CommandException
      */
     protected void writeTTFilesByUsers(TableWriter[] trainWriters, TableWriter[] testWriters,

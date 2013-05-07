@@ -34,12 +34,14 @@ import java.util.Random;
  * in to the Groovy evaluation script under a special name, so the
  * script can use it to pull properties out.
  *
- * @author John Riedl
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
  */
 public class EvalConfig {
     public static final String FORCE_PROPERTY = "lenskit.eval.force";
+    public static final String SKIP_PROPERTY = "lenskit.eval.skip";
     public static final String EVAL_SCRIPT_PROPERTY = "lenskit.eval.script";
+    public static final String EVAL_SCRIPTFILES_PROPERTY = "lenskit.eval.scripts";
     public static final String DATA_DIR_PROPERTY = "lenskit.eval.dataDir";
     public static final String ANALYSIS_DIR_PROPERTY = "lenskit.eval.analysisDir";
     public static final String THREAD_COUNT_PROPERTY = "lenskit.eval.threadCount";
@@ -48,14 +50,26 @@ public class EvalConfig {
     
     private Properties properties;
 
+    /**
+     * Construct a new eval config using the system properties.
+     */
     public EvalConfig() {
-        this(new Properties());
+        this(System.getProperties());
     }
 
+    /**
+     * Construct a new eval config using the specified properties.
+     * @param props The properties to use.
+     */
     public EvalConfig(Properties props) {
         properties = (Properties) props.clone();
     }
 
+    /**
+     * Set the random number generator.
+     * 
+     * @param random The random number generator
+     */
     public void setRandom(Random random) {
         this.random = random;
     }
@@ -118,13 +132,18 @@ public class EvalConfig {
     }
 
     public int getThreadCount() {
-        return Integer.parseInt(get(THREAD_COUNT_PROPERTY, "1"));
+        int count = Integer.parseInt(get(THREAD_COUNT_PROPERTY, "1"));
+        if (count == 0) {
+            return Runtime.getRuntime().availableProcessors();
+        } else {
+            return count;
+        }
     }
 
     /**
-     * Get the random number generator
+     * Get the random number generator.
      * 
-     * @return the random object
+     * @return The random number generator.
      */
     public Random getRandom() {
         return random;

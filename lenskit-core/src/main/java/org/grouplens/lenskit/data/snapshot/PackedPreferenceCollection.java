@@ -39,7 +39,7 @@ import org.grouplens.lenskit.data.pref.IndexedPreference;
  * implementations for {@link PackedPreferenceSnapshot}. It supports subsetting the
  * packed data set to only a particular list of indices.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @SuppressWarnings("javadoc")
         // JavaDoc warnings incorrectly flag PackedPreferenceData

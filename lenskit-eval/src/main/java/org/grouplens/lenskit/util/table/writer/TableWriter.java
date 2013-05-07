@@ -35,7 +35,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * table has finished, call {@link #close()} to finish the table and close the
  * underlying output.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see TableWriterBuilder
  */
 @ThreadSafe

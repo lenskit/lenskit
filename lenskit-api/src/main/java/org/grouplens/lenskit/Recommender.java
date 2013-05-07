@@ -34,7 +34,7 @@ import java.io.Closeable;
  * ensures that, if you can actually get an object implementing a particular interface,
  * you are guaranteed to be able to use it.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  * @see RecommenderEngine
  */

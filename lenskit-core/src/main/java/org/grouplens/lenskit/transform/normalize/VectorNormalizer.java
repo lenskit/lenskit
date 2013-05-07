@@ -34,7 +34,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * rating to be subtracted from a set of ratings.
  *
  * @param <V> The type of reference vectors.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultImplementation(IdentityVectorNormalizer.class)
 public interface VectorNormalizer {

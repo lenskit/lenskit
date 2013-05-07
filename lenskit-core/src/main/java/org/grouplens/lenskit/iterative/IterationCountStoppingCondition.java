@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.iterative;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.iterative.params.IterationCount;
 
 import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
@@ -30,7 +29,7 @@ import java.io.Serializable;
 /**
  * Stop once the iteration count has reached a value.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Immutable
 @Shareable

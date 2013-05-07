@@ -36,7 +36,7 @@ import java.lang.annotation.Target;
  * Example: a provider that reads the ratings from the DAO to compute their average
  * and build a component around that average has a transient dependency on the DAO.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 @Attribute

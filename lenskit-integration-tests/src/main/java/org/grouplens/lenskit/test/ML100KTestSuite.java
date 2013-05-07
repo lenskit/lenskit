@@ -28,7 +28,7 @@ import java.io.File;
 
 /**
  * Base class for integration tests using the ML-100K data set.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ML100KTestSuite {
     protected final String ML100K_PROPERTY = "lenskit.movielens.100k";

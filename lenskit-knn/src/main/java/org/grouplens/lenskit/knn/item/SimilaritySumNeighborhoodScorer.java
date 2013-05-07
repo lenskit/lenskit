@@ -20,10 +20,10 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.inject.Singleton;
 import java.io.Serializable;
@@ -31,7 +31,7 @@ import java.io.Serializable;
 /**
  * Neighborhood scorer that computes the sum of neighborhood similarities.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 @Singleton
@@ -39,19 +39,10 @@ public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Seri
     private static final long serialVersionUID = 1L;
 
     @Override
-    public double score(ScoredLongList neighbors, SparseVector scores) {
-        if (neighbors.isEmpty()) {
-            return Double.NaN;
-        }
-        double sum = 0;
-        ScoredLongListIterator nIter = neighbors.iterator();
-        while (nIter.hasNext()) {
-            @SuppressWarnings("unused")
-            long i = nIter.nextLong();
-
-            double sim = nIter.getScore();
-            sum += sim;
-        }
-        return sum;
+    public double score(SparseVector neighbors, SparseVector scores) {
+		if (neighbors.isEmpty()) {
+			return Double.NaN;
+		}        
+        return neighbors.sum();
     }
 }

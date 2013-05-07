@@ -28,7 +28,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertThat;
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class MutualInformationAccumulatorTest {
     MutualInformationAccumulator accum;

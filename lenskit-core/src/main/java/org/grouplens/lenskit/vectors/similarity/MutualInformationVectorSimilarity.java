@@ -36,7 +36,7 @@ import java.io.Serializable;
  * Note, this uses the naive estimator of mutual information, which can be
  * heavily biased when the two vectors have little overlap.
  *
- * @author Daniel Kluver <kluver@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class MutualInformationVectorSimilarity implements VectorSimilarity, Serializable {
 

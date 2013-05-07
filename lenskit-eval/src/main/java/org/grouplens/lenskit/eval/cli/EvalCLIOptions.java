@@ -35,7 +35,7 @@ import java.util.Properties;
 /**
  * Parse & present command line options for running the evaluator.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public class EvalCLIOptions {
@@ -46,7 +46,7 @@ public class EvalCLIOptions {
     private URL[] classpathUrls;
     private Properties props;
     private boolean force;
-    private int nthreads = -1;
+    private int nthreads = 1;
 
     private EvalCLIOptions(CommandLine cmd) {
         String[] cpadds = cmd.getOptionValues("C");
@@ -74,7 +74,7 @@ public class EvalCLIOptions {
         if (cmd.hasOption("j")) {
             String n = cmd.getOptionValue("j");
             if (n == null) {
-                nthreads = Runtime.getRuntime().availableProcessors();
+                nthreads = 0;
             } else {
                 nthreads = Integer.parseInt(n);
             }
@@ -144,6 +144,7 @@ public class EvalCLIOptions {
         return configFile;
     }
 
+    @SuppressWarnings({"EI_EXPOSE_REP", "PMD.MethodReturnsInternalArray"})
     public String[] getArgs() {
         return args;
     }

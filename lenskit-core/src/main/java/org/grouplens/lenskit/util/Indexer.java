@@ -33,7 +33,7 @@ import it.unimi.dsi.fastutil.longs.LongLists;
 /**
  * Build contiguous 0-based indexes for long IDs.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class Indexer implements Index {
     private static final long serialVersionUID = -8383883342128686850L;

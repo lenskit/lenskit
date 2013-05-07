@@ -30,7 +30,7 @@ import java.lang.annotation.Annotation;
 /**
  * Helper for implementing Lenskit config contexts.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.0
  */
 public abstract class AbstractConfigContext extends AbstractContext implements LenskitConfigContext {

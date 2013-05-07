@@ -30,7 +30,7 @@ import java.io.Serializable;
 /**
  * Identity normalization (makes no change).
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 @Singleton

@@ -47,7 +47,7 @@ import java.util.Map;
  * Symbols are hashable, because they are singletons, so the default hashCode
  * based on Object address should work.
  *
- * @author John Riedl <riedl@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public final class Symbol {
@@ -56,12 +56,6 @@ public final class Symbol {
 
     // Variables unique to each instance
     private final String strSymbol;    // The name of the symbol, which is the string used to create it.
-
-    // The only constructors are private, so Symbols can only be created
-    // through the public interface.
-    private Symbol() {
-        this("");
-    }
 
     // The only constructor is private, so Symbols can only be created
     // through the public interface.

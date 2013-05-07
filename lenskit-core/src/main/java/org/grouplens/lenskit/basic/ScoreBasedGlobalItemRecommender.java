@@ -95,7 +95,7 @@ public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommend
             accum.put(pred.getKey(), v);
         }
 
-        return accum.finish();
+        return new ScoredLongArrayList(accum.finish());
     }
 
 }

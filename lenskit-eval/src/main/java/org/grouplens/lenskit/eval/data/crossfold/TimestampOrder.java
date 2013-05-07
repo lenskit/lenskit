@@ -31,7 +31,7 @@ import org.grouplens.lenskit.data.event.Events;
  * Order an event sequence by timestamp.
  *
  * @param <E>
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TimestampOrder<E extends Event> implements Order<E> {
 

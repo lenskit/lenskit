@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutionException;
  * Execute job groups. {@link JobGroup}s are added to the executor, and then
  * they are all run when {@link #run()} is called.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
 public interface JobGroupExecutor {

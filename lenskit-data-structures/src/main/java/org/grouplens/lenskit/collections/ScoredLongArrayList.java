@@ -28,6 +28,7 @@ import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntComparator;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -41,7 +42,7 @@ import java.util.List;
  * Array-backed implementation of {@link ScoredLongList}.  Items and scores
  * are stored in parallel arrays.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public class ScoredLongArrayList implements ScoredLongList, Serializable {
@@ -107,6 +108,16 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
                                     "list size mismatch");
         itemList = items;
         scoreList = scores;
+    }
+
+    public ScoredLongArrayList(@Nonnull List<ScoredId> items) {
+        itemList = new LongArrayList(items.size());
+        scoreList = new DoubleArrayList(items.size());
+
+        for (ScoredId id : items) {
+            itemList.add(id.getId());
+            scoreList.add(id.getScore());
+        }
     }
 
     /**

@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * Command to get a algorithm instances.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ExternalAlgorithmInstanceCommand extends AbstractCommand<ExternalAlgorithmInstance> {
     private Map<String, Object> attributes = new HashMap<String, Object>();

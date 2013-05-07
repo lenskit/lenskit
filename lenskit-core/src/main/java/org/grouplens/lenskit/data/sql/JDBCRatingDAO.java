@@ -53,13 +53,28 @@ import javax.annotation.WillCloseWhenClosed;
  * Rating DAO backed by a JDBC connection.  This DAO can only store rating data;
  * no other events are supported.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class JDBCRatingDAO extends AbstractDataAccessObject {
+    /**
+     * Event ID column number.
+     */
     public static final int COL_EVENT_ID = 1;
+    /**
+     * User ID column number.
+     */
     public static final int COL_USER_ID = 2;
+    /**
+     * Item ID column number.
+     */
     public static final int COL_ITEM_ID = 3;
+    /**
+     * Rating column number.
+     */
     public static final int COL_RATING = 4;
+    /**
+     * Timestamp column number.
+     */
     public static final int COL_TIMESTAMP = 5;
 
     /**
@@ -144,7 +159,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
                     dbc = DriverManager.getConnection(cxnUrl, properties);
                 }
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new DatabaseAccessException(e);
             }
             return dbc;
         }
@@ -256,10 +271,10 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
                 connection.close();
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseAccessException(e);
         }
         if (failed) {
-            throw new RuntimeException("Error closing statement (see log for details)");
+            throw new DatabaseAccessException("Error closing statement (see log for details)");
         }
     }
 
@@ -269,7 +284,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
             PreparedStatement s = userStatement.call();
             return new IDCursor(s);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseAccessException(e);
         }
     }
 
@@ -286,7 +301,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
         try {
             rs = s.executeQuery();
             if (!rs.next()) {
-                throw new RuntimeException("User count query returned no rows");
+                throw new DatabaseAccessException("User count query returned no rows");
             }
             return rs.getInt(1);
         } finally {
@@ -301,7 +316,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
         try {
             return getCount(userCountStatement.call());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseAccessException(e);
         }
     }
 
@@ -311,7 +326,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
             PreparedStatement s = itemStatement.call();
             return new IDCursor(s);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseAccessException(e);
         }
     }
 
@@ -320,7 +335,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
         try {
             return getCount(itemCountStatement.call());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseAccessException(e);
         }
     }
 
@@ -335,7 +350,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
             PreparedStatement s = eventStatements[order.ordinal()].call();
             return new RatingCursor(s);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseAccessException(e);
         }
     }
 
@@ -355,7 +370,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
             s.setLong(1, userId);
             return new RatingCursor(s);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseAccessException(e);
         }
     }
 
@@ -375,7 +390,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
             s.setLong(1, itemId);
             return new RatingCursor(s);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseAccessException(e);
         }
     }
 
@@ -421,7 +436,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
             try {
                 return rset.getLong(1);
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new DatabaseAccessException(e);
             }
         }
 
@@ -430,7 +445,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
             try {
                 rset.close();
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new DatabaseAccessException(e);
             }
         }
     }
@@ -462,21 +477,21 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
                     return null;
                 }
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new DatabaseAccessException(e);
             }
 
             try {
                 rating.setId(resultSet.getLong(COL_EVENT_ID));
                 if (resultSet.wasNull()) {
-                    throw new RuntimeException("Unexpected null event ID");
+                    throw new DatabaseAccessException("Unexpected null event ID");
                 }
                 rating.setUserId(resultSet.getLong(COL_USER_ID));
                 if (resultSet.wasNull()) {
-                    throw new RuntimeException("Unexpected null user ID");
+                    throw new DatabaseAccessException("Unexpected null user ID");
                 }
                 rating.setItemId(resultSet.getLong(COL_ITEM_ID));
                 if (resultSet.wasNull()) {
-                    throw new RuntimeException("Unexpected null item ID");
+                    throw new DatabaseAccessException("Unexpected null item ID");
                 }
                 rating.setRating(resultSet.getDouble(COL_RATING));
                 if (resultSet.wasNull()) {
@@ -491,7 +506,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
                 }
                 rating.setTimestamp(ts);
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new DatabaseAccessException(e);
             }
 
             return rating;
@@ -502,7 +517,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
             try {
                 resultSet.close();
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new DatabaseAccessException(e);
             }
         }
     }

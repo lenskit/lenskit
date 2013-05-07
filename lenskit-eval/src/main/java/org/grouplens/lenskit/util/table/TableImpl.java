@@ -34,7 +34,7 @@ import java.util.Iterator;
 /**
  * In-memory table implementation.
  *
- * @author Shuo Chang<schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Immutable
 class TableImpl extends AbstractList<Row> implements Table {

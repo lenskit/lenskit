@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
+import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
@@ -34,16 +35,19 @@ import org.grouplens.lenskit.vectors.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 /**
  * Evaluate a recommender's prediction accuracy by computing the mutual
  * information between the ratings and the prediction. This tells us the amount
  * of information our predictions can tell the user about our ratings.
  *
- * @author Daniel Kluver <kluver@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class EntropyPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(EntropyPredictMetric.class);
-    private static final String[] COLUMNS = {"Entropy.ofRating.ByUser", "Entropy.ofPredictions.byUser", "Information.ByUser"};
+    private static final ImmutableList<String> COLUMNS =
+            ImmutableList.of("Entropy.ofRating.ByUser", "Entropy.ofPredictions.byUser", "Information.ByUser");
 
     @Override
     public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algorithm, TTDataSet dataSet) {
@@ -51,12 +55,12 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
     }
 
     @Override
-    public String[] getUserColumnLabels() {
+    public List<String> getUserColumnLabels() {
         return COLUMNS;
     }
 
     @Override
-    public String[] getColumnLabels() {
+    public List<String> getColumnLabels() {
         return COLUMNS;
     }
 

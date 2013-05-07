@@ -33,7 +33,7 @@ import java.io.Serializable;
  * reference vector to a unit vector. If the length of the reference vector
  * is 0, no normalization is applied.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 @Singleton

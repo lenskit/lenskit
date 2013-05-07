@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
+import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
@@ -29,6 +30,8 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import static java.lang.Math.abs;
 
@@ -41,12 +44,12 @@ import static java.lang.Math.abs;
  * <emph>by-user</emph>, where the MAE is computed per-user and then averaged
  * over all users.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class MAEPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(MAEPredictMetric.class);
-    private static final String[] COLUMNS = {"MAE", "MAE.ByUser"};
-    private static final String[] USER_COLUMNS = {"MAE"};
+    private static final ImmutableList<String> COLUMNS = ImmutableList.of("MAE", "MAE.ByUser");
+    private static final ImmutableList<String> USER_COLUMNS = ImmutableList.of("MAE");
 
     @Override
     public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
@@ -54,12 +57,12 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
     }
 
     @Override
-    public String[] getColumnLabels() {
+    public List<String> getColumnLabels() {
         return COLUMNS;
     }
 
     @Override
-    public String[] getUserColumnLabels() {
+    public List<String> getUserColumnLabels() {
         return USER_COLUMNS;
     }
 

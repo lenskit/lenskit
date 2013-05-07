@@ -35,7 +35,7 @@ import java.util.Collection;
  *     <b>Note:</b> The fact that this interface extends {@link ItemScorer} is deprecated.
  * </p>
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public interface RatingPredictor extends ItemScorer {

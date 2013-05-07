@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * Rating-only data source backed by a simple delimited file.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public class SimpleFileRatingDAO extends AbstractDataAccessObject {
@@ -172,7 +172,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
             logger.debug("Opening {}", file.getPath());
             input = LKFileUtils.openInput(file, compression);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new DataAccessException(e);
         }
         BufferedReader buf;
         try {

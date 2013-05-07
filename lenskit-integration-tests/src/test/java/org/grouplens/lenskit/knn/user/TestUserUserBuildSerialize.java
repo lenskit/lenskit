@@ -50,7 +50,7 @@ import static org.junit.Assert.assertThat;
 /**
  * Do major tests on the user-user recommender.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestUserUserBuildSerialize extends ML100KTestSuite {
     @Test

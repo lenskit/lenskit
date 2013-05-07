@@ -35,7 +35,7 @@ import com.google.common.collect.Sets;
 /**
  * Various type utilities used in LensKit.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TypeUtils {
     /**
@@ -94,7 +94,7 @@ public class TypeUtils {
     }
 
     /**
-     * Function that gets the class for its argument.
+     * Function that casts classes to specified types.  This function does not accept nulls.
      *
      * @param supertype A class known to be a valid supertype for any argument.
      */
@@ -102,13 +102,17 @@ public class TypeUtils {
         return new Function<Class<?>, Class<? extends T>>() {
             @Override
             public Class<? extends T> apply(Class<?> input) {
-                return input.asSubclass(supertype);
+                if (input == null) {
+                    throw new NullPointerException("null class");
+                } else {
+                    return input.asSubclass(supertype);
+                }
             }
         };
     }
 
     /**
-     * Function that gets the class for its argument.
+     * Function that gets the class for its argument.  This function does not accept nulls.
      *
      * @param supertype A class known to be a valid supertype for any argument.
      */
@@ -116,7 +120,11 @@ public class TypeUtils {
         return new Function<T, Class<? extends T>>() {
             @Override
             public Class<? extends T> apply(T input) {
-                return input.getClass().asSubclass(supertype);
+                if (input == null) {
+                    throw new NullPointerException("null class");
+                } else {
+                    return input.getClass().asSubclass(supertype);
+                }
             }
         };
     }

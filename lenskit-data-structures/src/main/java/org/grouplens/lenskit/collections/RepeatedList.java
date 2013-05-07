@@ -25,7 +25,7 @@ import java.util.AbstractList;
 /**
  * List consisting of multiple occurrences of one element.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class RepeatedList<T> extends AbstractList<T> {
     private int size;

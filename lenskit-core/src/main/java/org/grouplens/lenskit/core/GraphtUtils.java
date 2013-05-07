@@ -23,6 +23,7 @@ package org.grouplens.lenskit.core;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
@@ -41,7 +42,7 @@ import java.util.Set;
 /**
  * Helper utilities for Grapht integration.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
 public final class GraphtUtils {
@@ -65,14 +66,15 @@ public final class GraphtUtils {
         final Node placeholder = new Node(sat, CachePolicy.MEMOIZE);
         graph.replaceNode(node, placeholder);
 
-        // replace desires on edges
-        for (Edge e: graph.getIncomingEdges(placeholder)) {
+        // replace desires on edges (truncates desire chains to only contain head, dropping refs)
+        for (Edge e: Lists.newArrayList(graph.getIncomingEdges(placeholder))) {
             Desire d = e.getDesire();
             List<Desire> lbl = null;
             if (d != null) {
                 lbl = Collections.singletonList(d);
             }
-            graph.updateEdgeLabel(e, lbl);
+            Edge replacement = new Edge(e.getHead(), e.getTail(), lbl);
+            graph.replaceEdge(e, replacement);
         }
 
         return placeholder;

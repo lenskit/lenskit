@@ -34,7 +34,7 @@ import java.util.Collection;
 /**
  * Score items based on the basket of items using an item-item CF model.
  *
- * @author Shuo Chang <schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ItemItemGlobalScorer extends AbstractGlobalItemScorer {
     protected final ItemItemModel model;

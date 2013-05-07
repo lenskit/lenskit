@@ -27,7 +27,7 @@ import org.grouplens.lenskit.data.Event;
 import java.util.Comparator;
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class Events {
     private Events() {}

@@ -22,6 +22,7 @@ package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
@@ -55,7 +56,7 @@ import java.util.List;
 /**
  * Run a single train-test evaluation of a single algorithm.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
 public class TrainTestEvalJob implements Job {
@@ -68,6 +69,8 @@ public class TrainTestEvalJob implements Job {
     @Nonnull
     private final List<TestUserMetric> evaluators;
     @Nonnull
+    private final List<ModelMetric> modelMetrics;
+    @Nonnull
     private final List<Pair<Symbol, String>> channels;
     @Nonnull
     private final TTDataSet data;
@@ -78,7 +81,6 @@ public class TrainTestEvalJob implements Job {
     @Nonnull
     private final Supplier<TableWriter> predictOutputSupplier;
     private final Supplier<SharedPreferenceSnapshot> snapshot;
-    private final int outputColumnCount;
 
     /**
      * Create a new train-test eval job.
@@ -100,6 +102,7 @@ public class TrainTestEvalJob implements Job {
      */
     public TrainTestEvalJob(@Nonnull AlgorithmInstance algo,
                             @Nonnull List<TestUserMetric> evals,
+                            @Nonnull List<ModelMetric> mMetrics,
                             @Nonnull List<Pair<Symbol,String>> chans,
                             @Nonnull TTDataSet ds, Supplier<SharedPreferenceSnapshot> snap,
                             @Nonnull Supplier<TableWriter> out,
@@ -108,6 +111,7 @@ public class TrainTestEvalJob implements Job {
                             int nrecs) {
         algorithm = algo;
         evaluators = evals;
+        modelMetrics = mMetrics;
         channels = chans;
         data = ds;
         snapshot = snap;
@@ -115,19 +119,16 @@ public class TrainTestEvalJob implements Job {
         userOutputSupplier = userOut;
         predictOutputSupplier = predOut;
         numRecs = nrecs;
-
-        int ncols = 2;
-        for (TestUserMetric eval : evals) {
-            if (eval.getColumnLabels() != null) {
-                ncols += eval.getColumnLabels().length;
-            }
-        }
-        outputColumnCount = ncols;
     }
 
     @Override
     public String getName() {
         return algorithm.getName();
+    }
+
+    @Override
+    public String getDescription() {
+        return algorithm.toString() + " on " + data.getName();
     }
 
     @Override
@@ -139,6 +140,7 @@ public class TrainTestEvalJob implements Job {
             userTable = userOutputSupplier.get();
             predictTable = predictOutputSupplier.get();
 
+            List<Object> outputRow = Lists.newArrayList();
 
             logger.info("Building {}", algorithm.getName());
             StopWatch buildTimer = new StopWatch();
@@ -146,6 +148,11 @@ public class TrainTestEvalJob implements Job {
             RecommenderInstance rec = algorithm.makeTestableRecommender(data, snapshot);
             buildTimer.stop();
             logger.info("Built {} in {}", algorithm.getName(), buildTimer);
+
+            logger.info("Measuring {}", algorithm.getName());
+            for (ModelMetric metric: modelMetrics) {
+                outputRow.addAll(metric.measureAlgorithm(algorithm, data, rec.getRecommender()));
+            }
 
             logger.info("Testing {}", algorithm.getName());
             StopWatch testTimer = new StopWatch();
@@ -214,7 +221,7 @@ public class TrainTestEvalJob implements Job {
             logger.info("Tested {} in {}", algorithm.getName(), testTimer);
 
             try {
-                writeOutput(buildTimer, testTimer, evalAccums);
+                writeOutput(buildTimer, testTimer, outputRow, evalAccums);
             } catch (IOException e) {
                 logger.error("Error writing output", e);
             }
@@ -257,24 +264,28 @@ public class TrainTestEvalJob implements Job {
         }
     }
 
-    private void writeOutput(StopWatch build, StopWatch test, List<TestUserMetricAccumulator> accums) throws IOException {
-        Object[] row = new Object[outputColumnCount];
-        row[0] = build.getTime();
-        row[1] = test.getTime();
-        int col = 2;
-        for (TestUserMetricAccumulator acc : accums) {
-            Object[] ar = acc.finalResults();
-            if (ar != null) {
-                // no aggregated output is generated
-                int n = ar.length;
-                System.arraycopy(ar, 0, row, col, n);
-                col += n;
-            }
-        }
+    private void writeOutput(StopWatch build, StopWatch test, List<Object> measures, List<TestUserMetricAccumulator> accums) throws IOException {
         TableWriter output = outputSupplier.get();
-        try {
-            output.writeRow(row);
 
+        try {
+            Object[] row = new Object[output.getLayout().getColumnCount()];
+            row[0] = build.getTime();
+            row[1] = test.getTime();
+            int col = 2;
+            for (Object o: measures) {
+                row[col] = o;
+                col += 1;
+            }
+            for (TestUserMetricAccumulator acc : accums) {
+                Object[] ar = acc.finalResults();
+                if (ar != null) {
+                    // no aggregated output is generated
+                    int n = ar.length;
+                    System.arraycopy(ar, 0, row, col, n);
+                    col += n;
+                }
+            }
+            output.writeRow(row);
         } finally {
             output.close();
         }

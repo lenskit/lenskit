@@ -29,13 +29,14 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.knn.params.NeighborhoodSize;
+import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.Collection;
@@ -57,7 +58,7 @@ import static java.lang.Math.max;
  * <p>Currently, this cache is never cleared. This should probably be changed
  * sometime.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializable {
     private static final long serialVersionUID = -6324767320394518347L;
@@ -113,7 +114,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
      */
     @Override
     public Long2ObjectMap<? extends Collection<Neighbor>>
-    findNeighbors(UserHistory<? extends Event> user, LongSet items) {
+    findNeighbors(@Nonnull UserHistory<? extends Event> user, @Nonnull LongSet items) {
         Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
                 new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
 

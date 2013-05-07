@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.baseline;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
@@ -33,18 +34,17 @@ import org.grouplens.lenskit.data.pref.Preference;
 /**
  * Rating scorer that predicts the global mean rating for all items.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @author Michael Ludwig <mludwig@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultProvider(GlobalMeanPredictor.Provider.class)
+@DefaultProvider(GlobalMeanPredictor.Builder.class)
 @Shareable
 public class GlobalMeanPredictor extends ConstantPredictor {
     /**
      * A default builder used to create GlobalMeanPredictors.
      *
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Provider implements javax.inject.Provider<GlobalMeanPredictor> {
+    public static class Builder implements Provider<GlobalMeanPredictor> {
         private DataAccessObject dao;
 
         /**
@@ -53,7 +53,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
          * @param dao The DAO.
          */
         @Inject
-        public Provider(@Transient DataAccessObject dao) {
+        public Builder(@Transient DataAccessObject dao) {
             this.dao = dao;
         }
 
@@ -88,14 +88,17 @@ public class GlobalMeanPredictor extends ConstantPredictor {
         long count = 0;
 
         Cursor<Rating> ratings = dao.getEvents(Rating.class);
-        for (Rating r : ratings.fast()) {
-            Preference p = r.getPreference();
-            if (p != null) {
-                total += p.getValue();
-                count += 1;
+        try {
+            for (Rating r : ratings.fast()) {
+                Preference p = r.getPreference();
+                if (p != null) {
+                    total += p.getValue();
+                    count += 1;
+                }
             }
+        } finally {
+            ratings.close();
         }
-        ratings.close();
 
         double avg = 0;
         if (count > 0) {

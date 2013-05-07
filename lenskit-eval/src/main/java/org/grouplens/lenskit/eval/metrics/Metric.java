@@ -24,7 +24,7 @@ package org.grouplens.lenskit.eval.metrics;
  * Base interface for metrics, which are used by evaluations to measure their results.
  *
  * @param <E> The type of evaluation.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public interface Metric<E> {

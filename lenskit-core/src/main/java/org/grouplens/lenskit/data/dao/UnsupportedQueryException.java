@@ -26,7 +26,7 @@ package org.grouplens.lenskit.data.dao;
 /**
  * Exception thrown when a data source receives an unsupported query.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public class UnsupportedQueryException extends IllegalArgumentException {

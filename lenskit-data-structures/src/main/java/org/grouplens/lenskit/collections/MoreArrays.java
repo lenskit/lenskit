@@ -23,7 +23,7 @@ package org.grouplens.lenskit.collections;
 /**
  * Additional array utilities.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class MoreArrays {
     private MoreArrays() {

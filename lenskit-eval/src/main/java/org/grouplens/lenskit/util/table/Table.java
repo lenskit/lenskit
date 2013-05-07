@@ -27,7 +27,7 @@ import java.util.List;
  * to call the filter method to find the rows that satisfy the conditions specified by users. And
  * table expose the functions of columns to enable users calling the functions on column.
  *
- * @author Shuo Chang<schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface Table extends List<Row> {
     Table filter(String header, Object data);

@@ -32,18 +32,15 @@ import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 
 import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
-import org.grouplens.lenskit.collections.BitSetIterator;
-import org.grouplens.lenskit.collections.IntIntervalList;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.collections.MoreArrays;
+import org.grouplens.lenskit.collections.*;
+import org.grouplens.lenskit.scored.AbstractScoredId;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.scored.ScoredIdBuilder;
 import org.grouplens.lenskit.symbols.Symbol;
 
 import com.google.common.base.Function;
@@ -74,7 +71,7 @@ import com.google.common.primitives.Longs;
  * vectors that are guaranteed to be unchanging, see
  * {@link ImmutableSparseVector}.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public abstract class SparseVector implements Iterable<VectorEntry>, Serializable {
@@ -247,6 +244,15 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         } else {
             return dft;
         }
+    }
+
+    /**
+     * Get the rating for the entry's key
+     * @param e A {@code VectorEntry} with the key to look up
+     * @return the key's value (or {@link Double#NaN} if no such value exists)
+     */
+    public double get(VectorEntry e) {
+        return get(e.getKey());
     }
 
     /**
@@ -652,4 +658,113 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public abstract SparseVector channel(Symbol channelSymbol);
 
+    /**
+     * Retrieve all symbols that map to side channels for this vector.
+     * @return A set of symbols, each of which identifies a side channel
+     *         of the vector.
+     */
+    public abstract Set<Symbol> getChannels();
+
+    /**
+     * Return a view of this vector as a {@code FastCollection} of
+     * {@code ScoredId} objects.
+     *
+     * @return A fast collection containing this vector's keys and values as
+     * {@code ScoredId} objects.
+     */
+    public FastCollection<ScoredId> scoredIds() {
+        return new FastScoredIdCollectionImpl();
+    }
+
+    private class FastScoredIdCollectionImpl extends CopyingFastCollection<ScoredId> {
+
+        private ScoredIdBuilder builder;
+
+        public FastScoredIdCollectionImpl() {
+            builder = new ScoredIdBuilder();
+        }
+
+        @Override
+        protected ScoredId copy(ScoredId elt) {
+            builder.clearChannels();
+            builder.setId(elt.getId());
+            builder.setScore(elt.getScore());
+            for (Symbol s : elt.getChannels()) {
+                builder.addChannel(s, elt.channel(s));
+            }
+
+            return builder.build();
+        }
+
+        @Override
+        public int size() {
+            return SparseVector.this.size();
+        }
+
+        @Override
+        public Iterator<ScoredId> fastIterator() {
+            return new FastIdIterImpl();
+        }
+    }
+
+    private class FastIdIterImpl implements Iterator<ScoredId> {
+
+        private Iterator<VectorEntry> entIter;
+        private ScoredIdImpl id;
+
+        public FastIdIterImpl() {
+            entIter = fastIterator();
+            id = new ScoredIdImpl();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return entIter.hasNext();
+        }
+
+        @Override
+        public ScoredId next() {
+            id.setEntry(entIter.next());
+            return id;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private class ScoredIdImpl extends AbstractScoredId {
+
+        private VectorEntry ent;
+
+        @Override
+        public long getId() {
+            return ent.getKey();
+        }
+
+        @Override
+        public double getScore() {
+            return ent.getValue();
+        }
+
+        @Override
+        public Set<Symbol> getChannels() {
+            return SparseVector.this.getChannels();
+        }
+
+        @Override
+        public double channel(Symbol s) {
+            return SparseVector.this.channel(s).get(ent);
+        }
+
+        @Override
+        public boolean hasChannel(Symbol s) {
+            return SparseVector.this.hasChannel(s);
+        }
+
+        public void setEntry(VectorEntry e) {
+            ent = e;
+        }
+    }
 }

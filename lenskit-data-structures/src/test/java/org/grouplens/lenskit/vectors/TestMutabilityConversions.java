@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.grouplens.common.test.MoreMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -31,7 +30,7 @@ import org.junit.Test;
 import com.google.common.collect.Iterators;
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestMutabilityConversions {
 
@@ -66,9 +65,7 @@ public class TestMutabilityConversions {
         assertThat(isvSimple.size(), equalTo(2));
 
         MutableSparseVector reSimple = isvSimple.mutableCopy();
-        assertThat(reSimple.size(), equalTo(2));
-        assertThat(reSimple.set(3, 77), notANumber());
-        assertThat(reSimple.size(), equalTo(3));  // changed!
+        assertThat(reSimple.size(), equalTo(2)); // unchanged
         assertThat(isvSimple.size(), equalTo(2)); // unchanged
         assertThat(simple.size(), equalTo(2));       // unchanged
     }

@@ -1,6 +1,6 @@
 import org.grouplens.lenskit.eval.data.crossfold.RandomOrder
 
-import org.grouplens.lenskit.knn.params.*
+import org.grouplens.lenskit.knn.NeighborhoodSize
 import org.grouplens.lenskit.knn.item.*
 import org.grouplens.lenskit.knn.user.*
 
@@ -46,7 +46,7 @@ trainTest {
 
         // apply some Bayesian smoothing to the mean values
         within(ItemUserMeanPredictor) {
-            set Damping to 25.0d
+            set MeanDamping to 25.0d
         }
     }
 
@@ -70,7 +70,7 @@ trainTest {
 
         // and apply some Bayesian damping to the baseline
         within(ItemUserMeanPredictor) {
-            set Damping to 25.0d
+            set MeanDamping to 25.0d
         }
     }
 }

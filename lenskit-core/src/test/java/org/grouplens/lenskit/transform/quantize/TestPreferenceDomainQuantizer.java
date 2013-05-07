@@ -32,7 +32,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestPreferenceDomainQuantizer {
     PreferenceDomain domain;

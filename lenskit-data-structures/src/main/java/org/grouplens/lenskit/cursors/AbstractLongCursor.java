@@ -31,7 +31,7 @@ import javax.annotation.Nonnull;
 /**
  * Abstract implementation of long cursors.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public abstract class AbstractLongCursor

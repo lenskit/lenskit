@@ -28,7 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
     private DataSource trainingData;
@@ -36,14 +36,11 @@ public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
     private Map<String, Object> attributes = new LinkedHashMap<String, Object>();
 
     public GenericTTDataCommand() {
-        super("TTData");
+        this(null);
     }
 
     public GenericTTDataCommand(String name) {
-        this();
-        if (name != null) {
-            setName(name);
-        }
+        super(name);
     }
 
     public GenericTTDataCommand setTrain(DataSource ds) {
@@ -56,6 +53,15 @@ public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
         return this;
     }
 
+    @Override
+    public String getName() {
+        if (name == null) {
+            return trainingData.getName();
+        } else {
+            return name;
+        }
+    }
+
     public Map<String, Object> getAttributes() {
         return attributes;
     }
@@ -65,6 +71,7 @@ public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
         return this;
     }
 
+    @Override
     public GenericTTDataSet call() {
         if (attributes.isEmpty()) {
             attributes.put("DataSet", name);

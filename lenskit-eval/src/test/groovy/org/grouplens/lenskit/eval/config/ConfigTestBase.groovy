@@ -25,7 +25,7 @@ import org.junit.Before
 /**
  * Base/helper class for testing configuration code snippets. Provides an
  * method which runs a code snippet as if it were a config script and returns the result.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 abstract class ConfigTestBase {
     protected EvalScriptEngine engine

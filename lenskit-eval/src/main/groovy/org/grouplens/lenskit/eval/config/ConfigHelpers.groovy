@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.eval.config
 
+import org.slf4j.LoggerFactory
+
 import static org.grouplens.lenskit.eval.config.ParameterTransforms.pickInvokable
 import org.apache.commons.lang3.reflect.ConstructorUtils
 import org.grouplens.lenskit.eval.Command
@@ -32,10 +34,12 @@ import org.grouplens.lenskit.eval.Command
  * <p>
  * <b>Warning</b>: here be dragons!
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 class ConfigHelpers {
+    private static def logger = LoggerFactory.getLogger(ConfigHelpers)
+
     static <T> Object makeCommandDelegate(EvalScriptEngine engine, Command<T> command) {
         def annot = command.class.getAnnotation(ConfigDelegate)
         if (annot == null) {
@@ -75,6 +79,7 @@ class ConfigHelpers {
      * inappropriate.
      */
     static Closure findCommandMethod(EvalScriptEngine engine, String name, args) {
+        logger.debug("searching for command {}", name)
         Class<? extends Command> commandClass = engine.getCommand(name)
         if (commandClass == null) return null
 
@@ -92,9 +97,11 @@ class ConfigHelpers {
     }
 
     static def makeCommandClosure(Class<? extends Command> cmd, EvalScriptEngine engine, Object[] args) {
+        logger.debug("making closure for command {}", cmd);
         Closure block = null
         Object[] trimmedArgs
         if (args.length > 0 && args[args.length - 1] instanceof Closure) {
+            logger.debug("command has configuration block")
             block = args[args.length - 1] as Closure
             trimmedArgs = Arrays.copyOf(args, args.length - 1)
         } else {

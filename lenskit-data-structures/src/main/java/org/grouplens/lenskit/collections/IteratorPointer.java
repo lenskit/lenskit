@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
 /**
  * A pointer wrapping an iterator.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class IteratorPointer<E> implements Pointer<E> {
     private Iterator<E> iterator;

@@ -9,11 +9,18 @@
   <artifactId>lenskit-api</artifactId>
   <name>LensKit API</name>
   <description>Recommender interfaces defined by LensKit.</description>
+
   <dependencies>
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>
       <artifactId>lenskit-data-structures</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-test</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

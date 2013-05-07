@@ -28,7 +28,7 @@ import org.apache.maven.plugin.logging.Log;
 
 /**
  * Logback appender that writes to the Maven log.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class MavenLogAppender<E extends ILoggingEvent> extends UnsynchronizedAppenderBase<E> {
     private Layout<E> layout;

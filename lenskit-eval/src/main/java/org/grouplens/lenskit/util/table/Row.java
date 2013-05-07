@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * One row of a data table.
  *
- * @author Shuo Chang<schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface Row extends Iterable<Object> {
     /**

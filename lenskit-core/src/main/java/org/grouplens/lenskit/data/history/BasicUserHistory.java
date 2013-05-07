@@ -39,7 +39,7 @@ import com.google.common.collect.Lists;
  * underlying list.
  *
  * @param <E> The type of event in this history.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> implements UserHistory<E> {
     private long user;

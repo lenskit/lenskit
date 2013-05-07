@@ -30,7 +30,7 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.params.Damping;
+import org.grouplens.lenskit.baseline.MeanDamping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -46,19 +46,12 @@ import org.slf4j.LoggerFactory;
  * mean <i>mu</i>), and <i>b<sub>u</sub></i> is the user's average offset (the average
  * difference between their ratings and the item-mean baseline).
  *
- * <p>It supports mean smoothing (see {@link Damping}).
+ * <p>It supports mean smoothing (see {@link MeanDamping}).
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @author John Riedl <riedl@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class ExtendedItemUserMeanScorer extends AbstractItemScorer {
-    /**
-     * A builder that creates ItemUserMeanPredictors.
-     *
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
-     */
-
     @SuppressWarnings("unused")
     private static final long serialVersionUID = 22L;
     private static final Logger logger = LoggerFactory.getLogger(ExtendedItemUserMeanScorer.class);
@@ -74,7 +67,7 @@ public class ExtendedItemUserMeanScorer extends AbstractItemScorer {
      */
     @Inject
     public ExtendedItemUserMeanScorer(DataAccessObject dao, ItemMeanModel inModel,
-                                      @Damping double inUserDamping) {
+                                      @MeanDamping double inUserDamping) {
         super(dao);
         model = inModel;
         userDamping = inUserDamping;

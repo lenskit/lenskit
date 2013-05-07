@@ -60,4 +60,3 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.knn.params.ModelSize;

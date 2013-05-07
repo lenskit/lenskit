@@ -5,6 +5,7 @@
     <sequential>
       <exec executable="${dot.executable}">
         <arg value="-Tsvg"/>
+        <arg value="-Grankdir=LR"/>
         <arg value="-o${project.build.directory}/@{name}.svg"/>
         <arg value="${project.build.directory}/@{name}.dot"/>
       </exec>

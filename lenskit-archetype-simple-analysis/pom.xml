@@ -11,7 +11,7 @@
   </parent>
 
   <artifactId>lenskit-archetype-simple-analysis</artifactId>
-  <name>Archetype - lenskit-archetype-simple-analysis</name>
+  <name>Simple Experiment Archetype</name>
   <packaging>maven-archetype</packaging>
 
   <build>

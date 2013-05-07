@@ -28,7 +28,7 @@ import org.grouplens.lenskit.transform.quantize.ValueArrayQuantizer;
 import org.junit.Test;
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestValueArrayQuantizer {
     @Test

@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.eval.config
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 
 trainTest {}

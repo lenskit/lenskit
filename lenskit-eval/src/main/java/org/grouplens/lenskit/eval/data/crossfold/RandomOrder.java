@@ -27,7 +27,7 @@ import java.util.Random;
 /**
  * Ordering that randomizes the list.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class RandomOrder<E> implements Order<E> {
 

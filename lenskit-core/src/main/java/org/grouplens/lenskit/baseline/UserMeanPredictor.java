@@ -24,7 +24,6 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -32,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import static java.lang.Math.abs;
 
@@ -42,9 +42,9 @@ import static java.lang.Math.abs;
  * actually computing the average offset from the global mean and adding back
  * the global mean for the returned prediction.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultProvider(UserMeanPredictor.Provider.class)
+@DefaultProvider(UserMeanPredictor.Builder.class)
 @Shareable
 public class UserMeanPredictor extends GlobalMeanPredictor {
     private static final Logger logger = LoggerFactory.getLogger(UserMeanPredictor.class);
@@ -52,9 +52,9 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
     /**
      * A builder that creates UserMeanPredictors.
      *
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Provider implements javax.inject.Provider<UserMeanPredictor> {
+    public static class Builder implements Provider<UserMeanPredictor> {
         private double smoothing = 0;
         private DataAccessObject dao;
 
@@ -65,8 +65,8 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
          * @param damping The damping term.
          */
         @Inject
-        public Provider(@Transient DataAccessObject dao,
-                        @Damping double damping) {
+        public Builder(@Transient DataAccessObject dao,
+                       @MeanDamping double damping) {
             this.dao = dao;
             smoothing = damping;
         }

@@ -26,7 +26,7 @@ package org.grouplens.lenskit.util.statistics;
  * Only the sum and the item count is stored, not the values them self.
  * </p>
  *
- * @author Matthias.Balke <matthias.balke@tu-dortmund.de>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
 public class AverageAccumulator {

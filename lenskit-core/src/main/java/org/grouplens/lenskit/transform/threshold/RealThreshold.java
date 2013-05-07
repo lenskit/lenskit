@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.transform.threshold;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.params.ThresholdValue;
 
 import javax.inject.Inject;
 import java.io.Serializable;

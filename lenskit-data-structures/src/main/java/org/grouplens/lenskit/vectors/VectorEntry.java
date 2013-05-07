@@ -23,8 +23,8 @@ package org.grouplens.lenskit.vectors;
 import javax.annotation.Nullable;
 
 /**
- * An entry in a vector. This represents the key-value pair at one entry
- * in a vector, similar to {@link java.util.Map.Entry} does for maps.
+ * An entry in a sparse vector. This represents the key-value pair at one entry
+ * in a sparse vector, similar to {@link java.util.Map.Entry} does for maps.
  * <p>
  * The entry class does not support a public setValue method; to set the
  * value at an entry on a mutable sparse vector, use
@@ -35,15 +35,15 @@ import javax.annotation.Nullable;
  * values, while the set operation on Mutable vectors allows the
  * element to be changed.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  * @since 0.11
  */
-public final class VectorEntry {
+public final class VectorEntry implements Cloneable {
     /**
      * The state of an entry in a sparse vector.
      *
-     * @author Michael Ekstrand
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      * @since 0.11
      */
     public static enum State {
@@ -162,5 +162,16 @@ public final class VectorEntry {
     @Nullable
     SparseVector getVector() {
         return vector;
+    }
+
+    @Override
+    public VectorEntry clone() {
+        VectorEntry e;
+        try {
+            e = (VectorEntry) super.clone();
+        } catch (CloneNotSupportedException exc) {
+            throw new AssertionError(); // This cannot happen
+        }
+        return e;
     }
 }

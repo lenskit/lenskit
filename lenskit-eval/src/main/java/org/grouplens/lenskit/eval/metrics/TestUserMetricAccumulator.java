@@ -23,8 +23,7 @@ package org.grouplens.lenskit.eval.metrics;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 
 /**
- * @author Matthias.Balke <matthias.balke@tu-dortmund.de>
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public interface TestUserMetricAccumulator {
@@ -33,7 +32,7 @@ public interface TestUserMetricAccumulator {
      *
      * @param user The user to evaluate.
      * @return The results of this user's evaluation, to be emitted in the
-     *         per-user table (if one is configured). The output can be
+     *         per-user table (if one is configured). The output can beEv
      *         {@code null} if the user could not be evaluated.
      */
     Object[] evaluate(TestUser user);

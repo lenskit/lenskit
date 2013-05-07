@@ -52,7 +52,7 @@ import static org.grouplens.lenskit.core.ContextWrapper.coerce;
  * This class is final for copying safety. This decision can be revisited.
  * </p>
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public final class LenskitRecommenderEngineFactory extends AbstractConfigContext implements RecommenderEngineFactory {
@@ -300,25 +300,32 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
     }
 
     /**
-     * Simulate an instantiation of the shared objects in a graph.
+     * Simulate an instantiation of the shared objects in a graph.  This method is made public
+     * only to facilitate analysis of LensKit graphs.
      *
      * @param graph The complete configuration graph.
      * @return A new graph that is identical to the original graph if it were
      *         subjected to the instantiation process.
      */
-    private Graph simulateInstantiation(Graph graph) {
+    public Graph simulateInstantiation(Graph graph) {
         Graph modified = graph.clone();
         Set<Node> toReplace = getShareableNodes(modified);
         InjectSPI spi = config.getSPI();
+        Set<Node> replacements = new LinkedHashSet<Node>();
+        logger.debug("simulating instantation of {} nodes", toReplace.size());
         for (Node node : toReplace) {
             CachedSatisfaction label = node.getLabel();
             assert label != null;
             if (!label.getSatisfaction().hasInstance()) {
                 Satisfaction instanceSat = spi.satisfyWithNull(label.getSatisfaction().getErasedType());
                 Node repl = new Node(instanceSat, label.getCachePolicy());
+                logger.debug("simulating instantiation of {}", node);
                 modified.replaceNode(node, repl);
+                replacements.add(repl);
             }
         }
+        Set<Node> tts = removeTransientEdges(modified, replacements);
+        removeOrphanSubgraphs(modified, tts);
         return modified;
     }
 
@@ -330,13 +337,19 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
      * @return The set of tail nodes of removed edges.
      */
     private Set<Node> removeTransientEdges(Graph graph, Set<Node> nodes) {
+        // Tail nodes of removed edges (return value)
         Set<Node> targets = new HashSet<Node>();
-        Set<Node> seen = new HashSet<Node>();
-        Queue<Node> work = new LinkedList<Node>();
-        work.addAll(nodes);
-        seen.addAll(nodes);
+        // Nodes we have seen in our traversal (set of members of the queue)
+        Set<Node> seen = new HashSet<Node>(nodes);
+        // The work queue
+        Queue<Node> work = new ArrayDeque<Node>(nodes);
+        // Queue of removals, to avoid concurrent modification
+        Queue<Edge> removals = new ArrayDeque<Edge>();
+
+        // Pump the work queue
         while (!work.isEmpty()) {
             Node node = work.remove();
+            // find and queue removals
             for (Edge e : graph.getOutgoingEdges(node)) {
                 Node nbr = e.getTail();
 
@@ -344,14 +357,21 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
                 Desire desire = e.getDesire();
                 assert desire != null;
                 if (GraphtUtils.desireIsTransient(desire)) {
-                    graph.removeEdge(e);
+                    removals.add(e);
                     targets.add(nbr);
                 } else if (!seen.contains(nbr)) {
                     seen.add(nbr);
                     work.add(nbr);
                 }
             }
+
+            // process removals
+            while (!removals.isEmpty()) {
+                graph.removeEdge(removals.remove());
+            }
+            // invariant: removals is empty
         }
+
         return targets;
     }
 

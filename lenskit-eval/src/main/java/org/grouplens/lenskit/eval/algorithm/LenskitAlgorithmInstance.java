@@ -34,6 +34,7 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.config.BuilderCommand;
+import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -48,7 +49,7 @@ import java.util.Map;
 /**
  * An instance of a recommender algorithm to be benchmarked.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @BuilderCommand(LenskitAlgorithmInstanceCommand.class)
 public class LenskitAlgorithmInstance implements AlgorithmInstance {
@@ -181,8 +182,36 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
         }
 
         @Override
+        public LenskitRecommender getRecommender() {
+            return recommender;
+        }
+
+        @Override
         public void close() {
             recommender.close();
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("LenskitAlgorithm(")
+          .append(getName())
+          .append(")");
+        if (!attributes.isEmpty()) {
+            sb.append("[");
+            boolean first = true;
+            for (Map.Entry<String,Object> e: attributes.entrySet()) {
+                if (!first) {
+                    sb.append(", ");
+                }
+                sb.append(e.getKey())
+                  .append("=")
+                  .append(e.getValue().toString());
+                first = false;
+            }
+            sb.append("]");
+        }
+        return sb.toString();
     }
 }

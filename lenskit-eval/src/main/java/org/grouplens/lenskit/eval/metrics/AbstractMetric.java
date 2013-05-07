@@ -23,16 +23,18 @@ package org.grouplens.lenskit.eval.metrics;
 /**
  * A simple metric base class that tracks the current evaluation.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public abstract class AbstractMetric<E> implements Metric<E> {
     private E currentEvaluation;
 
+    @Override
     public void startEvaluation(E eval) {
         currentEvaluation = eval;
     }
 
+    @Override
     public void finishEvaluation() {
         currentEvaluation = null;
     }

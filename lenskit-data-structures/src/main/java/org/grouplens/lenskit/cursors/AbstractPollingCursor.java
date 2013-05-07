@@ -28,7 +28,7 @@ import java.util.NoSuchElementException;
  * next()/hasNext() implementation to a simple method, {@link #poll()}.
  *
  * @param <T>
- * @author Michael Ludwig
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {

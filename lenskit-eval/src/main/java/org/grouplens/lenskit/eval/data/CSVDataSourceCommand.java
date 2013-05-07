@@ -26,30 +26,27 @@ import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractCommand;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 
 /**
  * Command to return a CSV data source.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
     String delimiter = ",";
-    String sourceName;
     File inputFile;
     boolean cache = true;
     PreferenceDomain domain;
     Function<DAOFactory, DAOFactory> wrapper;
 
     public CSVDataSourceCommand() {
-        super("CSVSource");
+        this(null);
     }
 
     public CSVDataSourceCommand(String name) {
-        super();
-        if (name != null) {
-            setName(name);
-        }
+        super(name);
     }
 
     /**
@@ -60,8 +57,18 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
      */
     @Override
     public CSVDataSourceCommand setName(String name) {
-        sourceName = name;
+        this.name = name;
         return this;
+    }
+
+    @Nonnull
+    @Override
+    public String getName() {
+        if (name == null) {
+            return inputFile.getName();
+        } else {
+            return name;
+        }
     }
 
     /**
@@ -125,18 +132,18 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
      *
      * @return The configured data source.
      */
-
+    @Override
     public CSVDataSource call() {
         // if no name, use the file name
-        if (sourceName == null && inputFile != null) {
-            sourceName = inputFile.toString();
+        if (name == null && inputFile != null) {
+            name = inputFile.toString();
         }
         // if no file, use the name
-        if (inputFile == null && sourceName != null) {
-            inputFile = new File(sourceName);
+        if (inputFile == null && name != null) {
+            inputFile = new File(name);
         }
         // by now we should have a file
         Preconditions.checkState(inputFile != null, "no input file specified");
-        return new CSVDataSource(sourceName, inputFile, delimiter, cache, domain, wrapper);
+        return new CSVDataSource(name, inputFile, delimiter, cache, domain, wrapper);
     }
 }

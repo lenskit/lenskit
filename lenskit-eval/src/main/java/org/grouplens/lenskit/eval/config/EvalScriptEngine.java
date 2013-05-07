@@ -45,7 +45,7 @@ import java.util.*;
  * Load and process configuration files. Also provides helper methods used by the
  * configuration scripts to locate & invoke methods.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public class EvalScriptEngine {
@@ -218,7 +218,7 @@ public class EvalScriptEngine {
         try {
             Properties props = new Properties();
             props.load(istr);
-            Object pv = props.get("command").toString();
+            Object pv = props.get("command");
             String className = pv == null ? null : pv.toString();
             if (className == null) {
                 return null;

@@ -33,7 +33,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * such). All exceptions must be clearly documented, and should only be in
  * contexts such as fast iteration.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public abstract class Preference {

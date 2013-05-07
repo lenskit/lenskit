@@ -27,7 +27,7 @@ import java.util.Comparator;
 /**
  * Representation of a single neighboring user.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class Neighbor {
     public final long user;

@@ -28,7 +28,7 @@ import java.util.Collection;
 /**
  * Abstract implementation of BaselinePredictor.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class AbstractBaselinePredictor implements BaselinePredictor {
     /**
