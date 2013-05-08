@@ -45,13 +45,15 @@ public class ML100KTestSuite {
         final File dataDir = dataProp != null ? new File(dataProp) : new File("data/ml-100k");
         final File inputFile = new File(dataDir, INPUT_FILE_NAME);
         if (dataProp == null) {
-            /* If this assumption fails, put an unzipped copy of the MovieLens data set
-             * in the data directory (specified by the lenskit.movielens.100k property, or
-             * in the data/ml-100k directory. */
-            assumeTrue("ML data set should be available", inputFile.exists());
+            assumeTrue("MovieLens should be available. To correct this, unpack the" +
+                       " MovieLens 100K data set into data/ml-100k, or set the" +
+                       " lenskit.movielens.100k property to point to the location" +
+                       " of an unpacked copy of the data set.  For more details, see" +
+                       " http://bitbucket.org/grouplens/lenskit/wiki/ML100K", inputFile.exists());
         } else if (!inputFile.exists()) {
             // if the property is set, fail fatally if it doesn't work
-            throw new FileNotFoundException("ML data set at " + inputFile);
+            throw new FileNotFoundException("ML data set at " + inputFile + ". " +
+                                            "See <https://bitbucket.org/grouplens/lenskit/wiki/ML100K>.");
         }
         daoFactory = SimpleFileRatingDAO.Factory.caching(inputFile, "\t");
     }
