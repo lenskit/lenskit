@@ -53,6 +53,16 @@ abstract class EvalScript extends Script {
         engine = ece
     }
 
+    /**
+     * Evaluate another script.
+     * @param file The script to evaluate.
+     * @param args The arguments to the script.
+     * @return The return value of the script (typically the return value of its last expression).
+     */
+    Object script(File file, String... args) {
+        return engine.execute(file, args)
+    }
+
     def methodMissing(String name, args) {
         logger.debug("searching for eval command {}", name)
         def method = ConfigHelpers.findCommandMethod(engine, name, args)
