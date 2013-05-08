@@ -59,7 +59,7 @@ abstract class EvalScript extends Script {
      * @param args The arguments to the script.
      * @return The return value of the script (typically the return value of its last expression).
      */
-    Object script(File file, String... args) {
+    Object evalScript(File file, String... args) {
         return engine.execute(file, args)
     }
 
