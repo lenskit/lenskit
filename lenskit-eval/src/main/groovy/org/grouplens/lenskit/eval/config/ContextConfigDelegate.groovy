@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.config
 
+import org.grouplens.grapht.Module
 import org.grouplens.lenskit.core.LenskitConfigContext
 
 /**
@@ -30,6 +31,24 @@ class ContextConfigDelegate {
 
     ContextConfigDelegate(LenskitConfigContext ctx) {
         context = ctx;
+    }
+
+    /**
+     * Use a closure as additional configuration
+     * @param cl A closure that is run on this context to do additional configuration.
+     */
+    def include(Closure cl) {
+        use(ConfigHelpers) {
+            cl.callWithDelegate(this)
+        }
+    }
+
+    /**
+     * Include a module in this configuration.
+     * @param mod The module to include.
+     */
+    def include(Module mod) {
+        mod.configure(context)
     }
 
     def within(Object... args) {
