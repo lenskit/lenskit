@@ -56,6 +56,9 @@ import java.util.List;
 public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     private static Logger logger = LoggerFactory.getLogger(FunkSVDModelBuilder.class);
 
+    /**
+     * The feature count. This is used by {@link #get()} and {@link #computeTrailingValue(int)}.
+     */
     protected final int featureCount;
     protected final BaselinePredictor baseline;
     protected final PreferenceSnapshot snapshot;
