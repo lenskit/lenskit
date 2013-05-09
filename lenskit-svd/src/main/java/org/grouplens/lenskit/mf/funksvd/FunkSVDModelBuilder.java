@@ -102,6 +102,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
             DoubleArrays.fill(userFeatures[f], initialValue);
             DoubleArrays.fill(itemFeatures[f], initialValue);
 
+
             FeatureInfo.Builder fib = new FeatureInfo.Builder(f);
             trainFeature(f, estimates, userFeatures[f], itemFeatures[f], fib);
             summarizeFeature(userFeatures[f], itemFeatures[f], fib);
@@ -121,11 +122,27 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     }
 
     /**
+     * Compute the trailing value to assume after a feature. The default implementation assumes
+     * all remaining features containing {@link #initialValue}, returning {@code
+     * (featureCount - feature - 1) * initialValue * initialValue}.  This is used by the default
+     * implementation of {@link #trainFeature(int, TrainingEstimator, double[], double[], FeatureInfo.Builder)}.
+     *
+     * @param feature The feature number.
+     * @return The trailing value to assume.
+     */
+    protected double computeTrailingValue(int feature) {
+        // We assume that all subsequent features have initialValue
+        // We can therefore pre-compute the "trailing" prediction value, as it
+        // will be the same for all ratings for this feature.
+        return (featureCount - feature - 1) * initialValue * initialValue;
+    }
+
+    /**
      * Train a feature using a collection of ratings.  This method iteratively calls {@link
      * #doFeatureIteration(TrainingEstimator, FastCollection, double[], double[], double)} to train
      * the feature.  It can be overridden to customize the feature training strategy.
      *
-     * @param feature   The feature number.
+     * @param feature   The number of the current feature.
      * @param estimates The current estimator.  This method is <b>not</b> expected to update the
      *                  estimator.
      * @param ufvs      The user feature values.  This has been initialized to the initial value,
@@ -142,11 +159,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     protected void trainFeature(int feature, TrainingEstimator estimates,
                                 double[] ufvs, double[] ifvs,
                                 FeatureInfo.Builder fib) {
-        // We assume that all subsequent features have initialValue
-        // We can therefore pre-compute the "trailing" prediction value, as it
-        // will be the same for all ratings for this feature.
-        final double trail = (featureCount - feature - 1) * initialValue * initialValue;
-
+        final double trail = computeTrailingValue(feature);
         double rmse = Double.MAX_VALUE;
         TrainingLoopController controller = rule.getTrainingLoopController();
         FastCollection<IndexedPreference> ratings = snapshot.getRatings();
