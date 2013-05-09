@@ -131,7 +131,7 @@ public class TestVec {
     }
 
     @Test
-    public void testAdd() {
+    public void testAddVector() {
         MutableVec mv = MutableVec.wrap(new double[]{3, 2, 5});
         assertThat(mv.sum(), closeTo(10));
         mv.add(v1);
@@ -139,6 +139,14 @@ public class TestVec {
         assertThat(mv.get(1), closeTo(5));
         assertThat(mv.get(2), closeTo(10));
         assertThat(mv.sum(), closeTo(19));
+    }
+
+    @Test
+    public void testAddValue() {
+        MutableVec mv = v1.mutableCopy();
+        double ov = mv.add(1, 2);
+        assertThat(ov, closeTo(3));
+        assertThat(mv.get(1), closeTo(5));
     }
 
     @Test

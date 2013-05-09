@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 
 /**
  * Mutable {@link Vec}.  This vector can be modified and is not
@@ -70,6 +71,30 @@ public class MutableVec extends Vec {
         final double old = data[i];
         data[i] = v;
         return old;
+    }
+
+    /**
+     * Add a value to an entry in this vector.
+     *
+     * @param i The index.
+     * @param v The value to set.
+     * @return The old value at {@code i}.
+     * @throws IllegalArgumentException if {@code i} is not a valid index in this vector.
+     */
+    public double add(int i, double v) {
+        Preconditions.checkElementIndex(i, size());
+        final double old = data[i];
+        data[i] = v + old;
+        return old;
+    }
+
+    /**
+     * Fill the vector with a value.
+     *
+     * @param v The value with which to fill the vector.
+     */
+    public void fill(double v) {
+        DoubleArrays.fill(data, v);
     }
 
     /**
