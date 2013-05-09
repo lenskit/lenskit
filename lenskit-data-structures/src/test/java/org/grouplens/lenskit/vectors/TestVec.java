@@ -169,4 +169,42 @@ public class TestVec {
         }
         assertThat(v.sum(), closeTo(0));
     }
+
+    @Test
+    public void testSetVec() {
+        MutableVec mv = v1.mutableCopy();
+        mv.set(v2);
+        assertThat(mv, equalTo(v2));
+    }
+
+    @Test
+    public void testSetVecMismatch() {
+        MutableVec mv = v1.mutableCopy();
+        try {
+            mv.set(single);
+            fail("set with mismatched vector dimension should fail");
+        } catch (IllegalArgumentException e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testSetArray() {
+        MutableVec mv = v1.mutableCopy();
+        mv.set(new double[] {101, 102, 103});
+        assertThat(mv.get(0), closeTo(101));
+        assertThat(mv.get(1), closeTo(102));
+        assertThat(mv.get(2), closeTo(103));
+    }
+
+    @Test
+    public void testSetArrayMismatch() {
+        MutableVec mv = v1.mutableCopy();
+        try {
+            mv.set(new double[1]);
+            fail("set with mismatched array dimension should fail");
+        } catch (IllegalArgumentException e) {
+            /* expected */
+        }
+    }
 }

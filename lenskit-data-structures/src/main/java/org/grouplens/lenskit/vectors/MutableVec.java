@@ -98,6 +98,26 @@ public class MutableVec extends Vec {
     }
 
     /**
+     * Copy a vector into this vector.
+     *
+     * @param v The vector to copy in.
+     */
+    public void set(Vec v) {
+        Preconditions.checkArgument(v.size() == size(), "incompatible vector dimensions");
+        System.arraycopy(v.data, 0, data, 0, v.size());
+    }
+
+    /**
+     * Copy an array into this vector.
+     *
+     * @param v The array to copy in.
+     */
+    public void set(double[] v) {
+        Preconditions.checkArgument(v.length == size(), "incompatible vector dimensions");
+        System.arraycopy(v, 0, data, 0, v.length);
+    }
+
+    /**
      * Add another vector to this vector.
      * @param v The other vector.
      * @throws IllegalArgumentException if {@code v} has a different dimension than this vector.
