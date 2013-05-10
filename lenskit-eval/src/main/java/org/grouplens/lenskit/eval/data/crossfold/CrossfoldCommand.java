@@ -20,11 +20,8 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.*;
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongListIterator;
-import it.unimi.dsi.fastutil.longs.LongLists;
 
 import java.io.File;
 import java.io.IOException;
