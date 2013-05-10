@@ -47,24 +47,19 @@ public class ErrorThresholdStoppingCondition implements StoppingCondition, Seria
 
     private final double threshold;
     private final int minIterations;
-    private final int thresholdIterations;
 
     /**
      * Construct a new error threshold stop.
      *
      * @param thresh      The threshold.
      * @param minIter     The minimum number of iterations.
-     * @param threshIters The number of iterations the error must be under the threshold to stop.
      */
     @Inject
     public ErrorThresholdStoppingCondition(@StoppingThreshold double thresh,
-                                           @MinimumIterations int minIter,
-                                           @ThresholdIterations int threshIters) {
+                                           @MinimumIterations int minIter) {
         Preconditions.checkArgument(thresh > 0, "threshold must be positive");
-        Preconditions.checkArgument(threshIters > 0, "threshold iterations must be positive");
         threshold = thresh;
         minIterations = minIter;
-        thresholdIterations = threshIters;
     }
 
     /**
@@ -74,16 +69,6 @@ public class ErrorThresholdStoppingCondition implements StoppingCondition, Seria
      */
     public ErrorThresholdStoppingCondition(double thresh) {
         this(thresh, 0);
-    }
-
-    /**
-     * Create a new threshold stop with a threshold itertaion count of 1.
-     *
-     * @param thresh   The threshold value.
-     * @param minIters The minimum number of iterations.
-     */
-    public ErrorThresholdStoppingCondition(double thresh, int minIters) {
-        this(thresh, minIters, 1);
     }
 
     @Override
@@ -132,7 +117,7 @@ public class ErrorThresholdStoppingCondition implements StoppingCondition, Seria
             if (Math.abs(error) < threshold) {
                 goodIters += 1;
             }
-            if (iterations >= minIterations && goodIters >= thresholdIterations) {
+            if (iterations >= minIterations) {
                 return false;
             } else {
                 ++iterations;
