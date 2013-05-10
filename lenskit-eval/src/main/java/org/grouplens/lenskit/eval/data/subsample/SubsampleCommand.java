@@ -186,7 +186,7 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
                         subsampleFraction, source.getName());
             TableWriter subsampleWriter = CSVWriter.open(subsampleFile, null);
             try {
-                mode.doSample(daoSnap, subsampleWriter, subsampleFraction);
+                mode.doSample(daoSnap, subsampleWriter, subsampleFraction, getConfig());
             } finally {
                 LKFileUtils.close(subsampleWriter);
             }
