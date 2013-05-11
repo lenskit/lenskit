@@ -72,9 +72,10 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     private boolean isForced;
     private boolean splitUsers = true;
 
+    private boolean cacheOutput = true;
+
     @Nullable
     private Function<DAOFactory, DAOFactory> wrapper;
-
 
     public CrossfoldCommand() {
         super("Crossfold");
@@ -216,6 +217,19 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     
     public void setSplitUsers(boolean splitUsers) {
         this.splitUsers = splitUsers;
+    }
+
+    /**
+     * Configure whether the data sets created by the crossfold will have
+     * caching turned on.
+     *
+     * @param on Whether the data sets returned should cache.
+     * @return The command (for chaining)
+     * @see CSVDataSource#setCache(boolean)
+     */
+    public CrossfoldCommand setCache(boolean on) {
+        cacheOutput = on;
+        return this;
     }
     
     private CrossfoldCommand initialize() {
@@ -489,10 +503,12 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
             CSVDataSourceCommand trainCommand = new CSVDataSourceCommand()
                     .setWrapper(wrapper)
                     .setDomain(source.getPreferenceDomain())
+                    .setCache(cacheOutput)
                     .setFile(trainFiles[i]);
             CSVDataSourceCommand testCommand = new CSVDataSourceCommand()
                     .setWrapper(wrapper)
                     .setDomain(source.getPreferenceDomain())
+                    .setCache(cacheOutput)
                     .setFile(testFiles[i]);
             GenericTTDataCommand tt = new GenericTTDataCommand(name + "." + i);
 
