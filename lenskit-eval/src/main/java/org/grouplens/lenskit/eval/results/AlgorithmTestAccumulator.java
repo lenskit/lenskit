@@ -25,7 +25,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 /**
  * Accumulates the results of a single test pass on a single algorithm.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface AlgorithmTestAccumulator {
     /**

@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Scored item accumulator with no upper bound.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulator {
     private List<ScoredId> scores;

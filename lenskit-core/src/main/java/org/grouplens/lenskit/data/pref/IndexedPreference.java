@@ -23,7 +23,7 @@ package org.grouplens.lenskit.data.pref;
 /**
  * A Preference that also provides 0-based indices for the user, item, and itself.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public abstract class IndexedPreference extends Preference {

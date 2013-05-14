@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.grouplens.lenskit.vectors.SparseVectorTestCommon.closeTo;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -36,7 +36,7 @@ import org.junit.Test;
 import com.google.common.collect.Iterators;
 
 /**
- * @author John Riedl <riedl@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestMutableSparseVectorChannels {
     Symbol fooSymbol = Symbol.of("foo");

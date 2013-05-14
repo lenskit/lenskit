@@ -39,6 +39,27 @@ LensKit Release Notes
 
   * Replaced <<<LongScoredList>>> with a list of <<<ScoredId>>> objects in Item-Item
     model construction to support side channels (#issue(219)).
+
+  * <<Config change>>: Removed dedicated <<<params>>> packages, moving parameters to saner locations
+    (#issue(219)):
+
+    * Similarity damping is now configured with <<<o.g.l.vectors.similarity.SimilarityDamping>>>.
+
+    * Baseline (and normalizer) damping is now configured with <<<o.g.l.baseline.MeanDamping>>>.
+
+    * Slope One deviation damping is now configured with <<<o.g.l.slopeone.DeviationDamping>>>.
+
+    * <<<@EventType>>> is now in <<<o.g.l.data.event>>>.
+
+    * <<<@SigWeightThreshold>>> is now in <<<o.g.l.vectors.similarity>>>.
+
+    * <<<@ThresholdValue>>> is now in <<<o.g.l.transform.threshold>>>.
+
+    * Item-item model size is now configured with <<<o.g.l.knn.item.ModelSize>>>.
+
+    * k-NN neighborhood sizes are now configured with <<<o.g.l.knn.NeighborhoodSize>>>.
+
+    * FunkSVD feature count is now configured with <<<o.g.l.funksvd.FeatureCount>>>.
   
   []
 
@@ -61,7 +82,7 @@ LensKit Release Notes
   * <<Incompatible change>>: moved iterative support code to <<<o.g.l.iterative>>> and
     changed parameters. The <<<StoppingCondition>>> interface and implementations now live
     in this package; common iterative method parameters are now defined by annotations in
-    <<<o.g.l.iterative.params>>>.
+    <<<o.g.l.iterative>>>.
 
     * <<<IterationCount>>> is moved to the new package.
 

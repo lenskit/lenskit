@@ -57,7 +57,7 @@ import java.util.*;
  * normalized.subtract(normFactor);
  * </pre>
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public final class MutableSparseVector extends SparseVector implements Serializable {

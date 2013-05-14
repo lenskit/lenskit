@@ -15,9 +15,11 @@
       <artifactId>lenskit-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+
     <dependency>
-      <groupId>org.grouplens.common</groupId>
-      <artifactId>common-test</artifactId>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-test</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

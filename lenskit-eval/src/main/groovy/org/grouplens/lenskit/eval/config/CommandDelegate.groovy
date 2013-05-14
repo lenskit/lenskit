@@ -40,7 +40,7 @@ import org.grouplens.lenskit.eval.Command
  *     delegate before the object is built.</li>
  * </ul>
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 class CommandDelegate<T> {

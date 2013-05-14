@@ -34,7 +34,7 @@ import java.util.*;
 /**
  * A Grapht injector that uses a precomputed graph.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class StaticInjector implements Injector {
     private InjectSPI spi;

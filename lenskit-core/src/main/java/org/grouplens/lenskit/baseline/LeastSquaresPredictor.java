@@ -29,8 +29,8 @@ import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
-import org.grouplens.lenskit.iterative.params.LearningRate;
-import org.grouplens.lenskit.iterative.params.RegularizationTerm;
+import org.grouplens.lenskit.iterative.LearningRate;
+import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -47,7 +47,7 @@ import java.io.Serializable;
 /**
  * Generate baseline predictions with regularization.
  *
- * @author Ark Xu <xuxxx728@umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultProvider(LeastSquaresPredictor.Builder.class)
 @Shareable

@@ -29,7 +29,7 @@ import java.util.List;
  * Partition a list by fraction.
  *
  * @param <E>
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class FractionPartition<E> implements PartitionAlgorithm<E> {
 

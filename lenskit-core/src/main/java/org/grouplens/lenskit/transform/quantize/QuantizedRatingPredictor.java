@@ -33,7 +33,7 @@ import javax.inject.Inject;
 
 /**
  * A rating predictor wrapper that quantizes predictions.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class QuantizedRatingPredictor extends AbstractRatingPredictor implements RatingPredictor {
     private RatingPredictor basePredictor;

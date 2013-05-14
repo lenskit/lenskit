@@ -47,7 +47,7 @@ import javax.inject.Inject;
  * <a href="http://www.grouplens.org/node/212">Sarwar et al., 2002</a> with the
  * user's ratings.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class FunkSVDItemScorer extends AbstractItemScorer {
 

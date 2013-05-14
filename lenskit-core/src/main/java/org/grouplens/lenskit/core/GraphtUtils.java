@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * Helper utilities for Grapht integration.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
 public final class GraphtUtils {

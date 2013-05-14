@@ -24,7 +24,6 @@ import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -34,7 +33,7 @@ import java.io.Serializable;
 /**
  * Similarity function using Spearman rank correlation.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
@@ -43,8 +42,8 @@ public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
     private final PearsonCorrelation pearson;
 
     @Inject
-    public SpearmanRankCorrelation(@Damping double shrink) {
-        pearson = new PearsonCorrelation(shrink);
+    public SpearmanRankCorrelation(@SimilarityDamping double damping) {
+        pearson = new PearsonCorrelation(damping);
     }
 
     public SpearmanRankCorrelation() {

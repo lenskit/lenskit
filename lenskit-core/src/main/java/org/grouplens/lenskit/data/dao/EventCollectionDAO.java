@@ -48,7 +48,7 @@ import static org.grouplens.lenskit.collections.CollectionUtils.fast;
 /**
  * Data source backed by a collection of events.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public class EventCollectionDAO extends AbstractDataAccessObject {
@@ -57,7 +57,7 @@ public class EventCollectionDAO extends AbstractDataAccessObject {
      * is not modified by other code, so a singleton DAO is created and returned
      * for both {@link #create()} and {@link #snapshot()}.
      *
-     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     @ThreadSafe
     public static class Factory implements DAOFactory {

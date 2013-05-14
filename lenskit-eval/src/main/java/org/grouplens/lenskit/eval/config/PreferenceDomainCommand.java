@@ -28,7 +28,7 @@ import org.grouplens.lenskit.eval.CommandException;
 /**
  * Builder for {@link PreferenceDomain} objects.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class PreferenceDomainCommand extends AbstractCommand<PreferenceDomain> {
     private Double min;

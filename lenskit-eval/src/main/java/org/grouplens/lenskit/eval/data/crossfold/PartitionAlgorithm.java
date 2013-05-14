@@ -27,7 +27,7 @@ import java.util.List;
  * algorithms are typically used to hold out some items by putting
  * them into the second partition.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface PartitionAlgorithm<E> {
     /**

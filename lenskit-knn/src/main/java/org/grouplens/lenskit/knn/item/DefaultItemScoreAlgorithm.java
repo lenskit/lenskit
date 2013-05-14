@@ -22,7 +22,7 @@ package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
-import org.grouplens.lenskit.knn.params.NeighborhoodSize;
+import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
@@ -40,7 +40,7 @@ import java.io.Serializable;
  * Default item scoring algorithm. It uses up to {@link NeighborhoodSize} neighbors to
  * score each item.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializable {

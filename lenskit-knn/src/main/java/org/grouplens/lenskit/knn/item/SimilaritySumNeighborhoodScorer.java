@@ -31,7 +31,7 @@ import java.io.Serializable;
 /**
  * Neighborhood scorer that computes the sum of neighborhood similarities.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 @Singleton

@@ -31,7 +31,7 @@ import javax.annotation.Nonnull
  * Default runner for commands.
  *
  * @since 1.0
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class DefaultCommandRunner implements CommandRunner {
     private static final Logger logger = LoggerFactory.getLogger(DefaultCommandRunner)

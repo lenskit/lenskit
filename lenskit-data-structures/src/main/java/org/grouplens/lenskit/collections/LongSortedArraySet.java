@@ -38,7 +38,7 @@ import java.util.NoSuchElementException;
  *
  * <p>No orders are supported other than the natural ordering.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 @Immutable

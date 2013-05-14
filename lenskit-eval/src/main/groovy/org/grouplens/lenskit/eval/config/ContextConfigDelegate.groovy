@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval.config
 import org.grouplens.lenskit.core.LenskitConfigContext
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class ContextConfigDelegate {
     LenskitConfigContext context
@@ -42,7 +42,7 @@ class ContextConfigDelegate {
             block = args[args.length - 1]
             reals = Arrays.copyOf(args, args.length - 1)
         }
-        LenskitConfigContext ctx = context.metaClass.invokeMethod(context, "in", reals)
+        LenskitConfigContext ctx = context.metaClass.invokeMethod(context, "within", reals)
         if (block != null) {
             use(ConfigHelpers) {
                 block.callWithDelegate(new ContextConfigDelegate(ctx))

@@ -33,7 +33,7 @@ import java.util.List;
  * data structures such as in-memory caches to be shared between jobs, with only
  * one such set in memory at a time.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
 public interface JobGroup {

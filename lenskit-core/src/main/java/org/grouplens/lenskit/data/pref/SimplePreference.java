@@ -25,7 +25,7 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Basic preference implementation that stores data in fields.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Immutable
 public final class SimplePreference extends Preference {

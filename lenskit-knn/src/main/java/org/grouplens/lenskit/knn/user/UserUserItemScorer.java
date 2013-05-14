@@ -47,7 +47,7 @@ import java.util.Collection;
 import static java.lang.Math.abs;
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class UserUserItemScorer extends AbstractItemScorer {
     private static final double MINIMUM_SIMILARITY = 0.001;

@@ -37,7 +37,7 @@ import java.util.List;
  * Simple evaluator that records user, rating and prediction counts and computes
  * recommender coverage over the queried items.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class CoveragePredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(CoveragePredictMetric.class);

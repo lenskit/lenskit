@@ -32,7 +32,7 @@ import java.util.List;
  * aggregate error information in the {@link TestUserMetricAccumulator#finalResults()}
  * method.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public interface TestUserMetric extends Metric<TrainTestEvalCommand> {

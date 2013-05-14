@@ -20,13 +20,15 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import java.io.Serializable;
-
+import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.util.Index;
+
+import java.io.Serializable;
 
 /**
  * The FunkSVD model class.
@@ -63,6 +65,16 @@ public class FunkSVDModel implements Serializable {
     public final ClampingFunction clampingFunction;
 
     /**
+     * The number of iterations used to train each feature.
+     */
+    public final IntList featureIterations;
+
+    /**
+     * The final RMSE of each iteration.
+     */
+    public final DoubleList featureRMSE;
+
+    /**
      * The item index.
      */
     public final Index itemIndex;
@@ -87,7 +99,7 @@ public class FunkSVDModel implements Serializable {
 
     public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
                         ClampingFunction clamp, Index iidx, Index uidx,
-                        BaselinePredictor baseline) {
+                        BaselinePredictor baseline, IntList fiters, DoubleList frmse) {
         featureCount = nfeatures;
         clampingFunction = clamp;
         this.baseline = baseline;
@@ -104,6 +116,8 @@ public class FunkSVDModel implements Serializable {
         averItemFeatures = getAverageFeatureVector(ifeats, numItem, featureCount);
         averUserFeatures = getAverageFeatureVector(ufeats, numUser, featureCount);
 
+        featureIterations = fiters;
+        featureRMSE = frmse;
     }
 
     private double[] getAverageFeatureVector(double[][] twoDimMatrix, int dimension, int feature) {

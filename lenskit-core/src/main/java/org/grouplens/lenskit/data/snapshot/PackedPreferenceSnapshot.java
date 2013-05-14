@@ -49,7 +49,7 @@ import java.util.List;
  * ephemeral. Because of this, the snapshot will not be included in built
  * RecommenderEngines, so it is not Serializable.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultProvider(PackedPreferenceSnapshot.Provider.class)
 @Shareable

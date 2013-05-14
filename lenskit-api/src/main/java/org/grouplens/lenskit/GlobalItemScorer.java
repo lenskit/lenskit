@@ -33,7 +33,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * scores, purchase probabilities, or any other real-valued score which can be
  * assigned to an item for a given item.
  *
- * @author Steven Chang <schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  * @since 0.10
  */

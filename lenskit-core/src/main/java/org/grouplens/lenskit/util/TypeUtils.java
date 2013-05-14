@@ -35,7 +35,7 @@ import com.google.common.collect.Sets;
 /**
  * Various type utilities used in LensKit.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TypeUtils {
     /**

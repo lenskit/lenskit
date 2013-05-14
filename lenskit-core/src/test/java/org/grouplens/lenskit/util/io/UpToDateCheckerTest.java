@@ -31,7 +31,7 @@ import static org.junit.Assert.assertThat;
 
 /**
  * Test the {@link UpToDateChecker}.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class UpToDateCheckerTest {
     UpToDateChecker checker;

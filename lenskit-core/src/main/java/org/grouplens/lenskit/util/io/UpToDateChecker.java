@@ -25,7 +25,7 @@ import java.io.File;
 /**
  * Utility class for detecting if a file is up-to-date.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
  */
 public class UpToDateChecker {

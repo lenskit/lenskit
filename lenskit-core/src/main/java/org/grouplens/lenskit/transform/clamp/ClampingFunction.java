@@ -25,7 +25,7 @@ import org.grouplens.grapht.annotation.DefaultImplementation;
 /**
  * Function for clamping user-item data, typically a preference or rating.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
 @DefaultImplementation(IdentityClampingFunction.class)

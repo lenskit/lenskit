@@ -25,7 +25,7 @@ import com.google.common.base.Function
 
 /**
  * Helper methods for transforming parameters.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @SuppressWarnings("unchecked") // this will carry through to java stub & silence compiler
 class ParameterTransforms {

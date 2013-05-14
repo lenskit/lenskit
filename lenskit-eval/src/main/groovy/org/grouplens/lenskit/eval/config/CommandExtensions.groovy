@@ -31,7 +31,7 @@ import org.grouplens.lenskit.eval.Command
  * <p>
  * <b>Warning:</b> here be dragons.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @SuppressWarnings("unchecked") // this will carry through to java stub & silence compiler
 class CommandExtensions {

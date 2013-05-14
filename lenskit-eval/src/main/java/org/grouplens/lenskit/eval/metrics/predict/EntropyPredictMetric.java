@@ -42,7 +42,7 @@ import java.util.List;
  * information between the ratings and the prediction. This tells us the amount
  * of information our predictions can tell the user about our ratings.
  *
- * @author Daniel Kluver <kluver@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class EntropyPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(EntropyPredictMetric.class);

@@ -31,7 +31,7 @@ import java.util.Iterator;
  * Abstract fast collection that implements {@link #iterator()} in terms of
  * {@link #fastIterator()} and {@link #copy(E)}.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
  * @param <E> The element type of the collection.
  */

@@ -23,7 +23,7 @@ package org.grouplens.lenskit.util.table.writer;
 /**
  * Utility methods for table writers.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
 public final class TableWriters {

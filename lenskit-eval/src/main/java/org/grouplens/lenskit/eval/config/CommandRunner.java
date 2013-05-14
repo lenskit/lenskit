@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 /**
  * Invoke a configuration block.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.0
  */
 public interface CommandRunner {

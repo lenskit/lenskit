@@ -30,7 +30,7 @@ import java.io.Serializable;
 /**
  * Implementation of {@link UserSimilarity} that delegates to a vector similarity.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
 @Shareable

@@ -24,13 +24,13 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.knn.params.NeighborhoodSize;
-import org.grouplens.lenskit.params.Damping;
+import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.test.CrossfoldTestSuite;
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.util.table.Table;
 import org.grouplens.lenskit.vectors.similarity.CosineVectorSimilarity;
+import org.grouplens.lenskit.vectors.similarity.SimilarityDamping;
 import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
 
 import static org.hamcrest.Matchers.closeTo;
@@ -39,7 +39,7 @@ import static org.junit.Assert.assertThat;
 /**
  * Do major tests on the item-item recommender.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestItemItemAccuracy extends CrossfoldTestSuite {
     @SuppressWarnings("unchecked")
@@ -55,7 +55,7 @@ public class TestItemItemAccuracy extends CrossfoldTestSuite {
                .bind(VectorSimilarity.class)
                .to(CosineVectorSimilarity.class);
         factory.in(ItemSimilarity.class)
-               .set(Damping.class)
+               .set(SimilarityDamping.class)
                .to(100.0);
         factory.set(NeighborhoodSize.class).to(30);
     }

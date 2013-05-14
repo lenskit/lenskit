@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
 /**
  * Raised if the recommender cannot be created for some reason.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @SuppressWarnings("serial")
 public class InvalidRecommenderException extends Exception {

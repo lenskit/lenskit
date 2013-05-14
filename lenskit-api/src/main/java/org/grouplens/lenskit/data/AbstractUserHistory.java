@@ -35,7 +35,7 @@ import com.google.common.base.Function;
  * implementations of convenience methods.
  *
  * @param <E> The type of event this history contains.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public (may require additional method implementations across minor revisions)
  */
 public abstract class AbstractUserHistory<E extends Event> extends AbstractList<E> implements UserHistory<E> {

@@ -25,7 +25,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 /**
  * Re-run sparse vector tests with a longer version of the vector.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestSparseVectorSized extends TestMutableSparseVector {
     /**

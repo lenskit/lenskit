@@ -25,7 +25,7 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Basic indexed preference implementation that stores data in fields.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
 @Immutable

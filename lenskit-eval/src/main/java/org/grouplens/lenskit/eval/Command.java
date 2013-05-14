@@ -27,7 +27,7 @@ import java.util.concurrent.Callable;
  * A command of evaluation task, which is exposed to the evaluation configuration script.
  * So the command can be called dynamically.
  *
- * @author Shuo Chang <schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface Command<T> extends Callable<T> {
 

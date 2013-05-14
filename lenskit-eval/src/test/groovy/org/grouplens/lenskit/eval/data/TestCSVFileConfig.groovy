@@ -28,7 +28,7 @@ import org.grouplens.lenskit.eval.config.ConfigTestBase
 import org.grouplens.lenskit.data.pref.PreferenceDomain
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class TestCSVFileConfig extends ConfigTestBase {
     @Test

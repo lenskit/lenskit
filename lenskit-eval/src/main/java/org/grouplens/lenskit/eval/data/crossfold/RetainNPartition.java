@@ -28,7 +28,7 @@ import java.util.List;
  * Partition the event list by retaining a fixed number of elements.
  *
  * @param <E>
- * @author Lingfei He <Lingfei@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class RetainNPartition<E> implements PartitionAlgorithm<E> {
 

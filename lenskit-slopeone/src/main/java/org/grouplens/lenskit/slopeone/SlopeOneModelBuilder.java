@@ -25,8 +25,6 @@ import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.knn.item.model.ItemItemBuildContext;
 import org.grouplens.lenskit.knn.item.model.ItemItemBuildContextFactory;
-import org.grouplens.lenskit.params.Damping;
-import org.grouplens.lenskit.util.Indexer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -49,7 +47,7 @@ public class SlopeOneModelBuilder implements Provider<SlopeOneModel> {
     public SlopeOneModelBuilder(@Transient @Nonnull DataAccessObject dao,
                                 @Nullable BaselinePredictor predictor,
                                 @Transient ItemItemBuildContextFactory contextFactory,
-                                @Damping double damping) {
+                                @DeviationDamping double damping) {
 
         this.predictor = predictor;
         this.contextFactory = contextFactory;

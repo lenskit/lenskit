@@ -31,7 +31,7 @@ import org.junit.Test;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;

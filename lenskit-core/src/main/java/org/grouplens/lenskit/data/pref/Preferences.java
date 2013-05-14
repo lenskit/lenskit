@@ -29,7 +29,7 @@ import java.util.Collection;
 /**
  * Utility class for working with preferences.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class Preferences {
     /**

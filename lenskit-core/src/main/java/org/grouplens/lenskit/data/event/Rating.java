@@ -28,7 +28,7 @@ import org.grouplens.lenskit.data.pref.Preference;
 /**
  * A rating is an expression of preference for an item by a user.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public interface Rating extends Event {

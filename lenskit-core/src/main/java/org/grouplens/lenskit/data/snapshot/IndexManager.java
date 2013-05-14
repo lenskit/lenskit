@@ -30,7 +30,7 @@ import java.util.ArrayList;
  * a simple mapping from (int,int) pairs to ints that assumes that the domain
  * ints are usable as array indices.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 final class IndexManager {
     // Things are stored as an array list mapping uidx's to maps, which in turn

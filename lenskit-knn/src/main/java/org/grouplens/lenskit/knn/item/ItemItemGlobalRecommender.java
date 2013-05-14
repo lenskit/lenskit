@@ -47,7 +47,7 @@ import javax.inject.Inject;
 /**
  * Global recommendation with item-item CF.
  *
- * @author Shuo Chang <schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @deprecated Use {@link ScoreBasedGlobalItemRecommender} directly instead.
  */
 @Deprecated

@@ -31,7 +31,7 @@ import java.io.Serializable;
  * the {@link org.grouplens.lenskit.data.pref.PreferenceDomain} to clamp values to fall within the minimum
  * and maximum allowable ratings.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
 @Shareable

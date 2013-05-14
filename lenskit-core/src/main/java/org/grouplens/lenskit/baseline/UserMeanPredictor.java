@@ -24,7 +24,6 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -43,7 +42,7 @@ import static java.lang.Math.abs;
  * actually computing the average offset from the global mean and adding back
  * the global mean for the returned prediction.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultProvider(UserMeanPredictor.Builder.class)
 @Shareable
@@ -53,7 +52,7 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
     /**
      * A builder that creates UserMeanPredictors.
      *
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder implements Provider<UserMeanPredictor> {
         private double smoothing = 0;
@@ -67,7 +66,7 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
          */
         @Inject
         public Builder(@Transient DataAccessObject dao,
-                       @Damping double damping) {
+                       @MeanDamping double damping) {
             this.dao = dao;
             smoothing = damping;
         }

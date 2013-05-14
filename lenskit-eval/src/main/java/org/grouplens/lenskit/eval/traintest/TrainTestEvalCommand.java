@@ -23,13 +23,16 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Closeables;
 import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.*;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.ExternalAlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.table.Table;
@@ -50,7 +53,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * The command that run the algorithm instance and output the prediction result file and the evaluation result file
  *
- * @author Shuo Chang<schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalCommand.class);
@@ -80,6 +83,8 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private Map<String, Integer> dataColumns;
     private Map<String, Integer> algoColumns;
     private List<TestUserMetric> predictMetrics;
+    private TableLayout masterLayout;
+    private List<ModelMetric> modelMetrics;
 
 
     public TrainTestEvalCommand() {
@@ -91,6 +96,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         dataSources = new LinkedList<TTDataSet>();
         algorithms = new LinkedList<AlgorithmInstance>();
         metrics = new LinkedList<TestUserMetric>();
+        modelMetrics = new LinkedList<ModelMetric>();
         predictChannels = new LinkedList<Pair<Symbol, String>>();
         outputFile = new File("train-test-results.csv");
         isolationLevel = IsolationLevel.NONE;
@@ -113,6 +119,31 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
 
     public TrainTestEvalCommand addMetric(TestUserMetric metric) {
         metrics.add(metric);
+        return this;
+    }
+
+    /**
+     * Add a metric that may write multiple columns per algorithm.
+     * @param file The output file.
+     * @param columns The column headers.
+     * @param metric The metric function. It should return a list of table rows, each of which has
+     *               entries corresponding to each column.
+     * @return The command (for chaining).
+     */
+    public TrainTestEvalCommand addMultiMetric(File file, List<String> columns, Function<Recommender,List<List<Object>>> metric) {
+        modelMetrics.add(new FunctionMultiModelMetric(file, columns, metric));
+        return this;
+    }
+
+    /**
+     * Add a metric that takes some metric of an algorithm.
+     * @param columns The column headers.
+     * @param metric The metric function. It should return a list of table rows, each of which has
+     *               entries corresponding to each column.
+     * @return The command (for chaining).
+     */
+    public TrainTestEvalCommand addMetric(List<String> columns, Function<Recommender,List<Object>> metric) {
+        modelMetrics.add(new FunctionModelMetric(columns, metric));
         return this;
     }
 
@@ -246,7 +277,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         int idx = 0;
         for (TTDataSet dataset : dataSources) {
             TrainTestEvalJobGroup group;
-            group = new TrainTestEvalJobGroup(this, algorithms, metrics, dataset, idx, numRecs);
+            group = new TrainTestEvalJobGroup(this, algorithms, metrics, modelMetrics, dataset, idx, numRecs);
             jobGroups.add(group);
             idx++;
         }
@@ -255,6 +286,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private void setupTableLayouts() {
         TableLayoutBuilder master = new TableLayoutBuilder();
         layoutCommonColumns(master);
+        masterLayout = master.build();
 
         commonColumnCount = master.getColumnCount();
 
@@ -264,6 +296,15 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
 
         // FIXME This doesn't seem right in the face of top-N metrics
         predictMetrics = metrics;
+    }
+
+    /**
+     * Get the master table layout.  This can be used by metrics to prefix their own tables.
+     *
+     * @return The master table layout. This layout must not be modified.
+     */
+    public TableLayout getMasterLayout() {
+        return masterLayout;
     }
 
     private void layoutCommonColumns(TableLayoutBuilder master) {
@@ -291,6 +332,12 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         TableLayoutBuilder output = master.clone();
         output.addColumn("BuildTime");
         output.addColumn("TestTime");
+
+        for (ModelMetric ev: modelMetrics) {
+            for (String c: ev.getColumnLabels()) {
+                output.addColumn(c);
+            }
+        }
 
         for (TestUserMetric ev : metrics) {
             List<String> columnLabels = ev.getColumnLabels();
@@ -365,7 +412,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
                 throw new RuntimeException("Error opening prediction table", e);
             }
         }
-        for (TestUserMetric metric : predictMetrics) {
+        for (Metric<TrainTestEvalCommand> metric : Iterables.concat(predictMetrics, modelMetrics)) {
             metric.startEvaluation(this);
         }
     }
@@ -374,7 +421,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      * Finalize metrics and close output files.
      */
     private void cleanUp() {
-        for (TestUserMetric metric : predictMetrics) {
+        for (Metric<TrainTestEvalCommand> metric : Iterables.concat(predictMetrics, modelMetrics)) {
             metric.finishEvaluation();
         }
         if (output == null) {

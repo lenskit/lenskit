@@ -32,7 +32,7 @@ import java.util.List;
  * Accumulate the top <i>N</i> scored IDs.  IDs are sorted by their associated
  * scores.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
     private final int count;

@@ -34,7 +34,7 @@ import static java.lang.Math.abs;
 /**
  * Neighborhood scorer that computes the weighted average of neighbor scores.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 @Singleton

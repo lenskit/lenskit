@@ -37,7 +37,7 @@ import org.w3c.dom.Element;
 import com.google.common.base.Predicate;
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TypeUtilsTest {
 

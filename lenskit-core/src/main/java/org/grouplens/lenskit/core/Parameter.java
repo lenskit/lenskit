@@ -27,7 +27,7 @@ import java.lang.annotation.*;
  * string (discouraged), or enum. Parameters have a shortcut configuration syntax
  * ({@link LenskitConfigContext#set(Class)}).
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.0
  */
 @Target(ElementType.ANNOTATION_TYPE)

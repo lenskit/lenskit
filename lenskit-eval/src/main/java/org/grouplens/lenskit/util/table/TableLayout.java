@@ -32,7 +32,7 @@ import java.util.List;
  * A layout for a table to be written.  Specifies the columns in the table.  Column names
  * must be unique.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public class TableLayout {

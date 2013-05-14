@@ -20,12 +20,21 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
+import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.data.pref.IndexedPreference;
+import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
-import org.grouplens.lenskit.iterative.params.LearningRate;
-import org.grouplens.lenskit.iterative.params.RegularizationTerm;
+import org.grouplens.lenskit.iterative.LearningRate;
+import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.Serializable;
@@ -37,10 +46,13 @@ import java.io.Serializable;
  */
 @Shareable
 public final class FunkSVDUpdateRule implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
+    private static final Logger logger = LoggerFactory.getLogger(FunkSVDUpdateRule.class);
 
     private final double learningRate;
     private final double trainingRegularization;
+    private final boolean useTrailingEstimate;
+    private final BaselinePredictor baseline;
     private final ClampingFunction clampingFunction;
     private final StoppingCondition stoppingCondition;
 
@@ -55,12 +67,25 @@ public final class FunkSVDUpdateRule implements Serializable {
     @Inject
     public FunkSVDUpdateRule(@LearningRate double lrate,
                              @RegularizationTerm double reg,
+                             @UseTrailingEstimate boolean trail,
+                             BaselinePredictor bl,
                              ClampingFunction clamp,
                              StoppingCondition stop) {
         learningRate = lrate;
         trainingRegularization = reg;
+        baseline = bl;
         clampingFunction = clamp;
         stoppingCondition = stop;
+        useTrailingEstimate = trail;
+    }
+
+    /**
+     * Create an estimator to use while training the recommender.
+     *
+     * @return The estimator to use.
+     */
+    public TrainingEstimator makeEstimator(PreferenceSnapshot snapshot) {
+        return new TrainingEstimator(snapshot, baseline, clampingFunction);
     }
 
     public double getLearningRate() {
@@ -103,8 +128,10 @@ public final class FunkSVDUpdateRule implements Serializable {
         // Clamp the prediction first
         pred = clampingFunction.apply(uid, iid, pred);
 
-        // Add the trailing value, then clamp the result again
-        pred = clampingFunction.apply(uid, iid, pred + trail);
+        if (useTrailingEstimate) {
+            // Add the trailing value, then clamp the result again
+            pred = clampingFunction.apply(uid, iid, pred + trail);
+        }
 
         // Compute the err and store this value
         return rating - pred;
@@ -132,5 +159,65 @@ public final class FunkSVDUpdateRule implements Serializable {
     public double itemUpdate(double err, double ufv, double ifv) {
         double delta = err * ufv - trainingRegularization * ifv;
         return delta * learningRate;
+    }
+
+    /**
+     * Train a feature using a collection of ratings.
+     *
+     * @param estimates The current estimator.
+     * @param ratings The rating collection.
+     * @param ufvs The user feature values.
+     * @param ifvs The item feature values.
+     * @param trail The trailing value.
+     * @return A pair of the iteration count and the final RMSE of the training round.
+     */
+    public Pair<Integer,Double> trainFeature(TrainingEstimator estimates,
+                                              FastCollection<IndexedPreference> ratings,
+                                              double[] ufvs, double[] ifvs, double trail) {
+        // Initialize our counters and error tracking
+        StopWatch timer = new StopWatch();
+        timer.start();
+
+        double rmse = Double.MAX_VALUE;
+        TrainingLoopController controller = getTrainingLoopController();
+        while (controller.keepTraining(rmse)) {
+            rmse = doFeatureIteration(estimates, ratings, ufvs, ifvs, trail);
+
+            logger.trace("iteration {} finished with RMSE {}", controller.getIterationCount(), rmse);
+        }
+
+        timer.stop();
+        logger.debug("Finished feature in {} epochs (took {})", controller.getIterationCount(), timer);
+        return Pair.of(controller.getIterationCount(), rmse);
+    }
+
+    private double doFeatureIteration(TrainingEstimator estimates,
+                                      FastCollection<IndexedPreference> ratings,
+                                      double[] ufvs, double[] ifvs, double trail) {
+        double sse = 0;
+        int n = 0;
+
+        for (IndexedPreference r: CollectionUtils.fast(ratings)) {
+            final int uidx = r.getUserIndex();
+            final int iidx = r.getItemIndex();
+
+            // Step 1: Save the old feature values before computing the new ones
+            final double ouf = ufvs[uidx];
+            final double oif = ifvs[iidx];
+
+            // Step 2: Compute the error
+            final double err = computeError(r.getUserId(), r.getItemId(),
+                                            trail, estimates.get(r),
+                                            r.getValue(), ouf, oif);
+
+            // Step 3: Update feature values
+            ufvs[uidx] += userUpdate(err, ouf, oif);
+            ifvs[iidx] += itemUpdate(err, ouf, oif);
+
+            sse += err * err;
+            n += 1;
+        }
+
+        return Math.sqrt(sse / n);
     }
 }

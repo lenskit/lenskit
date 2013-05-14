@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Stefan Nelson-Lindall <stefan@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class MeanVarianceNormalizerTest {
     private final static double MIN_DOUBLE_PRECISION = 0.00001;

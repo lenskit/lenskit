@@ -32,7 +32,7 @@ import java.util.List;
  * writer and presents a writer with fewer columns and constant values put in
  * for the underlying missing columns.  Closing it does nothing.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class PrefixedTableWriter implements TableWriter {
     private Object[] rowData; // contains fixed values; other columns re-used

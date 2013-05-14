@@ -27,7 +27,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
-import org.grouplens.lenskit.knn.params.ModelSize;
+import org.grouplens.lenskit.knn.item.ModelSize;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
@@ -47,7 +47,7 @@ import javax.inject.Provider;
  * This builder takes a very simple approach. It does not allow for vector
  * normalization and truncates on the fly.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @NotThreadSafe
 public class ItemItemModelBuilder implements Provider<ItemItemModel> {

@@ -49,7 +49,7 @@ import static java.lang.Math.log;
  *
  * <p>nDCG is computed per-user and then averaged over all users.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class NDCGPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(NDCGPredictMetric.class);

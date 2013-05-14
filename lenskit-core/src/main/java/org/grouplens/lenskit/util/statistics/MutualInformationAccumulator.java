@@ -28,7 +28,7 @@ import java.util.Arrays;
  * Accumulate mutual information over two discrete variables.  Slightly incorrectly,
  * this reports 0 as the entropy and mutual information of empty sets.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class MutualInformationAccumulator {
     private static final double RECIP_LOG_2 = 1 / Math.log(2);

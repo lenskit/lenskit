@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.closeTo;
 import static org.junit.Assert.assertThat;
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestPearsonCorrelation {
     private static final double EPSILON = 1.0e-5;

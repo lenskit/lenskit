@@ -44,7 +44,7 @@ import java.util.concurrent.Callable;
 /**
  * Run train-test evaluations of several algorithms over a data set.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
 public class TrainTestEvalJobGroup implements JobGroup {
@@ -59,6 +59,7 @@ public class TrainTestEvalJobGroup implements JobGroup {
     public TrainTestEvalJobGroup(TrainTestEvalCommand eval,
                                  List<AlgorithmInstance> algos,
                                  List<TestUserMetric> evals,
+                                 List<ModelMetric> modelMetrics,
                                  TTDataSet data, int partition,
                                  int numRecs) {
         evaluation = eval;
@@ -83,7 +84,7 @@ public class TrainTestEvalJobGroup implements JobGroup {
         for (AlgorithmInstance algo : algos) {
             Function<TableWriter, TableWriter> prefix = eval.prefixFunction(algo, data);
             TrainTestEvalJob job = new TrainTestEvalJob(
-                    algo, evals, eval.getPredictionChannels(), data, snap,
+                    algo, evals, modelMetrics, eval.getPredictionChannels(), data, snap,
                     Suppliers.compose(prefix, evaluation.outputTableSupplier()),
                     Suppliers.compose(prefix, evaluation.userTableSupplier()),
                     Suppliers.compose(prefix, evaluation.predictTableSupplier()),
