@@ -22,6 +22,11 @@ package org.grouplens.lenskit.vectors;
 
 import static org.grouplens.lenskit.vectors.SparseVectorTestCommon.closeTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.hamcrest.CoreMatchers.equalTo;
+
+import java.util.Set;
+
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 
 import org.grouplens.lenskit.symbols.Symbol;
@@ -64,6 +69,17 @@ public class TestImmutableSparseVectorChannels {
         ImmutableSparseVector simpleImm = simple.immutable();
         assertThat(simpleImm.channel(fooSymbol).get(3), closeTo(77));
     }
+    
+    @Test
+    public void testMissingChannel() {
+        ImmutableSparseVector simpleImm = simpleVector().immutable();
+        try {
+            simpleImm.channel(fooSymbol);
+            fail("a sparse vector should throw an exception if no such channel exists.");
+        } catch(IllegalArgumentException iae) {
+            // Expected
+        }
+    }
 
     @Test
     public void testCopy() {
@@ -84,6 +100,21 @@ public class TestImmutableSparseVectorChannels {
         // Now we check that the original immutable copy is unchanged
         assertThat(simpleImm.channel(fooSymbol).get(3), closeTo(77));
         assertThat(simpleImm.channel(fooSymbol).get(7, -1), closeTo(-1));
+    }
+    
+    @Test
+    public void testGetChannels() {
+        MutableSparseVector simple = simpleVector();
+        simple.addChannel(fooSymbol).set(7, 77);
+        simple.addChannel(barSymbol).set(3, 33);
+        simple.addChannel(foobarSymbol).set(8, 88);
+        
+        ImmutableSparseVector simpleImm = simple.immutable();
+        Set<Symbol> channelSet = simpleImm.getChannels();
+        assertThat(channelSet.size(), equalTo(3));
+        assert(channelSet.contains(fooSymbol));
+        assert(channelSet.contains(barSymbol));
+        assert(channelSet.contains(foobarSymbol));
     }
 
 }

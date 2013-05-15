@@ -46,6 +46,10 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
 
     private final Map<Symbol, ImmutableSparseVector> channelMap;
 
+    private transient volatile Double norm = null;
+    private transient volatile Double sum = null;
+    private transient volatile Double mean = null;
+    
     /**
      * Create a new, empty immutable sparse vector.
      */
@@ -142,6 +146,32 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     @Override
     public Set<Symbol> getChannels() {
         return channelMap.keySet();
+    }
+
+    // We override these three functions in the case that this vector is Immutable,
+    // so we can avoid computing them more than once.
+    @Override
+    public double norm() {
+        if (norm == null) {
+            norm = super.norm();
+        }
+        return norm;
+    }
+
+    @Override
+    public double sum() {
+        if (sum == null) {
+            sum = super.sum();
+        }
+        return sum;
+    }
+
+    @Override
+    public double mean() {
+        if (mean == null) {
+            mean = super.mean();
+        }
+        return mean;
     }
 
 }
