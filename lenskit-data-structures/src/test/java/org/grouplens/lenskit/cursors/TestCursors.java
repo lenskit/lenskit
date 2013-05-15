@@ -209,5 +209,15 @@ public class TestCursors {
         assertThat(lst, hasSize(3));
         assertThat(lst, containsInAnyOrder(42L, 39L, 67L));
     }
+
+    @Test
+    public void testMakeListOfListOfLongs() {
+        // same test as previous, but with a cursor with a known length
+        long[] nums = { 42, 39, 67 };
+        Cursor<Long> curs = Cursors.wrap(LongArrayList.wrap(nums));
+        List<Long> lst = Cursors.makeList(curs);
+        assertThat(lst, hasSize(3));
+        assertThat(lst, contains(42L, 39L, 67L));
+    }
     //endregion
 }
