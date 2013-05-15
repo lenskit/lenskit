@@ -65,9 +65,4 @@ class LongIteratorCursor extends AbstractLongCursor {
     public long nextLong() {
         return iterator.nextLong();
     }
-
-    @Override
-    public LongIterator iterator() {
-        return iterator;
-    }
 }
