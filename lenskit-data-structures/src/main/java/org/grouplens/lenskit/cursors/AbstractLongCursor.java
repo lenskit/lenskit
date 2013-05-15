@@ -39,6 +39,20 @@ public abstract class AbstractLongCursor
         implements LongCursor {
 
     /**
+     * Construct a cursor with unknown size.
+     */
+    protected AbstractLongCursor() {
+    }
+
+    /**
+     * Construct a cursor with possibly-known size.
+     * @param nrows The number of rows (or -1 for unknown size).
+     */
+    protected AbstractLongCursor(int nrows) {
+        super(nrows);
+    }
+
+    /**
      * Implement {@link org.grouplens.lenskit.cursors.Cursor#next() Cursor.next()}
      * by delegating to {@link #nextLong()}.
      *

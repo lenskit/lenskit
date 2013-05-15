@@ -39,6 +39,17 @@ class LongIteratorCursor extends AbstractLongCursor {
         iterator = iter;
     }
 
+    /**
+     * Construct a new long iterator cursor.
+     *
+     * @param iter The iterator to wrap.
+     * @param nrows The number of rows, if known (-1 for unknown).
+     */
+    public LongIteratorCursor(LongIterator iter, int nrows) {
+        super(nrows);
+        iterator = iter;
+    }
+
     @Override
     public boolean hasNext() {
         return iterator.hasNext();

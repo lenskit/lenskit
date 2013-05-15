@@ -227,7 +227,7 @@ public final class Cursors {
      * @return A cursor over the collection. Closing the cursor is a no-op.
      */
     public static LongCursor wrap(LongCollection collection) {
-        return new LongCollectionCursor(collection);
+        return new LongIteratorCursor(collection.iterator(), collection.size());
     }
 
     /**
