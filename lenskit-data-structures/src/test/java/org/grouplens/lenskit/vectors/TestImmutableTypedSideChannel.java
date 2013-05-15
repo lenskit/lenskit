@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.util.BitSet;
 
+import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.junit.Test;
 
 public class TestImmutableTypedSideChannel {
@@ -156,5 +157,25 @@ public class TestImmutableTypedSideChannel {
         ImmutableTypedSideChannel<String> simple = simpleSideChannel();
         assertEquals(simple, simple.immutableCopy());
         assertEquals(simple, simple.freeze());
+    }
+    
+    
+    @Test
+    public void testWithDomain() {
+        ImmutableTypedSideChannel<String> simple = simpleSideChannel();
+        LongSortedArraySet set = new LongSortedArraySet(new long[]{1,3});
+        ImmutableTypedSideChannel<String> subset = simple.withDomain(set);
+        
+        //simple is unchanged
+        assertFalse(simple.containsKey(3));
+        assertEquals(a, simple.get(1));
+        assertEquals(b, simple.get(2));
+        assertEquals(a, simple.get(4));
+        
+        //subset is subset
+        assertFalse(subset.containsKey(2));
+        assertFalse(subset.containsKey(3));
+        assertFalse(subset.containsKey(4));
+        assertEquals(a,subset.get(1));
     }
 }

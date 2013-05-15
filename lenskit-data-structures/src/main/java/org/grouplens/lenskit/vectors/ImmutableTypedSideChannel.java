@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import it.unimi.dsi.fastutil.longs.LongSet;
+
 import java.util.BitSet;
 
 import javax.annotation.concurrent.Immutable;
@@ -115,5 +117,10 @@ class ImmutableTypedSideChannel<V> extends TypedSideChannel<V> {
     @Override
     public ImmutableTypedSideChannel<V> freeze() {
         return this;
+    }
+    
+    @Override
+    public ImmutableTypedSideChannel<V> withDomain(LongSet domain) {
+        return super.withDomain(domain).freeze();
     }
 }

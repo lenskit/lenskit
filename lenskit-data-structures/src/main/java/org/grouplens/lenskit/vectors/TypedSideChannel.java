@@ -24,10 +24,12 @@ import java.util.Arrays;
 import java.util.BitSet;
 
 import org.grouplens.lenskit.collections.BitSetIterator;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
 
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLong2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
@@ -247,5 +249,46 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
         if (frozen) {
             throw new IllegalStateException("side channel is frozen");
         }
+    }
+    
+    /**
+     * used to mark a sidechannel as frozen without all the busywork of freezing it.
+     * Currently used for returning sidechanels from frozen sets.
+     */
+    TypedSideChannel<V> partialFreeze() {
+        frozen = true;
+        return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public TypedSideChannel<V> withDomain(LongSet domain) {
+        LongSortedArraySet set;
+        // since LSAS is immutable, we'll use its array if we can!
+        if (domain instanceof LongSortedArraySet) {
+            set = (LongSortedArraySet) domain;
+        } else {
+            set = new LongSortedArraySet(domain);
+        }
+        long[] ks = set.unsafeArray();
+        V vals[] = (V[]) new Object[keys.length];
+        BitSet bs = new BitSet(keys.length);
+        
+        int i = 0;
+        int j = 0;
+        while(i<domain.size() && j<domainSize) {
+            if (ks[i] == keys[j]) {
+                vals[i] = values[j];
+                bs.set(i);
+                i = i + 1;
+                j = j + 1;
+            } else if (ks[i] < keys[j]) {
+                i = i + 1;
+            } else {
+                j = j + 1;
+            }
+        }
+        
+        TypedSideChannel<V> retval = new TypedSideChannel<V>(ks, vals, bs, domain.size());
+        return retval;
     }
 }

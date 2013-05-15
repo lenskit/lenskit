@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.util.BitSet;
 
+import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.junit.Test;
 
 public class TestTypedSideChannel {
@@ -210,5 +211,48 @@ public class TestTypedSideChannel {
             simple.remove(2);
             fail("exception expected");
         } catch (IllegalStateException e) {/* expected */}
+    }
+    
+    @Test
+    public void testPartialFreeze() {
+        TypedSideChannel<String> simple = simpleSideChannel();
+        simple.remove(1);
+        TypedSideChannel<String> copy = simple.partialFreeze();
+        assertEquals(simple, copy);
+        
+     // simple is unusable
+        try {
+            simple.remove(2);
+            fail("exception expected");
+        } catch (IllegalStateException e) {/* expected */}
+        
+     // copy is unusable
+        try {
+            copy.remove(2);
+            fail("exception expected");
+        } catch (IllegalStateException e) {/* expected */}
+    }
+    
+    @Test
+    public void testWithDomain() {
+        TypedSideChannel<String> simple = simpleSideChannel();
+        LongSortedArraySet set = new LongSortedArraySet(new long[]{1,3});
+        TypedSideChannel<String> subset = simple.withDomain(set);
+        
+        //simple is unchanged
+        assertFalse(simple.containsKey(3));
+        assertEquals(a, simple.get(1));
+        assertEquals(b, simple.get(2));
+        assertEquals(a, simple.get(4));
+        
+        //subset is subset
+        assertFalse(subset.containsKey(2));
+        assertFalse(subset.containsKey(3));
+        assertFalse(subset.containsKey(4));
+        assertEquals(a,subset.get(1));
+        try {
+            subset.put(2, c);
+            fail("2 should no longer be in domain");
+        } catch (IllegalArgumentException e) { /*expected*/ }
     }
 }
