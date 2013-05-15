@@ -607,9 +607,16 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(copy.get(3), closeTo(5));
         assertThat(ve.getValue(), closeTo(7));  // unchanged, since we were operating on a copy
  
-        VectorEntry veBogus = new VectorEntry(null, -1, 3, 33, true);
+        VectorEntry veBogus = new VectorEntry(simple, -1, 3, 33, true);
         try {
             simple.set(veBogus, 7);
+            fail("Should throw an IllegalArgumentException because the vector entry has a bogus index");
+        } catch (IllegalArgumentException iae) { /* skip */
+        }
+
+        VectorEntry veBogus2 = new VectorEntry(simple, -1, 33, 33, true);
+        try {
+            simple.set(veBogus2, 7);
             fail("Should throw an IllegalArgumentException because the vector entry has a bogus index");
         } catch (IllegalArgumentException iae) { /* skip */
         }

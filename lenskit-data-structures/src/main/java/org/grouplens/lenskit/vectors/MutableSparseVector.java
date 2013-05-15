@@ -235,15 +235,12 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         }
     }
 
-    private double setAt(int idx, double value) {
-        if (idx >= 0) {
-            final double v = usedKeys.get(idx) ? values[idx] : Double.NaN;
-            values[idx] = value;
-            usedKeys.set(idx);
-            return v;
-        } else {
-            throw new IllegalArgumentException("Cannot set the value on a negative index");
-        }
+    private double setAt(int index, double value) {
+        assert index >= 0;
+        final double v = usedKeys.get(index) ? values[index] : Double.NaN;
+        values[index] = value;
+        usedKeys.set(index);
+        return v;
     }
 
     /**
@@ -259,6 +256,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     public double set(long key, double value) {
         checkMutable();
         final int idx = findIndex(key);
+        if (idx < 0) {
+            throw new IllegalArgumentException("Cannot 'set' key=" + key + " that is not in the key domain.");
+        }
         return setAt(idx, value);
     }
 
@@ -281,19 +281,21 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public double set(VectorEntry entry, double value) {
         final SparseVector evec = entry.getVector();
+        final int eind = entry.getIndex();
         if (evec == null) {
             throw new IllegalArgumentException("entry is not associated with a vector");
         } else if (evec.keys != this.keys) {
             throw new IllegalArgumentException("entry does not have safe key domain");
-        } else if (entry.getKey() != keys[entry.getIndex()]) {
+        } else if (eind < 0) {
+            throw new IllegalArgumentException("Cannot 'set' a key with a negative index.");
+        } else if (entry.getKey() != keys[eind]) {
             throw new IllegalArgumentException("entry does not have the correct key for its index");
         }
 
-        final int idx = entry.getIndex();
         if (evec == this) {  // if this is the original, not a copy or channel
             entry.setValue(value);
         }
-        return setAt(idx, value);
+        return setAt(eind, value);
     }
 
     /**
@@ -365,7 +367,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
-     * Add a value to the specified entry. The key must be in the key set, and must have a value.
+     * Add a value to the specified entry. The key must be in the key domain, and must have a value.
      * 
      * Note that the return value on a missing key will be changed in 2.0 to throwing an IllegalArgumentException
      * so code should not rely on Double.NaN coming back.  In general, this function should only be called
