@@ -130,23 +130,7 @@ public final class Cursors {
      * @return An empty cursor.
      */
     public static <T> Cursor<T> empty() {
-        return new AbstractCursor<T>() {
-            @Override
-            public int getRowCount() {
-                return 0;
-            }
-
-            @Override
-            public boolean hasNext() {
-                return false;
-            }
-
-            @Nonnull
-            @Override
-            public T next() {
-                throw new NoSuchElementException();
-            }
-        };
+        return wrap(Collections.<T>emptyList());
     }
 
     /**

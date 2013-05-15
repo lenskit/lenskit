@@ -20,9 +20,10 @@
  */
 package org.grouplens.lenskit.cursors;
 
+import com.google.common.base.Preconditions;
+
 import javax.annotation.Nonnull;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 /**
  * Implementation of {@link Cursor} that simply wraps an iterator.
@@ -32,8 +33,9 @@ import java.util.NoSuchElementException;
 class IteratorCursor<T> extends AbstractCursor<T> {
     private Iterator<? extends T> iterator;
 
-    public IteratorCursor(Iterator<? extends T> iter, int size) {
+    public IteratorCursor(@Nonnull Iterator<? extends T> iter, int size) {
         super(size);
+        Preconditions.checkNotNull(iter, "iterator for cursor");
         iterator = iter;
     }
 
@@ -46,33 +48,10 @@ class IteratorCursor<T> extends AbstractCursor<T> {
     @Override
     public T next() {
         if (iterator == null) {
-            throw new NoSuchElementException();
+            throw new IllegalStateException("cursor closed");
         }
 
         return iterator.next();
-    }
-
-    @Override
-    public Iterator<T> iterator() {
-        if (iterator == null) {
-            throw new IllegalStateException("cursor closed");
-        }
-        return new Iterator<T>() {
-            @Override
-            public boolean hasNext() {
-                return iterator.hasNext();
-            }
-
-            @Override
-            public T next() {
-                return iterator.next();
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
     }
 
     @Override
