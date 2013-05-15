@@ -152,4 +152,63 @@ public class TestTypedSideChannel {
         LongSet expected = new LongArraySet(new long[]{1,2,4}); 
         assertEquals(expected, simpleSideChannel().keySet());
     }
+    
+    @Test
+    public void testMutableCopy() {
+        TypedSideChannel<String> simple = simpleSideChannel();
+        simple.remove(1);
+        TypedSideChannel<String> mutCopy = simple.mutableCopy();
+        assertFalse(mutCopy.containsKey(1));
+        assertFalse(mutCopy.containsKey(3));
+        assertEquals(b,mutCopy.get(2));
+        assertEquals(a,mutCopy.get(4));
+        
+        // simple doesn't effect copy.
+        simple.remove(2);
+        simple.put(1, c);
+        assertEquals(b,mutCopy.get(2));
+        assertFalse(mutCopy.containsKey(1));
+        
+        //copy doesn't effect simple.
+        mutCopy.remove(4);
+        mutCopy.put(1, a);
+        assertEquals(a,simple.get(4));
+        assertEquals(c,simple.get(1));
+    }
+    
+    @Test
+    public void testImmutableCopy() {
+        TypedSideChannel<String> simple = simpleSideChannel();
+        simple.remove(1);
+        ImmutableTypedSideChannel<String> copy = simple.immutableCopy();
+        assertFalse(copy.containsKey(1));
+        assertFalse(copy.containsKey(3));
+        assertEquals(b,copy.get(2));
+        assertEquals(a,copy.get(4));
+        
+        // simple doesn't effect copy.
+        simple.remove(2);
+        simple.put(1, c);
+        assertEquals(b,copy.get(2));
+        assertFalse(copy.containsKey(1));
+    }
+    
+
+    
+    @Test
+    public void testFreeze() {
+        TypedSideChannel<String> simple = simpleSideChannel();
+        simple.remove(1);
+        ImmutableTypedSideChannel<String> copy = simple.freeze();
+        assertFalse(copy.containsKey(1));
+        assertFalse(copy.containsKey(3));
+        assertEquals(b,copy.get(2));
+        assertEquals(a,copy.get(4));
+        
+        // simple is unusable
+        try {
+            simple.remove(2);
+            fail("exception expected");
+        } catch (IllegalStateException e) {/* expected */}
+    }
 }

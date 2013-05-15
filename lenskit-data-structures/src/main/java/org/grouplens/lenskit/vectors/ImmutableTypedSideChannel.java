@@ -22,6 +22,9 @@ package org.grouplens.lenskit.vectors;
 
 import java.util.BitSet;
 
+import javax.annotation.concurrent.Immutable;
+
+@Immutable
 class ImmutableTypedSideChannel<V> extends TypedSideChannel<V> {
     private static final long serialVersionUID = 1L;
 
@@ -92,24 +95,25 @@ class ImmutableTypedSideChannel<V> extends TypedSideChannel<V> {
     ImmutableTypedSideChannel(long[] ks, V[] vs, BitSet bs, int length) {
         super(ks, vs, bs, length);
     }
-        @Override
-    public void clear() {
+    
+    @Override
+    protected void checkMutable() {
         throw new UnsupportedOperationException("ImmutableTypedSideChannels cannot be mutated");
     }
     
+    /**
+     * Returns this object, which may safely be used after calling this function.
+     */
     @Override
-    public V put(long key, V value) {
-        throw new UnsupportedOperationException("ImmutableTypedSideChannels cannot be mutated");
+    public ImmutableTypedSideChannel<V> immutableCopy() {
+         return this;
     }
     
+    /**
+     * Returns this object, which may safely be used after calling this function.
+     */
     @Override
-    public void defaultReturnValue(V rv) {
-        throw new UnsupportedOperationException("ImmutableTypedSideChannels cannot be mutated");
+    public ImmutableTypedSideChannel<V> freeze() {
+        return this;
     }
-    
-    @Override
-    public V remove(long key) {
-        throw new UnsupportedOperationException("ImmutableTypedSideChannels cannot be mutated");
-    }
-
 }

@@ -134,4 +134,27 @@ public class TestImmutableTypedSideChannel {
         LongSet expected = new LongArraySet(new long[]{1,2,4}); 
         assertEquals(expected, simpleSideChannel().keySet());
     }
+    
+    @Test
+    public void testMutableCopy() {
+        ImmutableTypedSideChannel<String> simple = simpleSideChannel();
+        TypedSideChannel<String> mutCopy = simple.mutableCopy();
+        assertFalse(mutCopy.containsKey(3));
+        assertEquals(a,mutCopy.get(1));
+        assertEquals(b,mutCopy.get(2));
+        assertEquals(a,mutCopy.get(4));
+
+        //copy doesn't effect simple.
+        mutCopy.remove(4);
+        mutCopy.put(1, c);
+        assertEquals(a,simple.get(4));
+        assertEquals(a,simple.get(1));
+    }
+    
+    @Test
+    public void testImmutableCopy() {
+        ImmutableTypedSideChannel<String> simple = simpleSideChannel();
+        assertEquals(simple, simple.immutableCopy());
+        assertEquals(simple, simple.freeze());
+    }
 }

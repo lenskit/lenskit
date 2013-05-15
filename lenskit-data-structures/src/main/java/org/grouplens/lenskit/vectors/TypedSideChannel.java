@@ -38,6 +38,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
     protected final BitSet usedKeys;
     protected V[] values;
     protected final int domainSize; // How much of the key space is actually used by this vector.
+    protected boolean frozen = false;
     
     /**
      * Build a new TypedSideChannel from the given keys, it is assumed that the key array is sorted, 
@@ -170,11 +171,13 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
     
     @Override
     public void clear() {
+        checkMutable();
         usedKeys.clear();
     }
     
     @Override
     public V put(long key, V value) {
+        checkMutable();
         final int idx = findIndex(key);
         if(idx >= 0) {
             V retval = null;
@@ -192,6 +195,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
     
     @Override
     public V remove(long key) {
+        checkMutable();
         final int idx = findIndex(key);
         V retval = get(key);
         if(idx >= 0) {
@@ -200,5 +204,48 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
         return retval;
     }
     
-
+    @Override
+    public void defaultReturnValue(V rv) {
+        checkMutable();
+        super.defaultReturnValue(rv);
+    }
+    
+    /**
+     * Creates a mutable copy of this side channel. The returned object can be modified without
+     * modifying this side channel. The returned copy is shallow, and will share instances with 
+     * this side channel.
+     */
+    public TypedSideChannel<V> mutableCopy() {
+        return new TypedSideChannel<V>(keys, Arrays.copyOf(values, values.length), 
+                                       (BitSet)usedKeys.clone(), domainSize);
+    }
+    
+    /**
+     * Creates an immutable copy of this side channel. This object can be modified without modifying 
+     * the returned side channel. The returned copy is shallow, and will share instances with 
+     * this side channel.
+     */
+    public ImmutableTypedSideChannel<V> immutableCopy() {
+        return new ImmutableTypedSideChannel<V>(keys, Arrays.copyOf(values, values.length), 
+                                                (BitSet)usedKeys.clone(), domainSize);
+    }
+    
+    /**
+     * Creates an immutable copy of this side channel. This object cannot be modified without modifying 
+     * the returned side channel. The returned copy is shallow, and will share instances with 
+     * this side channel. This object will be invalidated after calling this.
+     */
+    public ImmutableTypedSideChannel<V> freeze() {
+        frozen=true;
+        return new ImmutableTypedSideChannel<V>(keys, values, usedKeys, domainSize);
+    }
+    
+    /**
+     * Check if this vector is Mutable.
+     */
+    protected void checkMutable() {
+        if (frozen) {
+            throw new IllegalStateException("side channel is frozen");
+        }
+    }
 }
