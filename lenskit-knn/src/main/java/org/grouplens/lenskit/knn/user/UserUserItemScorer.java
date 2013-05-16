@@ -54,17 +54,13 @@ public class UserUserItemScorer extends AbstractItemScorer {
     private static final Logger logger = LoggerFactory.getLogger(UserUserItemScorer.class);
     protected final NeighborhoodFinder neighborhoodFinder;
     protected final UserVectorNormalizer normalizer;
-    protected final BaselinePredictor baseline;
 
     @Inject
     public UserUserItemScorer(DataAccessObject dao, NeighborhoodFinder nbrf,
-                              UserVectorNormalizer norm,
-                              @Nullable BaselinePredictor baseline) {
+                              UserVectorNormalizer norm) {
         super(dao);
         neighborhoodFinder = nbrf;
         normalizer = norm;
-        this.baseline = baseline;
-        logger.debug("Built predictor with baseline {}", baseline);
     }
 
     /**
@@ -123,12 +119,5 @@ public class UserUserItemScorer extends AbstractItemScorer {
         SparseVector urv = RatingVectorUserHistorySummarizer.makeRatingVector(history);
         VectorTransformation vo = normalizer.makeTransformation(history.getUserId(), urv);
         vo.unapply(scores);
-
-        // Use the baseline
-        if (baseline != null && nmissing > 0) {
-            logger.trace("Filling in {} missing predictions with baseline",
-                         nmissing);
-            baseline.predict(history.getUserId(), urv, scores, false);
-        }
     }
 }
