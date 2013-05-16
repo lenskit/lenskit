@@ -394,7 +394,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param value The value to add.
      */
     public void add(double value) {
-        clearCachedValues();
         // just update all values. if a value is unset, what we do to it is undefined
         for (int i = 0; i < domainSize; i++) {
             values[i] += value;
