@@ -32,7 +32,6 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,22 +173,19 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
         while (items.hasNext()) {
             long iid = items.nextLong();
             double ct = itemCounts.get(iid) + damping;
-            double t = itemMeansResult.get(iid) + damping * mean;
+            // add damping, subtract means to get offsets
+            double t = itemMeansResult.get(iid) + (damping - itemCounts.get(iid)) * mean;
             double avg = 0.0;
             if (ct > 0) {
-                avg = t / ct - mean;
+                avg = t / ct;
             }
             itemMeansResult.put(iid, avg);
         }
         return mean;
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
-     */
     @Override
-    public void predict(long user, SparseVector ratings,
-                        MutableSparseVector items, boolean predictSet) {
+    public void predict(long user, MutableSparseVector items, boolean predictSet) {
         State state = predictSet ? State.EITHER : State.UNSET;
         for (VectorEntry e : items.fast(state)) {
             items.set(e, getItemMean(e.getKey()));

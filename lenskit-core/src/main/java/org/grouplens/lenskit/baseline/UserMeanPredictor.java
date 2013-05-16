@@ -20,10 +20,18 @@
  */
 package org.grouplens.lenskit.baseline;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
+import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -46,7 +54,7 @@ import static java.lang.Math.abs;
  */
 @DefaultProvider(UserMeanPredictor.Builder.class)
 @Shareable
-public class UserMeanPredictor extends GlobalMeanPredictor {
+public class UserMeanPredictor extends AbstractBaselinePredictor {
     private static final Logger logger = LoggerFactory.getLogger(UserMeanPredictor.class);
 
     /**
@@ -76,27 +84,73 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
             logger.debug("Building new user mean scorer");
 
             logger.debug("damping = {}", smoothing);
-            double mean = GlobalMeanPredictor.computeMeanRating(dao);
+
+            double sum = 0;
+            double count = 0;
+            Long2DoubleMap userSums = new Long2DoubleOpenHashMap();
+            Long2IntMap userCounts = new Long2IntOpenHashMap();
+            Cursor<Rating> cur = dao.getEvents(Rating.class);
+            try {
+                // TODO Make this work properly with multiple ratings
+                for (Rating r: cur.fast()) {
+                    long uid = r.getUserId();
+                    Preference p = r.getPreference();
+                    if (p != null) {
+                        double v = p.getValue();
+                        sum += v;
+                        count++;
+                        userSums.put(uid, userSums.get(uid) + v);
+                        userCounts.put(uid, userCounts.get(uid) + 1);
+                    }
+                }
+            } finally {
+                cur.close();
+            }
+
+            double mean = sum / count;
+            MutableSparseVector umv = new MutableSparseVector(userSums.keySet());
+            for (VectorEntry e: umv.fast(VectorEntry.State.EITHER)) {
+                long uid = e.getKey();
+                int n = userCounts.get(uid);
+                // compute user mean, subtracting out global and adding smoothing
+                double umean = (userSums.get(uid) - mean * (n - smoothing)) / (n + smoothing);
+                umv.set(e, umean);
+            }
+
             logger.debug("Computed global mean {}", mean);
-            return new UserMeanPredictor(mean, smoothing);
+            return new UserMeanPredictor(mean, smoothing, umv.freeze());
         }
     }
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     private final double globalMean;
     private final double damping;
+    private final ImmutableSparseVector userMeans;
 
     /**
      * Construct a scorer that computes user means offset by the global mean.
      *
-     * @param mean The global mean rating.
-     * @param damp A damping term for the calculations.
+     * @param mean   The global mean rating.
+     * @param damp   A damping term for the calculations.
+     * @param umeans The mean rating for each user.
      */
-    public UserMeanPredictor(double mean, double damp) {
-        super(mean);
+    public UserMeanPredictor(double mean, double damp, ImmutableSparseVector umeans) {
         globalMean = mean;
         damping = damp;
+        userMeans = umeans;
+    }
+
+    @Override
+    public void predict(long user, MutableSparseVector output, boolean predictSet) {
+        double mean = globalMean + userMeans.get(user, 0);
+        if (predictSet) {
+            output.fill(mean);
+        } else {
+            for (VectorEntry e : output.fast(VectorEntry.State.UNSET)) {
+                output.set(e, mean);
+            }
+        }
     }
 
     static double average(SparseVector ratings, double globalMean, double smoothing) {
@@ -106,8 +160,14 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
         return (ratings.sum() + smoothing * globalMean) / (ratings.size() + smoothing);
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
+    /**
+     * Compute baseline predictions for a user. This uses the rating vector rather than the
+     * memorized mean.
+     *
+     * @param user The user.
+     * @param ratings The user's rating vector.
+     * @param output The output vector.
+     * @param predictSet Whether to predict already-set values in {@code output}.
      */
     @Override
     public void predict(long user, SparseVector ratings,

@@ -20,14 +20,15 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -53,7 +54,13 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
  */
 @DefaultProvider(ItemUserMeanPredictor.Builder.class)
 @Shareable
-public class ItemUserMeanPredictor extends ItemMeanPredictor {
+public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
+    private static final long serialVersionUID = 3L;
+    private final ImmutableSparseVector itemMeans;
+    private final ImmutableSparseVector userMeans;
+    private final double globalMean;
+    private final double damping;
+
     /**
      * A builder that creates ItemUserMeanPredictors.
      *
@@ -79,31 +86,61 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
 
         @Override
         public ItemUserMeanPredictor get() {
-            Long2DoubleMap itemMeans = new Long2DoubleOpenHashMap();
+            final ImmutableSparseVector itemMeans;
             Cursor<Rating> ratings = dao.getEvents(Rating.class);
             double globalMean;
             try {
-                 globalMean = computeItemAverages(ratings.fast().iterator(), damping, itemMeans);
+                Long2DoubleMap itemMeanAccum = new Long2DoubleOpenHashMap();
+                globalMean = ItemMeanPredictor.computeItemAverages(ratings.fast().iterator(), damping,
+                                                                   itemMeanAccum);
+                itemMeans = new ImmutableSparseVector(itemMeanAccum);
             } finally {
                 ratings.close();
             }
 
-            return new ItemUserMeanPredictor(itemMeans, globalMean, damping);
+            // now compute the user offsets, must be separate pass :(
+            MutableSparseVector userMeans;
+            ratings = dao.getEvents(Rating.class);
+            try {
+                Long2DoubleMap uSums = new Long2DoubleOpenHashMap();
+                Long2IntMap uCounts = new Long2IntOpenHashMap();
+                for (Rating r: ratings.fast()) {
+                    Preference p = r.getPreference();
+                    if (p != null) {
+                        long uid = p.getUserId();
+                        double v = p.getValue() - itemMeans.get(p.getItemId()) - globalMean;
+                        uSums.put(uid, uSums.get(uid) + v);
+                        uCounts.put(uid, uCounts.get(uid) + 1);
+                    }
+                }
+                userMeans = new MutableSparseVector(uSums);
+                for (VectorEntry e: userMeans.fast()) {
+                    userMeans.set(e, e.getValue() / (uCounts.get(e.getKey()) + damping));
+                }
+            } finally {
+                ratings.close();
+            }
+
+            return new ItemUserMeanPredictor(itemMeans, userMeans.freeze(),
+                                             globalMean, damping);
         }
     }
-
-    private static final long serialVersionUID = 2L;
 
     /**
      * Create a new scorer, this assumes ownership of the given map.
      *
-     * @param itemMeans  The map of item means.
-     * @param globalMean The global mean rating.
-     * @param damping    The damping term.
+     * @param iMeans  The map of item means.
+     * @param iMeans  The map of user means.
+     * @param mean The global mean rating.
+     * @param damp    The damping term.
      */
-    public ItemUserMeanPredictor(Long2DoubleMap itemMeans, double globalMean, double damping) {
-        // FIXME Make this use a sparse vector
-        super(itemMeans, globalMean, damping);
+    public ItemUserMeanPredictor(ImmutableSparseVector iMeans,
+                                 ImmutableSparseVector uMeans,
+                                 double mean, double damp) {
+        itemMeans = iMeans;
+        userMeans = uMeans;
+        globalMean = mean;
+        damping = damp;
     }
 
     /**
@@ -123,21 +160,27 @@ public class ItemUserMeanPredictor extends ItemMeanPredictor {
         for (VectorEntry rating : ratings.fast()) {
             double r = rating.getValue();
             long iid = rating.getKey();
-            total += r - getItemMean(iid);
+            total += r - globalMean - itemMeans.get(iid, 0);
         }
         return total / (values.size() + damping);
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
-     */
+    @Override
+    public void predict(long user, MutableSparseVector scores, boolean predictSet) {
+        double meanOffset = userMeans.get(user, 0);
+        State state = predictSet ? State.EITHER : State.UNSET;
+        for (VectorEntry e : scores.fast(state)) {
+            scores.set(e, meanOffset + globalMean + itemMeans.get(e.getKey(), 0));
+        }
+    }
+
     @Override
     public void predict(long user, SparseVector ratings,
                         MutableSparseVector scores, boolean predictSet) {
         double meanOffset = computeUserAverage(ratings);
         State state = predictSet ? State.EITHER : State.UNSET;
         for (VectorEntry e : scores.fast(state)) {
-            scores.set(e, meanOffset + getItemMean(e.getKey()));
+            scores.set(e, meanOffset + globalMean + itemMeans.get(e.getKey(), 0));
         }
     }
 }
