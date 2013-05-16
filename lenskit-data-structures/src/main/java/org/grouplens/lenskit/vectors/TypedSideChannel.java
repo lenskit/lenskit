@@ -278,7 +278,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
         while(i<domain.size() && j<domainSize) {
             if (ks[i] == keys[j]) {
                 vals[i] = values[j];
-                bs.set(i);
+                bs.set(i,usedKeys.get(j));
                 i = i + 1;
                 j = j + 1;
             } else if (ks[i] < keys[j]) {

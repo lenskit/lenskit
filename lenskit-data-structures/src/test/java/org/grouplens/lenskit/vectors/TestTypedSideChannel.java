@@ -118,9 +118,12 @@ public class TestTypedSideChannel {
         TypedSideChannel<String> channel = emptySideChannel();
         assertNull(channel.defaultReturnValue());
         assertNull(channel.get(1));
+        assertNull(channel.remove(1));
+        
         channel.defaultReturnValue(a);
         assertEquals(a, channel.defaultReturnValue());
         assertEquals(a, channel.get(1));
+        assertEquals(a, channel.remove(1));
     }
     
     @Test
@@ -135,9 +138,11 @@ public class TestTypedSideChannel {
     @Test
     public void testRemove() {
         TypedSideChannel<String> channel = emptySideChannel();
+        assertNull(channel.remove(10));
         channel.put(1,a);
         assertEquals(a,channel.get(1));
-        channel.remove(1);
+        assertEquals(a,channel.remove(1));
+        assertNull(channel.remove(1));
         assertNull(channel.get(1));
         
         channel.put(1,a);
@@ -236,23 +241,24 @@ public class TestTypedSideChannel {
     @Test
     public void testWithDomain() {
         TypedSideChannel<String> simple = simpleSideChannel();
-        LongSortedArraySet set = new LongSortedArraySet(new long[]{1,3});
+        simple.remove(1);
+        LongSortedArraySet set = new LongSortedArraySet(new long[]{1,2,3});
         TypedSideChannel<String> subset = simple.withDomain(set);
         
         //simple is unchanged
         assertFalse(simple.containsKey(3));
-        assertEquals(a, simple.get(1));
+        assertFalse(simple.containsKey(1));
         assertEquals(b, simple.get(2));
         assertEquals(a, simple.get(4));
         
         //subset is subset
-        assertFalse(subset.containsKey(2));
+        assertFalse(subset.containsKey(1));
         assertFalse(subset.containsKey(3));
         assertFalse(subset.containsKey(4));
-        assertEquals(a,subset.get(1));
+        assertEquals(b,subset.get(2));
         try {
-            subset.put(2, c);
-            fail("2 should no longer be in domain");
+            subset.put(4, c);
+            fail("4 should no longer be in domain");
         } catch (IllegalArgumentException e) { /*expected*/ }
     }
 }
