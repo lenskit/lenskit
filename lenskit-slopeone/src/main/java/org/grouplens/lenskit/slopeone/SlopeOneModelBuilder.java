@@ -20,14 +20,12 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.knn.item.model.ItemItemBuildContext;
 import org.grouplens.lenskit.knn.item.model.ItemItemBuildContextFactory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
@@ -40,16 +38,13 @@ import javax.inject.Provider;
 public class SlopeOneModelBuilder implements Provider<SlopeOneModel> {
     private final SlopeOneModelDataAccumulator accumulator;
 
-    private final BaselinePredictor predictor;
     private final ItemItemBuildContextFactory contextFactory;
 
     @Inject
     public SlopeOneModelBuilder(@Transient @Nonnull DataAccessObject dao,
-                                @Nullable BaselinePredictor predictor,
                                 @Transient ItemItemBuildContextFactory contextFactory,
                                 @DeviationDamping double damping) {
 
-        this.predictor = predictor;
         this.contextFactory = contextFactory;
         accumulator = new SlopeOneModelDataAccumulator(damping, dao);
     }
@@ -65,6 +60,6 @@ public class SlopeOneModelBuilder implements Provider<SlopeOneModel> {
                 accumulator.putItemPair(pair.itemId1, pair.vec1, pair.itemId2, pair.vec2);
             }
         }
-        return new SlopeOneModel(accumulator.buildMatrix(), predictor);
+        return new SlopeOneModel(accumulator.buildMatrix());
     }
 }

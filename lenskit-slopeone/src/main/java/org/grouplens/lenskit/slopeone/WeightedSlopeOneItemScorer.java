@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -77,11 +76,6 @@ public class WeightedSlopeOneItemScorer extends SlopeOneItemScorer {
                     scores.set(e, predValue);
                 }
             }
-        }
-
-        final BaselinePredictor baseline = model.getBaselinePredictor();
-        if (baseline != null && nUnpred > 0) {
-            baseline.predict(history.getUserId(), ratings, scores, false);
         }
     }
 }

@@ -20,14 +20,11 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.symbols.Symbol;
-import org.grouplens.lenskit.util.Index;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -46,14 +43,11 @@ public class SlopeOneModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final Long2ObjectMap<ImmutableSparseVector> matrix;
-    private final BaselinePredictor baseline;
 
     public static final Symbol CORATINGS_SYMBOL = Symbol.of("coratings");
 
-    public SlopeOneModel(Long2ObjectMap<ImmutableSparseVector> matrix, BaselinePredictor predictor) {
-
+    public SlopeOneModel(Long2ObjectMap<ImmutableSparseVector> matrix) {
         this.matrix = matrix;
-        baseline = predictor;
     }
 
     public double getDeviation(long item1, long item2) {
@@ -96,9 +90,5 @@ public class SlopeOneModel implements Serializable {
                 return (int) coratings;
             }
         }
-    }
-
-    public BaselinePredictor getBaselinePredictor() {
-        return baseline;
     }
 }
