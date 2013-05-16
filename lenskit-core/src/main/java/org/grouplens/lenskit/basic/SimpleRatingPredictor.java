@@ -22,6 +22,7 @@ package org.grouplens.lenskit.basic;
 
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -32,10 +33,18 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
+import static org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer.makeRatingVector;
+
 /**
  * Basic {@link org.grouplens.lenskit.RatingPredictor} backed by an
  * {@link org.grouplens.lenskit.ItemScorer}.  The scores are clamped to the preference domain
  * but otherwise unmodified.
+ *
+ * <p>If a baseline predictor is provided, then it is used to supply predictions that the item
+ * scorer could not.
+ *
+ * <p>This class has a provider {@link SimpleRatingPredictor.Provider} that is the default provider
+ * for {@link RatingPredictor}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
@@ -43,15 +52,19 @@ import javax.inject.Inject;
 public final class SimpleRatingPredictor extends AbstractRatingPredictor {
     private final ItemScorer scorer;
     @Nullable
-    private final PreferenceDomain domain;
+    private final BaselinePredictor baselinePredictor;
+    @Nullable
+    private final PreferenceDomain preferenceDomain;
 
     @Inject
     public SimpleRatingPredictor(DataAccessObject dao, ItemScorer scorer,
+                                 @Nullable BaselinePredictor baseline,
                                  @Nullable PreferenceDomain domain) {
         // TODO Make abstract rating predictors & item scorers not need the DAO
         super(dao);
         this.scorer = scorer;
-        this.domain = domain;
+        baselinePredictor = baseline;
+        preferenceDomain = domain;
     }
 
     /**
@@ -63,37 +76,35 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
         return scorer;
     }
 
+    /**
+     * Get the baseline predictor.
+     *
+     * @return The baseline predictor, or {@code null} if no baseline is configured.
+     */
+    @Nullable
+    public BaselinePredictor getBaselinePredictor() {
+        return baselinePredictor;
+    }
+
     @Override
     public void predict(long user, @Nonnull MutableSparseVector scores) {
         scorer.score(user, scores);
-        if (domain != null) {
-            domain.clampVector(scores);
+        if (baselinePredictor != null) {
+            baselinePredictor.predict(user, scores, false);
         }
-    }
-
-    @Override
-    public double predict(long user, long item) {
-        double v = scorer.score(user, item);
-        if (domain != null) {
-            v = domain.clampValue(v);
+        if (preferenceDomain != null) {
+            preferenceDomain.clampVector(scores);
         }
-        return v;
-    }
-
-    @Override
-    public double predict(@Nonnull UserHistory<? extends Event> profile, long item) {
-        double v = scorer.score(profile, item);
-        if (domain != null) {
-            v = domain.clampValue(v);
-        }
-        return v;
     }
 
     @Override
     public void predict(@Nonnull UserHistory<? extends Event> profile, @Nonnull MutableSparseVector predictions) {
         scorer.score(profile, predictions);
-        if (domain != null) {
-            domain.clampVector(predictions);
+        if (baselinePredictor != null) {
+            baselinePredictor.predict(profile.getUserId(), makeRatingVector(profile), predictions, false);
+        }
+        if (preferenceDomain != null) {
+            preferenceDomain.clampVector(predictions);
         }
     }
 
@@ -105,14 +116,17 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
     public static class Provider implements javax.inject.Provider<RatingPredictor> {
         private final DataAccessObject dao;
         private final ItemScorer scorer;
+        private final BaselinePredictor baseline;
         private final PreferenceDomain domain;
 
         @Inject
         public Provider(DataAccessObject dao,
                         @Nullable ItemScorer s,
+                        @Nullable BaselinePredictor bp,
                         @Nullable PreferenceDomain dom) {
             this.dao = dao;
             scorer = s;
+            baseline = bp;
             domain = dom;
         }
 
@@ -121,7 +135,7 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
             if (scorer == null) {
                 return null;
             } else {
-                return new SimpleRatingPredictor(dao, scorer, domain);
+                return new SimpleRatingPredictor(dao, scorer, baseline, domain);
             }
         }
     }
