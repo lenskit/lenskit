@@ -56,15 +56,13 @@ import com.google.common.base.Function;
 /**
  * The command to build and run a crossfold on the data source file and output the partition files
  *
- * @author Shuo Chang<schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-
 public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     private static final Logger logger = LoggerFactory.getLogger(CrossfoldCommand.class);
 
     private DataSource source;
     private int partitionCount = 5;
-    private Holdout holdout;
     private String trainFilePattern;
     private String testFilePattern;
     private Order<Rating> order = new RandomOrder<Rating>();
@@ -78,7 +76,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     private Function<DAOFactory, DAOFactory> wrapper;
 
     public CrossfoldCommand() {
-        super("Crossfold");
+        super(null);
     }
 
     public CrossfoldCommand(String n) {
@@ -225,24 +223,12 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      *
      * @param on Whether the data sets returned should cache.
      * @return The command (for chaining)
-     * @see CSVDataSource#setCache(boolean)
      */
     public CrossfoldCommand setCache(boolean on) {
         cacheOutput = on;
         return this;
     }
     
-    private CrossfoldCommand initialize() {
-        if (trainFilePattern == null) {
-            trainFilePattern = name + ".train.%d.csv";
-        }
-        if (testFilePattern == null) {
-            testFilePattern = name + ".test.%d.csv";
-        }
-        holdout = new Holdout(order, partition);
-        return this;
-    }
-
     /**
      * Get the visible name of this crossfold split.
      *
@@ -250,7 +236,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      */
     @Override
     public String getName() {
-        if (name.equals("Crossfold")) {
+        if (name == null) {
             return source.getName();
         } else {
             return name;
@@ -258,11 +244,33 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     }
 
     public String getTrainPattern() {
-        return trainFilePattern;
+        if (trainFilePattern != null) {
+            return trainFilePattern;
+        } else {
+            StringBuilder sb = new StringBuilder();
+            return sb.append(getConfig().getDataDir())
+                     .append(File.pathSeparator)
+                     .append(getName())
+                     .append("-crossfold")
+                     .append(File.pathSeparator)
+                     .append("train.%d.csv")
+                     .toString();
+        }
     }
 
     public String getTestPattern() {
-        return testFilePattern;
+        if (testFilePattern != null) {
+            return testFilePattern;
+        } else {
+            StringBuilder sb = new StringBuilder();
+            return sb.append(getConfig().getDataDir())
+                     .append(File.pathSeparator)
+                     .append(getName())
+                     .append("-crossfold")
+                     .append(File.pathSeparator)
+                     .append("test.%d.csv")
+                     .toString();
+        }
     }
 
     /**
@@ -284,7 +292,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     }
 
     public Holdout getHoldout() {
-        return holdout;
+        return new Holdout(order, partition);
     }
 
     public boolean getForce() {
@@ -304,14 +312,13 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      */
     @Override
     public List<TTDataSet> call() throws CommandException {
-        this.initialize();
         if (!getForce()) {
             UpToDateChecker check = new UpToDateChecker();
             check.addInput(source.lastModified());
-            for (File f: getFiles(trainFilePattern)) {
+            for (File f: getFiles(getTrainPattern())) {
                 check.addOutput(f);
             }
-            for (File f: getFiles(testFilePattern)) {
+            for (File f: getFiles(getTestPattern())) {
                 check.addOutput(f);
             }
             if (check.isUpToDate()) {
@@ -344,8 +351,8 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      *          Any error
      */
     protected void createTTFiles() throws CommandException {
-        File[] trainFiles = getFiles(trainFilePattern);
-        File[] testFiles = getFiles(testFilePattern);
+        File[] trainFiles = getFiles(getTrainPattern());
+        File[] testFiles = getFiles(getTestPattern());
         TableWriter[] trainWriters = new TableWriter[partitionCount];
         TableWriter[] testWriters = new TableWriter[partitionCount];
         try {
@@ -497,8 +504,8 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      */
     public List<TTDataSet> getTTFiles() {
         List<TTDataSet> dataSets = new ArrayList<TTDataSet>(partitionCount);
-        File[] trainFiles = getFiles(trainFilePattern);
-        File[] testFiles = getFiles(testFilePattern);
+        File[] trainFiles = getFiles(getTrainPattern());
+        File[] testFiles = getFiles(getTestPattern());
         for (int i = 0; i < partitionCount; i++) {
             CSVDataSourceCommand trainCommand = new CSVDataSourceCommand()
                     .setWrapper(wrapper)
