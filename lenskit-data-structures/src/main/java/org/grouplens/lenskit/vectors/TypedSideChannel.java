@@ -30,6 +30,7 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLong2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
@@ -218,7 +219,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      * this side channel.
      */
     public TypedSideChannel<V> mutableCopy() {
-        return new TypedSideChannel<V>(keys, Arrays.copyOf(values, values.length), 
+        return new TypedSideChannel<V>(keys, Arrays.copyOf(values, domainSize), 
                                        (BitSet)usedKeys.clone(), domainSize);
     }
     
@@ -228,7 +229,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      * this side channel.
      */
     public ImmutableTypedSideChannel<V> immutableCopy() {
-        return new ImmutableTypedSideChannel<V>(keys, Arrays.copyOf(values, values.length), 
+        return new ImmutableTypedSideChannel<V>(keys, Arrays.copyOf(values, domainSize), 
                                                 (BitSet)usedKeys.clone(), domainSize);
     }
     
@@ -290,5 +291,15 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
         
         TypedSideChannel<V> retval = new TypedSideChannel<V>(ks, vals, bs, domain.size());
         return retval;
+    }
+    
+    /**
+     * Get the key domain for this vector. All keys used are in this
+     * set.  The keys will be in sorted order.
+     *
+     * @return The key domain for this vector.
+     */
+    public LongSortedSet keyDomain() {
+        return LongSortedArraySet.wrap(keys, domainSize);
     }
 }

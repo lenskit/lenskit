@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparator;
@@ -42,6 +43,7 @@ import org.grouplens.lenskit.scored.AbstractScoredId;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdBuilder;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
@@ -646,6 +648,17 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @return whether this vector has such a channel right now.
      */
     public abstract boolean hasChannel(Symbol channelSymbol);
+    
+    /**
+     * Return whether this sparse vector has a typed channel stored under a
+     * particular typed symbol.  (Symbols are sort of like names, but more
+     * efficient.)
+     *
+     * @param channelSymbol the typed symbol under which the channel was
+     *                      stored in the vector.
+     * @return whether this vector has such a channel right now.
+     */
+    public abstract boolean hasChannel(TypedSymbol<?> channelSymbol);
 
     /**
      * Fetch the channel stored under a particular symbol.
@@ -657,6 +670,18 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      *                                  that symbol
      */
     public abstract SparseVector channel(Symbol channelSymbol);
+    
+    /**
+     * Fetch the channel stored under a particular typed symbol.
+     *
+     * @param channelSymbol the typed symbol under which the channel was/is
+     *                      stored in the vector.
+     * @return the channel, which is itself a map from the key domain to objects of
+     *                      the channel's type
+     * @throws IllegalArgumentException if there is no channel under
+     *                                  that typed symbol
+     */
+    public abstract <K> Long2ObjectMap<K> channel(TypedSymbol<K> channelSymbol);
 
     /**
      * Retrieve all symbols that map to side channels for this vector.
@@ -664,6 +689,13 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      *         of the vector.
      */
     public abstract Set<Symbol> getChannels();
+
+    /**
+     * Retrieve all typed symbols that map to  typed side channels for this vector.
+     * @return A set of symbols, each of which identifies a side channel
+     *         of the vector.
+     */
+    public abstract Set<TypedSymbol<?>> getTypedChannels();
 
     /**
      * Return a view of this vector as a {@code FastCollection} of
@@ -684,6 +716,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
             builder = new ScoredIdBuilder();
         }
 
+        @SuppressWarnings({ "rawtypes", "unchecked" })
         @Override
         protected ScoredId copy(ScoredId elt) {
             builder.clearChannels();
@@ -692,10 +725,13 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
             for (Symbol s : elt.getChannels()) {
                 builder.addChannel(s, elt.channel(s));
             }
+            for ( TypedSymbol s : elt.getTypedChannels()) {
+                builder.addChannel(s, elt.channel(s));
+            }
 
             return builder.build();
         }
-
+        
         @Override
         public int size() {
             return SparseVector.this.size();
@@ -754,12 +790,26 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         }
 
         @Override
+        public Set<TypedSymbol<?>> getTypedChannels() {
+            return SparseVector.this.getTypedChannels();
+        }
+
+        @Override
         public double channel(Symbol s) {
             return SparseVector.this.channel(s).get(ent);
         }
 
         @Override
+        public <K> K channel(TypedSymbol<K> s) {
+            return SparseVector.this.channel(s).get(ent.getKey());
+        }
+
+        @Override
         public boolean hasChannel(Symbol s) {
+            return SparseVector.this.hasChannel(s);
+        }
+
+        public boolean hasChannel(TypedSymbol<?> s) {
             return SparseVector.this.hasChannel(s);
         }
 
