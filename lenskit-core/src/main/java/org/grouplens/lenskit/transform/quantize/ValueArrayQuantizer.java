@@ -31,7 +31,7 @@ import java.util.Arrays;
  * Abstract quantizer implementation using a pre-generated array of possible
  * values. Values are quantized to their closest discrete possibility.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class ValueArrayQuantizer implements Quantizer, Serializable {

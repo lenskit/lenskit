@@ -30,7 +30,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * {@link LongList} that has double-valued scores for each entry. Undefined
  * scores are stored as {@link Double#NaN}.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public interface ScoredLongList extends LongList {

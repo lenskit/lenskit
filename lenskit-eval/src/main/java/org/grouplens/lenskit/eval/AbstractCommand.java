@@ -30,7 +30,7 @@ import javax.annotation.Nullable;
 /**
  * Base class to simplify writing {@link Command}s.
  *
- * @author Shuo Chang<schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class AbstractCommand<T> implements Command<T> {
     @Nullable protected String name;

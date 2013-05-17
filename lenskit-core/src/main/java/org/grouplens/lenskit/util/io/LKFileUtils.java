@@ -32,7 +32,7 @@ import java.util.zip.GZIPOutputStream;
  * File utilities for LensKit. Called LKFileUtils to avoid conflict with FileUtils
  * classes that may be imported from other packages such as Guava, Plexus, or Commons.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public final class LKFileUtils {

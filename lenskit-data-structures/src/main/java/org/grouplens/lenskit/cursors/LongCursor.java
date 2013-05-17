@@ -29,7 +29,7 @@ import it.unimi.dsi.fastutil.longs.LongIterable;
 /**
  * {@link Cursor} iterating over primitive longs.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public interface LongCursor extends Cursor<Long>, LongIterable {

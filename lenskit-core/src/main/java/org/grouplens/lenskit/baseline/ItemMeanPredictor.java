@@ -31,7 +31,6 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -54,8 +53,7 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
  * where <i>b<sub>i</sub></i> is the item's average rating (less the global
  * mean µ).
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @author Michael Ludwig <mludwig@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultProvider(ItemMeanPredictor.Builder.class)
 @Shareable
@@ -63,7 +61,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
     /**
      * A builder to create ItemMeanPredictors.
      *
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder implements Provider<ItemMeanPredictor> {
         private double damping = 0;
@@ -78,7 +76,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
          */
         @Inject
         public Builder(@Transient DataAccessObject dao,
-                       @Damping double damping) {
+                       @MeanDamping double damping) {
             this.dao = dao;
             this.damping = damping;
         }

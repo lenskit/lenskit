@@ -22,7 +22,7 @@ package org.grouplens.lenskit.eval.config
 
 /**
  * Eval config script that invokes a closure rather than running a script.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class ClosureScript extends EvalScript {
     Closure closure

@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 /**
  * Abstract user vector normalizer implementation.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
 public abstract class AbstractUserVectorNormalizer implements UserVectorNormalizer {

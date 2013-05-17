@@ -34,7 +34,6 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractCommand;
 import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
-import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,7 +98,7 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         if (domain != null) {
             factory.bind(PreferenceDomain.class).to(domain);
         }
-        logger.info("dumping graph {}", name);
+        logger.info("dumping graph {}", getName());
         Graph initial = factory.getInitialGraph(daoType);
         logger.debug("graph has {} nodes", initial.getNodes().size());
         Graph unshared = factory.simulateInstantiation(initial);
@@ -134,20 +133,24 @@ public class DumpGraphCommand extends AbstractCommand<File> {
             throw new CommandException("no root node for graph");
         }
         GraphDumper dumper = new GraphDumper(g, unshared, gw);
-        String rid = dumper.setRoot(root);
+        try {
+            String rid = dumper.setRoot(root);
 
-        for (Edge e: g.getOutgoingEdges(root)) {
-            Node target = e.getTail();
-            CachedSatisfaction csat = target.getLabel();
-            assert csat != null;
-            if (!satIsNull(csat.getSatisfaction())) {
-                String id = dumper.process(target);
-                gw.putEdge(new EdgeBuilder(rid, id)
-                                   .set("arrowhead", "vee")
-                                   .build());
+            for (Edge e: g.getOutgoingEdges(root)) {
+                Node target = e.getTail();
+                CachedSatisfaction csat = target.getLabel();
+                assert csat != null;
+                if (!satIsNull(csat.getSatisfaction())) {
+                    String id = dumper.process(target);
+                    gw.putEdge(new EdgeBuilder(rid, id)
+                                       .set("arrowhead", "vee")
+                                       .build());
+                }
             }
+            dumper.finish();
+        } catch (IOException e) {
+            throw new CommandException("error writing graph", e);
         }
-        dumper.finish();
     }
 
     private boolean satIsNull(Satisfaction sat) {

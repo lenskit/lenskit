@@ -33,7 +33,7 @@ import java.util.*;
 /**
  * Utility methods for cursors.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public final class Cursors {
@@ -130,23 +130,7 @@ public final class Cursors {
      * @return An empty cursor.
      */
     public static <T> Cursor<T> empty() {
-        return new AbstractCursor<T>() {
-            @Override
-            public int getRowCount() {
-                return 0;
-            }
-
-            @Override
-            public boolean hasNext() {
-                return false;
-            }
-
-            @Nonnull
-            @Override
-            public T next() {
-                throw new NoSuchElementException();
-            }
-        };
+        return wrap(Collections.<T>emptyList());
     }
 
     /**
@@ -243,7 +227,7 @@ public final class Cursors {
      * @return A cursor over the collection. Closing the cursor is a no-op.
      */
     public static LongCursor wrap(LongCollection collection) {
-        return new LongCollectionCursor(collection);
+        return new LongIteratorCursor(collection.iterator(), collection.size());
     }
 
     /**

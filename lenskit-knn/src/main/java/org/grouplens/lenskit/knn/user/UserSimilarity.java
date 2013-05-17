@@ -26,7 +26,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 /**
  * Compute the similarity between two users.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
 @DefaultImplementation(UserVectorSimilarity.class)

@@ -31,7 +31,7 @@ import org.grouplens.lenskit.data.UserHistory;
  * LensKit core data access object interface. This interface provides access to
  * users, items, and event histories to LensKit recommenders.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public interface DataAccessObject extends Closeable {

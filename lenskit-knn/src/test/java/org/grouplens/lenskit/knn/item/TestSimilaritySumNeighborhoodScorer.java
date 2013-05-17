@@ -20,8 +20,6 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.scored.ScoredIdBuilder;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.hamcrest.Matcher;
@@ -29,10 +27,7 @@ import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.junit.Assert.assertThat;
 
 public class TestSimilaritySumNeighborhoodScorer {

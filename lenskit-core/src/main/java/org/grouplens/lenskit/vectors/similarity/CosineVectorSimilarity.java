@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.vectors.similarity;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.inject.Inject;
@@ -30,7 +29,7 @@ import java.io.Serializable;
 /**
  * Cosine similarity for vectors.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class CosineVectorSimilarity implements VectorSimilarity, Serializable {
@@ -52,7 +51,7 @@ public class CosineVectorSimilarity implements VectorSimilarity, Serializable {
      *                similarity towards 0 for low-cooccurance vectors.
      */
     @Inject
-    public CosineVectorSimilarity(@Damping double damping) {
+    public CosineVectorSimilarity(@SimilarityDamping double damping) {
         dampingFactor = damping;
     }
 

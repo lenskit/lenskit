@@ -21,8 +21,8 @@
 package org.grouplens.lenskit.eval.algorithm;
 
 import com.google.common.base.Supplier;
-import groovy.sql.DataSet;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 
@@ -49,12 +49,15 @@ public interface AlgorithmInstance {
 
     /**
      * Create a testable recommender instance from this algorithm.
-     * @param data The data set. The test data should only be used if the recommender needs to
-     *                 capture the test data (e.g. an external program that will produce
-     *                 predictions en mass).
+     *
+     * @param data     The data set. The test data should only be used if the recommender needs to
+     *                 capture the test data (e.g. an external program that will produce predictions
+     *                 en mass).
      * @param snapshot The (cached) shared preference snapshot.
+     * @param info     The execution info for this execution.
      * @return A recommender instance for testing this algorithm.
      */
     RecommenderInstance makeTestableRecommender(TTDataSet data,
-                                                Supplier<SharedPreferenceSnapshot> snapshot) throws RecommenderBuildException;
+                                                Supplier<SharedPreferenceSnapshot> snapshot,
+                                                ExecutionInfo info) throws RecommenderBuildException;
 }

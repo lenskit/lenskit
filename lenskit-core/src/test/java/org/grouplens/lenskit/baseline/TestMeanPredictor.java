@@ -49,7 +49,7 @@ import org.junit.Test;
 /**
  * Test baseline predictors that compute means from data.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestMeanPredictor {
     private static final double RATINGS_DAT_MEAN = 3.75;

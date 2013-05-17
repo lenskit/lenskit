@@ -39,8 +39,8 @@
     <copyrightHolder>Regents of the University of Minnesota</copyrightHolder>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <lenskit.web.url>http://lenskit.grouplens.org</lenskit.web.url>
-    <lenskit.web.path>file:///web/research/lenskit.grouplens.org/</lenskit.web.path>
+    <lenskit.web.url>http://lenskit.grouplens.org/maven-site/</lenskit.web.url>
+    <lenskit.web.path>file:///web/research/lenskit.grouplens.org/maven-site/</lenskit.web.path>
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
     <javadoc.cite.database>${basedir}/etc/references.rdf</javadoc.cite.database>
     <groovy.version>1.8.6</groovy.version>
@@ -62,14 +62,15 @@
     <module>lenskit-api</module>
     <module>lenskit-data-structures</module>
     <module>lenskit-core</module>
+    <module>lenskit-test</module>
     <module>lenskit-eval</module>
     <module>lenskit-eval-maven-plugin</module>
     <module>lenskit-knn</module>
     <module>lenskit-svd</module>
     <module>lenskit-slopeone</module>
-    <module>lenskit-package</module>
     <module>lenskit-archetype-simple-analysis</module>
     <module>lenskit-archetype-fancy-analysis</module>
+    <module>lenskit-package</module>
     <module>lenskit-integration-tests</module>
   </modules>
 
@@ -179,6 +180,13 @@
         <version>1.8.4</version>
       </dependency>
 
+      <!-- Grapht -->
+      <dependency>
+        <groupId>org.grouplens.grapht</groupId>
+        <artifactId>grapht</artifactId>
+        <version>${grapht.version}</version>
+      </dependency>
+
       <!-- test libraries -->
       <dependency>
         <groupId>junit</groupId>
@@ -196,9 +204,9 @@
         <version>1.3</version>
       </dependency>
       <dependency>
-        <groupId>org.grouplens.common</groupId>
-        <artifactId>common-test</artifactId>
-        <version>${grouplens.common.version}</version>
+        <groupId>org.grouplens.lenskit</groupId>
+        <artifactId>lenskit-test</artifactId>
+        <version>${project.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -214,28 +222,7 @@
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
       <optional>true</optional>
-    </dependency>
-
-    <!-- all tests need junit, hamcrest, logging -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-nop</artifactId>
-      <scope>test</scope>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 
@@ -246,12 +233,17 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>2.5.1</version>
+          <version>3.1</version>
           <configuration>
             <source>1.6</source>
             <target>1.6</target>
             <showWarnings>true</showWarnings>
             <showDeprecation>true</showDeprecation>
+            <compilerArguments>
+              <Xlint/>
+              <Xlint:-processing/>
+            </compilerArguments>
+            <fork>true</fork>
           </configuration>
         </plugin>
 
@@ -259,14 +251,22 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>2.8.1</version>
+          <version>2.9</version>
         </plugin>
 
         <!-- Testing and verification -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.12.2</version>
+          <version>2.14.1</version>
+          <configuration>
+            <properties>
+              <property>
+                <name>listener</name>
+                <value>org.grouplens.lenskit.util.test.LoggingListener</value>
+              </property>
+            </properties>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -276,7 +276,15 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>2.12.4</version>
+          <version>2.14.1</version>
+          <configuration>
+            <properties>
+              <property>
+                <name>listener</name>
+                <value>org.grouplens.lenskit.util.test.LoggingListener</value>
+              </property>
+            </properties>
+          </configuration>
         </plugin>
 
         <!-- Packaging and build assistance -->
@@ -318,11 +326,6 @@
           <artifactId>maven-archetype-plugin</artifactId>
           <version>2.2</version>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-plugin-plugin</artifactId>
-          <version>3.1</version>
-        </plugin>
 
         <!-- Site generation -->
         <plugin>
@@ -352,39 +355,11 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <!-- Don't inherit top-level-only site settings. Inherited settings
-          will go in pluginManagement. -->
-        <inherited>false</inherited>
-
-        <configuration>
-          <templateFile>src/site/site.vm</templateFile>
-        </configuration>
-      </plugin>
-
-      <!-- Build the SASS style sheet for the site. -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
-            <id>compile-sass</id>
-            <phase>pre-site</phase> <!-- to make sure it's done before the site -->
-            <goals><goal>run</goal></goals>
             <inherited>false</inherited>
-            <configuration>
-              <target>
-                <mkdir dir="${project.build.directory}/site"/>
-                <exec executable="sass">
-                  <arg value="--no-cache"/>
-                  <arg value="-t"/>
-                  <arg value="compact"/>
-                  <arg value="src/site/scss/main.scss"/>
-                  <arg value="${project.build.directory}/site/main.css"/>
-                </exec>
-              </target>
-            </configuration>
+            <goals><goal>attach-descriptor</goal></goals>
           </execution>
         </executions>
       </plugin>
@@ -412,6 +387,16 @@
             <groovy>SLASHSTAR_STYLE</groovy>
           </mapping>
         </configuration>
+        <executions>
+        <execution>
+          <id>check-headers</id>
+          <inherited>false</inherited>
+          <phase>validate</phase>
+          <goals>
+            <goal>check</goal>
+          </goals>
+        </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
@@ -427,9 +412,21 @@
             <reports>
               <report>index</report>
               <report>dependencies</report>
+              <report>dependency-info</report>
               <report>dependency-convergence</report>
               <report>dependency-management</report>
               <report>plugins</report>
+              <report>plugin-management</report>
+              <report>summary</report>
+            </reports>
+          </reportSet>
+          <reportSet>
+            <id>parent-info</id>
+            <inherited>false</inherited>
+            <reports>
+              <report>modules</report>
+              <report>issue-tracking</report>
+              <report>scm</report>
             </reports>
           </reportSet>
         </reportSets>
@@ -438,7 +435,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.8.1</version>
+        <version>2.9</version>
         <configuration>
           <quiet>true</quiet>
 
@@ -530,13 +527,13 @@
               </groups>
             </configuration>
           </reportSet>
+          <reportSet>
+            <id>child</id>
+            <reports>
+              <report>javadoc</report>
+            </reports>
+          </reportSet>
         </reportSets>
-      </plugin>
-
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>jdepend-maven-plugin</artifactId>
-        <version>2.0-beta-2</version>
       </plugin>
     </plugins>
   </reporting>
@@ -595,10 +592,6 @@
     </profile>
 
     <profile>
-      <id>smoketest</id>
-    </profile>
-
-    <profile>
       <id>lint</id>
       <activation>
         <property>
@@ -612,27 +605,10 @@
         <plugins>
 
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <compilerArguments>
-                <Xlint/>
-              </compilerArguments>
-            </configuration>
-          </plugin>
-
-          <plugin>
             <groupId>com.mycila.maven-license-plugin</groupId>
             <artifactId>maven-license-plugin</artifactId>
             <executions>
-              <execution>
-                <id>check-headers</id>
-                <inherited>false</inherited>
-                <phase>validate</phase>
-                <goals>
-                  <goal>check</goal>
-                </goals>
-              </execution>
+              
             </executions>
           </plugin>
 

@@ -119,7 +119,7 @@ public class TrainModelCommand<T> extends AbstractCommand<T> {
                 try {
                     logger.info("{}: building recommender {}", getName(), algorithm.getName());
                     rec = closer.register(algorithm.buildRecommender(
-                            dao, null, inputData.getPreferenceDomain(), false));
+                            dao, null, inputData.getPreferenceDomain(), null, false));
                 } catch (RecommenderBuildException e) {
                     throw new CommandException(getName() + ": error building recommender", e);
                 }

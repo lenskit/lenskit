@@ -21,8 +21,6 @@
 package org.grouplens.lenskit.iterative;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.iterative.params.MinimumIterations;
-import org.grouplens.lenskit.iterative.params.StoppingThreshold;
 
 import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
@@ -31,7 +29,7 @@ import java.io.Serializable;
 /**
  * Stop when absolute delta drops below a threshold.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
 @Immutable
@@ -106,7 +104,8 @@ public class ThresholdStoppingCondition implements StoppingCondition, Serializab
 
         @Override
         public boolean keepTraining(double error) {
-            if (iterations >= minIterations && Math.abs(error-oldError) < threshold) {
+            double lastDelta = oldError - error;
+            if (iterations >= minIterations && Math.abs(lastDelta) < threshold) {
                 return false;
             } else {
                 ++iterations;

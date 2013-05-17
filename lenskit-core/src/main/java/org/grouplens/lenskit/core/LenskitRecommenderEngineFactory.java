@@ -52,7 +52,7 @@ import static org.grouplens.lenskit.core.ContextWrapper.coerce;
  * This class is final for copying safety. This decision can be revisited.
  * </p>
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public final class LenskitRecommenderEngineFactory extends AbstractConfigContext implements RecommenderEngineFactory {

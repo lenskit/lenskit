@@ -22,6 +22,7 @@ package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
@@ -32,6 +33,7 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
@@ -50,12 +52,13 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Run a single train-test evaluation of a single algorithm.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
 public class TrainTestEvalJob implements Job {
@@ -68,6 +71,8 @@ public class TrainTestEvalJob implements Job {
     @Nonnull
     private final List<TestUserMetric> evaluators;
     @Nonnull
+    private final List<ModelMetric> modelMetrics;
+    @Nonnull
     private final List<Pair<Symbol, String>> channels;
     @Nonnull
     private final TTDataSet data;
@@ -78,7 +83,6 @@ public class TrainTestEvalJob implements Job {
     @Nonnull
     private final Supplier<TableWriter> predictOutputSupplier;
     private final Supplier<SharedPreferenceSnapshot> snapshot;
-    private final int outputColumnCount;
 
     /**
      * Create a new train-test eval job.
@@ -100,6 +104,7 @@ public class TrainTestEvalJob implements Job {
      */
     public TrainTestEvalJob(@Nonnull AlgorithmInstance algo,
                             @Nonnull List<TestUserMetric> evals,
+                            @Nonnull List<ModelMetric> mMetrics,
                             @Nonnull List<Pair<Symbol,String>> chans,
                             @Nonnull TTDataSet ds, Supplier<SharedPreferenceSnapshot> snap,
                             @Nonnull Supplier<TableWriter> out,
@@ -108,6 +113,7 @@ public class TrainTestEvalJob implements Job {
                             int nrecs) {
         algorithm = algo;
         evaluators = evals;
+        modelMetrics = mMetrics;
         channels = chans;
         data = ds;
         snapshot = snap;
@@ -115,19 +121,16 @@ public class TrainTestEvalJob implements Job {
         userOutputSupplier = userOut;
         predictOutputSupplier = predOut;
         numRecs = nrecs;
-
-        int ncols = 2;
-        for (TestUserMetric eval : evals) {
-            if (eval.getColumnLabels() != null) {
-                ncols += eval.getColumnLabels().size();
-            }
-        }
-        outputColumnCount = ncols;
     }
 
     @Override
     public String getName() {
         return algorithm.getName();
+    }
+
+    @Override
+    public String getDescription() {
+        return algorithm.toString() + " on " + data.getName();
     }
 
     @Override
@@ -139,23 +142,28 @@ public class TrainTestEvalJob implements Job {
             userTable = userOutputSupplier.get();
             predictTable = predictOutputSupplier.get();
 
+            List<Object> outputRow = Lists.newArrayList();
+
+            ExecutionInfo execInfo = buildExecInfo();
 
             logger.info("Building {}", algorithm.getName());
             StopWatch buildTimer = new StopWatch();
             buildTimer.start();
-            RecommenderInstance rec = algorithm.makeTestableRecommender(data, snapshot);
+            RecommenderInstance rec = algorithm.makeTestableRecommender(data, snapshot, execInfo);
             buildTimer.stop();
             logger.info("Built {} in {}", algorithm.getName(), buildTimer);
+
+            logger.info("Measuring {}", algorithm.getName());
+            for (ModelMetric metric: modelMetrics) {
+                outputRow.addAll(metric.measureAlgorithm(algorithm, data, rec.getRecommender()));
+            }
 
             logger.info("Testing {}", algorithm.getName());
             StopWatch testTimer = new StopWatch();
             testTimer.start();
             List<TestUserMetricAccumulator> evalAccums = new ArrayList<TestUserMetricAccumulator>(evaluators.size());
 
-            Object[] userRow = null;
-            if (userTable != null) {
-                userRow = new Object[userTable.getLayout().getColumnCount()];
-            }
+            List<Object> userRow = new ArrayList<Object>();
 
             DataAccessObject testDao = data.getTestFactory().create();
             try {
@@ -169,6 +177,9 @@ public class TrainTestEvalJob implements Job {
                 Cursor<UserHistory<Event>> userProfiles = testDao.getUserHistories();
                 try {
                     for (UserHistory<Event> p : userProfiles) {
+                        assert userRow.isEmpty();
+                        userRow.add(p.getUserId());
+
                         long uid = p.getUserId();
                         LongSet testItems = p.itemSet();
 
@@ -181,22 +192,20 @@ public class TrainTestEvalJob implements Job {
 
                         TestUser test = new TestUser(uid, hist, testHist, preds, recs);
 
-                        int upos = 0;
                         for (TestUserMetricAccumulator accum : evalAccums) {
                             Object[] ures = accum.evaluate(test);
-                            if (ures != null && userRow != null) {
-                                System.arraycopy(ures, 0,
-                                                 userRow, upos, ures.length);
-                                upos += ures.length;
+                            if (ures != null) {
+                                userRow.addAll(Arrays.asList(ures));
                             }
                         }
-                        if (userRow != null) {
+                        if (userTable != null) {
                             try {
                                 userTable.writeRow(userRow);
                             } catch (IOException e) {
                                 throw new RuntimeException("error writing user row", e);
                             }
                         }
+                        userRow.clear();
 
                         if (predictTable != null) {
                             writePredictions(predictTable, uid,
@@ -214,7 +223,7 @@ public class TrainTestEvalJob implements Job {
             logger.info("Tested {} in {}", algorithm.getName(), testTimer);
 
             try {
-                writeOutput(buildTimer, testTimer, evalAccums);
+                writeOutput(buildTimer, testTimer, outputRow, evalAccums);
             } catch (IOException e) {
                 logger.error("Error writing output", e);
             }
@@ -224,6 +233,15 @@ public class TrainTestEvalJob implements Job {
         } finally {
             LKFileUtils.close(userTable, predictTable);
         }
+    }
+
+    private ExecutionInfo buildExecInfo() {
+        ExecutionInfo.Builder bld = new ExecutionInfo.Builder();
+        bld.setAlgoName(algorithm.getName())
+           .setAlgoAttributes(algorithm.getAttributes())
+           .setDataName(data.getName())
+           .setDataAttributes(data.getAttributes());
+        return bld.build();
     }
 
     private void writePredictions(TableWriter predictTable, long uid, SparseVector ratings, SparseVector predictions) {
@@ -257,24 +275,28 @@ public class TrainTestEvalJob implements Job {
         }
     }
 
-    private void writeOutput(StopWatch build, StopWatch test, List<TestUserMetricAccumulator> accums) throws IOException {
-        Object[] row = new Object[outputColumnCount];
-        row[0] = build.getTime();
-        row[1] = test.getTime();
-        int col = 2;
-        for (TestUserMetricAccumulator acc : accums) {
-            Object[] ar = acc.finalResults();
-            if (ar != null) {
-                // no aggregated output is generated
-                int n = ar.length;
-                System.arraycopy(ar, 0, row, col, n);
-                col += n;
-            }
-        }
+    private void writeOutput(StopWatch build, StopWatch test, List<Object> measures, List<TestUserMetricAccumulator> accums) throws IOException {
         TableWriter output = outputSupplier.get();
-        try {
-            output.writeRow(row);
 
+        try {
+            Object[] row = new Object[output.getLayout().getColumnCount()];
+            row[0] = build.getTime();
+            row[1] = test.getTime();
+            int col = 2;
+            for (Object o: measures) {
+                row[col] = o;
+                col += 1;
+            }
+            for (TestUserMetricAccumulator acc : accums) {
+                Object[] ar = acc.finalResults();
+                if (ar != null) {
+                    // no aggregated output is generated
+                    int n = ar.length;
+                    System.arraycopy(ar, 0, row, col, n);
+                    col += n;
+                }
+            }
+            output.writeRow(row);
         } finally {
             output.close();
         }

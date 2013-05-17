@@ -21,8 +21,6 @@
 package org.grouplens.lenskit.mf.funksvd;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
-import it.unimi.dsi.fastutil.longs.LongCollection;
-import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.CollectionUtils;
@@ -31,17 +29,16 @@ import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
-import org.grouplens.lenskit.mf.funksvd.params.FeatureCount;
-import org.grouplens.lenskit.transform.clamp.ClampingFunction;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.MutableVec;
+import org.grouplens.lenskit.vectors.Vec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.concurrent.NotThreadSafe;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * SVD recommender builder using gradient descent (Funk SVD).
@@ -54,36 +51,35 @@ import javax.inject.Provider;
  * <a href="http://www.timelydevelopment.com/demos/NetflixPrize.aspx">Timely
  * Development's sample code</a>.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@NotThreadSafe
 public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     private static Logger logger = LoggerFactory.getLogger(FunkSVDModelBuilder.class);
 
-    // The default value for feature values - isn't supposed to matter much
-    private static final double DEFAULT_FEATURE_VALUE = 0.1;
+    /**
+     * The feature count. This is used by {@link #get()} and {@link #computeTrailingValue(int)}.
+     */
+    protected final int featureCount;
+    protected final BaselinePredictor baseline;
+    protected final PreferenceSnapshot snapshot;
+    protected final double initialValue;
 
-    private final int featureCount;
-    private final BaselinePredictor baseline;
-    private final PreferenceSnapshot snapshot;
-
-    private FunkSVDUpdateRule rule;
+    protected final FunkSVDUpdateRule rule;
 
     @Inject
     public FunkSVDModelBuilder(@Transient @Nonnull PreferenceSnapshot snapshot,
                                @Transient @Nonnull FunkSVDUpdateRule rule,
                                @Nonnull BaselinePredictor baseline,
-                               @FeatureCount int featureCount) {
+                               @FeatureCount int featureCount,
+                               @InitialFeatureValue double initVal) {
         this.featureCount = featureCount;
+        this.initialValue = initVal;
         this.baseline = baseline;
         this.snapshot = snapshot;
         this.rule = rule;
     }
 
 
-    /* (non-Javadoc)
-    * @see org.grouplens.lenskit.RecommenderComponentBuilder#build(org.grouplens.lenskit.data.snapshot.RatingBuildContext)
-    */
     @Override
     public FunkSVDModel get() {
         double[][] userFeatures = new double[featureCount][snapshot.getUserIds().size()];
@@ -93,63 +89,107 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
         logger.debug("Learning rate is {}", rule.getLearningRate());
         logger.debug("Regularization term is {}", rule.getTrainingRegularization());
 
-        FastCollection<IndexedPreference> ratings = snapshot.getRatings();
-        logger.debug("Building SVD with {} features for {} ratings", featureCount, ratings.size());
+        logger.debug("Building SVD with {} features for {} ratings",
+                     featureCount, snapshot.getRatings().size());
 
-        double[] estimates = initializeEstimates(snapshot, baseline);
-        ClampingFunction clamp = rule.getClampingFunction();
+        TrainingEstimator estimates = rule.makeEstimator(snapshot);
+
+        List<FeatureInfo> featureInfo = new ArrayList<FeatureInfo>(featureCount);
 
         for (int f = 0; f < featureCount; f++) {
-            trainFeature(estimates, ratings, f, userFeatures[f], itemFeatures[f]);
+            logger.trace("Training feature {}", f);
+            StopWatch timer = new StopWatch();
+            timer.start();
+
+            // Fetch and initialize the arrays for this feature
+            DoubleArrays.fill(userFeatures[f], initialValue);
+            DoubleArrays.fill(itemFeatures[f], initialValue);
+
+
+            FeatureInfo.Builder fib = new FeatureInfo.Builder(f);
+            trainFeature(f, estimates, userFeatures[f], itemFeatures[f], fib);
+            summarizeFeature(userFeatures[f], itemFeatures[f], fib);
+            featureInfo.add(fib.build());
 
             // Update each rating's cached value to accommodate the feature values.
-            updateRatingEstimates(estimates, ratings, userFeatures[f], itemFeatures[f], clamp);
+            estimates.update(userFeatures[f], itemFeatures[f]);
+
+            timer.stop();
+            logger.debug("Finished feature {} in {}", f, timer);
         }
 
         return new FunkSVDModel(featureCount, itemFeatures, userFeatures,
-                                rule.getClampingFunction(), snapshot.itemIndex(), snapshot.userIndex(), baseline);
+                                rule.getClampingFunction(),
+                                snapshot.itemIndex(), snapshot.userIndex(),
+                                baseline, featureInfo);
     }
 
-
-    private void trainFeature(double[] estimates, FastCollection<IndexedPreference> ratings,
-                              int feature, double[] ufvs, double[] ifvs) {
-        logger.trace("Training feature {}", feature);
-
-        // Fetch and initialize the arrays for this feature
-        DoubleArrays.fill(ufvs, DEFAULT_FEATURE_VALUE);
-        DoubleArrays.fill(ifvs, DEFAULT_FEATURE_VALUE);
-
-        // We assume that all subsequent features have DEFAULT_FEATURE_VALUE
+    /**
+     * Compute the trailing value to assume after a feature. The default implementation assumes
+     * all remaining features containing {@link #initialValue}, returning {@code
+     * (featureCount - feature - 1) * initialValue * initialValue}.  This is used by the default
+     * implementation of {@link #trainFeature(int, TrainingEstimator, double[], double[], FeatureInfo.Builder)}.
+     *
+     * @param feature The feature number.
+     * @return The trailing value to assume.
+     */
+    protected double computeTrailingValue(int feature) {
+        // We assume that all subsequent features have initialValue
         // We can therefore pre-compute the "trailing" prediction value, as it
         // will be the same for all ratings for this feature.
-        final double trail = (featureCount - feature - 1)
-                * DEFAULT_FEATURE_VALUE * DEFAULT_FEATURE_VALUE;
-
-        // Initialize our counters and error tracking
-        StopWatch timer = new StopWatch();
-        timer.start();
-
-        double rmse = Double.MAX_VALUE;
-        logger.debug("starting feature {} loop, stop condition is {}",
-                     feature, rule.getStoppingCondition());
-        TrainingLoopController controller = rule.getTrainingLoopController();
-        while (controller.keepTraining(rmse)) {
-            rmse = doFeatureIteration(estimates, ratings, ufvs, ifvs, trail);
-
-            logger.trace("iteration {} finished with RMSE {}", controller.getIterationCount(), rmse);
-        }
-
-        timer.stop();
-        logger.debug("Finished feature {} in {} epochs (took {})",
-                     feature, controller.getIterationCount(), timer);
+        return (featureCount - feature - 1) * initialValue * initialValue;
     }
 
-    private double doFeatureIteration(double[] estimates, FastCollection<IndexedPreference> ratings,
-                                      double[] ufvs, double[] ifvs, double trail) {
+    /**
+     * Train a feature using a collection of ratings.  This method iteratively calls {@link
+     * #doFeatureIteration(TrainingEstimator, FastCollection, double[], double[], double)} to train
+     * the feature.  It can be overridden to customize the feature training strategy.
+     *
+     * @param feature   The number of the current feature.
+     * @param estimates The current estimator.  This method is <b>not</b> expected to update the
+     *                  estimator.
+     * @param ufvs      The user feature values.  This has been initialized to the initial value,
+     *                  and may be reused between features.
+     * @param ifvs      The item feature values.  This has been initialized to the initial value,
+     *                  and may be reused between features.
+     * @param fib       The feature info builder. This method is only expected to add information
+     *                  about its training rounds to the builder; the caller takes care of feature
+     *                  number and summary data.
+     * @see {@link #doFeatureIteration(TrainingEstimator, FastCollection, double[], double[],
+     *      double)}
+     * @see {@link #summarizeFeature(double[], double[], FeatureInfo.Builder)}
+     */
+    protected void trainFeature(int feature, TrainingEstimator estimates,
+                                double[] ufvs, double[] ifvs,
+                                FeatureInfo.Builder fib) {
+        final double trail = computeTrailingValue(feature);
+        double rmse = Double.MAX_VALUE;
+        TrainingLoopController controller = rule.getTrainingLoopController();
+        FastCollection<IndexedPreference> ratings = snapshot.getRatings();
+        while (controller.keepTraining(rmse)) {
+            rmse = doFeatureIteration(estimates, ratings, ufvs, ifvs, trail);
+            fib.addTrainingRound(rmse);
+            logger.trace("iteration {} finished with RMSE {}", controller.getIterationCount(), rmse);
+        }
+    }
+
+    /**
+     * Do a single feature iteration.
+     *
+     * @param estimates The estimates.
+     * @param ratings   The ratings to train on.
+     * @param ufvs      The user feature values.
+     * @param ifvs      The item feature values.
+     * @param trail     The trailing values.
+     * @return The RMSE of the feature iteration.
+     */
+    protected double doFeatureIteration(TrainingEstimator estimates,
+                                        FastCollection<IndexedPreference> ratings,
+                                        double[] ufvs, double[] ifvs, double trail) {
         double sse = 0;
         int n = 0;
 
-        for (IndexedPreference r: CollectionUtils.fast(ratings)) {
+        for (IndexedPreference r : CollectionUtils.fast(ratings)) {
             final int uidx = r.getUserIndex();
             final int iidx = r.getItemIndex();
 
@@ -159,7 +199,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
 
             // Step 2: Compute the error
             final double err = rule.computeError(r.getUserId(), r.getItemId(),
-                                                 trail, estimates[r.getIndex()],
+                                                 trail, estimates.get(r),
                                                  r.getValue(), ouf, oif);
 
             // Step 3: Update feature values
@@ -173,32 +213,18 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
         return Math.sqrt(sse / n);
     }
 
-    private void updateRatingEstimates(double[] estimates, FastCollection<IndexedPreference> ratings,
-                                       double[] ufvs, double[] ifvs, ClampingFunction clamp) {
-        for (IndexedPreference r : CollectionUtils.fast(ratings)) {
-            double est = estimates[r.getIndex()];
-            double offset = ufvs[r.getUserIndex()] * ifvs[r.getItemIndex()];
-            estimates[r.getIndex()] = clamp.apply(r.getUserId(), r.getItemId(), est + offset);
-        }
-    }
-
-    private double[] initializeEstimates(PreferenceSnapshot snapshot, BaselinePredictor baseline) {
-        final LongCollection userIds = snapshot.getUserIds();
-        final int numItem = snapshot.getRatings().size();
-        double[] estimates = new double[numItem];
-
-        LongIterator userIter = userIds.iterator();
-        while (userIter.hasNext()) {
-            long uid = userIter.nextLong();
-            SparseVector rvector = snapshot.userRatingVector(uid);
-            MutableSparseVector blpreds = new MutableSparseVector(rvector.keySet());
-            baseline.predict(uid, rvector, blpreds);
-
-            for (IndexedPreference r : CollectionUtils.fast(snapshot.getUserRatings(uid))) {
-                estimates[r.getIndex()] = blpreds.get(r.getItemId());
-            }
-        }
-
-        return estimates;
+    /**
+     * Add a feature's summary to the feature info builder.
+     *
+     * @param ufvs The user values.
+     * @param ifvs The item values.
+     * @param fib  The feature info builder.
+     */
+    protected void summarizeFeature(double[] ufvs, double[] ifvs, FeatureInfo.Builder fib) {
+        Vec ufv = MutableVec.wrap(ufvs);
+        Vec ifv = MutableVec.wrap(ifvs);
+        fib.setUserAverage(ufv.mean())
+           .setItemAverage(ifv.mean())
+           .setSingularValue(ufv.norm() * ifv.norm());
     }
 }

@@ -28,30 +28,43 @@ import java.util.LinkedHashSet;
 /**
  * Construct a layout for a table.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
     private LinkedHashSet<String> columns = new LinkedHashSet<String>();
 
     /**
+     * Construct a new builder that is a copy of an existing layout.
+     *
+     * @param layout The layout to copy.
+     * @return A new builder containing all columns in the layout.
+     */
+    public static TableLayoutBuilder copy(TableLayout layout) {
+        TableLayoutBuilder bld = new TableLayoutBuilder();
+        for (String col: layout.getColumns()) {
+            bld.addColumn(col);
+        }
+        return bld;
+    }
+
+    /**
      * Add a column to the table layout.  Each column must have a unique, non-null
      * name.
      *
      * @param name The column name.
-     * @return The index of the column. Columns are indexed from 0.
+     * @return The builder, for chaining.
      * @throws IllegalArgumentException if the column already exists.
      */
-    public int addColumn(String name) {
+    public TableLayoutBuilder addColumn(String name) {
         if (name == null) {
             throw new IllegalArgumentException("column name cannot be null");
         }
         if (columns.contains(name)) {
             throw new IllegalArgumentException("column " + name + " already exists");
         }
-        int i = columns.size();
         columns.add(name);
-        return i;
+        return this;
     }
 
     /**

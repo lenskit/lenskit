@@ -26,7 +26,7 @@ import org.grouplens.lenskit.util.Index;
 /**
  * Data storage for packed rating snapshots.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 final class PackedPreferenceData {
     static final int CHUNK_SHIFT = 12;

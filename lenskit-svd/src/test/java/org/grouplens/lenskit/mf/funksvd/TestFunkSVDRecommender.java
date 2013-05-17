@@ -39,7 +39,6 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.mf.funksvd.params.FeatureCount;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;

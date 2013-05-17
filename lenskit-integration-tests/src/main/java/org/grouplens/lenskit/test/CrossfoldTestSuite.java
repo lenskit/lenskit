@@ -25,7 +25,6 @@ import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceCommand;
 import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.data.GenericDataSource;
-import org.grouplens.lenskit.eval.data.crossfold.CrossfoldCommand;
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric;
@@ -63,7 +62,7 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
         }
 
         SimpleEvalCommand evalCommand = new SimpleEvalCommand("train-test");
-        Properties props =  new Properties();
+        Properties props =  new Properties(System.getProperties());
         props.setProperty(EvalConfig.DATA_DIR_PROPERTY, workDirName);
         evalCommand.setConfig(new EvalConfig(props));
         LenskitAlgorithmInstanceCommand algo = new LenskitAlgorithmInstanceCommand();

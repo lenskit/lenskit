@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 /**
  * The command to build and run a Subsample on the data source file and output the partition files
  *
- * @author Lingfei He<Lingfei@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SubsampleCommand extends AbstractCommand<DataSource> {
     private static final Logger logger = LoggerFactory.getLogger(SubsampleCommand.class);
@@ -186,7 +186,7 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
                         subsampleFraction, source.getName());
             TableWriter subsampleWriter = CSVWriter.open(subsampleFile, null);
             try {
-                mode.doSample(daoSnap, subsampleWriter, subsampleFraction);
+                mode.doSample(daoSnap, subsampleWriter, subsampleFraction, getConfig());
             } finally {
                 LKFileUtils.close(subsampleWriter);
             }

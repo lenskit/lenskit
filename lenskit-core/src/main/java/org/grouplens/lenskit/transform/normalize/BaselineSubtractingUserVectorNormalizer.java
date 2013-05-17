@@ -31,7 +31,7 @@ import java.io.Serializable;
 /**
  * User vector normalizer that subtracts a user's baseline predictions.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorNormalizer implements Serializable {

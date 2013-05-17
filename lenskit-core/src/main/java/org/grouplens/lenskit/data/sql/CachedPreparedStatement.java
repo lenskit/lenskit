@@ -30,7 +30,7 @@ import java.util.concurrent.Callable;
 /**
  * A simple object that wraps a lazy initialized {@link PreparedStatement}.
  *
- * @author Daniel Kluver <kluver@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class CachedPreparedStatement implements Callable<PreparedStatement>, Closeable {
     private PreparedStatement cache = null;

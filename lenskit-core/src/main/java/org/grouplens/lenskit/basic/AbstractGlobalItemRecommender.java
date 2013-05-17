@@ -37,7 +37,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * {@link GlobalItemRecommender} by delegating them to general methods with
  * fastutil-based interfaces.
  *
- * @author Shuo Chang<schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class AbstractGlobalItemRecommender implements GlobalItemRecommender {
     protected final DataAccessObject dao;

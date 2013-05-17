@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongListIterator;
 /**
  * Iterator for {@link ScoredLongList}s.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public interface ScoredLongListIterator extends LongListIterator {

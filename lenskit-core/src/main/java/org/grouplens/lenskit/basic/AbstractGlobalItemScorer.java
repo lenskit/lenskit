@@ -35,7 +35,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * Base class to make global item scorers easier to implement. Delegates single=item
  * score methods to collection-based ones,
  *
- * @author Steven Chang <schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class AbstractGlobalItemScorer implements GlobalItemScorer {
     /**

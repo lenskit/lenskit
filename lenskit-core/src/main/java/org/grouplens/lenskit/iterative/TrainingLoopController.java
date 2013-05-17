@@ -33,6 +33,7 @@ public interface TrainingLoopController {
     boolean keepTraining(double error);
 
     /**
+     * Get the current iteration count.
      *
      * @return the number of iterations done so far.
      */

@@ -60,7 +60,7 @@ import java.util.Map.Entry;
  * normalized.subtract(normFactor);
  * </pre>
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public final class MutableSparseVector extends SparseVector implements Serializable {
@@ -88,10 +88,10 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * Construct a new vector from the contents of a map. The key domain is the
      * key set of the map.  Therefore, no new keys can be added to this vector.
      *
-     * @param ratings A map providing the values for the vector.
+     * @param keyValueMap A map providing the values for the vector.
      */
-    public MutableSparseVector(Long2DoubleMap ratings) {
-        super(ratings);
+    public MutableSparseVector(Long2DoubleMap keyValueMap) {
+        super(keyValueMap);
         channelMap = new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
         typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>, TypedSideChannel<?>>();
     }
@@ -251,16 +251,12 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         }
     }
 
-    private double setAt(int idx, double value) {
-        if (idx >= 0) {
-            final double v = usedKeys.get(idx) ? values[idx] : Double.NaN;
-            values[idx] = value;
-            clearCachedValues();
-            usedKeys.set(idx);
-            return v;
-        } else {
-            throw new IllegalArgumentException("Cannot set the value on a negative index");
-        }
+    private double setAt(int index, double value) {
+        assert index >= 0;
+        final double v = usedKeys.get(index) ? values[index] : Double.NaN;
+        values[index] = value;
+        usedKeys.set(index);
+        return v;
     }
 
     /**
@@ -277,8 +273,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         checkMutable();
         final int idx = findIndex(key);
         if (idx < 0) {
-            throw new IllegalArgumentException("Cannot set a key that is not in the domain.  key="
-                                                       + key);
+            throw new IllegalArgumentException("Cannot 'set' key=" + key + " that is not in the key domain.");
         }
         return setAt(idx, value);
     }
@@ -302,17 +297,21 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public double set(VectorEntry entry, double value) {
         final SparseVector evec = entry.getVector();
+        final int eind = entry.getIndex();
         if (evec == null) {
             throw new IllegalArgumentException("entry is not associated with a vector");
         } else if (evec.keys != this.keys) {
             throw new IllegalArgumentException("entry does not have safe key domain");
+        } else if (eind < 0) {
+            throw new IllegalArgumentException("Cannot 'set' a key with a negative index.");
+        } else if (entry.getKey() != keys[eind]) {
+            throw new IllegalArgumentException("entry does not have the correct key for its index");
         }
 
-        final int idx = entry.getIndex();
         if (evec == this) {  // if this is the original, not a copy or channel
             entry.setValue(value);
         }
-        return setAt(idx, value);
+        return setAt(eind, value);
     }
 
     /**
@@ -337,6 +336,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         final int idx = findIndex(key);
         if (idx >= 0) {
             usedKeys.clear(idx);
+        } else {
+            throw new IllegalArgumentException("unset should only be used on keys that are in the key domain");
         }
     }
 
@@ -359,6 +360,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * Unset the value for a key. The key remains in the key domain, but is
      * removed from the key set.
      * @param key The key to unset.
+     * @throws IllegalArgumentException if the key is not in the key domain.
      */
     public void unset(long key) {
         clear(key);
@@ -381,7 +383,11 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
-     * Add a value to the specified entry. The value must be in the key set.
+     * Add a value to the specified entry. The key must be in the key domain, and must have a value.
+     * 
+     * Note that the return value on a missing key will be changed in 2.0 to throwing an IllegalArgumentException
+     * so code should not rely on Double.NaN coming back.  In general, this function should only be called
+     * on keys that are in the key set and that already have a value.
      *
      * @param key   The key whose value should be added.
      * @param value The value to increase it by.
@@ -391,11 +397,22 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         checkMutable();
         final int idx = findIndex(key);
         if (idx >= 0 && usedKeys.get(idx)) {
-            clearCachedValues();
             values[idx] += value;
             return values[idx];
         } else {
             return Double.NaN;
+        }
+    }
+
+    /**
+     * Add a value to all set keys in this array.
+     *
+     * @param value The value to add.
+     */
+    public void add(double value) {
+        // just update all values. if a value is unset, what we do to it is undefined
+        for (int i = 0; i < domainSize; i++) {
+            values[i] += value;
         }
     }
 
@@ -410,7 +427,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void subtract(final SparseVector other) {
         checkMutable();
-        clearCachedValues();
         int i = 0;
         for (VectorEntry oe : other.fast()) {
             final long k = oe.getKey();
@@ -437,7 +453,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void add(final SparseVector other) {
         checkMutable();
-        clearCachedValues();
         int i = 0;
         for (VectorEntry oe : other.fast()) {
             final long k = oe.getKey();
@@ -467,7 +482,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void set(final SparseVector other) {
         checkMutable();
-        clearCachedValues();
         int i = 0;
         for (VectorEntry oe : other.fast()) {
             final long k = oe.getKey();
@@ -491,7 +505,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param s The scalar to rescale the vector by.
      */
     public void scale(double s) {
-        clearCachedValues();
         BitSetIterator iter = new BitSetIterator(usedKeys, 0, domainSize);
         while (iter.hasNext()) {
             int i = iter.nextInt();
@@ -611,8 +624,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         double[] nvs;
         BitSet newUsedKeys;
 
-        if (keyDomain == keys) {
-            assert freeze;
+        // can't easily test the fourth condition below, because no public method
+        // does it this way.
+        if (keyDomain == keys && freeze) {
             nvs = values;
             newUsedKeys = usedKeys;
         } else {
@@ -632,6 +646,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
                 } else if (keys[j] < keyDomain[i]) {
                     j++;
                 } else {
+                    // untestable
                     throw new AssertionError("Key domain of new immutable vector must " +
                                              "be subset of original domain");
                 }
@@ -711,6 +726,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         if (values.length < size) {
             throw new IllegalArgumentException("value array too short");
         }
+        if (keys.length < size) {
+            throw new IllegalArgumentException("key array too short");
+        }
         if (!MoreArrays.isSorted(keys, 0, size)) {
             throw new IllegalArgumentException("item array not sorted");
         }
@@ -719,25 +737,18 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
     /**
      * Wrap key and value array lists in a mutable sparse vector. Don't modify
-     * the original lists once this has been called!
+     * the original lists once this has been called!  There must be at least
+     * as many values as keys.  The value list will be truncated to the length
+     * of the key list.
      *
      * @param keyList   The list of keys
      * @param valueList The list of values
      * @return A backed by the backing stores of the provided lists.
      */
     public static MutableSparseVector wrap(LongArrayList keyList, DoubleArrayList valueList) {
-        if (valueList.size() < keyList.size()) {
-            throw new IllegalArgumentException("Value list too short");
-        }
-
         long[] keys = keyList.elements();
         double[] values = valueList.elements();
-
-        if (!MoreArrays.isSorted(keys, 0, keyList.size())) {
-            throw new IllegalArgumentException("key array not sorted");
-        }
-
-        return new MutableSparseVector(keys, values, keyList.size());
+        return MutableSparseVector.wrap(keys, values, keyList.size());
     }
 
     /**
@@ -864,8 +875,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
     /**
      * Add a channel to the vector, even if there is already a
-     * channel with the same symbol.  The new channel will be empty,
-     * and will have the same key domain as this vector.
+     * channel with the same symbol.  If there already was such a channel
+     * it will be unchanged; otherwise a new empty channel will be created
+     * with the same key domain as this vector.
      *
      * @param channelSymbol the symbol under which this new channel
      *                      should be created.

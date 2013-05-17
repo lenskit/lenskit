@@ -21,10 +21,12 @@
 package org.grouplens.lenskit.eval.algorithm;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.annotation.Nullable;
 import java.io.Closeable;
 
 /**
@@ -55,6 +57,13 @@ public interface RecommenderInstance extends Closeable {
      * @return Recommendations for the user.
      */
     ScoredLongList getRecommendations(long uid, LongSet testItems, int n);
+
+    /**
+     * Get the recommender, if this instance has one.
+     * @return The recommender, or {@code null} if this instance doesn't have one.
+     */
+    @Nullable
+    Recommender getRecommender();
 
     @Override
     void close();

@@ -27,7 +27,7 @@ import org.grouplens.lenskit.data.Event;
  * Helper for making event cursors.
  *
  * @param <E> The type of event the cursor returns.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public abstract class AbstractEventCursor<E extends Event> extends AbstractPollingCursor<E> {

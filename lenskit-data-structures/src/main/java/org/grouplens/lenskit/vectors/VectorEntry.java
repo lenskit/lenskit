@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
  * values, while the set operation on Mutable vectors allows the
  * element to be changed.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  * @since 0.11
  */
@@ -43,7 +43,7 @@ public final class VectorEntry implements Cloneable {
     /**
      * The state of an entry in a sparse vector.
      *
-     * @author Michael Ekstrand
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      * @since 0.11
      */
     public static enum State {
@@ -174,4 +174,16 @@ public final class VectorEntry implements Cloneable {
         }
         return e;
     }
+    
+    @Override
+    public String toString() {
+        return "VectorEntry:"
+                + " vector=" + vector
+                + " index=" + index 
+                + " key=" + key 
+                + " value=" + value
+                + " isSet=" + isSet;
+    }
+
+
 }

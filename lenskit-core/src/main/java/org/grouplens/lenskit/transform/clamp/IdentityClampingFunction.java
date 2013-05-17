@@ -28,7 +28,7 @@ import java.io.Serializable;
 /**
  * Identity clamping function.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
 @Shareable

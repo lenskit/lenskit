@@ -21,10 +21,12 @@
 package org.grouplens.lenskit.eval.algorithm;
 
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.ScoredLongList;
@@ -33,6 +35,7 @@ import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.config.BuilderCommand;
 import org.grouplens.lenskit.eval.data.CSVDataSource;
@@ -87,6 +90,22 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
 
     public List<String> getCommand() {
         return command;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ExternalAlgorithm(")
+          .append(getName())
+          .append(")");
+        if (!attributes.isEmpty()) {
+            sb.append("[");
+            Joiner.on(", ")
+                  .withKeyValueSeparator("=")
+                  .appendTo(sb, attributes);
+            sb.append("]");
+        }
+        return sb.toString();
     }
 
     private File trainingFile(TTDataSet data) {
@@ -148,7 +167,8 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
     }
 
     @Override
-    public RecommenderInstance makeTestableRecommender(TTDataSet data, Supplier<SharedPreferenceSnapshot> snapshot) throws RecommenderBuildException {
+    public RecommenderInstance makeTestableRecommender(TTDataSet data, Supplier<SharedPreferenceSnapshot> snapshot,
+                                                       ExecutionInfo info) throws RecommenderBuildException {
         final File train = trainingFile(data);
         final File test = testFile(data);
         final File output = new File(workDir,
@@ -257,6 +277,11 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
 
         @Override
         public ScoredLongList getRecommendations(long uid, LongSet testItems, int n) {
+            return null;
+        }
+
+        @Override
+        public Recommender getRecommender() {
             return null;
         }
 

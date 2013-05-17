@@ -34,7 +34,7 @@ import javax.annotation.Nonnull;
  * should typically use the same normalizations used by the builder
  * to make use of the similarity scores.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10 as an interface.
  */
 @DefaultImplementation(SimilarityMatrixModel.class)

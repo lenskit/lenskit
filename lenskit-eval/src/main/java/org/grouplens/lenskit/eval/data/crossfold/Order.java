@@ -26,7 +26,7 @@ import java.util.Random;
 /**
  * An order for a list.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface Order<E> {
     /**

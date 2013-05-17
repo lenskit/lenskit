@@ -31,6 +31,7 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 import static java.lang.Math.abs;
@@ -44,7 +45,7 @@ import static java.lang.Math.abs;
  * <emph>by-user</emph>, where the MAE is computed per-user and then averaged
  * over all users.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class MAEPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(MAEPredictMetric.class);
@@ -72,6 +73,7 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
         private int nratings = 0;
         private int nusers = 0;
 
+        @Nonnull
         @Override
         public Object[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
@@ -95,10 +97,11 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
                 nusers += 1;
                 return new Object[]{errRate};
             } else {
-                return null;
+                return new Object[1];
             }
         }
 
+        @Nonnull
         @Override
         public Object[] finalResults() {
             double v = totalError / nratings;

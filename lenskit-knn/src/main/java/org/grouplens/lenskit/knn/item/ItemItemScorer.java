@@ -45,7 +45,7 @@ import java.util.Collection;
  * Score items using an item-item CF model. User ratings are <b>not</b> supplied
  * as default preferences.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see ItemItemRatingPredictor
  */
 public class ItemItemScorer extends AbstractItemScorer implements ItemScorer {

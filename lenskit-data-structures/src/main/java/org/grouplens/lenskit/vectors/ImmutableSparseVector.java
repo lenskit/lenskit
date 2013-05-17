@@ -39,7 +39,7 @@ import org.grouplens.lenskit.symbols.TypedSymbol;
  * Immutable sparse vectors. These vectors cannot be changed, even by other
  * code, and are therefore safe to store and are thread-safe.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 @Immutable
@@ -49,6 +49,10 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     private final Map<Symbol, ImmutableSparseVector> channelMap;
     private final Map<TypedSymbol<?>,ImmutableTypedSideChannel<?>> typedChannelMap;
 
+    private transient volatile Double norm = null;
+    private transient volatile Double sum = null;
+    private transient volatile Double mean = null;
+    
     /**
      * Create a new, empty immutable sparse vector.
      */
@@ -180,4 +184,31 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     public Set<TypedSymbol<?>> getTypedChannels() {
         return typedChannelMap.keySet();
     }
+
+    // We override these three functions in the case that this vector is Immutable,
+    // so we can avoid computing them more than once.
+    @Override
+    public double norm() {
+        if (norm == null) {
+            norm = super.norm();
+        }
+        return norm;
+    }
+
+    @Override
+    public double sum() {
+        if (sum == null) {
+            sum = super.sum();
+        }
+        return sum;
+    }
+
+    @Override
+    public double mean() {
+        if (mean == null) {
+            mean = super.mean();
+        }
+        return mean;
+    }
+
 }

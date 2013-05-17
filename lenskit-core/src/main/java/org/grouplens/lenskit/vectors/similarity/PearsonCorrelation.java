@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.vectors.similarity;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.Vectors;
 
@@ -42,7 +41,7 @@ import static java.lang.Math.sqrt;
  * Shapira, B., and Kantor, P. (eds.), <i>RecommenderEngine Systems Handbook</i>,
  * Springer. 2010, pp. 107-144.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class PearsonCorrelation implements VectorSimilarity, Serializable {
@@ -55,7 +54,7 @@ public class PearsonCorrelation implements VectorSimilarity, Serializable {
     }
 
     @Inject
-    public PearsonCorrelation(@Damping double s) {
+    public PearsonCorrelation(@SimilarityDamping double s) {
         shrinkage = s;
     }
 

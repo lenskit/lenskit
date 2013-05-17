@@ -1,0 +1,23 @@
+                               -------
+                                About
+                               -------
+
+LensKit Recommender Toolkit
+
+  LensKit is an open source toolkit for building, researching, and
+  studying recommender systems.
+
+  This is the Maven-generated site for LensKit, providing the auto-generated documentation
+  and general project infrastructure information.  For documentation on how to use or develop
+  LensKit, there are several resources available:
+
+  * {{{http://bitbucket.org/grouplens/lenskit/wiki}Wiki and manual}}
+
+  * {{{apidocs}JavaDoc}}
+
+  * {{{http://bitbucket.org/grouplens/lenskit/overview}README}} (mostly about how to work with the
+    LensKit source code).
+
+  * {{{lenskit-parent/lenskit-eval-maven-plugin/index.html}Maven plugin docs}}
+
+  []

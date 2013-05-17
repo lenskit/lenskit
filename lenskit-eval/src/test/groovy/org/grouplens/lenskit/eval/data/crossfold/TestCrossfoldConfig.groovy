@@ -38,7 +38,7 @@ import com.google.common.io.Files
 
 /**
  * Test crossfold configuration
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class TestCrossfoldConfig extends ConfigTestBase {
 

@@ -32,6 +32,9 @@ import java.util.Arrays;
 public class ImmutableVec extends Vec {
     private static final long serialVersionUID = 1L;
 
+    private transient volatile Double sum;
+    private transient volatile Double norm;
+
     /**
      * Construct a new immutable vector.
      * @param v The vector's contents. This array is copied for safety.
@@ -53,5 +56,21 @@ public class ImmutableVec extends Vec {
     @Override
     public ImmutableVec immutable() {
         return this;
+    }
+
+    @Override
+    public double sum() {
+        if (sum == null) {
+            sum = super.sum();
+        }
+        return sum;
+    }
+
+    @Override
+    public double norm() {
+        if (norm == null) {
+            norm = super.norm();
+        }
+        return norm;
     }
 }

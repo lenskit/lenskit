@@ -25,7 +25,7 @@ import org.apache.commons.lang3.builder.Builder;
 /**
  * Build a preference.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  * @compat Public
  */

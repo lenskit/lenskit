@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.util.table;
 
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.util.table.writer.TableWriter;
+import org.grouplens.lenskit.util.table.writer.AbstractTableWriter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,10 +29,10 @@ import java.util.List;
 /**
  * Builder to construct tables.
  *
- * @author Shuo Chang
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TableBuilder implements Builder<Table>, TableWriter {
+public class TableBuilder extends AbstractTableWriter implements Builder<Table> {
     private final TableLayout layout;
     private final List<Row> rows;
 
@@ -66,7 +66,7 @@ public class TableBuilder implements Builder<Table>, TableWriter {
 
 
     @Override
-    public void writeRow(Object[] row) {
+    public void writeRow(List<?> row) {
         addRow(row);
     }
 
@@ -75,8 +75,21 @@ public class TableBuilder implements Builder<Table>, TableWriter {
      *
      * @param row The row to add.
      * @throws IllegalArgumentException if the row has the wrong length.
+     * @since 1.1
      */
-    public synchronized void addRow(Object[] row) {
+    public synchronized void addRow(List<?> row) {
+        addRow(row.toArray());
+    }
+
+    /**
+     * Add a row to the table.
+     *
+     * @param row The row to add.
+     * @throws IllegalArgumentException if the row has the wrong length.
+     * @since 1.1
+     */
+    public synchronized void addRow(Object... row) {
+        checkRowWidth(row.length);
         rows.add(new RowImpl(layout, row));
     }
 

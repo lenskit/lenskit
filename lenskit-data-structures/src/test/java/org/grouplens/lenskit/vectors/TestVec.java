@@ -22,6 +22,7 @@ package org.grouplens.lenskit.vectors;
 
 import org.junit.Test;
 
+import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.grouplens.lenskit.vectors.SparseVectorTestCommon.closeTo;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -69,6 +70,13 @@ public class TestVec {
         assertThat(empty.norm(), closeTo(0));
         assertThat(single.norm(), closeTo(3.5));
         assertThat(v1.norm(), closeTo(5.9160798));
+    }
+
+    @Test
+    public void testMean() {
+        assertThat(empty.mean(), notANumber());
+        assertThat(single.mean(), closeTo(3.5));
+        assertThat(v1.mean(), closeTo(3));
     }
 
     @Test
@@ -123,7 +131,7 @@ public class TestVec {
     }
 
     @Test
-    public void testAdd() {
+    public void testAddVector() {
         MutableVec mv = MutableVec.wrap(new double[]{3, 2, 5});
         assertThat(mv.sum(), closeTo(10));
         mv.add(v1);
@@ -131,6 +139,14 @@ public class TestVec {
         assertThat(mv.get(1), closeTo(5));
         assertThat(mv.get(2), closeTo(10));
         assertThat(mv.sum(), closeTo(19));
+    }
+
+    @Test
+    public void testAddValue() {
+        MutableVec mv = v1.mutableCopy();
+        double ov = mv.add(1, 2);
+        assertThat(ov, closeTo(3));
+        assertThat(mv.get(1), closeTo(5));
     }
 
     @Test
@@ -152,5 +168,43 @@ public class TestVec {
             assertThat(v.get(i), closeTo(0));
         }
         assertThat(v.sum(), closeTo(0));
+    }
+
+    @Test
+    public void testSetVec() {
+        MutableVec mv = v1.mutableCopy();
+        mv.set(v2);
+        assertThat(mv, equalTo(v2));
+    }
+
+    @Test
+    public void testSetVecMismatch() {
+        MutableVec mv = v1.mutableCopy();
+        try {
+            mv.set(single);
+            fail("set with mismatched vector dimension should fail");
+        } catch (IllegalArgumentException e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testSetArray() {
+        MutableVec mv = v1.mutableCopy();
+        mv.set(new double[] {101, 102, 103});
+        assertThat(mv.get(0), closeTo(101));
+        assertThat(mv.get(1), closeTo(102));
+        assertThat(mv.get(2), closeTo(103));
+    }
+
+    @Test
+    public void testSetArrayMismatch() {
+        MutableVec mv = v1.mutableCopy();
+        try {
+            mv.set(new double[1]);
+            fail("set with mismatched array dimension should fail");
+        } catch (IllegalArgumentException e) {
+            /* expected */
+        }
     }
 }

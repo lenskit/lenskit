@@ -27,12 +27,35 @@
     <dependency>
       <groupId>org.grouplens.grapht</groupId>
       <artifactId>grapht</artifactId>
-      <version>${grapht.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.grouplens.common</groupId>
-      <artifactId>common-test</artifactId>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-test</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <!-- Since we define the annotation processor here, we cannot use it during compilation. -->
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <proc>none</proc>
+        </configuration>
+        <!-- but we can use it in a separate phase -->
+        <executions>
+          <execution>
+            <id>process-annotations</id>
+            <goals><goal>compile</goal></goals>
+            <phase>process-classes</phase>
+            <configuration>
+              <proc>only</proc>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

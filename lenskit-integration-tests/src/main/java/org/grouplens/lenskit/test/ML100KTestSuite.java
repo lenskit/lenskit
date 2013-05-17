@@ -25,10 +25,13 @@ import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
 import org.junit.Before;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Base class for integration tests using the ML-100K data set.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ML100KTestSuite {
     protected final String ML100K_PROPERTY = "lenskit.movielens.100k";
@@ -37,16 +40,20 @@ public class ML100KTestSuite {
     protected DAOFactory daoFactory;
 
     @Before
-    public void createDAOFactory() {
-        String dataDirName = System.getProperty(ML100K_PROPERTY);
-        if (null == dataDirName) dataDirName = "data/ml-100k";
-        File dataDir = new File(dataDirName);
-        File inputFile = new File(dataDir, INPUT_FILE_NAME);
-        if (! inputFile.exists()) {  
-                throw new IllegalStateException("must either put an unzipped copy of the MovieLens dataset in the "
-                        + dataDirName + " directory\n "
-                        + " or configure " + ML100K_PROPERTY
-                        + " to point to an unzipped version of the MovieLens dataset");
+    public void createDAOFactory() throws FileNotFoundException {
+        final String dataProp = System.getProperty(ML100K_PROPERTY);
+        final File dataDir = dataProp != null ? new File(dataProp) : new File("data/ml-100k");
+        final File inputFile = new File(dataDir, INPUT_FILE_NAME);
+        if (dataProp == null) {
+            assumeTrue("MovieLens should be available. To correct this, unpack the" +
+                       " MovieLens 100K data set into data/ml-100k, or set the" +
+                       " lenskit.movielens.100k property to point to the location" +
+                       " of an unpacked copy of the data set.  For more details, see" +
+                       " http://bitbucket.org/grouplens/lenskit/wiki/ML100K", inputFile.exists());
+        } else if (!inputFile.exists()) {
+            // if the property is set, fail fatally if it doesn't work
+            throw new FileNotFoundException("ML data set at " + inputFile + ". " +
+                                            "See <https://bitbucket.org/grouplens/lenskit/wiki/ML100K>.");
         }
         daoFactory = SimpleFileRatingDAO.Factory.caching(inputFile, "\t");
     }

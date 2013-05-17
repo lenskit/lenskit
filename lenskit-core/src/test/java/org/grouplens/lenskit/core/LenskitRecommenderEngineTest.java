@@ -39,7 +39,7 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition;
-import org.grouplens.lenskit.params.ThresholdValue;
+import org.grouplens.lenskit.transform.threshold.ThresholdValue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,7 +52,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class LenskitRecommenderEngineTest {
     private LenskitRecommenderEngineFactory factory;

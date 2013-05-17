@@ -34,7 +34,9 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.iterative.params.IterationCount;
+import org.grouplens.lenskit.iterative.IterationCount;
+import org.grouplens.lenskit.iterative.IterationCountStoppingCondition;
+import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -58,14 +60,23 @@ public class TestFunkSVDRecommenderBuild {
         daoFactory = new EventCollectionDAO.Factory(rs);
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "unchecked"})
     private LenskitRecommenderEngine makeEngine() throws RecommenderBuildException {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
-        factory.bind(PreferenceSnapshot.class).to(PackedPreferenceSnapshot.class);
-        factory.bind(ItemScorer.class).to(FunkSVDItemScorer.class);
-        factory.bind(BaselinePredictor.class).to(UserMeanPredictor.class);
-        factory.bind(ItemRecommender.class).to(FunkSVDRecommender.class);
-        factory.bind(Integer.class).withQualifier(IterationCount.class).to(10);
+        factory.bind(PreferenceSnapshot.class)
+               .to(PackedPreferenceSnapshot.class);
+        factory.bind(ItemScorer.class)
+               .to(FunkSVDItemScorer.class);
+        factory.bind(BaselinePredictor.class)
+               .to(UserMeanPredictor.class);
+        factory.bind(ItemRecommender.class)
+               .to(FunkSVDRecommender.class);
+        factory.bind(StoppingCondition.class)
+               .to(IterationCountStoppingCondition.class);
+        factory.set(IterationCount.class)
+               .to(10);
+        factory.set(FeatureCount.class)
+               .to(20);
 
         return factory.create();
     }
@@ -85,6 +96,26 @@ public class TestFunkSVDRecommenderBuild {
             assertThat(pred, instanceOf(SimpleRatingPredictor.class));
             assertThat(((SimpleRatingPredictor) pred).getScorer(),
                        sameInstance(rec.getItemScorer()));
+        } finally {
+            rec.close();
+        }
+    }
+
+    @Test
+    public void testFeatureInfo() throws RecommenderBuildException {
+        LenskitRecommenderEngine engine = makeEngine();
+        LenskitRecommender rec = engine.open();
+
+        try {
+            FunkSVDModel model = rec.get(FunkSVDModel.class);
+            assertThat(model, notNullValue());
+            assertThat(model.getFeatureInfo().size(),
+                       equalTo(20));
+            for (FeatureInfo feat: model.getFeatureInfo()) {
+                assertThat(feat.getIterCount(), equalTo(10));
+                assertThat(feat.getLastDeltaRMSE(),
+                           greaterThan(0.0));
+            }
         } finally {
             rec.close();
         }

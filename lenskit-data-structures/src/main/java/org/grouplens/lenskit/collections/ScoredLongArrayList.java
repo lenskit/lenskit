@@ -42,7 +42,7 @@ import java.util.List;
  * Array-backed implementation of {@link ScoredLongList}.  Items and scores
  * are stored in parallel arrays.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public class ScoredLongArrayList implements ScoredLongList, Serializable {

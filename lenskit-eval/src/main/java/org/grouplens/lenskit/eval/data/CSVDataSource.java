@@ -35,7 +35,7 @@ import java.io.File;
 import java.util.List;
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class CSVDataSource implements DataSource {
     final String name;

@@ -20,18 +20,22 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.grouplens.common.test.MoreMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.Set;
+
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 
+import org.grouplens.lenskit.symbols.Symbol;
 import org.junit.Test;
 
 import com.google.common.collect.Iterators;
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestMutabilityConversions {
 
@@ -59,7 +63,7 @@ public class TestMutabilityConversions {
     public void testClear() {
         MutableSparseVector simple = simpleVector();
         assertThat(simple.size(), equalTo(3));
-        simple.clear(3);
+        simple.unset(3);
         assertThat(simple.size(), equalTo(2));
 
         ImmutableSparseVector isvSimple = simple.immutable();
@@ -75,7 +79,7 @@ public class TestMutabilityConversions {
     public void testIterate() {
         MutableSparseVector simple = simpleVector();
         assertThat(simple.size(), equalTo(3));
-        simple.clear(3);
+        simple.unset(3);
         assertThat(simple.size(), equalTo(2));
 
         // Check that iteration on simple goes through the right
@@ -92,7 +96,7 @@ public class TestMutabilityConversions {
     @Test
     public void testEquals() {
         MutableSparseVector simple = simpleVector();
-        simple.clear(3);
+        simple.unset(3);
         ImmutableSparseVector isvSimple = simple.immutable();
         assertTrue(isvSimple.equals(simple));
         assertTrue(simple.equals(isvSimple));
@@ -103,5 +107,6 @@ public class TestMutabilityConversions {
         assertTrue(reSimple.equals(simple));
         assertTrue(simple.equals(reSimple));
     }
+    
 
 }

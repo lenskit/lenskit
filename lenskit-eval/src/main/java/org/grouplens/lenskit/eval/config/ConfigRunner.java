@@ -26,7 +26,7 @@ import java.lang.annotation.*;
  * Specify the default runner to run a command. The default is
  * {@link DefaultCommandRunner}.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.0
  */
 @Retention(RetentionPolicy.RUNTIME)

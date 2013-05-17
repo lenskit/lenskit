@@ -31,12 +31,26 @@ import javax.annotation.Nonnull;
 /**
  * Abstract implementation of long cursors.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public abstract class AbstractLongCursor
         extends AbstractCursor<Long>
         implements LongCursor {
+
+    /**
+     * Construct a cursor with unknown size.
+     */
+    protected AbstractLongCursor() {
+    }
+
+    /**
+     * Construct a cursor with possibly-known size.
+     * @param nrows The number of rows (or -1 for unknown size).
+     */
+    protected AbstractLongCursor(int nrows) {
+        super(nrows);
+    }
 
     /**
      * Implement {@link org.grouplens.lenskit.cursors.Cursor#next() Cursor.next()}

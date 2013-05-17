@@ -32,7 +32,7 @@ import java.util.concurrent.Callable;
  * A thread-safe lazy value class using soft references. Like {@link LazyValue},
  * but it recomputes its value if it is garbage collected.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SoftLazyValue<T> implements Supplier<T> {
     private volatile Reference<T> value;

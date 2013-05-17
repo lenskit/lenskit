@@ -40,7 +40,7 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
 /**
  * Rating scorer that predicts a constant rating for all items.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 @Singleton

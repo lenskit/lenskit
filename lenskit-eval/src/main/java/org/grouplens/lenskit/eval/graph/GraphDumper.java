@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.eval.graph;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
@@ -32,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Provider;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
@@ -66,7 +68,7 @@ class GraphDumper {
      * @param root The root node.
      * @return The ID of the root node.
      */
-    public String setRoot(Node root) {
+    public String setRoot(Node root) throws IOException {
         if (!nodeTargets.isEmpty()) {
             throw new IllegalStateException("root node already specificied");
         }
@@ -84,7 +86,7 @@ class GraphDumper {
      * @param node The node to process
      * @return The node's target descriptor (ID, possibly with port).
      */
-    public String process(Node node) {
+    public String process(Node node) throws IOException {
         Preconditions.checkNotNull(node, "node must not be null");
         if (nodeTargets.isEmpty()) {
             throw new IllegalStateException("root node has not been set");
@@ -97,7 +99,15 @@ class GraphDumper {
             CachedSatisfaction csat = node.getLabel();
             assert csat != null;
             Satisfaction sat = csat.getSatisfaction();
-            tgt = sat.visit(new Visitor(node, id));
+            try {
+                tgt = sat.visit(new Visitor(node, id));
+            } catch (RuntimeException e) {
+                if (e.getCause() instanceof IOException) {
+                    throw (IOException) e.getCause();
+                } else {
+                    throw e;
+                }
+            }
             Preconditions.checkNotNull(tgt, "the returned target was null");
             nodeTargets.put(id, tgt);
         } else {
@@ -113,7 +123,7 @@ class GraphDumper {
     /**
      * Finish the graph, writing the edges.
      */
-    public void finish() {
+    public void finish() throws IOException {
         while (!edgeQueue.isEmpty()) {
             GVEdge e = edgeQueue.remove();
             String newTarget = nodeTargets.get(e.getTarget());
@@ -151,7 +161,11 @@ class GraphDumper {
                 nb.setLabel("null");
             }
             GVNode node = nb.build();
-            writer.putNode(node);
+            try {
+                writer.putNode(node);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
             return node.getTarget();
         }
 
@@ -166,7 +180,11 @@ class GraphDumper {
                     .setLabel(instance.toString())
                     .setShape("ellipse")
                     .build();
-            writer.putNode(node);
+            try {
+                writer.putNode(node);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
             return node.getId();
         }
 
@@ -182,7 +200,11 @@ class GraphDumper {
                .setShared(!unsharedNodes.contains(node))
                .setIsProvided(true);
             GVNode node = cnb.build();
-            writer.putNode(node);
+            try {
+                writer.putNode(node);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
             edgeQueue.add(new EdgeBuilder(node.getTarget(), pid)
                                   .set("style", "dotted")
                                   .set("dir", "back")
@@ -201,11 +223,15 @@ class GraphDumper {
         @Override
         public String visitProviderInstance(Provider<?> provider) {
             String pid = nodeId + "P";
-            writer.putNode(new NodeBuilder(pid)
-                                   .setLabel(provider.toString())
-                                   .setShape("ellipse")
-                                   .set("style", "dashed")
-                                   .build());
+            try {
+                writer.putNode(new NodeBuilder(pid)
+                                       .setLabel(provider.toString())
+                                       .setShape("ellipse")
+                                       .set("style", "dashed")
+                                       .build());
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
             return putProvidedNode(pid);
         }
 
@@ -238,7 +264,12 @@ class GraphDumper {
                 } else {
                     logger.debug("dumping dependency {}", dep);
                     bld.addDependency(dep);
-                    String tid = process(targetNode);
+                    String tid = null;
+                    try {
+                        tid = process(targetNode);
+                    } catch (IOException exc) {
+                        throw Throwables.propagate(exc);
+                    }
                     String port = String.format("%s:%d", id, bld.getLastDependencyPort());
                     EdgeBuilder eb = new EdgeBuilder(port, tid)
                             .set("arrowhead", "vee");
@@ -249,7 +280,11 @@ class GraphDumper {
                 }
             }
             GVNode node = bld.build();
-            writer.putNode(node);
+            try {
+                writer.putNode(node);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
             return node;
         }
     }

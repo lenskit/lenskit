@@ -20,8 +20,17 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
-import com.google.common.base.Function;
 import it.unimi.dsi.fastutil.longs.*;
+import com.google.common.collect.Lists;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.UserHistory;
@@ -42,14 +51,7 @@ import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import com.google.common.base.Function;
 
 /**
  * The command to build and run a crossfold on the data source file and output the partition files
@@ -60,26 +62,23 @@ import java.util.Random;
 public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     private static final Logger logger = LoggerFactory.getLogger(CrossfoldCommand.class);
 
-    private static final Random random = new Random();
-
     private DataSource source;
     private int partitionCount = 5;
-    @Nullable
+    private Holdout holdout;
     private String trainFilePattern;
-    @Nullable
     private String testFilePattern;
-
     private Order<Rating> order = new RandomOrder<Rating>();
     private PartitionAlgorithm<Rating> partition = new HoldoutNPartition<Rating>(10);
     private boolean isForced;
     private boolean splitUsers = true;
 
+    private boolean cacheOutput = true;
+
     @Nullable
     private Function<DAOFactory, DAOFactory> wrapper;
 
-
     public CrossfoldCommand() {
-        this(null);
+        super("Crossfold");
     }
 
     public CrossfoldCommand(String n) {
@@ -215,9 +214,33 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
         isForced = force;
         return this;
     }
-
+    
     public void setSplitUsers(boolean splitUsers) {
         this.splitUsers = splitUsers;
+    }
+
+    /**
+     * Configure whether the data sets created by the crossfold will have
+     * caching turned on.
+     *
+     * @param on Whether the data sets returned should cache.
+     * @return The command (for chaining)
+     * @see CSVDataSource#setCache(boolean)
+     */
+    public CrossfoldCommand setCache(boolean on) {
+        cacheOutput = on;
+        return this;
+    }
+    
+    private CrossfoldCommand initialize() {
+        if (trainFilePattern == null) {
+            trainFilePattern = name + ".train.%d.csv";
+        }
+        if (testFilePattern == null) {
+            testFilePattern = name + ".test.%d.csv";
+        }
+        holdout = new Holdout(order, partition);
+        return this;
     }
 
     /**
@@ -227,31 +250,19 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      */
     @Override
     public String getName() {
-        if (name == null) {
+        if (name.equals("Crossfold")) {
             return source.getName();
         } else {
             return name;
         }
     }
 
-    @Nonnull
     public String getTrainPattern() {
-        if (trainFilePattern == null) {
-            String path = new File(getConfig().getDataDir(), getName()).getPath();
-            return path + ".train.%d.csv";
-        } else {
-            return trainFilePattern;
-        }
+        return trainFilePattern;
     }
 
-    @Nonnull
     public String getTestPattern() {
-        if (testFilePattern == null) {
-            String path = new File(getConfig().getDataDir(), getName()).getPath();
-            return path + ".test.%d.csv";
-        } else {
-            return testFilePattern;
-        }
+        return testFilePattern;
     }
 
     /**
@@ -273,7 +284,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     }
 
     public Holdout getHoldout() {
-        return new Holdout(order, partition);
+        return holdout;
     }
 
     public boolean getForce() {
@@ -293,13 +304,14 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      */
     @Override
     public List<TTDataSet> call() throws CommandException {
+        this.initialize();
         if (!getForce()) {
             UpToDateChecker check = new UpToDateChecker();
             check.addInput(source.lastModified());
-            for (File f: getFiles(getTrainPattern())) {
+            for (File f: getFiles(trainFilePattern)) {
                 check.addOutput(f);
             }
-            for (File f: getFiles(getTestPattern())) {
+            for (File f: getFiles(testFilePattern)) {
                 check.addOutput(f);
             }
             if (check.isUpToDate()) {
@@ -332,8 +344,8 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      *          Any error
      */
     protected void createTTFiles() throws CommandException {
-        File[] trainFiles = getFiles(getTrainPattern());
-        File[] testFiles = getFiles(getTestPattern());
+        File[] trainFiles = getFiles(trainFilePattern);
+        File[] testFiles = getFiles(testFilePattern);
         TableWriter[] trainWriters = new TableWriter[partitionCount];
         TableWriter[] testWriters = new TableWriter[partitionCount];
         try {
@@ -383,7 +395,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
             for (UserHistory<Rating> history : historyCursor) {
                 int foldNum = splits.get(history.getUserId());
                 List<Rating> ratings = new ArrayList<Rating>(history);
-                final int p = mode.partition(ratings, random);
+                final int p = mode.partition(ratings, getConfig().getRandom());
                 final int n = ratings.size();
 
                 for (int f = 0; f < partitionCount; f++) {
@@ -448,13 +460,13 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      * @throws IOException The writer IO error
      */
     protected void writeRating(TableWriter writer, Rating rating) throws IOException {
-        String[] row = new String[4];
-        row[0] = Long.toString(rating.getUserId());
-        row[1] = Long.toString(rating.getItemId());
         Preference pref = rating.getPreference();
-        row[2] = pref != null ? Double.toString(pref.getValue()) : "NaN";
-        row[3] = Long.toString(rating.getTimestamp());
-        writer.writeRow(row);
+        writer.writeRow(Lists.newArrayList(
+                Long.toString(rating.getUserId()),
+                Long.toString(rating.getItemId()),
+                (pref != null ? Double.toString(pref.getValue()) : "NaN"),
+                Long.toString(rating.getTimestamp())
+        ));
     }
 
     /**
@@ -466,7 +478,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     protected Long2IntMap splitUsers(DataAccessObject dao) {
         Long2IntMap userMap = new Long2IntOpenHashMap();
         LongArrayList users = Cursors.makeList(dao.getUsers());
-        LongLists.shuffle(users, random);
+        LongLists.shuffle(users, getConfig().getRandom());
         LongListIterator iter = users.listIterator();
         while (iter.hasNext()) {
             final int idx = iter.nextIndex();
@@ -485,22 +497,24 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      */
     public List<TTDataSet> getTTFiles() {
         List<TTDataSet> dataSets = new ArrayList<TTDataSet>(partitionCount);
-        File[] trainFiles = getFiles(getTrainPattern());
-        File[] testFiles = getFiles(getTestPattern());
+        File[] trainFiles = getFiles(trainFilePattern);
+        File[] testFiles = getFiles(testFilePattern);
         for (int i = 0; i < partitionCount; i++) {
             CSVDataSourceCommand trainCommand = new CSVDataSourceCommand()
                     .setWrapper(wrapper)
                     .setDomain(source.getPreferenceDomain())
+                    .setCache(cacheOutput)
                     .setFile(trainFiles[i]);
             CSVDataSourceCommand testCommand = new CSVDataSourceCommand()
                     .setWrapper(wrapper)
                     .setDomain(source.getPreferenceDomain())
+                    .setCache(cacheOutput)
                     .setFile(testFiles[i]);
             GenericTTDataCommand tt = new GenericTTDataCommand(name + "." + i);
 
             dataSets.add(tt.setTest(testCommand.call())
                            .setTrain(trainCommand.call())
-                           .setAttribute("DataSet", name)
+                           .setAttribute("DataSet", getName())
                            .setAttribute("Partition", i)
                            .call());
         }

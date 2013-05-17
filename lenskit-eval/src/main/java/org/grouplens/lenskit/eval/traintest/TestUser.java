@@ -32,7 +32,7 @@ import com.google.common.base.Suppliers;
 /**
  * A user in a test set, with the results of their recommendations or predictions.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestUser {
     private final long userId;

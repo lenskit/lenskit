@@ -29,7 +29,7 @@ import java.lang.annotation.*;
  * it is applied. Used to build objects when the user doesn't specify the
  * particular command factory to use.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 @Documented

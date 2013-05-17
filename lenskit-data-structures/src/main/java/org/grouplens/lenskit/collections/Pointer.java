@@ -28,7 +28,7 @@ import java.util.NoSuchElementException;
  * hasNext/next.
  *
  * @param <E> The type of element in the pointer.
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  * @since 0.9
  */

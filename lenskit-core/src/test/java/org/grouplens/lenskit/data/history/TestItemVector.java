@@ -33,7 +33,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestItemVector {
     private final static double EPSILON = 1.0e-6;

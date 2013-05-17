@@ -32,7 +32,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 /**
  * Helper methods for working with futures and executor services.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class ExecHelpers {
     private ExecHelpers() {}

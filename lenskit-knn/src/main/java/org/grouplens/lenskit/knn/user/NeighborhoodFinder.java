@@ -36,7 +36,7 @@ import org.grouplens.lenskit.data.UserHistory;
  * Interface for neighborhood-finding strategies. These strategies are used by
  * {@link UserUserRecommender} to find neighbors for recommendation.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultImplementation(SimpleNeighborhoodFinder.class)
 public interface NeighborhoodFinder {

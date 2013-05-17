@@ -27,9 +27,9 @@ import org.grouplens.lenskit.baseline.GlobalMeanPredictor
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.eval.config.ConfigTestBase
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
-import org.grouplens.lenskit.iterative.params.MinimumIterations
-import org.grouplens.lenskit.iterative.params.StoppingThreshold
-import org.grouplens.lenskit.params.ThresholdValue
+import org.grouplens.lenskit.iterative.MinimumIterations
+import org.grouplens.lenskit.iterative.StoppingThreshold
+import org.grouplens.lenskit.transform.threshold.ThresholdValue
 import org.grouplens.lenskit.transform.threshold.AbsoluteThreshold
 import org.grouplens.lenskit.transform.threshold.RealThreshold
 import org.junit.Test
@@ -38,7 +38,7 @@ import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class TestAlgorithmInstanceConfig extends ConfigTestBase {
     @Test

@@ -20,12 +20,13 @@
  */
 package org.grouplens.lenskit.eval.graph;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
 import groovy.json.StringEscapeUtils;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
+import javax.annotation.Nullable;
+import java.io.*;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -34,22 +35,23 @@ import java.util.regex.Pattern;
  */
 class GraphWriter implements Closeable {
     private static final Pattern SAFE_VALUE = Pattern.compile("\\w+");
-    private final PrintWriter output;
+    private final BufferedWriter output;
 
-    public GraphWriter(Writer out) {
-        output = new PrintWriter(out);
-        output.println("digraph {");
+    public GraphWriter(Writer out) throws IOException {
+        output = new BufferedWriter(out);
+        output.append("digraph {\n");
         output.append("  node [fontname=\"Helvetica\"")
               .append(",color=\"").append(ComponentNodeBuilder.UNSHARED_BGCOLOR).append("\"")
               .append("];\n");
         output.append("  edge [")
-              .append("color=\"").append(ComponentNodeBuilder.UNSHARED_BGCOLOR).append("\"")
+              .append("color=\"")
+              .append(ComponentNodeBuilder.UNSHARED_BGCOLOR).append("\"")
               .append("];\n");
     }
 
     @Override
     public void close() throws IOException {
-        output.println("}");
+        output.write("}\n");
         output.close();
     }
 
@@ -62,24 +64,23 @@ class GraphWriter implements Closeable {
         }
     }
 
-    private void putAttributes(Map<String, Object> attrs) {
+    private void putAttributes(Map<String, Object> attrs) throws IOException {
         if (!attrs.isEmpty()) {
             output.append(" [");
-            boolean first = true;
-            for (Map.Entry<String,Object> a: attrs.entrySet()) {
-                if (!first) {
-                    output.append(", ");
-                }
-                output.append(a.getKey())
-                      .append("=")
-                      .append(safeValue(a.getValue()));
-                first = false;
-            }
+            Joiner.on(", ")
+                  .withKeyValueSeparator("=")
+                  .appendTo(output, Maps.transformValues(attrs, new Function<Object, String>() {
+                      @Nullable
+                      @Override
+                      public String apply(@Nullable Object input) {
+                          return safeValue(input);
+                      }
+                  }));
             output.append("]");
         }
     }
 
-    public void putNode(GVNode node) {
+    public void putNode(GVNode node) throws IOException {
         final String id = node.getId();
         output.append("  ")
               .append(id);
@@ -87,7 +88,7 @@ class GraphWriter implements Closeable {
         output.append(";\n");
     }
 
-    public void putEdge(GVEdge edge) {
+    public void putEdge(GVEdge edge) throws IOException {
         final String src = edge.getSource();
         final String dst = edge.getTarget();
         output.append("  ")

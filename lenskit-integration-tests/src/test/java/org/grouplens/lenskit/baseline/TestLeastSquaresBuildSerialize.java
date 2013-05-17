@@ -41,7 +41,7 @@ import org.junit.Test;
 /**
  * Do major tests on the item-item recommender.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestLeastSquaresBuildSerialize extends ML100KTestSuite {
     @Test

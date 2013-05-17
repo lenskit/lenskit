@@ -20,11 +20,13 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.grouplens.lenskit.vectors.SparseVectorTestCommon.closeTo;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
+import java.util.Set;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 
@@ -34,7 +36,7 @@ import org.junit.Test;
 import com.google.common.collect.Iterators;
 
 /**
- * @author John Riedl <riedl@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestMutableSparseVectorChannels {
     Symbol fooSymbol = Symbol.of("foo");
@@ -86,10 +88,27 @@ public class TestMutableSparseVectorChannels {
         simple.addChannel(fooSymbol, simple2).set(3, 77);
         assertThat(simple.channel(fooSymbol).get(3), closeTo(77));
         try {
-            simple.addChannel(fooSymbol, simpleVector2());
+            simple.addChannel(fooSymbol, simpleVector());
+            fail("Should throw illegal argument exception because channel already exists.");
+        } catch (IllegalArgumentException iae) { /*ignore */ }
+        try {
+            simple.addChannel(barSymbol, simpleVector2());
             fail("Should throw illegal argument exception because of incompatible key domains.");
         } catch (IllegalArgumentException iae) { /*ignore */ }
     }
+    
+    @Test
+    public void testGetChannels() {
+        MutableSparseVector simple = simpleVector();
+        simple.addChannel(fooSymbol, simpleVector()).set(3, 77);
+        simple.addChannel(barSymbol, simpleVector());
+        simple.addChannel(foobarSymbol);
+        
+        Set<Symbol> channelSyms = simple.getChannels();
+        assert(channelSyms.contains(fooSymbol));
+        assert(channelSyms.contains(barSymbol));
+        assert(channelSyms.contains(foobarSymbol));
+   }
 
     @Test
     public void testCreate() {
@@ -115,6 +134,43 @@ public class TestMutableSparseVectorChannels {
         simple.addChannel(barSymbol);
         simple.channel(barSymbol);  // both channels should be there.
         simple.channel(fooSymbol);
+    }
+    
+    @Test
+    public void testRemoveChannel() {
+        MutableSparseVector empty = emptyVector();
+        empty.addChannel(fooSymbol);
+        empty.channel(fooSymbol);  // fetch the added channel
+        try {
+            empty.removeChannel(barSymbol);
+            fail("Should throw exception on removing a channel that does not exist.");
+        } catch (IllegalArgumentException iae) { /* ignore */ }
+        
+        empty.addChannel(barSymbol);
+        empty.channel(barSymbol);
+        empty.removeChannel(barSymbol);
+        try {
+            empty.channel(barSymbol);
+            fail("Should throw exception on touching a channel that has been removed.");
+        } catch (IllegalArgumentException iae) { /* ignore */ }   
+    }
+
+    @Test
+    public void testRemoveAllChannels() {
+        MutableSparseVector empty = emptyVector();
+        empty.addChannel(fooSymbol);
+        empty.addChannel(barSymbol);
+        empty.removeAllChannels();
+        
+        try {
+            empty.removeChannel(barSymbol);
+            fail("Should throw exception on removing a channel that does not exist.");
+        } catch (IllegalArgumentException iae) { /* ignore */ }
+        
+        try {
+            empty.channel(barSymbol);
+            fail("Should throw exception on touching a channel that has been removed.");
+        } catch (IllegalArgumentException iae) { /* ignore */ }   
     }
 
     @Test
@@ -149,9 +205,27 @@ public class TestMutableSparseVectorChannels {
         simple.channel(fooSymbol).set(3, 4.5);
         assertThat(simple.channel(fooSymbol).get(3), closeTo(4.5));
         assertThat(simple.channel(fooSymbol).get(27, -1.0), closeTo(-1.0));
-        simple.channel(fooSymbol).clear(8);
+        simple.channel(fooSymbol).unset(8);
         assertThat(simple.channel(fooSymbol).get(8, 45.0), closeTo(45.0));
     }
+    
+    // Test that values set in a channel can be fetched back from it
+    @Test
+    public void testAlwaysAddChannel() {
+        MutableSparseVector simple = simpleVector();
+        simple.addChannel(fooSymbol);
+        simple.channel(fooSymbol).set(3, 4.5);
+        simple.alwaysAddChannel(fooSymbol);
+        simple.alwaysAddChannel(barSymbol);
+        assert(simple.channel(barSymbol).isEmpty());
+        simple.channel(barSymbol).set(3, 33);
+        assertThat(simple.channel(fooSymbol).get(3), closeTo(4.5));
+        assertThat(simple.channel(barSymbol).get(3, -1.0), closeTo(33));
+        simple.channel(fooSymbol).unset(8);
+        assertThat(simple.channel(fooSymbol).get(8, 45.0), closeTo(45.0));
+    }
+
+
 
     // Test that only correct key values can be set in a channel
     @Test
@@ -175,7 +249,7 @@ public class TestMutableSparseVectorChannels {
         simple.channel(fooSymbol).set(7, 22.2);
         assertThat(simple.channel(fooSymbol).get(3), closeTo(77.7));
 
-        simple.clear(3);
+        simple.unset(3);
         assertThat(simple.channel(fooSymbol).get(3), closeTo(77.7));
 
         // We shrink the domain to 7, 8
@@ -207,7 +281,7 @@ public class TestMutableSparseVectorChannels {
         assertThat(simple.channel(fooSymbol).get(8), closeTo(77.7));
 
         MutableSparseVector simple2 = simpleVector();
-        simple2.clear(3);
+        simple2.unset(3);
         simple2.shrinkDomain();
         for (VectorEntry ve : simple) {
             if (ve.getKey() != 3) {
@@ -217,6 +291,36 @@ public class TestMutableSparseVectorChannels {
                 } catch (IllegalArgumentException iae) { /*expected */ }
             }
         }
+    }
+    
+    @Test
+    public void testImmutable() {
+        MutableSparseVector v = simpleVector();
+        v.addChannel(fooSymbol, simpleVector()).set(3, 77);
+        v.addChannel(barSymbol, simpleVector());
+        v.addChannel(foobarSymbol);
+        
+        ImmutableSparseVector iv = v.immutable();
+        v.set(7, 42.0);  // the original is still mutable
+        v.channel(fooSymbol).set(7, 77);
+        assertThat(v.get(7), closeTo(42.0));
+        assertThat(iv.get(7), closeTo(3.5));
+        assertThat(v.channel(fooSymbol).get(7), closeTo(77));
+    }
+
+    @Test
+    public void testFreeze() {
+        MutableSparseVector v = simpleVector();
+        v.addChannel(fooSymbol, simpleVector()).set(3, 77);
+        v.addChannel(barSymbol, simpleVector());
+        v.addChannel(foobarSymbol);
+        ImmutableSparseVector iv = v.freeze();
+        assertThat(iv, equalTo((SparseVector) simpleVector()));
+        
+        try {
+            v.channel(fooSymbol).set(3, 12);
+            fail("should throw IllegalStateException because the mutable vector is frozen");
+        } catch(IllegalStateException iae) { /* skip */ }
     }
 
 }

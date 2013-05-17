@@ -38,24 +38,12 @@ public abstract class Vec implements Serializable {
 
     final double[] data;
 
-    private transient volatile Double norm;
-    private transient volatile Double sum;
-
     /**
      * Construct a vector from a backing array. The array is not copied.
      * @param d The backing array.
      */
     Vec(double[] d) {
         data = d;
-    }
-
-    /**
-     * Clear cached values (sum, norm, etc.). This must be called by mutable subclasses whenever
-     * they modify the vector to invalidate the cached sums.
-     */
-    void clearCaches() {
-        norm = null;
-        sum = null;
     }
 
     /**
@@ -79,32 +67,38 @@ public abstract class Vec implements Serializable {
 
     /**
      * Get the L2 (Euclidean) norm of this vector.
+     *
      * @return The Euclidean length of the vector.
      */
-    public final double norm() {
-        if (norm == null) {
-            double ssq = 0;
-            for (double v : data) {
-                ssq += v * v;
-            }
-            norm = sqrt(ssq);
+    public double norm() {
+        double ssq = 0;
+        for (double v: data) {
+            ssq += v * v;
         }
-        return norm;
+        return sqrt(ssq);
     }
 
     /**
      * Get the sum of this vector.
+     *
      * @return The sum of the elements of the vector.
      */
-    public final double sum() {
-        if (sum == null) {
-            double s = 0;
-            for (double v : data) {
-                s += v;
-            }
-            sum = s;
+    public double sum() {
+        double s = 0;
+        for (double v : data) {
+            s += v;
         }
-        return sum;
+        return s;
+    }
+
+    /**
+     * Get the mean of this vector.
+     *
+     * @return The mean of the elements of the vector (or {@link Double#NaN} if the vector is
+     *         empty).
+     */
+    public double mean() {
+        return sum() / size();
     }
 
     /**
@@ -144,10 +138,8 @@ public abstract class Vec implements Serializable {
     public boolean equals(Object o) {
         if (o == this) {
             return true;
-        } else if (o instanceof Vec) {
-            return Arrays.equals(data, ((Vec) o).data);
         } else {
-            return false;
+            return o instanceof Vec && Arrays.equals(data, ((Vec) o).data);
         }
     }
 

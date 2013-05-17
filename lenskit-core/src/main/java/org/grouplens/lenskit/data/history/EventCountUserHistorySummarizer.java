@@ -26,7 +26,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.params.EventType;
+import org.grouplens.lenskit.data.event.EventType;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -38,7 +38,7 @@ import javax.inject.Singleton;
  * Summarize a history by counting all events referencing an item.  The history
  * can be filtered by type prior to counting.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 @Singleton

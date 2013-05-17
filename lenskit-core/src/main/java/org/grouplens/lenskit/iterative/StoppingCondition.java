@@ -39,8 +39,9 @@ public interface StoppingCondition {
     boolean isFinished(int niters, double delta);
 
     /**
+     * Create a controller for a new training loop.
      *
-     * @return a Training Loop Controller for iterative updates
+     * @return A loop controller for a new iterative update loop.
      */
     TrainingLoopController newLoop();
 }

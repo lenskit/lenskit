@@ -20,21 +20,28 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import java.io.Serializable;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.util.Index;
 
+import java.io.Serializable;
+import java.util.List;
+
 /**
  * The FunkSVD model class.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultProvider(FunkSVDModelBuilder.class)
 @Shareable
 public class FunkSVDModel implements Serializable {
-    private static final long serialVersionUID = -5797099617512506185L;
+    private static final long serialVersionUID = 2L;
 
     /**
      * Number of features in the vector.
@@ -57,10 +64,20 @@ public class FunkSVDModel implements Serializable {
      * The user-feature matrix (features, then users).  Do not modify this array.
      */
     public final double[][] userFeatures;
+
     /**
      * The clamping function used to build this model.
      */
     public final ClampingFunction clampingFunction;
+
+    /**
+     * The feature info for each feature.
+     */
+    public final List<FeatureInfo> featureInfo;
+
+    /**
+     * The final RMSE of
+     */
 
     /**
      * The item index.
@@ -76,18 +93,9 @@ public class FunkSVDModel implements Serializable {
      */
     public final BaselinePredictor baseline;
 
-    /**
-     * The average feature value for each user.
-     */
-    public final double[] averUserFeatures;
-    /**
-     * The average feature value for each item.
-     */
-    public final double[] averItemFeatures;
-
     public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
                         ClampingFunction clamp, Index iidx, Index uidx,
-                        BaselinePredictor baseline) {
+                        BaselinePredictor baseline, List<FeatureInfo> features) {
         featureCount = nfeatures;
         clampingFunction = clamp;
         this.baseline = baseline;
@@ -101,19 +109,32 @@ public class FunkSVDModel implements Serializable {
         numItem = iidx.getIds().size();
         numUser = uidx.getIds().size();
 
-        averItemFeatures = getAverageFeatureVector(ifeats, numItem, featureCount);
-        averUserFeatures = getAverageFeatureVector(ufeats, numUser, featureCount);
-
+        featureInfo = ImmutableList.copyOf(features);
     }
 
-    private double[] getAverageFeatureVector(double[][] twoDimMatrix, int dimension, int feature) {
-        double[] outputVector = new double[feature];
-        for (int i = 0; i < feature; i++) {
-            for (int j = 0; j < dimension; j++) {
-                outputVector[i] += twoDimMatrix[i][j];
-            }
-            outputVector[i] = outputVector[i] / dimension;
-        }
-        return outputVector;
+    /**
+     * Get the model's feature count.
+     *
+     * @return The model's feature count.
+     */
+    public int getFeatureCount() {
+        return featureCount;
+    }
+
+    /**
+     * Get the {@link FeatureInfo} for a particular feature.
+     * @param f The feature number.
+     * @return The feature's summary information.
+     */
+    public FeatureInfo getFeatureInfo(int f) {
+        return featureInfo.get(f);
+    }
+
+    /**
+     * Get the metadata about all features.
+     * @return The feature metadata.
+     */
+    public List<FeatureInfo> getFeatureInfo() {
+        return featureInfo;
     }
 }

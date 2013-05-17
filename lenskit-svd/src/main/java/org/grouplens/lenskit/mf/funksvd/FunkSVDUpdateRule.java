@@ -20,12 +20,16 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
+import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.grouplens.lenskit.iterative.LearningRate;
+import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
-import org.grouplens.lenskit.iterative.params.LearningRate;
-import org.grouplens.lenskit.iterative.params.RegularizationTerm;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.Serializable;
@@ -37,10 +41,12 @@ import java.io.Serializable;
  */
 @Shareable
 public final class FunkSVDUpdateRule implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     private final double learningRate;
     private final double trainingRegularization;
+    private final boolean useTrailingEstimate;
+    private final BaselinePredictor baseline;
     private final ClampingFunction clampingFunction;
     private final StoppingCondition stoppingCondition;
 
@@ -55,12 +61,25 @@ public final class FunkSVDUpdateRule implements Serializable {
     @Inject
     public FunkSVDUpdateRule(@LearningRate double lrate,
                              @RegularizationTerm double reg,
+                             @UseTrailingEstimate boolean trail,
+                             BaselinePredictor bl,
                              ClampingFunction clamp,
                              StoppingCondition stop) {
         learningRate = lrate;
         trainingRegularization = reg;
+        baseline = bl;
         clampingFunction = clamp;
         stoppingCondition = stop;
+        useTrailingEstimate = trail;
+    }
+
+    /**
+     * Create an estimator to use while training the recommender.
+     *
+     * @return The estimator to use.
+     */
+    public TrainingEstimator makeEstimator(PreferenceSnapshot snapshot) {
+        return new TrainingEstimator(snapshot, baseline, clampingFunction);
     }
 
     public double getLearningRate() {
@@ -103,8 +122,10 @@ public final class FunkSVDUpdateRule implements Serializable {
         // Clamp the prediction first
         pred = clampingFunction.apply(uid, iid, pred);
 
-        // Add the trailing value, then clamp the result again
-        pred = clampingFunction.apply(uid, iid, pred + trail);
+        if (useTrailingEstimate) {
+            // Add the trailing value, then clamp the result again
+            pred = clampingFunction.apply(uid, iid, pred + trail);
+        }
 
         // Compute the err and store this value
         return rating - pred;

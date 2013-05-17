@@ -37,7 +37,7 @@ import java.io.Serializable;
 /**
  * Summarize a history by extracting a rating vector.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 @ThreadSafe

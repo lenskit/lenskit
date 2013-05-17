@@ -26,7 +26,7 @@ import org.apache.tools.ant.DirectoryScanner
 /**
  * Base class for evaluator configuration scripts. It contains the metaclass
  * machinery to set up evaluation taskMap.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 abstract class EvalScript extends Script {
@@ -51,6 +51,26 @@ abstract class EvalScript extends Script {
 
     void setEngine(EvalScriptEngine ece) {
         engine = ece
+    }
+
+    /**
+     * Evaluate another script.
+     * @param file The script to evaluate.
+     * @param args The arguments to the script.
+     * @return The return value of the script (typically the return value of its last expression).
+     */
+    Object evalScript(File file, String... args) {
+        return engine.execute(file, args)
+    }
+
+    /**
+     * Evaluate another script.
+     * @param fn The script to evaluate.
+     * @param args The arguments to the script.
+     * @return The return value of the script (typically the return value of its last expression).
+     */
+    Object evalScript(String fn, String... args) {
+        return evalScript(new File(fn), args)
     }
 
     def methodMissing(String name, args) {

@@ -31,7 +31,7 @@ import java.io.File;
 
 /**
  * Test the eval CLI option parser.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestEvalCLIOptions {
     @Test

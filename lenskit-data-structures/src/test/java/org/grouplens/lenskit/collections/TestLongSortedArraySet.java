@@ -41,7 +41,7 @@ import org.junit.Test;
 
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestLongSortedArraySet {
     @SuppressWarnings("unchecked")

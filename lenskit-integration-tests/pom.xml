@@ -6,6 +6,7 @@
     <artifactId>lenskit</artifactId>
     <groupId>org.grouplens.lenskit</groupId>
     <version>1.1-SNAPSHOT</version>
+    <relativePath>..</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -54,6 +55,13 @@
       <groupId>org.grouplens.lenskit</groupId>
       <artifactId>lenskit-eval</artifactId>
       <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-test</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -104,7 +112,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <configuration>
-          <systemPropertyVariables>
+          <systemPropertyVariables combine.children="append">
             <lenskit.movielens.100k>${lenskit.movielens.100k}</lenskit.movielens.100k>
             <buildDirectory>${project.build.directory}</buildDirectory>
             <lenskit.temp.dir>${project.build.directory}/eval.scratch</lenskit.temp.dir>

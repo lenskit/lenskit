@@ -27,7 +27,7 @@ import org.grouplens.lenskit.data.pref.Preference;
 /**
  * Simple implementation of a null rating (unrate event).
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see SimpleRating
  * @compat Public
  */

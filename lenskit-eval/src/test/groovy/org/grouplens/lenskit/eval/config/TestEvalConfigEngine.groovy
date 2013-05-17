@@ -28,7 +28,7 @@ import org.junit.Ignore
 
 /**
  * Test the eval config engine and make sure it can actually execute tests.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class TestEvalConfigEngine {
     EvalScriptEngine engine;

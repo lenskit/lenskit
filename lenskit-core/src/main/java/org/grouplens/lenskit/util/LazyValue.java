@@ -30,7 +30,7 @@ import java.util.concurrent.Callable;
  * A thread-safe lazy value class.  It waits until its value is actually required
  * to compute it, then caches it.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @param <T> The type of value in the lazy value.
  */
 public class LazyValue<T> implements Supplier<T> {

@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,12 +36,14 @@ import org.grouplens.lenskit.util.io.LKFileUtils;
 import com.google.common.io.Files;
 import org.grouplens.lenskit.util.table.TableLayout;
 
+import static org.apache.commons.lang3.StringEscapeUtils.escapeCsv;
+
 /**
  * Implementation of {@link TableWriter} for CSV files.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class CSVWriter implements TableWriter {
+public class CSVWriter extends AbstractTableWriter {
     private Writer writer;
     private TableLayout layout;
 
@@ -66,34 +69,20 @@ public class CSVWriter implements TableWriter {
         writer = null;
     }
 
-    String quote(String e) {
-        if (e == null) {
-            return "";
-        }
-
-        if (e.matches("[\r\n,\"]")) {
-            return "\"" + e.replaceAll("\"", "\"\"") + "\"";
-        } else {
-            return e;
-        }
-    }
-
     @Override
-    public synchronized void writeRow(Object[] row) throws IOException {
-        if (layout != null && row.length != layout.getColumnCount()) {
-            throw new IllegalArgumentException("row too long");
+    public synchronized void writeRow(List<?> row) throws IOException {
+        if (layout != null) {
+            checkRowWidth(row.size());
         }
 
-        final int n = layout == null ? row.length : layout.getColumnCount();
-        for (int i = 0; i < n; i++) {
-            if (i > 0) {
+        boolean first = true;
+        for (Object val: row) {
+            if (!first) {
                 writer.write(',');
             }
-            if (i < row.length) {
-                Object val = row[i];
-                if (val != null) {
-                    writer.write(quote(val.toString()));
-                }
+            first = false;
+            if (val != null) {
+                writer.write(escapeCsv(val.toString()));
             }
         }
         writer.write('\n');

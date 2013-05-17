@@ -32,7 +32,7 @@ import org.grouplens.lenskit.data.dao.SortOrder;
  * The JDBC DAO framework operates by expecting a statement factory to construct
  * queries which return results in a defined format.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Immutable
 public interface SQLStatementFactory {

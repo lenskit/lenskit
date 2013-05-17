@@ -32,6 +32,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 import static java.lang.Math.log;
@@ -49,7 +50,7 @@ import static java.lang.Math.log;
  *
  * <p>nDCG is computed per-user and then averaged over all users.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class NDCGPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(NDCGPredictMetric.class);
@@ -98,6 +99,7 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
         double total = 0;
         int nusers = 0;
 
+        @Nonnull
         @Override
         public Object[] evaluate(TestUser user) {
             return evaluatePredictions(user.getTestRatings(), user.getPredictions());
@@ -114,6 +116,7 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
             return new Object[]{score};
         }
 
+        @Nonnull
         @Override
         public Object[] finalResults() {
             double v = total / nusers;

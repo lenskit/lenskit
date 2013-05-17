@@ -38,7 +38,7 @@ import java.lang.annotation.*;
  * <p>
  * The Shareable annotation should be on the component implementation, not interface.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 @Documented

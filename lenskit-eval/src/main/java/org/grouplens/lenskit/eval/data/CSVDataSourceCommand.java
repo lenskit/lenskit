@@ -32,7 +32,7 @@ import java.io.File;
 /**
  * Command to return a CSV data source.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
     String delimiter = ",";

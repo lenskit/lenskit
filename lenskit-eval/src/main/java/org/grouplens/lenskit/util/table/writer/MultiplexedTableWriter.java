@@ -51,7 +51,13 @@ public class MultiplexedTableWriter implements TableWriter {
         for (TableWriter w : writers) {
             w.writeRow(row);
         }
+    }
 
+    @Override
+    public void writeRow(List<?> row) throws IOException {
+        for (TableWriter w : writers) {
+            w.writeRow(row);
+        }
     }
 
     @Override
