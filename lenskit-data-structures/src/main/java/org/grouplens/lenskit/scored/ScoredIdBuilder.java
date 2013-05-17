@@ -101,9 +101,11 @@ public class ScoredIdBuilder implements Builder<ScoredId> {
 
     /**
      * Removes all channels from new {@code ScoredId} objects produced by the builder.
+     * @return This builder (for chaining)
      */
-    public void clearChannels() {
+    public ScoredIdBuilder clearChannels() {
         channelMap.clear();
+        return this;
     }
 
     /**
