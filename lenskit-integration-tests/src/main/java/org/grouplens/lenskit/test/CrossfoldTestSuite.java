@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -52,10 +53,10 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
     protected abstract void checkResults(Table table);
 
     @Test
-    public void testAlgorithmAccuracy() throws CommandException {
+    public void testAlgorithmAccuracy() throws CommandException, IOException {
         SimpleEvalCommand evalCommand = new SimpleEvalCommand("train-test");
         Properties props =  new Properties(System.getProperties());
-        props.setProperty(EvalConfig.DATA_DIR_PROPERTY, workDir.getRoot().getAbsolutePath());
+        props.setProperty(EvalConfig.DATA_DIR_PROPERTY, workDir.newFolder("data").getAbsolutePath());
         evalCommand.setConfig(new EvalConfig(props));
         LenskitAlgorithmInstanceCommand algo = new LenskitAlgorithmInstanceCommand();
         configureAlgorithm(algo.getFactory());
