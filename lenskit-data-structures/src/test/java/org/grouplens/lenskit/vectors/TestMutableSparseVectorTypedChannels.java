@@ -172,7 +172,6 @@ public class TestMutableSparseVectorTypedChannels {
         ImmutableSparseVector sv2 = sv.immutable();
         assertTrue(sv2.hasChannel(fooStrSym));
         ImmutableTypedSideChannel<String> ts2 = sv2.channel(fooStrSym);
-        System.out.println(ts2.keyDomain());
         assertEquals("a", ts2.get(1));
         ts.put(2,"b");
         assertNull(ts2.get(2));

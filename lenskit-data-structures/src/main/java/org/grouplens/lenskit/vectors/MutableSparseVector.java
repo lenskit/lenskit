@@ -652,7 +652,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
             if(keyDomain == keys) {
                 newTypedChannelMap.put(entry.getKey(), entry.getValue().freeze());
             } else {
-                System.out.println(java.util.Arrays.toString(keyDomain));
                 newTypedChannelMap.put(entry.getKey(), entry.getValue()
                                                             .withDomain(new LongSortedArraySet(keyDomain))
                                                             .freeze());
