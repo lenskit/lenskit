@@ -795,9 +795,16 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
             return res;
         }
 
+        @SuppressWarnings({ "rawtypes", "unchecked" })
         @Override
         public Set<TypedSymbol<?>> getTypedChannels() {
-            return SparseVector.this.getTypedChannels();
+            ReferenceArraySet<TypedSymbol<?>> res = new ReferenceArraySet<TypedSymbol<?>>();
+            for (TypedSymbol s: SparseVector.this.getTypedChannels()) {
+                if (SparseVector.this.channel(s).containsKey(ent.getKey())) {
+                    res.add(s);
+                }
+            }
+            return res;
         }
 
         @Override
@@ -817,7 +824,8 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         }
 
         public boolean hasChannel(TypedSymbol<?> s) {
-            return SparseVector.this.hasChannel(s);
+            return SparseVector.this.hasChannel(s)
+                    && SparseVector.this.channel(s).containsKey(ent.getKey());
         }
 
         public void setEntry(VectorEntry e) {

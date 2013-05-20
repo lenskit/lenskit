@@ -216,34 +216,4 @@ public class TestMutableSparseVectorTypedChannels {
         assertEquals("a", ts2.get(1));
         assertNull(ts2.get(2));
     }
-    
-    @Ignore // ignore test until scored ids can be debugged.
-    @Test
-    public void testScoredIds() {
-        long [] domain = {1,2,4};
-        MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
-        sv.set(1,1);
-        sv.set(2,2);
-        TypedSideChannel<String> ts = sv.addChannel(fooStrSym);
-        ts.put(1,"a");
-        ts.put(2, "b");
-        TypedSideChannel<String> bs = sv.addChannel(barStrSym);
-        bs.put(1,"ba");
-        
-        ScoredIdBuilder builder = new ScoredIdBuilder();
-        
-        Set<ScoredId> expected = new ObjectArraySet<ScoredId>();
-        expected.add(builder.setId(1)
-                .setScore(1)
-                .addChannel(fooStrSym, "a")
-                .addChannel(barStrSym, "ba")
-                .build());
-        builder.clearChannels();
-        expected.add(builder.setId(2)
-                .setScore(1)
-                .addChannel(fooStrSym, "b")
-                .build());
-        
-        assertEquals(expected,sv.scoredIds());
-    }
 }

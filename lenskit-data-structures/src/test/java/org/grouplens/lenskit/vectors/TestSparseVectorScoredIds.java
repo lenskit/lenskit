@@ -20,6 +20,10 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -28,13 +32,16 @@ import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdBuilder;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 public class TestSparseVectorScoredIds {
     private final Symbol fooSym = Symbol.of("foo");
     private final Symbol barSym = Symbol.of("bar");
     private final Symbol bazSym = Symbol.of("baz");
+    private final TypedSymbol<String> fooStrSym = TypedSymbol.of("foo", String.class);
+    private final TypedSymbol<String> barStrSym = TypedSymbol.of("bar", String.class);
+    private final TypedSymbol<String> bazStrSym = TypedSymbol.of("baz", String.class);
     
     @Test
     public void testSparseVectorScoredIds() {
@@ -53,11 +60,23 @@ public class TestSparseVectorScoredIds {
         MutableSparseVector baz = sv.addChannel(bazSym);
         baz.set(2, 100.0);
         
+        TypedSideChannel<String> fooStr = sv.addChannel(fooStrSym);
+        fooStr.put(1, "1");
+        fooStr.put(4, "4");
+        
+        TypedSideChannel<String> barStr = sv.addChannel(barStrSym);
+        barStr.put(1, "one");
+        
+        TypedSideChannel<String> bazStr = sv.addChannel(bazStrSym);
+        bazStr.put(2, "dos");
+        
         // check that the hasChannel function is correct.
         for(Iterator<ScoredId> it = sv.scoredIds().fastIterator(); it.hasNext();) {
             ScoredId sid = it.next();
             assertTrue(sid.hasChannel(fooSym));
             assertFalse(sid.hasChannel(bazSym));
+            assertTrue(sid.hasChannel(fooStrSym));
+            assertFalse(sid.hasChannel(bazStrSym));
         }
         
         ScoredIdBuilder builder = new ScoredIdBuilder();
@@ -66,11 +85,14 @@ public class TestSparseVectorScoredIds {
                             .setScore(1.0)
                             .addChannel(fooSym, 2.0)
                             .addChannel(barSym, 3.0)
+                            .addChannel(fooStrSym, "1")
+                            .addChannel(barStrSym, "one")
                             .build());
         expected.add(builder.clearChannels()
                             .setId(4)
                             .setScore(16.0)
                             .addChannel(fooSym, 5.0)
+                            .addChannel(fooStrSym, "4")
                             .build());
         
         // get the scored ids and put them in a hashset (for comparison).
