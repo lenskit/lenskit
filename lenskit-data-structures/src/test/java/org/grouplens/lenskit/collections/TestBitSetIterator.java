@@ -23,11 +23,15 @@ package org.grouplens.lenskit.collections;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
+import java.util.List;
 
 import org.junit.Test;
 
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -179,5 +183,23 @@ public class TestBitSetIterator {
         assertThat(iter.nextInt(), equalTo(2));
         assertTrue(iter.hasNext());
         assertThat(iter.nextInt(), equalTo(4));
+    }
+    
+    @Test
+    public void testFullIteration() {
+        List<Integer> inList = Arrays.asList(2, 3, 5, 8, 13, 21, 34); 
+        BitSet bset = new BitSet();
+        for (int n : inList) bset.set(n);
+        List<Integer> outList = Lists.newArrayList(new BitSetIterator(bset));
+        assertThat(inList, equalTo(outList));
+    }
+    
+    @Test
+    public void testStartEndEmpty() {
+        List<Integer> inList = Arrays.asList(2, 3, 5, 8, 13, 21, 34); 
+        BitSet bset = new BitSet();
+        for (int n : inList) bset.set(n);
+        List<Integer> outList = Lists.newArrayList(new BitSetIterator(bset, 9, 13));
+        assertThat(new ArrayList<Integer>(outList), equalTo(new ArrayList<Integer>()));
     }
 }

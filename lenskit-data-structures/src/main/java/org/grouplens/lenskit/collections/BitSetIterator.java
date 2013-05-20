@@ -26,7 +26,8 @@ import java.util.BitSet;
 import java.util.NoSuchElementException;
 
 /**
- * Iterator over the set bits in a {@link BitSet}.
+ * Iterator over the set bits in a {@link BitSet}, returning the indexes of the
+ * set bits, in order from 0 to highest index of a set bit.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.9
@@ -62,7 +63,7 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
     }
 
     /**
-     * Construct an iterator over a bit set.
+     * Construct an iterator over a bit set, starting at a desired index.
      *
      * @param set   The set to iterate.
      * @param start The first bit to return.
@@ -72,7 +73,8 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
     }
 
     /**
-     * Create an iterator starting at a particular bit.
+     * Create an iterator starting at a particular bit and ending at another index.
+     * The indices returned are inclusive of the starting index, and exclusive of the ending index.
      *
      * @param set   The bit set to wrap.
      * @param start The start index, inclusive.
