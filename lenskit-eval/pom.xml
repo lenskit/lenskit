@@ -10,6 +10,8 @@
   <name>LensKit Evaluation Framework</name>
 
   <properties>
+    <!-- Setting the compiler to groovy-eclipse-compiler tells Eclipse this is a Groovy project.
+         Later in this file, a profile overrides this when run from the command line. -->
     <maven.compiler.compilerId>groovy-eclipse-compiler</maven.compiler.compilerId>
   </properties>
 
@@ -129,6 +131,9 @@
 
   <profiles>
     <profile>
+      <!-- This profile will activate whenever maven.home is set, which should be any time Maven
+           is run from the command line. It reverts the compiler back to javac, so that we can
+           compile correctly. -->
       <id>non-eclipse</id>
       <activation>
         <property>
