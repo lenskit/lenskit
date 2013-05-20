@@ -73,7 +73,7 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
     @Override
     public Set<Symbol> getChannels() {
         if (channelMap != null) {
-            return channelMap.keySet();
+            return Collections.unmodifiableSet(channelMap.keySet());
         } else {
             return Collections.emptySet();
         }

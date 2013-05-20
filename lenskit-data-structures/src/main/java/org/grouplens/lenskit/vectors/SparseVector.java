@@ -31,6 +31,7 @@ import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 
 import java.io.Serializable;
 import java.util.*;
@@ -749,7 +750,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
 
         @Override
         public Set<Symbol> getChannels() {
-            ObjectArraySet<Symbol> res = new ObjectArraySet<Symbol>();
+            ReferenceArraySet<Symbol> res = new ReferenceArraySet<Symbol>();
             for (Symbol s: SparseVector.this.getChannels()) {
                 if (SparseVector.this.channel(s).containsKey(ent.getKey())) {
                     res.add(s);
