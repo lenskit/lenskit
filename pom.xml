@@ -44,6 +44,7 @@
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
     <javadoc.cite.database>${basedir}/etc/references.rdf</javadoc.cite.database>
     <groovy.version>1.8.6</groovy.version>
+    <gmaven.version>1.5</gmaven.version>
     <gmaven.runtime>1.8</gmaven.runtime>
     <grapht.version>0.5.0-SNAPSHOT</grapht.version>
     <grouplens.common.version>0.7-SNAPSHOT</grouplens.common.version>
