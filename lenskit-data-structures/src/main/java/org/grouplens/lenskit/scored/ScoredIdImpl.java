@@ -57,7 +57,7 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
             this.channelMap = new Reference2DoubleArrayMap<Symbol>(channelMap);
         }
         if (typedChannelMap != null) {
-            this.typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>();
+            this.typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>(typedChannelMap);
         }
     }
 
@@ -109,7 +109,7 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
 
     @Override
     public Set<TypedSymbol<?>> getTypedChannels() {
-        if (channelMap != null) {
+        if (typedChannelMap != null) {
             return Collections.unmodifiableSet(typedChannelMap.keySet());
         } else {
             return Collections.emptySet();
