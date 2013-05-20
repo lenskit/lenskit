@@ -69,7 +69,7 @@ public class ScoredIdBuilderTest {
         assertEquals(sib, sib.addChannel(fooSym, 1.0));
         Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
         channels.put(fooSym,1.0);
-        assertEquals(new ScoredIdImpl(1, 2, channels), sib.build());
+        assertEquals(new ScoredIdImpl(1, 2, channels, null), sib.build());
     }
 
     @Test
@@ -78,7 +78,7 @@ public class ScoredIdBuilderTest {
         assertEquals(sib, sib.addChannel(fooSym, 1.0));
         assertEquals(sib, sib.clearChannels());
         Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
-        assertEquals(new ScoredIdImpl(1, 2, channels), sib.build());
+        assertEquals(new ScoredIdImpl(1, 2, channels, null), sib.build());
     }
 
     @Test
@@ -91,9 +91,9 @@ public class ScoredIdBuilderTest {
         sib.setId(3);
         sib.setScore(4);
         sib.addChannel(fooSym, 2.0);
-        assertEquals(new ScoredIdImpl(1, 2, channels), sid);
+        assertEquals(new ScoredIdImpl(1, 2, channels, null), sid);
         sib.clearChannels();
-        assertEquals(new ScoredIdImpl(1, 2, channels), sid);
+        assertEquals(new ScoredIdImpl(1, 2, channels, null), sid);
     }
 
 }

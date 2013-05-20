@@ -41,8 +41,8 @@ public class ScoredIdImplTest {
     @Test
     public void testConstructors() {
         ScoredIdImpl sid = new ScoredIdImpl(1, 10);
-        ScoredIdImpl sid2 = new ScoredIdImpl(1, 10, null);
-        ScoredIdImpl sid3 = new ScoredIdImpl(1, 10, new Reference2DoubleArrayMap<Symbol>());
+        ScoredIdImpl sid2 = new ScoredIdImpl(1, 10, null, null);
+        ScoredIdImpl sid3 = new ScoredIdImpl(1, 10, new Reference2DoubleArrayMap<Symbol>(), null);
         assertEquals(sid2, sid);
         assertEquals(sid3, sid);
         assertEquals(sid3, sid2);
@@ -65,7 +65,7 @@ public class ScoredIdImplTest {
     public void testHasChannel() {
         Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
         channels.put(fooSym,1.0);
-        ScoredIdImpl sid = new ScoredIdImpl(1,10.5,channels);
+        ScoredIdImpl sid = new ScoredIdImpl(1,10.5,channels,null);
         channels.put(barSym,2.0); // shouldn't effect sid.
         assertTrue(sid.hasChannel(fooSym));
         assertFalse(sid.hasChannel(barSym));
@@ -75,7 +75,7 @@ public class ScoredIdImplTest {
     public void testChannel() {
         Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
         channels.put(fooSym,1.0);
-        ScoredIdImpl sid = new ScoredIdImpl(1,10.5,channels);
+        ScoredIdImpl sid = new ScoredIdImpl(1,10.5,channels,null);
         assertEquals(1.0, sid.channel(fooSym), 0.0001);
         try {
             sid.channel(barSym);
@@ -87,7 +87,7 @@ public class ScoredIdImplTest {
     public void testGetChannels() {
         Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
         channels.put(fooSym,1.0);
-        ScoredIdImpl sid = new ScoredIdImpl(1,10.5,channels);
+        ScoredIdImpl sid = new ScoredIdImpl(1,10.5,channels,null);
         assertEquals(Collections.singleton(fooSym),sid.getChannels());
     }
     
@@ -101,8 +101,8 @@ public class ScoredIdImplTest {
     public void testEqualsAndHashCode() {
         Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
         channels.put(fooSym,1.0);
-        ScoredIdImpl sid = new ScoredIdImpl(1, 10.5, channels);
-        ScoredIdImpl sid2 = new ScoredIdImpl(1, 10.5, channels);
+        ScoredIdImpl sid = new ScoredIdImpl(1, 10.5, channels, null);
+        ScoredIdImpl sid2 = new ScoredIdImpl(1, 10.5, channels, null);
         assertEquals(sid, sid2);
         assertEquals(sid.hashCode(), sid2.hashCode());
     }
@@ -125,10 +125,10 @@ public class ScoredIdImplTest {
     public void testEqualsDifferentChannels() {
         Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
         channels.put(fooSym,1.0);
-        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, channels);
+        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, channels, null);
         Reference2DoubleMap<Symbol> channels2 = new Reference2DoubleArrayMap<Symbol>();
         channels2.put(barSym,1.0);
-        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, channels2);
+        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, channels2, null);
         assertNotEquals(sid, sid2);
     }
     
@@ -136,10 +136,10 @@ public class ScoredIdImplTest {
     public void testEqualsDifferentChannelValues() {
         Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
         channels.put(fooSym,1.0);
-        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, channels);
+        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, channels, null);
         Reference2DoubleMap<Symbol> channels2 = new Reference2DoubleArrayMap<Symbol>();
         channels2.put(fooSym,1.1);
-        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, channels2);
+        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, channels2, null);
         assertNotEquals(sid, sid2);
     }
 }

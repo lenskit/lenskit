@@ -21,8 +21,11 @@
 package org.grouplens.lenskit.scored;
 
 import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 
 /**
  * Use a {@code ScoredId.Builder} to instantiate new {@code ScoredId} objects.
@@ -32,6 +35,7 @@ public class ScoredIdBuilder implements Builder<ScoredId> {
     private long id;
     private double score;
     private Reference2DoubleArrayMap<Symbol> channelMap;
+    private Reference2ObjectArrayMap<TypedSymbol<?>, Object> typedChannelMap;
 
     /**
      * Create a {@code ScoredIdBuilder}. Any {@code ScoredId} objects
@@ -66,6 +70,7 @@ public class ScoredIdBuilder implements Builder<ScoredId> {
         this.id = id;
         this.score = score;
         channelMap = new Reference2DoubleArrayMap<Symbol>();
+        typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>,Object>();
     }
 
     /**
@@ -100,11 +105,23 @@ public class ScoredIdBuilder implements Builder<ScoredId> {
     }
 
     /**
-     * Removes all channels from new {@code ScoredId} objects produced by the builder.
+     * Add a new typed side channel to the {@code ScoredId} under construction.
+     * @param s The symbol for the side channel.
+     * @param value The value for the side channel.
+     * @return This builder (for chaining)
+     */
+    public <K> ScoredIdBuilder addChannel(TypedSymbol<K> s, K value) {
+        typedChannelMap.put(s, value);
+        return this;
+    }
+
+    /**
+     * Removes all channels (typed and double) from new {@code ScoredId} objects produced by the builder.
      * @return This builder (for chaining)
      */
     public ScoredIdBuilder clearChannels() {
         channelMap.clear();
+        typedChannelMap.clear();
         return this;
     }
 
@@ -114,10 +131,14 @@ public class ScoredIdBuilder implements Builder<ScoredId> {
      */
     @Override
     public ScoredId build() {
-        if (channelMap.isEmpty()) {
-            return new ScoredIdImpl(id, score, null);
-        } else {
-            return new ScoredIdImpl(id, score, channelMap);
+        Reference2DoubleArrayMap<Symbol> cm = null;
+        if (!channelMap.isEmpty()) {
+            cm = channelMap; 
         }
+        Reference2ObjectArrayMap<TypedSymbol<?>, Object> tcm = null;
+        if (!typedChannelMap.isEmpty()) {
+            tcm = typedChannelMap; 
+        }
+        return new ScoredIdImpl(id, score, cm, tcm);
     }
 }
