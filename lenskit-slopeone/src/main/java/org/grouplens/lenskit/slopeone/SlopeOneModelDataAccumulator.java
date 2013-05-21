@@ -94,7 +94,7 @@ public class SlopeOneModelDataAccumulator {
             for (VectorEntry e : vec.fast()) {
                 double deviation = e.getValue();
                 int coratings = (int)vec.channel(SlopeOneModel.CORATINGS_SYMBOL).get(e);
-                vec.set(e, deviation/coratings);
+                vec.set(e, deviation/(coratings + damping));
             }
         }
 
