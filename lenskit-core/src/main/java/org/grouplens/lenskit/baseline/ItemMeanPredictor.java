@@ -172,9 +172,13 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
         LongIterator items = itemCounts.keySet().iterator();
         while (items.hasNext()) {
             long iid = items.nextLong();
-            double ct = itemCounts.get(iid) + damping;
-            // add damping, subtract means to get offsets
-            double t = itemMeansResult.get(iid) + (damping - itemCounts.get(iid)) * mean;
+            // the number of ratings for this item
+            final int n = itemCounts.get(iid);
+            // compute the total offset - subtract n means from total
+            final double t = itemMeansResult.get(iid) - n * mean;
+            // we pretend there are damping additional ratings with no offset
+            final double ct = n + damping;
+            // average goes to 0 if there are no ratings (shouldn't happen, b/c how did we get the item?)
             double avg = 0.0;
             if (ct > 0) {
                 avg = t / ct;
