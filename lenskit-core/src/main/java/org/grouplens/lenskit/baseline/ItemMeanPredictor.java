@@ -90,7 +90,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
                 for (Rating r: ratings.fast()) {
                     Preference p = r.getPreference();
                     if (p != null) {
-                        accum.add(p.getItemId(), p.getValue());
+                        accum.put(p.getItemId(), p.getValue());
                     }
                 }
                 globalMean = accum.globalMean();
