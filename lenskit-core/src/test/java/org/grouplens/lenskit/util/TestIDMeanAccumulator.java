@@ -31,10 +31,10 @@ import static org.junit.Assert.assertThat;
 
 public class TestIDMeanAccumulator {
     private static final double EPSILON = 1.0e-5;
-    IDMeanAccumulator acc;
+    IdMeanAccumulator acc;
     @Before
     public void createAccumulator() {
-        acc = new IDMeanAccumulator();
+        acc = new IdMeanAccumulator();
     }
 
     @Test

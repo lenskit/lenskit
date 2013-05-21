@@ -27,7 +27,7 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.util.IDMeanAccumulator;
+import org.grouplens.lenskit.util.IdMeanAccumulator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -86,7 +86,7 @@ public class UserMeanPredictor extends AbstractBaselinePredictor {
             final double mean;
             Cursor<Rating> cur = dao.getEvents(Rating.class);
             try {
-                IDMeanAccumulator accum = new IDMeanAccumulator();
+                IdMeanAccumulator accum = new IdMeanAccumulator();
                 // TODO Make this work properly with multiple ratings
                 for (Rating r: cur.fast()) {
                     Preference p = r.getPreference();

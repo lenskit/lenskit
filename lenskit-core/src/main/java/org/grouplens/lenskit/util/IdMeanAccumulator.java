@@ -34,7 +34,7 @@ import org.grouplens.lenskit.vectors.VectorEntry;
  * @since 1.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class IDMeanAccumulator {
+public final class IdMeanAccumulator {
     private Long2DoubleMap sums = new Long2DoubleOpenHashMap();
     private Long2IntMap counts = new Long2IntOpenHashMap();
     private double globalSum;

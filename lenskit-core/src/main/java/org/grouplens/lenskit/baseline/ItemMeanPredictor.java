@@ -30,7 +30,7 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.util.IDMeanAccumulator;
+import org.grouplens.lenskit.util.IdMeanAccumulator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -86,7 +86,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
 
             Cursor<Rating> ratings = dao.getEvents(Rating.class);
             try {
-                IDMeanAccumulator accum = new IDMeanAccumulator();
+                IdMeanAccumulator accum = new IdMeanAccumulator();
                 for (Rating r: ratings.fast()) {
                     Preference p = r.getPreference();
                     if (p != null) {
