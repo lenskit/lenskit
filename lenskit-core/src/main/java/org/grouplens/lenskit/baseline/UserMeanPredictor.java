@@ -20,10 +20,6 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
@@ -31,6 +27,7 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.util.IDMeanAccumulator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -63,7 +60,7 @@ public class UserMeanPredictor extends AbstractBaselinePredictor {
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder implements Provider<UserMeanPredictor> {
-        private double smoothing = 0;
+        private double damping = 0;
         private DataAccessObject dao;
 
         /**
@@ -76,49 +73,35 @@ public class UserMeanPredictor extends AbstractBaselinePredictor {
         public Builder(@Transient DataAccessObject dao,
                        @MeanDamping double damping) {
             this.dao = dao;
-            smoothing = damping;
+            this.damping = damping;
         }
 
         @Override
         public UserMeanPredictor get() {
             logger.debug("Building new user mean scorer");
 
-            logger.debug("damping = {}", smoothing);
+            logger.debug("damping = {}", damping);
 
-            double sum = 0;
-            double count = 0;
-            Long2DoubleMap userSums = new Long2DoubleOpenHashMap();
-            Long2IntMap userCounts = new Long2IntOpenHashMap();
+            final ImmutableSparseVector userMeans;
+            final double mean;
             Cursor<Rating> cur = dao.getEvents(Rating.class);
             try {
+                IDMeanAccumulator accum = new IDMeanAccumulator();
                 // TODO Make this work properly with multiple ratings
                 for (Rating r: cur.fast()) {
-                    long uid = r.getUserId();
                     Preference p = r.getPreference();
                     if (p != null) {
-                        double v = p.getValue();
-                        sum += v;
-                        count++;
-                        userSums.put(uid, userSums.get(uid) + v);
-                        userCounts.put(uid, userCounts.get(uid) + 1);
+                        accum.add(p.getUserId(), p.getValue());
                     }
                 }
+                userMeans = accum.idMeanOffsets(damping);
+                mean = accum.globalMean();
             } finally {
                 cur.close();
             }
 
-            double mean = sum / count;
-            MutableSparseVector umv = new MutableSparseVector(userSums.keySet());
-            for (VectorEntry e: umv.fast(VectorEntry.State.EITHER)) {
-                long uid = e.getKey();
-                int n = userCounts.get(uid);
-                // compute user mean, subtracting out global and adding smoothing
-                double umean = (userSums.get(uid) - mean * (n - smoothing)) / (n + smoothing);
-                umv.set(e, umean);
-            }
-
             logger.debug("Computed global mean {}", mean);
-            return new UserMeanPredictor(mean, smoothing, umv.freeze());
+            return new UserMeanPredictor(mean, damping, userMeans);
         }
     }
 

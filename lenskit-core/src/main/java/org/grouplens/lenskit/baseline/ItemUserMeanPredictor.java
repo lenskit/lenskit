@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
@@ -28,6 +27,7 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.util.IDMeanAccumulator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -87,41 +87,43 @@ public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
         @Override
         public ItemUserMeanPredictor get() {
             final ImmutableSparseVector itemMeans;
-            Cursor<Rating> ratings = dao.getEvents(Rating.class);
             double globalMean;
+            Cursor<Rating> ratings = dao.getEvents(Rating.class);
             try {
-                Long2DoubleMap itemMeanAccum = new Long2DoubleOpenHashMap();
-                globalMean = ItemMeanPredictor.computeItemAverages(ratings.fast().iterator(), damping,
-                                                                   itemMeanAccum);
-                itemMeans = new ImmutableSparseVector(itemMeanAccum);
+                IDMeanAccumulator accum = new IDMeanAccumulator();
+                for (Rating r: ratings.fast()) {
+                    Preference p = r.getPreference();
+                    if (p != null) {
+                        accum.add(p.getItemId(), p.getValue());
+                    }
+                }
+                globalMean = accum.globalMean();
+                itemMeans = accum.idMeanOffsets(damping);
             } finally {
                 ratings.close();
             }
 
             // now compute the user offsets, must be separate pass :(
-            MutableSparseVector userMeans;
+            ImmutableSparseVector userMeans;
             ratings = dao.getEvents(Rating.class);
             try {
-                Long2DoubleMap uSums = new Long2DoubleOpenHashMap();
-                Long2IntMap uCounts = new Long2IntOpenHashMap();
+                // accumulate the user's offsets from item means
+                IDMeanAccumulator uAccum = new IDMeanAccumulator();
                 for (Rating r: ratings.fast()) {
                     Preference p = r.getPreference();
                     if (p != null) {
                         long uid = p.getUserId();
                         double v = p.getValue() - itemMeans.get(p.getItemId()) - globalMean;
-                        uSums.put(uid, uSums.get(uid) + v);
-                        uCounts.put(uid, uCounts.get(uid) + 1);
+                        uAccum.add(uid, v);
                     }
                 }
-                userMeans = new MutableSparseVector(uSums);
-                for (VectorEntry e: userMeans.fast()) {
-                    userMeans.set(e, e.getValue() / (uCounts.get(e.getKey()) + damping));
-                }
+                // compute user means, damped towards 0 (*not* global mean) since they're offsets
+                userMeans = uAccum.computeIdMeans(0, damping);
             } finally {
                 ratings.close();
             }
 
-            return new ItemUserMeanPredictor(itemMeans, userMeans.freeze(),
+            return new ItemUserMeanPredictor(itemMeans, userMeans,
                                              globalMean, damping);
         }
     }
