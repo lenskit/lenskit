@@ -41,14 +41,13 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
     private final int lastBit;
 
     /* 
-     * bit is the last bit returned by next(), or firstBit - 1 if next() has
+     * Invariant: bit is the last bit returned by next(), or firstBit - 1 if next() has
      * not been called.  When previous() is called, it resets bit as if the
-     * corresponding call to next() has been undone. 
+     * corresponding call to next() has been undone.  If nextBit is equal to bit
+     * then the scan for the next bit has not yet been done.  hasNext() will do it,
+     * setting nextBit to the next set bit, or lastBit. 
      */
     private int bit;
-    /*
-     * nextBit is either equal to bit, lastBit, or the next set bit.
-     */
     private int nextBit;
 
     private BitSet bitSet;
@@ -81,6 +80,8 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
      * @param end   The end index, exclusive.
      */
     public BitSetIterator(BitSet set, int start, int end) {
+        if (start < 0) throw new IllegalArgumentException("Starting index must be non-negative");
+        if (start > end) throw new IllegalArgumentException("Starting index must not be past ending index");
         bitSet = set;
         firstBit = start;
         nextBit = start - 1;

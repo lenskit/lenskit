@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
@@ -43,6 +44,10 @@ public class TestBitSetIterator {
         BitSetIterator iter = new BitSetIterator(new BitSet());
         assertFalse(iter.hasNext());
         assertFalse(iter.hasPrevious());
+        try {
+            iter.previousInt();
+            fail("Should throw and exception!");
+        } catch(NoSuchElementException e) { /* expected */ }
     }
 
     @Test
@@ -201,5 +206,19 @@ public class TestBitSetIterator {
         for (int n : inList) bset.set(n);
         List<Integer> outList = Lists.newArrayList(new BitSetIterator(bset, 9, 13));
         assertThat(new ArrayList<Integer>(outList), equalTo(new ArrayList<Integer>()));
+        
+        assertFalse(new BitSetIterator(bset, 35, 100).hasPrevious());
+        assertFalse(new BitSetIterator(bset, 35, 100).hasNext());
+        assertFalse(new BitSetIterator(bset, 0, 100).hasPrevious());
+        
+        try {
+            new BitSetIterator(bset, -1, 100);
+            fail("Should throw illegal argument exception");
+        } catch(IllegalArgumentException e) { /* expected */ };
+        
+        try {
+            new BitSetIterator(bset, 13, 8);
+            fail("Should throw illegal argument exception");
+        } catch(IllegalArgumentException e) { /* expected */ };
     }
 }
