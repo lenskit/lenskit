@@ -28,6 +28,9 @@ import java.util.Set;
  * A numerical ID associated with a score and optional side channels.
  * A {@code ScoredId} object is intended to be immutable. The {@code ScoredId.Builder}
  * class may be used instantiate to a new {@code ScoredId} object.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 1.1
  */
 public interface ScoredId {
 
@@ -38,8 +41,8 @@ public interface ScoredId {
     long getId();
 
     /**
-     * Retrieve the score of this {@code ScoredId}
-     * @return A score.
+     * Retrieve the score of this {@code ScoredId}.
+     * @return The ID's score.
      */
     double getScore();
 
