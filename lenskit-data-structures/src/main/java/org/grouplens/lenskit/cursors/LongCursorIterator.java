@@ -22,9 +22,16 @@ package org.grouplens.lenskit.cursors;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 
+/**
+ * Iterator implementation backed by a long cursor.
+ */
 class LongCursorIterator implements LongIterator {
     private final LongCursor cursor;
 
+    /**
+     * Construct a long iterator.
+     * @param cur The cursor backing the iterator.
+     */
     public LongCursorIterator(LongCursor cur) {
         cursor = cur;
     }

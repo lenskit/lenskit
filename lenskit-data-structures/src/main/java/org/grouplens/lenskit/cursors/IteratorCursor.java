@@ -28,11 +28,18 @@ import java.util.Iterator;
 /**
  * Implementation of {@link Cursor} that simply wraps an iterator.
  *
+ * @param <T> The cursor's element type.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class IteratorCursor<T> extends AbstractCursor<T> {
     private Iterator<? extends T> iterator;
 
+    /**
+     * Construct a new iterator cursor.
+     * @param iter The iterator.
+     * @param size The length, or -1 if the length is not known.  This length must be an upper
+     *             bound on the cursor's element count.
+     */
     public IteratorCursor(@Nonnull Iterator<? extends T> iter, int size) {
         super(size);
         Preconditions.checkNotNull(iter, "iterator for cursor");

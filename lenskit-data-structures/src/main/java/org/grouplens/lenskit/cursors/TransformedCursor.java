@@ -28,6 +28,9 @@ import com.google.common.base.Function;
 /**
  * Implementation of transformed cursors.
  *
+ * @param <S> The element type of the wrapped cursor.
+ * @param <T> The element type of the cursor.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see Cursors#transform(Cursor, Function)
  */
