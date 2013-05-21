@@ -174,4 +174,16 @@ public final class VectorEntry implements Cloneable {
         }
         return e;
     }
+    
+    @Override
+    public String toString() {
+        return "VectorEntry:"
+                + " vector=" + vector
+                + " index=" + index 
+                + " key=" + key 
+                + " value=" + value
+                + " isSet=" + isSet;
+    }
+
+
 }

@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
 import org.grouplens.lenskit.symbols.Symbol;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Set;
 
 class ScoredIdImpl extends AbstractScoredId implements Serializable {
@@ -42,7 +43,7 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
         this.id = id;
         this.score = score;
         if (channelMap != null) {
-            this.channelMap = new Reference2DoubleArrayMap(channelMap);
+            this.channelMap = new Reference2DoubleArrayMap<Symbol>(channelMap);
         }
     }
 
@@ -71,6 +72,10 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
 
     @Override
     public Set<Symbol> getChannels() {
-        return channelMap.keySet();
+        if (channelMap != null) {
+            return Collections.unmodifiableSet(channelMap.keySet());
+        } else {
+            return Collections.emptySet();
+        }
     }
 }
