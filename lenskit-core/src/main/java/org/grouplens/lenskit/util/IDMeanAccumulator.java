@@ -45,7 +45,7 @@ public final class IDMeanAccumulator {
      * @param id The ID.
      * @param val The value.
      */
-    public void add(long id, double val) {
+    public void put(long id, double val) {
         globalSum += val;
         globalCount += 1;
         // the maps return 0 for missing keys

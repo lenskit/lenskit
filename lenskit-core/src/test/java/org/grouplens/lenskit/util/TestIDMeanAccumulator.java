@@ -48,7 +48,7 @@ public class TestIDMeanAccumulator {
 
     @Test
     public void testSingleValue() {
-        acc.add(5, Math.PI);
+        acc.put(5, Math.PI);
         assertThat(acc.globalMean(),
                    closeTo(Math.PI, EPSILON));
         SparseVector v = acc.idMeans();
@@ -58,8 +58,8 @@ public class TestIDMeanAccumulator {
 
     @Test
     public void testSeparateValues() {
-        acc.add(5, Math.PI);
-        acc.add(17, Math.E);
+        acc.put(5, Math.PI);
+        acc.put(17, Math.E);
         assertThat(acc.globalMean(),
                    closeTo((Math.PI + Math.E) / 2, EPSILON));
         SparseVector v = acc.idMeans();
@@ -70,11 +70,11 @@ public class TestIDMeanAccumulator {
 
     @Test
     public void testMultipleValues() {
-        acc.add(5, 3);
-        acc.add(17, 4);
-        acc.add(17, 5);
-        acc.add(5, 3);
-        acc.add(3, 2);
+        acc.put(5, 3);
+        acc.put(17, 4);
+        acc.put(17, 5);
+        acc.put(5, 3);
+        acc.put(3, 2);
         assertThat(acc.globalMean(),
                    closeTo(3.4, EPSILON));
         SparseVector v = acc.idMeans();
@@ -86,11 +86,11 @@ public class TestIDMeanAccumulator {
 
     @Test
     public void testMeanOffsets() {
-        acc.add(5, 3);
-        acc.add(17, 4);
-        acc.add(17, 5);
-        acc.add(5, 3);
-        acc.add(3, 2);
+        acc.put(5, 3);
+        acc.put(17, 4);
+        acc.put(17, 5);
+        acc.put(5, 3);
+        acc.put(3, 2);
         assertThat(acc.globalMean(),
                    closeTo(3.4, EPSILON));
         SparseVector v = acc.idMeanOffsets();
@@ -102,11 +102,11 @@ public class TestIDMeanAccumulator {
 
     @Test
     public void testDampedMeanOffsets() {
-        acc.add(5, 3);
-        acc.add(17, 4);
-        acc.add(17, 5);
-        acc.add(5, 3);
-        acc.add(3, 2);
+        acc.put(5, 3);
+        acc.put(17, 4);
+        acc.put(17, 5);
+        acc.put(5, 3);
+        acc.put(3, 2);
         assertThat(acc.globalMean(),
                    closeTo(3.4, EPSILON));
         SparseVector v = acc.idMeanOffsets(1);

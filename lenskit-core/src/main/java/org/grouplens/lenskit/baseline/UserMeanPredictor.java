@@ -91,7 +91,7 @@ public class UserMeanPredictor extends AbstractBaselinePredictor {
                 for (Rating r: cur.fast()) {
                     Preference p = r.getPreference();
                     if (p != null) {
-                        accum.add(p.getUserId(), p.getValue());
+                        accum.put(p.getUserId(), p.getValue());
                     }
                 }
                 userMeans = accum.idMeanOffsets(damping);

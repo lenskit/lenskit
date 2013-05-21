@@ -94,7 +94,7 @@ public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
                 for (Rating r: ratings.fast()) {
                     Preference p = r.getPreference();
                     if (p != null) {
-                        accum.add(p.getItemId(), p.getValue());
+                        accum.put(p.getItemId(), p.getValue());
                     }
                 }
                 globalMean = accum.globalMean();
@@ -114,7 +114,7 @@ public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
                     if (p != null) {
                         long uid = p.getUserId();
                         double v = p.getValue() - itemMeans.get(p.getItemId()) - globalMean;
-                        uAccum.add(uid, v);
+                        uAccum.put(uid, v);
                     }
                 }
                 // compute user means, damped towards 0 (*not* global mean) since they're offsets
