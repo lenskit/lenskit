@@ -27,10 +27,10 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
+import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.test.ML100KTestSuite;
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
@@ -57,7 +57,7 @@ public class TestUserUserBuildSerialize extends ML100KTestSuite {
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
         factory.bind(ItemRecommender.class)
-               .to(ScoreBasedItemRecommender.class);
+               .to(TopNItemRecommender.class);
         factory.bind(ItemScorer.class)
                .to(UserUserItemScorer.class);
         factory.within(UserVectorSimilarity.class)
@@ -84,8 +84,8 @@ public class TestUserUserBuildSerialize extends ML100KTestSuite {
             assertThat(rec.getItemScorer(),
                        instanceOf(UserUserItemScorer.class));
             ItemRecommender recommender = rec.getItemRecommender();
-            assertThat(recommender, instanceOf(ScoreBasedItemRecommender.class));
-            assertThat(((ScoreBasedItemRecommender) recommender).getScorer(),
+            assertThat(recommender, instanceOf(TopNItemRecommender.class));
+            assertThat(((TopNItemRecommender) recommender).getScorer(),
                        sameInstance(rec.getItemScorer()));
             RatingPredictor pred = rec.getRatingPredictor();
             assertThat(pred, instanceOf(SimpleRatingPredictor.class));

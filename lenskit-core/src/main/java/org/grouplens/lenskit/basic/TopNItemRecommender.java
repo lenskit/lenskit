@@ -48,11 +48,11 @@ import javax.inject.Inject;
  * <p>
  * Recommendations are returned in descending order of score.
  */
-public class ScoreBasedItemRecommender extends AbstractItemRecommender {
+public class TopNItemRecommender extends AbstractItemRecommender {
     protected final ItemScorer scorer;
 
     @Inject
-    public ScoreBasedItemRecommender(DataAccessObject dao, ItemScorer scorer) {
+    public TopNItemRecommender(DataAccessObject dao, ItemScorer scorer) {
         super(dao);
         this.scorer = scorer;
     }

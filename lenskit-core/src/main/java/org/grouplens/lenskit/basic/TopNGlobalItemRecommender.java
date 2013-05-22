@@ -32,11 +32,11 @@ import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
-public class ScoreBasedGlobalItemRecommender extends AbstractGlobalItemRecommender {
+public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
 
     protected final GlobalItemScorer scorer;
 
-    public ScoreBasedGlobalItemRecommender(DataAccessObject dao, GlobalItemScorer scorer) {
+    public TopNGlobalItemRecommender(DataAccessObject dao, GlobalItemScorer scorer) {
         super(dao);
         this.scorer = scorer;
     }
