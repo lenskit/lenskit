@@ -37,39 +37,40 @@ import com.google.common.collect.Lists;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TestBitSetIterator {
+public class TestRepeatedList {
 
     @Test
     public void testEmpty() {
-        BitSetIterator iter = new BitSetIterator(new BitSet());
-        assertFalse(iter.hasNext());
-        assertFalse(iter.hasPrevious());
+        RepeatedList rl = new RepeatedList<Integer>(7, 0);
+        assertThat(rl.size(), equalTo(0));
         try {
-            iter.previousInt();
+            rl.get(-1);
             fail("Should throw an exception!");
-        } catch(NoSuchElementException e) { /* expected */ }
+        } catch(IndexOutOfBoundsException e) { /* expected */ }
+        try {
+            rl.get(0);
+            fail("Should throw an exception!");
+        } catch(IndexOutOfBoundsException e) { /* expected */ }
         
         try {
-            iter.nextInt();
+            rl.get(1);
             fail("Should throw an exception!");
-        } catch(NoSuchElementException e) { /* expected */ }
+        } catch(IndexOutOfBoundsException e) { /* expected */ }
     }
 
     @Test
     public void testSingle() {
-        BitSet s = new BitSet();
-        s.set(0);
-        BitSetIterator iter = new BitSetIterator(s);
-        assertTrue(iter.hasNext());
-        assertTrue(iter.hasNext());
-        assertThat(iter.next(), equalTo(0));
-        assertFalse(iter.hasNext());
-        assertFalse(iter.hasNext());
-        assertTrue(iter.hasPrevious());
-        assertTrue(iter.hasPrevious());
-        assertThat(iter.previous(), equalTo(0));
-        assertTrue(iter.hasNext());
-        assertFalse(iter.hasPrevious());
+        RepeatedList rl = new RepeatedList<Integer>(7, 1);
+        assertThat(rl.size(), equalTo(1));
+        System.out.println(rl.get(0));
+        System.out.println(rl.get(0).getClass());
+        assertThat(((Integer)rl.get(0)).intValue(), equalTo(7));
+        
+        try {
+            rl.get(1);
+            fail("Should throw an exception!");
+        } catch(IndexOutOfBoundsException e) { /* expected */ }
+  
     }
 
     @Test

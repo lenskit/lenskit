@@ -41,15 +41,20 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
     private final int lastBit;
 
     /* 
-     * Invariant: bit is the last bit returned by next(), or firstBit - 1 if next() has
-     * not been called.  When previous() is called, it resets bit as if the
-     * corresponding call to next() has been undone.  If nextBit is equal to bit
-     * then the scan for the next bit has not yet been done.  hasNext() will do it,
-     * setting nextBit to the next set bit, or lastBit. 
+     * Invariant: nextBit is the next bit to be returned by next().  If nextBit is outside of the
+     * range [firstBit, lastBit), then hasNext() will be false, and nextInt() will throw an exception.
+     * 
+     * previousInt() will walk backwards from nextBit to the previous set bit, return it, and
+     * set the nextBit to that bit.
+     * 
+     * If nextBit is run out of the range using nextInt(), it will have the value lastBit.  If
+     * nextBit is run out of the range using previousInt(), it will have the value -1.
      */
-    private int bit;
     private int nextBit;
 
+    /* 
+     * The BitSet we are iterating over.
+     */
     private BitSet bitSet;
 
     /**
@@ -84,26 +89,33 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
         if (start > end) throw new IllegalArgumentException("Starting index must not be past ending index");
         bitSet = set;
         firstBit = start;
-        nextBit = start - 1;
-        bit = nextBit;
+        nextBit = bitSet.nextSetBit(start);
         lastBit = end;
     }
 
     @Override
     public boolean hasNext() {
-        if (bit == nextBit && nextBit < lastBit) {
-            /* unscanned & not at end - scan for the next set bit. */
-            nextBit = bitSet.nextSetBit(bit + 1);
-            if (nextBit < 0) {
-                nextBit = lastBit;
-            }
-        }
-        return nextBit >= 0 && nextBit < lastBit;
+        return nextBit >= firstBit && nextBit < lastBit;
     }
 
+    /*
+     * Given a starting index, return the previously set bit, or -1 if there is no
+     * previously set bit in the bit set.  Note that the common use will want to
+     * call previousIndex(nextBit - 1), since nextBit is the *next* bit, not
+     * the previous bit.
+     */
+    private int previousSetBit(int start) {
+        for (int i = start; i >= firstBit; i--) {
+            if (bitSet.get(i)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
     @Override
     public boolean hasPrevious() {
-        return bit >= firstBit && bit < lastBit;
+        return previousSetBit(nextBit - 1) >= 0;
     }
 
     @Override
@@ -111,31 +123,18 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
-        bit = nextBit;
-        return bit;
+        int retval = nextBit;
+        nextBit = bitSet.nextSetBit(nextBit + 1);
+        if (nextBit < 0) nextBit = lastBit;
+        return retval;
     }
 
     @Override
     public int previousInt() {
-        // previous is slow
-        if (bit >= firstBit && bit < lastBit) {
-            final int ret = bit;
-            // we have successfully returned at least 1 bit
-            for (int i = bit - 1; i >= firstBit; i--) {
-                if (bitSet.get(i)) {
-                    nextBit = i;
-                    bit = i;
-                    break;
-                }
-            }
-            if (bit == ret) {
-                // unchanged - reset to the beginning
-                nextBit = bit; // so we don't need to re-run hasNext
-                bit = firstBit - 1;
-            }
-            return ret;
-        } else {
+        if (!hasPrevious()) {
             throw new NoSuchElementException();
-        }
+        }   
+        nextBit = previousSetBit(nextBit - 1);
+        return nextBit;
     }
 }
