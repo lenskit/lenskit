@@ -30,6 +30,8 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 
 import java.io.Serializable;
 import java.util.*;
@@ -748,7 +750,13 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
 
         @Override
         public Set<Symbol> getChannels() {
-            return SparseVector.this.getChannels();
+            ReferenceArraySet<Symbol> res = new ReferenceArraySet<Symbol>();
+            for (Symbol s: SparseVector.this.getChannels()) {
+                if (SparseVector.this.channel(s).containsKey(ent.getKey())) {
+                    res.add(s);
+                }
+            }
+            return res;
         }
 
         @Override
@@ -758,7 +766,8 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
 
         @Override
         public boolean hasChannel(Symbol s) {
-            return SparseVector.this.hasChannel(s);
+            return SparseVector.this.hasChannel(s)
+                    && SparseVector.this.channel(s).containsKey(ent.getKey());
         }
 
         public void setEntry(VectorEntry e) {
