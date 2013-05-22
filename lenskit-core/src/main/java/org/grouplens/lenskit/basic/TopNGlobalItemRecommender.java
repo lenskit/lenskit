@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.basic;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
@@ -31,6 +32,9 @@ import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 /**
  * A global item recommender that recommends the top N items from a scorer.
@@ -104,4 +108,29 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
         return new ScoredLongArrayList(accum.finish());
     }
 
+    /**
+     * An intelligent provider for Top-N global recommenders. It provides a Top-N global recommender
+     * if there is an {@link GlobalItemScorer} available, and returns {@code null} otherwise.  This is
+     * the default provider for {@link GlobalItemRecommender}.
+     */
+    public static class Provider implements javax.inject.Provider<TopNGlobalItemRecommender> {
+        private final DataAccessObject dao;
+        private final GlobalItemScorer scorer;
+
+        @Inject
+        public Provider(DataAccessObject dao,
+                        @Nullable GlobalItemScorer s) {
+            this.dao = dao;
+            scorer = s;
+        }
+
+        @Override
+        public TopNGlobalItemRecommender get() {
+            if (scorer == null) {
+                return null;
+            } else {
+                return new TopNGlobalItemRecommender(dao, scorer);
+            }
+        }
+    }
 }

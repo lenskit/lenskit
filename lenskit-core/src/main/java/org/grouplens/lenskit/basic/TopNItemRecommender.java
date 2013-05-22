@@ -24,7 +24,9 @@ package org.grouplens.lenskit.basic;
 import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
 import org.grouplens.lenskit.collections.ScoredLongList;
@@ -33,11 +35,13 @@ import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -166,5 +170,31 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      */
     protected LongSet getPredictableItems(long user) {
         return Cursors.makeSet(dao.getItems());
+    }
+
+    /**
+     * An intelligent provider for Top-N recommenders. It provides a Top-N recommender
+     * if there is an {@link ItemScorer} available, and returns {@code null} otherwise.  This is
+     * the default provider for {@link ItemRecommender}.
+     */
+    public static class Provider implements javax.inject.Provider<TopNItemRecommender> {
+        private final DataAccessObject dao;
+        private final ItemScorer scorer;
+
+        @Inject
+        public Provider(DataAccessObject dao,
+                        @Nullable ItemScorer s) {
+            this.dao = dao;
+            scorer = s;
+        }
+
+        @Override
+        public TopNItemRecommender get() {
+            if (scorer == null) {
+                return null;
+            } else {
+                return new TopNItemRecommender(dao, scorer);
+            }
+        }
     }
 }
