@@ -41,12 +41,14 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 import javax.inject.Inject;
 
 /**
- * Base class for recommenders that recommend the top N items by a scorer.
+ * Recommender that recommends the top N items by a scorer.
  * Implements all methods required by {@link AbstractItemRecommender}. The
  * default exclude set is all items rated by the user.
  *
- * <p>
- * Recommendations are returned in descending order of score.
+ * <p>Recommendations are returned in descending order of score.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 1.1
  */
 public class TopNItemRecommender extends AbstractItemRecommender {
     protected final ItemScorer scorer;

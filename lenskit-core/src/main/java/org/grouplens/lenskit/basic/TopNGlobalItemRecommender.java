@@ -32,6 +32,12 @@ import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
+/**
+ * A global item recommender that recommends the top N items from a scorer.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 1.1
+ */
 public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
 
     protected final GlobalItemScorer scorer;
