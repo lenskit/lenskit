@@ -73,8 +73,7 @@ public class ConstantPredictor extends AbstractBaselinePredictor {
     }
 
     @Override
-    public void predict(long user, SparseVector ratings,
-                        MutableSparseVector output, boolean predictSet) {
+    public void predict(long user, MutableSparseVector output, boolean predictSet) {
         if (predictSet) {
             output.fill(value);
         } else {

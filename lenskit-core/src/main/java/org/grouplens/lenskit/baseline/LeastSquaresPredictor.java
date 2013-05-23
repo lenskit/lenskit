@@ -74,8 +74,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
     }
 
     @Override
-    public void predict(long user, SparseVector ratings,
-                        MutableSparseVector output, boolean predictSet) {
+    public void predict(long user, MutableSparseVector output, boolean predictSet) {
         State state = predictSet ? State.EITHER : State.UNSET;
         for (VectorEntry e : output.fast(state)) {
             double score = mean + userOffsets.get(user, 0) + itemOffsets.get(e.getKey(), 0);

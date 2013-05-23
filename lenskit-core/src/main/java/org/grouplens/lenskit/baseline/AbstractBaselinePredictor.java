@@ -43,8 +43,43 @@ public abstract class AbstractBaselinePredictor implements BaselinePredictor {
         return v;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>Delegates to {@link #predict(long, SparseVector, MutableSparseVector, boolean)}
+     * with {@code predictSet} of {@code true}.
+     */
     @Override
     public void predict(long user, SparseVector ratings, MutableSparseVector output) {
         predict(user, ratings, output, true);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>Delegates to {@link #predict(long, MutableSparseVector, boolean)}.
+     */
+    @Override
+    public void predict(long user, SparseVector ratings, MutableSparseVector output, boolean predictSet) {
+        predict(user, output, predictSet);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>Delegates to {@link #predict(long, MutableSparseVector)}.
+     */
+    @Override
+    public MutableSparseVector predict(long user, Collection<Long> items) {
+        MutableSparseVector v = new MutableSparseVector(items);
+        predict(user, v);
+        return v;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>Delegates to {@link #predict(long, MutableSparseVector, boolean)} with {@code predictSet}
+     * of {@code true}.
+     */
+    @Override
+    public void predict(long user, MutableSparseVector output) {
+        predict(user, output, true);
     }
 }

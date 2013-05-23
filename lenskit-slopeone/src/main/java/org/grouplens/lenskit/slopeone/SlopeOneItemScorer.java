@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -85,12 +84,6 @@ public class SlopeOneItemScorer extends AbstractItemScorer {
                     scores.clear(e);
                 }
             }
-        }
-
-        //Use Baseline Predictor if necessary
-        final BaselinePredictor baseline = model.getBaselinePredictor();
-        if (baseline != null && nUnpred > 0) {
-            baseline.predict(history.getUserId(), user, scores, false);
         }
     }
 

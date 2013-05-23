@@ -76,8 +76,8 @@ public class SimpleRatingPredictorTest {
     @Before
     public void setUp() throws Exception {
         PreferenceDomain domain = new PreferenceDomain(1, 5, 1);
-        pred = new SimpleRatingPredictor(null, new Scorer(), domain);
-        unclamped = new SimpleRatingPredictor(null, new Scorer(), null);
+        pred = new SimpleRatingPredictor(null, new Scorer(), null, domain);
+        unclamped = new SimpleRatingPredictor(null, new Scorer(), null, null);
     }
 
     @Test

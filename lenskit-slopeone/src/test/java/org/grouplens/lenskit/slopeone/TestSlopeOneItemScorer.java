@@ -45,7 +45,7 @@ public class TestSlopeOneItemScorer {
         ItemItemBuildContextFactory contextFactory = new ItemItemBuildContextFactory(
                 dao, new DefaultUserVectorNormalizer(), summarizer);
         SlopeOneModelBuilder provider = new SlopeOneModelBuilder(
-                dao, null, contextFactory, 0);
+                dao, contextFactory, 0);
         return provider.get();
     }
 
