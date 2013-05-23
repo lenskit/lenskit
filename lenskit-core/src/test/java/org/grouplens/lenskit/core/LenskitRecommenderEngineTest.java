@@ -91,6 +91,9 @@ public class LenskitRecommenderEngineTest {
                        instanceOf(SimpleRatingPredictor.class));
             assertThat(rec.get(BaselinePredictor.class),
                        instanceOf(ConstantPredictor.class));
+            // Since we have an item scorer, we should have a recommender too
+            assertThat(rec.getItemRecommender(),
+                       instanceOf(TopNItemRecommender.class));
         } finally {
             rec.close();
         }
