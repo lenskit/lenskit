@@ -112,6 +112,7 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         return output;
     }
 
+    @SuppressWarnings("PMD.AvoidCatchingThrowable")
     private void writeGraph(Graph g, Set<Node> unshared, File file) throws IOException, CommandException {
         Files.createParentDirs(output);
         Closer close = Closer.create();

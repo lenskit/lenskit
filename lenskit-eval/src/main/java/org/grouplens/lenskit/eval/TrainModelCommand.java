@@ -99,6 +99,7 @@ public class TrainModelCommand<T> extends AbstractCommand<T> {
     }
 
     @Override
+    @SuppressWarnings("PMD.AvoidCatchingThrowable")
     public T call() throws CommandException {
         Preconditions.checkState(algorithm != null, "no algorithm specified");
         Preconditions.checkState(inputData != null, "no input data specified");
