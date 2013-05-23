@@ -112,6 +112,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      * @throws IndexOutOfBoundsException if {@var start} or {@var end}
      *                                   is out of range.
      */
+    @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     private LongSortedArraySet(@Nonnull long[] items, int fromIndex, int toIndex,
                                boolean clean, @Nullable BitSet used) {
         data = items;

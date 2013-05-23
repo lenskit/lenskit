@@ -74,27 +74,7 @@ public abstract class AbstractCursor<T> implements Cursor<T> {
 
     @Override
     public Iterable<T> fast() {
-        return new Iterable<T>() {
-            @Override
-            public Iterator<T> iterator() {
-                return new Iterator<T>() {
-                    @Override
-                    public boolean hasNext() {
-                        return AbstractCursor.this.hasNext();
-                    }
-
-                    @Override
-                    public T next() {
-                        return fastNext();
-                    }
-
-                    @Override
-                    public void remove() {
-                        throw new UnsupportedOperationException();
-                    }
-                };
-            }
-        };
+        return new FastIterable();
     }
 
     /**
@@ -107,5 +87,27 @@ public abstract class AbstractCursor<T> implements Cursor<T> {
     @Override
     public Iterator<T> iterator() {
         return new CursorIterator<T>(this);
+    }
+
+    private class FastIterable implements Iterable<T> {
+        @Override
+        public Iterator<T> iterator() {
+            return new Iterator<T>() {
+                @Override
+                public boolean hasNext() {
+                    return AbstractCursor.this.hasNext();
+                }
+
+                @Override
+                public T next() {
+                    return fastNext();
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
     }
 }

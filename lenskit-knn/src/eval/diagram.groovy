@@ -18,21 +18,39 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-import org.grouplens.lenskit.GlobalItemRecommender
+
+
 import org.grouplens.lenskit.GlobalItemScorer
-import org.grouplens.lenskit.ItemRecommender
 import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.knn.item.ItemItemGlobalRecommender
+import org.grouplens.lenskit.baseline.BaselinePredictor
+import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
+import org.grouplens.lenskit.baseline.UserMeanPredictor
+import org.grouplens.lenskit.knn.NeighborhoodSize
 import org.grouplens.lenskit.knn.item.ItemItemGlobalScorer
-import org.grouplens.lenskit.knn.item.ItemItemRecommender
 import org.grouplens.lenskit.knn.item.ItemItemScorer
+import org.grouplens.lenskit.knn.user.UserUserItemScorer
+import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
+import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
 
 dumpGraph {
     output "${config.analysisDir}/item-item.dot"
     algorithm {
         bind ItemScorer to ItemItemScorer
-        bind ItemRecommender to ItemItemRecommender
         bind GlobalItemScorer to ItemItemGlobalScorer
-        bind GlobalItemRecommender to ItemItemGlobalRecommender
+        bind BaselinePredictor to ItemUserMeanPredictor
+        bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
+    }
+}
+
+dumpGraph {
+    output "${config.analysisDir}/user-user.dot"
+    algorithm {
+        bind ItemScorer to UserUserItemScorer
+        set NeighborhoodSize to 30
+        bind BaselinePredictor to ItemUserMeanPredictor
+        bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
+        within(UserVectorNormalizer) {
+            bind BaselinePredictor to UserMeanPredictor
+        }
     }
 }

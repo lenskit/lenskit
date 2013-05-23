@@ -24,10 +24,19 @@ import javax.annotation.WillCloseWhenClosed;
 
 import com.google.common.base.Predicate;
 
+/**
+ * A wrapper cursor that filters its underlying cursor.
+ * @param <T> The cursor's element type.
+ */
 class FilteredCursor<T> extends AbstractPollingCursor<T> {
     private final Cursor<T> cursor;
     private final Predicate<? super T> filter;
 
+    /**
+     * Construct a new filtered cursor.
+     * @param cur The underlying cursor.
+     * @param filt The filter.
+     */
     public FilteredCursor(@WillCloseWhenClosed Cursor<T> cur, Predicate<? super T> filt) {
         super();
         cursor = cur;

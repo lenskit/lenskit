@@ -20,18 +20,23 @@
  */
 package org.grouplens.lenskit.eval.graph;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.*;
+import org.grouplens.grapht.spi.reflect.*;
 import org.grouplens.lenskit.core.GraphtUtils;
 import org.grouplens.lenskit.core.Parameter;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.inject.Provider;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -241,7 +246,9 @@ class GraphDumper {
             bld.setShareable(pid == null && GraphtUtils.isShareable(node));
             bld.setShared(!unsharedNodes.contains(node));
             bld.setIsProvider(pid != null);
-            for (Edge e: graph.getOutgoingEdges(node)) {
+            List<Edge> edges = Lists.newArrayList(graph.getOutgoingEdges(node));
+            Collections.sort(edges, EDGE_ORDER);
+            for (Edge e: edges) {
                 Desire dep = e.getDesire();
                 assert dep != null;
                 Annotation q = dep.getInjectionPoint().getAttributes().getQualifier();
@@ -288,4 +295,49 @@ class GraphDumper {
             return node;
         }
     }
+
+    private static Function<Edge,List<String>> ORDER_KEY = new Function<Edge, List<String>>() {
+        @Nullable
+        @Override
+        public List<String> apply(@Nullable Edge input) {
+            if (input == null) {
+                throw new IllegalArgumentException("cannot order null edge");
+            }
+            Desire desire = input.getDesire();
+            if (desire == null) {
+                throw new IllegalArgumentException("cannot order null desire");
+            }
+            InjectionPoint ip = desire.getInjectionPoint();
+            List<String> key = new ArrayList<String>(4);
+            if (ip instanceof ConstructorParameterInjectionPoint) {
+                ConstructorParameterInjectionPoint cpi = (ConstructorParameterInjectionPoint) ip;
+                key.add("0: constructor");
+                key.add(Integer.toString(cpi.getParameterIndex()));
+            } else if (ip instanceof SetterInjectionPoint) {
+                SetterInjectionPoint spi = (SetterInjectionPoint) ip;
+                key.add("1: setter");
+                key.add(spi.getMember().getName());
+                key.add(Integer.toString(spi.getParameterIndex()));
+            } else if (ip instanceof FieldInjectionPoint) {
+                FieldInjectionPoint fpi = (FieldInjectionPoint) ip;
+                key.add("2: field");
+                key.add(fpi.getMember().getName());
+            } else if (ip instanceof NoArgumentInjectionPoint) {
+                /* this shouldn't really happen */
+                NoArgumentInjectionPoint fpi = (NoArgumentInjectionPoint) ip;
+                key.add("8: no-arg");
+                key.add(fpi.getMember().getName());
+            } else if (ip instanceof SimpleInjectionPoint) {
+                key.add("5: simple");
+            } else {
+                key.add("9: unknown");
+                key.add(ip.getClass().getName());
+            }
+            return key;
+        }
+    };
+
+    private static Ordering<Edge> EDGE_ORDER = Ordering.<String>natural()
+                                                       .lexicographical()
+                                                       .onResultOf(ORDER_KEY);
 }

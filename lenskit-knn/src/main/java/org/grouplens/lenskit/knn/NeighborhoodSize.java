@@ -36,7 +36,7 @@ import org.grouplens.lenskit.core.Parameter;
  * user-user and item-item CF. If 0, then all neighbors are used.
  */
 @Documented
-@DefaultInteger(30)
+@DefaultInteger(20)
 @Parameter(Integer.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})

@@ -20,17 +20,17 @@
  */
 package org.grouplens.lenskit.knn.user;
 
-import javax.inject.Inject;
-
-import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
+import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+
+import javax.inject.Inject;
 
 /**
  * A recommender and scorer using user-user collaborative filtering.
  * Neighbor user are aggregated using weighted averaging.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @deprecated Just use {@link ScoreBasedItemRecommender}.
+ * @deprecated Just use {@link org.grouplens.lenskit.basic.TopNItemRecommender}.
  */
 @Deprecated
 public class UserUserRecommender extends ScoreBasedItemRecommender {

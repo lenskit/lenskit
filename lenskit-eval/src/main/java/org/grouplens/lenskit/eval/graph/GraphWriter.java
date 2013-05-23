@@ -43,6 +43,7 @@ class GraphWriter implements Closeable {
         output.append("  node [fontname=\"Helvetica\"")
               .append(",color=\"").append(ComponentNodeBuilder.UNSHARED_BGCOLOR).append("\"")
               .append("];\n");
+        output.append("  graph [rankdir=LR];\n");
         output.append("  edge [")
               .append("color=\"")
               .append(ComponentNodeBuilder.UNSHARED_BGCOLOR).append("\"")

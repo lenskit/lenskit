@@ -28,6 +28,11 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
 
+/**
+ * Basic implementation of {@link ScoredId}.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
 class ScoredIdImpl extends AbstractScoredId implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -35,10 +40,21 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
     private final double score;
     Reference2DoubleMap<Symbol> channelMap;
 
+    /**
+     * Construct a scored ID with no channels.
+     * @param id The ID.
+     * @param score The score.
+     */
     public ScoredIdImpl(long id, double score) {
         this(id, score, null);
     }
 
+    /**
+     * Construct a scored ID.
+     * @param id The ID.
+     * @param score The score.
+     * @param channelMap The side channels for this ID.
+     */
     public ScoredIdImpl(long id, double score, Reference2DoubleMap<Symbol> channelMap) {
         this.id = id;
         this.score = score;

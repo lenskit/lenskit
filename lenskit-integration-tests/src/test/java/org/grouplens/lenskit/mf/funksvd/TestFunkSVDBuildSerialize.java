@@ -26,7 +26,7 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.baseline.MeanDamping;
-import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
+import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -53,7 +53,7 @@ public class TestFunkSVDBuildSerialize extends ML100KTestSuite {
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
         factory.bind(ItemRecommender.class)
-               .to(ScoreBasedItemRecommender.class);
+               .to(TopNItemRecommender.class);
         factory.bind(ItemScorer.class)
                .to(FunkSVDItemScorer.class);
         factory.bind(BaselinePredictor.class)

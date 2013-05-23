@@ -27,6 +27,7 @@ import java.util.NoSuchElementException;
 /**
  * A pointer wrapping an iterator.
  *
+ * @param <E> The pointer element type.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class IteratorPointer<E> implements Pointer<E> {
@@ -34,6 +35,10 @@ class IteratorPointer<E> implements Pointer<E> {
     private E element;
     private boolean atEnd;
 
+    /**
+     * Construct a new iterator pointer.
+     * @param iter The iterator.
+     */
     public IteratorPointer(Iterator<E> iter) {
         iterator = iter;
         if (iter.hasNext()) {

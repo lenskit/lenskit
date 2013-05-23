@@ -18,41 +18,21 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.collections;
 
-import java.util.AbstractList;
 
-/**
- * List consisting of multiple occurrences of one element.
- *
- * @param <T> The element type of the list.
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- */
-class RepeatedList<T> extends AbstractList<T> {
-    private int size;
-    private T object;
+import org.grouplens.lenskit.ItemScorer
+import org.grouplens.lenskit.baseline.BaselinePredictor
+import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
+import org.grouplens.lenskit.iterative.IterationCount
+import org.grouplens.lenskit.mf.funksvd.FeatureCount
+import org.grouplens.lenskit.mf.funksvd.FunkSVDItemScorer
 
-    /**
-     * Construct a new repeated list.
-     * @param obj The element.
-     * @param sz length of the list.
-     */
-    public RepeatedList(T obj, int sz) {
-        size = sz;
-        object = obj;
-    }
-
-    @Override
-    public T get(int index) {
-        if (index >= 0 && index < size) {
-            return object;
-        } else {
-            throw new IndexOutOfBoundsException();
-        }
-    }
-
-    @Override
-    public int size() {
-        return size;
+dumpGraph {
+    output "${config.analysisDir}/funksvd.dot"
+    algorithm {
+        bind ItemScorer to FunkSVDItemScorer
+        bind BaselinePredictor to ItemUserMeanPredictor
+        set IterationCount to 125
+        set FeatureCount to 25
     }
 }

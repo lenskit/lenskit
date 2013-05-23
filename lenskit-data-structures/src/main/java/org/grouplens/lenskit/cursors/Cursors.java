@@ -142,6 +142,7 @@ public final class Cursors {
      *         allocated with a capacity of {@link Cursor#getRowCount()} if possible,
      *         but has not been trimmed.
      */
+    @SuppressWarnings("PMD.LooseCoupling")
     public static <T> ArrayList<T> makeList(@WillClose Cursor<? extends T> cursor) {
         ArrayList<T> list;
         try {
@@ -239,51 +240,9 @@ public final class Cursors {
     public static LongCursor makeLongCursor(@WillCloseWhenClosed final Cursor<Long> cursor) {
         if (cursor instanceof LongCursor) {
             return (LongCursor) cursor;
+        } else {
+            return new UnboxingLongCursor(cursor);
         }
-
-        return new LongCursor() {
-            @Override
-            public boolean hasNext() {
-                return cursor.hasNext();
-            }
-
-            @Nonnull
-            @Override
-            public Long next() {
-                return cursor.next();
-            }
-
-            @Nonnull
-            @Override
-            public Long fastNext() {
-                return cursor.fastNext();
-            }
-
-            @Override
-            public LongIterable fast() {
-                return this;
-            }
-
-            @Override
-            public long nextLong() {
-                return next();
-            }
-
-            @Override
-            public void close() {
-                cursor.close();
-            }
-
-            @Override
-            public int getRowCount() {
-                return cursor.getRowCount();
-            }
-
-            @Override
-            public LongIterator iterator() {
-                return new LongCursorIterator(this);
-            }
-        };
     }
 
     /**
@@ -300,5 +259,55 @@ public final class Cursors {
         final ArrayList<T> list = makeList(cursor);
         Collections.sort(list, comp);
         return wrap(list);
+    }
+
+    private static class UnboxingLongCursor implements LongCursor {
+        private final Cursor<Long> cursor;
+
+        public UnboxingLongCursor(Cursor<Long> cursor) {
+            this.cursor = cursor;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return cursor.hasNext();
+        }
+
+        @Nonnull
+        @Override
+        public Long next() {
+            return cursor.next();
+        }
+
+        @Nonnull
+        @Override
+        public Long fastNext() {
+            return cursor.fastNext();
+        }
+
+        @Override
+        public LongIterable fast() {
+            return this;
+        }
+
+        @Override
+        public long nextLong() {
+            return next();
+        }
+
+        @Override
+        public void close() {
+            cursor.close();
+        }
+
+        @Override
+        public int getRowCount() {
+            return cursor.getRowCount();
+        }
+
+        @Override
+        public LongIterator iterator() {
+            return new LongCursorIterator(this);
+        }
     }
 }

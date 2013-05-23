@@ -25,11 +25,12 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.symbols.Symbol;
 
-import java.util.Set;
-
 /**
  * A base class for {@code ScoredId} implementations providing
  * {@code equals} and {@code hashCode} methods.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 1.1
  */
 public abstract class AbstractScoredId implements ScoredId {
 

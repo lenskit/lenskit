@@ -12,7 +12,6 @@
   </macrodef>
 
   <target name="render">
-    <render name="item-item"/>
-    <render name="user-user"/>
+    <render name="slope-one"/>
   </target>
 </project>
