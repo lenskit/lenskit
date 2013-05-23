@@ -79,6 +79,11 @@ public final class IdMeanAccumulator {
      * 0, effectively pretending that each ID has an additional \(\gamma\) values at exactly the
      * global mean.  If \(y=0\) and \(gamma > 0\), it pretends each ID has additional values at 0.
      *
+     * <p>The prior (assumed value for additional values) is always 0 in the output domain.  If
+     * \(y>0\), then the values are offset first, and then damped towards 0.  This method does
+     * not yet support damping towards some other value; if you need actual damped means, where
+     * each is damped towards the global mean, add the global mean to the resulting vector.
+     *
      * @param offset  An offset to subtract from each value prior to averaging.
      * @param damping The damping term (see {@link #idMeanOffsets(double)}).
      * @return The vector of means.
