@@ -33,10 +33,11 @@ import java.util.List;
  * data structures such as in-memory caches to be shared between jobs, with only
  * one such set in memory at a time.
  *
+ * @param <T> The return type of jobs in this group.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
-public interface JobGroup {
+public interface JobGroup<T> {
     /**
      * Get the name of this job group. This group will be displayed in the UI,
      * and used to allow the user to selectively enable certain job groups when
@@ -70,5 +71,5 @@ public interface JobGroup {
      *
      * @return The list of jobs to run in this group.
      */
-    List<Job> getJobs();
+    List<Job<T>> getJobs();
 }

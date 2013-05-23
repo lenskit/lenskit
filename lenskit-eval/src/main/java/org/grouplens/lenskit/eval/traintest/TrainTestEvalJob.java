@@ -61,7 +61,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
-public class TrainTestEvalJob implements Job {
+public class TrainTestEvalJob implements Job<Void> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalJob.class);
 
     private final int numRecs;
@@ -134,7 +134,7 @@ public class TrainTestEvalJob implements Job {
     }
 
     @Override
-    public void run() {
+    public Void call() throws RecommenderBuildException, IOException {
         TableWriter userTable = null;
         TableWriter predictTable = null;
 
@@ -227,12 +227,11 @@ public class TrainTestEvalJob implements Job {
             } catch (IOException e) {
                 logger.error("Error writing output", e);
             }
-        } catch (RecommenderBuildException e) {
-            logger.error("error building recommender {}: {}", algorithm, e);
-            throw new RuntimeException(e);
         } finally {
             LKFileUtils.close(userTable, predictTable);
         }
+
+        return null;
     }
 
     private ExecutionInfo buildExecInfo() {
@@ -244,7 +243,7 @@ public class TrainTestEvalJob implements Job {
         return bld.build();
     }
 
-    private void writePredictions(TableWriter predictTable, long uid, SparseVector ratings, SparseVector predictions) {
+    private void writePredictions(TableWriter predictTable, long uid, SparseVector ratings, SparseVector predictions) throws IOException {
         final int ncols = predictTable.getLayout().getColumnCount();
         final String[] row = new String[ncols];
         row[0] = Long.toString(uid);
@@ -267,11 +266,7 @@ public class TrainTestEvalJob implements Job {
                 }
                 i += 1;
             }
-            try {
-                predictTable.writeRow(row);
-            } catch (IOException x) {
-                throw new RuntimeException("error writing predictions", x);
-            }
+            predictTable.writeRow(row);
         }
     }
 

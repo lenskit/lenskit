@@ -47,11 +47,11 @@ import java.util.concurrent.Callable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
-public class TrainTestEvalJobGroup implements JobGroup {
+class TrainTestEvalJobGroup implements JobGroup<Void> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalJobGroup.class);
 
     private TTDataSet dataSet;
-    private List<Job> jobs;
+    private List<Job<Void>> jobs;
 
     private TrainTestEvalCommand evaluation;
 
@@ -80,7 +80,7 @@ public class TrainTestEvalJobGroup implements JobGroup {
                     }
                 });
 
-        jobs = new ArrayList<Job>(algos.size());
+        jobs = new ArrayList<Job<Void>>(algos.size());
         for (AlgorithmInstance algo : algos) {
             Function<TableWriter, TableWriter> prefix = eval.prefixFunction(algo, data);
             TrainTestEvalJob job = new TrainTestEvalJob(
@@ -109,7 +109,7 @@ public class TrainTestEvalJobGroup implements JobGroup {
     }
 
     @Override
-    public List<Job> getJobs() {
+    public List<Job<Void>> getJobs() {
         return jobs;
     }
 

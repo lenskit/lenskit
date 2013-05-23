@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,26 +48,26 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
     }
 
     private int threadCount;
-    private List<JobGroup> groups;
-    private Reference2IntMap<Job> jobGroupMap;
+    private List<JobGroup<?>> groups;
+    private Reference2IntMap<Job<?>> jobGroupMap;
     private int[] pendingJobCounts;
     private JobGroupState[] groupStates;
 
     public MergedJobGroupExecutor(int threads) {
         threadCount = threads;
-        groups = new ArrayList<JobGroup>();
-        jobGroupMap = new Reference2IntOpenHashMap<Job>();
+        groups = new ArrayList<JobGroup<?>>();
+        jobGroupMap = new Reference2IntOpenHashMap<Job<?>>();
         jobGroupMap.defaultReturnValue(-1);
     }
 
 
     @Override
-    public void add(JobGroup group) {
+    public void add(JobGroup<?> group) {
         final int num = groups.size();
         groups.add(group);
         assert groups.get(num) == group;
 
-        for (Job job : group.getJobs()) {
+        for (Job<?> job: group.getJobs()) {
             if (jobGroupMap.containsKey(job)) {
                 throw new IllegalStateException("Job " + job.getName()
                                                         + " appears more than once");
@@ -87,22 +88,18 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
         groupStates = new JobGroupState[ngroups];
         pendingJobCounts = new int[ngroups];
 
-        List<Runnable> tasks = new ArrayList<Runnable>();
+        List<JobTask> tasks = new ArrayList<JobTask>();
         for (int i = 0; i < ngroups; i++) {
             groupStates[i] = JobGroupState.WAITING;
-            JobGroup group = groups.get(i);
+            JobGroup<?> group = groups.get(i);
             pendingJobCounts[i] = group.getJobs().size();
-            for (Job job : group.getJobs()) {
+            for (Job<?> job : group.getJobs()) {
                 tasks.add(new JobTask(job));
             }
         }
 
         try {
             ExecHelpers.parallelRun(svc, tasks);
-        } catch (RuntimeException err) {
-            throw err;
-        } catch (ExecutionException err) {
-            throw err;
         } finally {
             pendingJobCounts = null;
             groupStates = null;
@@ -114,14 +111,14 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
      * Start a job, calling its group's {@link JobGroup#start()} method if
      * necessary.
      *
-     * @param job
+     * @param job The job that is starting.
      */
-    private synchronized void jobStarting(Job job) {
+    private synchronized void jobStarting(Job<?> job) {
         logger.debug("Starting job {}", job.getName());
         int gnum = jobGroupMap.getInt(job);
         assert groupStates[gnum] != JobGroupState.FINISHED;
         if (groupStates[gnum] == JobGroupState.WAITING) {
-            JobGroup group = groups.get(gnum);
+            JobGroup<?> group = groups.get(gnum);
             logger.info("Starting job group {}", group.getName());
             group.start();
             groupStates[gnum] = JobGroupState.RUNNING;
@@ -132,16 +129,16 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
      * Finalize a job, calling the group's {@link JobGroup#finish()} method if
      * appropriate.
      *
-     * @param job
+     * @param job The job that is finished.
      */
-    private synchronized void jobFinished(Job job) {
+    private synchronized void jobFinished(Job<?> job) {
         logger.debug("Finished job {}", job.getName());
         int gnum = jobGroupMap.getInt(job);
         assert pendingJobCounts[gnum] > 0;
         assert groupStates[gnum] == JobGroupState.RUNNING;
         // the task has already invoked the listener jobFinished
         if (--pendingJobCounts[gnum] == 0) {
-            JobGroup group = groups.get(gnum);
+            JobGroup<?> group = groups.get(gnum);
             logger.info("Finishing job group {}", group.getName());
             group.finish();
             groupStates[gnum] = JobGroupState.FINISHED;
@@ -154,24 +151,22 @@ public class MergedJobGroupExecutor implements JobGroupExecutor {
      *
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    private class JobTask implements Runnable {
-        final Job job;
+    private class JobTask implements Callable<Object> {
+        final Job<?> job;
 
-        public JobTask(Job job) {
+        public JobTask(Job<?> job) {
             this.job = job;
         }
 
         @Override
-        public void run() {
+        public Object call() throws Exception {
             jobStarting(job);
             try {
-                job.run();
-            } catch (Throwable e) {
-                if (e instanceof ThreadDeath) {
-                    throw (ThreadDeath) e;
-                }
+                return job.call();
+            } catch (Exception e) {
+                // we want to log the runtime exceptions
                 logger.error("Error running {}", job.getDescription(), e);
-                throw new RuntimeException("Error running " + job.getName(), e);
+                throw e;
             } finally {
                 jobFinished(job);
             }

@@ -35,10 +35,10 @@ public interface JobGroupExecutor {
      *
      * @param group The job group to execute.
      */
-    void add(JobGroup group);
+    void add(JobGroup<?> group);
 
     /**
-     * Run the job groups.
+     * Run the job groups. All return values are discarded.
      *
      * @throws ExecutionException if one of the jobs fails.
      */

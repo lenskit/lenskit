@@ -23,6 +23,7 @@ package org.grouplens.lenskit.util.parallel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -59,9 +60,9 @@ public final class ExecHelpers {
      * @throws ExecutionException if one of the tasks failed.  If multiple tasks
      *                            failed, it is undefined which exception is actually thrown.
      */
-    public static void parallelRun(ExecutorService svc, Collection<? extends Runnable> tasks) throws ExecutionException {
+    public static void parallelRun(ExecutorService svc, Collection<? extends Callable<?>> tasks) throws ExecutionException {
         List<Future<?>> results = new ArrayList<Future<?>>(tasks.size());
-        for (Runnable task : tasks) {
+        for (Callable<?> task: tasks) {
             results.add(svc.submit(task));
         }
         waitAll(results);
