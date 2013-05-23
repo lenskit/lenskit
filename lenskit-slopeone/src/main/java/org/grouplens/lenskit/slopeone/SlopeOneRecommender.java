@@ -20,17 +20,17 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import javax.inject.Inject;
-
-import org.grouplens.lenskit.basic.TopNItemRecommender;
+import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+
+import javax.inject.Inject;
 
 /**
  * A {@code RatingRecommender} that uses the Slope One algorithm.
  * @deprecated Just use {@link org.grouplens.lenskit.basic.TopNItemRecommender}.
  */
 @Deprecated
-public class SlopeOneRecommender extends TopNItemRecommender {
+public class SlopeOneRecommender extends ScoreBasedItemRecommender {
     private SlopeOneItemScorer predictor;
 
     /**

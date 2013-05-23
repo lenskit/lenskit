@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.basic.TopNItemRecommender;
+import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import javax.inject.Inject;
@@ -33,7 +33,7 @@ import javax.inject.Inject;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Deprecated
-public class ItemItemRecommender extends TopNItemRecommender {
+public class ItemItemRecommender extends ScoreBasedItemRecommender {
     /**
      * Construct a new item-item recommender from a scorer.
      *

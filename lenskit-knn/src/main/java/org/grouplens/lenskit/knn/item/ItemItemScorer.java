@@ -46,7 +46,6 @@ import java.util.Collection;
  * as default preferences.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @see ItemItemRatingPredictor
  */
 public class ItemItemScorer extends AbstractItemScorer implements ItemScorer {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemScorer.class);
@@ -101,7 +100,6 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemScorer {
      * Score items by computing predicted ratings.
      *
      * @see ItemScoreAlgorithm#scoreItems(ItemItemModel, SparseVector, MutableSparseVector, NeighborhoodScorer)
-     * @see #makeTransform(long, SparseVector)
      */
     @Override
     public void score(@Nonnull UserHistory<? extends Event> history,

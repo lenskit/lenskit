@@ -20,10 +20,10 @@
  */
 package org.grouplens.lenskit.knn.user;
 
-import javax.inject.Inject;
-
-import org.grouplens.lenskit.basic.TopNItemRecommender;
+import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+
+import javax.inject.Inject;
 
 /**
  * A recommender and scorer using user-user collaborative filtering.
@@ -33,7 +33,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * @deprecated Just use {@link org.grouplens.lenskit.basic.TopNItemRecommender}.
  */
 @Deprecated
-public class UserUserRecommender extends TopNItemRecommender {
+public class UserUserRecommender extends ScoreBasedItemRecommender {
     protected final UserUserItemScorer predictor;
 
     @Inject
