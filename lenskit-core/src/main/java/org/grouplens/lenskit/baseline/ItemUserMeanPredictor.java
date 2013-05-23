@@ -56,8 +56,8 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
 @Shareable
 public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
     private static final long serialVersionUID = 3L;
-    private final ImmutableSparseVector itemMeans;
-    private final ImmutableSparseVector userMeans;
+    private final ImmutableSparseVector itemMeanOffsets;
+    private final ImmutableSparseVector userMeanOffsets;
     private final double globalMean;
     private final double damping;
 
@@ -86,8 +86,13 @@ public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
 
         @Override
         public ItemUserMeanPredictor get() {
-            final ImmutableSparseVector itemMeans;
-            double globalMean;
+            /* Compute means in two passes. The first pass accumulates the global and item means,
+             * storing each item's average deviation from global mean in a vector.
+             *
+             * The second pass accumulates each user's mean deviation from item mean.
+             */
+            final double globalMean;
+            final ImmutableSparseVector itemMeanOffsets;
             Cursor<Rating> ratings = dao.getEvents(Rating.class);
             try {
                 IdMeanAccumulator accum = new IdMeanAccumulator();
@@ -98,13 +103,13 @@ public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
                     }
                 }
                 globalMean = accum.globalMean();
-                itemMeans = accum.idMeanOffsets(damping);
+                itemMeanOffsets = accum.idMeanOffsets(damping);
             } finally {
                 ratings.close();
             }
 
-            // now compute the user offsets, must be separate pass :(
-            ImmutableSparseVector userMeans;
+            // Pass 2: compute user offsets
+            ImmutableSparseVector userMeanOffsets;
             ratings = dao.getEvents(Rating.class);
             try {
                 // accumulate the user's offsets from item means
@@ -113,17 +118,17 @@ public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
                     Preference p = r.getPreference();
                     if (p != null) {
                         long uid = p.getUserId();
-                        double v = p.getValue() - itemMeans.get(p.getItemId()) - globalMean;
+                        double v = p.getValue() - itemMeanOffsets.get(p.getItemId()) - globalMean;
                         uAccum.put(uid, v);
                     }
                 }
                 // compute user means, damped towards 0 (*not* global mean) since they're offsets
-                userMeans = uAccum.computeIdMeans(0, damping);
+                userMeanOffsets = uAccum.computeIdMeans(0, damping);
             } finally {
                 ratings.close();
             }
 
-            return new ItemUserMeanPredictor(itemMeans, userMeans,
+            return new ItemUserMeanPredictor(itemMeanOffsets, userMeanOffsets,
                                              globalMean, damping);
         }
     }
@@ -139,8 +144,8 @@ public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
     public ItemUserMeanPredictor(ImmutableSparseVector iMeans,
                                  ImmutableSparseVector uMeans,
                                  double mean, double damp) {
-        itemMeans = iMeans;
-        userMeans = uMeans;
+        itemMeanOffsets = iMeans;
+        userMeanOffsets = uMeans;
         globalMean = mean;
         damping = damp;
     }
@@ -162,14 +167,14 @@ public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
         for (VectorEntry rating : ratings.fast()) {
             double r = rating.getValue();
             long iid = rating.getKey();
-            total += r - globalMean - itemMeans.get(iid, 0);
+            total += r - globalMean - itemMeanOffsets.get(iid, 0);
         }
         return total / (values.size() + damping);
     }
 
     @Override
     public void predict(long user, MutableSparseVector scores, boolean predictSet) {
-        writePredictions(scores, predictSet, userMeans.get(user, 0));
+        writePredictions(scores, predictSet, userMeanOffsets.get(user, 0));
     }
 
     @Override
@@ -181,7 +186,7 @@ public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
     private void writePredictions(MutableSparseVector scores, boolean predictSet, double userOffset) {
         State state = predictSet ? State.EITHER : State.UNSET;
         for (VectorEntry e : scores.fast(state)) {
-            scores.set(e, userOffset + globalMean + itemMeans.get(e.getKey(), 0));
+            scores.set(e, userOffset + globalMean + itemMeanOffsets.get(e.getKey(), 0));
         }
     }
 }
