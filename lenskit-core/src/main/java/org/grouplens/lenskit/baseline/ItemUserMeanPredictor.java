@@ -169,20 +169,19 @@ public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
 
     @Override
     public void predict(long user, MutableSparseVector scores, boolean predictSet) {
-        double meanOffset = userMeans.get(user, 0);
-        State state = predictSet ? State.EITHER : State.UNSET;
-        for (VectorEntry e : scores.fast(state)) {
-            scores.set(e, meanOffset + globalMean + itemMeans.get(e.getKey(), 0));
-        }
+        writePredictions(scores, predictSet, userMeans.get(user, 0));
     }
 
     @Override
     public void predict(long user, SparseVector ratings,
                         MutableSparseVector scores, boolean predictSet) {
-        double meanOffset = computeUserAverage(ratings);
+        writePredictions(scores, predictSet, computeUserAverage(ratings));
+    }
+
+    private void writePredictions(MutableSparseVector scores, boolean predictSet, double userOffset) {
         State state = predictSet ? State.EITHER : State.UNSET;
         for (VectorEntry e : scores.fast(state)) {
-            scores.set(e, meanOffset + globalMean + itemMeans.get(e.getKey(), 0));
+            scores.set(e, userOffset + globalMean + itemMeans.get(e.getKey(), 0));
         }
     }
 }
