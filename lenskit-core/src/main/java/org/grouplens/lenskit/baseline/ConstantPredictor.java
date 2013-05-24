@@ -27,7 +27,6 @@ import org.grouplens.grapht.annotation.DefaultDouble;
 import org.grouplens.lenskit.core.Parameter;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.inject.Inject;

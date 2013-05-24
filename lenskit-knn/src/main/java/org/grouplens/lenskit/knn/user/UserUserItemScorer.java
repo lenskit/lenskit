@@ -23,10 +23,7 @@ package org.grouplens.lenskit.knn.user;
 import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
-import org.grouplens.lenskit.basic.AbstractRatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -40,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.Collection;
 

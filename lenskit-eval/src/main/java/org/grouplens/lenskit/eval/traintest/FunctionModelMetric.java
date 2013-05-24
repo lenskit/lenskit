@@ -21,19 +21,11 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.util.table.TableLayoutBuilder;
-import org.grouplens.lenskit.util.table.writer.CSVWriter;
-import org.grouplens.lenskit.util.table.writer.TableWriter;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 /**

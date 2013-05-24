@@ -19,13 +19,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.grouplens.lenskit.eval.maven;
-import org.grouplens.lenskit.eval.config.EvalConfig;
-
-import static org.apache.commons.exec.CommandLine.parse;
-import static org.apache.commons.io.FileUtils.copyFile;
-
-import java.io.File;
-import java.io.IOException;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -33,12 +26,17 @@ import org.apache.commons.exec.ExecuteException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Execute;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.grouplens.lenskit.eval.config.EvalConfig;
+
+import java.io.File;
+import java.io.IOException;
+
+import static org.apache.commons.exec.CommandLine.parse;
+import static org.apache.commons.io.FileUtils.copyFile;
 
 /**
  * Run an R script for statistical analysis.

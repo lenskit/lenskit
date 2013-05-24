@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.core;
 
 import org.grouplens.lenskit.GlobalItemScorer;
-import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.basic.TopNGlobalItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 

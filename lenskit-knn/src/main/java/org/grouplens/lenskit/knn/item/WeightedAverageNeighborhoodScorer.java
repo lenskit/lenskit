@@ -21,13 +21,11 @@
 package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.inject.Singleton;
 import java.io.Serializable;
-import java.util.List;
 
 import static java.lang.Math.abs;
 

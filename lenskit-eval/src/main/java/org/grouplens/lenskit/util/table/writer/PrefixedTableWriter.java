@@ -25,7 +25,6 @@ import org.grouplens.lenskit.util.table.TableLayout;
 import org.grouplens.lenskit.util.table.TableLayoutBuilder;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 /**
