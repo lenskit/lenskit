@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
+import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
@@ -134,13 +135,12 @@ public class TrainTestEvalJob implements Job<Void> {
     }
 
     @Override
+    @SuppressWarnings("PMD.AvoidCatchingThrowable")
     public Void call() throws RecommenderBuildException, IOException {
-        TableWriter userTable = null;
-        TableWriter predictTable = null;
-
+        Closer closer = Closer.create();
         try {
-            userTable = userOutputSupplier.get();
-            predictTable = predictOutputSupplier.get();
+            TableWriter userTable = closer.register(userOutputSupplier.get());
+            TableWriter predictTable = closer.register(predictOutputSupplier.get());
 
             List<Object> outputRow = Lists.newArrayList();
 
@@ -165,70 +165,58 @@ public class TrainTestEvalJob implements Job<Void> {
 
             List<Object> userRow = new ArrayList<Object>();
 
-            DataAccessObject testDao = data.getTestFactory().create();
-            try {
-                for (TestUserMetric eval : evaluators) {
+            DataAccessObject testDao = closer.register(data.getTestFactory().create());
+            for (TestUserMetric eval : evaluators) {
+                TestUserMetricAccumulator accum = eval.makeAccumulator(algorithm, data);
+                evalAccums.add(accum);
+            }
 
-                    TestUserMetricAccumulator accum =
-                            eval.makeAccumulator(algorithm, data);
-                    evalAccums.add(accum);
-                }
+            Cursor<UserHistory<Event>> userProfiles = closer.register(testDao.getUserHistories());
+            for (UserHistory<Event> p : userProfiles) {
+                assert userRow.isEmpty();
+                userRow.add(p.getUserId());
 
-                Cursor<UserHistory<Event>> userProfiles = testDao.getUserHistories();
-                try {
-                    for (UserHistory<Event> p : userProfiles) {
-                        assert userRow.isEmpty();
-                        userRow.add(p.getUserId());
+                long uid = p.getUserId();
+                LongSet testItems = p.itemSet();
 
-                        long uid = p.getUserId();
-                        LongSet testItems = p.itemSet();
+                Supplier<SparseVector> preds =
+                        new PredictionSupplier(rec, uid, testItems);
+                Supplier<ScoredLongList> recs =
+                        new RecommendationSupplier(rec, uid, testItems);
+                Supplier<UserHistory<Event>> hist = new HistorySupplier(rec.getDAO(), uid);
+                Supplier<UserHistory<Event>> testHist = Suppliers.ofInstance(p);
 
-                        Supplier<SparseVector> preds =
-                                new PredictionSupplier(rec, uid, testItems);
-                        Supplier<ScoredLongList> recs =
-                                new RecommendationSupplier(rec, uid, testItems);
-                        Supplier<UserHistory<Event>> hist = new HistorySupplier(rec.getDAO(), uid);
-                        Supplier<UserHistory<Event>> testHist = Suppliers.ofInstance(p);
+                TestUser test = new TestUser(uid, hist, testHist, preds, recs);
 
-                        TestUser test = new TestUser(uid, hist, testHist, preds, recs);
-
-                        for (TestUserMetricAccumulator accum : evalAccums) {
-                            Object[] ures = accum.evaluate(test);
-                            if (ures != null) {
-                                userRow.addAll(Arrays.asList(ures));
-                            }
-                        }
-                        if (userTable != null) {
-                            try {
-                                userTable.writeRow(userRow);
-                            } catch (IOException e) {
-                                throw new RuntimeException("error writing user row", e);
-                            }
-                        }
-                        userRow.clear();
-
-                        if (predictTable != null) {
-                            writePredictions(predictTable, uid,
-                                             RatingVectorUserHistorySummarizer.makeRatingVector(p),
-                                             test.getPredictions());
-                        }
+                for (TestUserMetricAccumulator accum : evalAccums) {
+                    Object[] ures = accum.evaluate(test);
+                    if (ures != null) {
+                        userRow.addAll(Arrays.asList(ures));
                     }
-                } finally {
-                    userProfiles.close();
                 }
-            } finally {
-                testDao.close();
+                if (userTable != null) {
+                    try {
+                        userTable.writeRow(userRow);
+                    } catch (IOException e) {
+                        throw new RuntimeException("error writing user row", e);
+                    }
+                }
+                userRow.clear();
+
+                if (predictTable != null) {
+                    writePredictions(predictTable, uid,
+                                     RatingVectorUserHistorySummarizer.makeRatingVector(p),
+                                     test.getPredictions());
+                }
             }
             testTimer.stop();
             logger.info("Tested {} in {}", algorithm.getName(), testTimer);
 
-            try {
-                writeOutput(buildTimer, testTimer, outputRow, evalAccums);
-            } catch (IOException e) {
-                logger.error("Error writing output", e);
-            }
+            writeOutput(buildTimer, testTimer, outputRow, evalAccums);
+        } catch (Throwable th) {
+            throw closer.rethrow(th, RecommenderBuildException.class);
         } finally {
-            LKFileUtils.close(userTable, predictTable);
+            closer.close();
         }
 
         return null;
