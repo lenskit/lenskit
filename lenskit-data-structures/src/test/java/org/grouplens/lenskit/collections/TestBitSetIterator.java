@@ -204,6 +204,26 @@ public class TestBitSetIterator {
     }
     
     @Test
+    public void testStartEndOffset2() {
+        BitSet s = new BitSet();
+        s.set(5);
+        s.set(7);
+        s.set(9);
+        BitSetIterator iter = new BitSetIterator(s, 6, 8);
+        assertArrayEquals(new Integer[]{7},
+                          Iterators.toArray(new BitSetIterator(s, 6, 8), Integer.class));
+        
+        iter = new BitSetIterator(s, 6, 8);
+        assertFalse(iter.hasPrevious());
+
+        assertTrue(iter.hasNext());
+        iter.nextInt();
+        assertFalse(iter.hasNext());
+        assertTrue(iter.hasPrevious());
+    }
+
+    
+    @Test
     public void testFullIteration() {
         List<Integer> inList = Arrays.asList(2, 3, 5, 8, 13, 21, 34); 
         BitSet bset = new BitSet();

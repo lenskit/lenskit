@@ -89,12 +89,17 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
         if (start > end) throw new IllegalArgumentException("Starting index must not be past ending index");
         bitSet = set;
         firstBit = start;
-        nextBit = bitSet.nextSetBit(start);
         lastBit = end;
+        nextBit = bitSet.nextSetBit(start);
+        if (nextBit < 0) {
+            nextBit = lastBit;
+        }
     }
 
     @Override
     public boolean hasNext() {
+        // The current implementation of the invariant never allows nextBit to be
+        // less than firstBit, so the following line cannot be completely tested.
         return nextBit >= firstBit && nextBit < lastBit;
     }
 
@@ -115,7 +120,7 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
     
     @Override
     public boolean hasPrevious() {
-        return previousSetBit(nextBit - 1) >= 0;
+        return previousSetBit(nextBit - 1) >= firstBit;
     }
 
     @Override
@@ -131,10 +136,11 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
 
     @Override
     public int previousInt() {
-        if (!hasPrevious()) {
+        int prevBit = previousSetBit(nextBit - 1);
+        if (prevBit < 0) {
             throw new NoSuchElementException();
-        }   
-        nextBit = previousSetBit(nextBit - 1);
+        } 
+        nextBit = prevBit;
         return nextBit;
     }
 }
