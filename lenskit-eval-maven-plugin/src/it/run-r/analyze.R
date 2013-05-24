@@ -1,0 +1,1 @@
+cat("Hello, world\n", file="output.txt")
