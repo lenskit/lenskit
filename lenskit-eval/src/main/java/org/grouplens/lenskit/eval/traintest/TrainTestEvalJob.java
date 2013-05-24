@@ -138,8 +138,14 @@ public class TrainTestEvalJob implements Job<Void> {
     public Void call() throws RecommenderBuildException, IOException {
         Closer closer = Closer.create();
         try {
-            TableWriter userTable = closer.register(userOutputSupplier.get());
-            TableWriter predictTable = closer.register(predictOutputSupplier.get());
+            TableWriter userTable = userOutputSupplier.get();
+            if (userTable != null) {
+                closer.register(userTable);
+            }
+            TableWriter predictTable = predictOutputSupplier.get();
+            if (predictTable != null) {
+                closer.register(predictTable);
+            }
 
             List<Object> outputRow = Lists.newArrayList();
 
