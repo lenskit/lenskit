@@ -51,9 +51,13 @@ public final class Vectors {
         @Nullable
         @Override
         public ImmutablePair<VectorEntry, VectorEntry> apply(@Nullable Pair<VectorEntry, VectorEntry> p) {
-            VectorEntry l = (p.getLeft() == null ? null : p.getLeft().clone());
-            VectorEntry r = (p.getRight() == null ? null : p.getRight().clone());
-            return ImmutablePair.of(l, r);
+            if (p == null) {
+                return null;
+            } else {
+                VectorEntry l = (p.getLeft() == null ? null : p.getLeft().clone());
+                VectorEntry r = (p.getRight() == null ? null : p.getRight().clone());
+                return ImmutablePair.of(l, r);
+            }
         }
     };
 
