@@ -84,7 +84,6 @@
       <layout>default</layout>
       <snapshots>
         <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
         <checksumPolicy>fail</checksumPolicy>
       </snapshots>
       <releases><enabled>false</enabled></releases>
