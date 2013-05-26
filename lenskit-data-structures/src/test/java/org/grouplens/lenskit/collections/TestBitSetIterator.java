@@ -23,11 +23,16 @@ package org.grouplens.lenskit.collections;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -39,6 +44,15 @@ public class TestBitSetIterator {
         BitSetIterator iter = new BitSetIterator(new BitSet());
         assertFalse(iter.hasNext());
         assertFalse(iter.hasPrevious());
+        try {
+            iter.previousInt();
+            fail("Should throw an exception!");
+        } catch(NoSuchElementException e) { /* expected */ }
+        
+        try {
+            iter.nextInt();
+            fail("Should throw an exception!");
+        } catch(NoSuchElementException e) { /* expected */ }
     }
 
     @Test
@@ -69,6 +83,10 @@ public class TestBitSetIterator {
         assertFalse(iter.hasPrevious());
         assertTrue(iter.hasNext());
         assertFalse(iter.hasPrevious());
+        try {
+            iter.previousInt();
+            fail("Should throw an exception!");
+        } catch(NoSuchElementException e) { /* expected */ }
         assertTrue(iter.hasNext());
         assertThat(iter.nextInt(), equalTo(0));
         assertTrue(iter.hasNext());
@@ -80,6 +98,10 @@ public class TestBitSetIterator {
         assertThat(iter.nextInt(), equalTo(0));
         assertThat(iter.nextInt(), equalTo(1));
         assertFalse(iter.hasNext());
+        try {
+            iter.nextInt();
+            fail("Should throw an exception!");
+        } catch(NoSuchElementException e) { /* expected */ }
         assertTrue(iter.hasPrevious());
         assertFalse(iter.hasNext());
 
@@ -179,5 +201,57 @@ public class TestBitSetIterator {
         assertThat(iter.nextInt(), equalTo(2));
         assertTrue(iter.hasNext());
         assertThat(iter.nextInt(), equalTo(4));
+    }
+    
+    @Test
+    public void testStartEndOffset2() {
+        BitSet s = new BitSet();
+        s.set(5);
+        s.set(7);
+        s.set(9);
+        BitSetIterator iter = new BitSetIterator(s, 6, 8);
+        assertArrayEquals(new Integer[]{7},
+                          Iterators.toArray(new BitSetIterator(s, 6, 8), Integer.class));
+        
+        iter = new BitSetIterator(s, 6, 8);
+        assertFalse(iter.hasPrevious());
+
+        assertTrue(iter.hasNext());
+        iter.nextInt();
+        assertFalse(iter.hasNext());
+        assertTrue(iter.hasPrevious());
+    }
+
+    
+    @Test
+    public void testFullIteration() {
+        List<Integer> inList = Arrays.asList(2, 3, 5, 8, 13, 21, 34); 
+        BitSet bset = new BitSet();
+        for (int n : inList) bset.set(n);
+        List<Integer> outList = Lists.newArrayList(new BitSetIterator(bset));
+        assertThat(inList, equalTo(outList));
+    }
+    
+    @Test
+    public void testStartEndEmpty() {
+        List<Integer> inList = Arrays.asList(2, 3, 5, 8, 13, 21, 34); 
+        BitSet bset = new BitSet();
+        for (int n : inList) bset.set(n);
+        List<Integer> outList = Lists.newArrayList(new BitSetIterator(bset, 9, 13));
+        assertThat(new ArrayList<Integer>(outList), equalTo(new ArrayList<Integer>()));
+        
+        assertFalse(new BitSetIterator(bset, 35, 100).hasPrevious());
+        assertFalse(new BitSetIterator(bset, 35, 100).hasNext());
+        assertFalse(new BitSetIterator(bset, 0, 100).hasPrevious());
+        
+        try {
+            new BitSetIterator(bset, -1, 100);
+            fail("Should throw illegal argument exception");
+        } catch(IllegalArgumentException e) { /* expected */ };
+        
+        try {
+            new BitSetIterator(bset, 13, 8);
+            fail("Should throw illegal argument exception");
+        } catch(IllegalArgumentException e) { /* expected */ };
     }
 }
