@@ -143,9 +143,9 @@ public class DumpGraphCommand extends AbstractCommand<File> {
                 assert csat != null;
                 if (!satIsNull(csat.getSatisfaction())) {
                     String id = dumper.process(target);
-                    gw.putEdge(new EdgeBuilder(rid, id)
-                                       .set("arrowhead", "vee")
-                                       .build());
+                    gw.putEdge(EdgeBuilder.create(rid, id)
+                                          .set("arrowhead", "vee")
+                                          .build());
                 }
             }
             dumper.finish();
