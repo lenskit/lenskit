@@ -32,6 +32,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Various type utilities used in LensKit.
@@ -102,7 +103,7 @@ public class TypeUtils {
     public static <T> Function<Class<?>, Class<? extends T>> asSubclass(final Class<T> supertype) {
         return new Function<Class<?>, Class<? extends T>>() {
             @Override
-            @SuppressWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
+            @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
             public Class<? extends T> apply(Class<?> input) {
                 if (input == null) {
                     throw new NullPointerException("null class");
@@ -121,7 +122,7 @@ public class TypeUtils {
     public static <T> Function<T, Class<? extends T>> extractClass(final Class<T> supertype) {
         return new Function<T, Class<? extends T>>() {
             @Override
-            @SuppressWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")    
+            @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
             public Class<? extends T> apply(T input) {
                 if (input == null) {
                     throw new NullPointerException("null class");
