@@ -248,7 +248,11 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
             return trainFilePattern;
         } else {
             StringBuilder sb = new StringBuilder();
-            return sb.append(getConfig().getDataDir())
+            String dir = getConfig().getDataDir();
+            if (dir == null) {
+                dir = ".";
+            }
+            return sb.append(dir)
                      .append(File.separator)
                      .append(getName())
                      .append("-crossfold")
@@ -263,7 +267,11 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
             return testFilePattern;
         } else {
             StringBuilder sb = new StringBuilder();
-            return sb.append(getConfig().getDataDir())
+            String dir = getConfig().getDataDir();
+            if (dir == null) {
+                dir = ".";
+            }
+            return sb.append(dir)
                      .append(File.separator)
                      .append(getName())
                      .append("-crossfold")
