@@ -242,12 +242,10 @@
             <target>1.6</target>
             <showWarnings>true</showWarnings>
             <showDeprecation>true</showDeprecation>
-            <compilerArguments>
-              <compilerArgs>
-                <compilerArg>-Xlint</compilerArg>
-                <compilerArg>-Xlint:-processing</compilerArg>
-              </compilerArgs>
-            </compilerArguments>
+            <compilerArgs>
+              <compilerArg>-Xlint</compilerArg>
+              <compilerArg>-Xlint:-processing</compilerArg>
+            </compilerArgs>
             <fork>true</fork>
           </configuration>
         </plugin>
