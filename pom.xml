@@ -240,8 +240,10 @@
             <showWarnings>true</showWarnings>
             <showDeprecation>true</showDeprecation>
             <compilerArguments>
-              <Xlint/>
-              <Xlint:-processing/>
+              <compilerArgs>
+                <compilerArg>-Xlint</compilerArg>
+                <compilerArg>-Xlint:-processing</compilerArg>
+              </compilerArgs>
             </compilerArguments>
             <fork>true</fork>
           </configuration>
