@@ -598,22 +598,6 @@
           <name>lenskit.ci</name>
         </property>
       </activation>
-      <properties>
-        <lenskit.clean.removeAll>true</lenskit.clean.removeAll>
-      </properties>
-      <build>
-        <plugins>
-
-          <plugin>
-            <groupId>com.mycila.maven-license-plugin</groupId>
-            <artifactId>maven-license-plugin</artifactId>
-            <executions>
-              
-            </executions>
-          </plugin>
-
-        </plugins>
-      </build>
     </profile>
   </profiles>
 </project>
