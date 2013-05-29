@@ -21,6 +21,8 @@
 package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
@@ -71,11 +73,10 @@ import java.util.*;
 public abstract class SparseVector implements Iterable<VectorEntry>, Serializable {
     private static final long serialVersionUID = 1L;
 
-    protected final long[] keys;
-    protected final BitSet usedKeys;
-    protected double[] values;
-    protected final int domainSize; // How much of the key space is
-    // actually used by this vector.
+    final long[] keys;
+    final BitSet usedKeys;
+    double[] values;
+    final int domainSize; // How much of the key space is actually used by this vector.
 
     /**
      * Construct a new vector from existing arrays.  It is assumed that the keys
@@ -88,6 +89,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @param vs The array of values backing this vector.
      */
     // hard to test because it's not used externally
+    @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     SparseVector(long[] ks, double[] vs) {
         this(ks, vs, ks.length);
     }
@@ -104,10 +106,10 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @param vs     The array of values backing the vector.
      * @param length Number of items to actually use.
      */
+    @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     SparseVector(long[] ks, double[] vs, int length) {
-        if (! MoreArrays.isSorted(ks, 0, length)) {
-            throw new IllegalArgumentException("The input array of keys must be in sorted order.");
-        }
+        Preconditions.checkArgument(MoreArrays.isSorted(ks, 0, length),
+                                    "The input array of keys must be in sorted order.");
         keys = ks;
         values = vs;
         domainSize = length;
@@ -130,10 +132,10 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @param length Number of items to actually use.
      * @param used   The used entry set.
      */
+    @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     SparseVector(long[] ks, double[] vs, int length, BitSet used) {
-        if (! MoreArrays.isSorted(ks, 0, length)) {
-            throw new IllegalArgumentException("The input array of keys must be in sorted order.");
-        }
+        Preconditions.checkArgument(MoreArrays.isSorted(ks, 0, length),
+                                    "The input array of keys must be in sorted order.");
         keys = ks;
         values = vs;
         domainSize = length;
@@ -215,7 +217,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     }
 
     /**
-     * Get the rating for {@var key}.
+     * Get the value for {@var key}.
      *
      * @param key the key to look up
      * @param dft The value to return if the key is not in the vector
@@ -231,7 +233,8 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     }
 
     /**
-     * Get the value for the entry's key
+     * Get the value for the entry's key.
+     *
      * @param entry A {@code VectorEntry} with the key to look up
      * @return the key's value (or {@link Double#NaN} if no such value exists)
      */
@@ -508,8 +511,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
             double v = iter.nextDouble();
             ssq += v * v;
         }
-        double result = Math.sqrt(ssq);
-        return result;
+        return Math.sqrt(ssq);
     }
 
     /**
@@ -533,8 +535,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public double mean() {
         final int sz = size();
-        double result = sz > 0 ? sum() / sz : 0;
-        return result;
+        return sz > 0 ? sum() / sz : 0;
     }
 
     /**
@@ -545,8 +546,10 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public double dot(SparseVector o) {
         double dot = 0;
-        for (Vectors.EntryPair pair : Vectors.pairedFast(this, o)) {
-            dot += pair.getValue1() * pair.getValue2();
+        for (Pair<VectorEntry,VectorEntry> pair: Vectors.fastIntersect(this, o)) {
+            VectorEntry e1 = pair.getLeft();
+            VectorEntry e2 = pair.getRight();
+            dot += e1.getValue() * e2.getValue();
         }
         return dot;
     }
@@ -558,11 +561,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @return The number of keys appearing in both this and the other vector.
      */
     public int countCommonKeys(SparseVector o) {
-        int n = 0;
-        for (@SuppressWarnings("unused") Vectors.EntryPair pair : Vectors.pairedFast(this, o)) {
-            n++;
-        }
-        return n;
+        return Iterables.size(Vectors.fastIntersect(this, o));
     }
 
     @Override
@@ -604,8 +603,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
 
     @Override
     public int hashCode() {
-        int result = keySet().hashCode() ^ values().hashCode();
-        return result;
+        return keySet().hashCode() ^ values().hashCode();
     }
 
     /**

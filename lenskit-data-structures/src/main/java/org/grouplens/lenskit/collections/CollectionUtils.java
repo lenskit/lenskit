@@ -304,7 +304,7 @@ public final class CollectionUtils {
     }
 
     /**
-     * Wrap an iterator in a pointer.
+     * Wrap an iterator in a pointer.  It is safe for this iterator to be a fast iterator.
      *
      * @param <E>  The type of value in the iterator.
      * @param iter The iterator to wrap.

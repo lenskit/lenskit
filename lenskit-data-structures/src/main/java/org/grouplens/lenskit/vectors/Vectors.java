@@ -54,9 +54,15 @@ public final class Vectors {
             if (p == null) {
                 return null;
             } else {
-                VectorEntry l = (p.getLeft() == null ? null : p.getLeft().clone());
-                VectorEntry r = (p.getRight() == null ? null : p.getRight().clone());
-                return ImmutablePair.of(l, r);
+                VectorEntry left = p.getLeft();
+                if (left != null) {
+                    left = left.clone();
+                }
+                VectorEntry right = p.getRight();
+                if (right != null) {
+                    right = right.clone();
+                }
+                return ImmutablePair.of(left, right);
             }
         }
     };
@@ -86,8 +92,6 @@ public final class Vectors {
         private VectorEntry leftEnt;
         private VectorEntry rightEnt;
         private MutablePair<VectorEntry,VectorEntry> pair;
-        private VectorEntry e1;
-        private VectorEntry e2;
 
         public FastPairIterImpl(SparseVector v1, SparseVector v2) {
             p1 = CollectionUtils.pointer(v1.fastIterator());
@@ -105,39 +109,39 @@ public final class Vectors {
         @Override
         public Pair<VectorEntry, VectorEntry> next() {
             if (!p1.isAtEnd() && !p2.isAtEnd()) {
-                if (p1.get().getKey() < p2.get().getKey()) {
-                    e1 = p1.get();
-                    leftEnt.set(e1.getIndex(), e1.getKey(), e1.getValue(), e1.isSet());
+                final VectorEntry e1 = p1.get();
+                final VectorEntry e2 = p2.get();
+                final long k1 = e1.getKey();
+                final long k2 = e2.getKey();
+                if (k1 < k2) {
+                    leftEnt.set(e1.getIndex(), k1, e1.getValue(), e1.isSet());
                     pair.setLeft(leftEnt);
                     p1.advance();
 
                     pair.setRight(null);
 
                     return pair;
-                } else if (p2.get().getKey() < p1.get().getKey()) {
+                } else if (k2 < k1) {
                     pair.setLeft(null);
 
-                    e2 = p2.get();
-                    rightEnt.set(e2.getIndex(), e2.getKey(), e2.getValue(), e2.isSet());
+                    rightEnt.set(e2.getIndex(), k2, e2.getValue(), e2.isSet());
                     pair.setRight(rightEnt);
                     p2.advance();
 
                     return pair;
                 } else {
-                    e1 = p1.get();
-                    leftEnt.set(e1.getIndex(), e1.getKey(), e1.getValue(), e1.isSet());
+                    leftEnt.set(e1.getIndex(), k1, e1.getValue(), e1.isSet());
                     pair.setLeft(leftEnt);
                     p1.advance();
 
-                    e2 = p2.get();
-                    rightEnt.set(e2.getIndex(), e2.getKey(), e2.getValue(), e2.isSet());
+                    rightEnt.set(e2.getIndex(), k2, e2.getValue(), e2.isSet());
                     pair.setRight(rightEnt);
                     p2.advance();
 
                     return pair;
                 }
             } else if (!p1.isAtEnd()) {
-                e1 = p1.get();
+                VectorEntry e1 = p1.get();
                 leftEnt.set(e1.getIndex(), e1.getKey(), e1.getValue(), e1.isSet());
                 pair.setLeft(leftEnt);
                 p1.advance();
@@ -148,7 +152,7 @@ public final class Vectors {
             } else if (!p2.isAtEnd()) {
                 pair.setLeft(null);
 
-                e2 = p2.get();
+                VectorEntry e2 = p2.get();
                 rightEnt.set(e2.getIndex(), e2.getKey(), e2.getValue(), e2.isSet());
                 pair.setRight(rightEnt);
                 p2.advance();
@@ -157,6 +161,101 @@ public final class Vectors {
             } else {
                 throw new NoSuchElementException();
             }
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    /**
+     * Iterate over the intersection of two vectors - they keys they have in common.
+     * @param v1 The first vector.
+     * @param v2 The second vector.
+     * @return An iterator over the common pairs. This iterator will never contain null entries.
+     */
+    public static Iterable<ImmutablePair<VectorEntry,VectorEntry>> intersect(final SparseVector v1, final SparseVector v2) {
+        return new Iterable<ImmutablePair<VectorEntry, VectorEntry>>() {
+            @Override
+            public Iterator<ImmutablePair<VectorEntry, VectorEntry>> iterator() {
+                return Iterators.transform(new FastIntersectIterImpl(v1, v2), IMMUTABLE_PAIR_COPY);
+            }
+        };
+    }
+
+    /**
+     * Iterate over the intersection of two vectors without the overhead of object creation.
+     * @param v1 The first vector.
+     * @param v2 The second vector.
+     * @return A fast iterator over the common keys of the two vectors.
+     * @see #intersect(SparseVector, SparseVector)
+     */
+    public static Iterable<Pair<VectorEntry,VectorEntry>> fastIntersect(final SparseVector v1, final SparseVector v2) {
+        return new Iterable<Pair<VectorEntry, VectorEntry>>() {
+            @Override
+            public Iterator<Pair<VectorEntry, VectorEntry>> iterator() {
+                return new FastIntersectIterImpl(v1, v2);
+            }
+        };
+    }
+
+    private static class FastIntersectIterImpl implements Iterator<Pair<VectorEntry,VectorEntry>> {
+        private boolean atNext = false;
+        private Pointer<VectorEntry> p1;
+        private Pointer<VectorEntry> p2;
+        private VectorEntry leftEnt;
+        private VectorEntry rightEnt;
+        private MutablePair<VectorEntry,VectorEntry> pair;
+
+        public FastIntersectIterImpl(SparseVector v1, SparseVector v2) {
+            p1 = CollectionUtils.pointer(v1.fastIterator());
+            p2 = CollectionUtils.pointer(v2.fastIterator());
+            leftEnt = new VectorEntry(v1, -1, 0, 0, false);
+            rightEnt = new VectorEntry(v2, -1, 0, 0, false);
+            pair = new MutablePair<VectorEntry,VectorEntry>(leftEnt, rightEnt);
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (!atNext) {
+                while (!p1.isAtEnd() && !p2.isAtEnd()) {
+                    long key1 = p1.get().getKey();
+                    long key2 = p2.get().getKey();
+                    if (key1 == key2) {
+                        atNext = true;
+                        break;
+                    } else if (key1 < key2) {
+                        p1.advance();
+                    } else {
+                        p2.advance();
+                    }
+                }
+            }
+            return atNext;
+        }
+
+        @Override
+        public Pair<VectorEntry, VectorEntry> next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            final VectorEntry e1 = p1.get();
+            final VectorEntry e2 = p2.get();
+            assert e1.getKey() == e2.getKey();
+
+            leftEnt.set(e1.getIndex(), e1.getKey(), e1.getValue(), e1.isSet());
+            pair.setLeft(leftEnt);
+            p1.advance();
+
+            rightEnt.set(e2.getIndex(), e2.getKey(), e2.getValue(), e2.isSet());
+            pair.setRight(rightEnt);
+            p2.advance();
+
+            atNext = false;
+
+            return pair;
         }
 
         @Override
