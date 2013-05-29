@@ -110,6 +110,10 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
         scoreList = scores;
     }
 
+    /**
+     * Construct a scored list from a list of scored IDs.
+     * @param items The list of scored IDs.
+     */
     public ScoredLongArrayList(@Nonnull List<ScoredId> items) {
         itemList = new LongArrayList(items.size());
         scoreList = new DoubleArrayList(items.size());

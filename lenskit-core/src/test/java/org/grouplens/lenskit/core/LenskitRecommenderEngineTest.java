@@ -33,7 +33,7 @@ import org.grouplens.lenskit.baseline.BaselineItemScorer;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ConstantPredictor;
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor;
-import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
+import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.dao.DAOFactory;
@@ -76,7 +76,7 @@ public class LenskitRecommenderEngineTest {
         factory.bind(ItemScorer.class)
                .to(BaselineItemScorer.class);
         factory.bind(ItemRecommender.class)
-               .to(ScoreBasedItemRecommender.class);
+               .to(TopNItemRecommender.class);
         factory.bind(BaselinePredictor.class)
                .to(ConstantPredictor.class);
     }
@@ -84,13 +84,16 @@ public class LenskitRecommenderEngineTest {
     private void verifyBasicRecommender(LenskitRecommenderEngine engine) {LenskitRecommender rec = engine.open();
         try {
             assertThat(rec.getItemRecommender(),
-                       instanceOf(ScoreBasedItemRecommender.class));
+                       instanceOf(TopNItemRecommender.class));
             assertThat(rec.getItemScorer(),
                        instanceOf(BaselineItemScorer.class));
             assertThat(rec.getRatingPredictor(),
                        instanceOf(SimpleRatingPredictor.class));
             assertThat(rec.get(BaselinePredictor.class),
                        instanceOf(ConstantPredictor.class));
+            // Since we have an item scorer, we should have a recommender too
+            assertThat(rec.getItemRecommender(),
+                       instanceOf(TopNItemRecommender.class));
         } finally {
             rec.close();
         }

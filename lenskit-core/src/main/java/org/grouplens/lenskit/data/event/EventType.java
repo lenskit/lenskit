@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.data.event;
 
+import org.grouplens.lenskit.core.Parameter;
+
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
@@ -29,6 +31,7 @@ import java.lang.annotation.*;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Qualifier
+@Parameter(Class.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 @Documented

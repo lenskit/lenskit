@@ -76,6 +76,8 @@ LensKit Release Notes
 
   * <<Config change>>: Changed the default value for <<<MinimumIterations>>> to 10.
 
+  * <<Config change>>: Changed the default value for <<<ModelSize>>> to 20 (was 30).
+
   * <<Config change>>: Refactored the item-item recommender to get rid of
     <<<ItemItemModelBackedScorer>>>, simplifying the class hierarchy and configuration.
     Configurations must now specify the <<<ItemItemScorer>>> or <<<ItemItemRatingPredictor>>>;

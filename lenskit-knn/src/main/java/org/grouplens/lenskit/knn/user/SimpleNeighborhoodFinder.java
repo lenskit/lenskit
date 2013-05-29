@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.knn.user;
 
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
@@ -115,6 +116,9 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     @Override
     public Long2ObjectMap<? extends Collection<Neighbor>>
     findNeighbors(@Nonnull UserHistory<? extends Event> user, @Nonnull LongSet items) {
+        Preconditions.checkNotNull(user, "user profile");
+        Preconditions.checkNotNull(user, "item set");
+
         Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
                 new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
 
@@ -146,7 +150,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
             LongIterator iit = urv.keySet().iterator();
             while (iit.hasNext()) {
                 final long item = iit.nextLong();
-                if (items == null || items.contains(item)) {
+                if (items.contains(item)) {
                     PriorityQueue<Neighbor> heap = heaps.get(item);
                     if (heap == null) {
                         heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1,

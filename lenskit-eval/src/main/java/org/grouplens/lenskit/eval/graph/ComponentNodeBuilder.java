@@ -55,14 +55,19 @@ class ComponentNodeBuilder implements Builder<GVNode> {
     private boolean isProvided = false;
     private boolean isInterface = false;
 
-    /**
-     * Create a new component label builder.
-     * @param type The type of component to label.
-     */
-    public ComponentNodeBuilder(String id, Class<?> type) {
+    private ComponentNodeBuilder(String id, Class<?> type) {
         nodeId = id;
         label = shortClassName(type);
         isInterface = type.isInterface();
+    }
+
+    /**
+     * Create a new component label builder.
+     * @param id The node ID.
+     * @param type The type of component to label.
+     */
+    public static ComponentNodeBuilder create(String id, Class<?> type) {
+        return new ComponentNodeBuilder(id, type);
     }
 
     /**
@@ -141,7 +146,7 @@ class ComponentNodeBuilder implements Builder<GVNode> {
 
     @Override
     public GVNode build() {
-        NodeBuilder nb = new NodeBuilder(nodeId);
+        NodeBuilder nb = NodeBuilder.create(nodeId);
         if (dependencies.isEmpty() && parameters.isEmpty()) {
             nb.setLabel(label)
               .setShape("box")

@@ -64,7 +64,16 @@ public class BaselineItemScorer extends AbstractItemScorer {
 
     /**
      * {@inheritDoc}
-     * <p>Delegates to {@link BaselinePredictor#predict(long, SparseVector, Collection)}.
+     * <p>Delegates to {@link BaselinePredictor#predict(long, MutableSparseVector)}.
+     */
+    @Override
+    public void score(long user, @Nonnull MutableSparseVector scores) {
+        predictor.predict(user, scores);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>Delegates to {@link BaselinePredictor#predict(long, SparseVector, MutableSparseVector)}.
      */
     @Override
     public void score(@Nonnull UserHistory<? extends Event> profile,

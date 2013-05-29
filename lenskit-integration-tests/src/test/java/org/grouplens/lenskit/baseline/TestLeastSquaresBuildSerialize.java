@@ -31,10 +31,10 @@ import java.io.IOException;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.test.ML100KTestSuite;
 import org.junit.Test;
 
@@ -48,7 +48,7 @@ public class TestLeastSquaresBuildSerialize extends ML100KTestSuite {
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
         factory.bind(ItemRecommender.class)
-               .to(ScoreBasedItemRecommender.class);
+               .to(TopNItemRecommender.class);
         factory.bind(ItemScorer.class)
                .to(BaselineItemScorer.class);
         factory.bind(BaselinePredictor.class)

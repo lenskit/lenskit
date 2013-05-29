@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.util.table.writer;
 
+import javax.annotation.WillNotClose;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,7 +33,8 @@ import java.util.List;
 public final class TableWriters {
     /**
      * Create a table writer that writes data with common leading columns to an
-     * underlying table writer.
+     * underlying table writer.  The underlying writer will not be closed when the prefixed writer
+     * is closed.
      *
      * @param base   The base table writer for output.
      * @param prefix The values of the leading columns in this table writer.
@@ -41,7 +43,7 @@ public final class TableWriters {
      *         row is prefixed with the values in {@var prefix}.
      * @since 1.1
      */
-    public static TableWriter prefixed(TableWriter base, List<?> prefix) {
+    public static TableWriter prefixed(@WillNotClose TableWriter base, List<?> prefix) {
         return new PrefixedTableWriter(base, prefix);
     }
 
@@ -56,7 +58,7 @@ public final class TableWriters {
      *         row is prefixed with the values in {@var prefix}.
      * @since 0.8
      */
-    public static TableWriter prefixed(TableWriter base, Object... prefix) {
+    public static TableWriter prefixed(@WillNotClose TableWriter base, Object... prefix) {
         return prefixed(base, Arrays.asList(prefix));
     }
 }

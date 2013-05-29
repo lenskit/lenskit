@@ -30,9 +30,11 @@ import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric;
 import org.grouplens.lenskit.eval.traintest.SimpleEvalCommand;
 import org.grouplens.lenskit.util.table.Table;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -42,28 +44,18 @@ import static org.junit.Assert.assertThat;
  * A test suite that does cross-validation of an algorithm.
  */
 public abstract class CrossfoldTestSuite extends ML100KTestSuite {
-    protected String workDirName = System.getProperty("lenskit.temp.dir");
+    @Rule
+    public TemporaryFolder workDir = new TemporaryFolder();
 
     protected abstract void configureAlgorithm(LenskitRecommenderEngineFactory factory);
 
     protected abstract void checkResults(Table table);
 
     @Test
-    public void testAlgorithmAccuracy() throws CommandException {
-        if (workDirName == null) {  // no property specified
-            workDirName = "data/temp";
-        }
-        File workDir = new File(workDirName);
-        try {
-            workDir.mkdirs();
-        } catch(SecurityException se) {
-            throw new IllegalStateException("must configure lenskit.temp.dir to refer to a directory "
-                                            + "in which a temp directory can be created");
-        }
-
+    public void testAlgorithmAccuracy() throws CommandException, IOException {
         SimpleEvalCommand evalCommand = new SimpleEvalCommand("train-test");
         Properties props =  new Properties(System.getProperties());
-        props.setProperty(EvalConfig.DATA_DIR_PROPERTY, workDirName);
+        props.setProperty(EvalConfig.DATA_DIR_PROPERTY, workDir.newFolder("data").getAbsolutePath());
         evalCommand.setConfig(new EvalConfig(props));
         LenskitAlgorithmInstanceCommand algo = new LenskitAlgorithmInstanceCommand();
         configureAlgorithm(algo.getFactory());

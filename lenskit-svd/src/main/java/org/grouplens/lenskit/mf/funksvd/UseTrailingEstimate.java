@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.mf.funksvd;
 
 import org.grouplens.grapht.annotation.DefaultBoolean;
-import org.grouplens.grapht.annotation.DefaultDouble;
 import org.grouplens.lenskit.core.Parameter;
 
 import javax.inject.Qualifier;

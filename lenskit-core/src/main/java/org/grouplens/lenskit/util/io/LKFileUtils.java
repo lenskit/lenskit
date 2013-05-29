@@ -183,7 +183,11 @@ public final class LKFileUtils {
      * @param toClose The objects to close.
      * @return {@code true} if all objects closed cleanly; {@code false} if some objects
      *         failed when closing.
+     * @deprecated Use {@link com.google.common.io.Closer} instead; also see
+     * <a href="https://code.google.com/p/guava-libraries/issues/detail?id=1118">this explanation</a>
+     * for why Guava removed a similar feature.
      */
+    @Deprecated
     public static boolean close(Logger log, Closeable... toClose) {
         boolean success = true;
         for (Closeable c : toClose) {
@@ -211,7 +215,11 @@ public final class LKFileUtils {
      * @param toClose The objects to close.
      * @return {@code true} if all objects closed successfully.
      * @see #close(Logger, Closeable...)
+     * @deprecated Use {@link com.google.common.io.Closer} instead; also see
+     * <a href="https://code.google.com/p/guava-libraries/issues/detail?id=1118">this explanation</a>
+     * for why Guava removed a similar feature.
      */
+    @Deprecated
     public static boolean close(Closeable... toClose) {
         return close(logger, toClose);
     }

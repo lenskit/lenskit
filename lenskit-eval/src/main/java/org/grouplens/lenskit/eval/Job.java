@@ -20,14 +20,17 @@
  */
 package org.grouplens.lenskit.eval;
 
+import java.util.concurrent.Callable;
+
 /**
  * A single evaluation job.  This is typically building and evaluating a single
  * recommender on a single data set.
  *
+ * @param <T> The return type of this job.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
-public interface Job extends Runnable {
+public interface Job<T> extends Callable<T> {
     /**
      * Get a descriptive name for this job.  The name is displayed in UI to let
      * the user know what is being run.  More specific descriptors identifying
@@ -42,10 +45,4 @@ public interface Job extends Runnable {
      * Get a description for this job.
      */
     String getDescription();
-
-    /**
-     * Run this job.
-     */
-    @Override
-    void run();
 }

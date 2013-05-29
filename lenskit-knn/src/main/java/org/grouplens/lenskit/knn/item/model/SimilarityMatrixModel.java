@@ -24,18 +24,11 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.scored.ScoredIdBuilder;
-import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Item-item similarity model using an in-memory similarity matrix.

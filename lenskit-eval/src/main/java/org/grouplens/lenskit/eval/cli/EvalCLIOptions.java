@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.cli;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.cli.*;
 import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.slf4j.Logger;
@@ -144,7 +145,8 @@ public class EvalCLIOptions {
         return configFile;
     }
 
-    @SuppressWarnings({"EI_EXPOSE_REP", "PMD.MethodReturnsInternalArray"})
+    @SuppressWarnings({"PMD.MethodReturnsInternalArray"})
+    @SuppressFBWarnings({"EI_EXPOSE_REP"})
     public String[] getArgs() {
         return args;
     }

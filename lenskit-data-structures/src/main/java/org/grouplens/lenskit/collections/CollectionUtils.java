@@ -281,7 +281,7 @@ public final class CollectionUtils {
         }
     }
 
-    static class LongSetWrapper extends LongCollectionWrapper implements LongSet {
+    private static class LongSetWrapper extends LongCollectionWrapper implements LongSet {
         LongSetWrapper(Collection<Long> base) {
             super(base);
         }

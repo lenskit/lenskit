@@ -22,23 +22,16 @@ package org.grouplens.lenskit.eval.maven;
 
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.FileSet;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Execute;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.groovy.runtime.StackTraceUtils;
-import org.codehaus.groovy.runtime.WritableFile;
-import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.DirectoryScanner;
 import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.config.EvalScriptEngine;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.model.FileSet;
-import org.codehaus.plexus.util.DirectoryScanner;
-
 
 import java.io.File;
 import java.io.IOException;

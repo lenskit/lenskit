@@ -39,7 +39,7 @@
 package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.GlobalItemScorer;
-import org.grouplens.lenskit.basic.ScoreBasedGlobalItemRecommender;
+import org.grouplens.lenskit.basic.TopNGlobalItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import javax.inject.Inject;
@@ -48,10 +48,10 @@ import javax.inject.Inject;
  * Global recommendation with item-item CF.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @deprecated Use {@link ScoreBasedGlobalItemRecommender} directly instead.
+ * @deprecated Use {@link org.grouplens.lenskit.basic.TopNGlobalItemRecommender} directly instead.
  */
 @Deprecated
-public class ItemItemGlobalRecommender extends ScoreBasedGlobalItemRecommender {
+public class ItemItemGlobalRecommender extends TopNGlobalItemRecommender {
     @Inject
     public ItemItemGlobalRecommender(DataAccessObject dao,
                                      GlobalItemScorer scorer) {

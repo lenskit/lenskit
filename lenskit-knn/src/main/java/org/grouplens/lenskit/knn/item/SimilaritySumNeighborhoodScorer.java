@@ -21,9 +21,7 @@
 package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.inject.Singleton;
 import java.io.Serializable;
@@ -40,9 +38,9 @@ public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Seri
 
     @Override
     public double score(SparseVector neighbors, SparseVector scores) {
-		if (neighbors.isEmpty()) {
-			return Double.NaN;
-		}        
+        if (neighbors.isEmpty()) {
+            return Double.NaN;
+        }
         return neighbors.sum();
     }
 }

@@ -22,15 +22,12 @@ package org.grouplens.lenskit.knn.user;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
-
-import java.util.Collection;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
+
+import javax.annotation.Nonnull;
+import java.util.Collection;
 
 /**
  * Interface for neighborhood-finding strategies. These strategies are used by

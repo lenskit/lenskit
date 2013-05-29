@@ -26,7 +26,6 @@ import org.grouplens.lenskit.eval.AbstractCommand;
 import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceCommand;
-import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.crossfold.CrossfoldCommand;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
@@ -35,7 +34,6 @@ import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.util.table.Table;
 
 import java.io.File;
-import java.util.Properties;
 
 public class SimpleEvalCommand extends AbstractCommand<Table>{
 

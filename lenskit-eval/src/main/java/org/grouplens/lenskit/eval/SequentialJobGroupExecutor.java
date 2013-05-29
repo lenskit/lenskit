@@ -20,19 +20,16 @@
  */
 package org.grouplens.lenskit.eval;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.util.parallel.ExecHelpers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Execute job groups sequentially. Used to implement
@@ -44,52 +41,32 @@ import com.google.common.collect.Lists;
 public class SequentialJobGroupExecutor implements JobGroupExecutor {
     private static final Logger logger = LoggerFactory.getLogger(SequentialJobGroupExecutor.class);
 
-    private final List<JobGroup> groups;
+    private final List<JobGroup<?>> groups;
     private final int threadCount;
 
 
     public SequentialJobGroupExecutor(int nthreads) {
-        groups = new ArrayList<JobGroup>();
+        groups = new ArrayList<JobGroup<?>>();
         threadCount = nthreads;
     }
 
     @Override
-    public void add(JobGroup group) {
+    public void add(JobGroup<?> group) {
         groups.add(group);
-    }
-
-    class JobWrapper implements Function<Job, Runnable> {
-        @Override
-        public Runnable apply(final Job job) {
-            return new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        job.run();
-                    } catch (Throwable e) {
-                        if (e instanceof ThreadDeath) {
-                            throw (ThreadDeath) e;
-                        }
-                        logger.error("Error running {}", job.getDescription(), e);
-                        throw new RuntimeException("Error running " + job.getName(), e);
-                    }
-                }
-            };
-        }
     }
 
     @Override
     public void run() throws ExecutionException {
         ExecutorService svc = Executors.newFixedThreadPool(threadCount);
         try {
-            for (JobGroup group : groups) {
+            for (JobGroup<?> group : groups) {
                 StopWatch timer = new StopWatch();
                 timer.start();
 
                 logger.info("Running job group {}", group.getName());
                 group.start();
                 try {
-                    ExecHelpers.parallelRun(svc, Lists.transform(group.getJobs(), new JobWrapper()));
+                    ExecHelpers.parallelRun(svc, group.getJobs());
                 } finally {
                     group.finish();
                 }
@@ -98,10 +75,6 @@ public class SequentialJobGroupExecutor implements JobGroupExecutor {
                 logger.info("Job group {} finished in {}",
                             group.getName(), timer);
             }
-        } catch (ExecutionException err) {
-            throw err;
-        } catch (RuntimeException err) {
-            throw err;
         } finally {
             svc.shutdownNow();
         }

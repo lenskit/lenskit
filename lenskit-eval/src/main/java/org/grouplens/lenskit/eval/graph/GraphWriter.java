@@ -26,7 +26,10 @@ import com.google.common.collect.Maps;
 import groovy.json.StringEscapeUtils;
 
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -43,6 +46,7 @@ class GraphWriter implements Closeable {
         output.append("  node [fontname=\"Helvetica\"")
               .append(",color=\"").append(ComponentNodeBuilder.UNSHARED_BGCOLOR).append("\"")
               .append("];\n");
+        output.append("  graph [rankdir=LR];\n");
         output.append("  edge [")
               .append("color=\"")
               .append(ComponentNodeBuilder.UNSHARED_BGCOLOR).append("\"")
@@ -97,5 +101,28 @@ class GraphWriter implements Closeable {
               .append(dst);
         putAttributes(edge.getAttributes());
         output.append(";\n");
+    }
+
+    public void putSubgraph(GVSubgraph subgraph) throws IOException {
+        output.append("  subgraph ");
+        String name = subgraph.getName();
+        if (name != null) {
+            output.append(name).append(" ");
+        }
+        output.append("{\n");
+        for (Map.Entry<String,Object> e: subgraph.getAttributes().entrySet()) {
+            output.append("    ")
+                  .append(e.getKey())
+                  .append("=")
+                  .append(safeValue(e.getValue()))
+                  .append(";\n");
+        }
+        for (GVNode node: subgraph.getNodes()) {
+            putNode(node);
+        }
+        for (GVEdge edge: subgraph.getEdges()) {
+            putEdge(edge);
+        }
+        output.append("  }\n");
     }
 }

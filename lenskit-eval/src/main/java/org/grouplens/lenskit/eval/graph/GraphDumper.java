@@ -20,18 +20,24 @@
  */
 package org.grouplens.lenskit.eval.graph;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.*;
+import org.grouplens.grapht.spi.reflect.*;
 import org.grouplens.lenskit.core.GraphtUtils;
 import org.grouplens.lenskit.core.Parameter;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.inject.Provider;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -74,10 +80,11 @@ class GraphDumper {
         }
         nodeIds.put(root, ROOT_ID);
         nodeTargets.put(ROOT_ID, ROOT_ID);
-        writer.putNode(new NodeBuilder(ROOT_ID).setLabel("root")
-                                               .setShape("box")
-                                               .add("style", "rounded")
-                                               .build());
+        writer.putNode(NodeBuilder.create(ROOT_ID)
+                                  .setLabel("root")
+                                  .setShape("box")
+                                  .add("style", "rounded")
+                                  .build());
         return ROOT_ID;
     }
 
@@ -135,24 +142,24 @@ class GraphDumper {
     }
 
     private class Visitor implements SatisfactionVisitor<String> {
-        private final Node node;
+        private final Node currentNode;
         private final String nodeId;
         private final Satisfaction satisfaction;
 
         private Visitor(Node nd, String id) {
-            node = nd;
+            currentNode = nd;
             nodeId = id;
-            if (node == null) {
+            if (currentNode == null) {
                 throw new IllegalStateException("dumper not running");
             }
-            CachedSatisfaction csat = node.getLabel();
+            CachedSatisfaction csat = currentNode.getLabel();
             assert csat != null;
             satisfaction = csat.getSatisfaction();
         }
 
         @Override
         public String visitNull() {
-            NodeBuilder nb = new NodeBuilder(nodeId);
+            NodeBuilder nb = NodeBuilder.create(nodeId);
             nb.setShape("ellipse");
             Class<?> type = satisfaction.getErasedType();
             if (DataAccessObject.class.isAssignableFrom(type)) {
@@ -171,15 +178,21 @@ class GraphDumper {
 
         @Override
         public String visitClass(Class<?> clazz) {
-            return componentNode(clazz, null).getTarget();
+            GVNode node = componentNode(clazz, null);
+            try {
+                writer.putNode(node);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
+            return node.getTarget();
         }
 
         @Override
         public String visitInstance(Object instance) {
-            GVNode node = new NodeBuilder(nodeId)
-                    .setLabel(instance.toString())
-                    .setShape("ellipse")
-                    .build();
+            GVNode node = NodeBuilder.create(nodeId)
+                                     .setLabel(instance.toString())
+                                     .setShape("ellipse")
+                                     .build();
             try {
                 writer.putNode(node);
             } catch (IOException e) {
@@ -189,59 +202,77 @@ class GraphDumper {
         }
 
         /**
-         * Output the intermediate "provided" node from the current node.
+         * Create a provided node from the current node, and queue an edge for it.
+         *
          * @param pid The ID of the provider node for targeting the provision edge.
-         * @return The ID of the provided node, for targeting dependency edges.
+         * @return The provided node and the edge connect it to the provider node.
          */
-        private String putProvidedNode(String pid) {
-            ComponentNodeBuilder cnb;
-            cnb = new ComponentNodeBuilder(nodeId, satisfaction.getErasedType());
-            cnb.setShareable(GraphtUtils.isShareable(node))
-               .setShared(!unsharedNodes.contains(node))
-               .setIsProvided(true);
-            GVNode node = cnb.build();
-            try {
-                writer.putNode(node);
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
-            edgeQueue.add(new EdgeBuilder(node.getTarget(), pid)
-                                  .set("style", "dotted")
-                                  .set("dir", "back")
-                                  .set("arrowhead", "vee")
-                                  .build());
-            return node.getTarget();
+        private Pair<GVNode, GVEdge> providedNode(String pid) {
+            GVNode pNode = ComponentNodeBuilder.create(nodeId, satisfaction.getErasedType())
+                                               .setShareable(GraphtUtils.isShareable(currentNode))
+                                               .setShared(!unsharedNodes.contains(currentNode))
+                                               .setIsProvided(true)
+                                               .build();
+            GVEdge pEdge = EdgeBuilder.create(pNode.getTarget() + ":e", pid)
+                                      .set("style", "dotted")
+                                      .set("dir", "back")
+                                      .set("arrowhead", "vee")
+                                      .build();
+            return Pair.of(pNode, pEdge);
         }
 
         @Override
         public String visitProviderClass(Class<? extends Provider<?>> pclass) {
             String pid = nodeId + "P";
+            // we create a comp. node for the provider, and a provided node for its target
             GVNode pnode = componentNode(pclass, pid);
-            return putProvidedNode(pnode.getTarget());
+            Pair<GVNode, GVEdge> provided = providedNode(pid);
+            try {
+                SubgraphBuilder sgb = new SubgraphBuilder();
+                writer.putSubgraph(sgb.setName("sgp_" + pid)
+                                      .addNode(pnode)
+                                      .addNode(provided.getLeft())
+                                      .addEdge(provided.getRight())
+                                      .build());
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
+            // return *provided* node's ID
+            return provided.getLeft().getTarget();
         }
 
         @Override
         public String visitProviderInstance(Provider<?> provider) {
             String pid = nodeId + "P";
+            GVNode pnode = NodeBuilder.create(pid)
+                                      .setLabel(provider.toString())
+                                      .setShape("ellipse")
+                                      .set("style", "dashed")
+                                      .build();
+            Pair<GVNode, GVEdge> provided = providedNode(pid);
             try {
-                writer.putNode(new NodeBuilder(pid)
-                                       .setLabel(provider.toString())
-                                       .setShape("ellipse")
-                                       .set("style", "dashed")
-                                       .build());
+                SubgraphBuilder sgb = new SubgraphBuilder();
+                writer.putSubgraph(sgb.setName("sgp_" + pid)
+                                      .addNode(pnode)
+                                      .addNode(provided.getLeft())
+                                      .addEdge(provided.getRight())
+                                      .build());
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
-            return putProvidedNode(pid);
+            // return *provided* node's ID
+            return provided.getLeft().getTarget();
         }
 
         private GVNode componentNode(Class<?> type, String pid) {
             String id = pid == null ? nodeId : pid;
-            ComponentNodeBuilder bld = new ComponentNodeBuilder(id, type);
-            bld.setShareable(pid == null && GraphtUtils.isShareable(node));
-            bld.setShared(!unsharedNodes.contains(node));
-            bld.setIsProvider(pid != null);
-            for (Edge e: graph.getOutgoingEdges(node)) {
+            ComponentNodeBuilder bld = ComponentNodeBuilder.create(id, type);
+            bld.setShareable(pid == null && GraphtUtils.isShareable(currentNode))
+               .setShared(!unsharedNodes.contains(currentNode))
+               .setIsProvider(pid != null);
+            List<Edge> edges = Lists.newArrayList(graph.getOutgoingEdges(currentNode));
+            Collections.sort(edges, EDGE_ORDER);
+            for (Edge e: edges) {
                 Desire dep = e.getDesire();
                 assert dep != null;
                 Annotation q = dep.getInjectionPoint().getAttributes().getQualifier();
@@ -271,8 +302,8 @@ class GraphDumper {
                         throw Throwables.propagate(exc);
                     }
                     String port = String.format("%s:%d", id, bld.getLastDependencyPort());
-                    EdgeBuilder eb = new EdgeBuilder(port, tid)
-                            .set("arrowhead", "vee");
+                    EdgeBuilder eb = EdgeBuilder.create(port, tid)
+                                                .set("arrowhead", "vee");
                     if (GraphtUtils.desireIsTransient(dep)) {
                         eb.set("style", "dashed");
                     }
@@ -280,12 +311,52 @@ class GraphDumper {
                 }
             }
             GVNode node = bld.build();
-            try {
-                writer.putNode(node);
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
             return node;
         }
     }
+
+    private static Function<Edge,List<String>> ORDER_KEY = new Function<Edge, List<String>>() {
+        @Nullable
+        @Override
+        public List<String> apply(@Nullable Edge input) {
+            if (input == null) {
+                throw new IllegalArgumentException("cannot order null edge");
+            }
+            Desire desire = input.getDesire();
+            if (desire == null) {
+                throw new IllegalArgumentException("cannot order null desire");
+            }
+            InjectionPoint ip = desire.getInjectionPoint();
+            List<String> key = new ArrayList<String>(4);
+            if (ip instanceof ConstructorParameterInjectionPoint) {
+                ConstructorParameterInjectionPoint cpi = (ConstructorParameterInjectionPoint) ip;
+                key.add("0: constructor");
+                key.add(Integer.toString(cpi.getParameterIndex()));
+            } else if (ip instanceof SetterInjectionPoint) {
+                SetterInjectionPoint spi = (SetterInjectionPoint) ip;
+                key.add("1: setter");
+                key.add(spi.getMember().getName());
+                key.add(Integer.toString(spi.getParameterIndex()));
+            } else if (ip instanceof FieldInjectionPoint) {
+                FieldInjectionPoint fpi = (FieldInjectionPoint) ip;
+                key.add("2: field");
+                key.add(fpi.getMember().getName());
+            } else if (ip instanceof NoArgumentInjectionPoint) {
+                /* this shouldn't really happen */
+                NoArgumentInjectionPoint fpi = (NoArgumentInjectionPoint) ip;
+                key.add("8: no-arg");
+                key.add(fpi.getMember().getName());
+            } else if (ip instanceof SimpleInjectionPoint) {
+                key.add("5: simple");
+            } else {
+                key.add("9: unknown");
+                key.add(ip.getClass().getName());
+            }
+            return key;
+        }
+    };
+
+    private static Ordering<Edge> EDGE_ORDER = Ordering.<String>natural()
+                                                       .lexicographical()
+                                                       .onResultOf(ORDER_KEY);
 }

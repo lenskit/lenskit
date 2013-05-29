@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.basic.ScoreBasedItemRecommender;
+import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import javax.inject.Inject;
@@ -29,7 +29,7 @@ import javax.inject.Inject;
 /**
  * Recommend items using item-item collaborative filtering.
  *
- * @deprecated Just use {@link ScoreBasedItemRecommender} instead.
+ * @deprecated Just use {@link org.grouplens.lenskit.basic.TopNItemRecommender} instead.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Deprecated

@@ -282,7 +282,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
     public LongCursor getUsers() {
         try {
             PreparedStatement s = userStatement.call();
-            return new IDCursor(s);
+            return new IdCursor(s);
         } catch (SQLException e) {
             throw new DatabaseAccessException(e);
         }
@@ -324,7 +324,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
     public LongCursor getItems() {
         try {
             PreparedStatement s = itemStatement.call();
-            return new IDCursor(s);
+            return new IdCursor(s);
         } catch (SQLException e) {
             throw new DatabaseAccessException(e);
         }
@@ -403,13 +403,13 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
         }
     }
 
-    static class IDCursor extends AbstractLongCursor {
+    static class IdCursor extends AbstractLongCursor {
         private Logger logger = LoggerFactory.getLogger(getClass());
         private ResultSet rset;
         private boolean advanced;
         private boolean valid;
 
-        public IDCursor(PreparedStatement stmt) throws SQLException {
+        public IdCursor(PreparedStatement stmt) throws SQLException {
             advanced = false;
             rset = stmt.executeQuery();
         }

@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.basic.AbstractItemScorer;

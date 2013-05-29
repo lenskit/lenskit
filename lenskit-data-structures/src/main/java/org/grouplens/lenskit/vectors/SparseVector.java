@@ -20,24 +20,15 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
+import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleCollection;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongArrays;
-import it.unimi.dsi.fastutil.longs.LongComparator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
-
-import java.io.Serializable;
-import java.util.*;
-
-import javax.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.collections.*;
@@ -46,9 +37,9 @@ import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdBuilder;
 import org.grouplens.lenskit.symbols.Symbol;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
-import com.google.common.primitives.Longs;
+import javax.annotation.Nonnull;
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * Read-only interface to sparse vectors.
@@ -241,7 +232,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
 
     /**
      * Get the value for the entry's key
-     * @param e A {@code VectorEntry} with the key to look up
+     * @param entry A {@code VectorEntry} with the key to look up
      * @return the key's value (or {@link Double#NaN} if no such value exists)
      */
     public double get(VectorEntry entry) {

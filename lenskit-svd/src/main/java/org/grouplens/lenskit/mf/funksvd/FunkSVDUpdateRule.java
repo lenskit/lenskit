@@ -28,8 +28,6 @@ import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.Serializable;

@@ -33,13 +33,17 @@ class NodeBuilder implements Builder<GVNode> {
     private final Map<String,Object> attributes = new LinkedHashMap<String, Object>();
     private String target;
 
+    private NodeBuilder(String id) {
+        nodeId = id;
+        target = id;
+    }
+
     /**
      * Construct a node builder for a specified ID.
      * @param id The node ID.
      */
-    public NodeBuilder(String id) {
-        nodeId = id;
-        target = id;
+    public static NodeBuilder create(String id) {
+        return new NodeBuilder(id);
     }
 
     /**
