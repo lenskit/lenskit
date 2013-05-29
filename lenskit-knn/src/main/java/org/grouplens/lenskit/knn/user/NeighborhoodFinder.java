@@ -39,7 +39,7 @@ import java.util.Collection;
 public interface NeighborhoodFinder {
     /**
      * Find neighboring users for particular items. {@var user} and the
-     * returned rating vectors are <emph>unnormalized</emph>.  Any normalization
+     * returned rating vectors are <em>unnormalized</em>.  Any normalization
      * used by the neighborhood finder is only for comparing neighbors.
      *
      * @param user  The user's event history.

@@ -38,7 +38,7 @@ import java.io.Closeable;
  * The recommender build process often needs to take multiple passes over the
  * rating data. In a live system, the data provided by a
  * {@link DataAccessObject} may change between iterations. Therefore, we
- * introduce <emph>build contexts</emph> &mdash; snapshots of the rating data at
+ * introduce <em>build contexts</em> &mdash; snapshots of the rating data at
  * a particular point in time that can be iterated as many times as necessary to
  * build the recommender.
  *

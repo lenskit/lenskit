@@ -42,8 +42,8 @@ import java.util.*;
  * Once created the domain of potential keys remains immutable.  Since
  * the vector is sparse, keys can be added, but only within the domain
  * the vector was constructed with.  These vectors separate the
- * concepts of the <emph>key set</emph>, which is the current set of active keys
- * from the <emph>key domain</emph>, which is the set of potential keys.  Of
+ * concepts of the <em>key set</em>, which is the current set of active keys
+ * from the <em>key domain</em>, which is the set of potential keys.  Of
  * course, the key domain must always include the key set.
  * <p>
  * Addition and subtraction are

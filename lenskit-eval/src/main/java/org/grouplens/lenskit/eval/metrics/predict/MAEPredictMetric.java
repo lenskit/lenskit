@@ -40,9 +40,9 @@ import static java.lang.Math.abs;
  * Evaluate a recommender's predictions by Mean Absolute Error. In general, prefer
  * RMSE ({@link RMSEPredictMetric}) to MAE.
  *
- * <p>This evaluator computes two variants of MAE. The first is <emph>by-rating</emph>,
+ * <p>This evaluator computes two variants of MAE. The first is <em>by-rating<em>,
  * where the absolute error is averaged over all predictions. The second is
- * <emph>by-user</emph>, where the MAE is computed per-user and then averaged
+ * <em>by-user</em>, where the MAE is computed per-user and then averaged
  * over all users.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
