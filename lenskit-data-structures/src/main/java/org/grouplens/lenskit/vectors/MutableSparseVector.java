@@ -68,7 +68,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     // data, we can "freeze" this implementation so it can no longer
     // be changed.  Setting this variable to be false causes all
     // mutation methods to throw an exception if they are called.
-    protected boolean isMutable = true;
+    boolean isMutable = true;
 
     private Map<Symbol, MutableSparseVector> channelMap;
 
@@ -317,12 +317,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     @Deprecated
     public void clear(long key) {
-        final int idx = findIndex(key);
-        if (idx >= 0) {
-            usedKeys.clear(idx);
-        } else {
-            throw new IllegalArgumentException("unset should only be used on keys that are in the key domain");
-        }
+        unset(key);
     }
 
     /**
@@ -334,10 +329,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     @Deprecated
     public void clear(VectorEntry e) {
-        if (e.getVector() != this) {
-            throw new IllegalArgumentException("clearing vector from wrong entry");
-        }
-        usedKeys.clear(e.getIndex());
+        unset(e);
     }
 
     /**
@@ -347,7 +339,12 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @throws IllegalArgumentException if the key is not in the key domain.
      */
     public void unset(long key) {
-        clear(key);
+        final int idx = findIndex(key);
+        if (idx >= 0) {
+            usedKeys.clear(idx);
+        } else {
+            throw new IllegalArgumentException("unset should only be used on keys that are in the key domain");
+        }
     }
 
     /**
@@ -356,7 +353,10 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param e The entry to unset.
      */
     public void unset(VectorEntry e) {
-        clear(e);
+        if (e.getVector() != this) {
+            throw new IllegalArgumentException("clearing vector from wrong entry");
+        }
+        usedKeys.clear(e.getIndex());
     }
 
     /**
