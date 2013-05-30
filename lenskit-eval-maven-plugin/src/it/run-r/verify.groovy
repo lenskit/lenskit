@@ -24,4 +24,4 @@ import static org.hamcrest.Matchers.equalTo
 def file = new File("${basedir}/target/analysis", "output.txt")
 
 assertThat(file.exists(), equalTo(true))
-assertThat(file.text, equalTo("Hello, world\n"))
+assertThat(file.readLines().first(), equalTo("Hello, world"))
