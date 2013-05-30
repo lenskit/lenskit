@@ -21,25 +21,16 @@
 package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
-import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.CopyingFastCollection;
-import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.collections.Pointer;
-import org.grouplens.lenskit.scored.AbstractScoredId;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.scored.ScoredIdBuilder;
-import org.grouplens.lenskit.symbols.Symbol;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 /**
  * Utility methods for interacting with vectors.
@@ -464,6 +455,7 @@ public final class Vectors {
 
     /**
      * Wraps a pair of values that share a common key.
+     * @deprecated Use {@link #intersect(SparseVector, SparseVector)}.
      */
     @Deprecated
     public static final class EntryPair {
