@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.*;
 import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
@@ -562,6 +563,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * also to the channels: any channels of this mutable vector may
      * also be frozen if the vector is frozen, to avoid copying them.
      *
+     * @param freeze Whether to freeze this vector.
      * @return An immutable vector built from this vector's data.
      */
     public ImmutableSparseVector immutable(boolean freeze) {
@@ -847,9 +849,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     private static class IdComparator extends AbstractIntComparator {
-
         private long[] keys;
 
+        @SuppressWarnings("PMD.ArrayIsStoredDirectly")
         public IdComparator(long[] keys) {
             this.keys = keys;
         }
@@ -865,6 +867,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         private long[] keys;
         private double[] values;
 
+        @SuppressWarnings("PMD.ArrayIsStoredDirectly")
         public ParallelSwapper(long[] keys, double[] values) {
             this.keys = keys;
             this.values = values;
