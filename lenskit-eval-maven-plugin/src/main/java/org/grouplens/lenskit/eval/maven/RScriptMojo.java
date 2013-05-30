@@ -109,7 +109,7 @@ public class RScriptMojo extends AbstractMojo {
         // Generate the command line for executing R.
         final CommandLine command =
             parse(rscriptExecutable)
-                .addArgument(scriptCopy.getAbsolutePath());
+                .addArgument(scriptCopy.getAbsolutePath(), false);
         getLog().debug("command: " + command);  
 
         // Execute the command line, in the working directory.

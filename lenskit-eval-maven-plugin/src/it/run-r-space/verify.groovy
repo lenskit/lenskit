@@ -21,7 +21,7 @@
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.Matchers.equalTo
 
-def file = new File("${basedir}/target/analysis", "output.txt")
+def file = new File("${basedir}/target/space analysis", "output.txt")
 
 assertThat(file.exists(), equalTo(true))
 assertThat(file.text, equalTo("Hello, world\n"))
