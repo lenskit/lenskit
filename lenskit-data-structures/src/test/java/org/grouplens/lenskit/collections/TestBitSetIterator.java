@@ -254,4 +254,75 @@ public class TestBitSetIterator {
             fail("Should throw illegal argument exception");
         } catch(IllegalArgumentException e) { /* expected */ };
     }
+
+    @Test
+    public void testNonStartInitial() {
+        BitSet bset = new BitSet();
+        bset.set(1);
+        bset.set(2);
+        bset.set(4);
+        bset.set(5);
+        BitSetIterator iter = new BitSetIterator(bset, 0, 6, 2);
+        // the iterator should have both next and previous bits
+        assertTrue(iter.hasNext());
+        assertTrue(iter.hasPrevious());
+        // The iterator's 'next' bit should be 2
+        assertThat(iter.nextInt(), equalTo(2));
+        // followed by 4, of course
+        assertThat(iter.nextInt(), equalTo(4));
+        // reset, and back should get us 1
+        iter = new BitSetIterator(bset, 0, 6, 2);
+        assertThat(iter.previousInt(), equalTo(1));
+        assertFalse(iter.hasPrevious());
+    }
+
+    @Test
+    public void testNonStartInitialAtHole() {
+        BitSet bset = new BitSet();
+        bset.set(1);
+        bset.set(2);
+        bset.set(4);
+        bset.set(5);
+        BitSetIterator iter = new BitSetIterator(bset, 0, 6, 3);
+        // the iterator should have both next and previous bits
+        assertTrue(iter.hasNext());
+        assertTrue(iter.hasPrevious());
+        // The iterator's 'next' bit should be 4
+        assertThat(iter.nextInt(), equalTo(4));
+        // followed by 5, of course
+        assertThat(iter.nextInt(), equalTo(5));
+        assertFalse(iter.hasNext());
+        // reset, and back should get us 2
+        iter = new BitSetIterator(bset, 0, 6, 3);
+        assertThat(iter.previousInt(), equalTo(2));
+        assertThat(iter.previousInt(), equalTo(1));
+        assertFalse(iter.hasPrevious());
+    }
+
+    @Test
+    public void testInitiallAtEnd() {
+        BitSet bset = new BitSet();
+        bset.set(1);
+        bset.set(3);
+        bset.set(4);
+        BitSetIterator iter = new BitSetIterator(bset, 0, 5, 5);
+        assertFalse(iter.hasNext());
+        assertTrue(iter.hasPrevious());
+        try {
+            iter.nextInt();
+            fail("nextInt should throw");
+        } catch (NoSuchElementException e) {
+            /* expected */
+        }
+        // reset, and back should get us 2
+        iter = new BitSetIterator(bset, 0, 5, 5);
+        assertThat(iter.previousInt(), equalTo(4));
+        assertTrue(iter.hasNext());
+        assertThat(iter.previousInt(), equalTo(3));
+        assertThat(iter.nextInt(), equalTo(3));
+        assertThat(iter.previousInt(), equalTo(3));
+        assertThat(iter.previousInt(), equalTo(1));
+        assertTrue(iter.hasNext());
+        assertFalse(iter.hasPrevious());
+    }
 }

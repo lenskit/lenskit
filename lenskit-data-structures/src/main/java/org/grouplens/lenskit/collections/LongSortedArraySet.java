@@ -414,7 +414,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
         private BitSetIterator iter;
 
         public MaskedIterImpl(int spos) {
-            iter = new BitSetIterator(mask, spos, end);
+            iter = new BitSetIterator(mask, start, end, spos);
         }
 
         @Override

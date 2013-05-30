@@ -86,12 +86,30 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
      * @param end   The end index, exclusive.
      */
     public BitSetIterator(BitSet set, int start, int end) {
+        this(set, start, end, start);
+    }
+
+    /**
+     * Create an iterator starting at a particular bit and ending at another index, with an initial
+     * position that may not be at the beginning.  The indices returned are inclusive of the
+     * starting index, and exclusive of the ending index.
+     *
+     * @param set   The bit set to wrap.
+     * @param start The start index, inclusive.
+     * @param end   The end index, exclusive.
+     * @param initial The initial position of the iterator.  The first call to {@link #nextInt()}
+     *                returns the first set bit such that {@code bit >= initial} and
+     *                {@code bit < end}.
+     */
+    public BitSetIterator(BitSet set, int start, int end, int initial) {
         Preconditions.checkArgument(start >= 0, "Starting index must be non-negative");
         Preconditions.checkArgument(start <= end, "Starting index must not be past ending index");
+        Preconditions.checkArgument(initial >= start, "initial index must be >= start");
+        Preconditions.checkArgument(initial <= end, "initial index must be <= end");
         bitSet = set;
         firstBit = start;
         lastBit = end;
-        nextBit = bitSet.nextSetBit(start);
+        nextBit = bitSet.nextSetBit(initial);
         if (nextBit < 0) {
             nextBit = lastBit;
         }
