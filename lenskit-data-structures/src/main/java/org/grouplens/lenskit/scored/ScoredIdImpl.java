@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.scored;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -38,6 +39,7 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
 
     private final long id;
     private final double score;
+    @SuppressFBWarnings("SE_BAD_FIELD")
     private final Reference2DoubleMap<Symbol> channelMap;
 
     /**
