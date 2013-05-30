@@ -21,21 +21,31 @@
 package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
+import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.collections.CopyingFastCollection;
+import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.collections.Pointer;
+import org.grouplens.lenskit.scored.AbstractScoredId;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.scored.ScoredIdBuilder;
+import org.grouplens.lenskit.symbols.Symbol;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * Utility methods for interacting with vectors.
  *
  * @compat Public
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class Vectors {
     /**
@@ -44,6 +54,7 @@ public final class Vectors {
      */
     private Vectors() {}
 
+    //region Paired iteration
     private static final Function<Pair<VectorEntry,VectorEntry>, ImmutablePair<VectorEntry,VectorEntry>>
             IMMUTABLE_PAIR_COPY = new Function<Pair<VectorEntry, VectorEntry>,
                                                ImmutablePair<VectorEntry, VectorEntry>>() {
@@ -82,7 +93,7 @@ public final class Vectors {
         return new Iterable<ImmutablePair<VectorEntry, VectorEntry>>() {
             @Override
             public Iterator<ImmutablePair<VectorEntry, VectorEntry>> iterator() {
-                return Iterators.transform(new FastPairIterImpl(v1, v2), IMMUTABLE_PAIR_COPY);
+                return Iterators.transform(new FastUnionIterImpl(v1, v2), IMMUTABLE_PAIR_COPY);
             }
         };
     }
@@ -99,12 +110,12 @@ public final class Vectors {
         return new Iterable<Pair<VectorEntry, VectorEntry>>() {
             @Override
             public Iterator<Pair<VectorEntry, VectorEntry>> iterator() {
-                return new FastPairIterImpl(v1, v2);
+                return new FastUnionIterImpl(v1, v2);
             }
         };
     }
 
-    private static class FastPairIterImpl implements Iterator<Pair<VectorEntry,VectorEntry>> {
+    private static class FastUnionIterImpl implements Iterator<Pair<VectorEntry,VectorEntry>> {
 
         private Pointer<VectorEntry> p1;
         private Pointer<VectorEntry> p2;
@@ -112,7 +123,7 @@ public final class Vectors {
         private VectorEntry rightEnt;
         private MutablePair<VectorEntry,VectorEntry> pair;
 
-        public FastPairIterImpl(SparseVector v1, SparseVector v2) {
+        public FastUnionIterImpl(SparseVector v1, SparseVector v2) {
             p1 = CollectionUtils.pointer(v1.fastIterator());
             p2 = CollectionUtils.pointer(v2.fastIterator());
             leftEnt = new VectorEntry(v1, -1, 0, 0, false);
@@ -347,10 +358,10 @@ public final class Vectors {
      * @deprecated This can be implemented in terms of {@link #union(SparseVector, SparseVector)}
      */
     @Deprecated
+    @SuppressWarnings("deprecation")
     public static Iterator<EntryPair> pairedIterator(SparseVector v1, SparseVector v2) {
         return new IteratorImpl(v1, v2);
     }
-
 
     @SuppressWarnings("deprecation")
     private static final class IteratorImpl implements Iterator<EntryPair> {
@@ -505,5 +516,5 @@ public final class Vectors {
             return value2;
         }
     }
-
+    //endregion
 }

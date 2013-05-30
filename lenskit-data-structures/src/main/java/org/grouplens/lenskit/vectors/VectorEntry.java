@@ -157,12 +157,13 @@ public final class VectorEntry implements Cloneable {
     }
 
     /**
-     * Get the sparse vector associated with this entry.
+     * Get the sparse vector associated with this entry.  An entry does not necessarily have a
+     * reference to a vector.
      *
      * @return The associated vector, or {@code null} if no vector is linked.
      */
     @Nullable
-    SparseVector getVector() {
+    public SparseVector getVector() {
         return vector;
     }
 

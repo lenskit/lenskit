@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.vectors;
+package org.grouplens.lenskit.scored;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -28,6 +28,8 @@ import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdBuilder;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.Vectors;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -54,7 +56,7 @@ public class TestSparseVectorScoredIds {
         baz.set(2, 100.0);
         
         // check that the hasChannel function is correct.
-        for(Iterator<ScoredId> it = sv.scoredIds().fastIterator(); it.hasNext();) {
+        for(Iterator<ScoredId> it = ScoredIds.collectionFromVector(sv).fastIterator(); it.hasNext();) {
             ScoredId sid = it.next();
             assertTrue(sid.hasChannel(fooSym));
             assertFalse(sid.hasChannel(bazSym));
@@ -74,6 +76,6 @@ public class TestSparseVectorScoredIds {
                             .build());
         
         // get the scored ids and put them in a hashset (for comparison).
-        assertEquals(expected, new HashSet<ScoredId>(sv.scoredIds()));
+        assertEquals(expected, new HashSet<ScoredId>(ScoredIds.collectionFromVector(sv)));
     }
 }

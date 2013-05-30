@@ -30,13 +30,12 @@ import it.unimi.dsi.fastutil.doubles.DoubleCollection;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.*;
-import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.collections.*;
-import org.grouplens.lenskit.scored.AbstractScoredId;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.scored.ScoredIdBuilder;
+import org.grouplens.lenskit.collections.BitSetIterator;
+import org.grouplens.lenskit.collections.IntIntervalList;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.MoreArrays;
 import org.grouplens.lenskit.symbols.Symbol;
 
 import javax.annotation.Nonnull;
@@ -653,114 +652,4 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      *         of the vector.
      */
     public abstract Set<Symbol> getChannels();
-
-    /**
-     * Return a view of this vector as a {@code FastCollection} of
-     * {@code ScoredId} objects.
-     *
-     * @return A fast collection containing this vector's keys and values as
-     * {@code ScoredId} objects.
-     */
-    public FastCollection<ScoredId> scoredIds() {
-        return new FastScoredIdCollectionImpl();
-    }
-
-    private class FastScoredIdCollectionImpl extends CopyingFastCollection<ScoredId> {
-
-        private ScoredIdBuilder builder;
-
-        public FastScoredIdCollectionImpl() {
-            builder = new ScoredIdBuilder();
-        }
-
-        @Override
-        protected ScoredId copy(ScoredId elt) {
-            builder.clearChannels();
-            builder.setId(elt.getId());
-            builder.setScore(elt.getScore());
-            for (Symbol s : elt.getChannels()) {
-                builder.addChannel(s, elt.channel(s));
-            }
-
-            return builder.build();
-        }
-
-        @Override
-        public int size() {
-            return SparseVector.this.size();
-        }
-
-        @Override
-        public Iterator<ScoredId> fastIterator() {
-            return new FastIdIterImpl();
-        }
-    }
-
-    private class FastIdIterImpl implements Iterator<ScoredId> {
-
-        private Iterator<VectorEntry> entIter;
-        private ScoredIdImpl id;
-
-        public FastIdIterImpl() {
-            entIter = fastIterator();
-            id = new ScoredIdImpl();
-        }
-
-        @Override
-        public boolean hasNext() {
-            return entIter.hasNext();
-        }
-
-        @Override
-        public ScoredId next() {
-            id.setEntry(entIter.next());
-            return id;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    private class ScoredIdImpl extends AbstractScoredId {
-
-        private VectorEntry ent;
-
-        @Override
-        public long getId() {
-            return ent.getKey();
-        }
-
-        @Override
-        public double getScore() {
-            return ent.getValue();
-        }
-
-        @Override
-        public Set<Symbol> getChannels() {
-            ReferenceArraySet<Symbol> res = new ReferenceArraySet<Symbol>();
-            for (Symbol s: SparseVector.this.getChannels()) {
-                if (SparseVector.this.channel(s).containsKey(ent.getKey())) {
-                    res.add(s);
-                }
-            }
-            return res;
-        }
-
-        @Override
-        public double channel(Symbol s) {
-            return SparseVector.this.channel(s).get(ent);
-        }
-
-        @Override
-        public boolean hasChannel(Symbol s) {
-            return SparseVector.this.hasChannel(s)
-                    && SparseVector.this.channel(s).containsKey(ent.getKey());
-        }
-
-        public void setEntry(VectorEntry e) {
-            ent = e;
-        }
-    }
 }
