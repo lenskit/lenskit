@@ -26,6 +26,10 @@ import org.grouplens.lenskit.symbols.Symbol;
 
 /**
  * Use a {@code ScoredId.Builder} to instantiate new {@code ScoredId} objects.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 1.1
+ * @compat Experimental — this interface may change in future versions of LensKit.
  */
 public class ScoredIdBuilder implements Builder<ScoredId> {
 

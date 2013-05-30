@@ -31,6 +31,7 @@ import java.util.Set;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
+ * @compat Experimental — this interface may change in future versions of LensKit.
  */
 public interface ScoredId {
 
