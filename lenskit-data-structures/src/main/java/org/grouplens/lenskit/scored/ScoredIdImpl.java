@@ -38,7 +38,7 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
 
     private final long id;
     private final double score;
-    Reference2DoubleMap<Symbol> channelMap;
+    private final Reference2DoubleMap<Symbol> channelMap;
 
     /**
      * Construct a scored ID with no channels.
@@ -60,6 +60,8 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
         this.score = score;
         if (channelMap != null) {
             this.channelMap = new Reference2DoubleArrayMap<Symbol>(channelMap);
+        } else {
+            this.channelMap = null;
         }
     }
 
