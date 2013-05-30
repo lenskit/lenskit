@@ -75,6 +75,7 @@ public final class VectorEntry implements Cloneable {
      * @param i   The index in the vector of this entry.
      * @param k   The entry's key.
      * @param val The entry's value.
+     * @param set Whether the entry is set.
      */
     VectorEntry(@Nullable SparseVector vec, int i, long k, double val, boolean set) {
         vector = vec;
@@ -137,6 +138,7 @@ public final class VectorEntry implements Cloneable {
      * @param i The new index.
      * @param k The new key.
      * @param v the new value.
+     * @param set Whether the entry is set.
      */
     void set(int i, long k, double v, boolean set) {
         index = i;
@@ -170,7 +172,7 @@ public final class VectorEntry implements Cloneable {
         try {
             e = (VectorEntry) super.clone();
         } catch (CloneNotSupportedException exc) {
-            throw new AssertionError(); // This cannot happen
+            throw new AssertionError(exc); // This cannot happen
         }
         return e;
     }

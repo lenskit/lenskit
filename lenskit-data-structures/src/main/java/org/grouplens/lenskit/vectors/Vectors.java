@@ -67,6 +67,17 @@ public final class Vectors {
         }
     };
 
+    /**
+     * Iterate over the union of two vectors (the keys set in either).  Each pair in the resulting
+     * iterable contains the entries for a key appearing in one or both vectors.  If a key is only
+     * in one vector's key set, that vector entry is returned (as {@link Pair#getLeft()} for v1 and
+     * {@link Pair#getRight()} for v2) and the other is null.  If the key is in both vector's key
+     * sets, both entries are returned.
+     *
+     * @param v1 The first vector.
+     * @param v2 The second vector.
+     * @return An iterable of pairs of entries.
+     */
     public static Iterable<ImmutablePair<VectorEntry,VectorEntry>> union(final SparseVector v1, final SparseVector v2) {
         return new Iterable<ImmutablePair<VectorEntry, VectorEntry>>() {
             @Override
@@ -76,6 +87,14 @@ public final class Vectors {
         };
     }
 
+    /**
+     * A fast iterator version of {@link #union(SparseVector, SparseVector)}.
+     *
+     * @param v1 The first vector.
+     * @param v2 The second vector.
+     * @return A fast iteratable of pairs of vector entries.
+     * @see #union(SparseVector, SparseVector)
+     */
     public static Iterable<Pair<VectorEntry,VectorEntry>> fastUnion(final SparseVector v1, final SparseVector v2) {
         return new Iterable<Pair<VectorEntry, VectorEntry>>() {
             @Override
@@ -273,6 +292,7 @@ public final class Vectors {
      * @deprecated This can be implemented in terms of {@link #fastUnion(SparseVector, SparseVector)}
      */
     @Deprecated
+    @SuppressWarnings("deprecation")
     public static Iterable<EntryPair> pairedFast(final SparseVector v1, final SparseVector v2) {
         return new Iterable<EntryPair>() {
             @Override
@@ -306,6 +326,7 @@ public final class Vectors {
      * @deprecated This can be implemented in terms of {@link #union(SparseVector, SparseVector)}
      */
     @Deprecated
+    @SuppressWarnings("deprecation")
     public static Iterable<EntryPair> paired(final SparseVector v1, final SparseVector v2) {
         return new Iterable<EntryPair>() {
             @Override
@@ -331,6 +352,7 @@ public final class Vectors {
     }
 
 
+    @SuppressWarnings("deprecation")
     private static final class IteratorImpl implements Iterator<EntryPair> {
         private boolean atNext = false;
         private final Pointer<VectorEntry> p1;
@@ -378,6 +400,7 @@ public final class Vectors {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private static final class FastIteratorImpl implements Iterator<EntryPair> {
         private EntryPair curPair = new EntryPair();
         private boolean atNext = false;
@@ -431,13 +454,16 @@ public final class Vectors {
     /**
      * Wraps a pair of values that share a common key.
      */
+    @Deprecated
     public static final class EntryPair {
         private long key;
         private double value1;
         private double value2;
 
-        EntryPair() {
-        }
+        /**
+         * Construct an entry pair with zero key and values.
+         */
+        EntryPair() {}
 
         /**
          * Construct an entry pair with a key & values.

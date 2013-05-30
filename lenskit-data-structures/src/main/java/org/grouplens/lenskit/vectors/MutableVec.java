@@ -29,7 +29,7 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays;
  *
  * @compat Experimental — this interface may change in future versions of LensKit.
  */
-public class MutableVec extends Vec {
+public final class MutableVec extends Vec {
     private static final long serialVersionUID = 1L;
 
     /**

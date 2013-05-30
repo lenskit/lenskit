@@ -42,6 +42,7 @@ public abstract class Vec implements Serializable {
      * Construct a vector from a backing array. The array is not copied.
      * @param d The backing array.
      */
+    @SuppressWarnings("PMD.ArrayIsStoredDirectly") // that's the point
     Vec(double[] d) {
         data = d;
     }

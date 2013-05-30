@@ -29,7 +29,7 @@ import java.util.Arrays;
  * @compat Experimental — this interface may change in future versions of LensKit.
  */
 @Immutable
-public class ImmutableVec extends Vec {
+public final class ImmutableVec extends Vec {
     private static final long serialVersionUID = 1L;
 
     private transient volatile Double sum;

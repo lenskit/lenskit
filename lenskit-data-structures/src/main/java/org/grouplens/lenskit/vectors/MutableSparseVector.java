@@ -21,8 +21,8 @@
 package org.grouplens.lenskit.vectors;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import it.unimi.dsi.fastutil.*;
 import it.unimi.dsi.fastutil.Arrays;
+import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
@@ -33,7 +33,10 @@ import org.grouplens.lenskit.collections.MoreArrays;
 import org.grouplens.lenskit.symbols.Symbol;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 /**
  * Mutable version of sparse vector.
  *
@@ -71,7 +74,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     // mutation methods to throw an exception if they are called.
     boolean isMutable = true;
 
-    private Map<Symbol, MutableSparseVector> channelMap;
+    @SuppressFBWarnings(value="SE_BAD_FIELD", justification="stored value is always serializable")
+    private final Map<Symbol, MutableSparseVector> channelMap;
 
     /**
      * Construct a new empty vector. Since it also has an empty key domain, this
