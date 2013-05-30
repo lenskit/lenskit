@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 
@@ -44,6 +45,7 @@ import org.grouplens.lenskit.symbols.Symbol;
 public final class ImmutableSparseVector extends SparseVector implements Serializable {
     private static final long serialVersionUID = -2L;
 
+    @SuppressFBWarnings("SE_BAD_FIELD")
     private final Map<Symbol, ImmutableSparseVector> channelMap;
 
     private transient volatile Double norm = null;
@@ -108,8 +110,8 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      * @param used     the keys that actually have values currently.
      * @param channels The side channel values.
      */
-    protected ImmutableSparseVector(long[] ks, double[] vs, int sz, BitSet used,
-                                    Map<Symbol, ImmutableSparseVector> channels) {
+    ImmutableSparseVector(long[] ks, double[] vs, int sz, BitSet used,
+                          Map<Symbol, ImmutableSparseVector> channels) {
         super(ks, vs, sz, used);
         channelMap = channels;
     }
