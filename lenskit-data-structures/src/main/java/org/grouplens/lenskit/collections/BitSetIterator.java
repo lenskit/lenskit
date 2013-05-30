@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.collections;
 
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.AbstractIntBidirectionalIterator;
 
 import java.util.BitSet;
@@ -85,8 +86,8 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
      * @param end   The end index, exclusive.
      */
     public BitSetIterator(BitSet set, int start, int end) {
-        if (start < 0) throw new IllegalArgumentException("Starting index must be non-negative");
-        if (start > end) throw new IllegalArgumentException("Starting index must not be past ending index");
+        Preconditions.checkArgument(start >= 0, "Starting index must be non-negative");
+        Preconditions.checkArgument(start <= end, "Starting index must not be past ending index");
         bitSet = set;
         firstBit = start;
         lastBit = end;
@@ -130,7 +131,9 @@ public final class BitSetIterator extends AbstractIntBidirectionalIterator {
         }
         int retval = nextBit;
         nextBit = bitSet.nextSetBit(nextBit + 1);
-        if (nextBit < 0) nextBit = lastBit;
+        if (nextBit < 0) {
+            nextBit = lastBit;
+        }
         return retval;
     }
 

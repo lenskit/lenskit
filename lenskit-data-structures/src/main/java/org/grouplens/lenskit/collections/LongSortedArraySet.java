@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.collections;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.longs.*;
 
 import javax.annotation.Nonnull;
@@ -281,7 +282,9 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      * @return The array of elements.
      * @see #toLongArray()
      */
-    @SuppressWarnings({"EI_EXPOSE_REP", "PMD.MethodReturnsInternalArray"})
+    @SuppressWarnings({"PMD.MethodReturnsInternalArray"})
+    @SuppressFBWarnings(value="EI_EXPOSE_REP",
+                        justification="this field is documented as unsafe")
     public long[] unsafeArray() {
         if (start == 0 && end == data.length && mask == null) {
             return data;
@@ -311,9 +314,11 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
             Arrays.sort(data, 0, i);
         }
         // trim the array
+        //CHECKSTYLE:OFF MagicNumber
         if (data.length * 2 > i * 3) {
             data = Arrays.copyOf(data, i);
         }
+        //CHECKSTYLE:ON
         return new LongSortedArraySet(data, 0, i, true, null);
     }
 

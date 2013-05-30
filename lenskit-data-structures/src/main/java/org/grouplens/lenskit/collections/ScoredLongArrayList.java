@@ -76,6 +76,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
      *
      * @param items An array of items to copy into the list.
      */
+    @SuppressWarnings("PMD.ArrayIsStoredDirectly") // LongArrayList copies the items
     public ScoredLongArrayList(long[] items) {
         itemList = new LongArrayList(items);
         scoreList = null;
@@ -87,6 +88,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
      * @param items  An array of itemList to copy into the list.
      * @param scores An array of scoreList corresponding to the itemList.
      */
+    @SuppressWarnings("PMD.ArrayIsStoredDirectly") // Array lists copy the arrays
     public ScoredLongArrayList(long[] items, double[] scores) {
         if (scores.length != items.length) {
             throw new IllegalArgumentException("array length mismatch");
