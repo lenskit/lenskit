@@ -55,10 +55,10 @@ public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
 
     @Override
     public String getName() {
-        if (name == null) {
-            return trainingData.getName();
+        if (hasName()) {
+            return super.getName();
         } else {
-            return name;
+            return trainingData.getName();
         }
     }
 
@@ -74,10 +74,10 @@ public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
     @Override
     public GenericTTDataSet call() {
         if (attributes.isEmpty()) {
-            attributes.put("DataSet", name);
+            attributes.put("DataSet", getName());
         }
         Preconditions.checkNotNull(trainingData, "train data is Null");
-        return new GenericTTDataSet(name, trainingData,
+        return new GenericTTDataSet(getName(), trainingData,
                                     testData, trainingData.getPreferenceDomain(),
                                     attributes);
     }

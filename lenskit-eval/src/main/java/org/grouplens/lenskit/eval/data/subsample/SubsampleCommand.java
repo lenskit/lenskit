@@ -117,7 +117,7 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      */
     public File getOutput() {
         if (output == null) {
-            return new File(name + ".subsample.csv");
+            return new File(getName() + ".subsample.csv");
         }
         return output;
     }

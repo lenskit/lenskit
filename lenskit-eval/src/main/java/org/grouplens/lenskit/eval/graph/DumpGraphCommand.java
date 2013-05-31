@@ -61,10 +61,10 @@ public class DumpGraphCommand extends AbstractCommand<File> {
 
     @Override
     public String getName() {
-        if (name == null) {
-            return algorithm.getName();
+        if (hasName()) {
+            return super.getName();
         } else {
-            return name;
+            return algorithm.getName();
         }
     }
 

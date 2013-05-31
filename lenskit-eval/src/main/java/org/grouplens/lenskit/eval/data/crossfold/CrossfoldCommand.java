@@ -236,10 +236,10 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      */
     @Override
     public String getName() {
-        if (name == null) {
-            return source.getName();
+        if (hasName()) {
+            return super.getName();
         } else {
-            return name;
+            return source.getName();
         }
     }
 

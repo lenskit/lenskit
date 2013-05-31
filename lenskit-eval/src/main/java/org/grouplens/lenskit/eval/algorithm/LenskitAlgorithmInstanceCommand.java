@@ -58,7 +58,7 @@ public class LenskitAlgorithmInstanceCommand extends AbstractCommand<LenskitAlgo
      */
     @Override
     public LenskitAlgorithmInstanceCommand setName(String n) {
-        name = n;
+        super.setName(n);
         return this;
     }
 
@@ -119,7 +119,7 @@ public class LenskitAlgorithmInstanceCommand extends AbstractCommand<LenskitAlgo
 
     @Override
     public LenskitAlgorithmInstance call() throws CommandException {
-        return new LenskitAlgorithmInstance(name, factory, attributes, preload);
+        return new LenskitAlgorithmInstance(getName(), factory, attributes, preload);
     }
 
 }

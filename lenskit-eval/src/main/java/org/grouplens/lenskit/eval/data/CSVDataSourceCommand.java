@@ -57,17 +57,17 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
      */
     @Override
     public CSVDataSourceCommand setName(String name) {
-        this.name = name;
+        super.setName(name);
         return this;
     }
 
     @Nonnull
     @Override
     public String getName() {
-        if (name == null) {
-            return inputFile.getName();
+        if (hasName()) {
+            return super.getName();
         } else {
-            return name;
+            return inputFile.getName();
         }
     }
 
@@ -135,15 +135,15 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
     @Override
     public CSVDataSource call() {
         // if no name, use the file name
-        if (name == null && inputFile != null) {
-            name = inputFile.toString();
+        if (!hasName() && inputFile != null) {
+            setName(inputFile.toString());
         }
         // if no file, use the name
-        if (inputFile == null && name != null) {
-            inputFile = new File(name);
+        if (inputFile == null && hasName()) {
+            inputFile = new File(getName());
         }
         // by now we should have a file
         Preconditions.checkState(inputFile != null, "no input file specified");
-        return new CSVDataSource(name, inputFile, delimiter, cache, domain, wrapper);
+        return new CSVDataSource(getName(), inputFile, delimiter, cache, domain, wrapper);
     }
 }

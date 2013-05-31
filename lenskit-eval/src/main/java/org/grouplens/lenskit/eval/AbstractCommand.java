@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class AbstractCommand<T> implements Command<T> {
-    @Nullable protected String name;
+    @Nullable private String name;
     private EvalConfig config;
 
     /**
@@ -85,7 +85,8 @@ public abstract class AbstractCommand<T> implements Command<T> {
      * {@inheritDoc}
      * <p>This implementation returns the {@link #name} field, throwing
      * {@link IllegalStateException} if it is {@code null}.  Commands should override it to provide
-     * default derived names if they support such a concept.
+     * default derived names if they support such a concept.  Subclasses can call {@link #hasName()}
+     * to query whether the name has been set.
      */
     @Override @Nonnull
     public String getName() {
@@ -94,6 +95,14 @@ public abstract class AbstractCommand<T> implements Command<T> {
         } else {
             return name;
         }
+    }
+
+    /**
+     * Query whether this command has a name specified.
+     * @return {@code true} if a name has been set.
+     */
+    protected boolean hasName() {
+        return name != null;
     }
 
     @Override

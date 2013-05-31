@@ -57,7 +57,7 @@ public class ExternalAlgorithmInstanceCommand extends AbstractCommand<ExternalAl
      */
     @Override
     public ExternalAlgorithmInstanceCommand setName(String n) {
-        name = n;
+        super.setName(n);
         return this;
     }
 
@@ -128,7 +128,7 @@ public class ExternalAlgorithmInstanceCommand extends AbstractCommand<ExternalAl
         if (command == null) {
             throw new IllegalStateException("no command specified");
         }
-        return new ExternalAlgorithmInstance(name, attributes, command, workDir, outputDelimiter);
+        return new ExternalAlgorithmInstance(getName(), attributes, command, workDir, outputDelimiter);
     }
 
 }
