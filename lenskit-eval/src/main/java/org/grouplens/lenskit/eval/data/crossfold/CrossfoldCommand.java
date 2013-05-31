@@ -525,7 +525,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
                     .setDomain(source.getPreferenceDomain())
                     .setCache(cacheOutput)
                     .setFile(testFiles[i]);
-            GenericTTDataCommand tt = new GenericTTDataCommand(name + "." + i);
+            GenericTTDataCommand tt = new GenericTTDataCommand(getName() + "." + i);
 
             dataSets.add(tt.setTest(testCommand.call())
                            .setTrain(trainCommand.call())
