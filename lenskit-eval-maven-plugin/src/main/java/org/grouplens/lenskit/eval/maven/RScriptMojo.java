@@ -120,9 +120,9 @@ public class RScriptMojo extends AbstractMojo {
                 throw new MojoExecutionException( "Error code returned for: " + command.toString() );
             }
         } catch (ExecuteException e) {
-            throw new MojoExecutionException("Error executing command: " + command.toString());
+            throw new MojoExecutionException("Error executing command: " + command.toString(), e);
         } catch (IOException e) {
-            throw new MojoExecutionException("IO Exception while executing command: " + command.toString());
+            throw new MojoExecutionException("IO Exception while executing command: " + command.toString(), e);
         }
      }
 
