@@ -75,6 +75,11 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         return rule;
     }
 
+    @Override
+    public boolean canUseHistory() {
+        return rule != null;
+    }
+
     /**
      * Predict for a user using their preference array and history vector.
      *
