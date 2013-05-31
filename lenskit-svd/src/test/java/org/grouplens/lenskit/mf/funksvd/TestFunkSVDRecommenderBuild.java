@@ -96,6 +96,8 @@ public class TestFunkSVDRecommenderBuild {
             assertThat(pred, instanceOf(SimpleRatingPredictor.class));
             assertThat(((SimpleRatingPredictor) pred).getScorer(),
                        sameInstance(rec.getItemScorer()));
+            assertThat(((FunkSVDItemScorer) rec.getItemScorer()).getUpdateRule(),
+                       nullValue());
         } finally {
             rec.close();
         }
@@ -145,11 +147,11 @@ public class TestFunkSVDRecommenderBuild {
     }
 
     /**
-     * Test whether we can build a recommender without predict-time updates.
+     * Test whether we can build a recommender with predict-time updates.
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void testNoPredictUpdates() throws RecommenderBuildException {
+    public void testPredictUpdates() throws RecommenderBuildException {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
         factory.bind(ItemScorer.class)
                .to(FunkSVDItemScorer.class);
@@ -157,9 +159,8 @@ public class TestFunkSVDRecommenderBuild {
                .to(ItemUserMeanPredictor.class);
         factory.set(IterationCount.class)
                .to(10);
-        factory.at(FunkSVDItemScorer.class)
-               .bind(FunkSVDUpdateRule.class)
-               .toNull();
+        factory.bind(RuntimeUpdate.class, FunkSVDUpdateRule.class)
+               .to(FunkSVDUpdateRule.class);
 
         LenskitRecommenderEngine engine = factory.create();
 
@@ -169,7 +170,7 @@ public class TestFunkSVDRecommenderBuild {
             assertThat(scorer, instanceOf(FunkSVDItemScorer.class));
             FunkSVDItemScorer fsvd = (FunkSVDItemScorer) scorer;
             assertThat(fsvd.getUpdateRule(),
-                       nullValue());
+                       not(nullValue()));
         } finally {
             rec.close();
         }
