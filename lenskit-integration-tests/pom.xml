@@ -21,6 +21,10 @@
     <archetype.test.directory>${project.build.directory}/archetype-test</archetype.test.directory>
     <lenskit.movielens.100k>${basedir}/data/ml-100k</lenskit.movielens.100k>
     <lenskit.eval.threadCount>1</lenskit.eval.threadCount>
+    <!-- Specify the location of Rscript.  We need to do this explicitly here, even though Rscript
+         is the default, because of how we route properties.  Override this on the commadn line or
+         in your settings.xml if you need to specify an alternate location. -->
+    <rscript.executable>Rscript</rscript.executable>
   </properties>
 
   <dependencies>
