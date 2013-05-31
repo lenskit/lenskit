@@ -58,9 +58,18 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
     @Nullable
     private final FunkSVDUpdateRule rule;
 
+    /**
+     * Construct the item scorer.
+     *
+     * @param dao   The DAO.
+     * @param model The model.
+     * @param rule  The update rule, or {@code null} (the default) to only use the user features
+     *              from the model. If provided, this update rule is used to update a user's feature
+     *              values based on their profile when scores are requested.
+     */
     @Inject
     public FunkSVDItemScorer(DataAccessObject dao, FunkSVDModel model,
-                             @Nullable FunkSVDUpdateRule rule) {
+                             @Nullable @RuntimeUpdate FunkSVDUpdateRule rule) {
         super(dao);
         this.dao = dao;
         this.model = model;
