@@ -711,6 +711,16 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
+     * Create a mutable sparse vector with a fixed set of keys.  This is mostly useful for tests.
+     *
+     * @param keys The key domain.
+     * @return A mutable sparse vector with the specified keys in its domain, all unset.
+     */
+    public static MutableSparseVector create(long... keys) {
+        return new MutableSparseVector(new LongOpenHashSet(keys));
+    }
+
+    /**
      * Create a new {@code MutableSparseVector} from unsorted key and value
      * arrays. The provided arrays will be modified and should not be used
      * by the client after this operation has completed. The key domain of
