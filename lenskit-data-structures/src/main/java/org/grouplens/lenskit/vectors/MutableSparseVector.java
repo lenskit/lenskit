@@ -800,10 +800,11 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return the newly created channel
      */
     public MutableSparseVector alwaysAddChannel(Symbol channelSymbol) {
-        if (!hasChannel(channelSymbol)) {
-            addChannel(channelSymbol);
+        MutableSparseVector chan = channelMap.get(channelSymbol);
+        if (chan == null) {
+            chan = addChannel(channelSymbol);
         }
-        return channelMap.get(channelSymbol);
+        return chan;
     }
 
 
