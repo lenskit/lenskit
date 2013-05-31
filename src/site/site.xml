@@ -20,7 +20,7 @@
     <breadcrumbs>
       <item name="GroupLens Research"
             href="http://www.grouplens.org"/>
-      <item name="LensKit (Recommender Implementation)"
+      <item name="LensKit"
             href="index.html"/>
     </breadcrumbs>
     <menu name="LensKit" inherit="top">

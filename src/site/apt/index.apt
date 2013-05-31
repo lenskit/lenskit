@@ -11,13 +11,15 @@ LensKit Recommender Toolkit
   and general project infrastructure information.  For documentation on how to use or develop
   LensKit, there are several resources available:
 
+  * {{{http://lenskit.grouplens.org}LensKit home page}}
+
   * {{{http://bitbucket.org/grouplens/lenskit/wiki}Wiki and manual}}
 
-  * {{{apidocs}JavaDoc}}
+  * {{{./apidocs}JavaDoc}}
 
   * {{{http://bitbucket.org/grouplens/lenskit/overview}README}} (mostly about how to work with the
     LensKit source code).
 
-  * {{{lenskit-parent/lenskit-eval-maven-plugin/index.html}Maven plugin docs}}
+  * {{{./lenskit-eval-maven-plugin/index.html}Maven plugin docs}}
 
   []
