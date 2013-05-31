@@ -35,10 +35,12 @@
                     failonerror="true"
                     dir="${archetype.test.directory}/test-@{archetype}">
         <arg value="--settings=${basedir}/src/test/settings.xml"/>
+        <arg value="-e"/>
         <arg value="-Dmock.repository.url=${mock.repository.url}"/>
         <arg value="-Dtest.repo.directory=${test.repo.directory}"/>
         <arg value="-Dgrouplens.mldata.acknowledge=${grouplens.mldata.acknowledge}"/>
         <arg value="-Dlenskit.eval.threadCount=${lenskit.eval.threadCount}"/>
+        <arg value="-Drscript.executable=${rscript.executable}"/>
         <arg value="lenskit-publish"/>
       </artifact:mvn>
     </sequential>

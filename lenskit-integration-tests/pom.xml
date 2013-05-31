@@ -263,6 +263,8 @@
                                 value="${lenskit.movielens.100k}"/>
                       <property name="lenskit.eval.threadCount"
                                 value="${lenskit.eval.threadCount}"/>
+                      <property name="rscript.executable"
+                                value="${rscript.executable}"/>
                     </ant>
                   </target>
                 </configuration>
