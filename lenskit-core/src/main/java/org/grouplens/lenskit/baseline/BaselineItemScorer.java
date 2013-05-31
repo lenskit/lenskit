@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.baseline;
 
+import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
@@ -29,8 +30,8 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
-import java.util.Collection;
 
 /**
  * {@link org.grouplens.lenskit.ItemScorer} that delegates to the baseline predictor. This allows
@@ -40,18 +41,25 @@ import java.util.Collection;
  * @see BaselinePredictor
  */
 public class BaselineItemScorer extends AbstractItemScorer {
-    private BaselinePredictor predictor;
+    @Nullable
+    private final ItemScorer primary;
+    private final BaselinePredictor predictor;
 
     /**
      * Construct a new baseline rating predictor.
      *
      * @param baseline The baseline predictor to use.
      * @param dao      The DAO.
+     * @param scorer   The primary scorer to use. If not {@code null}, this scorer is consulted and
+     *                 the baseline is only used to supply predictions that it declines to.
      */
     @Inject
-    public BaselineItemScorer(BaselinePredictor baseline, DataAccessObject dao) {
+    public BaselineItemScorer(DataAccessObject dao,
+                              BaselinePredictor baseline,
+                              @Nullable @PrimaryScorer ItemScorer scorer) {
         super(dao);
         predictor = baseline;
+        primary = scorer;
     }
 
     /**
@@ -68,7 +76,10 @@ public class BaselineItemScorer extends AbstractItemScorer {
      */
     @Override
     public void score(long user, @Nonnull MutableSparseVector scores) {
-        predictor.predict(user, scores);
+        if (primary != null) {
+            primary.score(user, scores);
+        }
+        predictor.predict(user, scores, primary == null);
     }
 
     /**
@@ -78,7 +89,10 @@ public class BaselineItemScorer extends AbstractItemScorer {
     @Override
     public void score(@Nonnull UserHistory<? extends Event> profile,
                       @Nonnull MutableSparseVector scores) {
+        if (primary != null) {
+            primary.score(profile, scores);
+        }
         SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(profile);
-        predictor.predict(profile.getUserId(), ratings, scores);
+        predictor.predict(profile.getUserId(), ratings, scores, primary == null);
     }
 }
