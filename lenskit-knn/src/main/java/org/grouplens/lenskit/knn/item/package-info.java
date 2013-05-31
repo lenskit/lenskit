@@ -54,9 +54,6 @@
  * The scorers and recommenders actually operate on a generic {@link org.grouplens.lenskit.knn.item.model.ItemItemModel}, so the
  * item-based scoring algorithm can be used against other sources of similarity, such as
  * similarities stored in a database or text index.
- *
- * @cite Sarwar et al. 2001.
- * @cite Deshpande and Karypis 2004
  */
 package org.grouplens.lenskit.knn.item;
 
