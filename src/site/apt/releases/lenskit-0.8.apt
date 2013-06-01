@@ -1,0 +1,35 @@
+                               -------------
+                                Release 0.8
+                               -------------
+
+Release 0.8
+
+  The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
+  {{{http://bitbucket.org/grouplens/lenskit/issues?milestone=0.8&status=resolved}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+
+  * Cleaned up cursor utilities, moving all methods from
+    <<<Cursors2>>> to <<<Cursors>>>.  The old <<<Cursors2>>> methods
+    are deprecated and will be removed before 1.0 is released.
+
+  * Implemented a new evaluation framework that uses XML files to
+    directly configure evaluators (#issue(115)).  This replaces the
+    Ant plugin.  Eventually, a Maven plugin will be added that runs
+    these evaluations; for now, they can be run with
+    {{{http://mojo.codehaus.org/exec-maven-plugin}exec-maven-plugin}}.
+    See the <<<lenskit-eval-demo>>> project configuration for an
+    example.  With this comes the fix for #issue(115) as well.
+
+  * Provide example evaluation configurations run as integration
+    tests.  <<<lenskit-eval>>> contains a basic one, and
+    <<<lenskit-eval-demo>>> contains a more extensive set complete
+    with R-based post-analysis.  To run these, activate the
+    <<<smoketest>>> profile and set the
+    <<<grouplens.mldata.acknowledge>>> property to <<<yes>>> to
+    acknowledge that you are abiding by the licensing terms for the
+    {{{http://www.grouplens.org/node/73}MovieLens ML100K data set}},
+    which is automatically downloaded and used by the demo
+    evaluations.
+
+  []

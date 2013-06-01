@@ -1,0 +1,47 @@
+                               -------------
+                                Release 0.6
+                               -------------
+
+Release 0.6
+
+  The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
+  {{{http://bitbucket.org/grouplens/lenskit/issues?milestone=0.6&status=resolved}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+
+  * Fixed a bug where FunkSVD crashed when predicting for a user not in
+    the model.
+
+  * Added history summarizers to compute vector summaries of user
+    histories.  This paves the way for non-rating-based scorers.
+
+  * Updated to <<<gl-common>>> 0.4, including the new citation JavaDoc
+    taglet.  More citations in the JavaDoc to come.
+
+  * Added version of <<<MutableSparseVector.freeze()>>> that strips NaN
+    values in the frozen vector.
+
+  * Fixed a couple bugs in the user-user rating predictor with how
+    baselines were added and what happens when the total similarity
+    for an item is 0.
+
+  * Build our first basket recommender (see #issue(3)).  It isn't
+    tested in basket configuration yet, but item-item CF is now
+    sufficiently modular to operate in unary contexts.
+
+    * Added <<<NeighborhoodScorer>>> abstract scoring items based on
+      neighborhoods.  <<<WeightedAverageNeighborhoodScorer>>>
+      implements the traditional weighted average algorithm that has
+      been in item-item CF since we implemented it, and
+      <<<SimilaritySumNeighborhoodScorer>>> just sums similarities
+      (useful for unary contexts).
+
+    * Split <<<ItemItemRatingPredictor>>> apart into
+      <<<ItemItemScorer>>>, which uses arbitrary histories and
+      <<<NeighborhoodScorer>>>s to score items, and
+      <<<ItemItemRatingPredictor>>> which configures it to be a rating
+      predictor.
+
+    []
+
+  []

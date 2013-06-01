@@ -1,0 +1,18 @@
+                         ---------------
+                          Release 0.3.1
+                         ---------------
+
+Release 0.3.1
+
+  The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
+  {{{http://bitbucket.org/grouplens/lenskit/issues?milestone=0.3.1&status=resolved}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+
+  * Removed the generic parameter from <<<DAOFactory>>>.  We will be
+    ensuring in a later release that the dependency injection
+    mechanism allows subclasses of <<<DataAccessObject>>> to be
+    visible as such.
+
+  []
+  

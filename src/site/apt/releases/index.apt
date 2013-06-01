@@ -1,0 +1,51 @@
+                        ---------------------
+                          Release Notes
+                        ---------------------
+
+#macro ( release $ver)
+* {{{./releases/lenskit-$ver.html}Release $ver}}
+#end
+
+LensKit Releases
+
+  #release("1.1")
+
+  #release("1.0.2")
+
+  #release("1.0.1")
+
+  #release("1.0")
+
+  #release("0.11")
+
+  #release("0.10")
+
+  #release("0.9")
+
+  #release("0.8.1")
+
+  #release("0.8")
+
+  #release("0.7")
+
+  #release("0.6")
+
+  #release("0.5")
+
+  #release("0.4")
+
+  #release("0.3.1")
+
+  #release("0.3")
+
+  #release("0.2")
+
+  #release("0.1")
+
+  #release("0.0.3")
+
+  #release("0.0.2") (March 28, 2011)
+
+  #release("0.0.1") (March 25, 2011)
+
+  []

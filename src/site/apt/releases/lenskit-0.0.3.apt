@@ -1,0 +1,45 @@
+                          ---------------
+                           Release 0.0.3
+                          ---------------
+
+Release 0.0.3
+
+  This release contains many large changes, including significant
+  architectural and API changes to make it easier to take LensKit
+  forward.  See the {{{http://dev.grouplens.org/hg/lenskit}Mercurial
+  changelog}} for complete change listings.  Highlights include:
+
+  * Dropped our use of Guice for dependency injection and
+    configuration.  Recommenders are now configured with the
+    <<<LenskitRecommenderComponentFactory>>> class.  PicoContainer
+    provides the underlying infrastructure, but this will be changing
+    in the future.
+
+  * Renamed and refactored classes in the recommender implementations
+    to improve clarity and consistency.
+    
+  * Upgraded to Maven 3 (#issue(38)); Maven 2 is currently unsupported
+    for building LensKit.  LensKit can, of course, be used by Maven 2
+    projects without problem.
+
+  * Lots of documentation improvements.
+
+  * Introduce <<<ImmutableSparseVector>>> and build more robust
+    type-checking for mutability guarantees on sparse vectors.
+
+  * Drop thread safety guarantee on <<<UserRatingProfile>>>. Many
+    profile implementations will likely be thread-safe, but we're not
+    promising it any more.
+
+  * Add a session concept to data access objects to make it easier to
+    deal with database handle scoping and related issues.
+
+  * Use Ant to manage evaluations.  This allows for more flexible
+    evaluation processing setups.
+    
+  []
+
+  The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
+  {{{http://bitbucket.org/grouplens/lenskit/issues?milestone=0.0.3&status=resolved}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
