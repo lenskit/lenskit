@@ -234,7 +234,7 @@ public final class Vectors {
             p2 = CollectionUtils.pointer(v2.fastIterator());
             leftEnt = new VectorEntry(v1, -1, 0, 0, false);
             rightEnt = new VectorEntry(v2, -1, 0, 0, false);
-            pair = new MutablePair<VectorEntry,VectorEntry>(leftEnt, rightEnt);
+            pair = MutablePair.of(leftEnt, rightEnt);
         }
 
         @Override
@@ -267,11 +267,9 @@ public final class Vectors {
             assert e1.getKey() == e2.getKey();
 
             leftEnt.set(e1.getIndex(), e1.getKey(), e1.getValue(), e1.isSet());
-            pair.setLeft(leftEnt);
             p1.advance();
 
             rightEnt.set(e2.getIndex(), e2.getKey(), e2.getValue(), e2.isSet());
-            pair.setRight(rightEnt);
             p2.advance();
 
             atNext = false;
