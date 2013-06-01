@@ -47,14 +47,14 @@ public final class ScoredIds {
      * @param vector The vector to view as a collection of {@link ScoredId}s
      */
     public static FastCollection<ScoredId> collectionFromVector(SparseVector vector) {
-        return new FastScoredIdCollectionImpl(vector);
+        return new VectorIdCollection(vector);
     }
 
-    private static class FastScoredIdCollectionImpl extends CopyingFastCollection<ScoredId> {
+    private static class VectorIdCollection extends CopyingFastCollection<ScoredId> {
 
         private final SparseVector vector;
 
-        public FastScoredIdCollectionImpl(SparseVector v) {
+        public VectorIdCollection(SparseVector v) {
             vector = v;
         }
 
@@ -77,17 +77,17 @@ public final class ScoredIds {
 
         @Override
         public Iterator<ScoredId> fastIterator() {
-            return new FastIdIterImpl(vector);
+            return new VectorIdIter(vector);
         }
     }
 
-    private static class FastIdIterImpl implements Iterator<ScoredId> {
+    private static class VectorIdIter implements Iterator<ScoredId> {
 
         private final SparseVector vector;
         private Iterator<VectorEntry> entIter;
         private VectorEntryScoredId id;
 
-        public FastIdIterImpl(SparseVector v) {
+        public VectorIdIter(SparseVector v) {
             vector = v;
             entIter = vector.fastIterator();
             id = new VectorEntryScoredId(vector);
