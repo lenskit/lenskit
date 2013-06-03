@@ -8,7 +8,7 @@
   </parent>
   <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.1</version>
   <packaging>pom</packaging>
   <name>LensKit</name>
   <description>Collaborative filtering toolkit from GroupLens Research</description>
@@ -32,7 +32,7 @@
     <connection>scm:hg:https://bitbucket.org/grouplens/lenskit</connection>
     <developerConnection>scm:hg:https://bitbucket.org/grouplens/lenskit</developerConnection>
     <url>https://bitbucket.org/grouplens/lenskit</url>
-    <tag>HEAD</tag>
+    <tag>lenskit-1.1</tag>
   </scm>
 
   <properties>
@@ -587,8 +587,8 @@
                   <target>
                     <copy todir="${project.build.directory}/site/downloads">
                       <fileset dir="${basedir}/lenskit-package/target">
-                        <include name="lenskit-${project.version}.zip"/>
-                        <include name="lenskit-${project.version}.tar.gz"/>
+                        <include name="lenskit-${project.version}.zip" />
+                        <include name="lenskit-${project.version}.tar.gz" />
                       </fileset>
                     </copy>
                   </target>

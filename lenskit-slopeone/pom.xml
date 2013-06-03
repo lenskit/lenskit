@@ -3,7 +3,7 @@
   <parent>
     <artifactId>lenskit</artifactId>
     <groupId>org.grouplens.lenskit</groupId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>lenskit-slopeone</artifactId>
@@ -72,9 +72,7 @@
                 <configuration>
                   <failOnError>false</failOnError>
                   <target>
-                    <ant antfile="${basedir}/src/eval/render.xml"
-                         target="render"
-                         dir="${basedir}"/>
+                    <ant antfile="${basedir}/src/eval/render.xml" target="render" dir="${basedir}" />
                   </target>
                 </configuration>
               </execution>

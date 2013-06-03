@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>lenskit</artifactId>
     <groupId>org.grouplens.lenskit</groupId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
     <relativePath>..</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -82,14 +80,12 @@
             <phase>pre-integration-test</phase>
             <configuration>
               <target>
-                <ant antfile="${basedir}/src/test/ant/get-data.xml"
-                     target="fetch-100k">
+                <ant antfile="${basedir}/src/test/ant/get-data.xml" target="fetch-100k">
                   <!--
                    Maven only exports POM value to Ant, not command-line value.
                    re-export here to get the right value.
                    -->
-                  <property name="lenskit.movielens.100k"
-                            value="${lenskit.movielens.100k}"/>
+                  <property name="lenskit.movielens.100k" value="${lenskit.movielens.100k}" />
                 </ant>
               </target>
             </configuration>
@@ -219,7 +215,7 @@
                 <mockRepo>
                   <source>${test.repo.directory}</source>
                 </mockRepo>
-                <proxyRepo/>
+                <proxyRepo />
               </repositories>
             </configuration>
             <executions>
@@ -255,20 +251,15 @@
                   <failOnError>false</failOnError>
                   <!-- FIXME Find a way to detect failure beyond scanning for missing files -->
                   <target>
-                    <property name="lenskit.version"
-                              value="${project.version}"/>
-                    <ant antfile="${basedir}/src/test/ant/test-archetypes.xml"
-                         target="all-tests">
+                    <property name="lenskit.version" value="${project.version}" />
+                    <ant antfile="${basedir}/src/test/ant/test-archetypes.xml" target="all-tests">
                       <!--
                        Maven only exports POM value to Ant, not command-line value.
                        re-export here to get the right value.
                       -->
-                      <property name="lenskit.movielens.100k"
-                                value="${lenskit.movielens.100k}"/>
-                      <property name="lenskit.eval.threadCount"
-                                value="${lenskit.eval.threadCount}"/>
-                      <property name="rscript.executable"
-                                value="${rscript.executable}"/>
+                      <property name="lenskit.movielens.100k" value="${lenskit.movielens.100k}" />
+                      <property name="lenskit.eval.threadCount" value="${lenskit.eval.threadCount}" />
+                      <property name="rscript.executable" value="${rscript.executable}" />
                     </ant>
                   </target>
                 </configuration>
