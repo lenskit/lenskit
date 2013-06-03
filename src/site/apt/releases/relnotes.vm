@@ -19,7 +19,13 @@ Release $ver $tail
 #end
 
 #macro( pmIntro $ver )
-  The {{{http://bitbucket.org/grouplens/lenskit/commits/tags/lenskit-$ver}Mercurial changelog}} and the
+#if( $project.version == "${ver}-SNAPSHOT" )##
+#set( $commits = "commits" )
+#else
+#set( $commits = "/commits/tags/lenskit-$ver" )
+#end
+
+  The {{{http://bitbucket.org/grouplens/lenskit/$commits}Mercurial changelog}} and the
   {{{http://bitbucket.org/grouplens/lenskit/issues?milestone=$ver&status=resolved}list
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
