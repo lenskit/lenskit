@@ -33,13 +33,13 @@ import org.grouplens.lenskit.baseline.BaselineItemScorer;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ConstantPredictor;
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor;
-import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
+import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.iterative.StoppingThreshold;
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition;
-import org.grouplens.lenskit.transform.threshold.ThresholdValue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -152,14 +152,14 @@ public class LenskitRecommenderEngineTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testParameter() throws RecommenderBuildException {
-        factory.set(ThresholdValue.class).to(0.01);
+        factory.set(StoppingThreshold.class).to(0.042);
         factory.addRoot(ThresholdStoppingCondition.class);
         LenskitRecommenderEngine engine = factory.create();
         LenskitRecommender rec = engine.open();
         ThresholdStoppingCondition stop = rec.get(ThresholdStoppingCondition.class);
         assertThat(stop, notNullValue());
         assertThat(stop.getThreshold(),
-                   closeTo(0.01, 1.0e-6));
+                   closeTo(0.042, 1.0e-6));
     }
 
     @SuppressWarnings({"rawtypes"})
