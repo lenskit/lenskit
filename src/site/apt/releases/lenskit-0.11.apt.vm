@@ -1,8 +1,5 @@
-                               --------------
-                                Release 0.11
-                               --------------
-
-Release 0.11
+#parse("relnotes.vm")
+#header("0.11")
 
   The primary focus of this release is making LensKit use {{{http://bitbucket.org/grouplens/grapht}Grapht}}
   rather than PicoContainer, with additional refactorings of components to more
@@ -14,11 +11,9 @@ Release 0.11
   algorithm implementations will definitely need to be updated; other client code may need
   updates as well.
 
-  The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
-  {{{http://bitbucket.org/grouplens/lenskit/issues?milestone=0.11&status=resolved}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.
+  #pmIntro("0.11")
 
+* General Changes
 
   * Made <<<SparseVector>>> return <<<VectorEntry>>> objects when iterated,
     rather than <<<Long2DoubleMap.Entry>>> instances. All code that iterates over sparse

@@ -1,13 +1,5 @@
-                               -------------
-                                Release 0.9
-                               -------------
-
-Release 0.9
-
-  The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
-  {{{http://bitbucket.org/grouplens/lenskit/issues?milestone=0.9&status=resolved}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.
+#parse("relnotes.vm")
+#stdHeader("0.9")
 
   * Clean up documentation, warnings, and documenting annotations in
     several places. Also made many style fixes.

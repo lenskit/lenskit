@@ -333,7 +333,14 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.2</version>
+          <version>3.3</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.velocity</groupId>
+              <artifactId>velocity</artifactId>
+              <version>1.6</version>
+            </dependency>
+          </dependencies>
         </plugin>
 
       </plugins>

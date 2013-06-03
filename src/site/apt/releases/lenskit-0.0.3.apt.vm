@@ -1,13 +1,9 @@
-                          ---------------
-                           Release 0.0.3
-                          ---------------
-
-Release 0.0.3
+#parse("relnotes.vm")
+#stdHeader("0.0.3")
 
   This release contains many large changes, including significant
   architectural and API changes to make it easier to take LensKit
-  forward.  See the {{{http://dev.grouplens.org/hg/lenskit}Mercurial
-  changelog}} for complete change listings.  Highlights include:
+  forward.  Highlights include:
 
   * Dropped our use of Guice for dependency injection and
     configuration.  Recommenders are now configured with the
@@ -38,8 +34,3 @@ Release 0.0.3
     evaluation processing setups.
     
   []
-
-  The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
-  {{{http://bitbucket.org/grouplens/lenskit/issues?milestone=0.0.3&status=resolved}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.

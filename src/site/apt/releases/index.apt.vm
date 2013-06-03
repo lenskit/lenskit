@@ -2,8 +2,8 @@
                           Release Notes
                         ---------------------
 
-#macro ( release $ver)
-* {{{./releases/lenskit-$ver.html}Release $ver}}
+#macro ( release $ver )
+* {{{./lenskit-${ver}.html}Release $ver}}
 #end
 
 LensKit Releases

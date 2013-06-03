@@ -1,8 +1,5 @@
-                            -------------
-                             Release 0.1
-                            -------------
-
-Release 0.1
+#parse("relnotes.vm")
+#header("0.1")
 
   The first beta release!  What this means for the future is that our
   core APIs (such as the recommenders and predictors) are pretty
@@ -40,10 +37,7 @@ Release 0.1
 
   []
 
-  The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
-  {{{http://bitbucket.org/grouplens/lenskit/issues?milestone=0.1&status=resolved}list
-  of closed tickets}} provide more information on what has happened,
-  including bugs that have been fixed.
+  #pmIntro("0.1")
 
   Keep watching LensKit for further developments and lots of exciting
   new work this summer.
