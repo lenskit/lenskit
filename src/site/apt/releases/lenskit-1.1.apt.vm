@@ -1,9 +1,17 @@
 #parse("relnotes.vm")
 #stdHeader("1.1")
 
-  This release requires some recommender configuration changes; see {{{http://bitbucket.org/grouplens/lenskit/wiki/UpgradingTo11}Upgrading to LensKit 1.1}} for details on how to do this.
+  This release requires some recommender configuration changes, as
+  well as changes to any custom components depending on LensKit
+  parameter annotations; see
+  {{{http://bitbucket.org/grouplens/lenskit/wiki/UpgradingTo11}Upgrading
+  to LensKit 1.1}} for details on how to do this.
 
-  * Made <<<Recommender>>> extend <<<Closeable>>>.
+  There are quite a few changes in LensKit 1.1; this list is not
+  exhaustive, but tries to capture highlights and things that will
+  affect current users.
+
+  * Made <<<Recommender>>> extend <<<Closeable>>> (#issue 315).
 
   * Added side channel support to sparse vectors (#issue(185)).
 
@@ -14,37 +22,28 @@
   * Made <<<SparseVector>>> constructors package-private.  Sparse vectors shouldn't be
     subclassed by any additional classes.
 
-  * Introduced <<<predict>>> methods to <<<RatingPredictor>>>, deprecating the fact that it
-    extends <<<ItemScorer>>>.
+  * <<Config change>>: introduced <<<predict>>> methods to
+    <<<RatingPredictor>>>, deprecating the fact that it extends
+    <<<ItemScorer>>> (#issue(164)).  As a result, all algorithm item
+    scorers now implement <<<ItemScorer>>>, <not>
+    <<<RatingPredictor>>>, and new rating predictors fill in the old
+    jobs.  The
+    {{{http://bitbucket.org/grouplens/lenskit/wiki/UpgradingTo11}upgrading
+    guide}}, #issue(164), and #issue(311) contain more details.
 
   * <<Incompatible change>>: moved abstract and simple/score-based implementations of basic
     recommender components to the new package <<<o.g.l.basic>>>.  This should only be incompatible
     for people implementing new LensKit components.
 
-  * Replaced <<<LongScoredList>>> with a list of <<<ScoredId>>> objects in Item-Item
-    model construction to support side channels (#issue(219)).
+  * <<Config change>>: Removed dedicated <<<params>>> packages, moving
+    parameters to saner locations (#issue(294)).  See the
+    {{{http://bitbucket.org/grouplens/lenskit/wiki/UpgradingTo11}upgrading
+    guide}} for details.
 
-  * <<Config change>>: Removed dedicated <<<params>>> packages, moving parameters to saner locations
-    (#issue(219)):
+  * Many little cleanups and bug-fixes.
 
-    * Similarity damping is now configured with <<<o.g.l.vectors.similarity.SimilarityDamping>>>.
+  * Lots more automatic testing support.
 
-    * Baseline (and normalizer) damping is now configured with <<<o.g.l.baseline.MeanDamping>>>.
-
-    * Slope One deviation damping is now configured with <<<o.g.l.slopeone.DeviationDamping>>>.
-
-    * <<<@EventType>>> is now in <<<o.g.l.data.event>>>.
-
-    * <<<@SigWeightThreshold>>> is now in <<<o.g.l.vectors.similarity>>>.
-
-    * <<<@ThresholdValue>>> is now in <<<o.g.l.transform.threshold>>>.
-
-    * Item-item model size is now configured with <<<o.g.l.knn.item.ModelSize>>>.
-
-    * k-NN neighborhood sizes are now configured with <<<o.g.l.knn.NeighborhoodSize>>>.
-
-    * FunkSVD feature count is now configured with <<<o.g.l.funksvd.FeatureCount>>>.
-  
   []
 
 * Algorithms
@@ -52,20 +51,31 @@
   * Item-item scorers now report the number of neighbors used for each score as
     a side channel.
 
-  * <<Default change>>: changed default <<<ModelSize>>> to 0 (all neighbors retained); by
-    default, item-item models now retain all neighbors with nonnegative similarities.
-
   * Deprecated algorithm-specific item recommenders in favor of using
     <<<ScoreBasedItemRecommender>>> directly.
 
-  * <<Config change>>: Changed the default value for <<<MinimumIterations>>> to 10.
+  * Added <<<LeastSquaresPredictor>>>, a baseline predictor that uses gradient descent to
+    train per-item and per-user baseline values (à la Koren et al.).
 
-  * <<Config change>>: Changed the default value for <<<ModelSize>>> to 20 (was 30).
+  []
 
-  * <<Config change>>: Refactored the item-item recommender to get rid of
-    <<<ItemItemModelBackedScorer>>>, simplifying the class hierarchy and configuration.
-    Configurations must now specify the <<<ItemItemScorer>>> or <<<ItemItemRatingPredictor>>>;
-    using <<<ItemItemRecommender>>> no longer forces that.
+** k-NN Recommenders
+
+  * <<Default change>>: changed default <<<ModelSize>>> to 0 (all neighbors retained); by
+    default, item-item models now retain all neighbors with nonnegative similarities.
+
+  * <<Default change>>: Changed the default value for <<<ModelSize>>> to 20 (was 30).
+
+  * Refactored the item-item recommender to get rid of
+    <<<ItemItemModelBackedScorer>>>, simplifying the class hierarchy
+    and configuration.
+
+  * Replaced <<<LongScoredList>>> with a list of <<<ScoredId>>> objects in Item-Item
+    model construction to support side channels (#issue(219)).
+
+  []
+
+** Funk-SVD
 
   * <<Incompatible change>>: moved iterative support code to <<<o.g.l.iterative>>> and
     changed parameters. The <<<StoppingCondition>>> interface and implementations now live
@@ -83,17 +93,17 @@
     * The FunkSVD <<<LearningRate>>> and <<<RegularizationTerm>>> have been moved to
       the new iterative parameters package.
 
+    * <<Config change>>: Changed the default value for <<<MinimumIterations>>> to 10.
+
     []
 
-  * Added <<<LeastSquaresPredictor>>>, a baseline predictor that uses gradient descent to
-    train per-item and per-user baseline values (à la Koren et al.).
+  * Added several new configuration points to the Funk-SVD model builder
 
   []
 
 * Evaluator
 
   * <<<TrainTestEvalCommand>>> now returns <<<Table>>>, not <<<TableImpl>>>.
-
 
   * Eval configuration changes
 
@@ -105,20 +115,10 @@
 
     []
 
-  * Train-test evaluator always runs, even if output is up-to-date with respect to input;
-    use the <<<lenskit.eval.skip>>> Maven property to disable the evaluator when it via
-    Maven and you only want to run post-eval analysis phases.
+  * Added a <<<trainModel>>> command that trains a model and applies
+    arbitrary functions to it.
 
-  * Train-test evaluator now has <<<predictionChannel>>> directive to write side channel
-    values out to the prediction output file.
-
-  * Added <<<retain>>> directive to the <<<trainTest>>> command to retain a fixed number
-    of items per user.
-
-  * Deprecated the <<<holdout>>> directive on <<<trainTest>>> that takes a fraction in favor
-    of the clearer <<<holdoutFraction>>> directive.
-
-  * Table changes (these should affect client code at present):
+  * Table changes:
 
     * Tables now live in <<<o.g.l.util.table>>>.
 
@@ -132,5 +132,56 @@
     * Table writers now live in <<<o.g.l.util.table.writer>>>.
 
     []
+
+  * Many improvements to the <<<dumpGraph>>> command (#issue(264)).
+
+  * <<<AbstractCommand>>> now allows for the name to be null, although
+    null names can never be exposed to callers.
+
+  * Added
+    {{{../lenskit-eval-maven-plugin/run-r-mojo.html}<<<run-r>>>}} goal
+    to the Maven plugin to run R.
+
+  * Added the <<<lenskit-publish>>> phase to the LensKit evaluation
+    lifecycle as a place to hook in and generate reports that use the
+    output of <<<lenskit-analyze>>>.
+
+  * Added the <<<subsample>>> command to subsample a data set.
+
+  []
+
+** Train-Test Evaluator
+
+  * Train-test evaluator always runs, even if output is up-to-date
+    with respect to input; use the <<<lenskit.eval.skip>>> Maven
+    property to disable the evaluator when running it via Maven and
+    you only want to run post-eval analysis phases.
+
+  * Train-test evaluator now has <<<predictionChannel>>> directive to
+    write side channel values out to the prediction output file.
+
+  * Added <<<retain>>> directive to the <<<trainTest>>> command to retain a fixed number
+    of items per user.
+
+  * Deprecated the <<<holdout>>> directive on <<<trainTest>>> that takes a fraction in favor
+    of the clearer <<<holdoutFraction>>> directive.
+
+  * Add the ability for <<<metric>>> to take an arbitrary function to
+    compute metrics over an algorithm, and <<<multiMetric>>> to
+    compute multiple metrics per algorithm.
+
+  * Added the <<<externalAlgorithm>>> directive to allow algorithms
+    implemented in external processes to be evaluated.
+
+  []
+
+* Archetypes
+
+  * Added
+    {{{../lenskit-archetype-fancy-analysis/}lenskit-archetype-fancy-analysis}}
+    archetype to provide a template for more sophisticated LensKit
+    experimental setups.
+
+  * Improved the simple archetype to use the new R mojo.
 
   []
