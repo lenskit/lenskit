@@ -36,7 +36,6 @@ import javax.inject.Qualifier;
  * @see org.grouplens.lenskit.transform.threshold
  */
 @Documented
-@DefaultDouble(0.0)
 @Parameter(Double.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
