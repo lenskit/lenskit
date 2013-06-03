@@ -336,6 +336,11 @@
           <version>3.3</version>
           <dependencies>
             <dependency>
+              <groupId>org.apache.maven.wagon</groupId>
+              <artifactId>wagon-ssh-external</artifactId>
+              <version>2.2</version>
+            </dependency>
+            <dependency>
               <groupId>org.apache.velocity</groupId>
               <artifactId>velocity</artifactId>
               <version>1.6</version>
