@@ -46,7 +46,6 @@
     <groovy.version>1.8.6</groovy.version>
     <gmaven.version>1.5</gmaven.version>
     <gmaven.runtime>1.8</gmaven.runtime>
-    <grouplens.common.version>0.7</grouplens.common.version>
     <lenskit.clean.removeAll>false</lenskit.clean.removeAll>
   </properties>
 
@@ -476,7 +475,7 @@
               <tagletArtifact>
                 <groupId>org.grouplens.common</groupId>
                 <artifactId>common-javadoc</artifactId>
-                <version>${grouplens.common.version}</version>
+                <version>0.7</version>
               </tagletArtifact>
             </taglet>
             <taglet>
