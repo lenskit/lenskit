@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,8 +23,12 @@ package org.grouplens.lenskit.baseline;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
+import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.params.Damping;
+import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.util.IdMeanAccumulator;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -30,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import static java.lang.Math.abs;
 
@@ -40,20 +47,20 @@ import static java.lang.Math.abs;
  * actually computing the average offset from the global mean and adding back
  * the global mean for the returned prediction.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultProvider(UserMeanPredictor.Provider.class)
+@DefaultProvider(UserMeanPredictor.Builder.class)
 @Shareable
-public class UserMeanPredictor extends GlobalMeanPredictor {
+public class UserMeanPredictor extends AbstractBaselinePredictor {
     private static final Logger logger = LoggerFactory.getLogger(UserMeanPredictor.class);
 
     /**
      * A builder that creates UserMeanPredictors.
      *
-     * @author Michael Ludwig <mludwig@cs.umn.edu>
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Provider implements javax.inject.Provider<UserMeanPredictor> {
-        private double smoothing = 0;
+    public static class Builder implements Provider<UserMeanPredictor> {
+        private double damping = 0;
         private DataAccessObject dao;
 
         /**
@@ -63,38 +70,70 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
          * @param damping The damping term.
          */
         @Inject
-        public Provider(@Transient DataAccessObject dao,
-                        @Damping double damping) {
+        public Builder(@Transient DataAccessObject dao,
+                       @MeanDamping double damping) {
             this.dao = dao;
-            smoothing = damping;
+            this.damping = damping;
         }
 
         @Override
         public UserMeanPredictor get() {
             logger.debug("Building new user mean scorer");
 
-            logger.debug("damping = {}", smoothing);
-            double mean = GlobalMeanPredictor.computeMeanRating(dao);
+            logger.debug("damping = {}", damping);
+
+            final ImmutableSparseVector userMeans;
+            final double mean;
+            Cursor<Rating> cur = dao.getEvents(Rating.class);
+            try {
+                IdMeanAccumulator accum = new IdMeanAccumulator();
+                // TODO Make this work properly with multiple ratings
+                for (Rating r: cur.fast()) {
+                    Preference p = r.getPreference();
+                    if (p != null) {
+                        accum.put(p.getUserId(), p.getValue());
+                    }
+                }
+                userMeans = accum.idMeanOffsets(damping);
+                mean = accum.globalMean();
+            } finally {
+                cur.close();
+            }
+
             logger.debug("Computed global mean {}", mean);
-            return new UserMeanPredictor(mean, smoothing);
+            return new UserMeanPredictor(mean, damping, userMeans);
         }
     }
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     private final double globalMean;
     private final double damping;
+    private final ImmutableSparseVector userMeans;
 
     /**
      * Construct a scorer that computes user means offset by the global mean.
      *
-     * @param mean The global mean rating.
-     * @param damp A damping term for the calculations.
+     * @param mean   The global mean rating.
+     * @param damp   A damping term for the calculations.
+     * @param umeans The mean rating for each user.
      */
-    public UserMeanPredictor(double mean, double damp) {
-        super(mean);
+    public UserMeanPredictor(double mean, double damp, ImmutableSparseVector umeans) {
         globalMean = mean;
         damping = damp;
+        userMeans = umeans;
+    }
+
+    @Override
+    public void predict(long user, MutableSparseVector output, boolean predictSet) {
+        double mean = globalMean + userMeans.get(user, 0);
+        if (predictSet) {
+            output.fill(mean);
+        } else {
+            for (VectorEntry e : output.fast(VectorEntry.State.UNSET)) {
+                output.set(e, mean);
+            }
+        }
     }
 
     static double average(SparseVector ratings, double globalMean, double smoothing) {
@@ -104,8 +143,14 @@ public class UserMeanPredictor extends GlobalMeanPredictor {
         return (ratings.sum() + smoothing * globalMean) / (ratings.size() + smoothing);
     }
 
-    /* (non-Javadoc)
-     * @see org.grouplens.lenskit.RatingPredictor#predict(long, java.util.Map, java.util.Collection)
+    /**
+     * Compute baseline predictions for a user. This uses the rating vector rather than the
+     * memorized mean.
+     *
+     * @param user The user.
+     * @param ratings The user's rating vector.
+     * @param output The output vector.
+     * @param predictSet Whether to predict already-set values in {@code output}.
      */
     @Override
     public void predict(long user, SparseVector ratings,

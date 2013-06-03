@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -27,6 +29,7 @@ import com.google.common.base.Function;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Singleton;
 import java.io.Serializable;
@@ -34,7 +37,7 @@ import java.io.Serializable;
 /**
  * Summarize a history by extracting a rating vector.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 @ThreadSafe
@@ -54,8 +57,11 @@ public final class RatingVectorUserHistorySummarizer implements UserHistorySumma
         return history.memoize(this);
     }
 
-    @Override
+    @Override @Nonnull
     public SparseVector apply(UserHistory<? extends Event> history) {
+        if (history == null) {
+            throw new IllegalArgumentException("history is null");
+        }
         return Ratings.userRatingVector(history.filter(Rating.class));
     }
 
@@ -66,6 +72,11 @@ public final class RatingVectorUserHistorySummarizer implements UserHistorySumma
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "RatingVectorUserHistorySummarizer";
     }
 
     /**

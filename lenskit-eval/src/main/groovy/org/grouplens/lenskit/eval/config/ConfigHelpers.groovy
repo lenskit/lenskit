@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,18 +20,27 @@
  */
 package org.grouplens.lenskit.eval.config
 
+import org.slf4j.LoggerFactory
+
 import static org.grouplens.lenskit.eval.config.ParameterTransforms.pickInvokable
 import org.apache.commons.lang3.reflect.ConstructorUtils
 import org.grouplens.lenskit.eval.Command
-import org.codehaus.groovy.runtime.GroovyCategorySupport
 
 /**
  * Helper methods for invoking configuration methods.
- * @author Michael Ekstrand
+ * <p>
+ * These methods often work by returning closures which, when invoked, will perform the
+ * correct action.
+ * <p>
+ * <b>Warning</b>: here be dragons!
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 class ConfigHelpers {
-    static <T> Object makeCommandDelegate(EvalConfigEngine engine, Command<T> command) {
+    private static def logger = LoggerFactory.getLogger(ConfigHelpers)
+
+    static <T> Object makeCommandDelegate(EvalScriptEngine engine, Command<T> command) {
         def annot = command.class.getAnnotation(ConfigDelegate)
         if (annot == null) {
             return new CommandDelegate<T>(engine, command)
@@ -38,7 +49,7 @@ class ConfigHelpers {
             // try two-arg constructor
             def ctor = dlgClass.constructors.find {
                 def formals = it.parameterTypes
-                formals.length == 2 && formals[0].isAssignableFrom(EvalConfigEngine) && formals[1].isInstance(command)
+                formals.length == 2 && formals[0].isAssignableFrom(EvalScriptEngine) && formals[1].isInstance(command)
             }
             if (ctor != null) {
                 return ctor.newInstance(engine, command)
@@ -67,7 +78,8 @@ class ConfigHelpers {
      * @throws IllegalArgumentException if the command can be found but {@code args} is
      * inappropriate.
      */
-    static Closure findCommandMethod(EvalConfigEngine engine, String name, args) {
+    static Closure findCommandMethod(EvalScriptEngine engine, String name, args) {
+        logger.debug("searching for command {}", name)
         Class<? extends Command> commandClass = engine.getCommand(name)
         if (commandClass == null) return null
 
@@ -84,10 +96,12 @@ class ConfigHelpers {
         }
     }
 
-    static def makeCommandClosure(Class<? extends Command> cmd, EvalConfigEngine engine, Object[] args) {
+    static def makeCommandClosure(Class<? extends Command> cmd, EvalScriptEngine engine, Object[] args) {
+        logger.debug("making closure for command {}", cmd);
         Closure block = null
         Object[] trimmedArgs
         if (args.length > 0 && args[args.length - 1] instanceof Closure) {
+            logger.debug("command has configuration block")
             block = args[args.length - 1] as Closure
             trimmedArgs = Arrays.copyOf(args, args.length - 1)
         } else {
@@ -107,6 +121,7 @@ class ConfigHelpers {
             return {
                 Object[] txargs = bestCtor.right.collect({it.get()})
                 def command = bestCtor.left.newInstance(txargs)
+                command.setConfig(engine.config)
                 runner.invoke(command, block)
             }
         } else {

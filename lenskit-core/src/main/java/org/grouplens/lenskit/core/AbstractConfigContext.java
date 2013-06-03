@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,16 +22,18 @@ package org.grouplens.lenskit.core;
 
 import com.google.common.base.Preconditions;
 import org.grouplens.grapht.Binding;
+import org.grouplens.grapht.AbstractContext;
 
+import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 
 /**
  * Helper for implementing Lenskit config contexts.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.0
  */
-public abstract class AbstractConfigContext implements LenskitConfigContext {
+public abstract class AbstractConfigContext extends AbstractContext implements LenskitConfigContext {
     @Override
     @SuppressWarnings("rawtypes")
     public Binding set(Class<? extends Annotation> param) {
@@ -39,5 +43,20 @@ public abstract class AbstractConfigContext implements LenskitConfigContext {
             throw new IllegalArgumentException(param.toString() + "has no Parameter annotation");
         }
         return bind(annot.value()).withQualifier(param);
+    }
+    
+    @Override
+    public LenskitConfigContext in(Class<?> type) {
+        return within(type);
+    }
+    
+    @Override
+    public LenskitConfigContext in(@Nullable Class<? extends Annotation> qualifier, Class<?> type) {
+        return within(qualifier, type);
+    }
+    
+    @Override
+    public LenskitConfigContext in(@Nullable Annotation qualifier, Class<?> type) {
+        return within(qualifier, type);
     }
 }

@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,16 +23,18 @@ package org.grouplens.lenskit.eval.metrics;
 /**
  * A simple metric base class that tracks the current evaluation.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public abstract class AbstractMetric<E> implements Metric<E> {
     private E currentEvaluation;
 
+    @Override
     public void startEvaluation(E eval) {
         currentEvaluation = eval;
     }
 
+    @Override
     public void finishEvaluation() {
         currentEvaluation = null;
     }

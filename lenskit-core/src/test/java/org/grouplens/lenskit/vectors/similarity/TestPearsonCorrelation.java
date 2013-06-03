@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -25,13 +27,15 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.grouplens.common.test.MoreMatchers.closeTo;
+import static org.hamcrest.Matchers.closeTo;
 import static org.junit.Assert.assertThat;
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestPearsonCorrelation {
+    private static final double EPSILON = 1.0e-5;
+
     VectorSimilarity sim;
 
     @Before
@@ -42,7 +46,7 @@ public class TestPearsonCorrelation {
     @Test
     public void testEmptyVector() {
         SparseVector v = new ImmutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
-        assertThat(sim.similarity(v, v), closeTo(0));
+        assertThat(sim.similarity(v, v), closeTo(0, EPSILON));
     }
 
     @Test
@@ -50,8 +54,8 @@ public class TestPearsonCorrelation {
         long keys[] = {1, 5, 7};
         double values[] = {1.5, 2.5, 2};
         SparseVector v = MutableSparseVector.wrap(keys, values).freeze();
-        assertThat(sim.similarity(v, v), closeTo(1));
-        assertThat(sim.similarity(v, v.mutableCopy().freeze()), closeTo(1));
+        assertThat(sim.similarity(v, v), closeTo(1, EPSILON));
+        assertThat(sim.similarity(v, v.mutableCopy().freeze()), closeTo(1, EPSILON));
     }
 
     @Test
@@ -61,7 +65,7 @@ public class TestPearsonCorrelation {
         long keys2[] = {2, 4, 8};
         SparseVector v1 = MutableSparseVector.wrap(keys, values).freeze();
         SparseVector v2 = MutableSparseVector.wrap(keys2, values).freeze();
-        assertThat(sim.similarity(v1, v2), closeTo(0));
+        assertThat(sim.similarity(v1, v2), closeTo(0, EPSILON));
     }
 
     @Test
@@ -72,6 +76,6 @@ public class TestPearsonCorrelation {
         double val2[] = {2, 2.5, 1.7};
         SparseVector v1 = MutableSparseVector.wrap(k1, val1).freeze();
         SparseVector v2 = MutableSparseVector.wrap(k2, val2).freeze();
-        assertThat(sim.similarity(v1, v2), closeTo(.806404996));
+        assertThat(sim.similarity(v1, v2), closeTo(0.806404996, EPSILON));
     }
 }

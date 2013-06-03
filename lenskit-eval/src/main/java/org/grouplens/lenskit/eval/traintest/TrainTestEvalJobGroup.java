@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -24,14 +26,14 @@ import com.google.common.base.Suppliers;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
-import org.grouplens.lenskit.eval.AlgorithmInstance;
 import org.grouplens.lenskit.eval.Job;
 import org.grouplens.lenskit.eval.JobGroup;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.util.SoftLazyValue;
-import org.grouplens.lenskit.util.tablewriter.TableWriter;
+import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,14 +44,14 @@ import java.util.concurrent.Callable;
 /**
  * Run train-test evaluations of several algorithms over a data set.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
-public class TrainTestEvalJobGroup implements JobGroup {
+class TrainTestEvalJobGroup implements JobGroup<Void> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalJobGroup.class);
 
     private TTDataSet dataSet;
-    private List<Job> jobs;
+    private List<Job<Void>> jobs;
 
     private TrainTestEvalCommand evaluation;
 
@@ -57,6 +59,7 @@ public class TrainTestEvalJobGroup implements JobGroup {
     public TrainTestEvalJobGroup(TrainTestEvalCommand eval,
                                  List<AlgorithmInstance> algos,
                                  List<TestUserMetric> evals,
+                                 List<ModelMetric> modelMetrics,
                                  TTDataSet data, int partition,
                                  int numRecs) {
         evaluation = eval;
@@ -77,15 +80,15 @@ public class TrainTestEvalJobGroup implements JobGroup {
                     }
                 });
 
-        jobs = new ArrayList<Job>(algos.size());
+        jobs = new ArrayList<Job<Void>>(algos.size());
         for (AlgorithmInstance algo : algos) {
             Function<TableWriter, TableWriter> prefix = eval.prefixFunction(algo, data);
             TrainTestEvalJob job = new TrainTestEvalJob(
-                    algo, evals, data, snap,
+                    algo, evals, modelMetrics, eval.getPredictionChannels(), data, snap,
                     Suppliers.compose(prefix, evaluation.outputTableSupplier()),
+                    Suppliers.compose(prefix, evaluation.userTableSupplier()),
+                    Suppliers.compose(prefix, evaluation.predictTableSupplier()),
                     numRecs);
-            job.setUserOutput(Suppliers.compose(prefix, evaluation.userTableSupplier()));
-            job.setPredictOutput(Suppliers.compose(prefix, evaluation.predictTableSupplier()));
             jobs.add(job);
         }
     }
@@ -106,7 +109,7 @@ public class TrainTestEvalJobGroup implements JobGroup {
     }
 
     @Override
-    public List<Job> getJobs() {
+    public List<Job<Void>> getJobs() {
         return jobs;
     }
 

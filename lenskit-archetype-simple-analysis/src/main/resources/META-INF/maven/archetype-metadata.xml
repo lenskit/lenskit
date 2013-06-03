@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <archetype-descriptor name="simple-analysis">
   <id>lenskit-archetype-simple-analysis</id>
-  <sources>
-    <source>src/main/java/App.java</source>
-  </sources>
-  <testSources>
-    <source>src/test/java/AppTest.java</source>
-  </testSources>
   
   <!-- These resources will be copied out of the archetype-resources
        directory into the newly created target project. -->

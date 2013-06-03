@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,6 +21,7 @@
 package org.grouplens.lenskit.collections;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -38,7 +41,7 @@ import org.junit.Test;
 
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestLongSortedArraySet {
     @SuppressWarnings("unchecked")
@@ -189,7 +192,7 @@ public class TestLongSortedArraySet {
         BitSet bits = new BitSet(data.length);
         bits.set(1, data.length);
         LongSortedSet set = LongSortedArraySet.wrap(data, data.length, bits);
-        assertThat(set.size(), equalTo(4));
+        assertThat(set, hasSize(4));
         assertThat(set.first(), equalTo(7l));
         assertThat(set.last(), equalTo(639l));
         assertTrue(set.contains(7));
@@ -201,7 +204,7 @@ public class TestLongSortedArraySet {
                    equalTo(new long[]{7, 8, 42, 639}));
         assertThat(LongIterators.unwrap(set.iterator(7)),
                    equalTo(new long[]{8, 42, 639}));
-        assertThat(set.headSet(42).size(), equalTo(2));
+        assertThat(set.headSet(42), hasSize(2));
     }
 
     @Test
@@ -211,7 +214,7 @@ public class TestLongSortedArraySet {
         bits.set(0, data.length);
         bits.clear(2);
         LongSortedSet set = LongSortedArraySet.wrap(data, data.length, bits);
-        assertThat(set.size(), equalTo(4));
+        assertThat(set, hasSize(4));
         assertThat(set.first(), equalTo(2l));
         assertThat(set.last(), equalTo(639l));
         assertTrue(set.contains(7));
@@ -223,7 +226,7 @@ public class TestLongSortedArraySet {
                    equalTo(new long[]{7, 42, 639}));
         assertThat(LongIterators.unwrap(set.iterator(7)),
                    equalTo(new long[]{42, 639}));
-        assertThat(set.headSet(42).size(), equalTo(2));
+        assertThat(set.headSet(42), hasSize(2));
         assertThat(set.toLongArray(),
                    equalTo(new long[]{2, 7, 42, 639}));
     }
@@ -234,7 +237,7 @@ public class TestLongSortedArraySet {
         BitSet bits = new BitSet(data.length);
         bits.set(0, data.length - 1);
         LongSortedSet set = LongSortedArraySet.wrap(data, data.length, bits);
-        assertThat(set.size(), equalTo(4));
+        assertThat(set, hasSize(4));
         assertThat(set.first(), equalTo(2l));
         assertThat(set.last(), equalTo(42l));
         assertTrue(set.contains(8));
@@ -266,7 +269,6 @@ public class TestLongSortedArraySet {
     }
 
     @Test
-    @Ignore("until the bit set iterator is properly bidirectional")
     public void testMaskedIterator() {
         long[] data = {2, 7, 8, 42, 639};
         BitSet bits = new BitSet(data.length);
@@ -279,7 +281,6 @@ public class TestLongSortedArraySet {
     }
 
     @Test
-    @Ignore("until the bit set iterator is properly bidirectional")
     public void testMaskedIteratorMid() {
         long[] data = {2, 7, 8, 42, 639};
         BitSet bits = new BitSet(data.length);

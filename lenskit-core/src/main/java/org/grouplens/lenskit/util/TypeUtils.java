@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -27,13 +29,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Various type utilities used in LensKit.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TypeUtils {
     /**
@@ -92,29 +96,39 @@ public class TypeUtils {
     }
 
     /**
-     * Function that gets the class for its argument.
+     * Function that casts classes to specified types.  This function does not accept nulls.
      *
      * @param supertype A class known to be a valid supertype for any argument.
      */
     public static <T> Function<Class<?>, Class<? extends T>> asSubclass(final Class<T> supertype) {
         return new Function<Class<?>, Class<? extends T>>() {
             @Override
+            @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
             public Class<? extends T> apply(Class<?> input) {
-                return input.asSubclass(supertype);
+                if (input == null) {
+                    throw new NullPointerException("null class");
+                } else {
+                    return input.asSubclass(supertype);
+                }
             }
         };
     }
 
     /**
-     * Function that gets the class for its argument.
+     * Function that gets the class for its argument.  This function does not accept nulls.
      *
      * @param supertype A class known to be a valid supertype for any argument.
      */
     public static <T> Function<T, Class<? extends T>> extractClass(final Class<T> supertype) {
         return new Function<T, Class<? extends T>>() {
             @Override
+            @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
             public Class<? extends T> apply(T input) {
-                return input.getClass().asSubclass(supertype);
+                if (input == null) {
+                    throw new NullPointerException("null class");
+                } else {
+                    return input.getClass().asSubclass(supertype);
+                }
             }
         };
     }

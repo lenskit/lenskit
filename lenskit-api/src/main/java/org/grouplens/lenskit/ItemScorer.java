@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -42,7 +44,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * the ID-based methods.
  * </p>
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  * @since 0.4
  */
@@ -52,8 +54,7 @@ public interface ItemScorer {
      *
      * @param user The user ID for whom to generate a score.
      * @param item The item ID to score.
-     * @return The preference, or {@link Double#NaN} if no preference can be
-     *         predicted.
+     * @return The score, or {@link Double#NaN} if no score can be generated.
      * @see #score(UserHistory, MutableSparseVector)
      */
     double score(long user, long item);

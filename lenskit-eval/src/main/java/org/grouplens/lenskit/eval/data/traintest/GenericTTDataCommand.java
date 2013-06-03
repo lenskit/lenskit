@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -26,7 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
     private DataSource trainingData;
@@ -34,14 +36,11 @@ public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
     private Map<String, Object> attributes = new LinkedHashMap<String, Object>();
 
     public GenericTTDataCommand() {
-        super("TTData");
+        this(null);
     }
 
     public GenericTTDataCommand(String name) {
-        this();
-        if (name != null) {
-            setName(name);
-        }
+        super(name);
     }
 
     public GenericTTDataCommand setTrain(DataSource ds) {
@@ -54,6 +53,15 @@ public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
         return this;
     }
 
+    @Override
+    public String getName() {
+        if (hasName()) {
+            return super.getName();
+        } else {
+            return trainingData.getName();
+        }
+    }
+
     public Map<String, Object> getAttributes() {
         return attributes;
     }
@@ -63,12 +71,13 @@ public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
         return this;
     }
 
+    @Override
     public GenericTTDataSet call() {
         if (attributes.isEmpty()) {
-            attributes.put("DataSet", name);
+            attributes.put("DataSet", getName());
         }
         Preconditions.checkNotNull(trainingData, "train data is Null");
-        return new GenericTTDataSet(name, trainingData,
+        return new GenericTTDataSet(getName(), trainingData,
                                     testData, trainingData.getPreferenceDomain(),
                                     attributes);
     }

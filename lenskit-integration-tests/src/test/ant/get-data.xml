@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="lenskit-itest-prep">
+  <!-- Set up the MovieLens 100K data. If lenskit.movielens.100k is set, it is used
+       as the location of the data; otherwise, it is downloaded from the GroupLens
+       web site. -->
+
+  <property name="mldata.zipfile" value="${project.build.directory}/data/ml100k.zip"/>
+
+  <target name="check-100k">
+    <condition property="lenskit.movielens.100k.avail">
+      <available file="${lenskit.movielens.100k}/u.data"/>
+    </condition>
+  </target>
+
+  <target name="download-100k" depends="check-100k">
+
+    <fail message="This analysis makes use of the MovieLens 100K data
+         set from GroupLens Research. Use of this data set is restricted to
+         non-commercial purposes and is only permitted in accordance with the
+         license terms. To use this data in LensKit's automated tests, set the
+         `grouplens.mldata.acknowledge' property to `yes' to indicate you
+         acknowledge the usage license.  More information is available at
+         &lt;http://bitbucket.org/grouplens/lenskit/wiki/ML100K&gt;.">
+
+      <condition>
+        <not>
+          <equals arg1="${grouplens.mldata.acknowledge}" arg2="yes"
+                  trim="true" casesensitive="false"/>
+        </not>
+      </condition>
+    </fail>
+
+    <echo message="Downloading ML-100K data set"/>
+
+    <mkdir dir="${project.build.directory}/data"/>
+    <get src="http://www.grouplens.org/system/files/ml-100k.zip"
+         dest="${mldata.zipfile}"
+         skipexisting="true"/>
+  </target>
+
+  <target name="extract-100k" depends="check-100k,download-100k" unless="lenskit.movielens.100k.avail">
+    <echo message="Extracting ML-100K data set to ${lenskit.movielens.100k}"/>
+    <unzip src="${mldata.zipfile}" dest="${lenskit.movielens.100k}">
+      <patternset>
+        <include name="ml-100k/*"/>
+      </patternset>
+      <mapper type="flatten"/>
+    </unzip>
+  </target>
+
+  <target name="fetch-100k" depends="extract-100k"/>
+</project>
+

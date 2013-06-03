@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -24,14 +26,17 @@ import com.google.common.base.Functions;
 /**
  * Additional function utilities to go with {@link Functions}.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.9
  */
-public class MoreFunctions {
+public final class MoreFunctions {
+    private MoreFunctions() {}
 
     /**
      * Identity function casting its arguments to a particular type.
      *
+     * @param <F> The function's input type.
+     * @param <T> The type to which to cast arguments.
      * @param target The target type for arguments.
      * @return A function which, when applied to an object, casts it to type
      *         {@var target}.

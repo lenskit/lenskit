@@ -1,62 +1,76 @@
-import org.grouplens.lenskit.RatingPredictor
 import org.grouplens.lenskit.eval.data.crossfold.RandomOrder
 
-import org.grouplens.lenskit.knn.item.ItemItemRatingPredictor
-import org.grouplens.lenskit.knn.item.ItemSimilarity
-import org.grouplens.lenskit.knn.params.NeighborhoodSize
-import org.grouplens.lenskit.knn.user.UserSimilarity
-import org.grouplens.lenskit.knn.user.UserUserRatingPredictor
+import org.grouplens.lenskit.knn.NeighborhoodSize
+import org.grouplens.lenskit.knn.item.*
+import org.grouplens.lenskit.knn.user.*
 
-import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
-import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
-import org.grouplens.lenskit.transform.normalize.VectorNormalizer
+import org.grouplens.lenskit.transform.normalize.*
 
-import org.grouplens.lenskit.params.Damping
-import org.grouplens.lenskit.baseline.*
-
-def ml100k = crossfold("ml-100k") {
-   source csvfile("data/ml-100k/u.data") {
-      delimiter "\t"
-      domain {
-         minimum 1.0
-         maximum 5.0
-         precision 1.0
-      }
-   }
-   train "target/ml-100k.%d.train.csv"
-   test "target/ml-100k.%d.test.csv"
-   order RandomOrder
-   holdout 10
-   partitions 5
+def ml100k = crossfold {
+    source csvfile("ml100k/u.data") {
+        delimiter "\t"
+        domain {
+            minimum 1.0
+            maximum 5.0
+            precision 1.0
+        }
+    }
+    train "ml100k-crossfold/train.%d.csv"
+    test "ml100k-crossfold/test.%d.csv"
+    order RandomOrder
+    holdout 10
+    partitions 5
 }
 
-trainTest("item-item vs. user-user algorithm") {
-   dataset ml100k
-   
-   // Three different types of output for analysis.
-   output "target/eval-results.csv"
-   predictOutput "target/eval-preds.csv"
-   userOutput "target/eval-user.csv"
-   
-   metric CoveragePredictMetric
-   metric RMSEPredictMetric
-   metric NDCGPredictMetric
-   
-   algorithm("ItemItem") {
-      bind RatingPredictor to ItemItemRatingPredictor
-      bind BaselinePredictor to ItemUserMeanPredictor
-      bind VectorNormalizer to MeanVarianceNormalizer
-      bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-      within ItemSimilarity set Damping to 100.0d
-      set NeighborhoodSize to 30
-   }
+trainTest {
+    dataset ml100k
 
-   algorithm("UserUser") {
-      bind RatingPredictor to UserUserRatingPredictor
-      bind BaselinePredictor to ItemUserMeanPredictor
-      bind VectorNormalizer to MeanVarianceNormalizer
-      bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-      set NeighborhoodSize to 30
-   }
+    // Three different types of output for analysis.
+    output "eval-results.csv"
+    predictOutput "eval-preds.csv"
+    userOutput "eval-user.csv"
+
+    metric CoveragePredictMetric
+    metric RMSEPredictMetric
+    metric NDCGPredictMetric
+
+    algorithm("ItemItem") {
+        // use the item-item rating predictor with a baseline and normalizer
+        bind ItemScorer to ItemItemScorer
+        bind BaselinePredictor to ItemUserMeanPredictor
+        bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
+
+        // retain 500 neighbors in the model, use 30 for prediction
+        set ModelSize to 500
+        set NeighborhoodSize to 30
+
+        // apply some Bayesian smoothing to the mean values
+        within(ItemUserMeanPredictor) {
+            set MeanDamping to 25.0d
+        }
+    }
+
+    algorithm("UserUser") {
+        // use the user-user rating predictor
+        bind ItemScorer to UserUserItemScorer
+        bind BaselinePredictor to ItemUserMeanPredictor
+        bind VectorNormalizer to MeanVarianceNormalizer
+
+        // use 30 neighbors for predictions
+        set NeighborhoodSize to 30
+
+        // override normalizer within the neighborhood finder
+        // this makes it use a different normalizer (subtract user mean) for computing
+        // user similarities
+        within(NeighborhoodFinder) {
+            bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
+            // override baseline to use user mean
+            bind BaselinePredictor to UserMeanPredictor
+        }
+
+        // and apply some Bayesian damping to the baseline
+        within(ItemUserMeanPredictor) {
+            set MeanDamping to 25.0d
+        }
+    }
 }

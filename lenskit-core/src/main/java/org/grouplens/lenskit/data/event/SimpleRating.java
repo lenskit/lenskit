@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -33,10 +35,11 @@ import org.grouplens.lenskit.data.pref.SimplePreference;
  * <p>This implementation only supports set ratings; for null ratings (unrate
  * events), use {@link SimpleNullRating}.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @compat Public
  */
 @Immutable
-public class SimpleRating extends AbstractEvent implements Rating, Cloneable {
+public final class SimpleRating extends AbstractEvent implements Rating {
     final long eventId;
     final long timestamp;
     @Nonnull
@@ -99,37 +102,28 @@ public class SimpleRating extends AbstractEvent implements Rating, Cloneable {
     }
 
     @Override
-    final public long getUserId() {
+    public final long getUserId() {
         return preference.getUserId();
     }
 
     @Override
-    final public long getItemId() {
+    public final long getItemId() {
         return preference.getItemId();
     }
 
-    @Nonnull
     @Override
-    final public Preference getPreference() {
+    @Nonnull
+    public final Preference getPreference() {
         return preference;
     }
 
     @Override
-    final public long getTimestamp() {
+    public final long getTimestamp() {
         return timestamp;
     }
 
     @Override
     public Rating copy() {
-        return clone();
-    }
-
-    @Override
-    protected Rating clone() {
-        try {
-            return (Rating) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException("clone error", e);
-        }
+        return this;
     }
 }

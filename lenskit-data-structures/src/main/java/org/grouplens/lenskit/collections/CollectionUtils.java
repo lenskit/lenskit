@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -37,7 +39,7 @@ import static it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet;
  * Various helper methods for working with collections (particularly Fastutil
  * collections).
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public final class CollectionUtils {
@@ -133,7 +135,7 @@ public final class CollectionUtils {
      * Wrapper class that implements a {@link LongCollection} by delegating to
      * a {@link Collection}.
      *
-     * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     private static class LongCollectionWrapper implements LongCollection {
         protected final Collection<Long> base;
@@ -279,7 +281,7 @@ public final class CollectionUtils {
         }
     }
 
-    static class LongSetWrapper extends LongCollectionWrapper implements LongSet {
+    private static class LongSetWrapper extends LongCollectionWrapper implements LongSet {
         LongSetWrapper(Collection<Long> base) {
             super(base);
         }
@@ -302,7 +304,8 @@ public final class CollectionUtils {
     }
 
     /**
-     * Wrap an iterator in a pointer.
+     * Wrap an iterator in a pointer.  It is safe for this iterator to be a fast iterator; the resulting pointer
+     * may then return the same object, modified, multiple times.
      *
      * @param <E>  The type of value in the iterator.
      * @param iter The iterator to wrap.

@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -29,12 +31,26 @@ import javax.annotation.Nonnull;
 /**
  * Abstract implementation of long cursors.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public abstract class AbstractLongCursor
         extends AbstractCursor<Long>
         implements LongCursor {
+
+    /**
+     * Construct a cursor with unknown size.
+     */
+    protected AbstractLongCursor() {
+    }
+
+    /**
+     * Construct a cursor with possibly-known size.
+     * @param nrows The number of rows (or -1 for unknown size).
+     */
+    protected AbstractLongCursor(int nrows) {
+        super(nrows);
+    }
 
     /**
      * Implement {@link org.grouplens.lenskit.cursors.Cursor#next() Cursor.next()}

@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -23,18 +25,17 @@ import org.junit.Test
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.*
 import org.junit.Ignore
-import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand
 
 /**
  * Test the eval config engine and make sure it can actually execute tests.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class TestEvalConfigEngine {
-    EvalConfigEngine engine;
+    EvalScriptEngine engine;
 
     @Before
     void createEngine() {
-        engine = new EvalConfigEngine()
+        engine = new EvalScriptEngine()
     }
 
     private def script(name) {
@@ -58,7 +59,7 @@ class TestEvalConfigEngine {
         def result = engine.execute(script("multiple.groovy"))
         def eval = env.defaultTask
         assertThat(eval, instanceOf(TrainTestEvalTask))
-        def evals = env.tasks
+        def evals = env.getArgs
         assertThat(evals.size(), equalTo(2))
         assertTrue(evals.contains(eval));
         assertTrue(evals.containsAll(eval.dependencies))

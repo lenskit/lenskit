@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,6 +21,7 @@
 package org.grouplens.lenskit;
 
 import javax.annotation.Nullable;
+import java.io.Closeable;
 
 /**
  * Main entry point for accessing recommender components.  A recommender object
@@ -31,11 +34,11 @@ import javax.annotation.Nullable;
  * ensures that, if you can actually get an object implementing a particular interface,
  * you are guaranteed to be able to use it.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  * @see RecommenderEngine
  */
-public interface Recommender {
+public interface Recommender extends Closeable {
     /**
      * Get the recommender's item scorer.
      *
@@ -57,7 +60,7 @@ public interface Recommender {
     /**
      * Get the recommender's rating scorer.
      *
-     * @return The rating scorer for this recommender configuration, or
+     * @return The rating predictor for this recommender configuration, or
      *         {@code null} if rating prediction is not supported.
      */
     @Nullable
@@ -85,6 +88,7 @@ public interface Recommender {
      * Close the recommender session.  Underlying data connections are released
      * as appropriate.
      */
+    @Override
     void close();
 
 }

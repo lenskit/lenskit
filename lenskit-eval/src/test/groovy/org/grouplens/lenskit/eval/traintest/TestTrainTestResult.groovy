@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,7 +21,7 @@
 package org.grouplens.lenskit.eval.traintest
 
 import com.google.common.io.Files
-
+import org.grouplens.lenskit.ItemScorer
 import org.junit.Before
 import org.junit.After
 import org.junit.Test
@@ -27,19 +29,19 @@ import org.grouplens.lenskit.eval.config.ConfigTestBase
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
 import org.grouplens.lenskit.RatingPredictor
-import org.grouplens.lenskit.baseline.BaselineRatingPredictor
+import org.grouplens.lenskit.baseline.BaselineItemScorer
 import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
 
 import static org.junit.Assert.assertThat
 
 import static org.hamcrest.Matchers.instanceOf
-import org.grouplens.lenskit.eval.util.table.TableImpl
+import org.grouplens.lenskit.util.table.TableImpl
 
 /**
  * Test the result returned by the trainTest
  *
- * @author Shuo Chang<schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  *
  */
 class TestTrainTestResult extends ConfigTestBase {
@@ -85,12 +87,11 @@ class TestTrainTestResult extends ConfigTestBase {
                 metric RMSEPredictMetric
 
                 algorithm("ItemUserMean") {
-                    bind RatingPredictor to BaselineRatingPredictor
+                    bind ItemScorer to BaselineItemScorer
                     bind BaselinePredictor to ItemUserMeanPredictor
                 }
             }
         }
         assertThat(result, instanceOf(TableImpl))
-
     }
 }

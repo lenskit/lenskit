@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -27,7 +29,7 @@ import java.lang.annotation.Annotation;
 /**
  * Wrap a Grapht context to make a LensKit context.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see 1.0
  */
 public class ContextWrapper extends AbstractConfigContext {
@@ -66,17 +68,32 @@ public class ContextWrapper extends AbstractConfigContext {
     }
 
     @Override
-    public LenskitConfigContext in(Class<?> type) {
-        return coerce(base.in(type));
+    public LenskitConfigContext within(Class<?> type) {
+        return coerce(base.within(type));
     }
 
     @Override
-    public LenskitConfigContext in(@Nullable Class<? extends Annotation> qualifier, Class<?> type) {
-        return coerce(base.in(qualifier, type));
+    public LenskitConfigContext within(@Nullable Class<? extends Annotation> qualifier, Class<?> type) {
+        return coerce(base.within(qualifier, type));
     }
 
     @Override
-    public LenskitConfigContext in(@Nullable Annotation qualifier, Class<?> type) {
-        return coerce(base.in(qualifier, type));
+    public LenskitConfigContext within(@Nullable Annotation qualifier, Class<?> type) {
+        return coerce(base.within(qualifier, type));
+    }
+
+    @Override
+    public LenskitConfigContext at(Class<?> type) {
+        return coerce(base.at(type));
+    }
+
+    @Override
+    public LenskitConfigContext at(@Nullable Class<? extends Annotation> qualifier, Class<?> type) {
+        return coerce(base.at(qualifier, type));
+    }
+
+    @Override
+    public LenskitConfigContext at(@Nullable Annotation qualifier, Class<?> type) {
+        return coerce(base.at(qualifier, type));
     }
 }

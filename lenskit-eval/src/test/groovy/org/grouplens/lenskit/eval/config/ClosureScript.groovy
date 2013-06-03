@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,12 +22,12 @@ package org.grouplens.lenskit.eval.config
 
 /**
  * Eval config script that invokes a closure rather than running a script.
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class ClosureScript extends EvalConfigScript {
+class ClosureScript extends EvalScript {
     Closure closure
 
-    ClosureScript(EvalConfigEngine engine, Closure cl) {
+    ClosureScript(EvalScriptEngine engine, Closure cl) {
         super(engine)
         closure = cl
     }

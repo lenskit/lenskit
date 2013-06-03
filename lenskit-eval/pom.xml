@@ -3,67 +3,17 @@
   <parent>
     <groupId>org.grouplens.lenskit</groupId>
     <artifactId>lenskit</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.1</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>lenskit-eval</artifactId>
   <name>LensKit Evaluation Framework</name>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.gmaven</groupId>
-        <artifactId>gmaven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generateStubs</goal>
-              <goal>compile</goal>
-              <goal>generateTestStubs</goal>
-              <goal>testCompile</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-    <pluginManagement>
-      <plugins>
-        <!--This plugin's configuration is used to store Eclipse
-m2e settings only. It has no influence on the Maven build itself. -->
-        <plugin>
-          <groupId>org.eclipse.m2e</groupId>
-          <artifactId>lifecycle-mapping</artifactId>
-          <version>1.0.0</version>
-          <configuration>
-            <lifecycleMappingMetadata>
-              <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>
-                      org.codehaus.gmaven
-                    </groupId>
-                    <artifactId>
-                      gmaven-plugin
-                    </artifactId>
-                    <versionRange>[1.4,)</versionRange>
-                    <goals>
-                      <goal>generateStubs</goal>
-                      <goal>compile</goal>
-                      <goal>generateTestStubs</goal>
-                      <goal>testCompile</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore />
-                  </action>
-                </pluginExecution>
-              </pluginExecutions>
-            </lifecycleMappingMetadata>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
+  <properties>
+    <!-- Setting the compiler to groovy-eclipse-compiler tells Eclipse this is a Groovy project.
+         Later in this file, a profile overrides this when run from the command line. -->
+    <maven.compiler.compilerId>groovy-eclipse-compiler</maven.compiler.compilerId>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -95,73 +45,105 @@ m2e settings only. It has no influence on the Maven build itself. -->
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-test</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.gmaven</groupId>
+        <artifactId>gmaven-plugin</artifactId>
+        <version>${gmaven.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generateStubs</goal>
+              <goal>compile</goal>
+              <goal>generateTestStubs</goal>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.gmaven.runtime</groupId>
+            <artifactId>gmaven-runtime-${gmaven.runtime}</artifactId>
+            <version>${gmaven.version}</version>
+            <exclusions>
+              <exclusion>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy-all-minimal</artifactId>
+              </exclusion>
+            </exclusions>
+          </dependency>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>${groovy.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+
+    <pluginManagement>
+      <plugins>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>
+                      org.codehaus.gmaven
+                    </groupId>
+                    <artifactId>
+                      gmaven-plugin
+                    </artifactId>
+                    <versionRange>[1.5,)</versionRange>
+                    <goals>
+                      <goal>compile</goal>
+                      <goal>generateStubs</goal>
+                      <goal>generateTestStubs</goal>
+                      <goal>testCompile</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore />
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 
   <profiles>
     <profile>
-      <id>smoketest</id>
-      <build>
-        <plugins>
-
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>fetch-mldata</id>
-                <phase>pre-integration-test</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <configuration>
-                  <target>
-                    <property name="project.build.directory" value="${project.build.directory}" />
-                    <property name="grouplens.mldata.acknowledge" value="${grouplens.mldata.acknowledge}" />
-                    <ant antfile="src/integration-test/setup.xml" target="prepare-100k" />
-                  </target>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
-            <artifactId>exec-maven-plugin</artifactId>
-            <groupId>org.codehaus.mojo</groupId>
-            <version>1.2.1</version>
-            <executions>
-              <execution>
-                <id>run-eval</id>
-                <phase>integration-test</phase>
-                <goals>
-                  <goal>java</goal>
-                </goals>
-                <configuration>
-                  <mainClass>org.grouplens.lenskit.eval.cli.EvalCLI</mainClass>
-                  <systemProperties>
-                    <systemProperty>
-                      <key>scripts.directory</key>
-                      <value>${basedir}/src/integration-test</value>
-                    </systemProperty>
-                    <systemProperty>
-                      <key>project.build.directory</key>
-                      <value>${project.build.directory}</value>
-                    </systemProperty>
-                    <systemProperty>
-                      <key>lenskit.eval.throwErrors</key>
-                      <value>true</value>
-                    </systemProperty>
-                  </systemProperties>
-                  <arguments>
-                    <argument>-f</argument>
-                    <argument>${basedir}/src/integration-test/eval.groovy</argument>
-                  </arguments>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-        </plugins>
-      </build>
+      <!-- This profile will activate whenever maven.home is set, which should be any time Maven
+           is run from the command line. It reverts the compiler back to javac, so that we can
+           compile correctly. -->
+      <id>non-eclipse</id>
+      <activation>
+        <property>
+          <name>maven.home</name>
+        </property>
+      </activation>
+      <properties>
+        <maven.compiler.compilerId>javac</maven.compiler.compilerId>
+      </properties>
     </profile>
   </profiles>
+
 </project>

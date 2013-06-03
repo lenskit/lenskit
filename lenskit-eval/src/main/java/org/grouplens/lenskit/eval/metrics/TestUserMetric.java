@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,9 +20,11 @@
  */
 package org.grouplens.lenskit.eval.metrics;
 
-import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand;
+
+import java.util.List;
 
 /**
  * Interface for prediction and recommendation accuracy evaluators. Evaluators
@@ -28,7 +32,7 @@ import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand;
  * aggregate error information in the {@link TestUserMetricAccumulator#finalResults()}
  * method.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public interface TestUserMetric extends Metric<TrainTestEvalCommand> {
@@ -56,7 +60,7 @@ public interface TestUserMetric extends Metric<TrainTestEvalCommand> {
      * @return The labels for this evaluator's output, used as column headers when
      *         outputting the results table.
      */
-    String[] getColumnLabels();
+    List<String> getColumnLabels();
 
     /**
      * Get labels for the per-user columns output by this evaluator.
@@ -65,5 +69,5 @@ public interface TestUserMetric extends Metric<TrainTestEvalCommand> {
      *         when outputting the results table.
      * @see TestUserMetricAccumulator#evaluate(org.grouplens.lenskit.eval.traintest.TestUser)
      */
-    String[] getUserColumnLabels();
+    List<String> getUserColumnLabels();
 }

@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -31,7 +33,8 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * such). All exceptions must be clearly documented, and should only be in
  * contexts such as fast iteration.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @compat Public
  */
 public abstract class Preference {
     /**
@@ -64,9 +67,7 @@ public abstract class Preference {
      */
     @Override
     public final boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        } else if (obj == this) {
+        if (obj == this) {
             return true;
         } else if (obj instanceof Preference) {
             Preference op = (Preference) obj;
@@ -95,5 +96,18 @@ public abstract class Preference {
     @Override
     public String toString() {
         return String.format("Preference(u=%d, i=%d, v=%.2f", getUserId(), getItemId(), getValue());
+    }
+
+    /**
+     * Copy this preference. The resulting preference is guaranteed to be immutable,
+     * so this method can be used to save an object in fast iteration.  It may be the
+     * same object as {@var this}, if it is already immutable.  The copy should also be
+     * isolated from any backing store so it can be retained without holding references
+     * to large objects.
+     *
+     * @return The copied preference.
+     */
+    public Preference copy() {
+        return PreferenceBuilder.copy(this).build();
     }
 }

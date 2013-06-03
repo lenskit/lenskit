@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -27,7 +29,7 @@ import java.lang.annotation.Annotation;
 /**
  * LensKit-specific augmentations of the Grapht context interface.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  * @since 1.0
  */
@@ -42,14 +44,27 @@ public interface LenskitConfigContext extends Context {
      */
     @SuppressWarnings("rawtypes")
     Binding set(Class<? extends Annotation> param);
-
+    
     @Override
+    @Deprecated
     LenskitConfigContext in(Class<?> type);
+    
+    @Override
+    @Deprecated
+    LenskitConfigContext in(@Nullable Class<? extends Annotation> qualifier,
+                                Class<?> type);
+    
+    @Override
+    @Deprecated
+    LenskitConfigContext in(@Nullable Annotation qualifier, Class<?> type);
 
     @Override
-    LenskitConfigContext in(@Nullable Class<? extends Annotation> qualifier,
+    LenskitConfigContext within(Class<?> type);
+
+    @Override
+    LenskitConfigContext within(@Nullable Class<? extends Annotation> qualifier,
                             Class<?> type);
 
     @Override
-    LenskitConfigContext in(@Nullable Annotation qualifier, Class<?> type);
+    LenskitConfigContext within(@Nullable Annotation qualifier, Class<?> type);
 }

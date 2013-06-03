@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,20 +20,19 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import static java.lang.Math.abs;
-
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.inject.Singleton;
 import java.io.Serializable;
 
+import static java.lang.Math.abs;
+
 /**
  * Neighborhood scorer that computes the weighted average of neighbor scores.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 @Singleton
@@ -39,13 +40,12 @@ public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Se
     private static final long serialVersionUID = 1L;
 
     @Override
-    public double score(ScoredLongList neighbors, SparseVector scores) {
+    public double score(SparseVector neighbors, SparseVector scores) {
         double sum = 0;
         double weight = 0;
-        ScoredLongListIterator nIter = neighbors.iterator();
-        while (nIter.hasNext()) {
-            long oi = nIter.nextLong();
-            double sim = nIter.getScore();
+        for (VectorEntry e : neighbors.fast(VectorEntry.State.SET)) {
+            long oi = e.getKey();
+            double sim = e.getValue();
             weight += abs(sim);
             sum += sim * scores.get(oi);
         }

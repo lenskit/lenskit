@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -30,7 +32,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestPreferenceDomainQuantizer {
     PreferenceDomain domain;
@@ -51,8 +53,11 @@ public class TestPreferenceDomainQuantizer {
     public void testHalfStars() {
         Quantizer q = new PreferenceDomainQuantizer(domain);
         assertThat(q.getCount(), equalTo(10));
-        assertThat(q.getValue(q.apply(4.9)), closeTo(5.0, 1.0e-6));
-        assertThat(q.getValue(q.apply(4.7)), closeTo(4.5, 1.0e-6));
-        assertThat(q.getValue(q.apply(3.42)), closeTo(3.5, 1.0e-6));
+        assertThat(q.getIndexValue(q.index(4.9)), closeTo(5.0, 1.0e-6));
+        assertThat(q.getIndexValue(q.index(4.7)), closeTo(4.5, 1.0e-6));
+        assertThat(q.getIndexValue(q.index(3.42)), closeTo(3.5, 1.0e-6));
+        assertThat(q.quantize(4.9), closeTo(5.0, 1.0e-6));
+        assertThat(q.quantize(4.7), closeTo(4.5, 1.0e-6));
+        assertThat(q.quantize(3.42), closeTo(3.5, 1.0e-6));
     }
 }

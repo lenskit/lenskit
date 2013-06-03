@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,18 +22,16 @@ package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
-
-import static org.junit.Assert.assertNull;
-
 import it.unimi.dsi.fastutil.doubles.DoubleRBTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import static org.grouplens.common.test.MoreMatchers.closeTo;
-import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
@@ -62,6 +62,10 @@ public abstract class SparseVectorTestCommon {
      * @return A rating vector mapping {3, 5, 8} to {2, 2.3, 1.7}.
      */
     protected abstract SparseVector simpleVector2();
+
+    public static Matcher<Double> closeTo(double v) {
+        return Matchers.closeTo(v, 1.0e-5);
+    }
 
     @Test
     public void testDot() {
@@ -103,10 +107,6 @@ public abstract class SparseVectorTestCommon {
         assertThat(v.get(7), closeTo(3.5));
         assertThat(v.get(3), closeTo(1.5));
         assertThat(v.get(8), closeTo(2));
-        assertThat(v.get(1), notANumber());
-        assertThat(v.get(4), notANumber());
-        assertThat(v.get(9), notANumber());
-        assertThat(v.get(42), notANumber());
     }
 
     /**
@@ -124,10 +124,6 @@ public abstract class SparseVectorTestCommon {
         assertThat(v.get(7, -1), closeTo(3.5));
         assertThat(v.get(3, -1), closeTo(1.5));
         assertThat(v.get(8, -1), closeTo(2));
-        assertThat(v.get(1, -1), closeTo(-1));
-        assertThat(v.get(4, 42), closeTo(42));
-        assertThat(v.get(9, -7), closeTo(-7));
-        assertThat(v.get(42, Math.E), closeTo(Math.E));
     }
 
     /**
@@ -165,10 +161,14 @@ public abstract class SparseVectorTestCommon {
         }
 
         Iterator<VectorEntry> iter = singleton().iterator();
+        try {
+            iter.remove();
+            fail("should throw exception because we cannot remove an item from an iterator on an immutable vector");
+        } catch (UnsupportedOperationException x) { /* good*/ }
         assertTrue(iter.hasNext());
         VectorEntry e = iter.next();
         assertFalse(iter.hasNext());
-        assertEquals(5, e.getKey());
+        assertThat(e.getKey(), equalTo(5L));
         assertThat(e.getValue(), closeTo(Math.PI));
         try {
             iter.next();
@@ -180,10 +180,10 @@ public abstract class SparseVectorTestCommon {
         VectorEntry[] entries =
                 Iterators.toArray(simpleVector().iterator(),
                                   VectorEntry.class);
-        assertEquals(3, entries.length);
-        assertEquals(3, entries[0].getKey());
-        assertEquals(7, entries[1].getKey());
-        assertEquals(8, entries[2].getKey());
+        assertThat(entries.length, equalTo(3));
+        assertThat(entries[0].getKey(), equalTo(3L));
+        assertThat(entries[1].getKey(), equalTo(7L));
+        assertThat(entries[2].getKey(), equalTo(8L));
         assertThat(entries[0].getValue(), closeTo(1.5));
         assertThat(entries[1].getValue(), closeTo(3.5));
         assertThat(entries[2].getValue(), closeTo(2));
@@ -204,9 +204,13 @@ public abstract class SparseVectorTestCommon {
 
         Iterator<VectorEntry> iter = singleton().fastIterator();
         assertTrue(iter.hasNext());
+        try {
+            iter.remove();
+            fail("should throw exception because we cannot remove an item from an iterator on an immutable vector");
+        } catch (UnsupportedOperationException x) { /* good*/ }
         VectorEntry e = iter.next();
         assertFalse(iter.hasNext());
-        assertEquals(5, e.getKey());
+        assertThat(e.getKey(), equalTo(5L));
         assertThat(e.getValue(), closeTo(Math.PI));
         try {
             iter.next();
@@ -337,27 +341,33 @@ public abstract class SparseVectorTestCommon {
     public void testNorm() {
         assertThat(emptyVector().norm(), closeTo(0));
         assertThat(singleton().norm(), closeTo(Math.PI));
-        assertThat(simpleVector().norm(), closeTo(4.301162634));
+        SparseVector sv = simpleVector();
+        assertThat(sv.norm(), closeTo(4.301162634));
+        assertThat(sv.norm(), closeTo(4.301162634));  // doubled, to check caching
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#sum()}.
+     * Test method for {@link org.grouplens.lenskit.vectors.SparseVector#sum()}.
      */
     @Test
     public void testSum() {
         assertThat(emptyVector().sum(), closeTo(0));
         assertThat(singleton().sum(), closeTo(Math.PI));
-        assertThat(simpleVector().sum(), closeTo(7));
+        SparseVector sv = simpleVector();
+        assertThat(sv.sum(), closeTo(7));
+        assertThat(sv.sum(), closeTo(7)); // doubled, to check caching
     }
 
     /**
-     * Test method for {@link org.grouplens.lenskit.vectors.MutableSparseVector#mean()}.
+     * Test method for {@link org.grouplens.lenskit.vectors.SparseVector#mean()}.
      */
     @Test
     public void testMean() {
         assertThat(emptyVector().mean(), closeTo(0));
         assertThat(singleton().mean(), closeTo(Math.PI));
-        assertThat(simpleVector().mean(), closeTo(7.0 / 3));
+        SparseVector sv = simpleVector();
+        assertThat(sv.mean(), closeTo(7.0 / 3));
+        assertThat(sv.mean(), closeTo(7.0 / 3));  // doubled, to check caching
     }
 
     @Test
@@ -366,4 +376,58 @@ public abstract class SparseVectorTestCommon {
         assertArrayEquals(new long[]{7, 8, 3}, simpleVector().keysByValue(true).toLongArray());
         assertArrayEquals(new long[]{5, 3, 8}, simpleVector2().keysByValue(true).toLongArray());
     }
+
+    @Test
+    public void testEquals() {
+        SparseVector sv = simpleVector();
+        assertTrue(sv.equals(sv));
+        assertFalse(sv.equals(new VectorEntry(sv, 0, 3, 33, true)));
+        assertTrue(simpleVector().equals(simpleVector()));
+        assertTrue(singleton().equals(singleton()));
+        assertTrue(simpleVector2().equals(simpleVector2()));
+        assertTrue(emptyVector().equals(emptyVector()));
+
+        assertFalse(simpleVector().equals(simpleVector2()));
+        assertFalse(singleton().equals(simpleVector()));
+        assertFalse(simpleVector2().equals(simpleVector()));
+        assertFalse(emptyVector().equals(singleton()));
+    }
+    
+    @Test
+    public void testVectorEntryMethods() {
+        SparseVector simple = simpleVector();
+        VectorEntry ve = new VectorEntry(simple, 0, 3, 33, true);
+        assertThat(simple.get(3), closeTo(1.5));
+        assertThat(ve.getValue(), closeTo(33));  // the VectorEntry is bogus
+        assertThat(simple.get(ve), closeTo(1.5));
+        
+        VectorEntry veBogus = new VectorEntry(null, -1, 3, 33, true);
+        try {
+            simple.get(veBogus);
+            fail("Should throw an IllegalArgumentException because the vector entry has a bogus index");
+        } catch (IllegalArgumentException iae) { /* skip */
+        }
+
+        VectorEntry veNull = new VectorEntry(null, 0, 3, 33, true);
+        try {
+            simple.get(veNull);
+            fail("Should throw an IllegalArgumentException because the vector entry is not attached to this sparse vector");
+        } catch (IllegalArgumentException iae) { /* skip */
+        }
+        
+        VectorEntry veBogusKey = new VectorEntry(simple, 0, 22, 33, true);
+        try {
+            simple.get(veBogusKey);
+            fail("Should throw an IllegalArgumentException because the vector entry has a bogus key");
+        } catch (IllegalArgumentException iae) { /* skip */
+        }
+
+        VectorEntry veBogusKeyDomain = new VectorEntry(simpleVector2(), 0, 3, 1.5, true);
+        try {
+            simple.get(veBogusKeyDomain);
+            fail("Should throw an IllegalArgumentException because the vector entry has a different key domain from the vector");
+        } catch (IllegalArgumentException iae) { /* skip */
+        }
+    }
+
 }

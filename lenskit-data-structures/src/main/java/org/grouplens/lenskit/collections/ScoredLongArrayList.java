@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -26,6 +28,7 @@ import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntComparator;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -39,7 +42,7 @@ import java.util.List;
  * Array-backed implementation of {@link ScoredLongList}.  Items and scores
  * are stored in parallel arrays.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public class ScoredLongArrayList implements ScoredLongList, Serializable {
@@ -73,6 +76,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
      *
      * @param items An array of items to copy into the list.
      */
+    @SuppressWarnings("PMD.ArrayIsStoredDirectly") // LongArrayList copies the items
     public ScoredLongArrayList(long[] items) {
         itemList = new LongArrayList(items);
         scoreList = null;
@@ -84,6 +88,7 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
      * @param items  An array of itemList to copy into the list.
      * @param scores An array of scoreList corresponding to the itemList.
      */
+    @SuppressWarnings("PMD.ArrayIsStoredDirectly") // Array lists copy the arrays
     public ScoredLongArrayList(long[] items, double[] scores) {
         if (scores.length != items.length) {
             throw new IllegalArgumentException("array length mismatch");
@@ -105,6 +110,20 @@ public class ScoredLongArrayList implements ScoredLongList, Serializable {
                                     "list size mismatch");
         itemList = items;
         scoreList = scores;
+    }
+
+    /**
+     * Construct a scored list from a list of scored IDs.
+     * @param items The list of scored IDs.
+     */
+    public ScoredLongArrayList(@Nonnull List<ScoredId> items) {
+        itemList = new LongArrayList(items.size());
+        scoreList = new DoubleArrayList(items.size());
+
+        for (ScoredId id : items) {
+            itemList.add(id.getId());
+            scoreList.add(id.getScore());
+        }
     }
 
     /**

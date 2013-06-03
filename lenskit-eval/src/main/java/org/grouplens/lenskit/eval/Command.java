@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,16 +20,18 @@
  */
 package org.grouplens.lenskit.eval;
 
+import javax.annotation.Nonnull;
 import java.util.concurrent.Callable;
 
 /**
  * A command of evaluation task, which is exposed to the evaluation configuration script.
  * So the command can be called dynamically.
  *
- * @author Shuo Chang <schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface Command<T> extends Callable<T> {
 
+    @Nonnull
     String getName();
 
     T call() throws CommandException;

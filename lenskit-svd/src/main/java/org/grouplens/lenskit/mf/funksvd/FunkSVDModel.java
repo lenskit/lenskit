@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,36 +20,79 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import java.io.Serializable;
-
+import com.google.common.collect.ImmutableList;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.util.Index;
 
-@DefaultProvider(FunkSVDModelProvider.class)
+import java.io.Serializable;
+import java.util.List;
+
+/**
+ * The FunkSVD model class.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
+@DefaultProvider(FunkSVDModelBuilder.class)
 @Shareable
 public class FunkSVDModel implements Serializable {
-    private static final long serialVersionUID = -5797099617512506185L;
+    private static final long serialVersionUID = 2L;
 
+    /**
+     * Number of features in the vector.
+     */
     public final int featureCount;
+    /**
+     * The number of users.
+     */
+    public final int numUser;
+    /**
+     * The number of items.
+     */
+    public final int numItem;
+
+    /**
+     * The item-feature matrix (features, then items).  Do not modify this array.
+     */
     public final double[][] itemFeatures;
+    /**
+     * The user-feature matrix (features, then users).  Do not modify this array.
+     */
     public final double[][] userFeatures;
+
+    /**
+     * The clamping function used to build this model.
+     */
     public final ClampingFunction clampingFunction;
 
-    public final Index itemIndex;
-    public final Index userIndex;
-    public final BaselinePredictor baseline;
+    /**
+     * The feature info for each feature.
+     */
+    public final List<FeatureInfo> featureInfo;
 
-    public final double[] averUserFeatures;
-    public final double[] averItemFeatures;
-    public final int numUser;
-    public final int numItem;
+    /**
+     * The final RMSE of
+     */
+
+    /**
+     * The item index.
+     */
+    public final Index itemIndex;
+    /**
+     * The user index.
+     */
+    public final Index userIndex;
+
+    /**
+     * The baseline predictor used to build this model.
+     */
+    public final BaselinePredictor baseline;
 
     public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
                         ClampingFunction clamp, Index iidx, Index uidx,
-                        BaselinePredictor baseline) {
+                        BaselinePredictor baseline, List<FeatureInfo> features) {
         featureCount = nfeatures;
         clampingFunction = clamp;
         this.baseline = baseline;
@@ -61,19 +106,32 @@ public class FunkSVDModel implements Serializable {
         numItem = iidx.getIds().size();
         numUser = uidx.getIds().size();
 
-        averItemFeatures = getAverageFeatureVector(ifeats, numItem, featureCount);
-        averUserFeatures = getAverageFeatureVector(ufeats, numUser, featureCount);
-
+        featureInfo = ImmutableList.copyOf(features);
     }
 
-    private double[] getAverageFeatureVector(double[][] twoDimMatrix, int dimension, int feature) {
-        double[] outputVector = new double[feature];
-        for (int i = 0; i < feature; i++) {
-            for (int j = 0; j < dimension; j++) {
-                outputVector[i] += twoDimMatrix[i][j];
-            }
-            outputVector[i] = outputVector[i] / dimension;
-        }
-        return outputVector;
+    /**
+     * Get the model's feature count.
+     *
+     * @return The model's feature count.
+     */
+    public int getFeatureCount() {
+        return featureCount;
+    }
+
+    /**
+     * Get the {@link FeatureInfo} for a particular feature.
+     * @param f The feature number.
+     * @return The feature's summary information.
+     */
+    public FeatureInfo getFeatureInfo(int f) {
+        return featureInfo.get(f);
+    }
+
+    /**
+     * Get the metadata about all features.
+     * @return The feature metadata.
+     */
+    public List<FeatureInfo> getFeatureInfo() {
+        return featureInfo;
     }
 }

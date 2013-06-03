@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,12 +20,9 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongIterators;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.core.AbstractGlobalItemScorer;
+import org.grouplens.lenskit.basic.AbstractGlobalItemScorer;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -35,16 +34,15 @@ import java.util.Collection;
 /**
  * Score items based on the basket of items using an item-item CF model.
  *
- * @author Shuo Chang <schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class ItemItemGlobalScorer extends AbstractGlobalItemScorer implements
-        ItemItemModelBackedGlobalScorer {
+public class ItemItemGlobalScorer extends AbstractGlobalItemScorer {
     protected final ItemItemModel model;
-    protected final
     @Nonnull
+    protected final
     NeighborhoodScorer scorer;
-    protected final
     @Nonnull
+    protected final
     ItemScoreAlgorithm algorithm;
 
     @Inject
@@ -58,11 +56,6 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer implements
     }
 
     @Override
-    public ItemItemModel getModel() {
-        return model;
-    }
-
-    @Override
     public void globalScore(@Nonnull Collection<Long> queryItems,
                             @Nonnull MutableSparseVector output) {
         // create the unary rating for the items
@@ -71,18 +64,5 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer implements
 
         output.clear();
         algorithm.scoreItems(model, basket, output, scorer);
-    }
-
-
-    @Override
-    public LongSet getScoreableItems(Collection<Long> queryItems) {
-        // FIXME This method incorrectly assumes the model is symmetric
-        LongSet items = new LongOpenHashSet();
-        LongIterator iter = LongIterators.asLongIterator(queryItems.iterator());
-        while (iter.hasNext()) {
-            final long item = iter.nextLong();
-            items.addAll(model.getNeighbors(item));
-        }
-        return items;
     }
 }

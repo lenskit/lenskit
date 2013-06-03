@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -27,7 +29,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * Algorithm for scoring items given an item-item model and neighborhood scorer.
  * Used by {@link ItemItemScorer} and {@link ItemItemGlobalScorer} to score items.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 @DefaultImplementation(DefaultItemScoreAlgorithm.class)
@@ -35,7 +37,7 @@ public interface ItemScoreAlgorithm {
     /**
      * Score items for a user.
      *
-     * @param model    The item-tiem model.
+     * @param model    The item-item model.
      * @param userData The user's rating data.
      * @param scores   The score vector (key domain is items to score). Unscoreable
      *                 items will be left unchanged.

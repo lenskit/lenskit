@@ -1,0 +1,18 @@
+<project name="lenskit-knn">
+  <property name="dot.executable" value="dot"/>
+  <macrodef name="render">
+    <attribute name="name"/>
+    <sequential>
+      <exec executable="${dot.executable}">
+        <arg value="-Tsvg"/>
+        <arg value="-o${project.build.directory}/@{name}.svg"/>
+        <arg value="${project.build.directory}/@{name}.dot"/>
+      </exec>
+    </sequential>
+  </macrodef>
+
+  <target name="render">
+    <render name="item-item"/>
+    <render name="user-user"/>
+  </target>
+</project>

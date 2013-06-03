@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -37,7 +39,6 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.mf.funksvd.params.FeatureCount;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -50,6 +51,7 @@ public class TestFunkSVDRecommender {
     private static ItemRecommender recommender;
     private static DataAccessObject dao;
 
+    @SuppressWarnings("deprecation")
     @BeforeClass
     public static void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
@@ -71,7 +73,7 @@ public class TestFunkSVDRecommender {
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
         factory.bind(PreferenceSnapshot.class).to(PackedPreferenceSnapshot.class);
-        factory.bind(RatingPredictor.class).to(FunkSVDRatingPredictor.class);
+        factory.bind(ItemScorer.class).to(FunkSVDItemScorer.class);
         factory.bind(BaselinePredictor.class).to(UserMeanPredictor.class);
         factory.bind(ItemRecommender.class).to(FunkSVDRecommender.class);
         factory.bind(Integer.class).withQualifier(FeatureCount.class).to(100);

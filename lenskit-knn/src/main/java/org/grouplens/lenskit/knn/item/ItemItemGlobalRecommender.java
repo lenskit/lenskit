@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -36,30 +38,23 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import javax.inject.Inject;
-
-import it.unimi.dsi.fastutil.longs.LongSet;
-
-import org.grouplens.lenskit.core.ScoreBasedGlobalItemRecommender;
+import org.grouplens.lenskit.GlobalItemScorer;
+import org.grouplens.lenskit.basic.TopNGlobalItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+
+import javax.inject.Inject;
 
 /**
  * Global recommendation with item-item CF.
  *
- * @author Shuo Chang <schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Use {@link org.grouplens.lenskit.basic.TopNGlobalItemRecommender} directly instead.
  */
-public class ItemItemGlobalRecommender extends ScoreBasedGlobalItemRecommender {
-    protected final ItemItemModelBackedGlobalScorer scorer;
-
+@Deprecated
+public class ItemItemGlobalRecommender extends TopNGlobalItemRecommender {
     @Inject
     public ItemItemGlobalRecommender(DataAccessObject dao,
-                                     ItemItemModelBackedGlobalScorer scorer) {
+                                     GlobalItemScorer scorer) {
         super(dao, scorer);
-        this.scorer = scorer;
-    }
-
-    @Override
-    public LongSet getPredictableItems(LongSet items) {
-        return scorer.getScoreableItems(items);
     }
 }

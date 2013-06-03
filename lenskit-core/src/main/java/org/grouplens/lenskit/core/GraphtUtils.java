@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -27,7 +29,6 @@ import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.*;
-import org.grouplens.grapht.spi.reflect.ReflectionDesire;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import javax.annotation.Nonnull;
@@ -41,10 +42,10 @@ import java.util.Set;
 /**
  * Helper utilities for Grapht integration.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
-final class GraphtUtils {
+public final class GraphtUtils {
     private GraphtUtils() {
     }
 
@@ -65,14 +66,15 @@ final class GraphtUtils {
         final Node placeholder = new Node(sat, CachePolicy.MEMOIZE);
         graph.replaceNode(node, placeholder);
 
-        // replace desires on edges
-        for (Edge e: graph.getIncomingEdges(placeholder)) {
+        // replace desires on edges (truncates desire chains to only contain head, dropping refs)
+        for (Edge e: Lists.newArrayList(graph.getIncomingEdges(placeholder))) {
             Desire d = e.getDesire();
             List<Desire> lbl = null;
             if (d != null) {
                 lbl = Collections.singletonList(d);
             }
-            graph.updateEdgeLabel(e, lbl);
+            Edge replacement = new Edge(e.getHead(), e.getTail(), lbl);
+            graph.replaceEdge(e, replacement);
         }
 
         return placeholder;
@@ -188,11 +190,11 @@ final class GraphtUtils {
      * @return A function extracting the tail of a node.
      */
     public static Function<Edge, Node> edgeTail() {
-        return EdgeTail.instance;
+        return EdgeTail.INSTANCE;
     }
 
     private static class EdgeTail implements Function<Edge, Node> {
-        public static final EdgeTail instance = new EdgeTail();
+        public static final EdgeTail INSTANCE = new EdgeTail();
 
         @Override
         public Node apply(@Nullable Edge input) {

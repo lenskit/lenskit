@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -29,7 +31,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestPreferences {
     @Test
@@ -58,7 +60,8 @@ public class TestPreferences {
         prefs.add(new SimplePreference(1, 9, 4.0));
         prefs.add(new SimplePreference(1, 5, 2.8));
         prefs.add(new SimplePreference(1, 9, Math.PI));
-        SparseVector v = Preferences.userPreferenceVector(prefs);
+        @SuppressWarnings("unused")
+		SparseVector v = Preferences.userPreferenceVector(prefs);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -67,6 +70,7 @@ public class TestPreferences {
         prefs.add(new SimplePreference(1, 3, 2.5));
         prefs.add(new SimplePreference(1, 9, 4.0));
         prefs.add(new SimplePreference(2, 5, 2.8));
-        SparseVector v = Preferences.userPreferenceVector(prefs);
+        @SuppressWarnings("unused")
+		SparseVector v = Preferences.userPreferenceVector(prefs);
     }
 }

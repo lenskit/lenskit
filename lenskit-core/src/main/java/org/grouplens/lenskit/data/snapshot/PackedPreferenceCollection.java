@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -37,14 +39,14 @@ import org.grouplens.lenskit.data.pref.IndexedPreference;
  * implementations for {@link PackedPreferenceSnapshot}. It supports subsetting the
  * packed data set to only a particular list of indices.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @SuppressWarnings("javadoc")
         // JavaDoc warnings incorrectly flag PackedPreferenceData
 class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
         implements FastCollection<IndexedPreference> {
-    final private PackedPreferenceData data;
-    final private IntList indices;
+    private final PackedPreferenceData data;
+    private final IntList indices;
 
     /**
      * Construct a preference collection view of the entire packed data set.
@@ -96,7 +98,7 @@ class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
 
         @Override
         public IndexedPreference next() {
-            final int index = iter.next();
+            final int index = iter.nextInt();
             return data.preference(index);
         }
 
@@ -122,7 +124,7 @@ class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
 
         @Override
         public IndexedPreference next() {
-            preference.setIndex(iter.next());
+            preference.setIndex(iter.nextInt());
             assert preference.isValid();
             return preference;
         }

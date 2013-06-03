@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,6 +20,7 @@
  */
 package org.grouplens.lenskit.knn.user;
 
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
@@ -27,13 +30,14 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.knn.params.NeighborhoodSize;
+import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.Collection;
@@ -55,7 +59,7 @@ import static java.lang.Math.max;
  * <p>Currently, this cache is never cleared. This should probably be changed
  * sometime.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializable {
     private static final long serialVersionUID = -6324767320394518347L;
@@ -111,7 +115,10 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
      */
     @Override
     public Long2ObjectMap<? extends Collection<Neighbor>>
-    findNeighbors(UserHistory<? extends Event> user, LongSet items) {
+    findNeighbors(@Nonnull UserHistory<? extends Event> user, @Nonnull LongSet items) {
+        Preconditions.checkNotNull(user, "user profile");
+        Preconditions.checkNotNull(user, "item set");
+
         Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
                 new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
 
@@ -143,7 +150,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
             LongIterator iit = urv.keySet().iterator();
             while (iit.hasNext()) {
                 final long item = iit.nextLong();
-                if (items == null || items.contains(item)) {
+                if (items.contains(item)) {
                     PriorityQueue<Neighbor> heap = heaps.get(item);
                     if (heap == null) {
                         heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1,

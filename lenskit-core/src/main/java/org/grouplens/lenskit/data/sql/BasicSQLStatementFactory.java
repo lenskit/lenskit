@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,22 +20,18 @@
  */
 package org.grouplens.lenskit.data.sql;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.dao.UnsupportedQueryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 /**
  * Default implementation of the SQL statement factory.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @SuppressWarnings("unused")
 public class BasicSQLStatementFactory implements SQLStatementFactory {
@@ -163,33 +161,23 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     }
 
     @Override
-    public PreparedStatement prepareUsers(Connection dbc) throws SQLException {
-        String query =
-                String.format("SELECT DISTINCT %s FROM %s", userColumn, tableName);
-        return dbc.prepareStatement(query);
+    public String prepareUsers() {
+        return String.format("SELECT DISTINCT %s FROM %s", userColumn, tableName);
     }
 
     @Override
-    public PreparedStatement prepareUserCount(Connection dbc) throws SQLException {
-        String query =
-                String.format("SELECT COUNT(DISTINCT %s) FROM %s", userColumn,
-                              tableName);
-        return dbc.prepareStatement(query);
+    public String prepareUserCount() {
+        return String.format("SELECT COUNT(DISTINCT %s) FROM %s", userColumn, tableName);
     }
 
     @Override
-    public PreparedStatement prepareItems(Connection dbc) throws SQLException {
-        String query =
-                String.format("SELECT DISTINCT %s FROM %s", itemColumn, tableName);
-        return dbc.prepareStatement(query);
+    public String prepareItems() {
+        return String.format("SELECT DISTINCT %s FROM %s", itemColumn, tableName);
     }
 
     @Override
-    public PreparedStatement prepareItemCount(Connection dbc) throws SQLException {
-        String query =
-                String.format("SELECT COUNT(DISTINCT %s) FROM %s", itemColumn,
-                              tableName);
-        return dbc.prepareStatement(query);
+    public String prepareItemCount() {
+        return String.format("SELECT COUNT(DISTINCT %s) FROM %s", itemColumn, tableName);
     }
 
     /**
@@ -260,32 +248,32 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     }
 
     @Override
-    public PreparedStatement prepareEvents(Connection dbc, SortOrder order) throws SQLException {
+    public String prepareEvents(SortOrder order) {
         StringBuilder query = new StringBuilder();
         rqAddSelectFrom(query);
         rqAddOrder(query, order);
         rqFinish(query);
         logger.debug("Rating query: {}", query);
-        return dbc.prepareStatement(query.toString());
+        return query.toString();
     }
 
     @Override
-    public PreparedStatement prepareUserEvents(Connection dbc) throws SQLException {
+    public String prepareUserEvents() {
         StringBuilder query = new StringBuilder();
         rqAddSelectFrom(query);
         query.append(" WHERE ").append(userColumn).append(" = ?");
         rqFinish(query);
         logger.debug("User rating query: {}", query);
-        return dbc.prepareStatement(query.toString());
+        return query.toString();
     }
 
     @Override
-    public PreparedStatement prepareItemEvents(Connection dbc) throws SQLException {
+    public String prepareItemEvents() {
         StringBuilder query = new StringBuilder();
         rqAddSelectFrom(query);
         query.append(" WHERE ").append(itemColumn).append(" = ?");
         rqFinish(query);
         logger.debug("Item rating query: {}", query);
-        return dbc.prepareStatement(query.toString());
+        return query.toString();
     }
 }

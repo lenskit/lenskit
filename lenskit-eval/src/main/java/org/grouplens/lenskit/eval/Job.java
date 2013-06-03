@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,14 +20,17 @@
  */
 package org.grouplens.lenskit.eval;
 
+import java.util.concurrent.Callable;
+
 /**
  * A single evaluation job.  This is typically building and evaluating a single
  * recommender on a single data set.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @param <T> The return type of this job.
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
-public interface Job extends Runnable {
+public interface Job<T> extends Callable<T> {
     /**
      * Get a descriptive name for this job.  The name is displayed in UI to let
      * the user know what is being run.  More specific descriptors identifying
@@ -37,8 +42,7 @@ public interface Job extends Runnable {
     String getName();
 
     /**
-     * Run this job.
+     * Get a description for this job.
      */
-    @Override
-    void run();
+    String getDescription();
 }

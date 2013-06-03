@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,15 +22,13 @@ package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-
-import java.io.Serializable;
+import org.grouplens.grapht.annotation.DefaultProvider;
+import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 import javax.annotation.Nonnull;
-
-import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.collections.ScoredLongArrayList;
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.core.Shareable;
+import java.io.Serializable;
 
 /**
  * Item-item similarity model using an in-memory similarity matrix.
@@ -38,17 +38,15 @@ import org.grouplens.lenskit.core.Shareable;
  * should use the same normalizations used by the builder to make use of the
  * similarity scores.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-@DefaultProvider(ItemItemModelProvider.class)
+@DefaultProvider(ItemItemModelBuilder.class)
 @Shareable
 public class SimilarityMatrixModel implements Serializable, ItemItemModel {
-    private static final long serialVersionUID = -5986236982760043379L;
+    private static final long serialVersionUID = 2L;
 
-    private static final ScoredLongList EMPTY_LIST = new ScoredLongArrayList();
-
-    private final Long2ObjectMap<ScoredLongList> similarityMatrix;
+    private final Long2ObjectMap<ImmutableSparseVector> similarityMatrix;
     private final LongSortedSet itemUniverse;
 
     /**
@@ -58,7 +56,7 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
      *                 of the matrix.
      * @param matrix   The similarity matrix columns (maps item ID to column)
      */
-    public SimilarityMatrixModel(LongSortedSet universe, Long2ObjectMap<ScoredLongList> matrix) {
+    public SimilarityMatrixModel(LongSortedSet universe, Long2ObjectMap<ImmutableSparseVector> matrix) {
         itemUniverse = universe;
         similarityMatrix = matrix;
     }
@@ -70,11 +68,12 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
 
     @Override
     @Nonnull
-    public ScoredLongList getNeighbors(long item) {
-        ScoredLongList nbrs = similarityMatrix.get(item);
-        if (nbrs == null) {
-            nbrs = EMPTY_LIST;
+    public ImmutableSparseVector getNeighbors(long item) {
+        ImmutableSparseVector v = similarityMatrix.get(item);
+        if (v == null) {
+            return new MutableSparseVector().freeze();
+        } else {
+            return v;
         }
-        return nbrs;
     }
 }

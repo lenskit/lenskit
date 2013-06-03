@@ -1,0 +1,102 @@
+#parse("relnotes.vm")
+#header("0.11")
+
+  The primary focus of this release is making LensKit use {{{http://bitbucket.org/grouplens/grapht}Grapht}}
+  rather than PicoContainer, with additional refactorings of components to more
+  effectively take advantage of Grapht. We also made significant improvements to how
+  the evaluator works to allow evaluation scripts to be more flexible, and made a number
+  of other improvements and bug fixes.
+
+  There are a number of backwards-incompatible changes in this release. Configurations and
+  algorithm implementations will definitely need to be updated; other client code may need
+  updates as well.
+
+  #pmIntro("0.11")
+
+* General Changes
+
+  * Made <<<SparseVector>>> return <<<VectorEntry>>> objects when iterated,
+    rather than <<<Long2DoubleMap.Entry>>> instances. All code that iterates over sparse
+    vectors will need to be updated.
+
+  * Added methods to <<<ItemScorer>>> and <<<GlobalItemScorer>>> to output scores to sparse
+    vectors.
+
+  * Begun documenting {{{./versioning.html}API stability}} (#issue(103)).
+
+  * Events are no longer <<<Cloneable>>>, and the <<<clone>>> method is now a deprecated
+    alias for <<<copy()>>>.
+
+  []
+
+* Algorithm Changes
+
+  * The default user similarity for user-user CF is now cosine rather than Pearson.
+
+  * Item-item models can now have unbounded size and have rows truncated by threshold
+    value rather than size (#issue(171)).
+
+  * FunkSVD now incorporates user ratings at predict time (#issue(174)).
+
+  []
+
+* Component Refactoring
+
+  This release contains a lot of algorithm and component refactorings. The public recommender
+  API is unchanged, but many components and their interfaces have changed. This means that
+  custom components and recommender configurations will need to be updated.
+
+  * Added <<<@Shareable>>> annotation for components that can be put in the model build
+    and shared between recommender sessions. All shareable components must now be annotated
+    with this annotation (or configured via instance bindings), or they will not be pre-built.
+
+  * Removed <<<MinRating>>> and <<<MaxRating>>> (deprecated in release 0.10).
+    Code should use <<<PreferenceDomain>>> instead. See #issue(163).
+
+  * Renamed <<<RatingSnapshot>>> and related classes to <<<PreferenceSnapshot>>>,
+    since that's what it really is.
+
+  * Removed many annotations formerly used as dependency qualifiers (see
+    #issue(168)).
+
+    * <<<@NormalizedSnapshot>>>: components that formerly used this qualifier should depend on
+      <<<userNormalizedPreferenceSnapshot>>> or use the normalizer directly.
+
+    * <<<@NormalizerBaseline>>>: use a context-sensitive binding on
+      <<<BaselineSubtractingNormalizer>>>.
+
+    * <<<@PredictNormalizer>>>: use context-sensitive bindings. Usually this will require using
+      context-sensitive bindings to bind the <other> normalizers.
+
+    * <<<@UserHistorySummary>>>: was redundant with the component interface.
+
+    * <<<@UserVectorNormalizer>>>: refactored into a separate <<<UserVectorNormalizer>>> interface,
+      the default implementation of which delegates to a generic vector normalizer.
+      Context-sensitive bindings configure the inner normalizer. <<<BaselineSubtractingNormalizer>>>
+      has become <<<BaselineSubtractingUserVectorNormalizer>>> and implements the new interface.
+
+    * <<<@ItemSimilarity>>>: factored into <<<ItemSimilarity>>> interface, with default
+      implementation delegating to <<<VectorSimilarity>>>.
+
+    * <<<@UserSimilarity>>>: factored into <<<UserSimilarity>>> interface, with default
+      implementation delegating to <<<VectorSimilarity>>>.
+
+    * <<<@WeightedSimilarity>>>: removed in favor of context-sensitive bindings.
+
+    * Dropped <<<@ClampingFunction>>> (and <<<DoubleFunction>>>) in favor of a
+      <<<ClampingFunction>>> interface. The new interface provides the user and item IDs, too.
+
+    []
+
+  * Renamed <<<HistorySummarizer>>> to <<<UserHistorySummarizer>>>, and renamed base classes.
+
+  * Moved normalizers and quantizers into subpackages of <<<o.g.l.transform>>>.
+
+  * Refactored similarities for k-NN recommenders. <<<Similarity>>> became <<<VectorSimilarity>>>,
+    without a generic parameter, and <<<OptimizableVectorSimilarity>>> and <<<SymmetricBinaryFunction>>>
+    have been replaced by methods on similarity interfaces.
+
+  * Removed <<<ItemVector>>> and <<<UserVector>>> classes. User and item IDs are now carried
+    independently and we use distinct component interfaces to handle users and items.
+
+  []

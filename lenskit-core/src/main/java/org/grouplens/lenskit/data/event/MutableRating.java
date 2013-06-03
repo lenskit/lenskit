@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -24,7 +26,7 @@ import org.grouplens.lenskit.data.pref.Preference;
  * Rating implementation for mutation by fast iterators. It is used in
  * {@link org.grouplens.lenskit.data.dao.DelimitedTextRatingCursor} and similar places.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class MutableRating implements Rating {
     private long eid;
@@ -56,6 +58,11 @@ public class MutableRating implements Rating {
         return eid;
     }
 
+    /**
+     * Set the rating's ID.
+     *
+     * @param eid The rating's new ID.
+     */
     public void setId(long eid) {
         this.eid = eid;
     }
@@ -65,6 +72,10 @@ public class MutableRating implements Rating {
         return uid;
     }
 
+    /**
+     * Set the rating's user ID.
+     * @param uid The new user ID.
+     */
     public void setUserId(long uid) {
         this.uid = uid;
     }
@@ -74,6 +85,11 @@ public class MutableRating implements Rating {
         return iid;
     }
 
+    /**
+     * Set the rating's new item ID.
+     *
+     * @param iid The new item ID.
+     */
     public void setItemId(long iid) {
         this.iid = iid;
     }
@@ -102,6 +118,11 @@ public class MutableRating implements Rating {
         return timestamp;
     }
 
+    /**
+     * Set the rating's new timestamp.
+     *
+     * @param ts The rating's timestamp.
+     */
     public void setTimestamp(long ts) {
         timestamp = ts;
     }

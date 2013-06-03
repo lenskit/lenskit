@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,6 +23,7 @@ package org.grouplens.lenskit.util.parallel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -30,7 +33,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 /**
  * Helper methods for working with futures and executor services.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class ExecHelpers {
     private ExecHelpers() {}
@@ -57,9 +60,9 @@ public final class ExecHelpers {
      * @throws ExecutionException if one of the tasks failed.  If multiple tasks
      *                            failed, it is undefined which exception is actually thrown.
      */
-    public static void parallelRun(ExecutorService svc, Collection<? extends Runnable> tasks) throws ExecutionException {
+    public static void parallelRun(ExecutorService svc, Collection<? extends Callable<?>> tasks) throws ExecutionException {
         List<Future<?>> results = new ArrayList<Future<?>>(tasks.size());
-        for (Runnable task : tasks) {
+        for (Callable<?> task: tasks) {
             results.add(svc.submit(task));
         }
         waitAll(results);

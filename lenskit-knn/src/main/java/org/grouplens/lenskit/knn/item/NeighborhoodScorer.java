@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,7 +20,7 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
@@ -30,18 +32,19 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * scores are available, and truncated to the neighborhood size, so all functions
  * implementing this interface need to do is accumulate scores.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@DefaultImplementation(WeightedAverageNeighborhoodScorer.class)
 public interface NeighborhoodScorer {
     /**
      * Compute a score based on similar neighbors and their corresponding
      * scores.
      *
-     * @param neighbors A list of neighbors with similarity measures.
+     * @param neighbors A vector of neighbors with similarity measures.
      * @param scores    A vector of item scores. It should contain a score for
      *                  every item in {@var neighbors}.
      * @return An accumulated score from the neighbors, or {@link Double#NaN} if
      *         no score could be computed.
      */
-    double score(ScoredLongList neighbors, SparseVector scores);
+    double score(SparseVector neighbors, SparseVector scores);
 }

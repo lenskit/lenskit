@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,53 +20,52 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.util.Index;
+import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
+
+import java.io.Serializable;
 
 /**
- * A model for a {@code SlopeOneRatingPredictor} or {@code WeightedSlopeOneRatingPredictor}.
+ * A model for a {@link SlopeOneItemScorer} or {@link WeightedSlopeOneItemScorer}.
  * Stores calculated deviation values and number of co-rating users for each item pair.
- * Also contains a {@code BaselinePredictor} and the minimum and maximum rating values
+ * Also contains a {@link BaselinePredictor} and the minimum and maximum rating values
  * for use by a scorer.
  */
-@DefaultProvider(SlopeOneModelProvider.class)
+@DefaultProvider(SlopeOneModelBuilder.class)
 @Shareable
-public class SlopeOneModel {
+public class SlopeOneModel implements Serializable {
 
-    private final Long2IntMap[] coMatrix;
-    private final Long2DoubleMap[] devMatrix;
-    private final BaselinePredictor baseline;
-    private final Index itemIndex;
+    private static final long serialVersionUID = 1L;
 
-    public SlopeOneModel(Long2IntMap[] coMatrix, Long2DoubleMap[] devMatrix,
-                         BaselinePredictor predictor, Index itemIndex) {
+    private final Long2ObjectMap<ImmutableSparseVector> matrix;
 
-        this.coMatrix = coMatrix;
-        this.devMatrix = devMatrix;
-        baseline = predictor;
-        this.itemIndex = itemIndex;
+    public static final Symbol CORATINGS_SYMBOL = Symbol.of("coratings");
+
+    public SlopeOneModel(Long2ObjectMap<ImmutableSparseVector> matrix) {
+        this.matrix = matrix;
     }
 
     public double getDeviation(long item1, long item2) {
         if (item1 == item2) {
             return 0;
         } else if (item1 < item2) {
-            int index = itemIndex.getIndex(item1);
-            if (index < 0) {
+            SparseVector row = matrix.get(item1);
+            if (row == null) {
                 return Double.NaN;
             } else {
-                return devMatrix[index].get(item2);
+                return row.get(item2);
             }
         } else {
-            int index = itemIndex.getIndex(item2);
-            if (index < 0) {
+            SparseVector row = matrix.get(item2);
+            if (row == null) {
                 return Double.NaN;
             } else {
-                return -devMatrix[index].get(item1);
+                return -row.get(item1);
             }
         }
     }
@@ -73,27 +74,21 @@ public class SlopeOneModel {
         if (item1 == item2) {
             return 0;
         } else if (item1 < item2) {
-            int index = itemIndex.getIndex(item1);
-            if (index < 0) {
+            SparseVector row = matrix.get(item1);
+            if (row == null) {
                 return 0;
             } else {
-                return coMatrix[index].get(item2);
+                double coratings = row.channel(CORATINGS_SYMBOL).get(item2, 0);
+                return (int) coratings;
             }
         } else {
-            int index = itemIndex.getIndex(item2);
-            if (index < 0) {
+            SparseVector row = matrix.get(item2);
+            if (row == null) {
                 return 0;
             } else {
-                return coMatrix[index].get(item1);
+                double coratings = row.channel(CORATINGS_SYMBOL).get(item1, 0);
+                return (int) coratings;
             }
         }
-    }
-
-    public BaselinePredictor getBaselinePredictor() {
-        return baseline;
-    }
-
-    public Index getItemIndex() {
-        return itemIndex;
     }
 }

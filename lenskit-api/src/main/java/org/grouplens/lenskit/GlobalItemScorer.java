@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -31,7 +33,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * scores, purchase probabilities, or any other real-valued score which can be
  * assigned to an item for a given item.
  *
- * @author Steven Chang <schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  * @since 0.10
  */
@@ -59,10 +61,11 @@ public interface GlobalItemScorer {
                              @Nonnull Collection<Long> items);
 
     /**
-     * Score a collection of items based on a collection of items (a shopping basket).
+     * Score items in a vector based on a collection of items (a shopping basket).
      *
      * @param queryItems The items to use as the query.
      * @param output     A vector whose key domain is the items to score.
+     * @see ItemScorer#score(long, MutableSparseVector)
      */
     void globalScore(@Nonnull Collection<Long> queryItems,
                      @Nonnull MutableSparseVector output);

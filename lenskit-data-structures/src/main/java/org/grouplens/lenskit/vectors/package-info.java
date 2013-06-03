@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -17,35 +19,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * Sparse vectors and their operations. This package provides a sparse vector
- * framework for storing things such as rating vectors. Sparse vectors are
- * stored efficiently and have a key domain fixed at create time. Storage is
- * linear in the size of the key domain. See
- * {@link org.grouplens.lenskit.vectors.SparseVector} for more details.
+ * Vectors (both sparse and dense) and their operations.  This package provides various
+ * vector utilities used by LensKit.
  *
- * <p>
- * To allow the type system to communicate valuable information about how
- * vectors are used while still preserving efficiency, sparse vectors come in
- * three forms: <em>read-only</em>, realized by
- * {@link org.grouplens.lenskit.vectors.SparseVector}, provides the basic sparse
- * vector interface; <em>read-write</em>, in
- * {@link org.grouplens.lenskit.vectors.MutableSparseVector}, provides an
- * interface where the values can be changed (e.g. for in-place addition or
- * subtraction); and <em>immutable</em>, in
- * {@link org.grouplens.lenskit.vectors.ImmutableSparseVector}, where the vector
- * is guaranteed to be unchanging and can be safely stored or shared across
- * threads without concern about the caller mutating it later.
+ * <p>There are two types of vectors in this package: vectors ({@link Vector}) and sparse
+ * vectors ({@link SparseVector}).  Vectors are the standard linear algebra vectors, with
+ * a particular dimension \(d\) and elements indexed by integers in the range \([0,d)\).
+ * Sparse vectors map arbitrary long keys to values sparsely and efficiently.  The keys can
+ * be negative.
  *
- * <p>
- * There are further versions of immutable vectors with particular information
- * associated with them: {@link org.grouplens.lenskit.data.history.ItemVector},
- * {@link org.grouplens.lenskit.data.history.UserVector}, and their subclasses.
- * These classes are used for vectors of data associated with particular users.
+ * <p>Each vector comes in three flavors. Read-only vectors ({@link Vector} and {@link SparseVector});
+ * this type is the base of the remaining types for each vector, and provides a read-only
+ * interface to the vector.  Immutable vectors ({@link ImmutableVector}
+ * and {@link ImmutableSparseVector}) are immutable and cannot be
+ * changed once created.  They can also be freely shared between threads.  Finally, mutable vectors
+ * ({@link MutableVector}) and {@link MutableSparseVector})
+ * are mutable and not thread-safe.
  *
- * <p>
- * The {@link org.grouplens.lenskit.vectors.SparseVector SparseVector} class
- * also provides utility methods for manipulating sparse vectors (e.g. the
- * {@link org.grouplens.lenskit.vectors.SparseVector#immutable()
- * SparseVector.immutable()} method for getting an immutable sparse vector).
+ * <p>This design allows read-only operations to be performed on any type of vector, while allowing
+ * components to specifically work with and store vectors guaranteed to be immutable.
+ *
+ * <p>The {@link Vectors} class provides utility methods for working with vectors.
  */
 package org.grouplens.lenskit.vectors;

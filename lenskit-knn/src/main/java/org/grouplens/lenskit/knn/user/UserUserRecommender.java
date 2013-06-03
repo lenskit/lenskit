@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,22 +20,24 @@
  */
 package org.grouplens.lenskit.knn.user;
 
-import javax.inject.Inject;
-
 import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+
+import javax.inject.Inject;
 
 /**
  * A recommender and scorer using user-user collaborative filtering.
  * Neighbor user are aggregated using weighted averaging.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Just use {@link org.grouplens.lenskit.basic.TopNItemRecommender}.
  */
+@Deprecated
 public class UserUserRecommender extends ScoreBasedItemRecommender {
-    protected final UserUserRatingPredictor predictor;
+    protected final UserUserItemScorer predictor;
 
     @Inject
-    public UserUserRecommender(DataAccessObject dao, UserUserRatingPredictor pred) {
+    public UserUserRecommender(DataAccessObject dao, UserUserItemScorer pred) {
         super(dao, pred);
         predictor = pred;
     }

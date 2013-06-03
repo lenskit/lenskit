@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -32,13 +34,19 @@ import javax.annotation.WillClose;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Utilities for working with ratings.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class Ratings {
+    /**
+     * Integer to generate sequential IDs for fresh events.  Used mostly in
+     * test cases.
+     */
+    static final AtomicLong nextEventId = new AtomicLong();
 
     public static final Comparator<Rating> ITEM_TIME_COMPARATOR = new Comparator<Rating>() {
         @Override
@@ -153,7 +161,7 @@ public final class Ratings {
      * mostly useful in test cases.
      */
     public static Rating make(long uid, long iid, double value, long ts) {
-        return new SimpleRating(Events.nextEventId.incrementAndGet(),
+        return new SimpleRating(nextEventId.incrementAndGet(),
                                 uid, iid, value, ts);
     }
 }

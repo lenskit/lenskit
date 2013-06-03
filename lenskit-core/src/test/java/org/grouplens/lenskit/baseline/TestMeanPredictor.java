@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -47,7 +49,7 @@ import org.junit.Test;
 /**
  * Test baseline predictors that compute means from data.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestMeanPredictor {
     private static final double RATINGS_DAT_MEAN = 3.75;
@@ -75,7 +77,7 @@ public class TestMeanPredictor {
 
     @Test
     public void testMeanBaseline() {
-        BaselinePredictor pred = new GlobalMeanPredictor.Provider(dao).get();
+        BaselinePredictor pred = new GlobalMeanPredictor.Builder(dao).get();
         SparseVector map = new ImmutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
         SparseVector pv = pred.predict(10L, map, itemSet(2l));
         assertEquals(RATINGS_DAT_MEAN, pv.get(2l), 0.00001);
@@ -83,7 +85,7 @@ public class TestMeanPredictor {
 
     @Test
     public void testUserMeanBaseline() {
-        BaselinePredictor pred = new UserMeanPredictor.Provider(dao, 0.0).get();
+        BaselinePredictor pred = new UserMeanPredictor.Builder(dao, 0.0).get();
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
         SparseVector map = MutableSparseVector.wrap(items, ratings).freeze();
@@ -100,7 +102,7 @@ public class TestMeanPredictor {
      */
     @Test
     public void testUserMeanBaselineFallback() {
-        BaselinePredictor pred = new UserMeanPredictor.Provider(dao, 0.0).get();
+        BaselinePredictor pred = new UserMeanPredictor.Builder(dao, 0.0).get();
         SparseVector map = new ImmutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
         SparseVector pv = pred.predict(10l, map, itemSet(2));
         assertEquals(RATINGS_DAT_MEAN, pv.get(2), 0.001);
@@ -108,7 +110,7 @@ public class TestMeanPredictor {
 
     @Test
     public void testItemMeanBaseline() {
-        BaselinePredictor pred = new ItemMeanPredictor.Provider(dao, 0.0).get();
+        BaselinePredictor pred = new ItemMeanPredictor.Builder(dao, 0.0).get();
         long[] items = {5, 7, 10};
         double[] values = {3, 6, 4};
         SparseVector map = MutableSparseVector.wrap(items, values).freeze();
@@ -130,7 +132,7 @@ public class TestMeanPredictor {
 
     @Test
     public void testUserItemMeanBaseline() {
-        BaselinePredictor pred = new ItemUserMeanPredictor.Provider(dao, 0.0).get();
+        BaselinePredictor pred = new ItemUserMeanPredictor.Builder(dao, 0.0).get();
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
         SparseVector map = MutableSparseVector.wrap(items, ratings).freeze();

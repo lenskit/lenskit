@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,18 +20,20 @@
  */
 package org.grouplens.lenskit.eval.config
 
-import com.google.common.base.Supplier
 import java.lang.reflect.Method
 
-import org.apache.commons.lang3.reflect.TypeUtils
 import org.slf4j.LoggerFactory
 import static ParameterTransforms.pickInvokable
 import org.grouplens.lenskit.eval.Command
 
 /**
  * Utilities for searching for methods of {@link Command}s.
- * @author Michael Ekstrand
+ * <p>
+ * <b>Warning:</b> here be dragons.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@SuppressWarnings("unchecked") // this will carry through to java stub & silence compiler
 class CommandExtensions {
     private static final def logger = LoggerFactory.getLogger(CommandExtensions)
 
@@ -78,9 +82,9 @@ class CommandExtensions {
      * @param args The arguments.
      * @return A closure to prepare and invoke the method, or {@code null} if no
      * such method can be found.
-     * @see EvalConfigEngine#getCommandForType(Class)
+     * @see EvalScriptEngine#getCommandForType(Class)
      */
-    static def findBuildableMethod(Command self, EvalConfigEngine engine, List<Method> methods, Object[] args) {
+    static def findBuildableMethod(Command self, EvalScriptEngine engine, List<Method> methods, Object[] args) {
         // collect all buildable methods
         def buildables = methods.collect({ method ->
             BuilderCommand builderAnnotation = method.getAnnotation(BuilderCommand.class)
@@ -155,7 +159,7 @@ class CommandExtensions {
      * @return A no-argument closure that either invokes the method if it is found
      * or throws an exception if there is no matching method.
      */
-    static def findSetter(Command self, EvalConfigEngine engine, String name, Object... args) {
+    static def findSetter(Command self, EvalScriptEngine engine, String name, Object... args) {
         name = "set" + name.capitalize()
         def methods = getMethods(self, name)
 
@@ -195,7 +199,7 @@ class CommandExtensions {
      * @return A no-argument closure that either invokes the method if it is found
      * or throws an exception if there is no matching method.
      */
-    static def findAdder(Command self, EvalConfigEngine engine, String name, Object... args) {
+    static def findAdder(Command self, EvalScriptEngine engine, String name, Object... args) {
         name = "add" + name.capitalize()
         def method = findMethod(self, name, args)
         if (method == null) method = findMultiMethod(self, name, args)

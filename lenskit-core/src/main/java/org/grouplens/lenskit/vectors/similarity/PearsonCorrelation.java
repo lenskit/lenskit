@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,7 +21,6 @@
 package org.grouplens.lenskit.vectors.similarity;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.params.Damping;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.Vectors;
 
@@ -40,7 +41,7 @@ import static java.lang.Math.sqrt;
  * Shapira, B., and Kantor, P. (eds.), <i>RecommenderEngine Systems Handbook</i>,
  * Springer. 2010, pp. 107-144.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class PearsonCorrelation implements VectorSimilarity, Serializable {
@@ -53,7 +54,7 @@ public class PearsonCorrelation implements VectorSimilarity, Serializable {
     }
 
     @Inject
-    public PearsonCorrelation(@Damping double s) {
+    public PearsonCorrelation(@SimilarityDamping double s) {
         shrinkage = s;
     }
 

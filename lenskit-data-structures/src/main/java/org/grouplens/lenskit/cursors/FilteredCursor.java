@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -22,10 +24,19 @@ import javax.annotation.WillCloseWhenClosed;
 
 import com.google.common.base.Predicate;
 
+/**
+ * A wrapper cursor that filters its underlying cursor.
+ * @param <T> The cursor's element type.
+ */
 class FilteredCursor<T> extends AbstractPollingCursor<T> {
     private final Cursor<T> cursor;
     private final Predicate<? super T> filter;
 
+    /**
+     * Construct a new filtered cursor.
+     * @param cur The underlying cursor.
+     * @param filt The filter.
+     */
     public FilteredCursor(@WillCloseWhenClosed Cursor<T> cur, Predicate<? super T> filt) {
         super();
         cursor = cur;

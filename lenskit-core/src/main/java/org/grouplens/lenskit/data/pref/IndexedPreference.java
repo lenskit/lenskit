@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,7 +23,8 @@ package org.grouplens.lenskit.data.pref;
 /**
  * A Preference that also provides 0-based indices for the user, item, and itself.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @compat Public
  */
 public abstract class IndexedPreference extends Preference {
     /**
@@ -50,4 +53,9 @@ public abstract class IndexedPreference extends Preference {
      * @return The user index.
      */
     public abstract int getUserIndex();
+
+    @Override
+    public IndexedPreference copy() {
+        return IndexedPreferenceBuilder.copy(this).build();
+    }
 }

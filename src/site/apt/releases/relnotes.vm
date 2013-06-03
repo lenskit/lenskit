@@ -1,0 +1,38 @@
+#macro( issue $num )##
+{{{http://bitbucket.org/grouplens/lenskit/issue/$num}#$num}}##
+#end
+
+#macro( makeHeader $ver $tail )##
+                         --------------------
+                          Release $ver $tail
+                         --------------------
+
+Release $ver $tail
+#end
+
+#macro( header $ver )##
+#if( $project.version == "${ver}-SNAPSHOT" )##
+#makeHeader($ver, "(in progress)")
+#else
+#makeHeader($ver, "")
+#end
+#end
+
+#macro( pmIntro $ver )
+#if( $project.version == "${ver}-SNAPSHOT" )##
+#set( $commits = "commits" )
+#else
+#set( $commits = "/commits/tags/lenskit-$ver" )
+#end
+
+  The {{{http://bitbucket.org/grouplens/lenskit/$commits}Mercurial changelog}} and the
+  {{{http://bitbucket.org/grouplens/lenskit/issues?milestone=$ver&status=resolved}list
+  of closed tickets}} provide more information on what has happened,
+  including bugs that have been fixed.
+#end
+
+#macro( stdHeader $ver )
+#header($ver)
+
+  #pmIntro($ver)
+#end

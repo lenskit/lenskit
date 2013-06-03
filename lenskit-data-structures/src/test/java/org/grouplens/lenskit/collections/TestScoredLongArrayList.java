@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,6 +23,7 @@ package org.grouplens.lenskit.collections;
 import it.unimi.dsi.fastutil.doubles.DoubleComparators;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.longs.LongListIterator;
+
 import org.junit.Test;
 
 import java.io.*;
@@ -30,12 +33,13 @@ import java.util.NoSuchElementException;
 import static java.lang.Double.isNaN;
 import static java.lang.Math.E;
 import static java.lang.Math.PI;
+import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.junit.Assert.*;
 
 /**
  * Tests for {@link ScoredLongArrayList}.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestScoredLongArrayList {
     @Test
@@ -100,7 +104,7 @@ public class TestScoredLongArrayList {
         assertEquals(1, l.size());
         assertEquals(5, l.getLong(0));
         assertEquals(5, l.get(0).longValue());
-        assertTrue(isNaN(l.getScore(0)));
+        assertThat(l.getScore(0), notANumber());
     }
 
     @Test
@@ -111,7 +115,7 @@ public class TestScoredLongArrayList {
         assertEquals(1, l.size());
         assertEquals(5, l.getLong(0));
         assertEquals(5, l.get(0).longValue());
-        assertTrue(isNaN(l.getScore(0)));
+        assertThat(l.getScore(0), notANumber());
     }
 
     @Test
@@ -142,7 +146,7 @@ public class TestScoredLongArrayList {
         assertEquals(3, l.getLong(1));
         assertEquals(10, l.getLong(2));
         assertEquals(Math.PI, l.getScore(0), 1.0e-5);
-        assertTrue(isNaN(l.getScore(1)));
+        assertThat(l.getScore(1), notANumber());
         assertEquals(Math.E, l.getScore(2), 1.0e-5);
     }
 
@@ -172,7 +176,7 @@ public class TestScoredLongArrayList {
             assertEquals(items[i], l.getLong(i));
         }
         for (int i = 0; i < 3; i++) {
-            assertTrue(isNaN(l.getScore(i)));
+            assertThat(l.getScore(i), notANumber());
         }
     }
 
@@ -247,7 +251,7 @@ public class TestScoredLongArrayList {
         assertEquals(3, l.size());
         for (int i = 0; i < items.length; i++) {
             assertEquals(items[i], l.getLong(i));
-            assertTrue(isNaN(l.getScore(i)));
+            assertThat(l.getScore(i), notANumber());
         }
     }
 
@@ -274,7 +278,7 @@ public class TestScoredLongArrayList {
         assertEquals(3, l.size());
         for (int i = 0; i < 3; i++) {
             assertEquals(items[i + 1], l.getLong(i));
-            assertTrue(isNaN(l.getScore(i)));
+            assertThat(l.getScore(i), notANumber());
         }
     }
 
@@ -310,7 +314,7 @@ public class TestScoredLongArrayList {
 
         for (int i = 0; i < 3; i++) {
             assertEquals(ni[i], l.getLong(i + 2));
-            assertTrue(isNaN(l.getScore(i + 2)));
+            assertThat(l.getScore(i + 2), notANumber());
         }
     }
 
@@ -350,10 +354,10 @@ public class TestScoredLongArrayList {
     public void setScoreNaN() {
         long[] items = {1, 2, 5};
         ScoredLongArrayList l = new ScoredLongArrayList(items);
-        assertTrue(isNaN(l.setScore(1, PI)));
+        assertThat(l.setScore(1, PI), notANumber());
         assertEquals(PI, l.getScore(1), 1.0e-5);
-        assertTrue(isNaN(l.getScore(0)));
-        assertTrue(isNaN(l.getScore(2)));
+        assertThat(l.getScore(0), notANumber());
+        assertThat(l.getScore(2), notANumber());
     }
 
     @Test

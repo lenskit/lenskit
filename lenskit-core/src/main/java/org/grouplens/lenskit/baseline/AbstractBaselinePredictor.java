@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -26,7 +28,7 @@ import java.util.Collection;
 /**
  * Abstract implementation of BaselinePredictor.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class AbstractBaselinePredictor implements BaselinePredictor {
     /**
@@ -41,8 +43,43 @@ public abstract class AbstractBaselinePredictor implements BaselinePredictor {
         return v;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>Delegates to {@link #predict(long, SparseVector, MutableSparseVector, boolean)}
+     * with {@code predictSet} of {@code true}.
+     */
     @Override
     public void predict(long user, SparseVector ratings, MutableSparseVector output) {
         predict(user, ratings, output, true);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>Delegates to {@link #predict(long, MutableSparseVector, boolean)}.
+     */
+    @Override
+    public void predict(long user, SparseVector ratings, MutableSparseVector output, boolean predictSet) {
+        predict(user, output, predictSet);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>Delegates to {@link #predict(long, MutableSparseVector)}.
+     */
+    @Override
+    public MutableSparseVector predict(long user, Collection<Long> items) {
+        MutableSparseVector v = new MutableSparseVector(items);
+        predict(user, v);
+        return v;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>Delegates to {@link #predict(long, MutableSparseVector, boolean)} with {@code predictSet}
+     * of {@code true}.
+     */
+    @Override
+    public void predict(long user, MutableSparseVector output) {
+        predict(user, output, true);
     }
 }

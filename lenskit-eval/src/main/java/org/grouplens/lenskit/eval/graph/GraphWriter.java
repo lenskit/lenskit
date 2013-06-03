@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,31 +20,109 @@
  */
 package org.grouplens.lenskit.eval.graph;
 
-import org.grouplens.grapht.graph.Graph;
-import org.grouplens.grapht.graph.Node;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
+import groovy.json.StringEscapeUtils;
+
+import javax.annotation.Nullable;
+import java.io.BufferedWriter;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
- * A GraphWriter writes one or more {@link org.grouplens.grapht.Graph Graphs}
- * stored in memory to a permanent representation.
+ * Write a graph in GraphViz format.
  */
-public interface GraphWriter {
+class GraphWriter implements Closeable {
+    private static final Pattern SAFE_VALUE = Pattern.compile("\\w+");
+    private final BufferedWriter output;
 
-    /**
-     * Perform any preparations necessary to begin constructing the representation.
-     */
-    void start();
+    public GraphWriter(Writer out) throws IOException {
+        output = new BufferedWriter(out);
+        output.append("digraph {\n");
+        output.append("  node [fontname=\"Helvetica\"")
+              .append(",color=\"").append(ComponentNodeBuilder.UNSHARED_BGCOLOR).append("\"")
+              .append("];\n");
+        output.append("  graph [rankdir=LR];\n");
+        output.append("  edge [")
+              .append("color=\"")
+              .append(ComponentNodeBuilder.UNSHARED_BGCOLOR).append("\"")
+              .append("];\n");
+    }
 
-    /**
-     * Add the entirety of a graph to the underlying representation.
-     *
-     * @param g    The graph to add.
-     * @param root The root node of the graph.
-     */
-    void addGraph(String label, Graph g, Node root);
+    @Override
+    public void close() throws IOException {
+        output.write("}\n");
+        output.close();
+    }
 
-    /**
-     * Complete the representation and perform any required cleanup.
-     */
-    void finish();
+    private String safeValue(Object obj) {
+        String str = obj.toString();
+        if (obj instanceof HTMLLabel || SAFE_VALUE.matcher(str).matches()) {
+            return str;
+        } else {
+            return "\"" + StringEscapeUtils.escapeJava(str) + "\"";
+        }
+    }
 
+    private void putAttributes(Map<String, Object> attrs) throws IOException {
+        if (!attrs.isEmpty()) {
+            output.append(" [");
+            Joiner.on(", ")
+                  .withKeyValueSeparator("=")
+                  .appendTo(output, Maps.transformValues(attrs, new Function<Object, String>() {
+                      @Nullable
+                      @Override
+                      public String apply(@Nullable Object input) {
+                          return safeValue(input);
+                      }
+                  }));
+            output.append("]");
+        }
+    }
+
+    public void putNode(GVNode node) throws IOException {
+        final String id = node.getId();
+        output.append("  ")
+              .append(id);
+        putAttributes(node.getAttributes());
+        output.append(";\n");
+    }
+
+    public void putEdge(GVEdge edge) throws IOException {
+        final String src = edge.getSource();
+        final String dst = edge.getTarget();
+        output.append("  ")
+              .append(src)
+              .append(" -> ")
+              .append(dst);
+        putAttributes(edge.getAttributes());
+        output.append(";\n");
+    }
+
+    public void putSubgraph(GVSubgraph subgraph) throws IOException {
+        output.append("  subgraph ");
+        String name = subgraph.getName();
+        if (name != null) {
+            output.append(name).append(" ");
+        }
+        output.append("{\n");
+        for (Map.Entry<String,Object> e: subgraph.getAttributes().entrySet()) {
+            output.append("    ")
+                  .append(e.getKey())
+                  .append("=")
+                  .append(safeValue(e.getValue()))
+                  .append(";\n");
+        }
+        for (GVNode node: subgraph.getNodes()) {
+            putNode(node);
+        }
+        for (GVEdge edge: subgraph.getEdges()) {
+            putEdge(edge);
+        }
+        output.append("  }\n");
+    }
 }

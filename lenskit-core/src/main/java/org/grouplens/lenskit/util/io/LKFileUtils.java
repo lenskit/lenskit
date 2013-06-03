@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -30,7 +32,7 @@ import java.util.zip.GZIPOutputStream;
  * File utilities for LensKit. Called LKFileUtils to avoid conflict with FileUtils
  * classes that may be imported from other packages such as Guava, Plexus, or Commons.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
 public final class LKFileUtils {
@@ -181,7 +183,11 @@ public final class LKFileUtils {
      * @param toClose The objects to close.
      * @return {@code true} if all objects closed cleanly; {@code false} if some objects
      *         failed when closing.
+     * @deprecated Use {@link com.google.common.io.Closer} instead; also see
+     * <a href="https://code.google.com/p/guava-libraries/issues/detail?id=1118">this explanation</a>
+     * for why Guava removed a similar feature.
      */
+    @Deprecated
     public static boolean close(Logger log, Closeable... toClose) {
         boolean success = true;
         for (Closeable c : toClose) {
@@ -209,7 +215,11 @@ public final class LKFileUtils {
      * @param toClose The objects to close.
      * @return {@code true} if all objects closed successfully.
      * @see #close(Logger, Closeable...)
+     * @deprecated Use {@link com.google.common.io.Closer} instead; also see
+     * <a href="https://code.google.com/p/guava-libraries/issues/detail?id=1118">this explanation</a>
+     * for why Guava removed a similar feature.
      */
+    @Deprecated
     public static boolean close(Closeable... toClose) {
         return close(logger, toClose);
     }

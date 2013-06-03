@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,6 +21,9 @@
 package org.grouplens.lenskit.eval.config
 
 import org.grouplens.lenskit.eval.Command
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 import javax.annotation.Nullable
 import javax.annotation.Nonnull
 
@@ -26,12 +31,13 @@ import javax.annotation.Nonnull
  * Default runner for commands.
  *
  * @since 1.0
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class DefaultCommandRunner implements CommandRunner {
-    protected final EvalConfigEngine engine
+    private static final Logger logger = LoggerFactory.getLogger(DefaultCommandRunner)
+    protected final EvalScriptEngine engine
 
-    DefaultCommandRunner(EvalConfigEngine eng) {
+    DefaultCommandRunner(EvalScriptEngine eng) {
         engine = eng;
     }
 
@@ -66,6 +72,7 @@ class DefaultCommandRunner implements CommandRunner {
      * @param cl The closure.
      */
     protected <V> V invokeClosure(@Nonnull Closure<V> closure) {
+        logger.debug("configuring command")
         closure.call()
     }
 
@@ -75,6 +82,7 @@ class DefaultCommandRunner implements CommandRunner {
      * @return The return value of the command.
      */
     protected <V> V callCommand(@Nonnull Command<V> cmd) {
+        logger.debug("invoking command {}", cmd.name)
         return cmd.call();
     }
 
@@ -94,6 +102,7 @@ class DefaultCommandRunner implements CommandRunner {
     @Override
     <V> V invoke(@Nonnull Command<V> command,
                  @Nullable Closure<?> closure) {
+        logger.debug("preparing and invoking command {}", command)
         if (closure != null) {
             def dlg = getDelegate(command)
             attachDelegate(closure, dlg)

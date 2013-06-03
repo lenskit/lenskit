@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,9 +20,10 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
+import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.grouplens.lenskit.eval.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -29,9 +32,12 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
+import java.util.List;
+
 public class HLUtilityPredictMetric extends AbstractTestUserMetric {
     private static final Logger logger = LoggerFactory.getLogger(HLUtilityPredictMetric.class);
-    private static final String[] COLUMNS = {"HLUtility"};
+    private static final List<String> COLUMNS = ImmutableList.of("HLUtility");
 
     private double alpha;
 
@@ -49,12 +55,12 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
     }
 
     @Override
-    public String[] getColumnLabels() {
+    public List<String> getColumnLabels() {
         return COLUMNS;
     }
 
     @Override
-    public String[] getUserColumnLabels() {
+    public List<String> getUserColumnLabels() {
         return COLUMNS;
     }
 
@@ -75,11 +81,13 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
         double total = 0;
         int nusers = 0;
 
+        @Nonnull
         @Override
         public Object[] evaluate(TestUser user) {
             return evaluatePredictions(user.getTestRatings(), user.getPredictions());
         }
 
+        @Nonnull
         Object[] evaluatePredictions(SparseVector ratings, SparseVector predictions) {
             LongList ideal = ratings.keysByValue(true);
             LongList actual = predictions.keysByValue(true);
@@ -91,6 +99,7 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
             return new Object[]{u};
         }
 
+        @Nonnull
         @Override
         public Object[] finalResults() {
             double v = total / nusers;

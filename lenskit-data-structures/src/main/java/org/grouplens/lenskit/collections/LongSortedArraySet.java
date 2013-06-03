@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,6 +20,7 @@
  */
 package org.grouplens.lenskit.collections;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.longs.*;
 
 import javax.annotation.Nonnull;
@@ -36,7 +39,7 @@ import java.util.NoSuchElementException;
  *
  * <p>No orders are supported other than the natural ordering.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 @Immutable
@@ -110,6 +113,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      * @throws IndexOutOfBoundsException if {@var start} or {@var end}
      *                                   is out of range.
      */
+    @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     private LongSortedArraySet(@Nonnull long[] items, int fromIndex, int toIndex,
                                boolean clean, @Nullable BitSet used) {
         data = items;
@@ -278,7 +282,9 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      * @return The array of elements.
      * @see #toLongArray()
      */
-    @SuppressWarnings("EI_EXPOSE_REP")
+    @SuppressWarnings({"PMD.MethodReturnsInternalArray"})
+    @SuppressFBWarnings(value="EI_EXPOSE_REP",
+                        justification="this field is documented as unsafe")
     public long[] unsafeArray() {
         if (start == 0 && end == data.length && mask == null) {
             return data;
@@ -308,9 +314,11 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
             Arrays.sort(data, 0, i);
         }
         // trim the array
+        //CHECKSTYLE:OFF MagicNumber
         if (data.length * 2 > i * 3) {
             data = Arrays.copyOf(data, i);
         }
+        //CHECKSTYLE:ON
         return new LongSortedArraySet(data, 0, i, true, null);
     }
 
@@ -406,7 +414,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
         private BitSetIterator iter;
 
         public MaskedIterImpl(int spos) {
-            iter = new BitSetIterator(mask, spos, end);
+            iter = new BitSetIterator(mask, start, end, spos);
         }
 
         @Override

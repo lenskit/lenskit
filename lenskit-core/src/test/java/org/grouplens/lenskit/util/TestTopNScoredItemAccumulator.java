@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,16 +20,19 @@
  */
 package org.grouplens.lenskit.util;
 
-import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
+
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestTopNScoredItemAccumulator {
     ScoredItemAccumulator accum;
@@ -39,7 +44,7 @@ public class TestTopNScoredItemAccumulator {
 
     @Test
     public void testEmpty() {
-        ScoredLongList out = accum.finish();
+        List<ScoredId> out = accum.finish();
         assertTrue(out.isEmpty());
     }
 
@@ -48,14 +53,14 @@ public class TestTopNScoredItemAccumulator {
         accum.put(5, 4.2);
         accum.put(3, 2.9);
         accum.put(2, 9.8);
-        ScoredLongList out = accum.finish();
-        assertThat(out.size(), equalTo(3));
-        assertThat(out.get(0), equalTo(2L));
-        assertThat(out.getScore(0), equalTo(9.8));
-        assertThat(out.get(1), equalTo(5L));
-        assertThat(out.getScore(1), equalTo(4.2));
-        assertThat(out.get(2), equalTo(3L));
-        assertThat(out.getScore(2), equalTo(2.9));
+        List<ScoredId> out = accum.finish();
+        assertThat(out, hasSize(3));
+        assertThat(out.get(0).getId(), equalTo(2L));
+        assertThat(out.get(0).getScore(), equalTo(9.8));
+        assertThat(out.get(1).getId(), equalTo(5L));
+        assertThat(out.get(1).getScore(), equalTo(4.2));
+        assertThat(out.get(2).getId(), equalTo(3L));
+        assertThat(out.get(2).getScore(), equalTo(2.9));
     }
 
     @Test
@@ -65,13 +70,13 @@ public class TestTopNScoredItemAccumulator {
         accum.put(3, 2.9);
         accum.put(2, 9.8);
         accum.put(8, 2.1);
-        ScoredLongList out = accum.finish();
-        assertThat(out.size(), equalTo(3));
-        assertThat(out.get(0), equalTo(2L));
-        assertThat(out.getScore(0), equalTo(9.8));
-        assertThat(out.get(1), equalTo(5L));
-        assertThat(out.getScore(1), equalTo(4.2));
-        assertThat(out.get(2), equalTo(3L));
-        assertThat(out.getScore(2), equalTo(2.9));
+        List<ScoredId> out = accum.finish();
+        assertThat(out, hasSize(3));
+        assertThat(out.get(0).getId(), equalTo(2L));
+        assertThat(out.get(0).getScore(), equalTo(9.8));
+        assertThat(out.get(1).getId(), equalTo(5L));
+        assertThat(out.get(1).getScore(), equalTo(4.2));
+        assertThat(out.get(2).getId(), equalTo(3L));
+        assertThat(out.get(2).getScore(), equalTo(2.9));
     }
 }

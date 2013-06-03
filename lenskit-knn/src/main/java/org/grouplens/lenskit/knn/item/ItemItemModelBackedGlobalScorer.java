@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -29,8 +31,7 @@ import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 /**
  * The  global scorer for the global recommendation backed by a item-item model.
  *
- * @author Shuo Chang <schang@cs.umn.edu>
- * @see{@link ItemItemModelBackedScorer}
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultImplementation(ItemItemGlobalScorer.class)
 public interface ItemItemModelBackedGlobalScorer extends GlobalItemScorer {

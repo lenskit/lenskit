@@ -1,0 +1,175 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>\${groupId}</groupId>
+  <artifactId>\${artifactId}</artifactId>
+  <version>\${version}</version>
+  <packaging>jar</packaging>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <lenskit.eval.scriptDir>\${basedir}/src/eval/</lenskit.eval.scriptDir>
+    <lenskit.eval.dataDir>\${basedir}/target/data/</lenskit.eval.dataDir>
+    <lenskit.eval.analysisDir>\${basedir}/target/analysis/</lenskit.eval.analysisDir>
+    <lenskit.eval.publishDir>\${basedir}/src/paper/</lenskit.eval.publishDir>
+
+    <!-- The version of LensKit for your project -->
+    <!-- Note that we use project.version to pick up the version from the 
+	 source tree this archetype is being built from. -->
+    <lenskit.version>${project.version}</lenskit.version>
+
+    <!-- The location of the Rscript executable. The default is to search 
+	 for Rscript in your PATH. If you need to override this, it should probably 
+	 be done in ~/.m2/settings.xml rather than here. -->
+    <rscript.executable>Rscript</rscript.executable>
+
+    <!-- Uncomment and change below to 'yes' if you accept the MovieLens 
+	 data terms of service. <grouplens.mldata.acknowledge>no</grouplens.mldata.acknowledge> -->
+  </properties>
+
+  <dependencies>
+
+    <!-- You will automatically get a version of LensKit for your project, 
+	 pulled in transitively by the lenskit-eval-maven-plugin. The version you 
+	 get is based on the version of the archetype you used to create this project. -->
+
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-core</artifactId>
+      <version>\${lenskit.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-knn</artifactId>
+      <version>\${lenskit.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <version>1.3</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <!-- Now we specify the build that will actually execute to make our project 
+       do something cool. The build is a collection of plugins that we execute to 
+       do the work. Note that we run the evaluations using the lenskit-lifecycle, 
+       because we use the lenskit-eval-maven-plugin. The phases of this lifecycle 
+       are lenskit-pre-eval, lenskit-eval, lenskit-post-eval, and lenskit-analyze, 
+       in that order. -->
+
+  <build>
+    <plugins>
+
+      <!-- LensKit requires at least Java 1.6 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.0.2</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+
+      <!-- This use of the ant plugin first creates the data directory and 
+	   then fetches the ml-100k dataset. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <id>create-dirs</id>
+            <phase>lenskit-pre-eval</phase>
+            <configuration>
+              <tasks>
+                <mkdir dir="\${lenskit.eval.dataDir}" />
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>fetch-mldata</id>
+            <phase>lenskit-pre-eval</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <ant antfile="get-data.xml" target="prepare-100k"
+		     dir="\${lenskit.eval.scriptDir}" />
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Run the lenskit eval plugin that does the work of evaluating the 
+	   recommenders you are comparing, by running your Groovy script. -->
+      <plugin>
+        <artifactId>lenskit-eval-maven-plugin</artifactId>
+        <groupId>org.grouplens.lenskit</groupId>
+        <version>\${lenskit.version}</version>
+        <extensions>true</extensions>
+
+	<!-- The default execution for the lenskit-eval-maven-plugin
+	     will run the run-eval goal in the lenskit-eval phase to
+	     run your Groovy script to evaluate the recommenders you
+	     are comparing.  The configuration here configures the
+	     plugin, including all of its MOJOs.  -->
+
+	<configuration>
+	  <script>${lenskit.eval.scriptDir}/eval.groovy</script>
+	  <analysisScript>${lenskit.eval.scriptDir}/chart.R</analysisScript>
+	</configuration>
+
+        <executions>
+
+          <!-- This execution runs the run-r goal from the
+	       lenskit-eval-maven-plugin to perform R data analysis to
+	       produce the graphs from our runs. -->
+
+	  <execution>
+	    <id>run-r</id>
+	    <phase>lenskit-analyze</phase>
+	    <goals>
+	      <goal>run-r</goal>
+	    </goals>
+	  </execution>
+
+        </executions>
+
+      </plugin>
+
+      <!-- This plugin runs LaTeX to produce the PDF version of our paper. 
+	   We tie this plugin to the appropriate phase of the lenskit lifecycle. -->
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>latex-maven-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <id>do-latex</id>
+            <phase>lenskit-publish</phase>
+            <goals>
+              <goal>latex</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+</project>

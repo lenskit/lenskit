@@ -1,0 +1,53 @@
+#parse("relnotes.vm")
+#header("1.0")
+
+  This release includes many documentation improvements and general cleanups from
+  LensKit 0.11.
+
+  #pmIntro("1.0")
+
+* Core
+
+   * Added <<<set>>> method for setting parameters.
+
+   * Recommender engine factories now throw a checked <<<RecommenderBuildException>>>.
+
+   []
+
+* Algorithms
+
+   * Factored out FunkSVD stopping conditions, made default now 100 iterations. If you
+     want a delta RMSE threshold, use <<<ThresholdStoppingCondition>>> and set the
+     <<<ThresholdValue>>> parameter.
+
+   * Moved FunkSVD to the <<<o.g.l.mf.funksvd>>> package.
+
+   * Made Slope-One use k-NN, specifically item-item, as the base framework rather than
+     being standalone. Future tasks will further harness and develop this merger.
+
+   * Support item vector normalizers for the item-item similarity matrix (see
+     <<<NormalizingSimilarityMatrixAccumulatorFactory>>>.
+
+   * Move vector similarity code into <<<o.g.l.vectors.similarity>>>.
+
+   * Made item-item clamp predictions to the preference domain, if it is available.
+
+   []
+
+* Evaluator
+
+   * Evaluation scripts now have access to command line arguments (#issue(138)).
+
+   * Added support for a block form of the <<<within>>> directive.
+
+   * Added the <<<dumpGraph>>> command to dump recommender configurations to GraphViz.
+
+   * Added new archetype to aid in creating evaluation projects.
+
+   []
+
+* Cleanup
+
+   * Removed all deprecated methods.
+
+   []

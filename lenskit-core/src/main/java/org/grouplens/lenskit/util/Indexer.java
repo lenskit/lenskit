@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,6 +20,10 @@
  */
 package org.grouplens.lenskit.util;
 
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
+import org.grouplens.lenskit.vectors.VectorEntry.State;
+
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -27,7 +33,7 @@ import it.unimi.dsi.fastutil.longs.LongLists;
 /**
  * Build contiguous 0-based indexes for long IDs.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class Indexer implements Index {
     private static final long serialVersionUID = -8383883342128686850L;
@@ -80,5 +86,19 @@ public class Indexer implements Index {
             indexes.put(id, idx);
         }
         return idx;
+    }
+
+    @Override
+    public MutableSparseVector convertArrayToVector(double[] values) {
+        if(values.length != getObjectCount()){
+            throw new IllegalArgumentException("Value array has incorrect length");
+        }
+
+        MutableSparseVector newSparseVector = new MutableSparseVector(ids);
+        for(VectorEntry e : newSparseVector.fast(State.EITHER)){
+            final int iid = getIndex(e.getKey());
+            newSparseVector.set(e, values[iid]);
+        }
+        return newSparseVector;
     }
 }

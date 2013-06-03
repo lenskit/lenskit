@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,25 +20,17 @@
  */
 package org.grouplens.lenskit.data.event;
 
-import java.util.Comparator;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.grouplens.lenskit.data.Event;
-
 import com.google.common.collect.ComparisonChain;
 import com.google.common.primitives.Longs;
+import org.grouplens.lenskit.data.Event;
+
+import java.util.Comparator;
 
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class Events {
     private Events() {}
-
-    /**
-     * Integer to generate sequential IDs for fresh events.  Used mostly in
-     * test cases.
-     */
-    static final AtomicLong nextEventId = new AtomicLong();
 
     /**
      * Compare two events by timestamp.

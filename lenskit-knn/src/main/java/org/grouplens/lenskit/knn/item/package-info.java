@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,7 +22,7 @@
  * Implementation of item-item collaborative filtering.
  * <p/>
  * The item-item CF implementation is built up of several pieces. The
- * {@linkplain org.grouplens.lenskit.knn.item.model.ItemItemModelProvider model builder} takes the rating data
+ * {@linkplain org.grouplens.lenskit.knn.item.model.ItemItemModelBuilder model builder} takes the rating data
  * and several parameters and components, such as the
  * {@linkplain org.grouplens.lenskit.vectors.similarity.VectorSimilarity similarity function} and {@linkplain ModelSize model size},
  * and computes the {@linkplain org.grouplens.lenskit.knn.item.model.SimilarityMatrixModel similarity matrix}. The
@@ -52,10 +54,6 @@
  * The scorers and recommenders actually operate on a generic {@link org.grouplens.lenskit.knn.item.model.ItemItemModel}, so the
  * item-based scoring algorithm can be used against other sources of similarity, such as
  * similarities stored in a database or text index.
- *
- * @cite Sarwar et al. 2001.
- * @cite Deshpande and Karypis 2004
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.knn.params.ModelSize;

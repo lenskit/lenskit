@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -24,31 +26,27 @@ import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractCommand;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 
 /**
  * Command to return a CSV data source.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@SuppressWarnings("UnusedDeclaration")
 public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
     String delimiter = ",";
-    String sourceName;
     File inputFile;
     boolean cache = true;
     PreferenceDomain domain;
     Function<DAOFactory, DAOFactory> wrapper;
 
     public CSVDataSourceCommand() {
-        super("CSVSource");
+        this(null);
     }
 
     public CSVDataSourceCommand(String name) {
-        super();
-        if (name != null) {
-            setName(name);
-        }
+        super(name);
     }
 
     /**
@@ -59,8 +57,18 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
      */
     @Override
     public CSVDataSourceCommand setName(String name) {
-        sourceName = name;
+        super.setName(name);
         return this;
+    }
+
+    @Nonnull
+    @Override
+    public String getName() {
+        if (hasName()) {
+            return super.getName();
+        } else {
+            return inputFile.getName();
+        }
     }
 
     /**
@@ -124,18 +132,18 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
      *
      * @return The configured data source.
      */
-
+    @Override
     public CSVDataSource call() {
         // if no name, use the file name
-        if (sourceName == null && inputFile != null) {
-            sourceName = inputFile.toString();
+        if (!hasName() && inputFile != null) {
+            setName(inputFile.toString());
         }
         // if no file, use the name
-        if (inputFile == null && sourceName != null) {
-            inputFile = new File(sourceName);
+        if (inputFile == null && hasName()) {
+            inputFile = new File(getName());
         }
         // by now we should have a file
         Preconditions.checkState(inputFile != null, "no input file specified");
-        return new CSVDataSource(sourceName, inputFile, delimiter, cache, domain, wrapper);
+        return new CSVDataSource(getName(), inputFile, delimiter, cache, domain, wrapper);
     }
 }

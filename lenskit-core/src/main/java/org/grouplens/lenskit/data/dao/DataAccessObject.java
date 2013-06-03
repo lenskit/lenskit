@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -29,7 +31,7 @@ import org.grouplens.lenskit.data.UserHistory;
  * LensKit core data access object interface. This interface provides access to
  * users, items, and event histories to LensKit recommenders.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public interface DataAccessObject extends Closeable {
@@ -84,7 +86,7 @@ public interface DataAccessObject extends Closeable {
      *                                   this data source.
      * @see #getEvents(Class, SortOrder)
      */
-    Cursor<? extends Event> getEvents(SortOrder order);
+    Cursor<? extends Event> getEvents(SortOrder order) throws UnsupportedQueryException;
 
     /**
      * Get all events of a particular type. Equivalent to
@@ -109,7 +111,7 @@ public interface DataAccessObject extends Closeable {
      * @throws UnsupportedQueryException if the sort order is not supported by
      *                                   this data source.
      */
-    <E extends Event> Cursor<E> getEvents(Class<E> type, SortOrder order);
+    <E extends Event> Cursor<E> getEvents(Class<E> type, SortOrder order) throws UnsupportedQueryException;
 
     /**
      * Get the user history for a user.

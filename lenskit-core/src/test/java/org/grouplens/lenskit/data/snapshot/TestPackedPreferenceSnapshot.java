@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -34,8 +36,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.grouplens.common.test.MoreMatchers.*;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
 
 public class TestPackedPreferenceSnapshot {
@@ -86,8 +87,7 @@ public class TestPackedPreferenceSnapshot {
 
     @Test
     public void testBasicStats() {
-        assertThat(snap.getRatings().size(),
-                   equalTo(20));
+        assertThat(snap.getRatings(), hasSize(20));
     }
 
     @Test
@@ -186,12 +186,11 @@ public class TestPackedPreferenceSnapshot {
     @Test
     public void testGetUserRatings() {
         FastCollection<IndexedPreference> ratings = snap.getUserRatings(1);
-        assertThat(ratings.size(), equalTo(4));
-        assertThat(ratings, contains(preference(1, 7, 4)));
-        assertThat(ratings, contains(preference(1, 7, 4)));
-        assertThat(ratings, contains(preference(1, 8, 5)));
-        assertThat(ratings, contains(preference(1, 9, 3)));
-        assertThat(ratings, contains(preference(1, 11, 5)));
+        assertThat(ratings, hasSize(4));
+        assertTrue(ratings.contains(preference(1, 7, 4)));
+        assertTrue(ratings.contains(preference(1, 8, 5)));
+        assertTrue(ratings.contains(preference(1, 9, 3)));
+        assertTrue(ratings.contains(preference(1, 11, 5)));
 
         ratings = snap.getUserRatings(2);
         assertEquals(0, ratings.size());

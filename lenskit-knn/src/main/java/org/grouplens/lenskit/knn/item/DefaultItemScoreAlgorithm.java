@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,14 +20,13 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
-import org.grouplens.lenskit.knn.params.NeighborhoodSize;
+import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -39,7 +40,7 @@ import java.io.Serializable;
  * Default item scoring algorithm. It uses up to {@link NeighborhoodSize} neighbors to
  * score each item.
  *
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializable {
@@ -65,25 +66,25 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
             accum = new UnlimitedScoredItemAccumulator();
         }
 
+        // Create a channel for recording the neighborhoodsize
+        scores.alwaysAddChannel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL);
         // for each item, compute its prediction
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
 
             // find all potential neighbors
-            // FIXME: Take advantage of the fact that the neighborhood is sorted
-            ScoredLongList neighbors = model.getNeighbors(item);
+            ImmutableSparseVector neighbors = model.getNeighbors(item);
             final int nnbrs = neighbors.size();
 
             // filter and truncate the neighborhood
-            ScoredLongListIterator niter = neighbors.iterator();
-            while (niter.hasNext()) {
-                long oi = niter.nextLong();
-                double score = niter.getScore();
+            for (VectorEntry neighbor : neighbors.fast()) {
+                long oi = neighbor.getKey();
+                double score = neighbor.getValue();
                 if (userData.containsKey(oi)) {
                     accum.put(oi, score);
                 }
             }
-            neighbors = accum.finish();
+            neighbors = accum.finishVector().freeze();
             if (logger.isTraceEnabled()) { // conditional to avoid alloc
                 logger.trace("using {} of {} neighbors for {}",
                              new Object[]{neighbors.size(), nnbrs, item});
@@ -91,6 +92,8 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
 
             // compute score & place in vector
             final double score = scorer.score(neighbors, userData);
+            scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
+                    set(e.getKey(), neighbors.size()); // set size even if no score
             if (!Double.isNaN(score)) {
                 scores.set(e, score);
             }

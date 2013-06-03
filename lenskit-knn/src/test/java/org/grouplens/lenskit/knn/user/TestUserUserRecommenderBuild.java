@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,6 +21,7 @@
 package org.grouplens.lenskit.knn.user;
 
 import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
@@ -31,12 +34,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 public class TestUserUserRecommenderBuild {
 
     private static RecommenderEngine engine;
 
+    @SuppressWarnings("deprecation")
     @Before
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
@@ -48,24 +53,27 @@ public class TestUserUserRecommenderBuild {
         DAOFactory daof = new EventCollectionDAO.Factory(rs);
 
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
-        factory.bind(RatingPredictor.class).to(UserUserRatingPredictor.class);
+        factory.bind(ItemScorer.class).to(UserUserItemScorer.class);
         factory.bind(ItemRecommender.class).to(UserUserRecommender.class);
         factory.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
 
         engine = factory.create();
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testUserUserRecommenderEngineCreate() {
         Recommender rec = engine.open();
 
         try {
-            assertThat(rec.getRatingPredictor(),
-                       instanceOf(UserUserRatingPredictor.class));
             assertThat(rec.getItemScorer(),
-                       instanceOf(UserUserRatingPredictor.class));
+                       instanceOf(UserUserItemScorer.class));
             assertThat(rec.getItemRecommender(),
                        instanceOf(UserUserRecommender.class));
+            RatingPredictor pred = rec.getRatingPredictor();
+            assertThat(pred, instanceOf(SimpleRatingPredictor.class));
+            assertThat(((SimpleRatingPredictor) pred).getScorer(),
+                       sameInstance(rec.getItemScorer()));
         } finally {
             rec.close();
         }

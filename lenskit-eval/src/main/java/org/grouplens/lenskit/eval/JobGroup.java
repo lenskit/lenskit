@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -31,10 +33,11 @@ import java.util.List;
  * data structures such as in-memory caches to be shared between jobs, with only
  * one such set in memory at a time.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @param <T> The return type of jobs in this group.
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
-public interface JobGroup {
+public interface JobGroup<T> {
     /**
      * Get the name of this job group. This group will be displayed in the UI,
      * and used to allow the user to selectively enable certain job groups when
@@ -68,5 +71,5 @@ public interface JobGroup {
      *
      * @return The list of jobs to run in this group.
      */
-    List<Job> getJobs();
+    List<Job<T>> getJobs();
 }

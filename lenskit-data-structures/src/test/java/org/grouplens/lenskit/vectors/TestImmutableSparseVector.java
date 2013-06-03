@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,18 +20,16 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.grouplens.common.test.MoreMatchers.closeTo;
-import static org.grouplens.common.test.MoreMatchers.notANumber;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
+import org.junit.Test;
+
+import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
-
-import org.junit.Test;
-
 /**
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestImmutableSparseVector extends SparseVectorTestCommon {
     @Override
@@ -78,7 +78,6 @@ public class TestImmutableSparseVector extends SparseVectorTestCommon {
         assertThat(v.containsKey(9), equalTo(false));
         assertThat(v.get(9), notANumber());
         assertThat(v.get(3), closeTo(Math.PI));
-        assertThat(v.get(9), notANumber());
         assertThat(v.containsKey(9), equalTo(false));
     }
 }

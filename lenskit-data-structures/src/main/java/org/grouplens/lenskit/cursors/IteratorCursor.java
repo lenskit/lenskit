@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,20 +20,29 @@
  */
 package org.grouplens.lenskit.cursors;
 
+import com.google.common.base.Preconditions;
+
 import javax.annotation.Nonnull;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 /**
  * Implementation of {@link Cursor} that simply wraps an iterator.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @param <T> The cursor's element type.
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class IteratorCursor<T> extends AbstractCursor<T> {
     private Iterator<? extends T> iterator;
 
-    public IteratorCursor(Iterator<? extends T> iter, int size) {
+    /**
+     * Construct a new iterator cursor.
+     * @param iter The iterator.
+     * @param size The length, or -1 if the length is not known.  This length must be an upper
+     *             bound on the cursor's element count.
+     */
+    public IteratorCursor(@Nonnull Iterator<? extends T> iter, int size) {
         super(size);
+        Preconditions.checkNotNull(iter, "iterator for cursor");
         iterator = iter;
     }
 
@@ -44,33 +55,10 @@ class IteratorCursor<T> extends AbstractCursor<T> {
     @Override
     public T next() {
         if (iterator == null) {
-            throw new NoSuchElementException();
+            throw new IllegalStateException("cursor closed");
         }
 
         return iterator.next();
-    }
-
-    @Override
-    public Iterator<T> iterator() {
-        if (iterator == null) {
-            throw new IllegalStateException("cursor closed");
-        }
-        return new Iterator<T>() {
-            @Override
-            public boolean hasNext() {
-                return iterator.hasNext();
-            }
-
-            @Override
-            public T next() {
-                return iterator.next();
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
     }
 
     @Override

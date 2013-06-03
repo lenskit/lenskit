@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,47 +20,33 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.util.Index;
+import org.grouplens.lenskit.vectors.*;
 
-import org.grouplens.lenskit.util.Indexer;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.Vectors;
+import java.util.Map;
 
 public class SlopeOneModelDataAccumulator {
 
-    private Long2DoubleMap[] deviationMatrix;
-    private Long2IntMap[] coratingMatrix;
+    private Long2ObjectMap<MutableSparseVector> workMatrix;
     private double damping;
-    private Index itemIndex;
 
     /**
      * Creates an accumulator to process rating data and generate the necessary data for
-     * a {@code SlopeOneRatingPredictor}.
+     * a {@code SlopeOneItemScorer}.
      *
      * @param damping   A damping term for deviation calculations.
-     * @param itemIndex An Index for items in the model
      * @param dao       The DataAccessObject interfacing with the data for the model
      */
-    public SlopeOneModelDataAccumulator(double damping, Indexer itemIndex, DataAccessObject dao) {
+    public SlopeOneModelDataAccumulator(double damping, DataAccessObject dao) {
         this.damping = damping;
-        this.itemIndex = itemIndex;
         LongList items = Cursors.makeList(dao.getItems());
-        deviationMatrix = new Long2DoubleOpenHashMap[items.size()];
-        coratingMatrix = new Long2IntOpenHashMap[items.size()];
 
-        LongIterator iter = items.iterator();
-        while (iter.hasNext()) {
-            final long itemId = iter.nextLong();
-            deviationMatrix[itemIndex.internId(itemId)] = new Long2DoubleOpenHashMap();
-            coratingMatrix[itemIndex.internId(itemId)] = new Long2IntOpenHashMap();
+        workMatrix = new Long2ObjectOpenHashMap<MutableSparseVector>(items.size());
+        for (long item : items) {
+            workMatrix.put(item, new MutableSparseVector(items));
+            workMatrix.get(item).addChannel(SlopeOneModel.CORATINGS_SYMBOL);
         }
     }
 
@@ -71,44 +59,50 @@ public class SlopeOneModelDataAccumulator {
      * @param itemVec2 The rating vector of the second item.
      */
     public void putItemPair(long id1, SparseVector itemVec1, long id2, SparseVector itemVec2) {
+        if (workMatrix == null) {
+            throw new IllegalStateException("Model is already built");
+        }
+
         // to profit from matrix symmetry, always store by the lesser id
         if (id1 < id2) {
-            int corating = 0;
+            int coratings = 0;
             double deviation = 0.0;
             for (Vectors.EntryPair pair : Vectors.pairedFast(itemVec1, itemVec2)) {
-                corating++;
+                coratings++;
                 deviation += pair.getValue1() - pair.getValue2();
             }
-            deviation = (corating == 0) ? Double.NaN : deviation;
-            deviationMatrix[itemIndex.getIndex(id1)].put(id2, deviation);
-            coratingMatrix[itemIndex.getIndex(id1)].put(id2, corating);
-        }
+            deviation = (coratings == 0) ? Double.NaN : deviation;
 
+            workMatrix.get(id1).set(id2, deviation);
+            workMatrix.get(id1).channel(SlopeOneModel.CORATINGS_SYMBOL).set(id2, coratings);
+        }
     }
 
     /**
-     * @return A matrix of item deviation values to be used by
-     *         a {@code SlopeOneRatingPredictor}.
+     * @return A matrix of item deviation and corating values to be used by
+     *         a {@code SlopeOneItemScorer}.
      */
-    public Long2DoubleMap[] buildDeviationMatrix() {
-        for (int i = 0; i < coratingMatrix.length; i++) {
-            LongIterator itemIter = coratingMatrix[i].keySet().iterator();
-            while (itemIter.hasNext()) {
-                long curItem = itemIter.nextLong();
-                if (coratingMatrix[i].get(curItem) != 0) {
-                    double deviation = deviationMatrix[i].get(curItem) / (coratingMatrix[i].get(curItem) + damping);
-                    deviationMatrix[i].put(curItem, deviation);
-                }
+    public Long2ObjectMap<ImmutableSparseVector> buildMatrix() {
+        if (workMatrix == null) {
+            throw new IllegalStateException("Model is already built");
+        }
+
+        Long2ObjectMap<ImmutableSparseVector> matrix =
+                new Long2ObjectOpenHashMap<ImmutableSparseVector>(workMatrix.size());
+
+        for (MutableSparseVector vec : workMatrix.values()) {
+            for (VectorEntry e : vec.fast()) {
+                double deviation = e.getValue();
+                int coratings = (int)vec.channel(SlopeOneModel.CORATINGS_SYMBOL).get(e);
+                vec.set(e, deviation/(coratings + damping));
             }
         }
-        return deviationMatrix;
-    }
 
-    /**
-     * @return A matrix, containing the number of co-rating users for each item
-     *         pair, to be used by a {@code SlopeOneRatingPredictor}.
-     */
-    public Long2IntMap[] buildCoratingMatrix() {
-        return coratingMatrix;
+        for (Map.Entry<Long, MutableSparseVector> e : workMatrix.entrySet()) {
+            matrix.put(e.getKey(), e.getValue().freeze());
+        }
+
+        workMatrix = null;
+        return matrix;
     }
 }

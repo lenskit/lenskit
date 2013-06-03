@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -44,9 +46,10 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.grouplens.common.test.MoreMatchers.notANumber;
+import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
 
@@ -55,6 +58,7 @@ public class TestItemItemRecommender {
     private LenskitRecommender session;
     private ItemRecommender recommender;
 
+    @SuppressWarnings("deprecation")
     @Before
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
@@ -74,20 +78,22 @@ public class TestItemItemRecommender {
         rs.add(Ratings.make(3, 9, 4));
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.bind(ItemScorer.class).to(ItemItemRatingPredictor.class);
+        factory.bind(ItemScorer.class).to(ItemItemScorer.class);
         factory.bind(ItemRecommender.class).to(ItemItemRecommender.class);
         // this is the default
         factory.bind(UserVectorNormalizer.class)
                .to(DefaultUserVectorNormalizer.class);
         factory.bind(VectorNormalizer.class)
-                .to(IdentityVectorNormalizer.class);
+               .to(IdentityVectorNormalizer.class);
         LenskitRecommenderEngine engine = factory.create();
         session = engine.open();
         recommender = session.getItemRecommender();
     }
 
     /**
-     * Check that we score items but do not provide rating scores.
+     * Check that we score items but do not provide scores for items
+     * the user has previously rated.  User 5 has rated only item 8
+     * previously.
      */
     @Test
     public void testItemScorerNoRating() {
@@ -101,6 +107,35 @@ public class TestItemItemRecommender {
         assertThat(scores.get(7), not(notANumber()));
         assertThat(scores.get(8), notANumber());
         assertThat(scores.containsKey(8), equalTo(false));
+    }
+
+    /**
+     * Check that we score items but do not provide scores for items
+     * the user has previously rated.  User 5 has rated only item 8
+     * previously.
+     */
+    @Test
+    public void testItemScorerChannels() {
+        UserHistory<Rating> history = getRatings(5);
+        long[] items = {7, 8};
+        ItemItemScorer scorer = session.get(ItemItemScorer.class);
+        assertThat(scorer, notNullValue());
+        SparseVector scores = scorer.score(history, LongArrayList.wrap(items));
+        assertThat(scores, notNullValue());
+        assertThat(scores.size(), equalTo(1));
+        assertThat(scores.get(7), not(notANumber()));
+        assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
+                get(7), closeTo(1.0, 1.0e-5));
+        assertThat(scores.get(8), notANumber());
+        assertThat(scores.containsKey(8), equalTo(false));
+
+        history = getRatings(2);  // has rated 7, and 8
+        long[] items2 = {7, 8, 9};
+        scorer = session.get(ItemItemScorer.class);
+        assertThat(scorer, notNullValue());
+        scores = scorer.score(history, LongArrayList.wrap(items2));
+        assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
+                get(9), closeTo(3.0, 1.0e-5));  // 1, 7, 8
     }
 
     /**
@@ -293,7 +328,7 @@ public class TestItemItemRecommender {
 
     //Helper method to retrieve user's user and create SparseVector
     private UserHistory<Rating> getRatings(long user) {
-        DataAccessObject dao = session.getRatingDataAccessObject();
+        DataAccessObject dao = session.getDataAccessObject();
         return dao.getUserHistory(user, Rating.class);
     }
 

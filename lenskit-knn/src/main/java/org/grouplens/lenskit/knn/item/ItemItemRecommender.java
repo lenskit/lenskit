@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,36 +20,27 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import javax.inject.Inject;
-
-import it.unimi.dsi.fastutil.longs.LongSet;
-
+import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+
+import javax.inject.Inject;
 
 /**
  * Recommend items using item-item collaborative filtering.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @deprecated Just use {@link org.grouplens.lenskit.basic.TopNItemRecommender} instead.
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@Deprecated
 public class ItemItemRecommender extends ScoreBasedItemRecommender {
-    protected final ItemItemModelBackedScorer scorer;
-
     /**
      * Construct a new item-item recommender from a scorer.
      *
      * @param scorer The scorer to use.
      */
     @Inject
-    public ItemItemRecommender(DataAccessObject dao, ItemItemModelBackedScorer scorer) {
+    public ItemItemRecommender(DataAccessObject dao, ItemScorer scorer) {
         super(dao, scorer);
-        this.scorer = scorer;
-    }
-
-    @Override
-    public LongSet getPredictableItems(UserHistory<? extends Event> user) {
-        return scorer.getScoreableItems(user);
     }
 }

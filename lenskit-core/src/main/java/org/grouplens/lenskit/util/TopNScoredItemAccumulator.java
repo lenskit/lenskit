@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -19,15 +21,18 @@
 package org.grouplens.lenskit.util;
 
 import it.unimi.dsi.fastutil.doubles.DoubleHeapIndirectPriorityQueue;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.scored.ScoredIdBuilder;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 
-import org.grouplens.lenskit.collections.ScoredLongArrayList;
-import org.grouplens.lenskit.collections.ScoredLongList;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Accumulate the top <i>N</i> scored IDs.  IDs are sorted by their associated
  * scores.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
     private final int count;
@@ -44,6 +49,7 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
      */
     public TopNScoredItemAccumulator(int n) {
         this.count = n;
+        // arrays must have n+1 slots to hold extra item before removing smallest
         scores = new double[n + 1];
         items = new long[n + 1];
         slot = 0;
@@ -85,16 +91,18 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
     }
 
     @Override
-    public ScoredLongList finish() {
+    public List<ScoredId> finish() {
         assert size == heap.size();
         int[] indices = new int[size];
         // Copy backwards so the scored list is sorted.
         for (int i = size - 1; i >= 0; i--) {
             indices[i] = heap.dequeue();
         }
-        ScoredLongList l = new ScoredLongArrayList(size);
+        ArrayList<ScoredId> l = new ArrayList<ScoredId>(size);
+        ScoredIdBuilder idBuilder = new ScoredIdBuilder();
         for (int i : indices) {
-            l.add(items[i], scores[i]);
+            ScoredId id = idBuilder.setId(items[i]).setScore(scores[i]).build();
+            l.add(id);
         }
 
         assert heap.isEmpty();
@@ -102,5 +110,31 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         size = 0;
         slot = 0;
         return l;
+    }
+
+    @Override
+    public MutableSparseVector finishVector() {
+        if (scores == null) {
+            return new MutableSparseVector();
+        }
+
+        assert size == heap.size();
+        int[] indices = new int[size];
+        // Copy backwards so the scored list is sorted.
+        for (int i = size - 1; i >= 0; i--) {
+            indices[i] = heap.dequeue();
+        }
+        assert heap.isEmpty();
+
+        long[] keys = new long[indices.length];
+        double[] values = new double[indices.length];
+        for (int i = 0; i < indices.length; i++) {
+            keys[i] = items[indices[i]];
+            values[i] = scores[indices[i]];
+        }
+        size = 0;
+        slot = 0;
+
+        return MutableSparseVector.wrapUnsorted(keys, values);
     }
 }

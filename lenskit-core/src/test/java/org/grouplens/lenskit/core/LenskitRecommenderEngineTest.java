@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -25,30 +27,32 @@ import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.grapht.spi.reflect.InstanceSatisfaction;
 import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.baseline.BaselineItemScorer;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.baseline.BaselineRatingPredictor;
 import org.grouplens.lenskit.baseline.ConstantPredictor;
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor;
+import org.grouplens.lenskit.basic.SimpleRatingPredictor;
+import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.params.ThresholdValue;
-import org.grouplens.lenskit.util.iterative.ThresholdStoppingCondition;
+import org.grouplens.lenskit.iterative.StoppingThreshold;
+import org.grouplens.lenskit.iterative.ThresholdStoppingCondition;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 /**
- * @author Michael Ekstrand
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class LenskitRecommenderEngineTest {
     private LenskitRecommenderEngineFactory factory;
@@ -69,10 +73,10 @@ public class LenskitRecommenderEngineTest {
     }
 
     private void configureBasicRecommender() {
-        factory.bind(RatingPredictor.class)
-               .to(BaselineRatingPredictor.class);
+        factory.bind(ItemScorer.class)
+               .to(BaselineItemScorer.class);
         factory.bind(ItemRecommender.class)
-               .to(ScoreBasedItemRecommender.class);
+               .to(TopNItemRecommender.class);
         factory.bind(BaselinePredictor.class)
                .to(ConstantPredictor.class);
     }
@@ -80,13 +84,16 @@ public class LenskitRecommenderEngineTest {
     private void verifyBasicRecommender(LenskitRecommenderEngine engine) {LenskitRecommender rec = engine.open();
         try {
             assertThat(rec.getItemRecommender(),
-                       instanceOf(ScoreBasedItemRecommender.class));
+                       instanceOf(TopNItemRecommender.class));
             assertThat(rec.getItemScorer(),
-                       instanceOf(BaselineRatingPredictor.class));
+                       instanceOf(BaselineItemScorer.class));
             assertThat(rec.getRatingPredictor(),
-                       instanceOf(BaselineRatingPredictor.class));
+                       instanceOf(SimpleRatingPredictor.class));
             assertThat(rec.get(BaselinePredictor.class),
                        instanceOf(ConstantPredictor.class));
+            // Since we have an item scorer, we should have a recommender too
+            assertThat(rec.getItemRecommender(),
+                       instanceOf(TopNItemRecommender.class));
         } finally {
             rec.close();
         }
@@ -112,20 +119,24 @@ public class LenskitRecommenderEngineTest {
     public void testSeparatePredictor() throws RecommenderBuildException {
         factory.bind(BaselinePredictor.class)
                .to(GlobalMeanPredictor.class);
-        factory.bind(RatingPredictor.class)
-               .to(BaselineRatingPredictor.class);
+        factory.bind(ItemScorer.class)
+               .to(BaselineItemScorer.class);
 
         LenskitRecommenderEngine engine = factory.create();
 
         LenskitRecommender rec1 = engine.open();
         LenskitRecommender rec2 = engine.open();
         try {
-            assertThat(rec1.getRatingPredictor(),
-                       instanceOf(BaselineRatingPredictor.class));
-            assertThat(rec2.getRatingPredictor(),
-                       instanceOf(BaselineRatingPredictor.class));
+            assertThat(rec1.getItemScorer(),
+                       instanceOf(BaselineItemScorer.class));
+            assertThat(rec2.getItemScorer(),
+                       instanceOf(BaselineItemScorer.class));
 
-            // verify that recommenders have different predictors
+            // verify that recommenders have different scorers
+            assertThat(rec1.getItemScorer(),
+                       not(sameInstance(rec2.getItemScorer())));
+
+            // verify that recommenders have different rating predictors
             assertThat(rec1.getRatingPredictor(),
                        not(sameInstance(rec2.getRatingPredictor())));
 
@@ -141,17 +152,17 @@ public class LenskitRecommenderEngineTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testParameter() throws RecommenderBuildException {
-        factory.set(ThresholdValue.class).to(0.01);
+        factory.set(StoppingThreshold.class).to(0.042);
         factory.addRoot(ThresholdStoppingCondition.class);
         LenskitRecommenderEngine engine = factory.create();
         LenskitRecommender rec = engine.open();
         ThresholdStoppingCondition stop = rec.get(ThresholdStoppingCondition.class);
         assertThat(stop, notNullValue());
         assertThat(stop.getThreshold(),
-                   closeTo(0.01, 1.0e-6));
+                   closeTo(0.042, 1.0e-6));
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({"rawtypes"})
     private void assertNodeNotEVDao(Node node) {
         CachedSatisfaction lbl = node.getLabel();
         if (lbl == null) {
@@ -173,7 +184,7 @@ public class LenskitRecommenderEngineTest {
 
         LenskitRecommenderEngine engine = factory.create();
 
-        Graph g = engine.dependencies;
+        Graph g = engine.getDependencies();
         // make sure we have no record of an instance dao
         for (Node n: g.getNodes()) {
             assertNodeNotEVDao(n);
@@ -194,10 +205,36 @@ public class LenskitRecommenderEngineTest {
         File tfile = File.createTempFile("lenskit", "engine");
         try {
             engine.write(tfile);
-            LenskitRecommenderEngine e2 = new LenskitRecommenderEngine(daoFactory, tfile);
+            LenskitRecommenderEngine e2 = LenskitRecommenderEngine.load(daoFactory, tfile);
             verifyBasicRecommender(e2);
         } finally {
             tfile.delete();
+        }
+    }
+
+    /**
+     * Verify that we can inject subclassed DAOs.
+     */
+    @Test
+    public void testSubclassedDAO() throws RecommenderBuildException {
+        factory.addRoot(SubclassedDAODepComponent.class);
+        LenskitRecommenderEngine engine = factory.create();
+        LenskitRecommender rec = engine.open();
+        try {
+            SubclassedDAODepComponent dep = rec.get(SubclassedDAODepComponent.class);
+            assertThat(dep, notNullValue());
+            assertThat(dep.dao, notNullValue());
+        } finally {
+            rec.close();
+        }
+    }
+
+    public static class SubclassedDAODepComponent {
+        private final EventCollectionDAO dao;
+
+        @Inject
+        public SubclassedDAODepComponent(EventCollectionDAO dao) {
+            this.dao = dao;
         }
     }
 }

@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,18 +20,20 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import javax.inject.Inject;
-
 import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
+
+import javax.inject.Inject;
 
 /**
  * FunkSVD recommender implementation.  At present, we do no folding-in, so dynamic
  * recommendation is not supported.
+ * @deprecated Just use {@link org.grouplens.lenskit.basic.TopNItemRecommender}.
  */
+@Deprecated
 public class FunkSVDRecommender extends ScoreBasedItemRecommender {
     @Inject
-    public FunkSVDRecommender(DataAccessObject dao, FunkSVDRatingPredictor predictor) {
+    public FunkSVDRecommender(DataAccessObject dao, FunkSVDItemScorer predictor) {
         super(dao, predictor);
     }
 }

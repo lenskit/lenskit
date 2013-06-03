@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -18,24 +20,18 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import javax.inject.Inject;
-
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-
-import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.core.ScoreBasedItemRecommender;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.event.Rating;
+
+import javax.inject.Inject;
 
 /**
  * A {@code RatingRecommender} that uses the Slope One algorithm.
+ * @deprecated Just use {@link org.grouplens.lenskit.basic.TopNItemRecommender}.
  */
+@Deprecated
 public class SlopeOneRecommender extends ScoreBasedItemRecommender {
-    private SlopeOneRatingPredictor predictor;
+    private SlopeOneItemScorer predictor;
 
     /**
      * Construct a new recommender from a scorer.
@@ -43,31 +39,8 @@ public class SlopeOneRecommender extends ScoreBasedItemRecommender {
      * @param predictor The predictor to use.
      */
     @Inject
-    public SlopeOneRecommender(DataAccessObject dao, SlopeOneRatingPredictor predictor) {
+    public SlopeOneRecommender(DataAccessObject dao, SlopeOneItemScorer predictor) {
         super(dao, predictor);
         this.predictor = predictor;
-    }
-
-    @Override
-    protected LongSet getPredictableItems(UserHistory<? extends Event> user) {
-        if (predictor.getModel().getBaselinePredictor() != null) {
-            return new LongSortedArraySet(predictor.getModel().getItemIndex().getIds());
-        } else {
-            LongSet predictable = new LongOpenHashSet();
-            LongIterator iter1 = predictor.getModel().getItemIndex().getIds().iterator();
-            while (iter1.hasNext()) {
-                long id1 = iter1.nextLong();
-                LongIterator iter2 = user.filter(Rating.class).itemSet().iterator();
-                int nusers = 0;
-                while (iter2.hasNext() && nusers == 0) {
-                    long id2 = iter2.nextLong();
-                    nusers += predictor.getModel().getCoratings(id1, id2);
-                }
-                if (nusers > 0) {
-                    predictable.add(id1);
-                }
-            }
-            return predictable;
-        }
     }
 }

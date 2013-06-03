@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -33,8 +35,8 @@ import java.util.Iterator;
  * provides access to item vectors and the item universe for use in  building
  * up the model in the accumulator.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
- * @see ItemItemModelProvider
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @see ItemItemModelBuilder
  */
 public class ItemItemBuildContext {
     private
@@ -120,7 +122,9 @@ public class ItemItemBuildContext {
         public FastIteratorImpl(LongSortedSet list1, LongSortedSet list2) {
             itemVecPair = new ItemVecPair();
             iter1 = list1.iterator();
-            itemVecPair.setItem1(iter1.nextLong());
+            if (iter1.hasNext()) {
+            	itemVecPair.setItem1(iter1.nextLong());
+            }
             this.list2 = list2;
             iter2 = list2.iterator();
         }

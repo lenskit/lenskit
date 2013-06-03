@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -24,7 +26,7 @@ import java.util.concurrent.ExecutionException;
  * Execute job groups. {@link JobGroup}s are added to the executor, and then
  * they are all run when {@link #run()} is called.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
 public interface JobGroupExecutor {
@@ -33,10 +35,10 @@ public interface JobGroupExecutor {
      *
      * @param group The job group to execute.
      */
-    void add(JobGroup group);
+    void add(JobGroup<?> group);
 
     /**
-     * Run the job groups.
+     * Run the job groups. All return values are discarded.
      *
      * @throws ExecutionException if one of the jobs fails.
      */

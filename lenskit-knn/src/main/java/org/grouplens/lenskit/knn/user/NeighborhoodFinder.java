@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -20,27 +22,24 @@ package org.grouplens.lenskit.knn.user;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
-
-import java.util.Collection;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
+
+import javax.annotation.Nonnull;
+import java.util.Collection;
 
 /**
  * Interface for neighborhood-finding strategies. These strategies are used by
  * {@link UserUserRecommender} to find neighbors for recommendation.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultImplementation(SimpleNeighborhoodFinder.class)
 public interface NeighborhoodFinder {
     /**
      * Find neighboring users for particular items. {@var user} and the
-     * returned rating vectors are <emph>unnormalized</emph>.  Any normalization
+     * returned rating vectors are <em>unnormalized</em>.  Any normalization
      * used by the neighborhood finder is only for comparing neighbors.
      *
      * @param user  The user's event history.
@@ -50,5 +49,5 @@ public interface NeighborhoodFinder {
      *         we can find neighboring users.
      */
     Long2ObjectMap<? extends Collection<Neighbor>> findNeighbors(
-            @Nonnull UserHistory<? extends Event> user, @Nullable LongSet items);
+            @Nonnull UserHistory<? extends Event> user, @Nonnull LongSet items);
 }

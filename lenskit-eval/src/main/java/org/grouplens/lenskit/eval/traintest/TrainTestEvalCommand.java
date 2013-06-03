@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -21,16 +23,28 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Closeables;
+import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.*;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.ExternalAlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
-import org.grouplens.lenskit.eval.util.table.TableImpl;
-import org.grouplens.lenskit.util.tablewriter.*;
+import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.util.table.Table;
+import org.grouplens.lenskit.util.table.TableBuilder;
+import org.grouplens.lenskit.util.table.TableLayout;
+import org.grouplens.lenskit.util.table.TableLayoutBuilder;
+import org.grouplens.lenskit.util.table.writer.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -39,16 +53,16 @@ import java.util.concurrent.ExecutionException;
 /**
  * The command that run the algorithm instance and output the prediction result file and the evaluation result file
  *
- * @author Shuo Chang<schang@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
+public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalCommand.class);
 
     private List<TTDataSet> dataSources;
     private List<AlgorithmInstance> algorithms;
     private List<TestUserMetric> metrics;
+    private List<Pair<Symbol,String>> predictChannels;
     private IsolationLevel isolationLevel;
-    private int nThread;
     private File outputFile;
     private File userOutputFile;
     private File predictOutputFile;
@@ -61,7 +75,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
     private TableLayout predictLayout;
 
     private TableWriter output;
-    private InMemoryWriter outputInMemory;
+    private TableBuilder outputInMemory;
     private TableWriter userOutput;
     private TableWriter predictOutput;
 
@@ -69,10 +83,12 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
     private Map<String, Integer> dataColumns;
     private Map<String, Integer> algoColumns;
     private List<TestUserMetric> predictMetrics;
+    private TableLayout masterLayout;
+    private List<ModelMetric> modelMetrics;
 
 
     public TrainTestEvalCommand() {
-        this("Traintest");
+        this("train-test");
     }
 
     public TrainTestEvalCommand(String name) {
@@ -80,6 +96,8 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
         dataSources = new LinkedList<TTDataSet>();
         algorithms = new LinkedList<AlgorithmInstance>();
         metrics = new LinkedList<TestUserMetric>();
+        modelMetrics = new LinkedList<ModelMetric>();
+        predictChannels = new LinkedList<Pair<Symbol, String>>();
         outputFile = new File("train-test-results.csv");
         isolationLevel = IsolationLevel.NONE;
     }
@@ -89,13 +107,73 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
         return this;
     }
 
-    public TrainTestEvalCommand addAlgorithm(AlgorithmInstance algorithm) {
+    public TrainTestEvalCommand addAlgorithm(LenskitAlgorithmInstance algorithm) {
+        algorithms.add(algorithm);
+        return this;
+    }
+
+    public TrainTestEvalCommand addExternalAlgorithm(ExternalAlgorithmInstance algorithm) {
         algorithms.add(algorithm);
         return this;
     }
 
     public TrainTestEvalCommand addMetric(TestUserMetric metric) {
         metrics.add(metric);
+        return this;
+    }
+
+    /**
+     * Add a metric that may write multiple columns per algorithm.
+     * @param file The output file.
+     * @param columns The column headers.
+     * @param metric The metric function. It should return a list of table rows, each of which has
+     *               entries corresponding to each column.
+     * @return The command (for chaining).
+     */
+    public TrainTestEvalCommand addMultiMetric(File file, List<String> columns, Function<Recommender,List<List<Object>>> metric) {
+        modelMetrics.add(new FunctionMultiModelMetric(file, columns, metric));
+        return this;
+    }
+
+    /**
+     * Add a metric that takes some metric of an algorithm.
+     * @param columns The column headers.
+     * @param metric The metric function. It should return a list of table rows, each of which has
+     *               entries corresponding to each column.
+     * @return The command (for chaining).
+     */
+    public TrainTestEvalCommand addMetric(List<String> columns, Function<Recommender,List<Object>> metric) {
+        modelMetrics.add(new FunctionModelMetric(columns, metric));
+        return this;
+    }
+
+    /**
+     * Add a channel to be recorded with predict output.
+     *
+     * @param channelSym The channel to output.
+     * @return The command (for chaining)
+     * @see #addWritePredictionChannel
+     */
+    public TrainTestEvalCommand addWritePredictionChannel(@Nonnull Symbol channelSym) {
+        return addWritePredictionChannel(channelSym, null);
+    }
+
+    /**
+     * Add a channel to be recorded with predict output.
+     *
+     * @param channelSym The channel to record, if present in the prediction output vector.
+     * @param label   The column label. If {@code null}, the channel symbol's name is used.
+     * @return The command (for chaining).
+     * @see #setPredictOutput(File)
+     */
+    public TrainTestEvalCommand addWritePredictionChannel(@Nonnull Symbol channelSym,
+                                                          @Nullable String label) {
+        Preconditions.checkNotNull(channelSym, "channel is null");
+        if (label == null) {
+            label = channelSym.getName();
+        }
+        Pair<Symbol, String> entry = Pair.of(channelSym, label);
+        predictChannels.add(entry);
         return this;
     }
 
@@ -119,11 +197,6 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
         return this;
     }
 
-    public TrainTestEvalCommand setThread(int n) {
-        nThread = n;
-        return this;
-    }
-
     List<TTDataSet> dataSources() {
         return dataSources;
     }
@@ -134,6 +207,10 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
 
     List<TestUserMetric> getMetrics() {
         return metrics;
+    }
+
+    List<Pair<Symbol,String>> getPredictionChannels() {
+        return predictChannels;
     }
 
     File getOutput() {
@@ -156,19 +233,18 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
     /**
      * Run the evaluation on the train test data source files
      *
-     * @return For now, return nothing
+     * @return The summary output table.
      * @throws org.grouplens.lenskit.eval.CommandException
      *          Failure of the evaluation
      */
     @Override
-    public TableImpl call() throws CommandException {
-        this.setupJobs();
-        int nthreads = nThread;
-        if (nthreads <= 0) {
-            nthreads = Runtime.getRuntime().availableProcessors();
-        }
+    public Table call() throws CommandException {
+        setupJobGroups();
+        setupTableLayouts();
+
+        int nthreads = getConfig().getThreadCount();
         logger.info("Starting evaluation");
-        this.initialize();
+        this.prepareEval();
         logger.info("Running evaluator with {} threads", nthreads);
         JobGroupExecutor exec;
         switch (isolationLevel) {
@@ -193,18 +269,52 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
             logger.info("Finishing evaluation");
             this.cleanUp();
         }
-        return outputInMemory.getResult();
+        return outputInMemory.build();
     }
 
-    protected void setupJobs() throws CommandException {
-        TableLayoutBuilder master = new TableLayoutBuilder();
+    private void setupJobGroups() {
+        jobGroups = new ArrayList<JobGroup>(dataSources.size());
+        int idx = 0;
+        for (TTDataSet dataset : dataSources) {
+            TrainTestEvalJobGroup group;
+            group = new TrainTestEvalJobGroup(this, algorithms, metrics, modelMetrics, dataset, idx, numRecs);
+            jobGroups.add(group);
+            idx++;
+        }
+    }
 
+    private void setupTableLayouts() {
+        TableLayoutBuilder master = new TableLayoutBuilder();
+        layoutCommonColumns(master);
+        masterLayout = master.build();
+
+        commonColumnCount = master.getColumnCount();
+
+        outputLayout = layoutAggregateOutput(master);
+        userLayout = layoutUserTable(master);
+        predictLayout = layoutPredictionTable(master);
+
+        // FIXME This doesn't seem right in the face of top-N metrics
+        predictMetrics = metrics;
+    }
+
+    /**
+     * Get the master table layout.  This can be used by metrics to prefix their own tables.
+     *
+     * @return The master table layout. This layout must not be modified.
+     */
+    public TableLayout getMasterLayout() {
+        return masterLayout;
+    }
+
+    private void layoutCommonColumns(TableLayoutBuilder master) {
         master.addColumn("Algorithm");
         dataColumns = new HashMap<String, Integer>();
         for (TTDataSet ds : dataSources) {
             for (String attr : ds.getAttributes().keySet()) {
                 if (!dataColumns.containsKey(attr)) {
-                    dataColumns.put(attr, master.addColumn(attr));
+                    dataColumns.put(attr, master.getColumnCount());
+                    master.addColumn(attr);
                 }
             }
         }
@@ -213,39 +323,42 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
         for (AlgorithmInstance algo : algorithms) {
             for (String attr : algo.getAttributes().keySet()) {
                 if (!algoColumns.containsKey(attr)) {
-                    algoColumns.put(attr, master.addColumn(attr));
+                    algoColumns.put(attr, master.getColumnCount());
+                    master.addColumn(attr);
                 }
             }
         }
+    }
 
-        jobGroups = new ArrayList<JobGroup>(dataSources.size());
-        int idx = 0;
-        for (TTDataSet dataset : dataSources) {
-            TrainTestEvalJobGroup group;
-            group = new TrainTestEvalJobGroup(this, algorithms, metrics, dataset, idx, numRecs);
-            jobGroups.add(group);
-            idx++;
-        }
-
-        commonColumnCount = master.getColumnCount();
-
+    private TableLayout layoutAggregateOutput(TableLayoutBuilder master) {
         TableLayoutBuilder output = master.clone();
         output.addColumn("BuildTime");
         output.addColumn("TestTime");
-        TableLayoutBuilder perUser = master.clone();
 
-        String[] columnLabels;
-        String[] userColumnLabels;
+        for (ModelMetric ev: modelMetrics) {
+            for (String c: ev.getColumnLabels()) {
+                output.addColumn(c);
+            }
+        }
 
         for (TestUserMetric ev : metrics) {
-            columnLabels = ev.getColumnLabels();
+            List<String> columnLabels = ev.getColumnLabels();
             if (columnLabels != null) {
                 for (String c : columnLabels) {
                     output.addColumn(c);
                 }
             }
+        }
 
-            userColumnLabels = ev.getUserColumnLabels();
+        return output.build();
+    }
+
+    private TableLayout layoutUserTable(TableLayoutBuilder master) {
+        TableLayoutBuilder perUser = master.clone();
+        perUser.addColumn("User");
+
+        for (TestUserMetric ev : metrics) {
+            List<String> userColumnLabels = ev.getUserColumnLabels();
             if (userColumnLabels != null) {
                 for (String c : userColumnLabels) {
                     perUser.addColumn(c);
@@ -253,24 +366,29 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
             }
         }
 
-        outputLayout = output.build();
-        userLayout = perUser.build();
+        return perUser.build();
+    }
 
+    private TableLayout layoutPredictionTable(TableLayoutBuilder master) {
         TableLayoutBuilder eachPred = master.clone();
         eachPred.addColumn("User");
         eachPred.addColumn("Item");
         eachPred.addColumn("Rating");
         eachPred.addColumn("Prediction");
+        for (Pair<Symbol,String> pair: predictChannels) {
+            eachPred.addColumn(pair.getRight());
+        }
 
-        predictLayout = eachPred.build();
-
-        predictMetrics = metrics;
+        return eachPred.build();
     }
 
-    private void initialize() {
+    /**
+     * Prepare the evaluation by opening all outputs and initializing metrics.
+     */
+    private void prepareEval() {
         logger.info("Starting evaluation");
         List<TableWriter> tableWriters = new ArrayList<TableWriter>();
-        outputInMemory = new InMemoryWriter(outputLayout);
+        outputInMemory = new TableBuilder(outputLayout);
         tableWriters.add(outputInMemory);
         if (outputFile != null) {
             try {
@@ -297,13 +415,16 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
                 throw new RuntimeException("Error opening prediction table", e);
             }
         }
-        for (TestUserMetric metric : predictMetrics) {
+        for (Metric<TrainTestEvalCommand> metric : Iterables.concat(predictMetrics, modelMetrics)) {
             metric.startEvaluation(this);
         }
     }
 
+    /**
+     * Finalize metrics and close output files.
+     */
     private void cleanUp() {
-        for (TestUserMetric metric : predictMetrics) {
+        for (Metric<TrainTestEvalCommand> metric : Iterables.concat(predictMetrics, modelMetrics)) {
             metric.finishEvaluation();
         }
         if (output == null) {
@@ -381,7 +502,7 @@ public class TrainTestEvalCommand extends AbstractCommand<TableImpl> {
     }
 
     /**
-     * Function version of {@link #prefixTable(TableWriter, AlgorithmInstance, TTDataSet)}. Intended
+     * Function version of {@link #prefixTable(TableWriter, org.grouplens.lenskit.eval.algorithm.AlgorithmInstance, TTDataSet)}. Intended
      * for use with {@link com.google.common.base.Suppliers#compose(com.google.common.base.Function, Supplier)}.
      */
     public Function<TableWriter, TableWriter> prefixFunction(

@@ -1,6 +1,8 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2012 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -36,7 +38,7 @@ import java.io.Closeable;
  * The recommender build process often needs to take multiple passes over the
  * rating data. In a live system, the data provided by a
  * {@link DataAccessObject} may change between iterations. Therefore, we
- * introduce <emph>build contexts</emph> &mdash; snapshots of the rating data at
+ * introduce <em>build contexts</em> &mdash; snapshots of the rating data at
  * a particular point in time that can be iterated as many times as necessary to
  * build the recommender.
  *
@@ -52,7 +54,7 @@ import java.io.Closeable;
  * and user IDs to consecutive, 0-based indices. The indices <strong>may
  * differ</strong> from one build context to another.
  *
- * @author Michael Ekstrand <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @ThreadSafe
 @DefaultImplementation(PackedPreferenceSnapshot.class)
