@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.iterative;
 
-import org.grouplens.grapht.annotation.DefaultDouble;
 import org.grouplens.lenskit.core.Parameter;
 
 import javax.inject.Qualifier;
@@ -32,7 +31,6 @@ import java.lang.annotation.*;
  * @since 1.1
  */
 @Documented
-@DefaultDouble(0.01)
 @Parameter(Double.class)
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
