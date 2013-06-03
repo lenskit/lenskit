@@ -4,10 +4,12 @@
 
 Release 1.1 (in progress)
 
-  The {{{https://bitbucket.org/grouplens/lenskit}Mercurial changelog}} and the
+  The {{{http://bitbucket.org/grouplens/lenskit/commits}Mercurial changelog}} and the
   {{{http://bitbucket.org/grouplens/lenskit/issues?milestone=1.1&status=resolved}list
   of closed tickets}} provide more information on what has happened,
   including bugs that have been fixed.
+
+  This release requires some recommender configuration changes; see {{{http://bitbucket.org/grouplens/lenskit/wiki/UpgradingTo11}Upgrading to LensKit 1.1}} for details on how to do this.
 
   * Made <<<Recommender>>> extend <<<Closeable>>>.
 
