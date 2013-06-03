@@ -24,7 +24,7 @@
             href="index.html"/>
     </breadcrumbs>
     <menu name="LensKit" inherit="top">
-      <item name="Home Page" href="http://lenskit.grouplens.org"/>
+      <item name="Project Home" href="http://lenskit.grouplens.org"/>
       <item name="BitBucket" href="http://bitbucket.org/grouplens/lenskit"/>
     </menu>
     <menu name="Documentation">
