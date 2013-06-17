@@ -20,18 +20,10 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.*;
-import com.google.common.collect.Lists;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.UserHistory;
@@ -45,14 +37,18 @@ import org.grouplens.lenskit.eval.data.CSVDataSourceCommand;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataCommand;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * The command to build and run a crossfold on the data source file and output the partition files
