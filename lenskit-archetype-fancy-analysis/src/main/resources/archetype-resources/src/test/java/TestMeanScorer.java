@@ -83,7 +83,7 @@ public class TestMeanScorer {
         assertThat(scores1.get(5), closeTo(3.25, 1.0e-5));
         assertThat(scores1.get(7), closeTo(3.75, 1.0e-5));
         assertThat(scores1.get(10), closeTo(3.75, 1.0e-5));  // user overall average
-        assertTrue(Double.isNaN(scores1.get(4)));
+        assertFalse(scores1.containsKey(4));
 
         // User 8
         long[] items8 = {4, 5, 7};
@@ -98,7 +98,7 @@ public class TestMeanScorer {
         MutableSparseVector scores2 = MutableSparseVector.wrap(items, ratings); // ratings ignored
         scorer.score(2L, scores2);
         assertThat(scores2.get(5), closeTo(3.5, 1.0e-5));
-        assertTrue(Double.isNaN(scores2.get(4)));
+        assertFalse(scores1.containsKey(4));
         assertThat(scores2.get(7), closeTo(4, 1.0e-5));
      }
     
@@ -116,6 +116,6 @@ public class TestMeanScorer {
         assertThat(scores1.get(5), closeTo(3.25, 1.0e-5));
         assertThat(scores1.get(7), closeTo(3.75, 1.0e-5));
         assertThat(scores1.get(10), closeTo(3.75, 1.0e-5));  // user overall average
-        assertTrue(Double.isNaN(scores1.get(4)));
+        assertFalse(scores1.containsKey(4));
      }
 }
