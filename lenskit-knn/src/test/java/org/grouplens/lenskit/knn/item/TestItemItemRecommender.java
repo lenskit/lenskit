@@ -105,7 +105,6 @@ public class TestItemItemRecommender {
         assertThat(scores, notNullValue());
         assertThat(scores.size(), equalTo(1));
         assertThat(scores.get(7), not(notANumber()));
-        assertThat(scores.get(8), notANumber());
         assertThat(scores.containsKey(8), equalTo(false));
     }
 
@@ -126,7 +125,6 @@ public class TestItemItemRecommender {
         assertThat(scores.get(7), not(notANumber()));
         assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
                 get(7), closeTo(1.0, 1.0e-5));
-        assertThat(scores.get(8), notANumber());
         assertThat(scores.containsKey(8), equalTo(false));
 
         history = getRatings(2);  // has rated 7, and 8

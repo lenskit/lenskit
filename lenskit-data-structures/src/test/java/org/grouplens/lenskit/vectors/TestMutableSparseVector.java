@@ -23,6 +23,7 @@ package org.grouplens.lenskit.vectors;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -142,7 +143,11 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         v1 = new MutableSparseVector(keys, values, keys.length, used);
         assertThat(v1.get(3), closeTo(2));
         assertThat(v1.get(8), closeTo(1.7));
-        assertThat(v1.get(5), notANumber());
+        assertThat(v1.containsKey(8), equalTo(true));
+        assertThat(v1.get(5, Double.NaN), notANumber());
+        assertThat(v1.containsKey(5), equalTo(false));
+        assertThat(v1.keyDomain(), hasItem(5L));
+        assertThat(v1.keySet(), not(hasItem(5L)));
     }
 
     // Ensure that the constructors work too.
@@ -244,7 +249,8 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         v2.unset(7);  
         v.unset(3);
         v.subtract(v2);
-        assertThat(v.get(3), notANumber());
+        assertThat(v.containsKey(3), equalTo(false));
+        assertThat(v.get(3, Double.NaN), notANumber());
         assertThat(v.get(7), closeTo(3.5));
         assertThat(v.get(8), closeTo(0));
     }
@@ -282,7 +288,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         v2.unset(7);  
         v.unset(3);
         v.add(v2);
-        assertThat(v.get(3), notANumber());
+        assertThat(v.get(3, Double.NaN), notANumber());
         assertThat(v.get(7), closeTo(3.5));
         assertThat(v.get(8), closeTo(4));
     }
@@ -322,7 +328,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
                    equalTo(new long[] { 2, 5 }));
         assertFalse(v.containsKey(2));
         assertTrue(v.keyDomain().contains(2));
-        assertThat(v.get(2), notANumber());
+        assertThat(v.get(2, Double.NaN), notANumber());
     }
 
     @Test
@@ -341,7 +347,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         v.clear(2);
         assertThat(v.isEmpty(), equalTo(true));
         assertThat(v.size(), equalTo(0));
-        assertThat(v.get(2), notANumber());
+        assertThat(v.containsKey(2), equalTo(false));
         assertThat(v.set(2, Math.E), notANumber());
     }
 
@@ -378,7 +384,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         v = simpleVector();
         v.set(simpleVector2());
         assertThat(v.get(3), closeTo(2));
-        assertThat(v.get(5), notANumber());
+        assertThat(v.get(5, Double.NaN), notANumber());
         assertThat(v.get(7), closeTo(3.5));
         assertThat(v.get(8), closeTo(1.7));
 
@@ -494,7 +500,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         MutableSparseVector v = MutableSparseVector.wrap(keys, values, 2);
         assertThat(v.size(), equalTo(2));
         assertThat(v.containsKey(9), equalTo(false));
-        assertThat(v.get(9), notANumber());
+        assertThat(v.get(9, Double.NaN), notANumber());
         assertThat(v.get(3), closeTo(Math.PI));
         v.clear(3);
         assertThat(v.size(), equalTo(1));
@@ -505,7 +511,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
             fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
         } catch (IllegalArgumentException iae) { /* skip */
         }
-        assertThat(v.get(9), notANumber());
+        assertThat(v.get(9, Double.NaN), notANumber());
         assertThat(v.containsKey(9), equalTo(false));
     }
 
@@ -522,7 +528,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(f.get(3), closeTo(Math.PI));
         assertThat(f.get(9), closeTo(0.42));
         assertThat(f.containsKey(7), equalTo(false));
-        assertThat(f.get(7), notANumber());
+        assertThat(f.get(7, Double.NaN), notANumber());
     }
 
     @Test

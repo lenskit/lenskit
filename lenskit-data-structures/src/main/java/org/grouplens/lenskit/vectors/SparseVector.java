@@ -206,13 +206,17 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     /**
      * Get the value for {@var key}.
      *
-     * @param key the key to look up
-     * @return the key's value (or {@link Double#NaN} if no such value
-     *         exists)
-     * @see #get(long, double)
+     * @param key the key to look up; the key must be in the key set.
+     * @return the key's value
+     * @throws IllegalArgumentException if {@var key} is not in the key set.
      */
     public double get(long key) {
-        return get(key, Double.NaN);
+        final int idx = findIndex(key);
+        if (idx >= 0 && usedKeys.get(idx)) {
+            return values[idx];
+        } else {
+            throw new IllegalArgumentException("Key " + key + " is not in the key set");
+        }
     }
 
     /**
@@ -235,7 +239,10 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * Get the value for the entry's key.
      *
      * @param entry A {@code VectorEntry} with the key to look up
-     * @return the key's value (or {@link Double#NaN} if no such value exists)
+     * @return the key's value
+     * @throws IllegalArgumentException if the entry is unset, or if it is not from this vector or another vector
+     * sharing the same key domain.  Only vectors and their side channels share key domains for the
+     * purposes of this check.
      */
     public double get(VectorEntry entry) {
         final SparseVector evec = entry.getVector();
@@ -246,13 +253,36 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         } else if (evec.keys != this.keys) {
             throw new IllegalArgumentException("entry does not have safe key domain");
         } else if (entry.getKey() != keys[eind]) {
+            // REVIEW Should this be an assertion?
             throw new IllegalArgumentException("entry does not have the correct key for its index");
         }
         if (usedKeys.get(eind)) {
             return values[eind];
         } else {
-            return Double.NaN;
+            throw new IllegalArgumentException("Key " + entry.getKey() + " is not set");
         }
+    }
+
+    /**
+     * Check whether an entry is set.
+     * @param entry The entry.
+     * @return {@code true} if the entry is set in this vector.
+     * @throws IllegalArgumentException if the entry is not from this vector or another vector
+     * sharing the same key domain.  Only vectors and their side channels share key domains for the
+     * purposes of this check.
+     */
+    public boolean isSet(VectorEntry entry) {
+        final SparseVector evec = entry.getVector();
+        final int eind = entry.getIndex();
+
+        if (evec == null) {
+            throw new IllegalArgumentException("entry is not associated with a vector");
+        } else if (evec.keys != this.keys) {
+            throw new IllegalArgumentException("entry does not have safe key domain");
+        } else if (entry.getKey() != keys[eind]) {
+            throw new IllegalStateException("entry does not have the correct key for its index");
+        }
+        return usedKeys.get(eind);
     }
 
     /**

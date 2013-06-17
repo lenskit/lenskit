@@ -97,10 +97,17 @@ public abstract class SparseVectorTestCommon {
      */
     @Test
     public void testGet() {
-        assertThat(emptyVector().get(5), notANumber());
+        try {
+            emptyVector().get(5);
+            fail("invalid key should throw exception");
+        } catch (IllegalArgumentException e) { /* expected */ }
+
         SparseVector v = singleton();
         assertThat(v.get(5), closeTo(Math.PI));
-        assertThat(v.get(2), notANumber());
+        try {
+            v.get(2);
+            fail("should throw IllegalArgumentException for bad argument");
+        } catch (IllegalArgumentException e) { /* expected */ }
 
         v = simpleVector();
         assertThat(v.get(7), closeTo(3.5));
@@ -400,10 +407,16 @@ public abstract class SparseVectorTestCommon {
         assertThat(simple.get(3), closeTo(1.5));
         assertThat(ve.getValue(), closeTo(33));  // the VectorEntry is bogus
         assertThat(simple.get(ve), closeTo(1.5));
+        assertThat(simple.isSet(ve), equalTo(true));
         
         VectorEntry veBogus = new VectorEntry(null, -1, 3, 33, true);
         try {
             simple.get(veBogus);
+            fail("Should throw an IllegalArgumentException because the vector entry has a bogus index");
+        } catch (IllegalArgumentException iae) { /* skip */
+        }
+        try {
+            simple.isSet(veBogus);
             fail("Should throw an IllegalArgumentException because the vector entry has a bogus index");
         } catch (IllegalArgumentException iae) { /* skip */
         }
@@ -414,10 +427,20 @@ public abstract class SparseVectorTestCommon {
             fail("Should throw an IllegalArgumentException because the vector entry is not attached to this sparse vector");
         } catch (IllegalArgumentException iae) { /* skip */
         }
+        try {
+            simple.isSet(veNull);
+            fail("Should throw an IllegalArgumentException because the vector entry is not attached to this sparse vector");
+        } catch (IllegalArgumentException iae) { /* skip */
+        }
         
         VectorEntry veBogusKey = new VectorEntry(simple, 0, 22, 33, true);
         try {
             simple.get(veBogusKey);
+            fail("Should throw an IllegalArgumentException because the vector entry has a bogus key");
+        } catch (IllegalArgumentException iae) { /* skip */
+        }
+        try {
+            simple.isSet(veBogusKey);
             fail("Should throw an IllegalArgumentException because the vector entry has a bogus key");
         } catch (IllegalArgumentException iae) { /* skip */
         }
@@ -427,6 +450,23 @@ public abstract class SparseVectorTestCommon {
             simple.get(veBogusKeyDomain);
             fail("Should throw an IllegalArgumentException because the vector entry has a different key domain from the vector");
         } catch (IllegalArgumentException iae) { /* skip */
+        }
+        try {
+            simple.isSet(veBogusKeyDomain);
+            fail("Should throw an IllegalArgumentException because the vector entry has a different key domain from the vector");
+        } catch (IllegalArgumentException iae) { /* skip */
+        }
+
+
+        MutableSparseVector msv = simpleVector().mutableCopy();
+        msv.unset(7);
+        VectorEntry veUnset = new VectorEntry(msv, 1, 7, 3.5, false);
+        assertThat(msv.isSet(veUnset), equalTo(false));
+        try {
+            msv.get(veUnset);
+            fail("should throw an IllegalArgumentException b/c the vector entry is unset.");
+        } catch (IllegalArgumentException e) {
+            /* expected */
         }
     }
 
