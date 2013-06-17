@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
+import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.*;
 import com.google.common.collect.Lists;
 
@@ -334,7 +335,11 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
                 return getTTFiles();
             }
         }
-        createTTFiles();
+        try {
+            createTTFiles();
+        } catch (IOException ex) {
+            throw new CommandException("Error writing data sets", ex);
+        }
         return getTTFiles();
     }
 
@@ -355,24 +360,20 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     /**
      * Write train-test split files
      *
-     * @throws org.grouplens.lenskit.eval.CommandException
-     *          Any error
+     * @throws IOException if there is an error writing the files.
      */
-    protected void createTTFiles() throws CommandException {
+    protected void createTTFiles() throws IOException {
         File[] trainFiles = getFiles(getTrainPattern());
         File[] testFiles = getFiles(getTestPattern());
         TableWriter[] trainWriters = new TableWriter[partitionCount];
         TableWriter[] testWriters = new TableWriter[partitionCount];
+        Closer closer = Closer.create();
         try {
             for (int i = 0; i < partitionCount; i++) {
                 File train = trainFiles[i];
                 File test = testFiles[i];
-                try {
-                    trainWriters[i] = CSVWriter.open(train, null);
-                    testWriters[i] = CSVWriter.open(test, null);
-                } catch (IOException e) {
-                    throw new CommandException("Error creating train test file writer", e);
-                }
+                trainWriters[i] = closer.register(CSVWriter.open(train, null));
+                testWriters[i] = closer.register(CSVWriter.open(test, null));
             }
             DAOFactory factory = source.getDAOFactory();
             DataAccessObject daoSnap = factory.snapshot();
@@ -385,9 +386,10 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
             } finally {
                 daoSnap.close();
             }
+        } catch (Throwable th) {
+            throw closer.rethrow(th);
         } finally {
-            LKFileUtils.close(logger, trainWriters);
-            LKFileUtils.close(logger, testWriters);
+            closer.close();
         }
     }
     

@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.eval.config;
 
 import com.google.common.base.Preconditions;
+import com.google.common.io.Closeables;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -209,28 +210,30 @@ public class EvalScriptEngine {
     public Class<? extends Command> getCommand(@Nonnull String name) {
         String path = METHOD_PATH + name + ".properties";
         logger.debug("loading method {} from {}", name, path);
-        InputStream istr = classLoader.getResourceAsStream(path);
-        if (istr == null) {
-            logger.debug("path {} not found", path);
-            return null;
-        }
 
         try {
-            Properties props = new Properties();
-            props.load(istr);
-            Object pv = props.get("command");
-            String className = pv == null ? null : pv.toString();
-            if (className == null) {
+            InputStream istr = classLoader.getResourceAsStream(path);
+            if (istr == null) {
+                logger.debug("path {} not found", path);
                 return null;
             }
+            try {
+                Properties props = new Properties();
+                props.load(istr);
+                Object pv = props.get("command");
+                String className = pv == null ? null : pv.toString();
+                if (className == null) {
+                    return null;
+                }
 
-            return classLoader.loadClass(className).asSubclass(Command.class);
+                return classLoader.loadClass(className).asSubclass(Command.class);
+            } finally {
+                istr.close();
+            }
         } catch (IOException e) {
             throw new RuntimeException("error reading method " + name, e);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("cannot find command class", e);
-        } finally {
-            LKFileUtils.close(istr);
         }
     }
 
@@ -282,7 +285,7 @@ public class EvalScriptEngine {
                 try {
                     props.load(istr);
                 } finally {
-                    LKFileUtils.close(istr);
+                    istr.close();
                 }
             }
         } catch (IOException e) {

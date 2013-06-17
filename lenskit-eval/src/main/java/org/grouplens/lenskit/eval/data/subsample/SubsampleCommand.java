@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import javax.annotation.Nullable;
 
+import com.google.common.io.Closer;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.eval.AbstractCommand;
@@ -184,11 +185,14 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
         try {
             logger.info("sampling {} of {}",
                         subsampleFraction, source.getName());
-            TableWriter subsampleWriter = CSVWriter.open(subsampleFile, null);
+            Closer closer = Closer.create();
+            TableWriter subsampleWriter = closer.register(CSVWriter.open(subsampleFile, null));
             try {
                 mode.doSample(daoSnap, subsampleWriter, subsampleFraction, getConfig());
+            } catch (Throwable th) {
+                throw closer.rethrow(th);
             } finally {
-                LKFileUtils.close(subsampleWriter);
+                closer.close();
             }
         } catch (IOException e) {
             throw new CommandException("Error writing output file", e);
