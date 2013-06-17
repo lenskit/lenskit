@@ -22,6 +22,7 @@ package org.grouplens.lenskit.knn.item.model;
 
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
+import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -31,7 +32,6 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.knn.item.ItemItemGlobalRecommender;
 import org.grouplens.lenskit.knn.item.ItemItemGlobalScorer;
-import org.grouplens.lenskit.knn.item.ItemItemRecommender;
 import org.grouplens.lenskit.knn.item.ItemItemScorer;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,7 +58,6 @@ public class TestNormalizingItemItemRecommenderBuild {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
         factory.bind(ItemItemModel.class).toProvider(NormalizingItemItemModelBuilder.class);
         factory.bind(ItemScorer.class).to(ItemItemScorer.class);
-        factory.bind(ItemRecommender.class).to(ItemItemRecommender.class);
         factory.bind(GlobalItemRecommender.class).to(ItemItemGlobalRecommender.class);
         factory.bind(GlobalItemScorer.class).to(ItemItemGlobalScorer.class);
         // this is the default
@@ -78,7 +77,7 @@ public class TestNormalizingItemItemRecommenderBuild {
         assertThat(rec.getRatingPredictor(),
                 instanceOf(SimpleRatingPredictor.class));
         assertThat(rec.getItemRecommender(),
-                instanceOf(ItemItemRecommender.class));
+                instanceOf(TopNItemRecommender.class));
         assertThat(rec.getGlobalItemRecommender(),
                 instanceOf(ItemItemGlobalRecommender.class));
         assertThat(rec.getGlobalItemScorer(),

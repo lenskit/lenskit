@@ -20,11 +20,15 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
+import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -69,8 +73,6 @@ public class TestFunkSVDRecommenderBuild {
                .to(FunkSVDItemScorer.class);
         factory.bind(BaselinePredictor.class)
                .to(UserMeanPredictor.class);
-        factory.bind(ItemRecommender.class)
-               .to(FunkSVDRecommender.class);
         factory.bind(StoppingCondition.class)
                .to(IterationCountStoppingCondition.class);
         factory.set(IterationCount.class)
@@ -91,7 +93,7 @@ public class TestFunkSVDRecommenderBuild {
             assertThat(rec.getItemScorer(),
                        instanceOf(FunkSVDItemScorer.class));
             assertThat(rec.getItemRecommender(),
-                       instanceOf(FunkSVDRecommender.class));
+                       instanceOf(TopNItemRecommender.class));
             RatingPredictor pred = rec.getRatingPredictor();
             assertThat(pred, instanceOf(SimpleRatingPredictor.class));
             assertThat(((SimpleRatingPredictor) pred).getScorer(),

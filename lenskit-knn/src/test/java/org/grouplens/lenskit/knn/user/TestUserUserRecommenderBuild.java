@@ -22,6 +22,7 @@ package org.grouplens.lenskit.knn.user;
 
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
+import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
@@ -54,7 +55,6 @@ public class TestUserUserRecommenderBuild {
 
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
         factory.bind(ItemScorer.class).to(UserUserItemScorer.class);
-        factory.bind(ItemRecommender.class).to(UserUserRecommender.class);
         factory.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
 
         engine = factory.create();
@@ -69,7 +69,7 @@ public class TestUserUserRecommenderBuild {
             assertThat(rec.getItemScorer(),
                        instanceOf(UserUserItemScorer.class));
             assertThat(rec.getItemRecommender(),
-                       instanceOf(UserUserRecommender.class));
+                       instanceOf(TopNItemRecommender.class));
             RatingPredictor pred = rec.getRatingPredictor();
             assertThat(pred, instanceOf(SimpleRatingPredictor.class));
             assertThat(((SimpleRatingPredictor) pred).getScorer(),

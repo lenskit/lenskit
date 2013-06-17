@@ -71,7 +71,6 @@ public class TestUserUserRecommender {
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
         factory.bind(ItemScorer.class).to(UserUserItemScorer.class);
-        factory.bind(ItemRecommender.class).to(UserUserRecommender.class);
         factory.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
         factory.in(UserSimilarity.class)
                .bind(VectorSimilarity.class)

@@ -75,7 +75,6 @@ public class TestFunkSVDRecommender {
         factory.bind(PreferenceSnapshot.class).to(PackedPreferenceSnapshot.class);
         factory.bind(ItemScorer.class).to(FunkSVDItemScorer.class);
         factory.bind(BaselinePredictor.class).to(UserMeanPredictor.class);
-        factory.bind(ItemRecommender.class).to(FunkSVDRecommender.class);
         factory.bind(Integer.class).withQualifier(FeatureCount.class).to(100);
         // FIXME: Don't use 100 features.
         RecommenderEngine engine = factory.create();

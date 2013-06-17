@@ -22,6 +22,7 @@ package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
+import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -55,7 +56,6 @@ public class TestItemItemRecommenderBuild {
 
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
         factory.bind(ItemScorer.class).to(ItemItemScorer.class);
-        factory.bind(ItemRecommender.class).to(ItemItemRecommender.class);
         factory.bind(GlobalItemRecommender.class).to(ItemItemGlobalRecommender.class);
         factory.bind(GlobalItemScorer.class).to(ItemItemGlobalScorer.class);
         // this is the default
@@ -75,7 +75,7 @@ public class TestItemItemRecommenderBuild {
         assertThat(rec.getRatingPredictor(),
                    instanceOf(SimpleRatingPredictor.class));
         assertThat(rec.getItemRecommender(),
-                   instanceOf(ItemItemRecommender.class));
+                   instanceOf(TopNItemRecommender.class));
         assertThat(rec.getGlobalItemRecommender(),
                    instanceOf(ItemItemGlobalRecommender.class));
         assertThat(rec.getGlobalItemScorer(),

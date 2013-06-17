@@ -31,7 +31,7 @@ import java.util.Collection;
 
 /**
  * Interface for neighborhood-finding strategies. These strategies are used by
- * {@link UserUserRecommender} to find neighbors for recommendation.
+ * {@link UserUserItemScorer} to find neighbors for generating scores.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */

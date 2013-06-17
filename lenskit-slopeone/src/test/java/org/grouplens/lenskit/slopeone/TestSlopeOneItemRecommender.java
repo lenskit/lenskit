@@ -20,10 +20,14 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
+import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -57,7 +61,6 @@ public class TestSlopeOneItemRecommender {
 
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
         factory.bind(ItemScorer.class).to(SlopeOneItemScorer.class);
-        factory.bind(ItemRecommender.class).to(SlopeOneRecommender.class);
         factory.bind(PreferenceDomain.class).to(new PreferenceDomain(1, 5));
         // factory.setComponent(UserVectorNormalizer.class, IdentityVectorNormalizer.class);
         factory.bind(BaselinePredictor.class).to(ItemUserMeanPredictor.class);
@@ -77,7 +80,7 @@ public class TestSlopeOneItemRecommender {
             assertThat(((SimpleRatingPredictor) rp).getScorer(),
                        sameInstance(rec.getItemScorer()));
             assertThat(rec.getItemRecommender(),
-                       instanceOf(SlopeOneRecommender.class));
+                       instanceOf(TopNItemRecommender.class));
         } finally {
             rec.close();
         }
