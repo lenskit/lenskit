@@ -1,8 +1,7 @@
 /* This file may be freely modified, used, and redistributed without restriction. */
 package ${package};
 
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.closeTo;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 
