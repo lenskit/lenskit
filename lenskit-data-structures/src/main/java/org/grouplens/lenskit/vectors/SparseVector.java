@@ -280,7 +280,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         } else if (evec.keys != this.keys) {
             throw new IllegalArgumentException("entry does not have safe key domain");
         } else if (entry.getKey() != keys[eind]) {
-            throw new IllegalStateException("entry does not have the correct key for its index");
+            throw new IllegalArgumentException("entry does not have the correct key for its index");
         }
         return usedKeys.get(eind);
     }
