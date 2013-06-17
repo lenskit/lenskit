@@ -20,8 +20,12 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
-import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.GlobalItemScorer;
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
+import org.grouplens.lenskit.basic.TopNGlobalItemRecommender;
 import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
@@ -30,7 +34,6 @@ import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
-import org.grouplens.lenskit.knn.item.ItemItemGlobalRecommender;
 import org.grouplens.lenskit.knn.item.ItemItemGlobalScorer;
 import org.grouplens.lenskit.knn.item.ItemItemScorer;
 import org.junit.Before;
@@ -58,7 +61,6 @@ public class TestNormalizingItemItemRecommenderBuild {
         LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
         factory.bind(ItemItemModel.class).toProvider(NormalizingItemItemModelBuilder.class);
         factory.bind(ItemScorer.class).to(ItemItemScorer.class);
-        factory.bind(GlobalItemRecommender.class).to(ItemItemGlobalRecommender.class);
         factory.bind(GlobalItemScorer.class).to(ItemItemGlobalScorer.class);
         // this is the default
 //        factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
@@ -79,7 +81,7 @@ public class TestNormalizingItemItemRecommenderBuild {
         assertThat(rec.getItemRecommender(),
                 instanceOf(TopNItemRecommender.class));
         assertThat(rec.getGlobalItemRecommender(),
-                instanceOf(ItemItemGlobalRecommender.class));
+                instanceOf(TopNGlobalItemRecommender.class));
         assertThat(rec.getGlobalItemScorer(),
                 instanceOf(ItemItemGlobalScorer.class));
     }
