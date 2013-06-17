@@ -28,6 +28,7 @@ import org.grouplens.grapht.spi.CachePolicy;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.grapht.spi.reflect.ReflectionInjectSPI;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
@@ -55,6 +56,8 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
 
     LenskitRecommenderEngine(DAOFactory factory, Graph dependencies,
                              Node daoNode, InjectSPI spi) {
+        Preconditions.checkArgument(spi instanceof ReflectionInjectSPI,
+                                    "SPI must be a reflection SPI");
         this.factory = factory;
         this.dependencies = dependencies;
         this.spi = spi;
@@ -217,5 +220,41 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
      */
     Graph getDependencies() {
         return dependencies;
+    }
+
+    /**
+     * Build a LensKit recommender engine from a configuration.  The resulting recommender is
+     * independent of any subsequent modifications to the configuration.
+     *
+     * @param daoFactory The DAO factory to use.
+     * @param config     The configuration.
+     * @return The recommender engine.
+     */
+    public static LenskitRecommenderEngine build(DAOFactory daoFactory, LenskitConfiguration config) throws RecommenderBuildException {
+        DataAccessObject dao = daoFactory.snapshot();
+        try {
+            Graph graph = config.buildGraph(dao);
+            Graph built = new RecommenderInstantiator(config.getSPI(), graph).instantiate();
+            Node daoNode = GraphtUtils.replaceDAONode(config.getSPI(), built);
+            return new LenskitRecommenderEngine(daoFactory, built, daoNode, config.getSPI());
+        } finally {
+            dao.close();
+        }
+    }
+
+    /**
+     * Build a LensKit recommender engine from a configuration and a DAO.  The resulting recommender
+     * is independent of any subsequent modifications to the configuration.  It is slightly broken;
+     * {@link #open()} will not work, only {@link #open(DataAccessObject, boolean)}.
+     *
+     * @param dao    The DAO to use. This DAO will not be closed.
+     * @param config The configuration.
+     * @return The recommender engine.
+     */
+    public static LenskitRecommenderEngine build(DataAccessObject dao, LenskitConfiguration config) throws RecommenderBuildException {
+        Graph graph = config.buildGraph(dao);
+        Graph built = new RecommenderInstantiator(config.getSPI(), graph).instantiate();
+        Node daoNode = GraphtUtils.replaceDAONode(config.getSPI(), built);
+        return new LenskitRecommenderEngine(null, built, daoNode, config.getSPI());
     }
 }

@@ -20,31 +20,17 @@
  */
 package org.grouplens.lenskit.core;
 
-import com.google.common.base.Predicates;
-import com.google.common.collect.Iterables;
+import com.google.common.base.Throwables;
 import org.grouplens.grapht.Binding;
-import org.grouplens.grapht.BindingFunctionBuilder;
-import org.grouplens.grapht.InjectionException;
-import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
-import org.grouplens.grapht.graph.Node;
-import org.grouplens.grapht.solver.DefaultDesireBindingFunction;
-import org.grouplens.grapht.solver.DependencySolver;
-import org.grouplens.grapht.solver.SolverException;
-import org.grouplens.grapht.spi.*;
-import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.RecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
-import java.util.*;
-
-import static org.grouplens.grapht.BindingFunctionBuilder.RuleSet;
-import static org.grouplens.lenskit.core.ContextWrapper.coerce;
 
 /**
  * {@link RecommenderEngineFactory} that builds a LenskitRecommenderEngine.
@@ -54,22 +40,14 @@ import static org.grouplens.lenskit.core.ContextWrapper.coerce;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
+ * @deprecated Use {@link LenskitConfiguration} and {@link LenskitRecommenderEngine#build(DAOFactory, LenskitConfiguration)} instead.
  */
+@Deprecated
 public final class LenskitRecommenderEngineFactory extends AbstractConfigContext implements RecommenderEngineFactory {
-    private static final Class<?>[] INITIAL_ROOTS = {
-            RatingPredictor.class,
-            ItemScorer.class,
-            GlobalItemScorer.class,
-            ItemRecommender.class,
-            GlobalItemRecommender.class
-    };
     private static final int RESOLVE_DEPTH_LIMIT = 100;
 
-    private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngineFactory.class);
-
-    private final BindingFunctionBuilder config;
+    private final LenskitConfiguration config;
     private DAOFactory factory;
-    private final Set<Class<?>> roots;
 
     /**
      * Create a new recommender engine factory.
@@ -85,15 +63,13 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
      */
     public LenskitRecommenderEngineFactory(@Nullable DAOFactory factory) {
         this.factory = factory;
-        config = new BindingFunctionBuilder();
-        roots = new HashSet<Class<?>>();
-        Collections.addAll(roots, INITIAL_ROOTS);
+        config = new LenskitConfiguration();
+
     }
 
     private LenskitRecommenderEngineFactory(LenskitRecommenderEngineFactory engineFactory) {
         factory = engineFactory.factory;
-        config = engineFactory.config.clone();
-        roots = new HashSet<Class<?>>(engineFactory.roots);
+        config = new LenskitConfiguration(engineFactory.config);
     }
 
     /**
@@ -103,49 +79,50 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
      *
      * @param componentType The type of component to add as a root (typically an interface).
      * @see LenskitRecommender#get(Class)
+     * @see LenskitConfiguration#addRoot(Class)
      */
     public void addRoot(Class<?> componentType) {
-        roots.add(componentType);
+        config.addRoot(componentType);
     }
 
     @Override
     public <T> Binding<T> bind(Class<T> type) {
-        return config.getRootContext().bind(type);
+        return config.bind(type);
     }
 
     @Override
     public <T> Binding<T> bind(Class<? extends Annotation> qualifier, Class<T> type) {
-        return bind(type).withQualifier(qualifier);
+        return config.bind(qualifier,  type);
     }
 
     @Override
     public LenskitConfigContext within(Class<?> type) {
-        return coerce(config.getRootContext().within(type));
+        return config.within(type);
     }
 
     @Override
     public LenskitConfigContext within(Class<? extends Annotation> qualifier, Class<?> type) {
-        return coerce(config.getRootContext().within(qualifier, type));
+        return config.within(qualifier, type);
     }
 
     @Override
     public LenskitConfigContext within(Annotation qualifier, Class<?> type) {
-        return coerce(config.getRootContext().within(qualifier, type));
+        return config.within(qualifier, type);
     }
 
     @Override
     public LenskitConfigContext at(Class<?> type) {
-        return coerce(config.getRootContext().at(type));
+        return config.at(type);
     }
 
     @Override
     public LenskitConfigContext at(Class<? extends Annotation> qualifier, Class<?> type) {
-        return coerce(config.getRootContext().at(qualifier, type));
+        return config.at(qualifier, type);
     }
 
     @Override
     public LenskitConfigContext at(Annotation qualifier, Class<?> type) {
-        return coerce(config.getRootContext().at(qualifier, type));
+        return config.at(qualifier, type);
     }
 
     @Override
@@ -173,23 +150,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
 
     @Override
     public LenskitRecommenderEngine create() throws RecommenderBuildException {
-        if (factory == null) {
-            throw new IllegalStateException("create() called with no DAOFactory");
-        }
-        DataAccessObject dao = factory.snapshot();
-        try {
-            return create(dao);
-        } finally {
-            dao.close();
-        }
-    }
-
-    private void resolve(Class<?> type, DependencySolver solver) {
-        try {
-            solver.resolve(config.getSPI().desire(null, type, true));
-        } catch (SolverException e) {
-            throw new InjectionException(type, null, e);
-        }
+        return LenskitRecommenderEngine.build(getDAOFactory(), config);
     }
 
     /**
@@ -199,104 +160,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
      * @throws RecommenderBuildException if there is an error building the recommender.
      */
     public LenskitRecommenderEngine create(@Nonnull DataAccessObject dao) throws RecommenderBuildException {
-        Graph original;
-        try {
-            original = buildGraph(dao);
-        } catch (RuntimeException ex) {
-            throw new RecommenderConfigurationException("could not build recommender graph", ex);
-        }
-
-        // Get the set of shareable instances.
-        Set<Node> shared = getShareableNodes(original);
-        logger.debug("found {} shared nodes", shared.size());
-
-        // Instantiate and replace shareable nodes
-        Graph modified = original.clone();
-
-        Set<Node> sharedInstances;
-        try {
-            sharedInstances = instantiate(modified, shared);
-        } catch (RuntimeException ex) {
-            throw new RecommenderBuildException("could not instantiate shared components", ex);
-        }
-        logger.debug("found {} shared instances", sharedInstances.size());
-
-        // Remove transient edges and orphaned subgraphs
-        Set<Node> transientTargets = removeTransientEdges(modified, sharedInstances);
-        Set<Node> removed = removeOrphanSubgraphs(modified, transientTargets);
-        logger.debug("removed {} orphaned nodes", removed.size());
-
-        // Find the DAO node
-        Node daoNode = GraphtUtils.findDAONode(modified);
-        Node daoPlaceholder = null;
-        if (daoNode != null) {
-            daoPlaceholder = GraphtUtils.replaceNodeWithPlaceholder(config.getSPI(),
-                                                                    modified, daoNode);
-        }
-
-        return new LenskitRecommenderEngine(factory, modified, daoPlaceholder,
-                                            config.getSPI());
-    }
-
-    /**
-     * Prune the graph, returning the set of nodes for shareable objects
-     * (objects that will be replaced with instance satisfactions in the
-     * final graph).
-     *
-     * @param graph The graph to analyze. The graph is not modified.
-     * @return The set of root nodes - nodes that need to be instantiated and
-     *         removed. These nodes are in topologically sorted order.
-     */
-    private LinkedHashSet<Node> getShareableNodes(Graph graph) {
-        LinkedHashSet<Node> shared = new LinkedHashSet<Node>();
-
-        List<Node> nodes = graph.sort(graph.getNode(null));
-        for (Node node : nodes) {
-            if (!GraphtUtils.isShareable(node)) {
-                continue;
-            }
-
-            // see if we depend on any non-shared nodes
-            // since nodes are sorted, all shared nodes will have been seen
-            Set<Edge> intransient = GraphtUtils.removeTransient(graph.getOutgoingEdges(node));
-            boolean isShared =
-                    Iterables.all(Iterables.transform(intransient, GraphtUtils.edgeTail()),
-                                  Predicates.in(shared));
-            if (isShared) {
-                shared.add(node);
-            }
-        }
-
-        return shared;
-    }
-
-    /**
-     * Instantiate the shared objects in a graph. This instantiates all shared objects,
-     * and replaces their nodes with nodes wrapping instance satisfactions.
-     *
-     * @param graph     The complete configuration graph. This graph will be modified.
-     * @param toReplace The shared nodes to replace.
-     * @return The new instance nodes, in iteration order from {@code toReplace}.
-     */
-    private Set<Node> instantiate(Graph graph, Set<Node> toReplace) {
-        InjectSPI spi = config.getSPI();
-        StaticInjector injector = new StaticInjector(spi, graph);
-        LinkedHashSet<Node> replacements = new LinkedHashSet<Node>();
-        for (Node node : toReplace) {
-            Object obj = injector.instantiate(node);
-            CachedSatisfaction label = node.getLabel();
-            assert label != null;
-            Satisfaction instanceSat;
-            if (obj == null) {
-                instanceSat = spi.satisfyWithNull(label.getSatisfaction().getErasedType());
-            } else {
-                instanceSat = spi.satisfy(obj);
-            }
-            Node repl = new Node(instanceSat, label.getCachePolicy());
-            graph.replaceNode(node, repl);
-            replacements.add(repl);
-        }
-        return replacements;
+        return LenskitRecommenderEngine.build(dao, config);
     }
 
     /**
@@ -308,134 +172,7 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
      *         subjected to the instantiation process.
      */
     public Graph simulateInstantiation(Graph graph) {
-        Graph modified = graph.clone();
-        Set<Node> toReplace = getShareableNodes(modified);
-        InjectSPI spi = config.getSPI();
-        Set<Node> replacements = new LinkedHashSet<Node>();
-        logger.debug("simulating instantation of {} nodes", toReplace.size());
-        for (Node node : toReplace) {
-            CachedSatisfaction label = node.getLabel();
-            assert label != null;
-            if (!label.getSatisfaction().hasInstance()) {
-                Satisfaction instanceSat = spi.satisfyWithNull(label.getSatisfaction().getErasedType());
-                Node repl = new Node(instanceSat, label.getCachePolicy());
-                logger.debug("simulating instantiation of {}", node);
-                modified.replaceNode(node, repl);
-                replacements.add(repl);
-            }
-        }
-        Set<Node> tts = removeTransientEdges(modified, replacements);
-        removeOrphanSubgraphs(modified, tts);
-        return modified;
-    }
-
-    /**
-     * Remove transient edges from a graph.
-     *
-     * @param graph The graph to remove transient edges from.
-     * @param nodes The nodes whose outgoing transient edges should be removed.
-     * @return The set of tail nodes of removed edges.
-     */
-    private Set<Node> removeTransientEdges(Graph graph, Set<Node> nodes) {
-        // Tail nodes of removed edges (return value)
-        Set<Node> targets = new HashSet<Node>();
-        // Nodes we have seen in our traversal (set of members of the queue)
-        Set<Node> seen = new HashSet<Node>(nodes);
-        // The work queue
-        Queue<Node> work = new ArrayDeque<Node>(nodes);
-        // Queue of removals, to avoid concurrent modification
-        Queue<Edge> removals = new ArrayDeque<Edge>();
-
-        // Pump the work queue
-        while (!work.isEmpty()) {
-            Node node = work.remove();
-            // find and queue removals
-            for (Edge e : graph.getOutgoingEdges(node)) {
-                Node nbr = e.getTail();
-
-                // remove transient edges, traverse non-transient ones
-                Desire desire = e.getDesire();
-                assert desire != null;
-                if (GraphtUtils.desireIsTransient(desire)) {
-                    removals.add(e);
-                    targets.add(nbr);
-                } else if (!seen.contains(nbr)) {
-                    seen.add(nbr);
-                    work.add(nbr);
-                }
-            }
-
-            // process removals
-            while (!removals.isEmpty()) {
-                graph.removeEdge(removals.remove());
-            }
-            // invariant: removals is empty
-        }
-
-        return targets;
-    }
-
-    private Set<Node> removeOrphanSubgraphs(Graph graph, Collection<Node> candidates) {
-        Set<Node> removed = new HashSet<Node>();
-        Queue<Node> removeQueue = new LinkedList<Node>(candidates);
-        while (!removeQueue.isEmpty()) {
-            Node candidate = removeQueue.poll();
-            Set<Edge> incoming = graph.getIncomingEdges(candidate); // null if candidate got re-added
-            if (incoming != null && incoming.isEmpty()) {
-                // No other node depends on this node, so we can remove it,
-                // we must also flag its dependencies as removal candidates
-                // Flag each multiple times, as it could become a candidate late
-                for (Edge e : graph.getOutgoingEdges(candidate)) {
-                    removeQueue.add(e.getTail());
-                }
-                logger.debug("removing orphan node {}", candidate);
-                graph.removeNode(candidate);
-                removed.add(candidate);
-            }
-        }
-        return removed;
-    }
-
-    private Graph buildGraph(DataAccessObject dao) {
-        BindingFunctionBuilder cfg = config.clone();
-        if (dao == null) {
-            cfg.getRootContext().bind(DataAccessObject.class).toNull();
-        } else {
-            cfg.getRootContext().bind(DataAccessObject.class).to(dao);
-        }
-
-        return finishBuild(cfg);
-    }
-
-    private Graph buildGraph(Class<? extends DataAccessObject> daoType) {
-        BindingFunctionBuilder cfg = config.clone();
-        if (daoType == null) {
-            cfg.getRootContext().bind(DataAccessObject.class).toNull();
-        } else {
-            cfg.getRootContext().bind(DataAccessObject.class).to(daoType);
-            cfg.getRootContext().bind(daoType).toNull();
-        }
-        return finishBuild(cfg);
-    }
-
-    private Graph finishBuild(BindingFunctionBuilder cfg) {
-        DependencySolver solver = new DependencySolver(
-                Arrays.asList(cfg.build(RuleSet.EXPLICIT),
-                              cfg.build(RuleSet.INTERMEDIATE_TYPES),
-                              cfg.build(RuleSet.SUPER_TYPES),
-                              new DefaultDesireBindingFunction(cfg.getSPI())),
-                CachePolicy.MEMOIZE,
-                RESOLVE_DEPTH_LIMIT);
-
-        // Resolve all required types to complete a Recommender
-        for (Class<?> root : roots) {
-            resolve(root, solver);
-        }
-
-        // At this point the graph contains the dependency state to build a
-        // recommender with the current DAO. Any extra bind rules don't matter
-        // because they could not have created any Nodes.
-        return solver.getGraph();
+        return new RecommenderInstantiator(config.getSPI(), graph).simulate();
     }
 
     /**
@@ -447,7 +184,11 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
      * @return The full graph.
      */
     public Graph getInitialGraph(Class<? extends DataAccessObject> daoType) {
-        return buildGraph(daoType);
+        try {
+            return config.buildGraph(daoType);
+        } catch (RecommenderConfigurationException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     /**
@@ -459,6 +200,6 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
      * @return The recommender graph.
      */
     public Graph getInstantiatedGraph(Class<? extends DataAccessObject> daoType) {
-        return simulateInstantiation(buildGraph(daoType));
+        return simulateInstantiation(getInitialGraph(daoType));
     }
 }
