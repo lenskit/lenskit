@@ -13,6 +13,13 @@ public class LenskitConfigDSL extends BindingDSL {
     private final LenskitConfiguration config;
 
     /**
+     * Construct a new delegate with an empty configuration.
+     */
+    public LenskitConfigDSL() {
+        this(new LenskitConfiguration());
+    }
+
+    /**
      * Construct a new delegate.
      *
      * @param cfg The context to configure.

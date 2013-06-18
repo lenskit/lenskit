@@ -17,8 +17,19 @@ public class ConfigHelpers {
      * @param block The block to evaluate.  This block will be evaluated with a delegate providing
      *              the LensKit DSL and the {@link groovy.lang.Closure#DELEGATE_FIRST} resolution strategy.
      * @return The LensKit configuration.
+     * @see ConfigurationLoader#load(groovy.lang.Closure)
      */
     public static LenskitConfiguration load(Closure<?> block) {
         return new ConfigurationLoader().load(block);
+    }
+
+    /**
+     * Load a LensKit configuration from a script (as a string).
+     *
+     * @param script The script source text to evaluate.
+     * @return The LensKit configuration.
+     */
+    public static LenskitConfiguration load(String script) {
+        return new ConfigurationLoader().load(script);
     }
 }
