@@ -122,7 +122,7 @@
             <exclusions>
               <exclusion>
                 <groupId>org.codehaus.groovy</groupId>
-                <artifactId>groovy-all-minimal</artifactId>
+                <artifactId>groovy-all</artifactId>
               </exclusion>
             </exclusions>
           </dependency>
