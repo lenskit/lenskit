@@ -59,9 +59,9 @@ public class ConfigurationLoader {
      * @return The resulting LensKit configuration.
      */
     public LenskitConfiguration load(String source) {
-        Script script = shell.parse(source);
+        LenskitConfigScript script = (LenskitConfigScript) shell.parse(source);
         script.run();
-        return (LenskitConfiguration) script.getMetaClass().getProperty(script, "config");
+        return script.getConfig();
     }
 
     /**
