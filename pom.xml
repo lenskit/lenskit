@@ -71,6 +71,7 @@
     <module>lenskit-archetype-fancy-analysis</module>
     <module>lenskit-package</module>
     <module>lenskit-integration-tests</module>
+    <module>lenskit-groovy</module>
   </modules>
 
   <repositories>

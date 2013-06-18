@@ -67,4 +67,14 @@ public interface LenskitConfigContext extends Context {
 
     @Override
     LenskitConfigContext within(@Nullable Annotation qualifier, Class<?> type);
+
+    @Override
+    LenskitConfigContext at(Class<?> type);
+
+    @Override
+    LenskitConfigContext at(@Nullable Class<? extends Annotation> qualifier,
+                                Class<?> type);
+
+    @Override
+    LenskitConfigContext at(@Nullable Annotation qualifier, Class<?> type);
 }
