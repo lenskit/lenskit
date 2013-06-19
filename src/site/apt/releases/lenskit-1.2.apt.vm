@@ -1,0 +1,8 @@
+#parse("relnotes.vm")
+#stdHeader("1.2")
+
+  * <<<PreferenceDomain>>> now uses a precision of 0 to represent continuous scales; the value is
+    still formally undefined behavior, but code which (incorrectly) depended on the precision when
+    a domain does not have a precision may need to be corrected.
+
+  []
