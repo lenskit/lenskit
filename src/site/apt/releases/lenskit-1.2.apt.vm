@@ -12,7 +12,7 @@
 
   []
 
-** Evaluator
+* Evaluator
 
   * Renamed <<<Command.getConfig())>>> to <<<Command.getEvalConfig()>>>. Also renamed the setter.
 
