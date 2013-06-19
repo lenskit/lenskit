@@ -22,6 +22,11 @@ package org.grouplens.lenskit.config;
 
 import groovy.lang.Closure;
 import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.RecommenderConfigurationException;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * LensKit configuration helper utilities.
@@ -39,7 +44,7 @@ public class ConfigHelpers {
      * @return The LensKit configuration.
      * @see ConfigurationLoader#load(groovy.lang.Closure)
      */
-    public static LenskitConfiguration load(Closure<?> block) {
+    public static LenskitConfiguration load(Closure<?> block) throws RecommenderConfigurationException {
         return new ConfigurationLoader().load(block);
     }
 
@@ -49,7 +54,27 @@ public class ConfigHelpers {
      * @param script The script source text to evaluate.
      * @return The LensKit configuration.
      */
-    public static LenskitConfiguration load(String script) {
+    public static LenskitConfiguration load(String script) throws RecommenderConfigurationException {
+        return new ConfigurationLoader().load(script);
+    }
+
+    /**
+     * Load a LensKit configuration from a script file.
+     *
+     * @param script The script source file to evaluate.
+     * @return The LensKit configuration.
+     */
+    public static LenskitConfiguration load(File script) throws IOException, RecommenderConfigurationException {
+        return new ConfigurationLoader().load(script);
+    }
+
+    /**
+     * Load a LensKit configuration from a script URL.
+     *
+     * @param script The script source URL to evaluate.
+     * @return The LensKit configuration.
+     */
+    public static LenskitConfiguration load(URL script) throws IOException, RecommenderConfigurationException {
         return new ConfigurationLoader().load(script);
     }
 }

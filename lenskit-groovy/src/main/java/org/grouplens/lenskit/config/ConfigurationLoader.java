@@ -20,15 +20,19 @@
  */
 package org.grouplens.lenskit.config;
 
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.GroovyShell;
-import groovy.lang.Script;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+import groovy.lang.*;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.RecommenderConfigurationException;
 
+import javax.annotation.Nonnull;
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
 /**
  * Load LensKit configurations using the configuration DSL.
@@ -40,6 +44,7 @@ public class ConfigurationLoader {
     private final ClassLoader classLoader;
     private final GroovyShell shell;
     private final Binding binding;
+    private int scriptNumber;
 
     /**
      * Construct a new configuration loader. It uses the current thread's class loader.
@@ -64,13 +69,42 @@ public class ConfigurationLoader {
         shell = new GroovyShell(loader, binding, config);
     }
 
+    private LenskitConfiguration load(GroovyCodeSource source) throws RecommenderConfigurationException {
+        LenskitConfigScript script;
+        try {
+            script = (LenskitConfigScript) shell.parse(source);
+        } catch (GroovyRuntimeException e) {
+            throw new RecommenderConfigurationException("Error loading Groovy script", e);
+        }
+
+        try {
+            script.run();
+        } catch (Exception ex) {
+            throw new RecommenderConfigurationException("Error running Groovy script",
+                                                        StackTraceUtils.deepSanitize(ex));
+        }
+
+        return script.getConfig();
+    }
+
     /**
      * Load a configuration from a file.
      * @param file The configuration script to load.
      * @return The resulting LensKit configuration.
      */
-    public LenskitConfiguration load(File file) {
-        return null;
+    public LenskitConfiguration load(@Nonnull File file) throws IOException, RecommenderConfigurationException {
+        Preconditions.checkNotNull(file, "Configuration file");
+        return load(new GroovyCodeSource(file));
+    }
+
+    /**
+     * Load a configuration from a URL.
+     * @param url The configuration script to load.
+     * @return The resulting LensKit configuration.
+     */
+    public LenskitConfiguration load(@Nonnull URL url) throws IOException, RecommenderConfigurationException {
+        Preconditions.checkNotNull(url, "Configuration URL");
+        return load(new GroovyCodeSource(url));
     }
 
     /**
@@ -78,10 +112,10 @@ public class ConfigurationLoader {
      * @param source The configuration script to load.
      * @return The resulting LensKit configuration.
      */
-    public LenskitConfiguration load(String source) {
-        LenskitConfigScript script = (LenskitConfigScript) shell.parse(source);
-        script.run();
-        return script.getConfig();
+    public LenskitConfiguration load(@Nonnull String source) throws RecommenderConfigurationException {
+        Preconditions.checkNotNull(source, "Configuration source text");
+        return load(new GroovyCodeSource(source, "LKConfig" + (++scriptNumber),
+                                         GroovyShell.DEFAULT_CODE_BASE));
     }
 
     /**
@@ -90,12 +124,25 @@ public class ConfigurationLoader {
      *              the LensKit DSL and the {@link Closure#DELEGATE_FIRST} resolution strategy.
      * @return The resulting LensKit configuration.
      */
-    public LenskitConfiguration load(Closure<?> block) {
+    public LenskitConfiguration load(@Nonnull Closure<?> block) throws RecommenderConfigurationException {
+        Preconditions.checkNotNull(block, "Configuration block");
         LenskitConfiguration config = new LenskitConfiguration();
         BindingDSL delegate = new LenskitConfigDSL(config);
         block.setDelegate(delegate);
         block.setResolveStrategy(Closure.DELEGATE_FIRST);
-        block.call();
+        try {
+            block.call();
+        } catch (GroovyRuntimeException e) {
+            // this quite possibly wraps an exception we want to throw
+            if (e.getClass().equals(GroovyRuntimeException.class) && e.getCause() != null) {
+                throw new RecommenderConfigurationException("Error evaluating Groovy block",
+                                                            e.getCause());
+            } else {
+                throw new RecommenderConfigurationException("Error evaluating Groovy block", e);
+            }
+        } catch (RuntimeException e) {
+            throw new RecommenderConfigurationException("Error evaluating Groovy block", e);
+        }
         return config;
     }
 }

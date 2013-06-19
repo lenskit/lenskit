@@ -124,4 +124,21 @@ set ConstantPredictor.Value to Math.PI""");
             rec.close()
         }
     }
+
+    @Test
+    void testLoadBasicURL() {
+        LenskitConfiguration config = ConfigHelpers.load(getClass().getResource("test-config.groovy"))
+        def engine = LenskitRecommenderEngine.build(factory, config)
+        def rec = engine.open()
+        try {
+            assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer))
+            assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
+            assertThat(rec.getGlobalItemRecommender(), nullValue());
+            def bl = rec.get(BaselinePredictor)
+            assertThat(bl, instanceOf(ConstantPredictor))
+            assertThat(bl.value, equalTo(Math.PI))
+        } finally {
+            rec.close()
+        }
+    }
 }
