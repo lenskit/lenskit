@@ -40,11 +40,11 @@ public class PreferenceDomainBuilder implements Builder<PreferenceDomain> {
 
     /**
      * Set the minimum preference.
-     * @param minimum The minimum preference.
+     * @param min The minimum preference.
      * @return The builder (for chaining).
      */
-    public PreferenceDomainBuilder setMinimum(double minimum) {
-        this.minimum = minimum;
+    public PreferenceDomainBuilder setMinimum(double min) {
+        minimum = min;
         return this;
     }
 
@@ -58,11 +58,11 @@ public class PreferenceDomainBuilder implements Builder<PreferenceDomain> {
 
     /**
      * Set the maximum preference.
-     * @param maximum The maximum preference.
+     * @param max The maximum preference.
      * @return The builder (for chaining).
      */
-    public PreferenceDomainBuilder setMaximum(double maximum) {
-        this.maximum = maximum;
+    public PreferenceDomainBuilder setMaximum(double max) {
+        maximum = max;
         return this;
     }
 
@@ -76,11 +76,11 @@ public class PreferenceDomainBuilder implements Builder<PreferenceDomain> {
 
     /**
      * Set the preference precision.
-     * @param precision The preference precision, or {@link Double#NaN} for unlimited precision.
+     * @param prec The preference precision, or {@link Double#NaN} for unlimited precision.
      * @return The preference precision.
      */
-    public PreferenceDomainBuilder setPrecision(double precision) {
-        this.precision = precision;
+    public PreferenceDomainBuilder setPrecision(double prec) {
+        precision = prec;
         return this;
     }
 

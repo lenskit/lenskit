@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.pref;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.grapht.annotation.DefaultNull;
@@ -51,13 +52,20 @@ public final class PreferenceDomain implements Serializable {
      *
      * @param min  The minimum preference value.
      * @param max  The maximum preference value.
-     * @param prec The preference precision (if {@link Double#NaN}, the domain
+     * @param prec The preference precision (if 0 or {@link Double#NaN}, the domain
      *             is continuous).
      */
     public PreferenceDomain(double min, double max, double prec) {
+        Preconditions.checkArgument(max > min, "max must be greater than min");
+        Preconditions.checkArgument(Double.isNaN(prec) || prec >= 0,
+                                    "precision cannot be negative");
         minimum = min;
         maximum = max;
-        precision = prec;
+        if (Double.isNaN(prec)) {
+            precision = 0;
+        } else {
+            precision = prec;
+        }
     }
 
     /**
@@ -67,7 +75,7 @@ public final class PreferenceDomain implements Serializable {
      * @param max The maximum preference value.
      */
     public PreferenceDomain(double min, double max) {
-        this(min, max, Double.NaN);
+        this(min, max, 0);
     }
 
     /**
@@ -95,7 +103,7 @@ public final class PreferenceDomain implements Serializable {
      *         if it is continuous.
      */
     public boolean hasPrecision() {
-        return !Double.isNaN(precision);
+        return precision > 0;
     }
 
     /**
@@ -107,11 +115,7 @@ public final class PreferenceDomain implements Serializable {
      * @see #hasPrecision()
      */
     public double getPrecision() {
-        if (hasPrecision()) {
-            return precision;
-        } else {
-            return Double.MIN_VALUE;
-        }
+        return precision;
     }
 
     /**
