@@ -1,6 +1,9 @@
 #parse("relnotes.vm")
 #stdHeader("1.2")
 
+  * Added <<<LenskitConfiguration>>> class and deprecated <<<LenskitRecommenderEngineFactory>>>.
+    Use <<<LenskitRecommenderEngine.build()>>> to build an engine from a configuration.
+
   * Added <<<PreferenceDomainBuilder>>> to build preference domains.
 
   * <<<PreferenceDomain>>> now uses a precision of 0 to represent continuous scales (#issue(327));
