@@ -76,6 +76,14 @@ public class LenskitConfiguration extends AbstractConfigContext {
         roots = new HashSet<Class<?>>(other.roots);
     }
 
+    /**
+     * Convenience method to copy a LensKit configuration.
+     * @return An independent copy of this configuration.
+     */
+    public LenskitConfiguration copy() {
+        return new LenskitConfiguration(this);
+    }
+
     InjectSPI getSPI() {
         return bindings.getSPI();
     }

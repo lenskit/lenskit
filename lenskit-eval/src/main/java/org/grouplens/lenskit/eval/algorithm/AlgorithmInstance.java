@@ -32,6 +32,8 @@ import java.util.Map;
 /**
  * An algorithm instance. On its own, this doesn't do much; it exists to share some
  * metadata between {@link LenskitAlgorithmInstance} and {@link ExternalAlgorithmInstance}.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface AlgorithmInstance {
     /**
