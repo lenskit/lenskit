@@ -63,7 +63,7 @@ public abstract class AbstractCommand<T> implements Command<T> {
      * @return The command's configuration object.
      */
     @Nonnull
-    public EvalConfig getConfig() {
+    public EvalConfig getEvalConfig() {
         if (config == null) {
             throw new IllegalStateException("no configuration is specified");
         }

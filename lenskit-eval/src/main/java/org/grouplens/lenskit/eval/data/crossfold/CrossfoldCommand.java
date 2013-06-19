@@ -245,7 +245,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
             return trainFilePattern;
         } else {
             StringBuilder sb = new StringBuilder();
-            String dir = getConfig().getDataDir();
+            String dir = getEvalConfig().getDataDir();
             if (dir == null) {
                 dir = ".";
             }
@@ -264,7 +264,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
             return testFilePattern;
         } else {
             StringBuilder sb = new StringBuilder();
-            String dir = getConfig().getDataDir();
+            String dir = getEvalConfig().getDataDir();
             if (dir == null) {
                 dir = ".";
             }
@@ -301,7 +301,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     }
 
     public boolean getForce() {
-        return isForced || getConfig().force();
+        return isForced || getEvalConfig().force();
     }
 
     public boolean getSplitUsers() {
@@ -408,7 +408,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
             for (UserHistory<Rating> history : historyCursor) {
                 int foldNum = splits.get(history.getUserId());
                 List<Rating> ratings = new ArrayList<Rating>(history);
-                final int p = mode.partition(ratings, getConfig().getRandom());
+                final int p = mode.partition(ratings, getEvalConfig().getRandom());
                 final int n = ratings.size();
 
                 for (int f = 0; f < partitionCount; f++) {
@@ -491,7 +491,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     protected Long2IntMap splitUsers(DataAccessObject dao) {
         Long2IntMap userMap = new Long2IntOpenHashMap();
         LongArrayList users = Cursors.makeList(dao.getUsers());
-        LongLists.shuffle(users, getConfig().getRandom());
+        LongLists.shuffle(users, getEvalConfig().getRandom());
         LongListIterator iter = users.listIterator();
         while (iter.hasNext()) {
             final int idx = iter.nextIndex();

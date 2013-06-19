@@ -242,7 +242,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         setupJobGroups();
         setupTableLayouts();
 
-        int nthreads = getConfig().getThreadCount();
+        int nthreads = getEvalConfig().getThreadCount();
         logger.info("Starting evaluation");
         this.prepareEval();
         logger.info("Running evaluator with {} threads", nthreads);

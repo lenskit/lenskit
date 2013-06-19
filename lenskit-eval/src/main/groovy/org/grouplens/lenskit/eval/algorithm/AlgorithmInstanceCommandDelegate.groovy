@@ -20,21 +20,19 @@
  */
 package org.grouplens.lenskit.eval.algorithm
 
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceCommand
-
+import org.grouplens.lenskit.config.LenskitConfigDSL
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory
-import org.grouplens.lenskit.eval.config.ContextConfigDelegate
 
 /**
  * Groovy delegate for configuring {@code AlgorithmInstanceCommand}s.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-class AlgorithmInstanceCommandDelegate extends ContextConfigDelegate {
+class AlgorithmInstanceCommandDelegate extends LenskitConfigDSL {
     private LenskitAlgorithmInstanceCommand command
 
     AlgorithmInstanceCommandDelegate(LenskitAlgorithmInstanceCommand builder) {
-        super(builder.getFactory())
+        super(builder.config)
         this.command = builder
     }
 
@@ -60,9 +58,5 @@ class AlgorithmInstanceCommandDelegate extends ContextConfigDelegate {
 
     void setName(String name) {
         command.setName(name)
-    }
-
-    void root(Class type) {
-        factory.addRoot(type)
     }
 }

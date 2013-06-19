@@ -73,6 +73,14 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
     }
 
     /**
+     * Get the configuration underlying this factory.
+     * @return The fatory's configuration.
+     */
+    public LenskitConfiguration getConfig() {
+        return config;
+    }
+
+    /**
      * Add the specified component type as a root component. This forces it (and its
      * dependencies) to be resolved, and makes it available from the resulting
      * recommenders.

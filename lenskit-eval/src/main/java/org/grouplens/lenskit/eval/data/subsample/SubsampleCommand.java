@@ -33,7 +33,6 @@ import org.grouplens.lenskit.eval.AbstractCommand;
 import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.data.CSVDataSourceCommand;
 import org.grouplens.lenskit.eval.data.DataSource;
-import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
@@ -188,7 +187,7 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
             Closer closer = Closer.create();
             TableWriter subsampleWriter = closer.register(CSVWriter.open(subsampleFile, null));
             try {
-                mode.doSample(daoSnap, subsampleWriter, subsampleFraction, getConfig());
+                mode.doSample(daoSnap, subsampleWriter, subsampleFraction, getEvalConfig());
             } catch (Throwable th) {
                 throw closer.rethrow(th);
             } finally {
