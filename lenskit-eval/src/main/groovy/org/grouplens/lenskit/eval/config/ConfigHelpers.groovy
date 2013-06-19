@@ -121,7 +121,7 @@ class ConfigHelpers {
             return {
                 Object[] txargs = bestCtor.right.collect({it.get()})
                 def command = bestCtor.left.newInstance(txargs)
-                command.setConfig(engine.config)
+                command.setEvalConfig(engine.config)
                 runner.invoke(command, block)
             }
         } else {

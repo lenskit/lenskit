@@ -11,3 +11,7 @@
     precision when a domain does not have a precision may need to be corrected.
 
   []
+
+** Evaluator
+
+  * Renamed <<<Command.getConfig())>>> to <<<Command.getEvalConfig()>>>. Also renamed the setter.
