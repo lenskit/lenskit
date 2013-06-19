@@ -25,9 +25,12 @@ import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.Module;
 import org.grouplens.lenskit.core.AbstractConfigContext;
 import org.grouplens.lenskit.core.LenskitConfigContext;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.data.pref.PreferenceDomainBuilder;
 
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
+import java.util.Map;
 
 /**
  * Groovy DSL definition for configuring LensKit recommenders. This class is the base class of
@@ -66,9 +69,7 @@ public class BindingDSL extends AbstractConfigContext {
      * @param cl A closure that is run on this context to do additional configuration.
      */
     public void include(Closure<?> cl) {
-        cl.setDelegate(this);
-        cl.setResolveStrategy(Closure.DELEGATE_FIRST);
-        cl.call();
+        ConfigHelpers.callWithDelegate(cl, this);
     }
 
     /**
@@ -106,9 +107,7 @@ public class BindingDSL extends AbstractConfigContext {
     }
 
     private LenskitConfigContext configure(LenskitConfigContext ctx, Closure<?> block) {
-        block.setDelegate(new BindingDSL(ctx));
-        block.setResolveStrategy(Closure.DELEGATE_FIRST);
-        block.call();
+        ConfigHelpers.callWithDelegate(block, new BindingDSL(ctx));
         return ctx;
     }
 
@@ -230,5 +229,44 @@ public class BindingDSL extends AbstractConfigContext {
     public LenskitConfigContext at(@Nullable Annotation qualifier,
                                        Class<?> type, Closure<?> block) {
         return configure(at(qualifier, type), block);
+    }
+
+    /**
+     * Make and bind a preference domain.  With this method, this:
+     * <pre>
+     *     domain minimum: 1, maximum: 5
+     * </pre>
+     * <p>is equivalent to:
+     * <pre>
+     *     bind PreferenceDomain to prefDomain(minimum: 1, maximum: 5)
+     * </pre>
+     *
+     * @param args The arguments.
+     * @return The preference domain.
+     * @see #prefDomain(java.util.Map)
+     */
+    public PreferenceDomain domain(Map<String,Object> args) {
+        PreferenceDomain dom = prefDomain(args);
+        bind(PreferenceDomain.class).to(dom);
+        return dom;
+    }
+
+    /**
+     * Make a preference domain.  This method takes three named arguments:
+     * <dl>
+     *     <dt>minimum</dt>
+     *     <dd>The minimum rating</dd>
+     *     <dt>maximum</dt>
+     *     <dd>The maximum rating</dd>
+     *     <dt>precision (optional)</dt>
+     *     <dd>The preference precision.</dd>
+     * </dl>
+     *
+     * @param args The arguments.
+     * @return The preference domain.
+     * @see org.grouplens.lenskit.data.pref.PreferenceDomain
+     */
+    public PreferenceDomain prefDomain(Map<String,Object> args) {
+        return ConfigHelpers.buildObject(new PreferenceDomainBuilder(), args);
     }
 }

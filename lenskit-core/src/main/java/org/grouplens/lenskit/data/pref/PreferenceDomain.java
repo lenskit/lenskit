@@ -42,9 +42,9 @@ import java.util.regex.Pattern;
 public final class PreferenceDomain implements Serializable {
     public static final long serialVersionUID = 1L;
 
-    private double minimum;
-    private double maximum;
-    private double precision;
+    private final double minimum;
+    private final double maximum;
+    private final double precision;
 
     /**
      * Create a discrete bounded preference domain.
@@ -189,8 +189,8 @@ public final class PreferenceDomain implements Serializable {
      * @return The preference domain represented by {@code spec}.
      * @throws IllegalArgumentException if {@code spec} is not a valid domain specification.
      */
-    public static
     @Nonnull
+    public static
     PreferenceDomain fromString(@Nonnull String spec) {
         Matcher m = specRE.matcher(spec);
         if (!m.matches()) {

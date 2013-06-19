@@ -24,6 +24,8 @@ import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.BaselineItemScorer
 import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.ConstantPredictor
+import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
+import org.grouplens.lenskit.basic.SimpleRatingPredictor
 import org.grouplens.lenskit.basic.TopNItemRecommender
 import org.grouplens.lenskit.core.LenskitConfiguration
 import org.grouplens.lenskit.core.LenskitRecommenderEngine
@@ -137,6 +139,32 @@ set ConstantPredictor.Value to Math.PI""");
             def bl = rec.get(BaselinePredictor)
             assertThat(bl, instanceOf(ConstantPredictor))
             assertThat(bl.value, equalTo(Math.PI))
+        } finally {
+            rec.close()
+        }
+    }
+
+    @Test
+    void testPreferenceDomain() {
+        LenskitConfiguration config = ConfigHelpers.load {
+            bind BaselinePredictor to ItemUserMeanPredictor
+            bind ItemScorer to BaselineItemScorer
+            domain minimum: 1, maximum: 5, precision: 0.5
+        }
+        def engine = LenskitRecommenderEngine.build(factory, config)
+        def rec = engine.open()
+        try {
+            assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer));
+            assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
+            def rp = rec.getRatingPredictor()
+            assertThat(rp, instanceOf(SimpleRatingPredictor))
+            assertThat((rp as SimpleRatingPredictor).scorer,
+                       sameInstance(rec.getItemScorer()))
+            def dom = (rp as SimpleRatingPredictor).preferenceDomain
+            assertThat(dom, notNullValue());
+            assertThat(dom.minimum, equalTo(1.0d))
+            assertThat(dom.maximum, equalTo(5.0d))
+            assertThat(dom.precision, equalTo(0.5d))
         } finally {
             rec.close()
         }

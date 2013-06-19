@@ -128,10 +128,8 @@ public class ConfigurationLoader {
         Preconditions.checkNotNull(block, "Configuration block");
         LenskitConfiguration config = new LenskitConfiguration();
         BindingDSL delegate = new LenskitConfigDSL(config);
-        block.setDelegate(delegate);
-        block.setResolveStrategy(Closure.DELEGATE_FIRST);
         try {
-            block.call();
+            ConfigHelpers.callWithDelegate(block, delegate);
         } catch (GroovyRuntimeException e) {
             // this quite possibly wraps an exception we want to throw
             if (e.getClass().equals(GroovyRuntimeException.class) && e.getCause() != null) {

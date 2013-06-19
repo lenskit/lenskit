@@ -21,6 +21,10 @@
 package org.grouplens.lenskit.config;
 
 import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.data.pref.PreferenceDomainBuilder;
+
+import java.util.Map;
 
 /**
  * Methods for the LensKit configuration DSL.  This extends {@link BindingDSL} with additional
