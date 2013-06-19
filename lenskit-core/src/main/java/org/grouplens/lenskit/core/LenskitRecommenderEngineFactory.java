@@ -170,9 +170,11 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
      * @param graph The complete configuration graph.
      * @return A new graph that is identical to the original graph if it were
      *         subjected to the instantiation process.
+     * @deprecated Use {@link org.grouplens.lenskit.core.RecommenderInstantiator#simulate()}.
      */
+    @Deprecated
     public Graph simulateInstantiation(Graph graph) {
-        return new RecommenderInstantiator(config.getSPI(), graph).simulate();
+        return RecommenderInstantiator.create(config.getSPI(), graph).simulate();
     }
 
     /**
@@ -182,7 +184,9 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
      * @param daoType The type of the DAO (so resolution can be successful in the face of
      *                dependencies on DAO subtypes).
      * @return The full graph.
+     * @deprecated Use {@link LenskitConfiguration#buildGraph(Class)}.
      */
+    @Deprecated
     public Graph getInitialGraph(Class<? extends DataAccessObject> daoType) {
         try {
             return config.buildGraph(daoType);
@@ -198,7 +202,9 @@ public final class LenskitRecommenderEngineFactory extends AbstractConfigContext
      * @param daoType The type of the DAO (so resolution can be successful in the face of
      *                dependencies on DAO subtypes).
      * @return The recommender graph.
+     * @deprecated Use {@link org.grouplens.lenskit.core.RecommenderInstantiator#simulate()}.
      */
+    @Deprecated
     public Graph getInstantiatedGraph(Class<? extends DataAccessObject> daoType) {
         return simulateInstantiation(getInitialGraph(daoType));
     }

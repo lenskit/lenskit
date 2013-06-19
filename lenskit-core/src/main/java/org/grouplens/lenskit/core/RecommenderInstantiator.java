@@ -32,6 +32,7 @@ import org.grouplens.grapht.spi.Desire;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,16 +40,44 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 /**
- * Build a recommender engine.  This class is private until we get the details worked out.
+ * Build a recommender engine.
+ *
+ * @since 1.2
+ * @compat Experimental
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class RecommenderInstantiator {
+public final class RecommenderInstantiator {
     private static final Logger logger = LoggerFactory.getLogger(RecommenderInstantiator.class);
     private final InjectSPI spi;
     private final Graph graph;
 
-    public RecommenderInstantiator(InjectSPI spi, Graph g) {
+    static RecommenderInstantiator create(InjectSPI spi, Graph g) {
+        return new RecommenderInstantiator(spi, g);
+    }
+
+    public static RecommenderInstantiator forConfig(LenskitConfiguration config,
+                                                    Class<? extends DataAccessObject> daoType) throws RecommenderConfigurationException {
+        return new RecommenderInstantiator(config.getSPI(), config.buildGraph(daoType));
+    }
+
+    public static RecommenderInstantiator forConfig(LenskitConfiguration config,
+                                                    DataAccessObject dao) throws RecommenderConfigurationException {
+        return new RecommenderInstantiator(config.getSPI(), config.buildGraph(dao));
+    }
+
+    private RecommenderInstantiator(InjectSPI spi, Graph g) {
         this.spi = spi;
         graph = g;
+    }
+
+    /**
+     * Get the graph from this instantiator.
+     *
+     * @return The graph.  This method returns a defensive copy, so modifying it will not modify the
+     *         graph underlying this instantiator.
+     */
+    public Graph getGraph() {
+        return graph.clone();
     }
 
     /**

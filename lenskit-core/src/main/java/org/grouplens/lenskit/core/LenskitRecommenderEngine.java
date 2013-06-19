@@ -38,14 +38,14 @@ import java.io.*;
 
 /**
  * LensKit implementation of a recommender engine.  It uses containers set up by
- * the {@link LenskitRecommenderEngineFactory} to set up recommender sessions.
+ * the {@link LenskitConfiguration} to set up recommender sessions.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
- * @see LenskitRecommenderEngineFactory
+ * @see LenskitConfiguration
  * @see LenskitRecommender
  */
-public class LenskitRecommenderEngine implements RecommenderEngine {
+public final class LenskitRecommenderEngine implements RecommenderEngine {
     private final Graph dependencies;
     private final Node rootNode;
     private final Node daoPlaceholder;
@@ -233,10 +233,9 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
     public static LenskitRecommenderEngine build(DAOFactory daoFactory, LenskitConfiguration config) throws RecommenderBuildException {
         DataAccessObject dao = daoFactory.snapshot();
         try {
-            Graph graph = config.buildGraph(dao);
-            Graph built = new RecommenderInstantiator(config.getSPI(), graph).instantiate();
-            Node daoNode = GraphtUtils.replaceDAONode(config.getSPI(), built);
-            return new LenskitRecommenderEngine(daoFactory, built, daoNode, config.getSPI());
+            Graph graph = RecommenderInstantiator.forConfig(config, dao).instantiate();
+            Node daoNode = GraphtUtils.replaceDAONode(config.getSPI(), graph);
+            return new LenskitRecommenderEngine(daoFactory, graph, daoNode, config.getSPI());
         } finally {
             dao.close();
         }
@@ -252,9 +251,8 @@ public class LenskitRecommenderEngine implements RecommenderEngine {
      * @return The recommender engine.
      */
     public static LenskitRecommenderEngine build(DataAccessObject dao, LenskitConfiguration config) throws RecommenderBuildException {
-        Graph graph = config.buildGraph(dao);
-        Graph built = new RecommenderInstantiator(config.getSPI(), graph).instantiate();
-        Node daoNode = GraphtUtils.replaceDAONode(config.getSPI(), built);
-        return new LenskitRecommenderEngine(null, built, daoNode, config.getSPI());
+        Graph graph = RecommenderInstantiator.forConfig(config, dao).instantiate();
+        Node daoNode = GraphtUtils.replaceDAONode(config.getSPI(), graph);
+        return new LenskitRecommenderEngine(null, graph, daoNode, config.getSPI());
     }
 }
