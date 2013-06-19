@@ -27,6 +27,8 @@ import org.junit.Before;
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -41,6 +43,9 @@ public class ML100KTestSuite {
 
     @Before
     public void createDAOFactory() throws FileNotFoundException {
+        assumeThat("Integration test skip requested",
+                   System.getProperty("lenskit.integration.skip"),
+                   anyOf(nullValue(), not(equalToIgnoringCase("true"))));
         final String dataProp = System.getProperty(ML100K_PROPERTY);
         final File dataDir = dataProp != null ? new File(dataProp) : new File("data/ml-100k");
         final File inputFile = new File(dataDir, INPUT_FILE_NAME);
