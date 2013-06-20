@@ -44,9 +44,13 @@ public class LenskitConfigDSL extends BindingDSL {
      *
      * @param cfg The context to configure.
      */
-    protected LenskitConfigDSL(LenskitConfiguration cfg) {
+    private LenskitConfigDSL(LenskitConfiguration cfg) {
         super(cfg);
         config = cfg;
+    }
+
+    public static LenskitConfigDSL forConfig(LenskitConfiguration cfg) {
+        return new LenskitConfigDSL(cfg);
     }
 
     /**

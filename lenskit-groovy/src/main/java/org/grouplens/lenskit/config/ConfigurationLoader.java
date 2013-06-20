@@ -127,7 +127,7 @@ public class ConfigurationLoader {
     public LenskitConfiguration load(@Nonnull Closure<?> block) throws RecommenderConfigurationException {
         Preconditions.checkNotNull(block, "Configuration block");
         LenskitConfiguration config = new LenskitConfiguration();
-        BindingDSL delegate = new LenskitConfigDSL(config);
+        BindingDSL delegate = LenskitConfigDSL.forConfig(config);
         try {
             ConfigHelpers.callWithDelegate(block, delegate);
         } catch (GroovyRuntimeException e) {

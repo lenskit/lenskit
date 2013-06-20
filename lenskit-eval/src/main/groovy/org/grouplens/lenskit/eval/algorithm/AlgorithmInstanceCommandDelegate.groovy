@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.algorithm
 
+import org.grouplens.lenskit.config.LenskitConfigDSL
 import org.grouplens.lenskit.core.LenskitConfiguration
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory
 import org.grouplens.lenskit.eval.config.EvalConfig
@@ -31,10 +32,11 @@ import org.grouplens.lenskit.eval.config.EvalConfig
  */
 class AlgorithmInstanceCommandDelegate {
     private LenskitAlgorithmInstanceCommand command
+    private LenskitConfigDSL dsl
 
     AlgorithmInstanceCommandDelegate(LenskitAlgorithmInstanceCommand builder) {
-        super(builder.lenskitConfig)
-        this.command = builder
+        command = builder
+        dsl = LenskitConfigDSL.forConfig(command.lenskitConfig)
     }
 
     LenskitRecommenderEngineFactory getFactory() {
@@ -67,5 +69,10 @@ class AlgorithmInstanceCommandDelegate {
 
     void setName(String name) {
         command.setName(name)
+    }
+
+    def methodMissing(String name, args) {
+        // delegate to missing method
+        return dsl.invokeMethod(name, args)
     }
 }
