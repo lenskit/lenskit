@@ -113,14 +113,14 @@ public class LenskitAlgorithmInstanceCommand extends AbstractCommand<LenskitAlgo
      *
      * @return The factory for this recommender instance. Each instance has the factory
      *         instantiated to a fresh, empty factory.
-     * @deprecated Use {@link #getEvalConfig()} instead.
+     * @deprecated Use {@link #getConfig()} instead.
      */
     @Deprecated
     public LenskitRecommenderEngineFactory getFactory() {
         return factory;
     }
 
-    public LenskitConfiguration getConfig() {
+    public LenskitConfiguration getLenskitConfig() {
         return factory.getConfig();
     }
 

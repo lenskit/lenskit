@@ -56,7 +56,7 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
         SimpleEvalCommand evalCommand = new SimpleEvalCommand("train-test");
         Properties props =  new Properties(System.getProperties());
         props.setProperty(EvalConfig.DATA_DIR_PROPERTY, workDir.newFolder("data").getAbsolutePath());
-        evalCommand.setEvalConfig(new EvalConfig(props));
+        evalCommand.setConfig(new EvalConfig(props));
         LenskitAlgorithmInstanceCommand algo = new LenskitAlgorithmInstanceCommand();
         configureAlgorithm(algo.getFactory());
         evalCommand.addAlgorithm(algo);

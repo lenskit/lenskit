@@ -51,7 +51,7 @@ public abstract class AbstractCommand<T> implements Command<T> {
      * @param cfg The configuration.
      * @return The command (for chaining).
      */
-    public AbstractCommand<T> setEvalConfig(@Nonnull EvalConfig cfg) {
+    public AbstractCommand<T> setConfig(@Nonnull EvalConfig cfg) {
         Preconditions.checkNotNull(cfg, "configuration cannot be null");
         config = cfg;
         return this;
@@ -63,7 +63,7 @@ public abstract class AbstractCommand<T> implements Command<T> {
      * @return The command's configuration object.
      */
     @Nonnull
-    public EvalConfig getEvalConfig() {
+    public EvalConfig getConfig() {
         if (config == null) {
             throw new IllegalStateException("no configuration is specified");
         }

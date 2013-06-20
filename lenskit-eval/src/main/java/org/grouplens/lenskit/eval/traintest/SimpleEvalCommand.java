@@ -140,7 +140,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
                 .setSource(source)
                 .setPartitions(partitions)
                 .setHoldoutFraction(holdout);
-        cross.setEvalConfig(getEvalConfig());
+        cross.setConfig(getConfig());
         addDataset(cross);
         return this;
     }
@@ -317,7 +317,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @return The table resulting from calling the command.
      */
     public Table call() throws CommandException{
-        result.setEvalConfig(getEvalConfig());
+        result.setConfig(getConfig());
         return result.call();
     }
 }
