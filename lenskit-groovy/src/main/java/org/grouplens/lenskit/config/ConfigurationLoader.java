@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.config;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import groovy.lang.*;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -129,7 +128,7 @@ public class ConfigurationLoader {
         LenskitConfiguration config = new LenskitConfiguration();
         BindingDSL delegate = LenskitConfigDSL.forConfig(config);
         try {
-            ConfigHelpers.callWithDelegate(block, delegate);
+            GroovyUtils.callWithDelegate(block, delegate);
         } catch (GroovyRuntimeException e) {
             // this quite possibly wraps an exception we want to throw
             if (e.getClass().equals(GroovyRuntimeException.class) && e.getCause() != null) {

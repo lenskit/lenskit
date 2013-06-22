@@ -40,42 +40,6 @@ import java.util.Map;
  */
 public class ConfigHelpers {
     /**
-     * Call a configuration block with a specified delegate.
-     * @param block The block to invoke.
-     * @param delegate The delegate.
-     * @return The return value.
-     */
-    static Object callWithDelegate(Closure<?> block, Object delegate) {
-        int oldStrategy = block.getResolveStrategy();
-        Object oldDelegate = block.getDelegate();
-        try {
-            block.setDelegate(delegate);
-            block.setResolveStrategy(Closure.DELEGATE_FIRST);
-            return block.call();
-        } finally {
-            block.setResolveStrategy(oldStrategy);
-            block.setDelegate(oldDelegate);
-        }
-    }
-
-    /**
-     * Build an object using named arguments.
-     * @param builder The builder to use.
-     * @param args The arguments.
-     * @param <T> The type of object to be built.
-     * @return A new object.
-     */
-    static <T> T buildObject(Builder<T> builder, Map<String,Object> args) {
-        for (Map.Entry<String,Object> arg: args.entrySet()) {
-            String name = arg.getKey();
-            // Use Groovy to invoke, since we're called from Groovy
-            InvokerHelper.invokeMethod(builder, "set" + StringUtils.capitalize(name),
-                                       arg.getValue());
-        }
-        return builder.build();
-    }
-
-    /**
      * Load a LensKit configuration from a Groovy closure.  This is useful for using the Groovy
      * DSL in unit tests.
      *

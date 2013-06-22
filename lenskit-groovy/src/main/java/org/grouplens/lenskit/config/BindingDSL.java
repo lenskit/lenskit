@@ -69,7 +69,7 @@ public class BindingDSL extends AbstractConfigContext {
      * @param cl A closure that is run on this context to do additional configuration.
      */
     public void include(Closure<?> cl) {
-        ConfigHelpers.callWithDelegate(cl, this);
+        GroovyUtils.callWithDelegate(cl, this);
     }
 
     /**
@@ -107,7 +107,7 @@ public class BindingDSL extends AbstractConfigContext {
     }
 
     private LenskitConfigContext configure(LenskitConfigContext ctx, Closure<?> block) {
-        ConfigHelpers.callWithDelegate(block, new BindingDSL(ctx));
+        GroovyUtils.callWithDelegate(block, new BindingDSL(ctx));
         return ctx;
     }
 
@@ -267,6 +267,6 @@ public class BindingDSL extends AbstractConfigContext {
      * @see org.grouplens.lenskit.data.pref.PreferenceDomain
      */
     public PreferenceDomain prefDomain(Map<String,Object> args) {
-        return ConfigHelpers.buildObject(new PreferenceDomainBuilder(), args);
+        return GroovyUtils.buildObject(new PreferenceDomainBuilder(), args);
     }
 }
