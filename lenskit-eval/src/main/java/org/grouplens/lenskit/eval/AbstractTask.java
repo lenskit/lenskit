@@ -37,6 +37,13 @@ public abstract class AbstractTask<T> implements EvalTask<T> {
     private EvalConfig config;
 
     /**
+     * Initialize a command with no name.
+     */
+    protected AbstractTask() {
+        this(null);
+    }
+
+    /**
      * Initialize a command.
      * @param name The command's name.
      */
@@ -76,32 +83,16 @@ public abstract class AbstractTask<T> implements EvalTask<T> {
      * @param name The new name.
      * @return The command (for chaining).
      */
-    public AbstractTask<T> setName(String name) {
+    public AbstractTask<T> setName(@Nullable String name) {
         this.name = name;
         return this;
     }
 
     /**
-     * {@inheritDoc}
-     * <p>This implementation returns the {@link #name} field, throwing
-     * {@link IllegalStateException} if it is {@code null}.  Commands should override it to provide
-     * default derived names if they support such a concept.  Subclasses can call {@link #hasName()}
-     * to query whether the name has been set.
+     * Get the task's name.
      */
-    @Override @Nonnull
+    @Nullable
     public String getName() {
-        if (name == null) {
-            throw new IllegalStateException("no name specified");
-        } else {
-            return name;
-        }
-    }
-
-    /**
-     * Query whether this command has a name specified.
-     * @return {@code true} if a name has been set.
-     */
-    protected boolean hasName() {
-        return name != null;
+        return name;
     }
 }

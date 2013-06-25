@@ -233,11 +233,11 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      */
     @Override
     public String getName() {
-        if (hasName()) {
-            return super.getName();
-        } else {
-            return source.getName();
+        String name = super.getName();
+        if (name == null) {
+            name = source.getName();
         }
+        return name;
     }
 
     public String getTrainPattern() {

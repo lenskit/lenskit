@@ -60,7 +60,7 @@ public class SubsampleTask extends AbstractTask<DataSource> {
     public SubsampleTask(String name) {
         super(name);
     }
-    
+
     /**
      * Set the fraction of subsample to generate.
      *

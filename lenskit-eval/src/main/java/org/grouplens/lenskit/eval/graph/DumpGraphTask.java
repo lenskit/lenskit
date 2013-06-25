@@ -70,15 +70,14 @@ public class DumpGraphTask extends AbstractTask<File> {
     @Nonnull
     @Override
     public String getName() {
-        if (hasName()) {
-            return super.getName();
-        } else {
-            String name = algorithm.getName();
+        String name = super.getName();
+        if (name == null) {
+            name = algorithm.getName();
             if (name == null) {
                 name = "algorithm";
             }
-            return name;
         }
+        return name;
     }
 
     public LenskitAlgorithmInstance getAlgorithm() {

@@ -28,7 +28,7 @@ import org.grouplens.lenskit.eval.data.GenericDataSource;
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric;
-import org.grouplens.lenskit.eval.traintest.SimpleEvalTask;
+import org.grouplens.lenskit.eval.traintest.SimpleEvaluator;
 import org.grouplens.lenskit.util.table.Table;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,10 +53,10 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
 
     @Test
     public void testAlgorithmAccuracy() throws TaskExecutionException, IOException {
-        SimpleEvalTask evalCommand = new SimpleEvalTask("train-test");
         Properties props =  new Properties(System.getProperties());
         props.setProperty(EvalConfig.DATA_DIR_PROPERTY, workDir.newFolder("data").getAbsolutePath());
-        evalCommand.setEvalConfig(new EvalConfig(props));
+        EvalConfig config = new EvalConfig(props);
+        SimpleEvaluator evalCommand = new SimpleEvaluator(config);
         LenskitAlgorithmInstanceBuilder algo = new LenskitAlgorithmInstanceBuilder();
         configureAlgorithm(algo.getFactory());
         evalCommand.addAlgorithm(algo);

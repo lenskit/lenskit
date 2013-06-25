@@ -22,10 +22,10 @@ package org.grouplens.lenskit.eval.traintest;
 
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceBuilder;
+import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.crossfold.CrossfoldTask;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
@@ -34,48 +34,34 @@ import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.util.table.Table;
 
 import java.io.File;
+import java.util.concurrent.Callable;
 
-public class SimpleEvalTask extends AbstractTask<Table> {
+public class SimpleEvaluator implements Callable<Table> {
 
+    private EvalConfig config;
     private TrainTestEvalTask result;
 
     /**
-     * Configure any default behaviors for
+     * Construct a simple evaluator.
      */
-    protected void init(){
+    public SimpleEvaluator() {
+        this(new EvalConfig());
+    }
+
+    /**
+     * Create a simple evaluator with a custom configuration.
+     *
+     * @param cfg The eval configuration.
+     */
+    public SimpleEvaluator(EvalConfig cfg) {
+        config = cfg;
+        result = new TrainTestEvalTask("simple-eval");
+        result.setEvalConfig(cfg);
         result.setOutput((File) null);
     }
 
-    /**
-     * Constructs a SimpleConfigCommand with a name for the command and the {@code TrainTestEvalCommand}
-     * @param commandName The name of the {@code SimpleConfigCommand}
-     * @param trainName The name of the {@code TrainTestEvalCommand} being created.
-     */
-    public SimpleEvalTask(String commandName, String trainName){
-        super(commandName);
-        result = new TrainTestEvalTask(trainName);
-        init();
-    }
-
-    /**
-     * Constructs the command with a default name. Currently this is 'train-test-builder'.
-     * @param trainName The name
-     */
-    public SimpleEvalTask(String trainName){
-        super("train-test-builder");
-        result = new TrainTestEvalTask(trainName);
-        init();
-    }
-
-    /**
-     * Constructs the command with a default name. Currently this is 'train-test-builder'.
-     *
-     * The command built has the name "train-test-eval"
-     */
-    public SimpleEvalTask(){
-        super("simple-eval");
-        result = new TrainTestEvalTask("train-test-eval");
-        init();
+    public EvalConfig getEvalConfig() {
+        return config;
     }
 
     /**
@@ -85,7 +71,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param algo The algorithm added to the {@code TrainTestEvalCommand}
      * @return Itself to allow  chaining
      */
-    public SimpleEvalTask addAlgorithm(LenskitAlgorithmInstance algo){
+    public SimpleEvaluator addAlgorithm(LenskitAlgorithmInstance algo){
         result.addAlgorithm(algo);
         return this;
     }
@@ -96,7 +82,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param algo The algorithm added to the {@code TrainTestEvalCommand}
      * @return Itself to allow  chaining
      */
-    public SimpleEvalTask addAlgorithm(LenskitAlgorithmInstanceBuilder algo){
+    public SimpleEvaluator addAlgorithm(LenskitAlgorithmInstanceBuilder algo){
         result.addAlgorithm(algo.build());
         return this;
     }
@@ -110,7 +96,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param cross
      * @return Itself to allow for  method chaining.
      */
-    public SimpleEvalTask addDataset(CrossfoldTask cross){
+    public SimpleEvaluator addDataset(CrossfoldTask cross){
         try {
             for (TTDataSet data: cross.call()) {
                 result.addDataset(data);
@@ -132,7 +118,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param holdout The holdout fraction
      * @return Itself for chaining.
      */
-    public SimpleEvalTask addDataset(String name, DataSource source, int partitions, double holdout){
+    public SimpleEvaluator addDataset(String name, DataSource source, int partitions, double holdout){
         CrossfoldTask cross = new CrossfoldTask(name)
                 .setSource(source)
                 .setPartitions(partitions)
@@ -151,7 +137,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param holdout The holdout fraction
      * @return Itself for chaining.
      */
-    public SimpleEvalTask addDataset(DataSource source, int partitions, double holdout){
+    public SimpleEvaluator addDataset(DataSource source, int partitions, double holdout){
         return addDataset(source.getName(), source, partitions, holdout);
     }
     /**
@@ -165,7 +151,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param partitions The number of partitions
      * @return Itself for chaining.
      */
-    public SimpleEvalTask addDataset(String name, DataSource source, int partitions){
+    public SimpleEvaluator addDataset(String name, DataSource source, int partitions){
        return addDataset(name, source, partitions, .2);
     }
 
@@ -179,7 +165,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param partitions The number of partitions
      * @return Itself for chaining.
      */
-    public SimpleEvalTask addDataset(DataSource source, int partitions){
+    public SimpleEvaluator addDataset(DataSource source, int partitions){
         return addDataset(source.getName(), source, partitions, .2);
     }
 
@@ -190,7 +176,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param data The dataset to be added to the command.
      * @return Itself to allow for  method chaining.
      */
-    public SimpleEvalTask addDataset(TTDataSet data) {
+    public SimpleEvaluator addDataset(TTDataSet data) {
         result.addDataset(data);
         return this;
     }
@@ -203,7 +189,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param dom The {@code PreferenceDomain} to be supplied to the new {@code TTDataSet}
      * @return Itself for  method chaining.
      */
-    public SimpleEvalTask addDataset(String name, DAOFactory train, DAOFactory test, PreferenceDomain dom){
+    public SimpleEvaluator addDataset(String name, DAOFactory train, DAOFactory test, PreferenceDomain dom){
         result.addDataset(new GenericTTDataSet(name, train, test, dom));
         return this;
     }
@@ -219,7 +205,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param dom The {@code PreferenceDomain} to be supplied to the new {@code TTDataSet}
      * @return Itself for  method chaining.
      */
-    public SimpleEvalTask addDataset(DAOFactory train, DAOFactory test, PreferenceDomain dom){
+    public SimpleEvaluator addDataset(DAOFactory train, DAOFactory test, PreferenceDomain dom){
         result.addDataset(new GenericTTDataSet("generic-data-source", train, test, dom));
         return this;
     }
@@ -228,7 +214,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param metric The metric to be added.
      * @return Itself for  method chaining.
      */
-    public SimpleEvalTask addMetric(TestUserMetric metric) {
+    public SimpleEvaluator addMetric(TestUserMetric metric) {
         result.addMetric(metric);
         return this;
     }
@@ -238,7 +224,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param file The file set as the output of the command
      * @return Itself for  method chaining
      */
-    public SimpleEvalTask setOutput(File file){
+    public SimpleEvaluator setOutput(File file){
         result.setOutput(file);
         return this;
     }
@@ -248,7 +234,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param file The file set as the prediction output.
      * @return
      */
-    public SimpleEvalTask setPredictOutput(File file){
+    public SimpleEvaluator setPredictOutput(File file){
         result.setPredictOutput(file);
         return this;
     }
@@ -259,7 +245,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param file The file set as the prediction user.
      * @return
      */
-    public SimpleEvalTask setUserOutput(File file){
+    public SimpleEvaluator setUserOutput(File file){
         result.setUserOutput(file);
         return this;
     }
@@ -270,7 +256,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param path The path to the file to be created
      * @return Itself for method chaining
      */
-    public SimpleEvalTask setOutputPath(String path){
+    public SimpleEvaluator setOutputPath(String path){
         result.setOutput(new File(path));
         return this;
     }
@@ -280,7 +266,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param path The path to the file to be created
      * @return Itself for method chaining
      */
-    public SimpleEvalTask setPredictOutputPath(String path){
+    public SimpleEvaluator setPredictOutputPath(String path){
         result.setPredictOutput(new File(path));
         return this;
     }
@@ -291,7 +277,7 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * @param path The path to the file to be created
      * @return Itself for method chaining
      */
-    public SimpleEvalTask setUserOutputPath(String path){
+    public SimpleEvaluator setUserOutputPath(String path){
         result.setUserOutput(new File(path));
         return this;
     }

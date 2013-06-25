@@ -20,8 +20,6 @@
  */
 package org.grouplens.lenskit.eval;
 
-import javax.annotation.Nullable;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 /**
@@ -34,16 +32,6 @@ import java.util.concurrent.Callable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface EvalTask<T> extends Callable<T> {
-    /**
-     * Get the task's name, if it has one.  Only tasks with non-null names may be directly selected
-     * to be run at the command line.  Each named task in the evaluation script must have a unique
-     * name.
-     *
-     * @return The task's name.
-     */
-    @Nullable
-    String getName();
-
     /**
      * Execute the task.
      *

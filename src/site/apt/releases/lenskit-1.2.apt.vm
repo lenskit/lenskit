@@ -23,4 +23,7 @@
     property on the script; it is also accessible as <<<eval.config>>>, with the new <<<eval>>>
     property that makes the script accessible by name.
 
+  * The simple evaluator is now called <<<SimpleEvaluator>>>, not <<<SimpleEvalCommand>>>. It no
+    longer takes a name.
+
   []
