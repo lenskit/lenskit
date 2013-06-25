@@ -23,56 +23,45 @@ package org.grouplens.lenskit.eval.algorithm
 import org.grouplens.lenskit.config.LenskitConfigDSL
 import org.grouplens.lenskit.core.LenskitConfiguration
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory
-import org.grouplens.lenskit.eval.config.EvalConfig
 
 /**
  * Groovy delegate for configuring {@code AlgorithmInstanceCommand}s.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-class AlgorithmInstanceBuilderDelegate {
-    private LenskitAlgorithmInstanceBuilder command
-    private LenskitConfigDSL dsl
+class AlgorithmInstanceBuilderDelegate extends LenskitConfigDSL {
+    private LenskitAlgorithmInstanceBuilder builder
 
     AlgorithmInstanceBuilderDelegate(LenskitAlgorithmInstanceBuilder builder) {
-        command = builder
-        dsl = LenskitConfigDSL.forConfig(command.config)
+        super(builder.config)
+        this.builder = builder
     }
 
     LenskitRecommenderEngineFactory getFactory() {
-        return command.factory
+        return builder.factory
     }
 
-    EvalConfig getConfig() {
-        return command.config
-    }
-
-    LenskitConfiguration getLenskitConfig() {
-        return command.config
+    LenskitConfiguration getConfig() {
+        return builder.config
     }
 
     def getAttributes() {
-        return command.attributes
+        return builder.attributes
     }
 
     boolean getPreload() {
-        return command.getPreload()
+        return builder.getPreload()
     }
 
     void setPreload(boolean pl) {
-        command.setPreload(pl)
+        builder.setPreload(pl)
     }
 
     String getName() {
-        return command.getName()
+        return builder.getName()
     }
 
     void setName(String name) {
-        command.setName(name)
-    }
-
-    def methodMissing(String name, args) {
-        // delegate to missing method
-        return dsl.invokeMethod(name, args)
+        builder.setName(name)
     }
 }

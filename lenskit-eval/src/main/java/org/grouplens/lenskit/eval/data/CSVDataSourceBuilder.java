@@ -73,6 +73,14 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
     }
 
     /**
+     * Get the input file.
+     * @return The input file for the builder.
+     */
+    public File getFile() {
+        return inputFile;
+    }
+
+    /**
      * Set the input file. If unspecified, the name (see {@link #setName(String)}) is used
      * as the file name.
      *
@@ -81,6 +89,22 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
     public CSVDataSourceBuilder setFile(File file) {
         inputFile = file;
         return this;
+    }
+
+    /**
+     * Set the input file by name.
+     * @param fn The input file name.
+     * @return The builder (for chaining).
+     */
+    public CSVDataSourceBuilder setFile(String fn) {
+        return setFile(new File(fn));
+    }
+
+    /**
+     * Get the input delimiter.
+     */
+    public String getDelimiter() {
+        return delimiter;
     }
 
     /**
@@ -94,6 +118,14 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
     }
 
     /**
+     * Get whether the constructed data source will cache its input.
+     * @return Whether the data source will have caching inabled.
+     */
+    public boolean getCache() {
+        return getCache();
+    }
+
+    /**
      * Specify whether to cache ratings in memory. Caching is enabled by default.
      *
      * @param on {@code false} to disable caching.
@@ -101,6 +133,10 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
     public CSVDataSourceBuilder setCache(boolean on) {
         cache = on;
         return this;
+    }
+
+    public PreferenceDomain getDomain() {
+        return domain;
     }
 
     /**
@@ -112,6 +148,10 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
     public CSVDataSourceBuilder setDomain(PreferenceDomain dom) {
         domain = dom;
         return this;
+    }
+
+    public Function<DAOFactory,DAOFactory> getWrapper() {
+        return wrapper;
     }
 
     /**

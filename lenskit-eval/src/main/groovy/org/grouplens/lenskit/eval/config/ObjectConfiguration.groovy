@@ -20,14 +20,12 @@
  */
 package org.grouplens.lenskit.eval.config
 
+import com.google.common.base.Function
 import org.apache.commons.lang3.builder.Builder
 import org.apache.commons.lang3.tuple.Pair
 import org.grouplens.lenskit.config.GroovyUtils
 
 import java.lang.reflect.Method
-
-import org.slf4j.LoggerFactory
-import static ParameterTransforms.pickInvokable
 
 /**
  * Utilities for searching for methods of configurable objects..
@@ -38,43 +36,6 @@ import static ParameterTransforms.pickInvokable
  */
 @SuppressWarnings("unchecked") // this will carry through to java stub & silence compiler
 class ObjectConfiguration {
-    private static final def logger = LoggerFactory.getLogger(ObjectConfiguration)
-
-    /**
-     * Find a method compatible with some arguments.
-     * @param self The command.
-     * @param name The method name.
-     * @param args The arguments.
-     * @return A no-argument closure invoking the method, or {@code null}.
-     */
-    static def findMethod(Object self, String name, Object[] args) {
-        logger.debug("searching for method {}", name)
-        def atypes = new Class[args.length]
-        for (i in 0..<args.length) {
-            atypes[i] = args[i].class
-        }
-
-        // try to just get a matching method
-        MetaMethod mm = self.metaClass.pickMethod(name, atypes)
-        if (mm != null) {
-            logger.debug("found method {}", mm)
-            return {
-                mm.doMethodInvoke(self, args)
-            }
-        }
-
-        // try to pick a method based on basic transformations
-        def inv = pickInvokable(args) {self.metaClass.pickMethod(name, it)}
-        if (inv == null) {
-            return null
-        } else {
-            return {
-                Object[] txargs = inv.right.collect({it.get()})
-                inv.left.invoke(self, txargs)
-            }
-        }
-    }
-
     /**
      * Search for a method with a specified BuiltBy, or a single-argument
      * method with a parameter that can be built. Used when we have a closure to
@@ -87,11 +48,11 @@ class ObjectConfiguration {
      * such method can be found.
      * @see EvalScriptEngine#getBuilderForType(Class)
      */
-    static def findBuildableMethod(Object self, EvalScriptEngine engine, List<Method> methods, Object[] args) {
-        def oneArgMethods = methods.findAll({it.parameterTypes.length == 1})
-        def buildables = oneArgMethods.collect({ method ->
+    private static Closure findBuildableMethod(Object self, EvalScriptEngine engine, String name, Object[] args) {
+        def oneArgMethods = self.class.methods.findAll({it.name == name && it.parameterTypes.length == 1})
+        List<Closure> buildables = oneArgMethods.findResults({ Method method ->
             def param = method.parameterTypes[0]
-            Class<? extends Builder> bldClass = null
+            Class<? extends Builder> bldClass
             BuiltBy annot = method.getAnnotation(BuiltBy) ?: param.getAnnotation(BuiltBy)
             if (annot != null) {
                 bldClass = annot.value()
@@ -106,13 +67,13 @@ class ObjectConfiguration {
             } else {
                 return null
             }
-        }).findAll()
+        })
 
         if (buildables.size() == 1) {
             // there is a unique builder
-            return buildables.get(0)
+            return buildables[0]
         } else if (buildables.size() > 1) {
-            throw new RuntimeException("too many buildable options")
+            throw new RuntimeException("multiple buildable methods named ${name}")
         } else {
             return null
         }
@@ -125,16 +86,16 @@ class ObjectConfiguration {
      * @param args The arguments.
      * @return A thunk that will invoke the method.
      */
-    static def findMultiMethod(Object self, String name, Object[] args) {
+    private static Closure findMultiMethod(Object self, String name, Object[] args) {
         if (args.length != 1) return null
         // the argument is a list
         def arg
         Class[] atypes
         arg = args[0]
-        if (!List.class.isAssignableFrom(arg.class)) {
+        if (!(arg instanceof Iterable)) {
             return null
         }
-        def type = arg[0].class
+        def type = arg.first().class
         assert type != null
         atypes = [type]
         MetaMethod mm = self.metaClass.pickMethod(name, atypes)
@@ -149,72 +110,52 @@ class ObjectConfiguration {
         }
     }
 
-    static List<Method> getMethods(Object self, String name) {
-        self.class.methods.findAll {it.name == name}
-    }
+    private static class ClosureFunction implements Function {
+        private Closure closure
 
-    /**
-     * Find a setter method compatible with a specific property name and arguments.
-     * @param self The command.
-     * @param name The property name.
-     * @param args The arguments.
-     * @return A no-argument closure that either invokes the method if it is found
-     * or throws an exception if there is no matching method.
-     */
-    static def findSetter(Object self, EvalScriptEngine engine, String name, Object... args) {
-        name = "set" + name.capitalize()
-        def methods = getMethods(self, name)
-
-        if (args.length == 1 && args[0] == null) {
-            if (methods.size() == 1) {
-                def method = methods[0]
-                def formals = method.parameterTypes
-                if (formals.size() == 1 && !formals[0].isPrimitive()) {
-                    return {
-                        method.invoke(self, args)
-                    }
-                } else {
-                    return {
-                        throw new IllegalArgumentException("multiple methods found matching ${name}")
-                    }
-                }
-            }
-        } else {
-            def method = findMethod(self, name, args)
-            if (method == null) {
-                method = findBuildableMethod(self, engine, methods, args)
-                if (method == null && !methods.isEmpty()) {
-                    return {
-                        throw new IllegalArgumentException("no compatible method ${name} found")
-                    }
-                }
-            }
-            return method
+        ClosureFunction(Closure cl) {
+            closure = cl;
+        }
+        def apply(input) {
+            closure.call(input)
         }
     }
 
     /**
-     * Find an adder method compatible with a specific property name and arguments.
-     * @param self The command.
-     * @param name The property name.
-     * @param args The arguments.
-     * @return A no-argument closure that either invokes the method if it is found
-     * or throws an exception if there is no matching method.
+     * Look for a method on an object.
+     * @param self The object.
+     * @param name The method name.
+     * @param args The method arguments.
+     * @return A thunk invoking the method, or {@code null} if no such method is found.
      */
-    static def findAdder(Object self, EvalScriptEngine engine, String name, Object... args) {
-        name = "add" + name.capitalize()
-        def method = findMethod(self, name, args)
-        if (method == null) method = findMultiMethod(self, name, args)
-        if (method == null) {
-            def methods = getMethods(self, name)
-            method = findBuildableMethod(self, engine, methods, args)
-            if (method == null && !methods.isEmpty()) {
-                return {
-                    throw new IllegalArgumentException("no compatible method ${name} found")
-                }
+    private static Closure findMethod(Object self, String name, Object[] args) {
+        // we have to get types & pick to deal with class arguments
+        Class[] atypes = args.collect({it?.class})
+        def mm = self.metaClass.pickMethod(name, atypes)
+
+        // try some simple transformations
+        // transform a trailing closure to a function
+        if (mm == null && args.length > 0 && args.last() instanceof Closure) {
+            def at2 = Arrays.copyOf(atypes, atypes.length)
+            at2[args.length - 1] = Function
+            mm = self.metaClass.pickMethod(name, at2)
+            if (mm != null) {
+                args[args.length - 1] = new ClosureFunction(args.last() as Closure)
             }
         }
-        return method
+
+        // try instantiating a single class
+        if (mm == null && args.length == 1 && args.first() instanceof Class) {
+            Class[] types = [args.first()]
+            mm = self.metaClass.pickMethod(name, types)
+            if (mm != null) {
+                args = [args.first().newInstance()]
+            }
+        }
+
+        mm == null ? null : {
+            mm.doMethodInvoke(self, args)
+        }
     }
 
     private static <T> Object makeConfigDelegate(Object target, EvalScriptEngine engine) {
@@ -259,9 +200,26 @@ class ObjectConfiguration {
         }
     }
 
+    /**
+     * Construct and configure a configurable object.  This instantiates the class, using the provided
+     * arguments.  If the last argument is a closure, it is witheld and used to configure the object
+     * after it is constructed.  No extra type coercion is performed.
+     *
+     * <p>If the object has an {@code evalConfig} property, that property is set to the engine's
+     * configuration.
+     *
+     * @param type
+     * @param engine
+     * @param args
+     * @return
+     */
     private static <T> T constructAndConfigure(Class<T> type, EvalScriptEngine engine, Object[] args) {
         def split = splitClosure(args)
         def obj = type.metaClass.invokeConstructor(split.left)
+        def configProp = obj.metaClass.getMetaProperty("evalConfig")
+        if (configProp != null) {
+            configProp.setProperty(obj, engine.config)
+        }
         if (split.right != null) {
             GroovyUtils.callWithDelegate(split.right, makeConfigDelegate(obj, engine))
         }
@@ -283,6 +241,48 @@ class ObjectConfiguration {
             return {args -> constructAndConfigure(mtype, engine, args)}
         } else {
             return null
+        }
+    }
+
+    static def invokeConfigurationMethod(Object target, EvalScriptEngine engine,
+                                         String name, Object[] args) {
+        List<Closure> options = []
+        def setterName = "set${name.capitalize()}"
+        def adderName = "add${name.capitalize()}"
+        // directly invoke
+        options << {
+            findMethod(target, name, args)
+        }
+        options << {
+            findBuildableMethod(target, engine, name, args)
+        }
+        // invoke a setter
+        options << {
+            findMethod(target, setterName, args)
+        }
+        // invoke a buildable setter
+        options << {
+            findBuildableMethod(target, engine, setterName, args)
+        }
+        // invoke an adder
+        options << {
+            findMethod(target, adderName, args)
+        }
+        // add from a list
+        options << {
+            findMultiMethod(target, adderName, args)
+        }
+        // invoke a buildable adder
+        options << {
+            findBuildableMethod(target, engine, adderName, args)
+        }
+
+        def method = options.findResult({it.call()})
+        if (method != null) {
+            method.call()
+        } else {
+            // try to invoke the method directly
+            target.invokeMethod(name, args)
         }
     }
 }

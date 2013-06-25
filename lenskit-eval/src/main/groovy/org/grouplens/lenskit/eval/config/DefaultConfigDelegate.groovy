@@ -57,21 +57,11 @@ class DefaultConfigDelegate<T> {
         target.getMetaClass().getProperty(target, name)
     }
 
+    def propertyMissing(String name, Object value) {
+        target.getMetaClass().setProperty(target, name, value);
+    }
+
     def methodMissing(String name, args) {
-        Closure method = null
-        use(ObjectConfiguration) {
-            method = target.findSetter(engine, name, args)
-
-            if (method == null) {
-                method = target.findAdder(engine, name, args)
-            }
-        }
-
-        if (method == null) {
-            // if we got this far we failed
-            throw new MissingMethodException(name, target.class, args)
-        } else {
-            return method.call()
-        }
+        ObjectConfiguration.invokeConfigurationMethod(target, engine, name, args)
     }
 }

@@ -81,9 +81,17 @@ public class DumpGraphTask extends AbstractTask<File> {
         }
     }
 
+    public LenskitAlgorithmInstance getAlgorithm() {
+        return algorithm;
+    }
+
     public DumpGraphTask setAlgorithm(LenskitAlgorithmInstance algorithm) {
         this.algorithm = algorithm;
         return this;
+    }
+
+    public File getOutput() {
+        return output;
     }
 
     public DumpGraphTask setOutput(File f) {
@@ -91,9 +99,21 @@ public class DumpGraphTask extends AbstractTask<File> {
         return this;
     }
 
+    public DumpGraphTask setOutput(String fn) {
+        return setOutput(new File(fn));
+    }
+
+    public PreferenceDomain getDomain() {
+        return domain;
+    }
+
     public DumpGraphTask setDomain(PreferenceDomain dom) {
         domain = dom;
         return this;
+    }
+
+    public Class<? extends DataAccessObject> getDaoType() {
+        return daoType;
     }
 
     public DumpGraphTask setDaoType(Class<? extends DataAccessObject> daoType) {

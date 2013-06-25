@@ -43,8 +43,9 @@ public class SimpleEvalTask extends AbstractTask<Table> {
      * Configure any default behaviors for
      */
     protected void init(){
-        result.setOutput(null);
+        result.setOutput((File) null);
     }
+
     /**
      * Constructs a SimpleConfigCommand with a name for the command and the {@code TrainTestEvalCommand}
      * @param commandName The name of the {@code SimpleConfigCommand}

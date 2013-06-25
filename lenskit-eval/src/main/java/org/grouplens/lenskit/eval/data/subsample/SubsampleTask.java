@@ -78,13 +78,23 @@ public class SubsampleTask extends AbstractTask<DataSource> {
     }
     
     /**
-     * Configure the output file name for the out put subsample File.
+     * Set the output file name.
      *
-     * @param name The name of the subsampled output file.
-     * @return The command object  (for chaining).
+     * @param name The name of the output file.
+     * @return The subsample task (for chaining).
+     * @see #setOutput(java.io.File)
      */
     public SubsampleTask setOutput(String name) {
-        output = new File(name);
+        return setOutput(new File(name));
+    }
+
+    /**
+     * Set the output file for the sampled data.
+     * @param out The output file.
+     * @return The task (for chaining).
+     */
+    public SubsampleTask setOutput(File out) {
+        output = out;
         return this;
     }
     

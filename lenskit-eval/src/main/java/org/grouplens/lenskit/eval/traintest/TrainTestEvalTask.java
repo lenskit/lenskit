@@ -122,6 +122,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return this;
     }
 
+    public TrainTestEvalTask addMetric(Class<? extends TestUserMetric> metricClass) throws IllegalAccessException, InstantiationException {
+        return addMetric(metricClass.newInstance());
+    }
+
     /**
      * Add a metric that may write multiple columns per algorithm.
      * @param file The output file.
@@ -167,7 +171,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      * @see #setPredictOutput(File)
      */
     public TrainTestEvalTask addWritePredictionChannel(@Nonnull Symbol channelSym,
-                                                          @Nullable String label) {
+                                                       @Nullable String label) {
         Preconditions.checkNotNull(channelSym, "channel is null");
         if (label == null) {
             label = channelSym.getName();
@@ -182,14 +186,26 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return this;
     }
 
+    public TrainTestEvalTask setOutput(String fn) {
+        return setOutput(new File(fn));
+    }
+
     public TrainTestEvalTask setUserOutput(File file) {
         userOutputFile = file;
         return this;
     }
 
+    public TrainTestEvalTask setUserOutput(String fn) {
+        return setUserOutput(new File(fn));
+    }
+
     public TrainTestEvalTask setPredictOutput(File file) {
         predictOutputFile = file;
         return this;
+    }
+
+    public TrainTestEvalTask setPredictOutput(String fn) {
+        return setPredictOutput(new File(fn));
     }
 
     public TrainTestEvalTask setIsolation(IsolationLevel level) {

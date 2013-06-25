@@ -56,6 +56,22 @@ public class TrainModelTask<T> extends AbstractTask<T> {
         super(name);
     }
 
+    public LenskitAlgorithmInstance getAlgorithm() {
+        return algorithm;
+    }
+
+    public File getWriteFile() {
+        return writeFile;
+    }
+
+    public DataSource getInputData() {
+        return inputData;
+    }
+
+    public Function<LenskitRecommender, T> getAction() {
+        return action;
+    }
+
     /**
      * Configure the algorithm.
      * @param algo The algorithm to configure.

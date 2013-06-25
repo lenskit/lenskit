@@ -56,6 +56,15 @@ class EvalScript extends Script {
     }
 
     /**
+     * Get the evaluator script. Provides global access to evaluator properties (such as the config).
+     *
+     * @return The eval script.
+     */
+    EvalScript getEval() {
+        return this;
+    }
+
+    /**
      * Evaluate another script.
      * @param file The script to evaluate.
      * @param args The arguments to the script.
@@ -83,7 +92,6 @@ class EvalScript extends Script {
             if (obj instanceof Builder) {
                 return obj.build()
             } else if (obj instanceof EvalTask) {
-                obj.setEvalConfig(config)
                 return obj.call()
             } else {
                 throw new RuntimeException("${obj} is not a configurable object")
