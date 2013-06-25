@@ -25,7 +25,7 @@ import java.util.Map;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.JobGroup;
-import org.grouplens.lenskit.eval.config.BuilderCommand;
+import org.grouplens.lenskit.eval.config.BuiltBy;
 
 import javax.annotation.Nullable;
 
@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
-@BuilderCommand(GenericTTDataCommand.class)
+@BuiltBy(GenericTTDataBuilder.class)
 public interface TTDataSet {
     /**
      * Get the data set name.

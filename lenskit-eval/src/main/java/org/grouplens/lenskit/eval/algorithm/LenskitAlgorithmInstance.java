@@ -36,7 +36,7 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
-import org.grouplens.lenskit.eval.config.BuilderCommand;
+import org.grouplens.lenskit.eval.config.BuiltBy;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -53,7 +53,7 @@ import java.util.Map;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@BuilderCommand(LenskitAlgorithmInstanceCommand.class)
+@BuiltBy(LenskitAlgorithmInstanceBuilder.class)
 public class LenskitAlgorithmInstance implements AlgorithmInstance {
     private static final Logger logger = LoggerFactory.getLogger(LenskitAlgorithmInstance.class);
     @Nullable

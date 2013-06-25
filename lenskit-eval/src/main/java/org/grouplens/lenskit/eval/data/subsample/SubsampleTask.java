@@ -29,9 +29,9 @@ import javax.annotation.Nullable;
 import com.google.common.io.Closer;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.eval.AbstractCommand;
-import org.grouplens.lenskit.eval.CommandException;
-import org.grouplens.lenskit.eval.data.CSVDataSourceCommand;
+import org.grouplens.lenskit.eval.AbstractTask;
+import org.grouplens.lenskit.eval.TaskExecutionException;
+import org.grouplens.lenskit.eval.data.CSVDataSourceBuilder;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
@@ -43,8 +43,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class SubsampleCommand extends AbstractCommand<DataSource> {
-    private static final Logger logger = LoggerFactory.getLogger(SubsampleCommand.class);
+public class SubsampleTask extends AbstractTask<DataSource> {
+    private static final Logger logger = LoggerFactory.getLogger(SubsampleTask.class);
 
     private DataSource source;
     private double subsampleFraction = 0.1;
@@ -53,11 +53,11 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
     @Nullable
     private File output;
     
-    public SubsampleCommand() {
+    public SubsampleTask() {
         super("subsample");
     }
 
-    public SubsampleCommand(String name) {
+    public SubsampleTask(String name) {
         super(name);
     }
     
@@ -67,7 +67,7 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      * @param fraction The fraction of ratings to keep.
      * @return The SubsampleCommand object  (for chaining)
      */
-    public SubsampleCommand setFraction(double fraction) throws IllegalArgumentException {
+    public SubsampleTask setFraction(double fraction) throws IllegalArgumentException {
         if (fraction >= 0 && fraction <= 1) {
             subsampleFraction = fraction;
         } else {
@@ -83,7 +83,7 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      * @param name The name of the subsampled output file.
      * @return The command object  (for chaining).
      */
-    public SubsampleCommand setOutput(String name) {
+    public SubsampleTask setOutput(String name) {
         output = new File(name);
         return this;
     }
@@ -94,7 +94,7 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      * @param source The data source to use.
      * @return The SubsampleCommand object  (for chaining)
      */
-    public SubsampleCommand setSource(DataSource source) {
+    public SubsampleTask setSource(DataSource source) {
         this.source = source;
         return this;
     }
@@ -105,7 +105,7 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      * @param mode The mode of the output.
      * @return The SubsampleCommand object  (for chaining).
      */
-    public SubsampleCommand  setMode(SubsampleMode mode) {
+    public SubsampleTask setMode(SubsampleMode mode) {
         this.mode = mode;
         return this;
     }
@@ -155,22 +155,21 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      * @return DataSource The subsample DataSource file
      */
     private DataSource makeDataSource() {
-        File subsampleFile = getOutput();
-        CSVDataSourceCommand sampleCommand = new CSVDataSourceCommand()
+        CSVDataSourceBuilder bld = new CSVDataSourceBuilder()
                 .setDomain(source.getPreferenceDomain())
-                .setFile(subsampleFile);
-        return sampleCommand.call();
+                .setFile(getOutput());
+        return bld.build();
     }
     
     /**
      * Run the Subsample command.
      *
      * @return DataSource The subsample DataSource file
-     * @throws org.grouplens.lenskit.eval.CommandException
+     * @throws org.grouplens.lenskit.eval.TaskExecutionException
      *
      */
     @Override
-    public DataSource call() throws CommandException {
+    public DataSource call() throws TaskExecutionException {
         UpToDateChecker check = new UpToDateChecker();
         check.addInput(source.lastModified());
         File subsampleFile = getOutput();
@@ -187,14 +186,14 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
             Closer closer = Closer.create();
             TableWriter subsampleWriter = closer.register(CSVWriter.open(subsampleFile, null));
             try {
-                mode.doSample(daoSnap, subsampleWriter, subsampleFraction, getConfig());
+                mode.doSample(daoSnap, subsampleWriter, subsampleFraction, getEvalConfig());
             } catch (Throwable th) {
                 throw closer.rethrow(th);
             } finally {
                 closer.close();
             }
         } catch (IOException e) {
-            throw new CommandException("Error writing output file", e);
+            throw new TaskExecutionException("Error writing output file", e);
         } finally {
             daoSnap.close();
         }

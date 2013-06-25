@@ -30,13 +30,13 @@ import org.grouplens.lenskit.eval.config.EvalConfig
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-class AlgorithmInstanceCommandDelegate {
-    private LenskitAlgorithmInstanceCommand command
+class AlgorithmInstanceBuilderDelegate {
+    private LenskitAlgorithmInstanceBuilder command
     private LenskitConfigDSL dsl
 
-    AlgorithmInstanceCommandDelegate(LenskitAlgorithmInstanceCommand builder) {
+    AlgorithmInstanceBuilderDelegate(LenskitAlgorithmInstanceBuilder builder) {
         command = builder
-        dsl = LenskitConfigDSL.forConfig(command.lenskitConfig)
+        dsl = LenskitConfigDSL.forConfig(command.config)
     }
 
     LenskitRecommenderEngineFactory getFactory() {
@@ -48,7 +48,7 @@ class AlgorithmInstanceCommandDelegate {
     }
 
     LenskitConfiguration getLenskitConfig() {
-        return command.lenskitConfig
+        return command.config
     }
 
     def getAttributes() {

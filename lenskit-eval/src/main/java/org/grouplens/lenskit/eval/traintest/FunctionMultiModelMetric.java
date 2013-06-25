@@ -46,7 +46,7 @@ public class FunctionMultiModelMetric implements ModelMetric {
     private final List<String> columnHeaders;
     private final Function<Recommender, List<List<Object>>> function;
     private TableWriter writer;
-    private TrainTestEvalCommand currentEval;
+    private TrainTestEvalTask currentEval;
 
     public FunctionMultiModelMetric(File file, List<String> columns,
                                     Function<Recommender, List<List<Object>>> func) {
@@ -75,7 +75,7 @@ public class FunctionMultiModelMetric implements ModelMetric {
     }
 
     @Override
-    public void startEvaluation(TrainTestEvalCommand eval) {
+    public void startEvaluation(TrainTestEvalTask eval) {
         TableLayoutBuilder builder = TableLayoutBuilder.copy(eval.getMasterLayout());
         for (String col: columnHeaders) {
             builder.addColumn(col);

@@ -20,11 +20,14 @@
  */
 package org.grouplens.lenskit.eval.config
 
+import org.apache.commons.lang3.builder.Builder
+import org.apache.commons.lang3.reflect.ConstructorUtils
+import org.apache.commons.lang3.tuple.Pair
+import org.grouplens.lenskit.config.GroovyUtils
+import org.grouplens.lenskit.eval.EvalTask
 import org.slf4j.LoggerFactory
 
 import static org.grouplens.lenskit.eval.config.ParameterTransforms.pickInvokable
-import org.apache.commons.lang3.reflect.ConstructorUtils
-import org.grouplens.lenskit.eval.Command
 
 /**
  * Helper methods for invoking configuration methods.
@@ -40,27 +43,27 @@ import org.grouplens.lenskit.eval.Command
 class ConfigHelpers {
     private static def logger = LoggerFactory.getLogger(ConfigHelpers)
 
-    static <T> Object makeCommandDelegate(EvalScriptEngine engine, Command<T> command) {
-        def annot = command.class.getAnnotation(ConfigDelegate)
+    private static <T> Object makeConfigDelegate(EvalScriptEngine engine, Object target) {
+        def annot = target.class.getAnnotation(ConfigDelegate)
         if (annot == null) {
-            return new CommandDelegate<T>(engine, command)
+            return new DefaultConfigDelegate<T>(engine, target)
         } else {
             Class<?> dlgClass = annot.value()
             // try two-arg constructor
             def ctor = dlgClass.constructors.find {
                 def formals = it.parameterTypes
-                formals.length == 2 && formals[0].isAssignableFrom(EvalScriptEngine) && formals[1].isInstance(command)
+                formals.length == 2 && formals[0].isAssignableFrom(EvalScriptEngine) && formals[1].isInstance(target)
             }
             if (ctor != null) {
-                return ctor.newInstance(engine, command)
+                return ctor.newInstance(engine, target)
             } else {
                 ctor = dlgClass.constructors.find {
                     def formals = it.parameterTypes
-                    formals.length == 1 && formals[0].isInstance(command)
+                    formals.length == 1 && formals[0].isInstance(target)
                 }
             }
             if (ctor != null) {
-                return ctor.newInstance(command)
+                return ctor.newInstance(target)
             } else {
                 return dlgClass.newInstance()
             }
@@ -68,9 +71,43 @@ class ConfigHelpers {
     }
 
     /**
-     * Resolve a method invocation with a command factory. Takes the name of a method and its
+     * Split an array of arguments into arguments a trailing closure.
+     * @param args The argument array.
+     * @return A pair consisting of the arguments, except for any trailing closure, and the closure.
+     * If {@var args} does not have end with a closure, {@code Pair.of(args, null)} is returned.
+     */
+    static Pair<Object[], Closure> splitClosure(Object[] args) {
+        if (args.length > 0 && args[args.length - 1] instanceof Closure) {
+            return Pair.of(Arrays.copyOf(args, args.length - 1),
+                           args[args.length-1] as Closure)
+        } else {
+            return Pair.of(args, null)
+        }
+    }
+
+    /**
+     * Pick a constructor, if we can.  Returns a closure that, when invoked, constructs the object.
+     * @param type The type to construct.
+     * @param args The constructor arguments.
+     */
+    private static Closure findConstructor(Class<?> type, Object[] args) {
+        def ctor = pickInvokable(args) { Class<?>[] ptypes ->
+            ConstructorUtils.getMatchingAccessibleConstructor(type, ptypes)
+        }
+        if (ctor == null) {
+            return null;
+        } else {
+            return {
+                def txargs = ctor.right.collect({it.get()})
+                ctor.left.newInstance(txargs);
+            }
+        }
+    }
+
+    /**
+     * Resolve a method invocation with a task. Takes the name of a method and its
      * arguments and, if possible, constructs a closure that returns the result of configuring
-     * a command and running it.
+     * a task and running it.
      * @param name The name of the method
      * @param args The arguments to the method.
      * @return A closure invoking and configuring the command, returning the built object,
@@ -78,60 +115,106 @@ class ConfigHelpers {
      * @throws IllegalArgumentException if the command can be found but {@code args} is
      * inappropriate.
      */
-    static Closure findCommandMethod(EvalScriptEngine engine, String name, args) {
-        logger.debug("searching for command {}", name)
-        Class<? extends Command> commandClass = engine.getCommand(name)
-        if (commandClass == null) return null
+    static Closure findTask(EvalScriptEngine engine, String name, Object[] args) {
+        logger.debug("searching for task {}", name)
+        Class<? extends EvalTask> task = engine.lookupTask(name)
+        if (task == null) return null
 
-        def command = makeCommandClosure(commandClass, engine, args)
+        def command = makeTaskClosure(task, engine, args)
         if (command == null) {
-            def msg = "cannot instantiate ${commandClass.name}: no suitable constructor found"
+            def msg = "cannot instantiate ${task.name}: no suitable constructor found"
             throw new InstantiationException(msg)
         }
 
         // finally have validated the arguments, move on
-        return {
-            def obj = command(args)
-            obj
-        }
+        return command.curry(args)
     }
 
-    static def makeCommandClosure(Class<? extends Command> cmd, EvalScriptEngine engine, Object[] args) {
-        logger.debug("making closure for command {}", cmd);
-        Closure block = null
-        Object[] trimmedArgs
-        if (args.length > 0 && args[args.length - 1] instanceof Closure) {
-            logger.debug("command has configuration block")
-            block = args[args.length - 1] as Closure
-            trimmedArgs = Arrays.copyOf(args, args.length - 1)
-        } else {
-            trimmedArgs = args
-        }
-        def bestCtor = pickInvokable(trimmedArgs) {
-            ConstructorUtils.getMatchingAccessibleConstructor(cmd, it)
-        }
-        if (bestCtor != null) {
-            def runCfg = cmd.getAnnotation(ConfigRunner)
-            def runner = null
-            if (runCfg != null) {
-                runner = runCfg.value().newInstance(engine)
-            } else {
-                runner = new DefaultCommandRunner(engine)
-            }
+    private static def makeTaskClosure(Class<? extends EvalTask> taskClass, EvalScriptEngine engine, Object[] args) {
+        logger.debug("making closure for task {}", taskClass);
+        def split = splitClosure(args)
+        def ctor = findConstructor(taskClass, split.left)
+        if (ctor != null) {
             return {
-                Object[] txargs = bestCtor.right.collect({it.get()})
-                def command = bestCtor.left.newInstance(txargs)
-                command.setConfig(engine.config)
-                runner.invoke(command, block)
+                def task = ctor.call()
+                task.setEvalConfig(engine.config)
+                if (split.right != null) {
+                    GroovyUtils.callWithDelegate(split.right, makeConfigDelegate(engine, task))
+                }
+                task.call()
             }
         } else {
             return null
         }
     }
 
-    static def callWithDelegate(Closure closure, delegate, Object... args) {
-        closure.setDelegate(delegate)
-        closure.setResolveStrategy(Closure.DELEGATE_FIRST)
-        closure.call(args)
+    /**
+     * Resolve a method invocation with a task. Takes the name of a method and its
+     * arguments and, if possible, constructs a closure that returns the result of configuring
+     * a task and running it.
+     * @param name The name of the method
+     * @param args The arguments to the method.
+     * @return A closure invoking and configuring the command, returning the built object,
+     * or {@code null} if the command cannot be invoked.
+     * @throws IllegalArgumentException if the command can be found but {@code args} is
+     * inappropriate.
+     */
+    static Closure findBuilder(EvalScriptEngine engine, String name, Object[] args) {
+        logger.debug("searching for builder {}", name)
+        Class<? extends Builder> builderClass = engine.lookupBuilder(name)
+        if (builderClass == null) return null
+
+        def command = makeBuilderClosure(builderClass, engine, args)
+        if (command == null) {
+            def msg = "cannot instantiate ${builderClass.name}: no suitable constructor found"
+            throw new InstantiationException(msg)
+        }
+
+        // finally have validated the arguments, move on
+        return command.curry(args)
+    }
+
+    private static def makeBuilderClosure(Class<? extends Builder> builderClass, EvalScriptEngine engine, Object[] args) {
+        logger.debug("making closure for task {}", builderClass);
+        def split = splitClosure(args)
+        def ctor = findConstructor(builderClass, split.left)
+        if (ctor != null) {
+            return {
+                def builder = ctor.call()
+                if (split.right != null) {
+                    GroovyUtils.callWithDelegate(split.right, makeConfigDelegate(engine, builder))
+                }
+                builder.build()
+            }
+        } else {
+            return null
+        }
+    }
+
+    static <T> T constructAndConfigure(EvalScriptEngine engine, Class<T> type, Object[] args) {
+        def split = splitClosure(args)
+        def obj = type.metaClass.invokeConstructor(split.left)
+        if (split.right != null) {
+            GroovyUtils.callWithDelegate(split.right, makeConfigDelegate(engine, obj))
+        }
+        type.cast(obj)
+    }
+
+    /**
+     * Find an external method (a builder or task) and return a closure that, when invoked, constructs
+     * and configures it.  It does <strong>not</strong> invoke the builder or task, that is left up
+     * to the caller.
+     *
+     * @param engine The script engine.
+     * @param name The method name.
+     * @return A closure representing the method builder, or {@code null} if no such method exists.
+     */
+    static Closure findExternalMethod(EvalScriptEngine engine, String name) {
+        def mtype = engine.lookupMethod(name)
+        if (mtype != null) {
+            return {args -> constructAndConfigure(engine, mtype, args)}
+        } else {
+            return null
+        }
     }
 }

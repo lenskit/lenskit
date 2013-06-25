@@ -23,16 +23,15 @@ package org.grouplens.lenskit.eval.config;
 import java.lang.annotation.*;
 
 /**
- * Specify a delegate class to be used to configure builders of the type to which
- * this annotation is applied. When using a command to instantiate a setter or adder
- * parameter, if the command class has this annotation the specified class is used
- * as the delegate instead of the default {@link CommandDelegate} when invoking the
- * command closure.
- * <p/>
- * If the delegate class has a constructor taking the command as a single argument,
- * that constructor is used; otherwise a no-arg constructor is used. The command
- * constructor is highly recommended, as otherwise there isn't a good way to make
- * the command available to the delegate.
+ * Specify a delegate class to be used to configure an object of the type to which this annotation
+ * is applied (typically either a builder or a task). When using a command to instantiate a setter
+ * or adder parameter, if the command class has this annotation the specified class is used as the
+ * delegate instead of the default {@link DefaultConfigDelegate} when invoking the command closure.
+ * <p>
+ * If the delegate class has a public constructor taking the command as a single argument, that
+ * constructor is used; otherwise a no-arg constructor is used. The single-argument constructor is
+ * highly recommended, as otherwise there isn't a good way to make the object to be configured
+ * available to the delegate.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
@@ -42,8 +41,7 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 public @interface ConfigDelegate {
     /**
-     * The delegate implementation to use. The class must have a no-arg public
-     * constructor.
+     * The delegate implementation to use.
      *
      * @return The delegate class.
      */

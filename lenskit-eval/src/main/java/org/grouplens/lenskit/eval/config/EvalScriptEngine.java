@@ -21,14 +21,13 @@
 package org.grouplens.lenskit.eval.config;
 
 import com.google.common.base.Preconditions;
-import com.google.common.io.Closeables;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+import org.apache.commons.lang3.builder.Builder;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.grouplens.lenskit.eval.Command;
-import org.grouplens.lenskit.eval.CommandException;
-import org.grouplens.lenskit.util.io.LKFileUtils;
+import org.grouplens.lenskit.eval.EvalTask;
+import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +58,7 @@ public class EvalScriptEngine {
     protected final EvalConfig config;
 
     @SuppressWarnings("rawtypes")
-    private final Map<Class, Class> commands = new HashMap<Class, Class>();
+    private final Map<Class, Class> builders = new HashMap<Class, Class>();
 
     public EvalScriptEngine() {
         this(Thread.currentThread().getContextClassLoader());
@@ -86,7 +85,7 @@ public class EvalScriptEngine {
         shell = new GroovyShell(loader, new Binding(), compConfig);
         classLoader = loader;
 
-        loadCommands();
+        loadBuilders();
     }
 
     /**
@@ -119,18 +118,18 @@ public class EvalScriptEngine {
      *
      * @param script The script to run (as loaded by Groovy)
      * @return A list of evaluations produced by {@code script}.
-     * @throws CommandException if the script is invalid or produces an error.
+     * @throws org.grouplens.lenskit.eval.TaskExecutionException if the script is invalid or produces an error.
      */
     @Nullable
-    protected Object runScript(EvalScript script, String[] args) throws CommandException {
+    protected Object runScript(EvalScript script, String[] args) throws TaskExecutionException {
         script.setBinding(new Binding(args));
         Object result = null;
         try {
             result = script.run();
         } catch (RuntimeException e) {
-            throw new CommandException("error running configuration script", e);
+            throw new TaskExecutionException("error running configuration script", e);
         } catch (LinkageError e) {
-            throw new CommandException("error running configuration script", e);
+            throw new TaskExecutionException("error running configuration script", e);
         }
         return result;
     }
@@ -140,11 +139,11 @@ public class EvalScriptEngine {
      *
      * @param file A Groovy script to configure the evaluator.
      * @return A list of evaluations to run.
-     * @throws CommandException if there is a configuration error
+     * @throws org.grouplens.lenskit.eval.TaskExecutionException if there is a configuration error
      * @throws IOException      if there is an error reading the file
      */
     @Nullable
-    public Object execute(File file) throws CommandException, IOException {
+    public Object execute(File file) throws TaskExecutionException, IOException {
         logger.debug("loading script file {}", file);
         return execute(file, new String[]{});
     }
@@ -155,11 +154,11 @@ public class EvalScriptEngine {
      * @param file A Groovy script to configure the evaluator.
      * @param args The command line arguments for the script.
      * @return A list of evaluations to run.
-     * @throws CommandException if there is a configuration error
+     * @throws org.grouplens.lenskit.eval.TaskExecutionException if there is a configuration error
      * @throws IOException      if there is an error reading the file
      */
     @Nullable
-    public Object execute(File file, String[] args) throws CommandException, IOException {
+    public Object execute(File file, String[] args) throws TaskExecutionException, IOException {
         logger.debug("loading script file {}", file);
         return runScript(loadScript(file), args);
     }
@@ -169,10 +168,10 @@ public class EvalScriptEngine {
      *
      * @param in The input stream
      * @return A list of evaluations
-     * @throws CommandException if there is a configuration error
+     * @throws org.grouplens.lenskit.eval.TaskExecutionException if there is a configuration error
      */
     @Nullable
-    public Object execute(Reader in) throws CommandException {
+    public Object execute(Reader in) throws TaskExecutionException {
         return execute(in, new String[]{});
     }
 
@@ -182,10 +181,10 @@ public class EvalScriptEngine {
      * @param in   The input stream
      * @param args The command line arguments for the script.
      * @return A list of evaluations
-     * @throws CommandException if there is a configuration error
+     * @throws org.grouplens.lenskit.eval.TaskExecutionException if there is a configuration error
      */
     @Nullable
-    public Object execute(Reader in, String[] args) throws CommandException {
+    public Object execute(Reader in, String[] args) throws TaskExecutionException {
         return runScript(loadScript(in), args);
     }
 
@@ -198,16 +197,8 @@ public class EvalScriptEngine {
         return config;
     }
 
-    /**
-     * Find a command with a particular name if it exists.
-     *
-     * @param name The name of the command
-     * @return The command factory or {@code null} if no such factory exists.
-     */
-    @SuppressWarnings("rawtypes")
-    @CheckForNull
-    @Nullable
-    public Class<? extends Command> getCommand(@Nonnull String name) {
+    private <R> Class<? extends R> lookupMethod(Class<R> root, String key, String name) {
+        // FIXME Cache these lookups
         String path = METHOD_PATH + name + ".properties";
         logger.debug("loading method {} from {}", name, path);
 
@@ -220,13 +211,13 @@ public class EvalScriptEngine {
             try {
                 Properties props = new Properties();
                 props.load(istr);
-                Object pv = props.get("command");
+                Object pv = props.get(key);
                 String className = pv == null ? null : pv.toString();
                 if (className == null) {
                     return null;
                 }
 
-                return classLoader.loadClass(className).asSubclass(Command.class);
+                return classLoader.loadClass(className).asSubclass(root);
             } finally {
                 istr.close();
             }
@@ -238,46 +229,94 @@ public class EvalScriptEngine {
     }
 
     /**
+     * Look up a registered method of any type.  The currently supported types are {@linkplain Builder builders}
+     * and {@linkplain org.grouplens.lenskit.eval.EvalTask tasks}.
+     * @param name The method name.
+     * @return The method implementation class, or {@code null} if it the method is not found.
+     */
+    public Class<?> lookupMethod(@Nonnull String name) {
+        Class<?> task = lookupTask(name);
+        Class<?> builder = lookupBuilder(name);
+        if (task == null && builder == null) {
+            return null;
+        } else if (task != null) {
+            if (builder == null) {
+                return task;
+            } else {
+                throw new RuntimeException("ambiguous method " + name);
+            }
+        } else {
+            return builder;
+        }
+    }
+
+    /**
+     * Find a task with a particular name if it exists.
+     *
+     * @param name The name of the command
+     * @return The command factory or {@code null} if no such factory exists.
+     */
+    @SuppressWarnings("rawtypes")
+    @CheckForNull
+    @Nullable
+    public Class<? extends EvalTask> lookupTask(@Nonnull String name) {
+        return lookupMethod(EvalTask.class, "task", name);
+    }
+
+    /**
+     * Find a builder with a particular name if it exists.
+     *
+     * @param name The name of the command
+     * @return The command factory or {@code null} if no such factory exists.
+     */
+    @SuppressWarnings("rawtypes")
+    @CheckForNull
+    @Nullable
+    public Class<? extends Builder> lookupBuilder(@Nonnull String name) {
+        return lookupMethod(Builder.class, "builder", name);
+    }
+
+    /**
      * Get a command for a type. It consults registered commands and looks for the
-     * {@link BuilderCommand} annotation.
+     * {@link BuiltBy} annotation.
      *
      * @param type A type that needs to be built.
      * @return A command class to build {@code type}, or {@code null} if none can be found.
      * @see #registerCommand
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public <T> Class<? extends Command> getCommandForType(Class<T> type) {
+    public <T> Class<? extends Builder> getBuilderForType(Class<T> type) {
         @SuppressWarnings("rawtypes")
-        Class command = commands.get(type);
-        if (command == null) {
-            BuilderCommand annot = type.getAnnotation(BuilderCommand.class);
+        Class builder = builders.get(type);
+        if (builder == null) {
+            BuiltBy annot = type.getAnnotation(BuiltBy.class);
             if (annot != null) {
-                command = annot.value();
+                builder = annot.value();
             }
         }
-        return command;
+        return builder;
     }
 
     /**
-     * Register a command class for a type. Used to allow commands to be found for types where
-     * the type cannot be augmented with the {@code DefaultBuilder} annotation.
+     * Register a builder class for a type. Used to allow commands to be found for types where
+     * the type cannot be augmented with the {@link BuiltBy} annotation.
      *
      * @param type    The type to build.
      * @param command A class that can build instances of {@code type}.
      * @param <T>     The type to build (type parameter).
      */
     @SuppressWarnings("rawtypes")
-    public <T> void registerCommand(Class<T> type, Class<? extends Command> command) {
+    public <T> void registerCommand(Class<T> type, Class<? extends Builder> command) {
         Preconditions.checkNotNull(type, "type cannot be null");
         Preconditions.checkNotNull(command, "command cannot be null");
-        commands.put(type, command);
+        builders.put(type, command);
     }
 
     /**
-     * Register a default set of commands.
+     * Register a default set of builders.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    protected void loadCommands() {
+    protected void loadBuilders() {
         Properties props = new Properties();
         try {
             for (URL url : Collections.list(classLoader.getResources("META-INF/lenskit-eval/builders.properties"))) {
@@ -303,15 +342,15 @@ public class EvalScriptEngine {
             }
             Class cmd;
             try {
-                cmd = Class.forName(command).asSubclass(Command.class);
+                cmd = Class.forName(command).asSubclass(Builder.class);
             } catch (ClassNotFoundException e) {
-                logger.error("command class {} not found", command);
+                logger.error("command class {} not builder", command);
                 continue;
             } catch (ClassCastException e) {
-                logger.error("class {} is not a command", command);
+                logger.error("class {} is not a builder", command);
                 continue;
             }
-            logger.debug("registering {} as command for {}", command, cls);
+            logger.debug("registering {} as builder for {}", command, cls);
             registerCommand(cls, cmd);
         }
     }

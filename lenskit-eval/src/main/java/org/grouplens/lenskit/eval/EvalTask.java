@@ -20,19 +20,36 @@
  */
 package org.grouplens.lenskit.eval;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 /**
- * A command of evaluation task, which is exposed to the evaluation configuration script.
- * So the command can be called dynamically.
+ * An evaluation task.
+ * <p>Tasks should not attempt to implement semantic equality or hashing; they may be used
+ * in sets and maps where identity equality and hashing are the right thing to do, as individual
+ * task objects should be treated as distinct tasks.</p>
  *
+ * @since 1.2
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public interface Command<T> extends Callable<T> {
-
-    @Nonnull
+public interface EvalTask<T> extends Callable<T> {
+    /**
+     * Get the task's name, if it has one.  Only tasks with non-null names may be directly selected
+     * to be run at the command line.  Each named task in the evaluation script must have a unique
+     * name.
+     *
+     * @return The task's name.
+     */
+    @Nullable
     String getName();
 
-    T call() throws CommandException;
+    /**
+     * Execute the task.
+     *
+     * @return The task's return payload.
+     * @throws TaskExecutionException If there is an error executing the task.
+     */
+    @Override
+    T call() throws TaskExecutionException;
 }

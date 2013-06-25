@@ -19,12 +19,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.grouplens.lenskit.eval.config
-
-import org.grouplens.lenskit.eval.Command
-
 /**
  * Default Groovy delegate for configuring commands of evaluator components. It wraps
- * a {@link Command}, and dispatches methods as follows:
+ * a {@link org.grouplens.lenskit.eval.EvalTask}, and dispatches methods as follows:
  * <p/>
  * To resolve "foo", this delegate first looks for a method "setFoo", then "addFoo", such that one
  * of the following holds:
@@ -33,7 +30,7 @@ import org.grouplens.lenskit.eval.Command
  *     <li>The parameters specified can be converted into appropriate types
  *     for the method by wrapping strings with {@code File} objects and instantiating
  *     classes with their default constructors.</li>
- *     <li>The method takes a single parameter annotated with the {@link BuilderCommand}
+ *     <li>The method takes a single parameter annotated with the {@link BuiltBy}
  *     annotation. This command is constructed using a constructor that matches the arguments
  *     provided, except that the last argument is ommitted if it is a {@link Closure}. If the
  *     last argument is a {@link Closure}, it is used to configure the command with an appropriate
@@ -43,40 +40,36 @@ import org.grouplens.lenskit.eval.Command
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-class CommandDelegate<T> {
+class DefaultConfigDelegate<T> {
     protected final EvalScriptEngine engine
-    protected final Command<T> command
+    protected final Object target
 
     /**
      * Construct a new command delegate.
-     * @param command The command to use when pretending methods.
+     * @param target The command to use when pretending methods.
      */
-    CommandDelegate(EvalScriptEngine engine, Command command) {
+    DefaultConfigDelegate(EvalScriptEngine engine, Object target) {
         this.engine = engine
-        this.command = command
+        this.target = target
     }
 
     def propertyMissing(String name) {
-        command.getMetaClass().getProperty(command, name)
+        target.getMetaClass().getProperty(target, name)
     }
 
     def methodMissing(String name, args) {
         Closure method = null
-        use(CommandExtensions) {
-            method = command.findSetter(engine, name, args)
+        use(ConfigurableExtensions) {
+            method = target.findSetter(engine, name, args)
 
             if (method == null) {
-                method = command.findAdder(engine, name, args)
+                method = target.findAdder(engine, name, args)
             }
         }
 
         if (method == null) {
-            method = ConfigHelpers.findCommandMethod(engine, name, args)
-        }
-
-        if (method == null) {
             // if we got this far we failed
-            throw new MissingMethodException(name, command.class, args)
+            throw new MissingMethodException(name, target.class, args)
         } else {
             return method.call()
         }

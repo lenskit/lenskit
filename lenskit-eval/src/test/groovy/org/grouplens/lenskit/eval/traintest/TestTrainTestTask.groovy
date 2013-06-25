@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.eval.traintest
 
 import com.google.common.io.Files
-
+import org.grouplens.lenskit.eval.config.EvalScript
 import org.grouplens.lenskit.eval.data.CSVDataSource
 
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
@@ -34,12 +34,10 @@ import static org.hamcrest.Matchers.equalTo
 import static org.hamcrest.Matchers.instanceOf
 import static org.junit.Assert.assertThat
 import static org.junit.Assert.assertTrue
-import org.grouplens.lenskit.eval.config.CommandDelegate
-import org.grouplens.lenskit.eval.data.traintest.GenericTTDataCommand
+import org.grouplens.lenskit.eval.config.DefaultConfigDelegate
+import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet
 import org.grouplens.lenskit.eval.config.EvalScriptEngine
-
-import static org.hamcrest.Matchers.hasKey
 import org.grouplens.lenskit.symbols.Symbol
 import org.apache.commons.lang3.tuple.Pair
 
@@ -50,10 +48,11 @@ import static org.hamcrest.Matchers.hasItem
  * framework.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class TestTrainTestCommand {
+class TestTrainTestTask {
     EvalScriptEngine engine
-    TrainTestEvalCommand command
-    CommandDelegate delegate
+    TrainTestEvalTask command
+    DefaultConfigDelegate delegate
+    EvalScript script
 
     def file = File.createTempFile("tempRatings", "csv")
     def trainTestDir = Files.createTempDir()
@@ -76,14 +75,20 @@ class TestTrainTestCommand {
     @Before
     void setupDelegate() {
         engine = new EvalScriptEngine()
-        command = new TrainTestEvalCommand("TTcommand")
-        delegate = new CommandDelegate(engine, command)
+        command = new TrainTestEvalTask("TTcommand")
+        script = new EvalScript(engine)
+        delegate = new DefaultConfigDelegate(engine, command)
     }
 
     @After
     void cleanUpFiles() {
         file.delete()
         trainTestDir.deleteDir()
+    }
+
+    def methodMissing(String name, args) {
+        // delegate missing methods to the script for global lookup
+        script.invokeMethod(name, args)
     }
 
     def eval(Closure cl) {
@@ -143,9 +148,9 @@ class TestTrainTestCommand {
         eval {
             dataset {
                 // check some things about our strategy...
-                assertThat(delegate, instanceOf(CommandDelegate))
+                assertThat(delegate, instanceOf(DefaultConfigDelegate))
                 assertThat(resolveStrategy, equalTo(Closure.DELEGATE_FIRST))
-                assertThat(delegate.command, instanceOf(GenericTTDataCommand))
+                assertThat(delegate.target, instanceOf(GenericTTDataBuilder))
 
                 closureInvoked = true
 

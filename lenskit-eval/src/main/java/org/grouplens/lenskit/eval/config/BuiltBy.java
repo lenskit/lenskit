@@ -20,26 +20,22 @@
  */
 package org.grouplens.lenskit.eval.config;
 
-import groovy.lang.Closure;
-import org.grouplens.lenskit.eval.Command;
+import org.apache.commons.lang3.builder.Builder;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.lang.annotation.*;
 
 /**
- * Invoke a configuration block.
+ * Specify the command for the default type of this class/interface to which
+ * it is applied. Used to build objects when the user doesn't specify the
+ * particular command factory to use.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 1.0
+ * @since 0.10
  */
-public interface CommandRunner {
-    /**
-     * Invoke a command, possibly using a configuration closure.
-     *
-     * @param command The command to run.
-     * @param closure The closure to configure it with.
-     * @param <V>     The return type of the command.
-     * @return The results of the command's {@link Command#call()} method.
-     */
-    <V> V invoke(@Nonnull Command<V> command, @Nullable Closure<?> closure);
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+@SuppressWarnings("rawtypes")
+public @interface BuiltBy {
+    Class<? extends Builder> value();
 }

@@ -53,10 +53,10 @@ class TrainTestEvalJobGroup implements JobGroup<Void> {
     private TTDataSet dataSet;
     private List<Job<Void>> jobs;
 
-    private TrainTestEvalCommand evaluation;
+    private TrainTestEvalTask evaluation;
 
 
-    public TrainTestEvalJobGroup(TrainTestEvalCommand eval,
+    public TrainTestEvalJobGroup(TrainTestEvalTask eval,
                                  List<AlgorithmInstance> algos,
                                  List<TestUserMetric> evals,
                                  List<ModelMetric> modelMetrics,

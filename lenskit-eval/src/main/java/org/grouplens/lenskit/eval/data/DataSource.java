@@ -22,7 +22,7 @@ package org.grouplens.lenskit.eval.data;
 
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.config.BuilderCommand;
+import org.grouplens.lenskit.eval.config.BuiltBy;
 
 import javax.annotation.Nullable;
 
@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@BuilderCommand(CSVDataSourceCommand.class)
+@BuiltBy(CSVDataSourceBuilder.class)
 public interface DataSource {
     /**
      * Get the data source name.

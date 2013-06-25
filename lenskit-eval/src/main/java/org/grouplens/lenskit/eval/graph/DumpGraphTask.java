@@ -33,8 +33,8 @@ import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.core.RecommenderInstantiator;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.AbstractCommand;
-import org.grouplens.lenskit.eval.CommandException;
+import org.grouplens.lenskit.eval.AbstractTask;
+import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,19 +51,19 @@ import java.util.Set;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @SuppressWarnings("unused")
-public class DumpGraphCommand extends AbstractCommand<File> {
-    private static final Logger logger = LoggerFactory.getLogger(DumpGraphCommand.class);
+public class DumpGraphTask extends AbstractTask<File> {
+    private static final Logger logger = LoggerFactory.getLogger(DumpGraphTask.class);
 
     private LenskitAlgorithmInstance algorithm;
     private File output;
     private PreferenceDomain domain = null;
     private Class<? extends DataAccessObject> daoType;
 
-    public DumpGraphCommand() {
+    public DumpGraphTask() {
         this(null);
     }
 
-    public DumpGraphCommand(String name) {
+    public DumpGraphTask(String name) {
         super(name);
     }
 
@@ -81,28 +81,28 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         }
     }
 
-    public DumpGraphCommand setAlgorithm(LenskitAlgorithmInstance algorithm) {
+    public DumpGraphTask setAlgorithm(LenskitAlgorithmInstance algorithm) {
         this.algorithm = algorithm;
         return this;
     }
 
-    public DumpGraphCommand setOutput(File f) {
+    public DumpGraphTask setOutput(File f) {
         output = f;
         return this;
     }
 
-    public DumpGraphCommand setDomain(PreferenceDomain dom) {
+    public DumpGraphTask setDomain(PreferenceDomain dom) {
         domain = dom;
         return this;
     }
 
-    public DumpGraphCommand setDaoType(Class<? extends DataAccessObject> daoType) {
+    public DumpGraphTask setDaoType(Class<? extends DataAccessObject> daoType) {
         this.daoType = daoType;
         return this;
     }
 
     @Override
-    public File call() throws CommandException {
+    public File call() throws TaskExecutionException {
         if (output == null) {
             logger.error("no output file specified");
             throw new IllegalStateException("no graph output file specified");
@@ -116,7 +116,7 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         try {
             instantiator = RecommenderInstantiator.forConfig(config, daoType);
         } catch (RecommenderConfigurationException e) {
-            throw new CommandException("error resolving algorithm configuration", e);
+            throw new TaskExecutionException("error resolving algorithm configuration", e);
         }
         Graph initial = instantiator.getGraph();
         logger.debug("graph has {} nodes", initial.getNodes().size());
@@ -125,14 +125,14 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         try {
             writeGraph(initial, unshared.getNodes(), output);
         } catch (IOException e) {
-            throw new CommandException("error writing graph", e);
+            throw new TaskExecutionException("error writing graph", e);
         }
         // TODO Support dumping the instantiated graph again
         return output;
     }
 
     @SuppressWarnings("PMD.AvoidCatchingThrowable")
-    private void writeGraph(Graph g, Set<Node> unshared, File file) throws IOException, CommandException {
+    private void writeGraph(Graph g, Set<Node> unshared, File file) throws IOException, TaskExecutionException {
         Files.createParentDirs(output);
         Closer close = Closer.create();
         try {
@@ -140,17 +140,17 @@ public class DumpGraphCommand extends AbstractCommand<File> {
             GraphWriter gw = close.register(new GraphWriter(writer));
             renderGraph(g, unshared, gw);
         } catch (Throwable th) {
-            throw close.rethrow(th, CommandException.class);
+            throw close.rethrow(th, TaskExecutionException.class);
         } finally {
             close.close();
         }
     }
 
-    private void renderGraph(final Graph g, Set<Node> unshared, final GraphWriter gw) throws CommandException {
+    private void renderGraph(final Graph g, Set<Node> unshared, final GraphWriter gw) throws TaskExecutionException {
         // Handle the root node
         Node root = g.getNode(null);
         if (root == null) {
-            throw new CommandException("no root node for graph");
+            throw new TaskExecutionException("no root node for graph");
         }
         GraphDumper dumper = new GraphDumper(g, unshared, gw);
         try {
@@ -169,7 +169,7 @@ public class DumpGraphCommand extends AbstractCommand<File> {
             }
             dumper.finish();
         } catch (IOException e) {
-            throw new CommandException("error writing graph", e);
+            throw new TaskExecutionException("error writing graph", e);
         }
     }
 

@@ -37,7 +37,7 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
-import org.grouplens.lenskit.eval.config.BuilderCommand;
+import org.grouplens.lenskit.eval.config.BuiltBy;
 import org.grouplens.lenskit.eval.data.CSVDataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
@@ -58,7 +58,7 @@ import java.util.Map;
 /**
  * An algorithm instance backed by an external program.
  */
-@BuilderCommand(ExternalAlgorithmInstanceCommand.class)
+@BuiltBy(ExternalAlgorithmInstanceBuilder.class)
 public class ExternalAlgorithmInstance implements AlgorithmInstance {
     private final Logger logger = LoggerFactory.getLogger(ExternalAlgorithmInstance.class);
 

@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.eval.data.traintest;
 
 import com.google.common.base.Preconditions;
-import org.grouplens.lenskit.eval.AbstractCommand;
+import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.eval.data.DataSource;
 
 import java.util.LinkedHashMap;
@@ -30,33 +30,38 @@ import java.util.Map;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
+public class GenericTTDataBuilder implements Builder<GenericTTDataSet> {
+    private String name;
     private DataSource trainingData;
     private DataSource testData;
     private Map<String, Object> attributes = new LinkedHashMap<String, Object>();
 
-    public GenericTTDataCommand() {
+    public GenericTTDataBuilder() {
         this(null);
     }
 
-    public GenericTTDataCommand(String name) {
-        super(name);
+    public GenericTTDataBuilder(String name) {
+        this.name = name;
     }
 
-    public GenericTTDataCommand setTrain(DataSource ds) {
+    public GenericTTDataBuilder setName(String n) {
+        name = n;
+        return this;
+    }
+
+    public GenericTTDataBuilder setTrain(DataSource ds) {
         trainingData = ds;
         return this;
     }
 
-    public GenericTTDataCommand setTest(DataSource ds) {
+    public GenericTTDataBuilder setTest(DataSource ds) {
         testData = ds;
         return this;
     }
 
-    @Override
     public String getName() {
-        if (hasName()) {
-            return super.getName();
+        if (name != null) {
+            return name;
         } else {
             return trainingData.getName();
         }
@@ -66,13 +71,13 @@ public class GenericTTDataCommand extends AbstractCommand<GenericTTDataSet> {
         return attributes;
     }
 
-    public GenericTTDataCommand setAttribute(String name, Object value) {
+    public GenericTTDataBuilder setAttribute(String name, Object value) {
         attributes.put(name, value);
         return this;
     }
 
     @Override
-    public GenericTTDataSet call() {
+    public GenericTTDataSet build() {
         if (attributes.isEmpty()) {
             attributes.put("DataSet", getName());
         }

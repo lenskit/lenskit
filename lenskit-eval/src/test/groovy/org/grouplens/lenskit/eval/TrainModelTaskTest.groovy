@@ -35,7 +35,7 @@ import org.junit.Test
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
-class TrainModelCommandTest extends ConfigTestBase {
+class TrainModelTaskTest extends ConfigTestBase {
     def ratings = [
             new SimpleRating(1, 1, 1, 3.5),
             new SimpleRating(2, 1, 2, 4.0),

@@ -40,19 +40,19 @@ import java.io.IOException;
 /**
  * Train a recommender algorithm and process it with a function.
  */
-public class TrainModelCommand<T> extends AbstractCommand<T> {
-    private static final Logger logger = LoggerFactory.getLogger(TrainModelCommand.class);
+public class TrainModelTask<T> extends AbstractTask<T> {
+    private static final Logger logger = LoggerFactory.getLogger(TrainModelTask.class);
 
     private LenskitAlgorithmInstance algorithm;
     private File writeFile;
     private DataSource inputData;
     private Function<LenskitRecommender, T> action;
 
-    public TrainModelCommand() {
+    public TrainModelTask() {
         super("train-model");
     }
 
-    public TrainModelCommand(String name) {
+    public TrainModelTask(String name) {
         super(name);
     }
 
@@ -61,7 +61,7 @@ public class TrainModelCommand<T> extends AbstractCommand<T> {
      * @param algo The algorithm to configure.
      * @return The command (for chaining).
      */
-    public TrainModelCommand setAlgorithm(LenskitAlgorithmInstance algo) {
+    public TrainModelTask setAlgorithm(LenskitAlgorithmInstance algo) {
         algorithm = algo;
         return this;
     }
@@ -72,7 +72,7 @@ public class TrainModelCommand<T> extends AbstractCommand<T> {
      * @param file The file name.
      * @return The command (for chaining).
      */
-    public TrainModelCommand setWriteFile(File file) {
+    public TrainModelTask setWriteFile(File file) {
         writeFile = file;
         return this;
     }
@@ -82,7 +82,7 @@ public class TrainModelCommand<T> extends AbstractCommand<T> {
      * @param data The input data source.
      * @return The builder (for chaining).
      */
-    public TrainModelCommand setInput(DataSource data) {
+    public TrainModelTask setInput(DataSource data) {
         inputData = data;
         return this;
     }
@@ -93,14 +93,14 @@ public class TrainModelCommand<T> extends AbstractCommand<T> {
      * @param act The action to invoke.
      * @return The command (for chaining).
      */
-    public TrainModelCommand setAction(Function<LenskitRecommender,T> act) {
+    public TrainModelTask setAction(Function<LenskitRecommender,T> act) {
         action = act;
         return this;
     }
 
     @Override
     @SuppressWarnings("PMD.AvoidCatchingThrowable")
-    public T call() throws CommandException {
+    public T call() throws TaskExecutionException {
         Preconditions.checkState(algorithm != null, "no algorithm specified");
         Preconditions.checkState(inputData != null, "no input data specified");
         Preconditions.checkState(inputData != null, "no action specified");
@@ -122,18 +122,18 @@ public class TrainModelCommand<T> extends AbstractCommand<T> {
                     rec = closer.register(algorithm.buildRecommender(
                             dao, null, inputData.getPreferenceDomain(), null, false));
                 } catch (RecommenderBuildException e) {
-                    throw new CommandException(getName() + ": error building recommender", e);
+                    throw new TaskExecutionException(getName() + ": error building recommender", e);
                 }
                 timer.stop();
                 logger.info("{}: trained in {}", getName(), timer);
                 return action.apply(rec);
             } catch (Throwable th) {
-                throw closer.rethrow(th, CommandException.class);
+                throw closer.rethrow(th, TaskExecutionException.class);
             } finally {
                 closer.close();
             }
         } catch (IOException ioe) {
-            throw new CommandException("error in " + getName(), ioe);
+            throw new TaskExecutionException("error in " + getName(), ioe);
         } finally {
             context.finish();
         }

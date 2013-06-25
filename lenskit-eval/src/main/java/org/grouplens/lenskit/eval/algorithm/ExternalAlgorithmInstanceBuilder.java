@@ -21,8 +21,7 @@
 package org.grouplens.lenskit.eval.algorithm;
 
 import com.google.common.base.Preconditions;
-import org.grouplens.lenskit.eval.AbstractCommand;
-import org.grouplens.lenskit.eval.CommandException;
+import org.apache.commons.lang3.builder.Builder;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -35,18 +34,19 @@ import java.util.Map;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class ExternalAlgorithmInstanceCommand extends AbstractCommand<ExternalAlgorithmInstance> {
+public class ExternalAlgorithmInstanceBuilder implements Builder<ExternalAlgorithmInstance> {
+    private String name;
     private Map<String, Object> attributes = new HashMap<String, Object>();
     private File workDir = new File(".");
     private String outputDelimiter = "\t";
     private List<String> command;
 
-    public ExternalAlgorithmInstanceCommand() {
+    public ExternalAlgorithmInstanceBuilder() {
         this("Unnamed");
     }
 
-    public ExternalAlgorithmInstanceCommand(String name) {
-        super(name);
+    public ExternalAlgorithmInstanceBuilder(String name) {
+        this.name = name;
     }
 
     /**
@@ -55,10 +55,17 @@ public class ExternalAlgorithmInstanceCommand extends AbstractCommand<ExternalAl
      * @param n The name for this algorithm instance.
      * @return The command for chaining.
      */
-    @Override
-    public ExternalAlgorithmInstanceCommand setName(String n) {
-        super.setName(n);
+    public ExternalAlgorithmInstanceBuilder setName(String n) {
+        name = n;
         return this;
+    }
+
+    /**
+     * Get the algorithm name.
+     * @return The algorithm's name.
+     */
+    public String getName() {
+        return name;
     }
 
     /**
@@ -69,7 +76,7 @@ public class ExternalAlgorithmInstanceCommand extends AbstractCommand<ExternalAl
      * @param value The attribute value.
      * @return The command for chaining.
      */
-    public ExternalAlgorithmInstanceCommand setAttribute(@Nonnull String attr, @Nonnull Object value) {
+    public ExternalAlgorithmInstanceBuilder setAttribute(@Nonnull String attr, @Nonnull Object value) {
         Preconditions.checkNotNull(attr, "attribute names cannot be null");
         Preconditions.checkNotNull(value, "attribute values cannot be null");
         attributes.put(attr, value);
@@ -98,7 +105,7 @@ public class ExternalAlgorithmInstanceCommand extends AbstractCommand<ExternalAl
      * @param cmd The command to run (name and arguments).
      * @return The command (for chaining)
      */
-    public ExternalAlgorithmInstanceCommand setCommand(List<String> cmd) {
+    public ExternalAlgorithmInstanceBuilder setCommand(List<String> cmd) {
         command = cmd;
         return this;
     }
@@ -108,7 +115,7 @@ public class ExternalAlgorithmInstanceCommand extends AbstractCommand<ExternalAl
      * @param dir The working directory.
      * @return The working directory.
      */
-    public ExternalAlgorithmInstanceCommand setWorkDir(File dir) {
+    public ExternalAlgorithmInstanceBuilder setWorkDir(File dir) {
         workDir = dir;
         return this;
     }
@@ -118,13 +125,13 @@ public class ExternalAlgorithmInstanceCommand extends AbstractCommand<ExternalAl
      * @param delim The output delimiter.
      * @return The input delimiter.
      */
-    public ExternalAlgorithmInstanceCommand setOutputDelimiter(String delim) {
+    public ExternalAlgorithmInstanceBuilder setOutputDelimiter(String delim) {
         outputDelimiter = delim;
         return this;
     }
 
     @Override
-    public ExternalAlgorithmInstance call() throws CommandException {
+    public ExternalAlgorithmInstance build() {
         if (command == null) {
             throw new IllegalStateException("no command specified");
         }

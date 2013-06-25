@@ -21,14 +21,14 @@
 package org.grouplens.lenskit.test;
 
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.eval.CommandException;
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceCommand;
+import org.grouplens.lenskit.eval.TaskExecutionException;
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceBuilder;
 import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.data.GenericDataSource;
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric;
-import org.grouplens.lenskit.eval.traintest.SimpleEvalCommand;
+import org.grouplens.lenskit.eval.traintest.SimpleEvalTask;
 import org.grouplens.lenskit.util.table.Table;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,12 +52,12 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
     protected abstract void checkResults(Table table);
 
     @Test
-    public void testAlgorithmAccuracy() throws CommandException, IOException {
-        SimpleEvalCommand evalCommand = new SimpleEvalCommand("train-test");
+    public void testAlgorithmAccuracy() throws TaskExecutionException, IOException {
+        SimpleEvalTask evalCommand = new SimpleEvalTask("train-test");
         Properties props =  new Properties(System.getProperties());
         props.setProperty(EvalConfig.DATA_DIR_PROPERTY, workDir.newFolder("data").getAbsolutePath());
-        evalCommand.setConfig(new EvalConfig(props));
-        LenskitAlgorithmInstanceCommand algo = new LenskitAlgorithmInstanceCommand();
+        evalCommand.setEvalConfig(new EvalConfig(props));
+        LenskitAlgorithmInstanceBuilder algo = new LenskitAlgorithmInstanceBuilder();
         configureAlgorithm(algo.getFactory());
         evalCommand.addAlgorithm(algo);
 

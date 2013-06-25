@@ -28,11 +28,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Base class to simplify writing {@link Command}s.
+ * Base class to simplify writing {@link EvalTask}s.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public abstract class AbstractCommand<T> implements Command<T> {
+public abstract class AbstractTask<T> implements EvalTask<T> {
     @Nullable private String name;
     private EvalConfig config;
 
@@ -40,7 +40,7 @@ public abstract class AbstractCommand<T> implements Command<T> {
      * Initialize a command.
      * @param name The command's name.
      */
-    protected AbstractCommand(@Nullable String name) {
+    protected AbstractTask(@Nullable String name) {
         this.name = name;
     }
 
@@ -51,7 +51,7 @@ public abstract class AbstractCommand<T> implements Command<T> {
      * @param cfg The configuration.
      * @return The command (for chaining).
      */
-    public AbstractCommand<T> setConfig(@Nonnull EvalConfig cfg) {
+    public AbstractTask<T> setEvalConfig(@Nonnull EvalConfig cfg) {
         Preconditions.checkNotNull(cfg, "configuration cannot be null");
         config = cfg;
         return this;
@@ -63,7 +63,7 @@ public abstract class AbstractCommand<T> implements Command<T> {
      * @return The command's configuration object.
      */
     @Nonnull
-    public EvalConfig getConfig() {
+    public EvalConfig getEvalConfig() {
         if (config == null) {
             throw new IllegalStateException("no configuration is specified");
         }
@@ -76,7 +76,7 @@ public abstract class AbstractCommand<T> implements Command<T> {
      * @param name The new name.
      * @return The command (for chaining).
      */
-    public AbstractCommand<T> setName(String name) {
+    public AbstractTask<T> setName(String name) {
         this.name = name;
         return this;
     }
@@ -104,7 +104,4 @@ public abstract class AbstractCommand<T> implements Command<T> {
     protected boolean hasName() {
         return name != null;
     }
-
-    @Override
-    public abstract T call() throws CommandException;
 }

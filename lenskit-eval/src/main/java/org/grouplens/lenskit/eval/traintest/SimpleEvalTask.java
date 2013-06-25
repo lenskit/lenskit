@@ -22,12 +22,12 @@ package org.grouplens.lenskit.eval.traintest;
 
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.AbstractCommand;
-import org.grouplens.lenskit.eval.CommandException;
+import org.grouplens.lenskit.eval.AbstractTask;
+import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceCommand;
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceBuilder;
 import org.grouplens.lenskit.eval.data.DataSource;
-import org.grouplens.lenskit.eval.data.crossfold.CrossfoldCommand;
+import org.grouplens.lenskit.eval.data.crossfold.CrossfoldTask;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
@@ -35,9 +35,9 @@ import org.grouplens.lenskit.util.table.Table;
 
 import java.io.File;
 
-public class SimpleEvalCommand extends AbstractCommand<Table>{
+public class SimpleEvalTask extends AbstractTask<Table> {
 
-    private TrainTestEvalCommand result;
+    private TrainTestEvalTask result;
 
     /**
      * Configure any default behaviors for
@@ -50,9 +50,9 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param commandName The name of the {@code SimpleConfigCommand}
      * @param trainName The name of the {@code TrainTestEvalCommand} being created.
      */
-    public SimpleEvalCommand(String commandName, String trainName){
+    public SimpleEvalTask(String commandName, String trainName){
         super(commandName);
-        result = new TrainTestEvalCommand(trainName);
+        result = new TrainTestEvalTask(trainName);
         init();
     }
 
@@ -60,9 +60,9 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * Constructs the command with a default name. Currently this is 'train-test-builder'.
      * @param trainName The name
      */
-    public SimpleEvalCommand(String trainName){
+    public SimpleEvalTask(String trainName){
         super("train-test-builder");
-        result = new TrainTestEvalCommand(trainName);
+        result = new TrainTestEvalTask(trainName);
         init();
     }
 
@@ -71,9 +71,9 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      *
      * The command built has the name "train-test-eval"
      */
-    public SimpleEvalCommand(){
+    public SimpleEvalTask(){
         super("simple-eval");
-        result = new TrainTestEvalCommand("train-test-eval");
+        result = new TrainTestEvalTask("train-test-eval");
         init();
     }
 
@@ -84,7 +84,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param algo The algorithm added to the {@code TrainTestEvalCommand}
      * @return Itself to allow  chaining
      */
-    public SimpleEvalCommand addAlgorithm(LenskitAlgorithmInstance algo){
+    public SimpleEvalTask addAlgorithm(LenskitAlgorithmInstance algo){
         result.addAlgorithm(algo);
         return this;
     }
@@ -95,12 +95,8 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param algo The algorithm added to the {@code TrainTestEvalCommand}
      * @return Itself to allow  chaining
      */
-    public SimpleEvalCommand addAlgorithm(LenskitAlgorithmInstanceCommand algo){
-        try{
-            result.addAlgorithm(algo.call());
-        } catch(CommandException e){
-            throw new RuntimeException(e);
-        }
+    public SimpleEvalTask addAlgorithm(LenskitAlgorithmInstanceBuilder algo){
+        result.addAlgorithm(algo.build());
         return this;
     }
 
@@ -113,13 +109,13 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param cross
      * @return Itself to allow for  method chaining.
      */
-    public SimpleEvalCommand addDataset(CrossfoldCommand cross){
+    public SimpleEvalTask addDataset(CrossfoldTask cross){
         try {
             for (TTDataSet data: cross.call()) {
                 result.addDataset(data);
             }
         }
-        catch (CommandException e) {
+        catch (TaskExecutionException e) {
             throw new RuntimeException(e);
         }
         return this;
@@ -135,12 +131,12 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param holdout The holdout fraction
      * @return Itself for chaining.
      */
-    public SimpleEvalCommand addDataset(String name, DataSource source, int partitions, double holdout){
-        CrossfoldCommand cross = new CrossfoldCommand(name)
+    public SimpleEvalTask addDataset(String name, DataSource source, int partitions, double holdout){
+        CrossfoldTask cross = new CrossfoldTask(name)
                 .setSource(source)
                 .setPartitions(partitions)
                 .setHoldoutFraction(holdout);
-        cross.setConfig(getConfig());
+        cross.setEvalConfig(getEvalConfig());
         addDataset(cross);
         return this;
     }
@@ -154,7 +150,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param holdout The holdout fraction
      * @return Itself for chaining.
      */
-    public SimpleEvalCommand addDataset(DataSource source, int partitions, double holdout){
+    public SimpleEvalTask addDataset(DataSource source, int partitions, double holdout){
         return addDataset(source.getName(), source, partitions, holdout);
     }
     /**
@@ -168,7 +164,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param partitions The number of partitions
      * @return Itself for chaining.
      */
-    public SimpleEvalCommand addDataset(String name, DataSource source, int partitions){
+    public SimpleEvalTask addDataset(String name, DataSource source, int partitions){
        return addDataset(name, source, partitions, .2);
     }
 
@@ -182,7 +178,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param partitions The number of partitions
      * @return Itself for chaining.
      */
-    public SimpleEvalCommand addDataset(DataSource source, int partitions){
+    public SimpleEvalTask addDataset(DataSource source, int partitions){
         return addDataset(source.getName(), source, partitions, .2);
     }
 
@@ -193,7 +189,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param data The dataset to be added to the command.
      * @return Itself to allow for  method chaining.
      */
-    public SimpleEvalCommand addDataset(TTDataSet data) {
+    public SimpleEvalTask addDataset(TTDataSet data) {
         result.addDataset(data);
         return this;
     }
@@ -206,7 +202,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param dom The {@code PreferenceDomain} to be supplied to the new {@code TTDataSet}
      * @return Itself for  method chaining.
      */
-    public SimpleEvalCommand addDataset(String name, DAOFactory train, DAOFactory test, PreferenceDomain dom){
+    public SimpleEvalTask addDataset(String name, DAOFactory train, DAOFactory test, PreferenceDomain dom){
         result.addDataset(new GenericTTDataSet(name, train, test, dom));
         return this;
     }
@@ -222,7 +218,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param dom The {@code PreferenceDomain} to be supplied to the new {@code TTDataSet}
      * @return Itself for  method chaining.
      */
-    public SimpleEvalCommand addDataset(DAOFactory train, DAOFactory test, PreferenceDomain dom){
+    public SimpleEvalTask addDataset(DAOFactory train, DAOFactory test, PreferenceDomain dom){
         result.addDataset(new GenericTTDataSet("generic-data-source", train, test, dom));
         return this;
     }
@@ -231,7 +227,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param metric The metric to be added.
      * @return Itself for  method chaining.
      */
-    public SimpleEvalCommand addMetric(TestUserMetric metric) {
+    public SimpleEvalTask addMetric(TestUserMetric metric) {
         result.addMetric(metric);
         return this;
     }
@@ -241,7 +237,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param file The file set as the output of the command
      * @return Itself for  method chaining
      */
-    public SimpleEvalCommand setOutput(File file){
+    public SimpleEvalTask setOutput(File file){
         result.setOutput(file);
         return this;
     }
@@ -251,7 +247,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param file The file set as the prediction output.
      * @return
      */
-    public SimpleEvalCommand setPredictOutput(File file){
+    public SimpleEvalTask setPredictOutput(File file){
         result.setPredictOutput(file);
         return this;
     }
@@ -262,7 +258,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param file The file set as the prediction user.
      * @return
      */
-    public SimpleEvalCommand setUserOutput(File file){
+    public SimpleEvalTask setUserOutput(File file){
         result.setUserOutput(file);
         return this;
     }
@@ -273,7 +269,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param path The path to the file to be created
      * @return Itself for method chaining
      */
-    public SimpleEvalCommand setOutputPath(String path){
+    public SimpleEvalTask setOutputPath(String path){
         result.setOutput(new File(path));
         return this;
     }
@@ -283,7 +279,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param path The path to the file to be created
      * @return Itself for method chaining
      */
-    public SimpleEvalCommand setPredictOutputPath(String path){
+    public SimpleEvalTask setPredictOutputPath(String path){
         result.setPredictOutput(new File(path));
         return this;
     }
@@ -294,7 +290,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      * @param path The path to the file to be created
      * @return Itself for method chaining
      */
-    public SimpleEvalCommand setUserOutputPath(String path){
+    public SimpleEvalTask setUserOutputPath(String path){
         result.setUserOutput(new File(path));
         return this;
     }
@@ -307,7 +303,7 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      *
      * @return The raw partially configured command.
      */
-    public TrainTestEvalCommand getRawCommand(){
+    public TrainTestEvalTask getRawCommand(){
         return result;
     }
 
@@ -316,8 +312,9 @@ public class SimpleEvalCommand extends AbstractCommand<Table>{
      *
      * @return The table resulting from calling the command.
      */
-    public Table call() throws CommandException{
-        result.setConfig(getConfig());
+    @Override
+    public Table call() throws TaskExecutionException {
+        result.setEvalConfig(getEvalConfig());
         return result.call();
     }
 }

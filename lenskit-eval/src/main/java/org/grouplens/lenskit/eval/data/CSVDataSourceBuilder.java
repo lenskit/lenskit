@@ -22,9 +22,9 @@ package org.grouplens.lenskit.eval.data;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.AbstractCommand;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -34,38 +34,39 @@ import java.io.File;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
+public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
+    private String name;
     String delimiter = ",";
     File inputFile;
     boolean cache = true;
     PreferenceDomain domain;
     Function<DAOFactory, DAOFactory> wrapper;
 
-    public CSVDataSourceCommand() {
-        this(null);
+    public CSVDataSourceBuilder() {}
+
+    public CSVDataSourceBuilder(String name) {
+        this.name = name;
     }
 
-    public CSVDataSourceCommand(String name) {
-        super(name);
+    public CSVDataSourceBuilder(File file) {
+        inputFile = file;
     }
 
     /**
      * Set the data source name. If unspecified, a name is derived from the file.
      *
-     * @param name The name of the data source.
+     * @param n The name of the data source.
      * @see #setFile(File)
      */
-    @Override
-    public CSVDataSourceCommand setName(String name) {
-        super.setName(name);
+    public CSVDataSourceBuilder setName(String n) {
+        name = n;
         return this;
     }
 
     @Nonnull
-    @Override
     public String getName() {
-        if (hasName()) {
-            return super.getName();
+        if (name != null) {
+            return name;
         } else {
             return inputFile.getName();
         }
@@ -77,7 +78,7 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
      *
      * @param file The file to read ratings from.
      */
-    public CSVDataSourceCommand setFile(File file) {
+    public CSVDataSourceBuilder setFile(File file) {
         inputFile = file;
         return this;
     }
@@ -87,7 +88,7 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
      *
      * @param delim The input delimiter.
      */
-    public CSVDataSourceCommand setDelimiter(String delim) {
+    public CSVDataSourceBuilder setDelimiter(String delim) {
         delimiter = delim;
         return this;
     }
@@ -97,7 +98,7 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
      *
      * @param on {@code false} to disable caching.
      */
-    public CSVDataSourceCommand setCache(boolean on) {
+    public CSVDataSourceBuilder setCache(boolean on) {
         cache = on;
         return this;
     }
@@ -108,7 +109,7 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
      * @param dom The preference domain.
      * @return The command (for chaining).
      */
-    public CSVDataSourceCommand setDomain(PreferenceDomain dom) {
+    public CSVDataSourceBuilder setDomain(PreferenceDomain dom) {
         domain = dom;
         return this;
     }
@@ -121,7 +122,7 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
      * @param wrapFun The DAO wrapper function.
      * @return The command (for chaining).
      */
-    public CSVDataSourceCommand setWrapper(Function<DAOFactory, DAOFactory> wrapFun) {
+    public CSVDataSourceBuilder setWrapper(Function<DAOFactory, DAOFactory> wrapFun) {
         wrapper = wrapFun;
         return this;
     }
@@ -133,13 +134,13 @@ public class CSVDataSourceCommand extends AbstractCommand<CSVDataSource> {
      * @return The configured data source.
      */
     @Override
-    public CSVDataSource call() {
+    public CSVDataSource build() {
         // if no name, use the file name
-        if (!hasName() && inputFile != null) {
+        if (name == null && inputFile != null) {
             setName(inputFile.toString());
         }
         // if no file, use the name
-        if (inputFile == null && hasName()) {
+        if (inputFile == null && name != null) {
             inputFile = new File(getName());
         }
         // by now we should have a file

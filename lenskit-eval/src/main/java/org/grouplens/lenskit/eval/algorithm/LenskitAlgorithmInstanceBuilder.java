@@ -21,10 +21,9 @@
 package org.grouplens.lenskit.eval.algorithm;
 
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.eval.AbstractCommand;
-import org.grouplens.lenskit.eval.CommandException;
 import org.grouplens.lenskit.eval.config.ConfigDelegate;
 
 import javax.annotation.Nonnull;
@@ -36,18 +35,19 @@ import java.util.Map;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@ConfigDelegate(AlgorithmInstanceCommandDelegate.class)
-public class LenskitAlgorithmInstanceCommand extends AbstractCommand<LenskitAlgorithmInstance> {
+@ConfigDelegate(AlgorithmInstanceBuilderDelegate.class)
+public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithmInstance> {
+    private String name;
     private Map<String, Object> attributes = new HashMap<String, Object>();
     private boolean preload;
     private LenskitRecommenderEngineFactory factory;
 
-    public LenskitAlgorithmInstanceCommand() {
-        this("Unnamed");
+    public LenskitAlgorithmInstanceBuilder() {
+        this("Unnamed Algorithm");
     }
 
-    public LenskitAlgorithmInstanceCommand(String name) {
-        super(name);
+    public LenskitAlgorithmInstanceBuilder(String name) {
+        this.name = name;
         factory = new LenskitRecommenderEngineFactory();
     }
 
@@ -57,10 +57,18 @@ public class LenskitAlgorithmInstanceCommand extends AbstractCommand<LenskitAlgo
      * @param n The name for this algorithm instance.
      * @return The command for chaining.
      */
-    @Override
-    public LenskitAlgorithmInstanceCommand setName(String n) {
-        super.setName(n);
+    public LenskitAlgorithmInstanceBuilder setName(String n) {
+        name = n;
         return this;
+    }
+
+    /**
+     * Get the algorithm name.
+     *
+     * @return The algortihm name.
+     */
+    public String getName() {
+        return name;
     }
 
     /**
@@ -79,7 +87,7 @@ public class LenskitAlgorithmInstanceCommand extends AbstractCommand<LenskitAlgo
      * @param pl {@code true} to pre-load input data when running this algorithm.
      * @return The command for chaining.
      */
-    public LenskitAlgorithmInstanceCommand setPreload(boolean pl) {
+    public LenskitAlgorithmInstanceBuilder setPreload(boolean pl) {
         preload = pl;
         return this;
     }
@@ -92,7 +100,7 @@ public class LenskitAlgorithmInstanceCommand extends AbstractCommand<LenskitAlgo
      * @param value The attribute value.
      * @return The command for chaining.
      */
-    public LenskitAlgorithmInstanceCommand setAttribute(@Nonnull String attr, @Nonnull Object value) {
+    public LenskitAlgorithmInstanceBuilder setAttribute(@Nonnull String attr, @Nonnull Object value) {
         Preconditions.checkNotNull(attr, "attribute names cannot be null");
         Preconditions.checkNotNull(value, "attribute values cannot be null");
         attributes.put(attr, value);
@@ -120,12 +128,12 @@ public class LenskitAlgorithmInstanceCommand extends AbstractCommand<LenskitAlgo
         return factory;
     }
 
-    public LenskitConfiguration getLenskitConfig() {
+    public LenskitConfiguration getConfig() {
         return factory.getConfig();
     }
 
     @Override
-    public LenskitAlgorithmInstance call() throws CommandException {
+    public LenskitAlgorithmInstance build() {
         return new LenskitAlgorithmInstance(getName(), factory, attributes, preload);
     }
 

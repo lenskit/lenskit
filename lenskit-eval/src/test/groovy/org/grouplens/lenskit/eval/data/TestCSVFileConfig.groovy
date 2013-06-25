@@ -33,9 +33,9 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain
 class TestCSVFileConfig extends ConfigTestBase {
     @Test
     void testBuilderAvailable() {
-        def cmdClass = engine.getCommand("csvfile")
+        def cmdClass = engine.lookupMethod("csvfile")
         assertThat(cmdClass, notNullValue())
-        assertThat(cmdClass, equalTo(CSVDataSourceCommand))
+        assertThat(cmdClass, equalTo(CSVDataSourceBuilder))
     }
 
     @Test

@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.eval.cli;
 
 import org.codehaus.groovy.runtime.StackTraceUtils;
-import org.grouplens.lenskit.eval.CommandException;
+import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.config.EvalScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +65,7 @@ public class EvalCLI {
         logger.info("loading evaluation from {}", f);
         try {
             engine.execute(f, options.getArgs());
-        } catch (CommandException e) {
+        } catch (TaskExecutionException e) {
             // we handle these specially
             reportError(e.getCause(), "%s: %s", f.getPath(), e.getMessage());
             return;

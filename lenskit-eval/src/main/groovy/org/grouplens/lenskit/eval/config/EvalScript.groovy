@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.eval.config
 
+import org.apache.commons.lang3.builder.Builder
+import org.grouplens.lenskit.eval.EvalTask
 import org.slf4j.LoggerFactory
 import org.apache.tools.ant.DirectoryScanner
 
@@ -29,7 +31,7 @@ import org.apache.tools.ant.DirectoryScanner
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-abstract class EvalScript extends Script {
+class EvalScript extends Script {
     protected final def logger = LoggerFactory.getLogger(getClass())
     private EvalScriptEngine engine
 
@@ -75,10 +77,17 @@ abstract class EvalScript extends Script {
 
     def methodMissing(String name, args) {
         logger.debug("searching for eval command {}", name)
-        def method = ConfigHelpers.findCommandMethod(engine, name, args)
+        def method = ConfigHelpers.findExternalMethod(engine, name)
         if (method != null) {
-            def obj = method()
-            return obj
+            def obj = method(args)
+            if (obj instanceof Builder) {
+                return obj.build()
+            } else if (obj instanceof EvalTask) {
+                obj.setEvalConfig(config)
+                return obj.call()
+            } else {
+                throw new RuntimeException("${obj} is not a configurable object")
+            }
         } else {
             throw new MissingMethodException(name, this.class, args)
         }
@@ -110,11 +119,6 @@ abstract class EvalScript extends Script {
     }
 
     def run() {
-        try {
-            return super.run()
-        } catch (MissingPropertyException mpe) {
-            def msg = "Could not resolve property ${mpe.property}; maybe an import is missing?"
-            throw new RuntimeException(msg, mpe);
-        }
+        throw new UnsupportedOperationException("script not implemented")
     }
 }

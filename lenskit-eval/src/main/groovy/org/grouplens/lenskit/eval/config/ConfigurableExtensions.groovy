@@ -20,22 +20,23 @@
  */
 package org.grouplens.lenskit.eval.config
 
+import org.apache.commons.lang3.builder.Builder
+
 import java.lang.reflect.Method
 
 import org.slf4j.LoggerFactory
 import static ParameterTransforms.pickInvokable
-import org.grouplens.lenskit.eval.Command
 
 /**
- * Utilities for searching for methods of {@link Command}s.
+ * Utilities for searching for methods of configurable objects..
  * <p>
  * <b>Warning:</b> here be dragons.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @SuppressWarnings("unchecked") // this will carry through to java stub & silence compiler
-class CommandExtensions {
-    private static final def logger = LoggerFactory.getLogger(CommandExtensions)
+class ConfigurableExtensions {
+    private static final def logger = LoggerFactory.getLogger(ConfigurableExtensions)
 
     /**
      * Find a method compatible with some arguments.
@@ -44,7 +45,7 @@ class CommandExtensions {
      * @param args The arguments.
      * @return A no-argument closure invoking the method, or {@code null}.
      */
-    static def findMethod(Command self, String name, Object[] args) {
+    static def findMethod(Object self, String name, Object[] args) {
         logger.debug("searching for method {}", name)
         def atypes = new Class[args.length]
         for (i in 0..<args.length) {
@@ -73,7 +74,7 @@ class CommandExtensions {
     }
 
     /**
-     * Search for a method with a specified BuilderCommand, or a single-argument
+     * Search for a method with a specified BuiltBy, or a single-argument
      * method with a parameter that can be built. Used when we have a closure to
      * build a directive argument.
      * @param self The command to search.
@@ -82,34 +83,25 @@ class CommandExtensions {
      * @param args The arguments.
      * @return A closure to prepare and invoke the method, or {@code null} if no
      * such method can be found.
-     * @see EvalScriptEngine#getCommandForType(Class)
+     * @see EvalScriptEngine#getBuilderForType(Class)
      */
-    static def findBuildableMethod(Command self, EvalScriptEngine engine, List<Method> methods, Object[] args) {
-        // collect all buildable methods
-        def buildables = methods.collect({ method ->
-            BuilderCommand builderAnnotation = method.getAnnotation(BuilderCommand.class)
-            if (builderAnnotation != null) {
-                // if it has a builder annotation, it is buildable.
-                Class<? extends Command> builder = builderAnnotation.value()
+    static def findBuildableMethod(Object self, EvalScriptEngine engine, List<Method> methods, Object[] args) {
+        def oneArgMethods = methods.findAll({it.parameterTypes.length == 1})
+        def buildables = oneArgMethods.collect({ method ->
+            def param = method.parameterTypes[0]
+            Class<? extends Builder> bldClass = null
+            BuiltBy annot = method.getAnnotation(BuiltBy) ?: param.getAnnotation(BuiltBy)
+            if (annot != null) {
+                bldClass = annot.value()
+            } else {
+                bldClass = engine.getBuilderForType(param)
+            }
+            if (bldClass != null) {
                 return {
-                    // REVIEW Does this really work?
-                    builder.call().invoke(self)
+                    def builder = ConfigHelpers.constructAndConfigure(engine, bldClass, args)
+                    method.invoke(self, builder.build())
                 }
             } else {
-                def formals = method.parameterTypes
-                if (formals.length == 1) {
-                    // has a single param, that has a builder command?
-                    def type = formals[0]
-                    logger.debug("looking for command of type {}", type)
-                    Class cmd = engine.getCommandForType(type)
-                    def ctor = ConfigHelpers.makeCommandClosure(cmd, engine, args)
-                    if (ctor != null) {
-                        // we can build the argument
-                        return {
-                            method.invoke(self, ctor(it))
-                        }
-                    }
-                }
                 return null
             }
         }).findAll()
@@ -124,7 +116,14 @@ class CommandExtensions {
         }
     }
 
-    static def findMultiMethod(Command self, String name, Object[] args) {
+    /**
+     * Find a method that should be invoked multiple times, if the argument is iterable.
+     * @param self The configurable object.
+     * @param name The method name.
+     * @param args The arguments.
+     * @return A thunk that will invoke the method.
+     */
+    static def findMultiMethod(Object self, String name, Object[] args) {
         if (args.length != 1) return null
         // the argument is a list
         def arg
@@ -143,11 +142,12 @@ class CommandExtensions {
                     mm.doMethodInvoke(self, elt)
                 }
             }
+        } else {
+            return null;
         }
-
     }
 
-    static List<Method> getMethods(Command self, String name) {
+    static List<Method> getMethods(Object self, String name) {
         self.class.methods.findAll {it.name == name}
     }
 
@@ -159,7 +159,7 @@ class CommandExtensions {
      * @return A no-argument closure that either invokes the method if it is found
      * or throws an exception if there is no matching method.
      */
-    static def findSetter(Command self, EvalScriptEngine engine, String name, Object... args) {
+    static def findSetter(Object self, EvalScriptEngine engine, String name, Object... args) {
         name = "set" + name.capitalize()
         def methods = getMethods(self, name)
 
@@ -199,7 +199,7 @@ class CommandExtensions {
      * @return A no-argument closure that either invokes the method if it is found
      * or throws an exception if there is no matching method.
      */
-    static def findAdder(Command self, EvalScriptEngine engine, String name, Object... args) {
+    static def findAdder(Object self, EvalScriptEngine engine, String name, Object... args) {
         name = "add" + name.capitalize()
         def method = findMethod(self, name, args)
         if (method == null) method = findMultiMethod(self, name, args)

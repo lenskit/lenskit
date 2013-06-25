@@ -18,24 +18,33 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config;
-
-import org.grouplens.lenskit.eval.AbstractCommand;
-
-import java.lang.annotation.*;
+package org.grouplens.lenskit.eval;
 
 /**
- * Specify the command for the default type of this class/interface to which
- * it is applied. Used to build objects when the user doesn't specify the
- * particular command factory to use.
+ * The exception thrown from the failure of call() in Commmand
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 0.10
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-@SuppressWarnings("rawtypes")
-public @interface BuilderCommand {
-    Class<? extends AbstractCommand> value();
+public class TaskExecutionException extends Exception {
+    private static final long serialVersionUID = -9073424874249517829L;
+
+    public TaskExecutionException() {
+    }
+
+    public TaskExecutionException(String message) {
+        super(message);
+    }
+
+    public TaskExecutionException(Exception cause) {
+        super(cause);
+    }
+
+    public TaskExecutionException(String message, Exception cause) {
+        super(message, cause);
+    }
+
+    public TaskExecutionException(String message, Error cause) {
+        super(message, cause);
+    }
+
 }

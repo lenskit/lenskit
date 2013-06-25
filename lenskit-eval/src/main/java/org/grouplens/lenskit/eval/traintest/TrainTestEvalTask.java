@@ -55,8 +55,8 @@ import java.util.concurrent.ExecutionException;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TrainTestEvalCommand extends AbstractCommand<Table> {
-    private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalCommand.class);
+public class TrainTestEvalTask extends AbstractTask<Table> {
+    private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalTask.class);
 
     private List<TTDataSet> dataSources;
     private List<AlgorithmInstance> algorithms;
@@ -87,11 +87,11 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
     private List<ModelMetric> modelMetrics;
 
 
-    public TrainTestEvalCommand() {
+    public TrainTestEvalTask() {
         this("train-test");
     }
 
-    public TrainTestEvalCommand(String name) {
+    public TrainTestEvalTask(String name) {
         super(name);
         dataSources = new LinkedList<TTDataSet>();
         algorithms = new LinkedList<AlgorithmInstance>();
@@ -102,22 +102,22 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         isolationLevel = IsolationLevel.NONE;
     }
 
-    public TrainTestEvalCommand addDataset(TTDataSet source) {
+    public TrainTestEvalTask addDataset(TTDataSet source) {
         dataSources.add(source);
         return this;
     }
 
-    public TrainTestEvalCommand addAlgorithm(LenskitAlgorithmInstance algorithm) {
+    public TrainTestEvalTask addAlgorithm(LenskitAlgorithmInstance algorithm) {
         algorithms.add(algorithm);
         return this;
     }
 
-    public TrainTestEvalCommand addExternalAlgorithm(ExternalAlgorithmInstance algorithm) {
+    public TrainTestEvalTask addExternalAlgorithm(ExternalAlgorithmInstance algorithm) {
         algorithms.add(algorithm);
         return this;
     }
 
-    public TrainTestEvalCommand addMetric(TestUserMetric metric) {
+    public TrainTestEvalTask addMetric(TestUserMetric metric) {
         metrics.add(metric);
         return this;
     }
@@ -130,7 +130,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      *               entries corresponding to each column.
      * @return The command (for chaining).
      */
-    public TrainTestEvalCommand addMultiMetric(File file, List<String> columns, Function<Recommender,List<List<Object>>> metric) {
+    public TrainTestEvalTask addMultiMetric(File file, List<String> columns, Function<Recommender,List<List<Object>>> metric) {
         modelMetrics.add(new FunctionMultiModelMetric(file, columns, metric));
         return this;
     }
@@ -142,7 +142,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      *               entries corresponding to each column.
      * @return The command (for chaining).
      */
-    public TrainTestEvalCommand addMetric(List<String> columns, Function<Recommender,List<Object>> metric) {
+    public TrainTestEvalTask addMetric(List<String> columns, Function<Recommender,List<Object>> metric) {
         modelMetrics.add(new FunctionModelMetric(columns, metric));
         return this;
     }
@@ -154,7 +154,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      * @return The command (for chaining)
      * @see #addWritePredictionChannel
      */
-    public TrainTestEvalCommand addWritePredictionChannel(@Nonnull Symbol channelSym) {
+    public TrainTestEvalTask addWritePredictionChannel(@Nonnull Symbol channelSym) {
         return addWritePredictionChannel(channelSym, null);
     }
 
@@ -166,7 +166,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      * @return The command (for chaining).
      * @see #setPredictOutput(File)
      */
-    public TrainTestEvalCommand addWritePredictionChannel(@Nonnull Symbol channelSym,
+    public TrainTestEvalTask addWritePredictionChannel(@Nonnull Symbol channelSym,
                                                           @Nullable String label) {
         Preconditions.checkNotNull(channelSym, "channel is null");
         if (label == null) {
@@ -177,22 +177,22 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         return this;
     }
 
-    public TrainTestEvalCommand setOutput(File file) {
+    public TrainTestEvalTask setOutput(File file) {
         outputFile = file;
         return this;
     }
 
-    public TrainTestEvalCommand setUserOutput(File file) {
+    public TrainTestEvalTask setUserOutput(File file) {
         userOutputFile = file;
         return this;
     }
 
-    public TrainTestEvalCommand setPredictOutput(File file) {
+    public TrainTestEvalTask setPredictOutput(File file) {
         predictOutputFile = file;
         return this;
     }
 
-    public TrainTestEvalCommand setIsolation(IsolationLevel level) {
+    public TrainTestEvalTask setIsolation(IsolationLevel level) {
         isolationLevel = level;
         return this;
     }
@@ -225,7 +225,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         return numRecs;
     }
 
-    public TrainTestEvalCommand setNumRecs(int numRecs) {
+    public TrainTestEvalTask setNumRecs(int numRecs) {
         this.numRecs = numRecs;
         return this;
     }
@@ -234,15 +234,15 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      * Run the evaluation on the train test data source files
      *
      * @return The summary output table.
-     * @throws org.grouplens.lenskit.eval.CommandException
+     * @throws org.grouplens.lenskit.eval.TaskExecutionException
      *          Failure of the evaluation
      */
     @Override
-    public Table call() throws CommandException {
+    public Table call() throws TaskExecutionException {
         setupJobGroups();
         setupTableLayouts();
 
-        int nthreads = getConfig().getThreadCount();
+        int nthreads = getEvalConfig().getThreadCount();
         logger.info("Starting evaluation");
         this.prepareEval();
         logger.info("Running evaluator with {} threads", nthreads);
@@ -264,7 +264,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
         try {
             exec.run();
         } catch (ExecutionException e) {
-            throw new CommandException("Error running the evaluation", e);
+            throw new TaskExecutionException("Error running the evaluation", e);
         } finally {
             logger.info("Finishing evaluation");
             this.cleanUp();
@@ -415,7 +415,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
                 throw new RuntimeException("Error opening prediction table", e);
             }
         }
-        for (Metric<TrainTestEvalCommand> metric : Iterables.concat(predictMetrics, modelMetrics)) {
+        for (Metric<TrainTestEvalTask> metric : Iterables.concat(predictMetrics, modelMetrics)) {
             metric.startEvaluation(this);
         }
     }
@@ -424,7 +424,7 @@ public class TrainTestEvalCommand extends AbstractCommand<Table> {
      * Finalize metrics and close output files.
      */
     private void cleanUp() {
-        for (Metric<TrainTestEvalCommand> metric : Iterables.concat(predictMetrics, modelMetrics)) {
+        for (Metric<TrainTestEvalTask> metric : Iterables.concat(predictMetrics, modelMetrics)) {
             metric.finishEvaluation();
         }
         if (output == null) {

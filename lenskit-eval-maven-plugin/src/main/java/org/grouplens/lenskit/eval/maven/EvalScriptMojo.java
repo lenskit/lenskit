@@ -29,7 +29,7 @@ import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.codehaus.plexus.util.DirectoryScanner;
-import org.grouplens.lenskit.eval.CommandException;
+import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.config.EvalScriptEngine;
 
@@ -195,7 +195,7 @@ public class EvalScriptMojo extends AbstractMojo {
             try {
                 getLog().info("Loading evalution script from " + f.getPath());
                 engine.execute(f);
-            } catch (CommandException e) {
+            } catch (TaskExecutionException e) {
                 Throwable report = StackTraceUtils.deepSanitize(e).getCause();
                 if (report == null) {
                     report = e;
@@ -232,9 +232,6 @@ public class EvalScriptMojo extends AbstractMojo {
         }
         return result;
     }
-
-
-
 
     /**
      * Compute the class loader we need in order to run. This is the class's class loader,
