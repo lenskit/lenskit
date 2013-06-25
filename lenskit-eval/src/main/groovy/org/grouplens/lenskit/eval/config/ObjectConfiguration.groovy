@@ -21,6 +21,8 @@
 package org.grouplens.lenskit.eval.config
 
 import org.apache.commons.lang3.builder.Builder
+import org.apache.commons.lang3.tuple.Pair
+import org.grouplens.lenskit.config.GroovyUtils
 
 import java.lang.reflect.Method
 
@@ -35,8 +37,8 @@ import static ParameterTransforms.pickInvokable
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @SuppressWarnings("unchecked") // this will carry through to java stub & silence compiler
-class ConfigurableExtensions {
-    private static final def logger = LoggerFactory.getLogger(ConfigurableExtensions)
+class ObjectConfiguration {
+    private static final def logger = LoggerFactory.getLogger(ObjectConfiguration)
 
     /**
      * Find a method compatible with some arguments.
@@ -98,7 +100,7 @@ class ConfigurableExtensions {
             }
             if (bldClass != null) {
                 return {
-                    def builder = ConfigHelpers.constructAndConfigure(engine, bldClass, args)
+                    def builder = constructAndConfigure(bldClass, engine, args)
                     method.invoke(self, builder.build())
                 }
             } else {
@@ -213,5 +215,74 @@ class ConfigurableExtensions {
             }
         }
         return method
+    }
+
+    private static <T> Object makeConfigDelegate(Object target, EvalScriptEngine engine) {
+        def annot = target.class.getAnnotation(ConfigDelegate)
+        if (annot == null) {
+            return new DefaultConfigDelegate<T>(engine, target)
+        } else {
+            Class<?> dlgClass = annot.value()
+            // try two-arg constructor
+            def ctor = dlgClass.constructors.find {
+                def formals = it.parameterTypes
+                formals.length == 2 && formals[0].isAssignableFrom(EvalScriptEngine) && formals[1].isInstance(target)
+            }
+            if (ctor != null) {
+                return ctor.newInstance(engine, target)
+            } else {
+                ctor = dlgClass.constructors.find {
+                    def formals = it.parameterTypes
+                    formals.length == 1 && formals[0].isInstance(target)
+                }
+            }
+            if (ctor != null) {
+                return ctor.newInstance(target)
+            } else {
+                return dlgClass.newInstance()
+            }
+        }
+    }
+
+    /**
+     * Split an array of arguments into arguments a trailing closure.
+     * @param args The argument array.
+     * @return A pair consisting of the arguments, except for any trailing closure, and the closure.
+     * If {@var args} does not have end with a closure, {@code Pair.of(args, null)} is returned.
+     */
+    static Pair<Object[], Closure> splitClosure(Object[] args) {
+        if (args.length > 0 && args[args.length - 1] instanceof Closure) {
+            return Pair.of(Arrays.copyOf(args, args.length - 1),
+                           args[args.length-1] as Closure)
+        } else {
+            return Pair.of(args, null)
+        }
+    }
+
+    private static <T> T constructAndConfigure(Class<T> type, EvalScriptEngine engine, Object[] args) {
+        def split = splitClosure(args)
+        def obj = type.metaClass.invokeConstructor(split.left)
+        if (split.right != null) {
+            GroovyUtils.callWithDelegate(split.right, makeConfigDelegate(obj, engine))
+        }
+        type.cast(obj)
+    }
+
+    /**
+     * Find an external method (a builder or task) and return a closure that, when invoked, constructs
+     * and configures it.  It does <strong>not</strong> invoke the builder or task, that is left up
+     * to the caller.
+     *
+     * @param engine The script engine.
+     * @param name The method name.
+     * @return A closure representing the method builder, or {@code null} if no such method exists.
+     */
+    static Closure findExternalMethod(EvalScriptEngine engine, String name) {
+        def mtype = engine.lookupMethod(name)
+        if (mtype != null) {
+            return {args -> constructAndConfigure(mtype, engine, args)}
+        } else {
+            return null
+        }
     }
 }

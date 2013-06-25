@@ -59,7 +59,7 @@ class DefaultConfigDelegate<T> {
 
     def methodMissing(String name, args) {
         Closure method = null
-        use(ConfigurableExtensions) {
+        use(ObjectConfiguration) {
             method = target.findSetter(engine, name, args)
 
             if (method == null) {

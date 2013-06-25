@@ -77,7 +77,7 @@ class EvalScript extends Script {
 
     def methodMissing(String name, args) {
         logger.debug("searching for eval command {}", name)
-        def method = ConfigHelpers.findExternalMethod(engine, name)
+        def method = ObjectConfiguration.findExternalMethod(engine, name)
         if (method != null) {
             def obj = method(args)
             if (obj instanceof Builder) {
