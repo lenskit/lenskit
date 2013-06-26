@@ -40,8 +40,14 @@ abstract class ConfigTestBase {
      * @param cl The code to run.
      * @return The return value of evaluating {@code cl}.
      */
-    protected def eval(Closure cl) {
+    protected def eval(@DelegatesTo(EvalScript) Closure cl) {
         def script = new ClosureScript(engine, cl)
         return engine.runScript(script)
+    }
+
+    protected EvalScript evalScript(@DelegatesTo(EvalScript) Closure cl) {
+        def script = new ClosureScript(engine, cl);
+        engine.runScript(script)
+        script
     }
 }

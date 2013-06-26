@@ -21,6 +21,10 @@
 package org.grouplens.lenskit.eval.config
 
 import org.apache.commons.lang3.builder.Builder
+import org.apache.tools.ant.BuildException
+import org.apache.tools.ant.Project
+import org.apache.tools.ant.Target
+import org.grouplens.lenskit.config.GroovyUtils
 import org.grouplens.lenskit.eval.EvalTask
 import org.slf4j.LoggerFactory
 import org.apache.tools.ant.DirectoryScanner
@@ -34,15 +38,19 @@ import org.apache.tools.ant.DirectoryScanner
 class EvalScript extends Script {
     protected final def logger = LoggerFactory.getLogger(getClass())
     private EvalScriptEngine engine
+    private Project project
+    private Target currentTarget
 
     EvalScript() {
-        engine = null
+        this(null)
     }
 
     EvalScript(EvalScriptEngine eng) {
         engine = eng
+        project = new Project()
     }
 
+    //region Properties
     EvalConfig getConfig() {
         return engine.config
     }
@@ -63,7 +71,9 @@ class EvalScript extends Script {
     EvalScript getEval() {
         return this;
     }
+    //endregion
 
+    //region Utilities
     /**
      * Evaluate another script.
      * @param file The script to evaluate.
@@ -82,23 +92,6 @@ class EvalScript extends Script {
      */
     Object evalScript(String fn, String... args) {
         return evalScript(new File(fn), args)
-    }
-
-    def methodMissing(String name, args) {
-        logger.debug("searching for eval command {}", name)
-        def method = ObjectConfiguration.findExternalMethod(engine, name)
-        if (method != null) {
-            def obj = method(args)
-            if (obj instanceof Builder) {
-                return obj.build()
-            } else if (obj instanceof EvalTask) {
-                return obj.call()
-            } else {
-                throw new RuntimeException("${obj} is not a configurable object")
-            }
-        } else {
-            throw new MissingMethodException(name, this.class, args)
-        }
     }
 
     /**
@@ -125,8 +118,59 @@ class EvalScript extends Script {
         ds.scan()
         return ds.getIncludedFiles()
     }
+    //endregion
+
+    Target target(String name, @DelegatesTo(TargetDelegate) closure) {
+        if (currentTarget != null) {
+            throw new IllegalStateException("cannot nest targets")
+        }
+
+        def target = new Target()
+        target.name = name
+        target.project = project
+        def delegate = new TargetDelegate(target)
+        currentTarget = target
+        try {
+            GroovyUtils.callWithDelegate(closure, delegate)
+        } finally {
+            currentTarget = null
+        }
+        project.addTarget(target)
+        target
+    }
+
+    //region Plumbing
+    def methodMissing(String name, args) {
+        logger.debug("searching for eval command {}", name)
+        def method = ObjectConfiguration.findExternalMethod(engine, name)
+        if (method != null) {
+            def obj = method(args)
+            if (obj instanceof Builder) {
+                return obj.build()
+            } else if (obj instanceof EvalTask) {
+                if (currentTarget == null) {
+                    return obj.call()
+                } else {
+                    def task = new EvalAntTask(obj)
+                    task.project = project
+                    task.owningTarget = currentTarget
+                    currentTarget.addTask(task)
+                    obj
+                }
+            } else {
+                throw new RuntimeException("${obj} is not a configurable object")
+            }
+        } else {
+            throw new MissingMethodException(name, this.class, args)
+        }
+    }
 
     def run() {
         throw new UnsupportedOperationException("script not implemented")
     }
+
+    void runTarget(String target) throws BuildException {
+        project.executeTarget(target)
+    }
+    //endregion
 }
