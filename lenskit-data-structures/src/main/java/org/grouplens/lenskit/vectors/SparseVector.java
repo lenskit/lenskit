@@ -663,10 +663,23 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public double dot(SparseVector o) {
         double dot = 0;
-        for (Pair<VectorEntry,VectorEntry> pair: Vectors.fastIntersect(this, o)) {
-            VectorEntry e1 = pair.getLeft();
-            VectorEntry e2 = pair.getRight();
-            dot += e1.getValue() * e2.getValue();
+        Pointer<VectorEntry> p1 = fastPointer();
+        Pointer<VectorEntry> p2 = o.fastPointer();
+
+        while (!p1.isAtEnd() && !p2.isAtEnd()) {
+            VectorEntry e1 = p1.get();
+            VectorEntry e2 = p2.get();
+            final long k1 = e1.getKey();
+            final long k2 = e2.getKey();
+            if (k1 < k2) {
+                p1.advance();
+            } else if (k2 < k1) {
+                p2.advance();
+            } else {
+                dot += e1.getValue() * e2.getValue();
+                p1.advance();
+                p2.advance();
+            }
         }
         return dot;
     }
