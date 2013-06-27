@@ -358,6 +358,7 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
      *
      * @throws IOException if there is an error writing the files.
      */
+    @SuppressWarnings("PMD.AvoidCatchingThrowable")
     protected void createTTFiles() throws IOException {
         File[] trainFiles = getFiles(getTrainPattern());
         File[] testFiles = getFiles(getTestPattern());

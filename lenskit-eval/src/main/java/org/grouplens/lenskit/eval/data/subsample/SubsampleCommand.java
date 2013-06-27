@@ -169,6 +169,7 @@ public class SubsampleCommand extends AbstractCommand<DataSource> {
      * @throws org.grouplens.lenskit.eval.CommandException
      *
      */
+    @SuppressWarnings("PMD.AvoidCatchingThrowable")
     @Override
     public DataSource call() throws CommandException {
         UpToDateChecker check = new UpToDateChecker();

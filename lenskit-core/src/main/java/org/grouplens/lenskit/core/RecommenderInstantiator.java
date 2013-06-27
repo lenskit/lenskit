@@ -24,6 +24,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
@@ -94,6 +95,7 @@ public final class RecommenderInstantiator {
         return replaceShareableNodes(new Function<Node, Node>() {
             @Nullable
             @Override
+            @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
             public Node apply(@Nullable Node node) {
                 Preconditions.checkNotNull(node);
                 assert node != null;
@@ -119,6 +121,7 @@ public final class RecommenderInstantiator {
         return replaceShareableNodes(new Function<Node, Node>() {
             @Nullable
             @Override
+            @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
             public Node apply(@Nullable Node node) {
                 Preconditions.checkNotNull(node);
                 assert node != null;
