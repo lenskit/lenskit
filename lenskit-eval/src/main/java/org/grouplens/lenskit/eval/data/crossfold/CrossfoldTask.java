@@ -358,6 +358,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      *
      * @throws IOException if there is an error writing the files.
      */
+    @SuppressWarnings("PMD.AvoidCatchingThrowable")
     protected void createTTFiles() throws IOException {
         File[] trainFiles = getFiles(getTrainPattern());
         File[] testFiles = getFiles(getTestPattern());

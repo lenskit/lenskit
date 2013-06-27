@@ -178,6 +178,7 @@ public class SubsampleTask extends AbstractTask<DataSource> {
      * @throws org.grouplens.lenskit.eval.TaskExecutionException
      *
      */
+    @SuppressWarnings("PMD.AvoidCatchingThrowable")
     @Override
     public DataSource call() throws TaskExecutionException {
         UpToDateChecker check = new UpToDateChecker();

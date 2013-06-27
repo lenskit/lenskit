@@ -157,7 +157,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         return getEvents(Event.class, SortOrder.ANY);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "PMD.AvoidCatchingThrowable"})
     @Override
     public <E extends Event> Cursor<E> getEvents(Class<E> type, SortOrder order) {
         // if they don't want ratings, they get nothing

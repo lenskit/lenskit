@@ -22,7 +22,6 @@ package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
@@ -187,6 +186,15 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     protected int findIndex(long key) {
         return Arrays.binarySearch(keys, 0, domainSize, key);
+    }
+
+    /**
+     * Query wehther the vector is "full"; that is, all keys are set.  This can speed up certain
+     * operations.
+     * @return {@code true} if all keys are known to be set.
+     */
+    boolean isFullySet() {
+        return false;
     }
 
     /**
@@ -435,7 +443,11 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     public Pointer<VectorEntry> fastPointer(VectorEntry.State state) {
         switch (state) {
         case SET:
-            return new FastMaskedPointer(false);
+            if (isFullySet()) {
+                return new FastPointer();
+            } else {
+                return new FastMaskedPointer(false);
+            }
         case UNSET:
             return new FastMaskedPointer(true);
         case EITHER:
@@ -477,9 +489,15 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         private final boolean isSet;
         private final VectorEntry entry = new VectorEntry(SparseVector.this, -1, 0, 0, false);
 
+        /**
+         * Construct a fast pointer that respects the usedKeys mask.
+         * @param invert Whether to invert the mask. If {@code true}, then the inverse of usedKeys
+         *               is used (iterating over unset keys).
+         */
         public FastMaskedPointer(boolean invert) {
             isSet = !invert;
             if (invert) {
+                // this is an uncommon operation, so invert the key set
                 BitSet inverse = new BitSet();
                 inverse.or(usedKeys);
                 inverse.flip(0, domainSize);
@@ -509,6 +527,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     }
     //endregion
 
+    //region Domain, set, and value management
     /**
      * Get the key domain for this vector. All keys used are in this
      * set.  The keys will be in sorted order.
@@ -615,7 +634,9 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     public boolean isEmpty() {
         return size() == 0;
     }
+    //endregion
 
+    //region Linear algebra
     /**
      * Compute and return the L2 norm (Euclidian length) of the vector.
      *
@@ -691,9 +712,30 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @return The number of keys appearing in both this and the other vector.
      */
     public int countCommonKeys(SparseVector o) {
-        return Iterables.size(Vectors.fastIntersect(this, o));
-    }
+        int count = 0;
+        Pointer<VectorEntry> p1 = fastPointer();
+        Pointer<VectorEntry> p2 = o.fastPointer();
 
+        while (!p1.isAtEnd() && !p2.isAtEnd()) {
+            VectorEntry e1 = p1.get();
+            VectorEntry e2 = p2.get();
+            final long k1 = e1.getKey();
+            final long k2 = e2.getKey();
+            if (k1 < k2) {
+                p1.advance();
+            } else if (k2 < k1) {
+                p2.advance();
+            } else {
+                count += 1;
+                p1.advance();
+                p2.advance();
+            }
+        }
+        return count;
+    }
+    //endregion
+
+    //region Object support
     @Override
     public String toString() {
         Function<VectorEntry, String> label = new Function<VectorEntry, String>() {
@@ -735,6 +777,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     public int hashCode() {
         return keySet().hashCode() ^ values().hashCode();
     }
+    //endregion
 
     /**
      * Return an immutable snapshot of this sparse vector. The new vector's key
