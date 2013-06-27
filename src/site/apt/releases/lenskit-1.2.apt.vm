@@ -11,7 +11,7 @@
     precision when a domain does not have a precision may need to be corrected.
 
   * Implemented new <<<lenskit-groovy>>> module to load LensKit configurations from Groovy-based
-    configuration files.  See the {{{./apidocs/org/grouplens/lenskit/config/package-summary.html}config package JavaDoc}}
+    configuration files.  See the {{{../apidocs/org/grouplens/lenskit/config/package-summary.html}config package JavaDoc}}
     for information on how to use this support.
 
   * <<<SparseVector>>> performance improvements, particularly for dot products.
