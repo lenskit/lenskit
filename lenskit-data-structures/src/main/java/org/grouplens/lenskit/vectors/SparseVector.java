@@ -22,7 +22,6 @@ package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
@@ -477,9 +476,15 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         private final boolean isSet;
         private final VectorEntry entry = new VectorEntry(SparseVector.this, -1, 0, 0, false);
 
+        /**
+         * Construct a fast pointer that respects the usedKeys mask.
+         * @param invert Whether to invert the mask. If {@code true}, then the inverse of usedKeys
+         *               is used (iterating over unset keys).
+         */
         public FastMaskedPointer(boolean invert) {
             isSet = !invert;
             if (invert) {
+                // this is an uncommon operation, so invert the key set
                 BitSet inverse = new BitSet();
                 inverse.or(usedKeys);
                 inverse.flip(0, domainSize);
