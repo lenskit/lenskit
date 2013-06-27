@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.eval.algorithm;
 
 import com.google.common.base.Preconditions;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.eval.AbstractCommand;
 import org.grouplens.lenskit.eval.CommandException;
@@ -112,9 +113,15 @@ public class LenskitAlgorithmInstanceCommand extends AbstractCommand<LenskitAlgo
      *
      * @return The factory for this recommender instance. Each instance has the factory
      *         instantiated to a fresh, empty factory.
+     * @deprecated Use {@link #getConfig()} instead.
      */
+    @Deprecated
     public LenskitRecommenderEngineFactory getFactory() {
         return factory;
+    }
+
+    public LenskitConfiguration getLenskitConfig() {
+        return factory.getConfig();
     }
 
     @Override

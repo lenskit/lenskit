@@ -20,17 +20,10 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
-import it.unimi.dsi.fastutil.longs.*;
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import com.google.common.io.Closer;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.UserHistory;
@@ -44,14 +37,18 @@ import org.grouplens.lenskit.eval.data.CSVDataSourceCommand;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataCommand;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * The command to build and run a crossfold on the data source file and output the partition files
@@ -334,7 +331,11 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
                 return getTTFiles();
             }
         }
-        createTTFiles();
+        try {
+            createTTFiles();
+        } catch (IOException ex) {
+            throw new CommandException("Error writing data sets", ex);
+        }
         return getTTFiles();
     }
 
@@ -355,24 +356,21 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
     /**
      * Write train-test split files
      *
-     * @throws org.grouplens.lenskit.eval.CommandException
-     *          Any error
+     * @throws IOException if there is an error writing the files.
      */
-    protected void createTTFiles() throws CommandException {
+    @SuppressWarnings("PMD.AvoidCatchingThrowable")
+    protected void createTTFiles() throws IOException {
         File[] trainFiles = getFiles(getTrainPattern());
         File[] testFiles = getFiles(getTestPattern());
         TableWriter[] trainWriters = new TableWriter[partitionCount];
         TableWriter[] testWriters = new TableWriter[partitionCount];
+        Closer closer = Closer.create();
         try {
             for (int i = 0; i < partitionCount; i++) {
                 File train = trainFiles[i];
                 File test = testFiles[i];
-                try {
-                    trainWriters[i] = CSVWriter.open(train, null);
-                    testWriters[i] = CSVWriter.open(test, null);
-                } catch (IOException e) {
-                    throw new CommandException("Error creating train test file writer", e);
-                }
+                trainWriters[i] = closer.register(CSVWriter.open(train, null));
+                testWriters[i] = closer.register(CSVWriter.open(test, null));
             }
             DAOFactory factory = source.getDAOFactory();
             DataAccessObject daoSnap = factory.snapshot();
@@ -385,9 +383,10 @@ public class CrossfoldCommand extends AbstractCommand<List<TTDataSet>> {
             } finally {
                 daoSnap.close();
             }
+        } catch (Throwable th) {
+            throw closer.rethrow(th);
         } finally {
-            LKFileUtils.close(logger, trainWriters);
-            LKFileUtils.close(logger, testWriters);
+            closer.close();
         }
     }
     

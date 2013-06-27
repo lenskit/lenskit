@@ -28,7 +28,9 @@ import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.AbstractSatisfactionVisitor;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.Satisfaction;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.RecommenderConfigurationException;
+import org.grouplens.lenskit.core.RecommenderInstantiator;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractCommand;
@@ -37,11 +39,18 @@ import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Set;
 
+/**
+ * Command to dump a graph.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
+@SuppressWarnings("unused")
 public class DumpGraphCommand extends AbstractCommand<File> {
     private static final Logger logger = LoggerFactory.getLogger(DumpGraphCommand.class);
 
@@ -49,7 +58,6 @@ public class DumpGraphCommand extends AbstractCommand<File> {
     private File output;
     private PreferenceDomain domain = null;
     private Class<? extends DataAccessObject> daoType;
-
 
     public DumpGraphCommand() {
         this(null);
@@ -59,12 +67,17 @@ public class DumpGraphCommand extends AbstractCommand<File> {
         super(name);
     }
 
+    @Nonnull
     @Override
     public String getName() {
         if (hasName()) {
             return super.getName();
         } else {
-            return algorithm.getName();
+            String name = algorithm.getName();
+            if (name == null) {
+                name = "algorithm";
+            }
+            return name;
         }
     }
 
@@ -94,14 +107,20 @@ public class DumpGraphCommand extends AbstractCommand<File> {
             logger.error("no output file specified");
             throw new IllegalStateException("no graph output file specified");
         }
-        LenskitRecommenderEngineFactory factory = algorithm.getFactory().clone();
+        LenskitConfiguration config = algorithm.getConfig().copy();
         if (domain != null) {
-            factory.bind(PreferenceDomain.class).to(domain);
+            config.bind(PreferenceDomain.class).to(domain);
         }
         logger.info("dumping graph {}", getName());
-        Graph initial = factory.getInitialGraph(daoType);
+        RecommenderInstantiator instantiator;
+        try {
+            instantiator = RecommenderInstantiator.forConfig(config, daoType);
+        } catch (RecommenderConfigurationException e) {
+            throw new CommandException("error resolving algorithm configuration", e);
+        }
+        Graph initial = instantiator.getGraph();
         logger.debug("graph has {} nodes", initial.getNodes().size());
-        Graph unshared = factory.simulateInstantiation(initial);
+        Graph unshared = instantiator.simulate();
         logger.debug("unshared graph has {} nodes", unshared.getNodes().size());
         try {
             writeGraph(initial, unshared.getNodes(), output);

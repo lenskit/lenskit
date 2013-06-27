@@ -37,7 +37,7 @@ public class TestPreferenceDomain {
         assertThat(d.getMinimum(), closeTo(1.0, 1.0e-6));
         assertThat(d.getMaximum(), closeTo(3.0, 1.0e-6));
         assertFalse(d.hasPrecision());
-        assertThat(d.getPrecision(), equalTo(Double.MIN_VALUE));
+        assertThat(d.getPrecision(), equalTo(0.0));
     }
 
     @Test(expected = IllegalArgumentException.class)

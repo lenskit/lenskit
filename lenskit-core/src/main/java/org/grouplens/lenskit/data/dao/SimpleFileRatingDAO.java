@@ -24,6 +24,8 @@
 package org.grouplens.lenskit.data.dao;
 
 import com.google.common.base.Supplier;
+import com.google.common.base.Throwables;
+import com.google.common.io.Closeables;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
@@ -155,7 +157,7 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         return getEvents(Event.class, SortOrder.ANY);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "PMD.AvoidCatchingThrowable"})
     @Override
     public <E extends Event> Cursor<E> getEvents(Class<E> type, SortOrder order) {
         // if they don't want ratings, they get nothing
@@ -166,32 +168,35 @@ public class SimpleFileRatingDAO extends AbstractDataAccessObject {
         @SuppressWarnings("rawtypes")
         Comparator comp = getComparator(order);
 
-        Reader input;
+        Reader input = null;
         final String name = file.getPath();
+        logger.debug("Opening {}", file.getPath());
         try {
-            logger.debug("Opening {}", file.getPath());
             input = LKFileUtils.openInput(file, compression);
-        } catch (IOException e) {
-            throw new DataAccessException(e);
-        }
-        BufferedReader buf;
-        try {
+
+            // failing to close buffer & cursor in event of unlikely errors is OK
+            BufferedReader buf;
             buf = new BufferedReader(input);
-        } catch (RuntimeException e) {
-            LKFileUtils.close(logger, input);
-            throw e;
-        }
-        Cursor<Rating> cursor;
-        try {
+            Cursor<Rating> cursor;
             cursor = new DelimitedTextRatingCursor(buf, name, delimiter);
-        } catch (RuntimeException e) {
-            LKFileUtils.close(logger, buf);
-            throw e;
-        }
-        if (comp == null) {
-            return (Cursor<E>) cursor;
-        } else {
-            return Cursors.sort(cursor, comp);
+            if (comp == null) {
+                return (Cursor<E>) cursor;
+            } else {
+                return Cursors.sort(cursor, comp);
+            }
+        } catch (Throwable th) {
+            // we got an exception, make sure we close the underlying reader since we won't be
+            // returning a closeable. Otherwise we might leak file handles.
+            if (input != null) {
+                try {
+                    Closeables.close(input, true);
+                } catch (IOException ioe) {
+                    // should never happen, we suppress exceptions
+                    throw new DataAccessException(ioe);
+                }
+            }
+            Throwables.propagateIfPossible(th);
+            throw new DataAccessException(th);
         }
     }
 

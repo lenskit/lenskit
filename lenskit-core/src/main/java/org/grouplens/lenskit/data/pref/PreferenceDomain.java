@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.pref;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.grapht.annotation.DefaultNull;
@@ -42,22 +43,29 @@ import java.util.regex.Pattern;
 public final class PreferenceDomain implements Serializable {
     public static final long serialVersionUID = 1L;
 
-    private double minimum;
-    private double maximum;
-    private double precision;
+    private final double minimum;
+    private final double maximum;
+    private final double precision;
 
     /**
      * Create a discrete bounded preference domain.
      *
      * @param min  The minimum preference value.
      * @param max  The maximum preference value.
-     * @param prec The preference precision (if {@link Double#NaN}, the domain
+     * @param prec The preference precision (if 0 or {@link Double#NaN}, the domain
      *             is continuous).
      */
     public PreferenceDomain(double min, double max, double prec) {
+        Preconditions.checkArgument(max > min, "max must be greater than min");
+        Preconditions.checkArgument(Double.isNaN(prec) || prec >= 0,
+                                    "precision cannot be negative");
         minimum = min;
         maximum = max;
-        precision = prec;
+        if (Double.isNaN(prec)) {
+            precision = 0;
+        } else {
+            precision = prec;
+        }
     }
 
     /**
@@ -67,7 +75,7 @@ public final class PreferenceDomain implements Serializable {
      * @param max The maximum preference value.
      */
     public PreferenceDomain(double min, double max) {
-        this(min, max, Double.NaN);
+        this(min, max, 0);
     }
 
     /**
@@ -95,7 +103,7 @@ public final class PreferenceDomain implements Serializable {
      *         if it is continuous.
      */
     public boolean hasPrecision() {
-        return !Double.isNaN(precision);
+        return precision > 0;
     }
 
     /**
@@ -107,11 +115,7 @@ public final class PreferenceDomain implements Serializable {
      * @see #hasPrecision()
      */
     public double getPrecision() {
-        if (hasPrecision()) {
-            return precision;
-        } else {
-            return Double.MIN_VALUE;
-        }
+        return precision;
     }
 
     /**
@@ -189,8 +193,8 @@ public final class PreferenceDomain implements Serializable {
      * @return The preference domain represented by {@code spec}.
      * @throws IllegalArgumentException if {@code spec} is not a valid domain specification.
      */
-    public static
     @Nonnull
+    public static
     PreferenceDomain fromString(@Nonnull String spec) {
         Matcher m = specRE.matcher(spec);
         if (!m.matches()) {

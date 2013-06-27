@@ -27,6 +27,7 @@ import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -104,6 +105,10 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
     @Nonnull
     public LenskitRecommenderEngineFactory getFactory() {
         return factory;
+    }
+
+    public LenskitConfiguration getConfig() {
+        return factory.getConfig();
     }
 
     public LenskitRecommender buildRecommender(DataAccessObject dao,

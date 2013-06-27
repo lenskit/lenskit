@@ -20,26 +20,35 @@
  */
 package org.grouplens.lenskit.eval.algorithm
 
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceCommand
-
+import org.grouplens.lenskit.config.LenskitConfigDSL
+import org.grouplens.lenskit.core.LenskitConfiguration
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory
-import org.grouplens.lenskit.eval.config.ContextConfigDelegate
+import org.grouplens.lenskit.eval.config.EvalConfig
 
 /**
  * Groovy delegate for configuring {@code AlgorithmInstanceCommand}s.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-class AlgorithmInstanceCommandDelegate extends ContextConfigDelegate {
+class AlgorithmInstanceCommandDelegate {
     private LenskitAlgorithmInstanceCommand command
+    private LenskitConfigDSL dsl
 
     AlgorithmInstanceCommandDelegate(LenskitAlgorithmInstanceCommand builder) {
-        super(builder.getFactory())
-        this.command = builder
+        command = builder
+        dsl = LenskitConfigDSL.forConfig(command.lenskitConfig)
     }
 
     LenskitRecommenderEngineFactory getFactory() {
-        return command.getFactory()
+        return command.factory
+    }
+
+    EvalConfig getConfig() {
+        return command.config
+    }
+
+    LenskitConfiguration getLenskitConfig() {
+        return command.lenskitConfig
     }
 
     def getAttributes() {
@@ -62,7 +71,8 @@ class AlgorithmInstanceCommandDelegate extends ContextConfigDelegate {
         command.setName(name)
     }
 
-    void root(Class type) {
-        factory.addRoot(type)
+    def methodMissing(String name, args) {
+        // delegate to missing method
+        return dsl.invokeMethod(name, args)
     }
 }

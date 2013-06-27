@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.util.io;
 
+import com.google.common.base.Throwables;
+import com.google.common.io.Closeables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,12 +80,10 @@ public final class LKFileUtils {
                 break;
             }
             return new InputStreamReader(wrapped, charset);
-        } catch (RuntimeException e) {
-            close(istream);
-            throw e;
-        } catch (IOException e) {
-            close(istream);
-            throw e;
+        } catch (Exception ex) {
+            Closeables.close(istream, true);
+            Throwables.propagateIfPossible(ex, IOException.class);
+            throw new RuntimeException("unexpected exception", ex);
         }
     }
 
@@ -141,12 +141,10 @@ public final class LKFileUtils {
                 break;
             }
             return new OutputStreamWriter(wrapped, charset);
-        } catch (RuntimeException e) {
-            close(ostream);
-            throw e;
-        } catch (IOException e) {
-            close(ostream);
-            throw e;
+        } catch (Exception ex) {
+            Closeables.close(ostream, true);
+            Throwables.propagateIfPossible(ex, IOException.class);
+            throw new RuntimeException("unexpected exception", ex);
         }
     }
 
@@ -174,53 +172,5 @@ public final class LKFileUtils {
     @SuppressWarnings("unused")
     public static Writer openOutput(File file) throws IOException {
         return openOutput(file, Charset.defaultCharset(), CompressionMode.AUTO);
-    }
-
-    /**
-     * Close a set of closeable objects, swallowing and logging all exceptions.
-     *
-     * @param log     The logger to which to report errors.
-     * @param toClose The objects to close.
-     * @return {@code true} if all objects closed cleanly; {@code false} if some objects
-     *         failed when closing.
-     * @deprecated Use {@link com.google.common.io.Closer} instead; also see
-     * <a href="https://code.google.com/p/guava-libraries/issues/detail?id=1118">this explanation</a>
-     * for why Guava removed a similar feature.
-     */
-    @Deprecated
-    public static boolean close(Logger log, Closeable... toClose) {
-        boolean success = true;
-        for (Closeable c : toClose) {
-            if (c != null) {
-                try {
-                    c.close();
-                } catch (IOException e) {
-                    String msg = String.format("error closing %s: %s", c, e);
-                    log.error(msg, e);
-                    success = false;
-                } catch (RuntimeException e) {
-                    String msg = String.format("error closing %s: %s", c, e);
-                    log.error(msg, e);
-                    success = false;
-                }
-            }
-        }
-
-        return success;
-    }
-
-    /**
-     * Close a group of objects, using a default logger.
-     *
-     * @param toClose The objects to close.
-     * @return {@code true} if all objects closed successfully.
-     * @see #close(Logger, Closeable...)
-     * @deprecated Use {@link com.google.common.io.Closer} instead; also see
-     * <a href="https://code.google.com/p/guava-libraries/issues/detail?id=1118">this explanation</a>
-     * for why Guava removed a similar feature.
-     */
-    @Deprecated
-    public static boolean close(Closeable... toClose) {
-        return close(logger, toClose);
     }
 }

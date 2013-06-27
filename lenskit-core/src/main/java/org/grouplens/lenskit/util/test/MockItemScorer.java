@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.util.test;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
@@ -40,6 +41,7 @@ public class MockItemScorer extends AbstractItemScorer {
     private final Long2ObjectMap<ImmutableSparseVector> userData;
     private final boolean usesHistory;
 
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
     private MockItemScorer(Long2ObjectMap<? extends SparseVector> udat, boolean uh) {
         super(null); // provide null DAO, we override the only method that uses it.
         userData = new Long2ObjectOpenHashMap<ImmutableSparseVector>(udat.size());

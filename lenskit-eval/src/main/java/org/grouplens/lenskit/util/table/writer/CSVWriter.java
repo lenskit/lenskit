@@ -30,6 +30,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+import com.google.common.io.Closeables;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 
@@ -108,12 +110,10 @@ public class CSVWriter extends AbstractTableWriter {
         Writer writer = LKFileUtils.openOutput(file, Charset.defaultCharset(), compression);
         try {
             return new CSVWriter(writer, layout);
-        } catch (RuntimeException e) {
-            LKFileUtils.close(writer);
-            throw e;
-        } catch (IOException e) {
-            LKFileUtils.close(writer);
-            throw e;
+        } catch (Exception ex) {
+            Closeables.close(writer, true);
+            Throwables.propagateIfInstanceOf(ex, IOException.class);
+            throw Throwables.propagate(ex);
         }
     }
 
