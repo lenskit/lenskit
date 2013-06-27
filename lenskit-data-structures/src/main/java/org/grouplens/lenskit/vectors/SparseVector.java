@@ -189,6 +189,15 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     }
 
     /**
+     * Query wehther the vector is "full"; that is, all keys are set.  This can speed up certain
+     * operations.
+     * @return {@code true} if all keys are known to be set.
+     */
+    boolean isFullySet() {
+        return false;
+    }
+
+    /**
      * Query whether the vector contains an entry for the key in question.
      *
      * @param key The key to search for.
@@ -434,7 +443,11 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     public Pointer<VectorEntry> fastPointer(VectorEntry.State state) {
         switch (state) {
         case SET:
-            return new FastMaskedPointer(false);
+            if (isFullySet()) {
+                return new FastPointer();
+            } else {
+                return new FastMaskedPointer(false);
+            }
         case UNSET:
             return new FastMaskedPointer(true);
         case EITHER:
@@ -514,6 +527,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     }
     //endregion
 
+    //region Domain, set, and value management
     /**
      * Get the key domain for this vector. All keys used are in this
      * set.  The keys will be in sorted order.
@@ -620,7 +634,9 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     public boolean isEmpty() {
         return size() == 0;
     }
+    //endregion
 
+    //region Linear algebra
     /**
      * Compute and return the L2 norm (Euclidian length) of the vector.
      *
@@ -717,7 +733,9 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         }
         return count;
     }
+    //endregion
 
+    //region Object support
     @Override
     public String toString() {
         Function<VectorEntry, String> label = new Function<VectorEntry, String>() {
@@ -759,6 +777,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     public int hashCode() {
         return keySet().hashCode() ^ values().hashCode();
     }
+    //endregion
 
     /**
      * Return an immutable snapshot of this sparse vector. The new vector's key

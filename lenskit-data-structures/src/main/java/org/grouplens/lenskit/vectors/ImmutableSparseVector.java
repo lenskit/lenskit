@@ -51,6 +51,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     private transient volatile Double norm = null;
     private transient volatile Double sum = null;
     private transient volatile Double mean = null;
+    private transient volatile Boolean fullySet = null;
     
     /**
      * Create a new, empty immutable sparse vector.
@@ -114,6 +115,14 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
                           Map<Symbol, ImmutableSparseVector> channels) {
         super(ks, vs, sz, used);
         channelMap = channels;
+    }
+
+    @Override
+    boolean isFullySet() {
+        if (fullySet == null) {
+            fullySet = usedKeys.cardinality() == domainSize;
+        }
+        return fullySet;
     }
 
     @Override
