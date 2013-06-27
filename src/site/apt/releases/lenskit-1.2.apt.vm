@@ -10,10 +10,20 @@
     the value is still formally undefined behavior, but code which (incorrectly) depended on the
     precision when a domain does not have a precision may need to be corrected.
 
-  []
+  * Implemented new <<<lenskit-groovy>>> module to load LensKit configurations from Groovy-based
+    configuration files.  See the {{{./apidocs/org/grouplens/lenskit/config/package-summary.html}config package JavaDoc}}
+    for information on how to use this support.
 
-* Evaluator
+  * <<<SparseVector>>> performance improvements, particularly for dot products.
 
-  * Renamed <<<Command.getConfig())>>> to <<<Command.getEvalConfig()>>>. Also renamed the setter.
+    * Sparse vectors now expose <<<Pointer>>>s over their entries directly, allowing pointer-based
+      access more efficiently than with <<<IteratorPointer>>>.
+
+    * Pairwise iteration in <<<Vectors>>> uses direct pointers.
+
+    * Dot products now use pairs of pointers directly, rather than indirectly using pairwise
+      iteration.
+
+    []
 
   []
