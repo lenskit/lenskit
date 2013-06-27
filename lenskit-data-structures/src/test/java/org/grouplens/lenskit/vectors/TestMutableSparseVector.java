@@ -36,11 +36,13 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 
 import java.util.BitSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 
+import org.grouplens.lenskit.collections.Pointer;
 import org.junit.Test;
 
 import com.google.common.collect.Iterators;
@@ -773,5 +775,78 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         msv2.set(7, 77);
         assertFalse(msv.equals(msv2));
         assertFalse(msv2.equals(msv));
+    }
+
+    @Test
+    public void testPartialSetPointer() {
+        MutableSparseVector msv = simpleVector();
+        msv.unset(7);
+
+        Pointer<VectorEntry> ptr = msv.pointer(VectorEntry.State.SET);
+        assertThat(ptr.isAtEnd(), equalTo(false));
+        assertThat(ptr.get().getKey(), equalTo(3L));
+        assertThat(ptr.get().getValue(), closeTo(1.5));
+        assertThat(ptr.get().isSet(), equalTo(true));
+        assertThat(ptr.isAtEnd(), equalTo(false));
+        assertThat(ptr.advance(), equalTo(true));
+        assertThat(ptr.get().getKey(), equalTo(8L));
+        assertThat(ptr.get().getValue(), closeTo(2));
+        assertThat(ptr.get().isSet(), equalTo(true));
+        assertThat(ptr.advance(), equalTo(false));
+        assertThat(ptr.isAtEnd(), equalTo(true));
+        try {
+            ptr.get();
+            fail("pointer should throw when out of bounds");
+        } catch (NoSuchElementException e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testPartialUnsetPointer() {
+        MutableSparseVector msv = simpleVector();
+        msv.unset(7);
+
+        Pointer<VectorEntry> ptr = msv.pointer(VectorEntry.State.UNSET);
+        assertThat(ptr.isAtEnd(), equalTo(false));
+        assertThat(ptr.get().getKey(), equalTo(7L));
+        assertThat(ptr.get().isSet(), equalTo(false));
+        assertThat(ptr.isAtEnd(), equalTo(false));
+        assertThat(ptr.advance(), equalTo(false));
+        assertThat(ptr.isAtEnd(), equalTo(true));
+        try {
+            ptr.get();
+            fail("pointer should throw when out of bounds");
+        } catch (NoSuchElementException e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testPartialEitherPointer() {
+        MutableSparseVector msv = simpleVector();
+        msv.unset(7);
+
+        Pointer<VectorEntry> ptr = msv.pointer(VectorEntry.State.EITHER);
+        assertThat(ptr.isAtEnd(), equalTo(false));
+        assertThat(ptr.get().getKey(), equalTo(3L));
+        assertThat(ptr.get().getValue(), closeTo(1.5));
+        assertThat(ptr.get().isSet(), equalTo(true));
+        assertThat(ptr.advance(), equalTo(true));
+        assertThat(ptr.get().getKey(), equalTo(7L));
+        assertThat(ptr.get().isSet(), equalTo(false));
+        assertThat(ptr.isAtEnd(), equalTo(false));
+        assertThat(ptr.advance(), equalTo(true));
+        assertThat(ptr.get().getKey(), equalTo(8L));
+        assertThat(ptr.get().getValue(), closeTo(2));
+        assertThat(ptr.get().isSet(), equalTo(true));
+        assertThat(ptr.advance(), equalTo(false));
+        assertThat(ptr.isAtEnd(), equalTo(true));
+        try {
+            ptr.get();
+            fail("pointer should throw when out of bounds");
+        } catch (NoSuchElementException e) {
+            /* expected */
+        }
     }
 }

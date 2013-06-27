@@ -32,10 +32,7 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.collections.BitSetIterator;
-import org.grouplens.lenskit.collections.IntIntervalList;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.collections.MoreArrays;
+import org.grouplens.lenskit.collections.*;
 import org.grouplens.lenskit.symbols.Symbol;
 
 import javax.annotation.Nonnull;
@@ -255,6 +252,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         }
     }
 
+    //region Iterators
     /**
      * Fast iterator over all set entries (it can reuse entry objects).
      *
@@ -336,6 +334,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         return new IterImpl();
     }
 
+
     private class IterImpl implements Iterator<VectorEntry> {
         private BitSetIterator iter = new BitSetIterator(usedKeys);
 
@@ -390,6 +389,125 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
             throw new UnsupportedOperationException();
         }
     }
+    //endregion
+
+    //region Pointers
+
+    /**
+     * Get a pointer over the set vector entries.
+     *
+     * @return A pointer to the first entry in this vector (or after the end, if the vector is
+     *         empty).
+     */
+    public Pointer<VectorEntry> pointer() {
+        return pointer(VectorEntry.State.SET);
+    }
+
+    /**
+     * Get a pointer over the vector entries.
+     *
+     * @param state The entries to include.
+     * @return A pointer to the first entry in this vector (or after the end, if the vector is
+     *         empty).
+     */
+    public Pointer<VectorEntry> pointer(VectorEntry.State state) {
+        return Pointers.transform(fastPointer(state), VectorEntry.copyFunction());
+    }
+
+    /**
+     * Get a fast pointer over the set vector entries.
+     *
+     * @return A pointer to the first entry in this vector (or after the end, if the vector is
+     *         empty).
+     */
+    public Pointer<VectorEntry> fastPointer() {
+        return fastPointer(VectorEntry.State.SET);
+    }
+
+    /**
+     * Get a fast pointer over the vector entries.  It may modify and return the same object rather
+     * than creating new instances.  When returned, it is pointing at the first entry, if such
+     * exists.
+     *
+     * @param state The entries to include.
+     * @return A (potentially) fast pointer over the vector entries.
+     */
+    public Pointer<VectorEntry> fastPointer(VectorEntry.State state) {
+        switch (state) {
+        case SET:
+            return new FastMaskedPointer(false);
+        case UNSET:
+            return new FastMaskedPointer(true);
+        case EITHER:
+            return new FastPointer();
+        default:
+            throw new AssertionError("invalid entry state");
+        }
+    }
+
+    private class FastPointer implements Pointer<VectorEntry> {
+        private int pos = 0;
+        private final VectorEntry entry = new VectorEntry(SparseVector.this, -1, 0, 0, false);
+
+        @Override
+        public boolean advance() {
+            if (pos < domainSize) {
+                ++pos;
+            }
+            return pos < domainSize;
+        }
+
+        @Override
+        public VectorEntry get() {
+            if (isAtEnd()) {
+                throw new NoSuchElementException("pointer out of bounds");
+            }
+            entry.set(pos, keys[pos], values[pos], usedKeys.get(pos));
+            return entry;
+        }
+
+        @Override
+        public boolean isAtEnd() {
+            return pos >= domainSize;
+        }
+    }
+
+    private class FastMaskedPointer implements Pointer<VectorEntry> {
+        private final BitSetPointer bsp;
+        private final boolean isSet;
+        private final VectorEntry entry = new VectorEntry(SparseVector.this, -1, 0, 0, false);
+
+        public FastMaskedPointer(boolean invert) {
+            isSet = !invert;
+            if (invert) {
+                BitSet inverse = new BitSet();
+                inverse.or(usedKeys);
+                inverse.flip(0, domainSize);
+                bsp = new BitSetPointer(inverse, 0, domainSize);
+            } else {
+                bsp = new BitSetPointer(usedKeys, 0, domainSize);
+            }
+        }
+
+        @Override
+        public boolean advance() {
+            return bsp.advance();
+        }
+
+        @Override
+        public VectorEntry get() {
+            int idx = bsp.getInt();
+            assert idx >= 0 && idx < domainSize;
+            entry.set(idx, keys[idx], values[idx], isSet);
+            return entry;
+        }
+
+        @Override
+        public boolean isAtEnd() {
+            return bsp.isAtEnd();
+        }
+    }
+    //endregion
 
     /**
      * Get the key domain for this vector. All keys used are in this
@@ -545,10 +663,23 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public double dot(SparseVector o) {
         double dot = 0;
-        for (Pair<VectorEntry,VectorEntry> pair: Vectors.fastIntersect(this, o)) {
-            VectorEntry e1 = pair.getLeft();
-            VectorEntry e2 = pair.getRight();
-            dot += e1.getValue() * e2.getValue();
+        Pointer<VectorEntry> p1 = fastPointer();
+        Pointer<VectorEntry> p2 = o.fastPointer();
+
+        while (!p1.isAtEnd() && !p2.isAtEnd()) {
+            VectorEntry e1 = p1.get();
+            VectorEntry e2 = p2.get();
+            final long k1 = e1.getKey();
+            final long k2 = e2.getKey();
+            if (k1 < k2) {
+                p1.advance();
+            } else if (k2 < k1) {
+                p2.advance();
+            } else {
+                dot += e1.getValue() * e2.getValue();
+                p1.advance();
+                p2.advance();
+            }
         }
         return dot;
     }

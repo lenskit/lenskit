@@ -24,6 +24,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.doubles.DoubleRBTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.grouplens.lenskit.collections.Pointer;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -65,6 +66,101 @@ public abstract class SparseVectorTestCommon {
 
     public static Matcher<Double> closeTo(double v) {
         return Matchers.closeTo(v, 1.0e-5);
+    }
+
+    @Test
+    public void testEmptyPointer() {
+        Pointer<VectorEntry> ptr = emptyVector().pointer(VectorEntry.State.SET);
+        assertThat(ptr.isAtEnd(), equalTo(true));
+        assertThat(ptr.advance(), equalTo(false));
+        try {
+            ptr.get();
+            fail("pointer should throw when out of bounds");
+        } catch (NoSuchElementException e) {
+            /* expected */
+        }
+
+        // try again, with EITHER (unmasked) pointer
+        ptr = emptyVector().pointer(VectorEntry.State.EITHER);
+        assertThat(ptr.isAtEnd(), equalTo(true));
+        assertThat(ptr.advance(), equalTo(false));
+        try {
+            ptr.get();
+            fail("pointer should throw when out of bounds");
+        } catch (NoSuchElementException e) {
+            /* expected */
+        }
+
+        // try again, with UNSET (inverted mask) pointer
+        ptr = emptyVector().pointer(VectorEntry.State.UNSET);
+        assertThat(ptr.isAtEnd(), equalTo(true));
+        assertThat(ptr.advance(), equalTo(false));
+        try {
+            ptr.get();
+            fail("pointer should throw when out of bounds");
+        } catch (NoSuchElementException e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testSimplePointer() {
+        Pointer<VectorEntry> ptr = simpleVector().pointer(VectorEntry.State.SET);
+        assertThat(ptr.isAtEnd(), equalTo(false));
+        assertThat(ptr.get().getKey(), equalTo(3L));
+        assertThat(ptr.get().getValue(), closeTo(1.5));
+        assertThat(ptr.get().isSet(), equalTo(true));
+        assertThat(ptr.advance(), equalTo(true));
+        assertThat(ptr.get().getKey(), equalTo(7L));
+        assertThat(ptr.get().getValue(), closeTo(3.5));
+        assertThat(ptr.get().isSet(), equalTo(true));
+        assertThat(ptr.isAtEnd(), equalTo(false));
+        assertThat(ptr.advance(), equalTo(true));
+        assertThat(ptr.get().getKey(), equalTo(8L));
+        assertThat(ptr.get().getValue(), closeTo(2));
+        assertThat(ptr.get().isSet(), equalTo(true));
+        assertThat(ptr.advance(), equalTo(false));
+        assertThat(ptr.isAtEnd(), equalTo(true));
+        try {
+            ptr.get();
+            fail("pointer should throw when out of bounds");
+        } catch (NoSuchElementException e) {
+            /* expected */
+        }
+
+        // try again, with EITHER (unmasked) pointer
+        ptr = simpleVector().pointer(VectorEntry.State.EITHER);
+        assertThat(ptr.isAtEnd(), equalTo(false));
+        assertThat(ptr.get().getKey(), equalTo(3L));
+        assertThat(ptr.get().getValue(), closeTo(1.5));
+        assertThat(ptr.get().isSet(), equalTo(true));
+        assertThat(ptr.advance(), equalTo(true));
+        assertThat(ptr.get().getKey(), equalTo(7L));
+        assertThat(ptr.get().getValue(), closeTo(3.5));
+        assertThat(ptr.get().isSet(), equalTo(true));
+        assertThat(ptr.isAtEnd(), equalTo(false));
+        assertThat(ptr.advance(), equalTo(true));
+        assertThat(ptr.get().getKey(), equalTo(8L));
+        assertThat(ptr.get().getValue(), closeTo(2));
+        assertThat(ptr.get().isSet(), equalTo(true));
+        assertThat(ptr.advance(), equalTo(false));
+        assertThat(ptr.isAtEnd(), equalTo(true));
+        try {
+            ptr.get();
+            fail("pointer should throw when out of bounds");
+        } catch (NoSuchElementException e) {
+            /* expected */
+        }
+
+        ptr = simpleVector().pointer(VectorEntry.State.UNSET);
+        assertThat(ptr.isAtEnd(), equalTo(true));
+        assertThat(ptr.advance(), equalTo(false));
+        try {
+            ptr.get();
+            fail("pointer should throw when out of bounds");
+        } catch (NoSuchElementException e) {
+            /* expected */
+        }
     }
 
     @Test
