@@ -691,7 +691,26 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @return The number of keys appearing in both this and the other vector.
      */
     public int countCommonKeys(SparseVector o) {
-        return Iterables.size(Vectors.fastIntersect(this, o));
+        int count = 0;
+        Pointer<VectorEntry> p1 = fastPointer();
+        Pointer<VectorEntry> p2 = o.fastPointer();
+
+        while (!p1.isAtEnd() && !p2.isAtEnd()) {
+            VectorEntry e1 = p1.get();
+            VectorEntry e2 = p2.get();
+            final long k1 = e1.getKey();
+            final long k2 = e2.getKey();
+            if (k1 < k2) {
+                p1.advance();
+            } else if (k2 < k1) {
+                p2.advance();
+            } else {
+                count += 1;
+                p1.advance();
+                p2.advance();
+            }
+        }
+        return count;
     }
 
     @Override
