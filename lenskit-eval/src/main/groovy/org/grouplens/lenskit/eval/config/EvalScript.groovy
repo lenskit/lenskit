@@ -40,6 +40,7 @@ class EvalScript extends Script {
     private EvalScriptEngine engine
     private Project project
     private Target currentTarget
+    private AntBuilder ant
 
     EvalScript() {
         this(null)
@@ -48,6 +49,8 @@ class EvalScript extends Script {
     EvalScript(EvalScriptEngine eng) {
         engine = eng
         project = new Project()
+        project.init()
+        ant = new AntBuilder(project)
     }
 
     //region Properties
@@ -70,6 +73,20 @@ class EvalScript extends Script {
      */
     EvalScript getEval() {
         return this;
+    }
+
+    /**
+     * Get the Ant project.
+     */
+    Project getProject() {
+        return project;
+    }
+
+    /**
+     * Get the Ant builder.
+     */
+    AntBuilder getAnt() {
+        return ant;
     }
     //endregion
 

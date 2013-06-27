@@ -1,9 +1,11 @@
 package org.grouplens.lenskit.eval.config
 
+import org.apache.tools.ant.BuildException
 import org.junit.Test
 
 import static org.hamcrest.Matchers.equalTo
-import static org.junit.Assert.assertThat
+import static org.hamcrest.Matchers.nullValue
+import static org.junit.Assert.*
 
 /**
  * Teset that targets behave as expected.
@@ -86,7 +88,7 @@ class TestTargets extends ConfigTestBase {
     }
 
     @Test
-    void testRunDependentTask() {
+    void testRunDependentTarget() {
         def ranTarget = false
         def configuredTask = false
         def ranAction = false
@@ -120,7 +122,7 @@ class TestTargets extends ConfigTestBase {
     }
 
     @Test
-    void testRunByNameDependentTask() {
+    void testRunByNameDependentTarget() {
         def ranTarget = false
         def configuredTask = false
         def ranAction = false
@@ -153,5 +155,20 @@ class TestTargets extends ConfigTestBase {
         script.runTarget("testing")
         assertThat(ranAction, equalTo(true))
         assertThat(ranRequired, equalTo(true))
+    }
+
+    @Test
+    void testSimpleAntTask() {
+        def script = evalScript {
+            target("ant") {
+                ant.fail(message: "failure")
+            }
+        }
+        try {
+            script.runTarget("ant")
+            fail("ant target should fail")
+        } catch (BuildException e) {
+            assertThat(e.getCause(), nullValue());
+        }
     }
 }

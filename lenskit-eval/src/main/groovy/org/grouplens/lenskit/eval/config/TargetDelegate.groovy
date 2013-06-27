@@ -10,9 +10,11 @@ import org.apache.tools.ant.Target
  */
 class TargetDelegate {
     private Target target
+    final AntBuilder ant
 
     TargetDelegate(Target tgt) {
         target = tgt
+        ant = new LenskitAntBuilder(tgt.project, tgt)
     }
 
     void requires(Object... targets) {
