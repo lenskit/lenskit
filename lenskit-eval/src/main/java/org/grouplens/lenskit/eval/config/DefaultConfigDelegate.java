@@ -18,13 +18,18 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config
+package org.grouplens.lenskit.eval.config;
+
+import groovy.lang.GroovyObjectSupport;
+import org.codehaus.groovy.runtime.InvokerHelper;
+
 /**
  * Default Groovy delegate for configuring commands of evaluator components. It wraps
  * a {@link org.grouplens.lenskit.eval.EvalTask}, and dispatches methods as follows:
- * <p/>
+ * <p>
  * To resolve "foo", this delegate first looks for a method "setFoo", then "addFoo", such that one
  * of the following holds:
+ * </p>
  * <ul>
  *     <li>The method takes the parameters specified.</li>
  *     <li>The parameters specified can be converted into appropriate types
@@ -32,36 +37,37 @@ package org.grouplens.lenskit.eval.config
  *     classes with their default constructors.</li>
  *     <li>The method takes a single parameter annotated with the {@link BuiltBy}
  *     annotation. This command is constructed using a constructor that matches the arguments
- *     provided, except that the last argument is ommitted if it is a {@link Closure}. If the
- *     last argument is a {@link Closure}, it is used to configure the command with an appropriate
+ *     provided, except that the last argument is ommitted if it is a {@link groovy.lang.Closure}. If the
+ *     last argument is a {@link groovy.lang.Closure}, it is used to configure the command with an appropriate
  *     delegate before the object is built.</li>
  * </ul>
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-class DefaultConfigDelegate<T> {
-    protected final EvalScriptEngine engine
-    protected final Object target
+public class DefaultConfigDelegate extends GroovyObjectSupport {
+    protected final ScriptHelper scriptHelper;
+    protected final Object target;
 
     /**
      * Construct a new command delegate.
      * @param target The command to use when pretending methods.
      */
-    DefaultConfigDelegate(EvalScriptEngine engine, Object target) {
-        this.engine = engine
-        this.target = target
+    public DefaultConfigDelegate(ScriptHelper ch, Object target) {
+        this.scriptHelper = ch;
+        this.target = target;
     }
 
-    def propertyMissing(String name) {
-        target.getMetaClass().getProperty(target, name)
+    public Object propertyMissing(String name) {
+        return InvokerHelper.getProperty(target, name);
     }
 
-    def propertyMissing(String name, Object value) {
-        target.getMetaClass().setProperty(target, name, value);
+    public void propertyMissing(String name, Object value) {
+        InvokerHelper.setProperty(target, name, value);
     }
 
-    def methodMissing(String name, args) {
-        ObjectConfiguration.invokeConfigurationMethod(target, engine, name, args)
+    public Object methodMissing(String name, Object args) {
+        return scriptHelper.invokeConfigurationMethod(target, name,
+                                                      InvokerHelper.asArray(args));
     }
 }

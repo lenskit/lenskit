@@ -24,14 +24,13 @@ import java.lang.annotation.*;
 
 /**
  * Specify a delegate class to be used to configure an object of the type to which this annotation
- * is applied (typically either a builder or a task). When using a command to instantiate a setter
- * or adder parameter, if the command class has this annotation the specified class is used as the
- * delegate instead of the default {@link DefaultConfigDelegate} when invoking the command closure.
+ * is applied (typically either a builder or a task). When using a builder to instantiate a setter
+ * or adder parameter, if the builder class has this annotation the specified class is used as the
+ * delegate instead of the default {@link DefaultConfigDelegate} when invoking the builder closure.
  * <p>
- * If the delegate class has a public constructor taking the command as a single argument, that
- * constructor is used; otherwise a no-arg constructor is used. The single-argument constructor is
- * highly recommended, as otherwise there isn't a good way to make the object to be configured
- * available to the delegate.
+ * The delegate class must have a public constructor that takes a single argument, the object to
+ * be configured.
+ * </p>
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
