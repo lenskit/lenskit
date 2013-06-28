@@ -44,8 +44,8 @@
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
     <javadoc.cite.database>${basedir}/etc/references.rdf</javadoc.cite.database>
     <groovy.version>2.1.5</groovy.version>
-    <gmaven.version>1.5</gmaven.version>
-    <gmaven.runtime>2.0</gmaven.runtime>
+    <groovy.eclipse.version>2.7.0-01</groovy.eclipse.version>
+    <groovy.eclipse.batch>2.1.5-03</groovy.eclipse.batch>
     <lenskit.clean.removeAll>false</lenskit.clean.removeAll>
   </properties>
 
@@ -258,21 +258,9 @@
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.gmaven</groupId>
-          <artifactId>gmaven-plugin</artifactId>
-          <version>${gmaven.version}</version>
-          <dependencies>
-            <dependency>
-              <groupId>org.codehaus.gmaven.runtime</groupId>
-              <artifactId>gmaven-runtime-${gmaven.runtime}</artifactId>
-              <version>${gmaven.version}</version>
-            </dependency>
-            <dependency>
-              <groupId>org.codehaus.groovy</groupId>
-              <artifactId>groovy-all</artifactId>
-              <version>${groovy.version}</version>
-            </dependency>
-          </dependencies>
+          <groupId>org.codehaus.groovy</groupId>
+          <artifactId>groovy-eclipse-compiler</artifactId>
+          <version>${groovy.eclipse.version}</version>
         </plugin>
 
         <!--JavaDoc -->
@@ -378,36 +366,6 @@
             </dependency>
           </dependencies>
         </plugin>
-
-        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-        <plugin>
-          <groupId>org.eclipse.m2e</groupId>
-          <artifactId>lifecycle-mapping</artifactId>
-          <version>1.0.0</version>
-          <configuration>
-            <lifecycleMappingMetadata>
-              <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.codehaus.gmaven</groupId>
-                    <artifactId>gmaven-plugin</artifactId>
-                    <versionRange>[1.5,)</versionRange>
-                    <goals>
-                      <goal>compile</goal>
-                      <goal>generateStubs</goal>
-                      <goal>generateTestStubs</goal>
-                      <goal>testCompile</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore />
-                  </action>
-                </pluginExecution>
-              </pluginExecutions>
-            </lifecycleMappingMetadata>
-          </configuration>
-        </plugin>
-
       </plugins>
 
     </pluginManagement>
