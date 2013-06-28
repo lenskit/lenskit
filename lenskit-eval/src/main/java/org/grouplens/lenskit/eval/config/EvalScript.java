@@ -59,7 +59,9 @@ public class EvalScript extends Script implements GroovyObject {
 
     public EvalScript(EvalScriptEngine eng) {
         engine = eng;
-        scriptHelper = new ScriptHelper(engine);
+        if (eng != null) {
+            scriptHelper = new ScriptHelper(engine);
+        }
         project = new Project();
         project.init();
         ant = new AntBuilder(project);
@@ -76,6 +78,7 @@ public class EvalScript extends Script implements GroovyObject {
 
     public void setEngine(EvalScriptEngine ece) {
         engine = ece;
+        scriptHelper = new ScriptHelper(ece);
     }
 
     /**
@@ -175,7 +178,7 @@ public class EvalScript extends Script implements GroovyObject {
         logger.debug("searching for eval command {}", name);
         Object obj = null;
         try {
-            obj = scriptHelper.callExternalMethod(engine, name, args);
+            obj = scriptHelper.callExternalMethod(name, args);
         } catch (NoSuchMethodException e) {
             throw new MissingMethodException(name, getClass(), args, true);
         }

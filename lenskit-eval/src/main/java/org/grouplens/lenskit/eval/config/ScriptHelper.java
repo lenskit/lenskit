@@ -303,11 +303,10 @@ public class ScriptHelper {
      * constructs and configures it.  It does <strong>not</strong> invoke the builder or task, that
      * is left up to the caller.
      *
-     * @param engine The script engine.
      * @param name   The method name.
      * @return The constructed and configured object corresponding to this method.
      */
-    public Object callExternalMethod(EvalScriptEngine engine, String name, Object... args) throws NoSuchMethodException {
+    public Object callExternalMethod(String name, Object... args) throws NoSuchMethodException {
         final Class<?> mtype = engine.lookupMethod(name);
         if (mtype != null) {
             try {
