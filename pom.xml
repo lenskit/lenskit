@@ -61,17 +61,17 @@
     <module>lenskit-api</module>
     <module>lenskit-data-structures</module>
     <module>lenskit-core</module>
-    <module>lenskit-test</module>
+    <module>lenskit-groovy</module>
     <module>lenskit-eval</module>
-    <module>lenskit-eval-maven-plugin</module>
     <module>lenskit-knn</module>
     <module>lenskit-svd</module>
     <module>lenskit-slopeone</module>
     <module>lenskit-archetype-simple-analysis</module>
     <module>lenskit-archetype-fancy-analysis</module>
+    <module>lenskit-eval-maven-plugin</module>
+    <module>lenskit-test</module>
     <module>lenskit-package</module>
     <module>lenskit-integration-tests</module>
-    <module>lenskit-groovy</module>
   </modules>
 
   <repositories>
