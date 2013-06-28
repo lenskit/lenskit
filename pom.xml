@@ -623,12 +623,12 @@
             <executions>
               <execution>
                 <id>default-single</id>
-                <phase>site</phase>
+                <phase>package</phase>
                 <goals>
                   <goal>single</goal>
                 </goals>
                 <configuration>
-                  <outputDirectory>${project.build.directory}/site/downloads</outputDirectory>
+                  <outputDirectory>${project.build.directory}</outputDirectory>
                   <tarLongFileMode>gnu</tarLongFileMode>
                   <descriptors>
                     <descriptor>src/assemble/source-package.xml</descriptor>
@@ -644,8 +644,8 @@
             <inherited>false</inherited>
             <executions>
               <execution>
-                <id>copy-binary-package</id>
-                <phase>post-site</phase>
+                <id>copy-downlaods</id>
+                <phase>site</phase>
                 <goals><goal>run</goal></goals>
                 <configuration>
                   <target>
@@ -653,6 +653,12 @@
                       <fileset dir="${basedir}/lenskit-package/target">
                         <include name="lenskit-${project.version}.zip" />
                         <include name="lenskit-${project.version}.tar.gz" />
+                      </fileset>
+                    </copy>
+                    <copy todir="${project.build.directory}/site/downloads">
+                      <fileset dir="${project.build.directory}">
+                        <include name="lenskit-${project.version}-source.zip" />
+                        <include name="lenskit-${project.version}-source.tar.gz" />
                       </fileset>
                     </copy>
                   </target>
