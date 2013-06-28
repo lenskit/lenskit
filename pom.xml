@@ -71,7 +71,6 @@
     <module>lenskit-eval-maven-plugin</module>
     <module>lenskit-test</module>
     <module>lenskit-package</module>
-    <module>lenskit-integration-tests</module>
   </modules>
 
   <repositories>
@@ -662,12 +661,16 @@
     </profile>
 
     <profile>
-      <id>lint</id>
+      <id>integration-tests</id>
       <activation>
+        <activeByDefault>true</activeByDefault>
         <property>
           <name>lenskit.ci</name>
         </property>
       </activation>
+      <modules>
+        <module>lenskit-integration-tests</module>
+      </modules>
     </profile>
   </profiles>
 </project>
