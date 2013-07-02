@@ -20,14 +20,13 @@
  */
 package org.grouplens.lenskit.eval.config;
 
+import com.google.common.collect.Iterables;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
 
 import javax.annotation.Nullable;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
 
 /**
  * An eval "project", the eval script equivalent of an Ant project.  This is used and configured
@@ -39,6 +38,7 @@ import java.util.Random;
 public class EvalProject {
     private Project antProject;
     private Random random = new Random();
+    private String defaultTarget;
 
     /**
      * Construct a new eval project.
@@ -115,5 +115,34 @@ public class EvalProject {
      */
     public void executeTarget(String name) throws BuildException {
         antProject.executeTarget(name);
+    }
+
+    /**
+     * Execute a sequence of targets.
+     * @param names The targets to execute.
+     */
+    @SuppressWarnings("rawtypes")
+    public void executeTargets(String... names) {
+        Vector targets = antProject.topoSort(names, antProject.getTargets(), false);
+        antProject.executeSortedTargets(targets);
+    }
+
+    /**
+     * Execute a sequence of targets.
+     * @param names The targets to execute.
+     */
+    @SuppressWarnings("rawtypes")
+    public void executeTargets(List<String> names) {
+        String[] nameArray = Iterables.toArray(names, String.class);
+        Vector targets = antProject.topoSort(nameArray, antProject.getTargets(), false);
+        antProject.executeSortedTargets(targets);
+    }
+
+    public String getDefaultTarget() {
+        return defaultTarget;
+    }
+
+    public void setDefaultTarget(String defaultTarget) {
+        this.defaultTarget = defaultTarget;
     }
 }

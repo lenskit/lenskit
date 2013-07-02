@@ -20,8 +20,13 @@
  */
 package org.grouplens.lenskit.eval.cli;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
+import org.apache.tools.ant.Target;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.grouplens.lenskit.eval.TaskExecutionException;
+import org.grouplens.lenskit.eval.config.EvalProject;
 import org.grouplens.lenskit.eval.config.EvalScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,8 +69,27 @@ public class EvalCLI {
         File f = options.getScriptFile();
         logger.info("loading evaluation from {}", f);
         try {
-            // FIXME Use the project properly
-            engine.loadProject(f);
+            EvalProject project = engine.loadProject(f);
+            if (options.getArgs().length == 0) {
+                String dft = project.getDefaultTarget();
+                if (dft == null && !project.getAntProject().getTargets().isEmpty()) {
+                    String targets = Joiner.on(", ")
+                                           .join(Iterables.transform(
+                                                   project.getAntProject().getTargets().keySet(),
+                                                   new Function() {
+                                                       @Nullable
+                                                       @Override
+                                                       public Object apply(@Nullable Object input) {
+                                                           return input == null ? null : ((Target) input).getName();
+                                                       }
+                                                   }));
+                    logger.error("No targets specified and no default provided (try one of {})",
+                                 targets);
+                    System.exit(2);
+                }
+            } else {
+                project.executeTargets(options.getArgs());
+            }
         } catch (TaskExecutionException e) {
             // we handle these specially
             reportError(e.getCause(), "%s: %s", f.getPath(), e.getMessage());

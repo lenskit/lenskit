@@ -176,7 +176,6 @@ public class EvalScriptEngine {
      * @throws org.grouplens.lenskit.eval.TaskExecutionException if there is a configuration error
      * @throws IOException      if there is an error reading the file
      */
-    @Nullable
     public EvalProject loadProject(File file) throws TaskExecutionException, IOException {
         logger.debug("loading script file {}", file);
         EvalProject project = new EvalProject(properties);
@@ -191,7 +190,6 @@ public class EvalScriptEngine {
      * @return A list of evaluations
      * @throws org.grouplens.lenskit.eval.TaskExecutionException if there is a configuration error
      */
-    @Nullable
     public Object loadProject(Reader in) throws TaskExecutionException, IOException {
         EvalProject project = createProject();
         runScript(in, project);

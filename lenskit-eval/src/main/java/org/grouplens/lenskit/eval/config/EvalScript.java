@@ -193,6 +193,18 @@ public class EvalScript extends Script implements GroovyObject {
         return target;
     }
 
+    public void defaultTarget(String name) {
+        project.setDefaultTarget(name);
+    }
+
+    public void defaultTarget(Target target) {
+        if (target == null) {
+            project.setDefaultTarget(null);
+        } else {
+            project.setDefaultTarget(target.getName());
+        }
+    }
+
     //region Plumbing
     public Object methodMissing(String name, Object arg) {
         Object[] args = InvokerHelper.asArray(arg);

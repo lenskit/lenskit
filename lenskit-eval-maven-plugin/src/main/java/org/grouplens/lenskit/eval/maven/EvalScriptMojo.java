@@ -20,6 +20,10 @@
  */
 package org.grouplens.lenskit.eval.maven;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.FileSet;
@@ -27,12 +31,15 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
+import org.apache.tools.ant.Target;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.config.EvalConfig;
+import org.grouplens.lenskit.eval.config.EvalProject;
 import org.grouplens.lenskit.eval.config.EvalScriptEngine;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -128,6 +135,13 @@ public class EvalScriptMojo extends AbstractMojo {
     @Parameter(property = EvalConfig.SKIP_PROPERTY)
     private boolean skip = false;
 
+    /**
+     * Targets to run in the eval script.
+     */
+    @SuppressWarnings("FieldCanBeLocal")
+    @Parameter(property = "lenskit.eval.targets")
+    private List<String> targets = Lists.newArrayList();
+
     @Override
     public void execute() throws MojoExecutionException {
         if (skip) {
@@ -194,8 +208,31 @@ public class EvalScriptMojo extends AbstractMojo {
         for(File f:files) {
             try {
                 getLog().info("Loading evalution script from " + f.getPath());
-                // FIXME Use the project properly
-                engine.loadProject(f);
+                EvalProject project = engine.loadProject(f);
+                List<String> toRun = targets;
+                if (toRun == null) {
+                    toRun = Lists.newArrayList();
+                }
+                if (toRun.isEmpty() && project.getDefaultTarget() != null) {
+                    toRun.add(project.getDefaultTarget());
+                }
+                if (toRun.isEmpty() && !project.getAntProject().getTargets().isEmpty()) {
+                    getLog().error("no target specified");
+                    StringBuilder bld = new StringBuilder("available targets are: ");
+                    Joiner.on(", ")
+                          .appendTo(bld, Iterables.transform(
+                                  project.getAntProject().getTargets().keySet(),
+                                  new Function() {
+                                      @Nullable
+                                      @Override
+                                      public Object apply(@Nullable Object input) {
+                                          return input == null ? null : ((Target) input).getName();
+                                      }
+                                  }));
+                    getLog().info(bld.toString());
+                    throw new MojoExecutionException("no target specified");
+                }
+                project.executeTargets(toRun);
             } catch (TaskExecutionException e) {
                 Throwable report = StackTraceUtils.deepSanitize(e).getCause();
                 if (report == null) {
