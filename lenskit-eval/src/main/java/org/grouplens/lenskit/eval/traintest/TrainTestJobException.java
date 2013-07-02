@@ -18,31 +18,14 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval;
-
-import java.util.concurrent.Callable;
+package org.grouplens.lenskit.eval.traintest;
 
 /**
- * A single evaluation job.  This is typically building and evaluating a single
- * recommender on a single data set.
- *
- * @param <T> The return type of this job.
+ * Internal exception for routing train-test job errors.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 0.8
  */
-public interface Job<T> extends Callable<T> {
-    /**
-     * Get a descriptive name for this job.  The name is displayed in UI to let
-     * the user know what is being run.  More specific descriptors identifying
-     * this job to allow its output to be processed should be output directly
-     * to the output handler when the job is run.
-     *
-     * @return The name for this job.
-     */
-    String getName();
-
-    /**
-     * Get a description for this job.
-     */
-    String getDescription();
+class TrainTestJobException extends RuntimeException {
+    TrainTestJobException(Throwable cause) {
+        super(cause);
+    }
 }

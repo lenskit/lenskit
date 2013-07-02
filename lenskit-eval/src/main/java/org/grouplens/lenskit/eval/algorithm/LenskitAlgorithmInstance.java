@@ -35,7 +35,7 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.ExecutionInfo;
-import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
+import org.grouplens.lenskit.eval.traintest.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.script.BuiltBy;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.vectors.SparseVector;

@@ -18,19 +18,28 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval;
+package org.grouplens.lenskit.eval.traintest;
 
+import com.google.common.base.Supplier;
 import it.unimi.dsi.fastutil.longs.LongCollection;
-
+import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
+import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.Index;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
 
 @Shareable
 public class SharedPreferenceSnapshot implements PreferenceSnapshot {
+    private static final Logger logger = LoggerFactory.getLogger(SharedPreferenceSnapshot.class);
     private final PreferenceSnapshot snapshot;
 
     public SharedPreferenceSnapshot(PreferenceSnapshot snapshot) {
@@ -76,5 +85,42 @@ public class SharedPreferenceSnapshot implements PreferenceSnapshot {
     @Override
     public SparseVector userRatingVector(long userId) {
         return snapshot.userRatingVector(userId);
+    }
+
+    /**
+     * Construct a supplier of a snapshot of the training data from a data set.  The snapshot is
+     * cached in a soft reference, so will be released when unused for a time.
+     *
+     * @param data The data set.
+     * @return A supplier that provides access to a shared preference snapshot.
+     */
+    public static Supplier<SharedPreferenceSnapshot> supplier(TTDataSet data) {
+        return new CachedSupplier(data);
+    }
+
+    private static class CachedSupplier implements Supplier<SharedPreferenceSnapshot> {
+        private final TTDataSet dataSet;
+
+        public CachedSupplier(@Nonnull TTDataSet data) {
+            dataSet = data;
+        }
+
+        @Override
+        public SharedPreferenceSnapshot get() {
+            logger.info("Loading snapshot for {}", dataSet.getName());
+            StopWatch timer = new StopWatch();
+            timer.start();
+            DataAccessObject dao = dataSet.getTrainFactory().snapshot();
+            PreferenceSnapshot snapshot;
+            try {
+                snapshot = PackedPreferenceSnapshot.pack(dao);
+            } finally {
+                dao.close();
+            }
+            timer.stop();
+            logger.info("Rating snapshot for {} loaded in {}",
+                        dataSet.getName(), timer);
+            return new SharedPreferenceSnapshot(snapshot);
+        }
     }
 }

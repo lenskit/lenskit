@@ -20,29 +20,34 @@
  */
 package org.grouplens.lenskit.eval.traintest
 
-import com.google.common.io.Files
-import org.grouplens.lenskit.eval.script.EvalScript
-import org.grouplens.lenskit.eval.script.ConfigMethodInvoker
+import org.apache.commons.lang3.tuple.Pair
+import org.grouplens.lenskit.ItemScorer
+import org.grouplens.lenskit.baseline.BaselineItemScorer
+import org.grouplens.lenskit.baseline.BaselinePredictor
+import org.grouplens.lenskit.baseline.ItemMeanPredictor
+import org.grouplens.lenskit.data.dao.DataAccessException
+import org.grouplens.lenskit.eval.EvalConfig
+import org.grouplens.lenskit.eval.TaskExecutionException
 import org.grouplens.lenskit.eval.data.CSVDataSource
-
+import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
-import static org.hamcrest.Matchers.equalTo
-import static org.hamcrest.Matchers.instanceOf
-import static org.junit.Assert.assertThat
-import static org.junit.Assert.assertTrue
+import org.grouplens.lenskit.eval.script.ConfigMethodInvoker
 import org.grouplens.lenskit.eval.script.DefaultConfigDelegate
-import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet
+import org.grouplens.lenskit.eval.script.EvalScript
 import org.grouplens.lenskit.eval.script.EvalScriptEngine
 import org.grouplens.lenskit.symbols.Symbol
-import org.apache.commons.lang3.tuple.Pair
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.TemporaryFolder
 
-import static org.hamcrest.Matchers.hasItem
+import static org.hamcrest.Matchers.*
+import static org.junit.Assert.assertThat
+import static org.junit.Assert.assertTrue
+import static org.junit.Assert.fail
 
 /**
  * Tests for train-test configurations; they also serve to test the command delegate
@@ -55,38 +60,35 @@ class TestTrainTestTask {
     DefaultConfigDelegate delegate
     EvalScript script
 
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder()
     def file = File.createTempFile("tempRatings", "csv")
-    def trainTestDir = Files.createTempDir()
 
     @Before
     void prepareFile() {
-        file.deleteOnExit()
-        file.append('19,242,3,881250949\n')
-        file.append('296,242,3.5,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
+        file = folder.newFile("ratings.csv");
+        file.append('1,3,3,881250949\n')
+        file.append('1,5,3.5,881250949\n')
+        file.append('2,5,3,881250949\n')
+        file.append('2,4,3,881250949\n')
+        file.append('3,1,3,881250949\n')
+        file.append('3,4,3,881250949\n')
+        file.append('3,5,3,881250949\n')
+        file.append('5,2,3,881250949\n')
+        file.append('5,1,3,881250949\n')
+        file.append('5,5,3,881250949\n')
     }
 
     @Before
     void setupDelegate() {
         engine = new EvalScriptEngine()
-        command = new TrainTestEvalTask("TTcommand")
         script = new EvalScript()
         script.setEngine(engine)
-        script.setProject(engine.createProject());
+        script.setProject(engine.createProject())
+        command = new TrainTestEvalTask("TTcommand")
+        command.setProject(script.project)
+        script.project.setUserProperty(EvalConfig.THREAD_COUNT_PROPERTY, "2")
         delegate = new DefaultConfigDelegate(new ConfigMethodInvoker(engine, script.project), command)
-    }
-
-    @After
-    void cleanUpFiles() {
-        file.delete()
-        trainTestDir.deleteDir()
     }
 
     def methodMissing(String name, args) {
@@ -202,8 +204,8 @@ class TestTrainTestTask {
             crossfold("tempRatings") {
                 source file
                 partitions 7
-                train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
-                test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
+                train "${folder.root.absolutePath}/ratings.train.%d.csv"
+                test "${folder.root.absolutePath}/ratings.test.%d.csv"
             }
         }
         assertThat(dat.size(), equalTo(7))
@@ -229,5 +231,56 @@ class TestTrainTestTask {
                    hasItem(Pair.of(Symbol.of("foo"), "foo")));
         assertThat(command.predictionChannels,
                    hasItem(Pair.of(Symbol.of("wombat"), "woozle")));
+    }
+
+    @Test
+    void testRun() {
+        eval {
+            dataset crossfold("tempRatings") {
+                source file
+                partitions 2
+                holdout 1
+                train "${folder.root.absolutePath}/ratings.train.%d.csv"
+                test "${folder.root.absolutePath}/ratings.test.%d.csv"
+            }
+            algorithm {
+                bind ItemScorer to BaselineItemScorer
+                bind BaselinePredictor to ItemMeanPredictor
+            }
+        }
+        assertThat(command.makeJobGroups(), hasSize(2));
+        command.execute()
+        assertThat(command.isDone(), equalTo(true))
+        assertThat(command.get(), notNullValue())
+    }
+
+    @Test
+    void testFailedRun() {
+        eval {
+            dataset crossfold("tempRatings") {
+                source file
+                partitions 2
+                holdout 1
+                train "${folder.root.absolutePath}/ratings.train.%d.csv"
+                test "${folder.root.absolutePath}/ratings.test.%d.csv"
+            }
+            dataset("badRatings") {
+                train "${folder.root.absolutePath}/noRatings.train.csv"
+                test "${folder.root.absolutePath}/noRatings.test.csv"
+            }
+            algorithm {
+                bind ItemScorer to BaselineItemScorer
+                bind BaselinePredictor to ItemMeanPredictor
+            }
+        }
+        assertThat(command.dataSources(), hasSize(3))
+        assertThat(command.makeJobGroups(), hasSize(3));
+        try {
+            command.execute()
+            fail("command with bad ratings should fail");
+        } catch (TaskExecutionException e) {
+            assertThat(e.cause, anyOf(instanceOf(DataAccessException),
+                                      instanceOf(IOException)))
+        }
     }
 }

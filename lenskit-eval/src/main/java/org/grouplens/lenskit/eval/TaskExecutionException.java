@@ -35,16 +35,11 @@ public class TaskExecutionException extends Exception {
         super(message);
     }
 
-    public TaskExecutionException(Exception cause) {
+    public TaskExecutionException(Throwable cause) {
         super(cause);
     }
 
-    public TaskExecutionException(String message, Exception cause) {
+    public TaskExecutionException(String message, Throwable cause) {
         super(message, cause);
     }
-
-    public TaskExecutionException(String message, Error cause) {
-        super(message, cause);
-    }
-
 }

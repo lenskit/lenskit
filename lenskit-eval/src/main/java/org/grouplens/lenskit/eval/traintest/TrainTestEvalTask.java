@@ -23,11 +23,14 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.eval.*;
+import org.grouplens.lenskit.eval.AbstractTask;
+import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.ExternalAlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
@@ -35,11 +38,15 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.util.parallel.TaskGroupRunner;
 import org.grouplens.lenskit.util.table.Table;
 import org.grouplens.lenskit.util.table.TableBuilder;
 import org.grouplens.lenskit.util.table.TableLayout;
 import org.grouplens.lenskit.util.table.TableLayoutBuilder;
-import org.grouplens.lenskit.util.table.writer.*;
+import org.grouplens.lenskit.util.table.writer.CSVWriter;
+import org.grouplens.lenskit.util.table.writer.MultiplexedTableWriter;
+import org.grouplens.lenskit.util.table.writer.TableWriter;
+import org.grouplens.lenskit.util.table.writer.TableWriters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +56,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * The command that run the algorithm instance and output the prediction result file and the evaluation result file
@@ -62,7 +71,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private List<AlgorithmInstance> algorithms;
     private List<TestUserMetric> metrics;
     private List<Pair<Symbol,String>> predictChannels;
-    private IsolationLevel isolationLevel;
+    private boolean isolate;
     private File outputFile;
     private File userOutputFile;
     private File predictOutputFile;
@@ -79,7 +88,6 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private TableWriter userOutput;
     private TableWriter predictOutput;
 
-    private List<JobGroup> jobGroups;
     private Map<String, Integer> dataColumns;
     private Map<String, Integer> algoColumns;
     private List<TestUserMetric> predictMetrics;
@@ -99,7 +107,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         modelMetrics = new LinkedList<ModelMetric>();
         predictChannels = new LinkedList<Pair<Symbol, String>>();
         outputFile = new File("train-test-results.csv");
-        isolationLevel = IsolationLevel.NONE;
+        isolate = false;
     }
 
     public TrainTestEvalTask addDataset(TTDataSet source) {
@@ -208,8 +216,18 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return setPredictOutput(new File(fn));
     }
 
-    public TrainTestEvalTask setIsolation(IsolationLevel level) {
-        isolationLevel = level;
+    /**
+     * Control whether the train-test evaluator will isolate data sets.  If set to {@code true},
+     * then each data set will be run in turn, with no inter-data-set parallelism.  This can
+     * reduce memory usage for some large runs, keeping the data from only a single data set in
+     * memory at a time.  Otherwise (the default), individual algorithm/data-set runs may be freely
+     * intermingled.
+     *
+     * @param iso Whether to isolate data sets.
+     * @return The task (for chaining).
+     */
+    public TrainTestEvalTask setIsolate(boolean iso) {
+        isolate = iso;
         return this;
     }
 
@@ -255,48 +273,67 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      */
     @Override
     public Table perform() throws TaskExecutionException {
-        setupJobGroups();
+        List<List<TrainTestEvalJob>> jobGroups = makeJobGroups();
         setupTableLayouts();
 
         int nthreads = getEvalConfig().getThreadCount();
         logger.info("Starting evaluation");
         this.prepareEval();
         logger.info("Running evaluator with {} threads", nthreads);
-        JobGroupExecutor exec;
-        switch (isolationLevel) {
-        case NONE:
-            exec = new MergedJobGroupExecutor(nthreads);
-            break;
-        case JOB_GROUP:
-            exec = new SequentialJobGroupExecutor(nthreads);
-            break;
-        default:
-            throw new RuntimeException("Invalid isolation level " + isolationLevel);
+        ExecutorService exec = Executors.newFixedThreadPool(nthreads);
+
+        try {
+            for (List<TrainTestEvalJob> group: jobGroups) {
+                TaskGroupRunner runner = TaskGroupRunner.create(exec);
+                runner.submitAll(group);
+                try {
+                    runner.waitForAll();
+                } catch (ExecutionException e) {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof TrainTestJobException) {
+                        cause = cause.getCause();
+                    }
+                    throw new TaskExecutionException(cause);
+                } catch (TrainTestJobException e) {
+                    throw new TaskExecutionException(e);
+                }
+            }
+        } finally {
+            cleanUp();
         }
 
-        for (JobGroup group : this.getJobGroups()) {
-            exec.add(group);
-        }
-        try {
-            exec.run();
-        } catch (ExecutionException e) {
-            throw new TaskExecutionException("Error running the evaluation", e);
-        } finally {
-            logger.info("Finishing evaluation");
-            this.cleanUp();
-        }
         return outputInMemory.build();
     }
 
-    private void setupJobGroups() {
-        jobGroups = new ArrayList<JobGroup>(dataSources.size());
-        int idx = 0;
+    List<List<TrainTestEvalJob>> makeJobGroups() {
+        List<List<TrainTestEvalJob>> jobGroups = Lists.newArrayList();
         for (TTDataSet dataset : dataSources) {
-            TrainTestEvalJobGroup group;
-            group = new TrainTestEvalJobGroup(this, algorithms, metrics, modelMetrics, dataset, idx, numRecs);
-            jobGroups.add(group);
-            idx++;
+            List<TrainTestEvalJob> jobs = makeJobs(dataset);
+            jobGroups.add(jobs);
         }
+        if (isolate) {
+            return Collections.singletonList(
+                    (List<TrainTestEvalJob>) Lists.newArrayList(Iterables.concat(jobGroups)));
+        } else {
+            return jobGroups;
+        }
+    }
+
+    private List<TrainTestEvalJob> makeJobs(TTDataSet data) {
+        List<TrainTestEvalJob> jobs = Lists.newArrayListWithCapacity(algorithms.size());
+        final Supplier<SharedPreferenceSnapshot> snap = SharedPreferenceSnapshot.supplier(data);
+
+        for (AlgorithmInstance algo: algorithms) {
+            Function<TableWriter, TableWriter> prefix = prefixFunction(algo, data);
+            TrainTestEvalJob job = new TrainTestEvalJob(
+                    algo, metrics, modelMetrics, predictChannels, data, snap,
+                    Suppliers.compose(prefix, outputTableSupplier()),
+                    Suppliers.compose(prefix, userTableSupplier()),
+                    Suppliers.compose(prefix, predictTableSupplier()),
+                    numRecs);
+            jobs.add(job);
+        }
+        return jobs;
     }
 
     private void setupTableLayouts() {
@@ -510,11 +547,6 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                 return userOutput;
             }
         };
-    }
-
-    @Nonnull
-    public List<JobGroup> getJobGroups() {
-        return jobGroups;
     }
 
     /**
