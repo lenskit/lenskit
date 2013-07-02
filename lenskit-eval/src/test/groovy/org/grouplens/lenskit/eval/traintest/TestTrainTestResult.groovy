@@ -25,7 +25,7 @@ import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.BaselineItemScorer
 import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
-import org.grouplens.lenskit.eval.config.ConfigTestBase
+import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
 import org.grouplens.lenskit.util.table.TableImpl

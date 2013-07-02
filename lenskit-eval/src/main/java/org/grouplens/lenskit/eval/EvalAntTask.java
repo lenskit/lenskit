@@ -18,24 +18,32 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config;
+package org.grouplens.lenskit.eval;
 
-import org.apache.commons.lang3.builder.Builder;
-
-import java.lang.annotation.*;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Task;
 
 /**
- * Specify the command for the default type of this class/interface to which
- * it is applied. Used to build objects when the user doesn't specify the
- * particular command factory to use.
- *
+ * Wrap an {@link EvalTask} as an Ant {@link Task}.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 0.10
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-@SuppressWarnings("rawtypes")
-public @interface BuiltBy {
-    Class<? extends Builder> value();
+public class EvalAntTask extends Task {
+    private final EvalTask<?> evalTask;
+
+    public EvalAntTask(EvalTask<?> task) {
+        evalTask = task;
+    }
+
+    public EvalTask<?> getEvalTask() {
+        return evalTask;
+    }
+
+    @Override
+    public void execute() throws BuildException {
+        try {
+            evalTask.execute();
+        } catch (TaskExecutionException e) {
+            throw new BuildException("error running eval task", e);
+        }
+    }
 }

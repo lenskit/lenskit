@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config;
+package org.grouplens.lenskit.eval.script;
 
 import com.google.common.base.*;
 import com.google.common.collect.Iterables;
@@ -30,6 +30,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.grouplens.lenskit.config.GroovyUtils;
+import org.grouplens.lenskit.eval.EvalConfig;
+import org.grouplens.lenskit.eval.EvalProject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -73,7 +75,7 @@ public class ConfigMethodInvoker {
      * @param args    The arguments.
      * @return A closure to prepare and invoke the method, or {@code null} if no such method can be
      *         found.
-     * @see org.grouplens.lenskit.eval.config.EvalScriptEngine#getBuilderForType(Class)
+     * @see org.grouplens.lenskit.eval.script.EvalScriptEngine#getBuilderForType(Class)
      */
     private Supplier<Object> findBuildableMethod(final Object self, String name, final Object[] args) {
         Supplier<Object> result = null;

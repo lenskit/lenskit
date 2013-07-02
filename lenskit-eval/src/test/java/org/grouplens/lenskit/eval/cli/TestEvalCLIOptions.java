@@ -24,7 +24,7 @@ import static org.grouplens.lenskit.eval.cli.EvalCLIOptions.parse;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
-import org.grouplens.lenskit.eval.config.EvalConfig;
+import org.grouplens.lenskit.eval.EvalConfig;
 import org.junit.Test;
 
 import java.io.File;

@@ -21,8 +21,8 @@
 package org.grouplens.lenskit.eval.traintest
 
 import com.google.common.io.Files
-import org.grouplens.lenskit.eval.config.EvalScript
-import org.grouplens.lenskit.eval.config.ConfigMethodInvoker
+import org.grouplens.lenskit.eval.script.EvalScript
+import org.grouplens.lenskit.eval.script.ConfigMethodInvoker
 import org.grouplens.lenskit.eval.data.CSVDataSource
 
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
@@ -35,10 +35,10 @@ import static org.hamcrest.Matchers.equalTo
 import static org.hamcrest.Matchers.instanceOf
 import static org.junit.Assert.assertThat
 import static org.junit.Assert.assertTrue
-import org.grouplens.lenskit.eval.config.DefaultConfigDelegate
+import org.grouplens.lenskit.eval.script.DefaultConfigDelegate
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet
-import org.grouplens.lenskit.eval.config.EvalScriptEngine
+import org.grouplens.lenskit.eval.script.EvalScriptEngine
 import org.grouplens.lenskit.symbols.Symbol
 import org.apache.commons.lang3.tuple.Pair
 

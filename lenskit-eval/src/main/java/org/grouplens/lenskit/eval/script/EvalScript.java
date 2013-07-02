@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config;
+package org.grouplens.lenskit.eval.script;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -31,8 +31,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.grouplens.lenskit.config.GroovyUtils;
-import org.grouplens.lenskit.eval.EvalTask;
-import org.grouplens.lenskit.eval.TaskExecutionException;
+import org.grouplens.lenskit.eval.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

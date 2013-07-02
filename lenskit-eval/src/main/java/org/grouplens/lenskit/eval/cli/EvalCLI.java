@@ -26,8 +26,8 @@ import com.google.common.collect.Iterables;
 import org.apache.tools.ant.Target;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.grouplens.lenskit.eval.TaskExecutionException;
-import org.grouplens.lenskit.eval.config.EvalProject;
-import org.grouplens.lenskit.eval.config.EvalScriptEngine;
+import org.grouplens.lenskit.eval.EvalProject;
+import org.grouplens.lenskit.eval.script.EvalScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

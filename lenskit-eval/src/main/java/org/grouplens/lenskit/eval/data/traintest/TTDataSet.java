@@ -25,7 +25,7 @@ import java.util.Map;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.JobGroup;
-import org.grouplens.lenskit.eval.config.BuiltBy;
+import org.grouplens.lenskit.eval.script.BuiltBy;
 
 import javax.annotation.Nullable;
 

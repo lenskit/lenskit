@@ -30,7 +30,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-import org.grouplens.lenskit.eval.config.EvalConfig;
+import org.grouplens.lenskit.eval.EvalConfig;
 
 import java.io.File;
 import java.io.IOException;

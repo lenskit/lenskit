@@ -18,38 +18,25 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config;
+package org.grouplens.lenskit.eval.script
 
-import groovy.util.AntBuilder;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Target;
-import org.apache.tools.ant.Task;
+import org.grouplens.lenskit.eval.AbstractTask
+import org.grouplens.lenskit.eval.TaskExecutionException
 
 /**
- * Customized Ant builder that doesn't run tasks.
+ * A mock task for use in testing.
  *
- * @since 1.2
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class LenskitAntBuilder extends AntBuilder {
-    public LenskitAntBuilder() {
-    }
+class MockTask extends AbstractTask {
+    Closure action
 
-    public LenskitAntBuilder(Project project) {
-        super(project);
-    }
-
-    public LenskitAntBuilder(Project project, Target owningTarget) {
-        super(project, owningTarget);
-    }
-
-    public LenskitAntBuilder(Task parentTask) {
-        super(parentTask);
+    void setAction(Closure cl) {
+        action = cl
     }
 
     @Override
-    protected void nodeCompleted(Object parent, Object node) {
-        // Pass a useless (non-target) object as the parent, so superclass logic doesn't run task
-        super.nodeCompleted("null", node);
+    Object perform() throws TaskExecutionException {
+        action.call()
     }
 }

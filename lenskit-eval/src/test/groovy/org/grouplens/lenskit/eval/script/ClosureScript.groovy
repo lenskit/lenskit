@@ -18,43 +18,25 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data;
-
-import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.script.BuiltBy;
-
-import javax.annotation.Nullable;
+package org.grouplens.lenskit.eval.script
 
 /**
- * Data source for a single data set.
- *
+ * Eval config script that invokes a closure rather than running a script.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@BuiltBy(CSVDataSourceBuilder.class)
-public interface DataSource {
-    /**
-     * Get the data source name.
-     *
-     * @return The data sources's name.
-     */
-    String getName();
+class ClosureScript extends EvalScript {
+    Closure closure
 
-    /**
-     * Get the preference domain of this data source.
-     *
-     * @return The data source preference domain.
-     */
-    @Nullable
-    PreferenceDomain getPreferenceDomain();
+    ClosureScript(EvalScriptEngine engine, Closure cl) {
+        super()
+        setEngine(engine)
+        closure = cl
+    }
 
-    /**
-     * Get a DAO factory for this data source. The data source must be prepared
-     * before this method is called or the resulting DAO factory used.
-     *
-     * @return A DAO factory backed by this data source.
-     */
-    DAOFactory getDAOFactory();
-
-    long lastModified();
+    @Override
+    def run() {
+        closure.setDelegate(this)
+        closure.setResolveStrategy(Closure.DELEGATE_FIRST)
+        return closure.call()
+    }
 }

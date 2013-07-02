@@ -24,7 +24,7 @@ import static org.junit.Assert.*
 import static org.hamcrest.Matchers.*
 import org.junit.Test
 
-import org.grouplens.lenskit.eval.config.ConfigTestBase
+import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.grouplens.lenskit.data.pref.PreferenceDomain
 
 /**

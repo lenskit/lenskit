@@ -18,25 +18,14 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config
+package org.grouplens.lenskit.eval.script
 
-import org.grouplens.lenskit.eval.AbstractTask
-import org.grouplens.lenskit.eval.TaskExecutionException
+def data = crossfold("ML") {
+    source "ml-100k/u.data"
+    partitions 5
+}
 
-/**
- * A mock task for use in testing.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- */
-class MockTask extends AbstractTask {
-    Closure action
-
-    void setAction(Closure cl) {
-        action = cl
-    }
-
-    @Override
-    Object perform() throws TaskExecutionException {
-        action.call()
-    }
+trainTest("foo") {
+    depends data
+    dataset data
 }

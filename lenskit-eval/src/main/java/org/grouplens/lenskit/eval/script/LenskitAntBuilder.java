@@ -18,14 +18,38 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config
+package org.grouplens.lenskit.eval.script;
 
-def data = crossfold("ML") {
-    source "ml-100k/u.data"
-    partitions 5
-}
+import groovy.util.AntBuilder;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Target;
+import org.apache.tools.ant.Task;
 
-trainTest("foo") {
-    depends data
-    dataset data
+/**
+ * Customized Ant builder that doesn't run tasks.
+ *
+ * @since 1.2
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
+public class LenskitAntBuilder extends AntBuilder {
+    public LenskitAntBuilder() {
+    }
+
+    public LenskitAntBuilder(Project project) {
+        super(project);
+    }
+
+    public LenskitAntBuilder(Project project, Target owningTarget) {
+        super(project, owningTarget);
+    }
+
+    public LenskitAntBuilder(Task parentTask) {
+        super(parentTask);
+    }
+
+    @Override
+    protected void nodeCompleted(Object parent, Object node) {
+        // Pass a useless (non-target) object as the parent, so superclass logic doesn't run task
+        super.nodeCompleted("null", node);
+    }
 }

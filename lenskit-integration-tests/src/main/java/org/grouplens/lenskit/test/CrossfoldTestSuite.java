@@ -23,7 +23,7 @@ package org.grouplens.lenskit.test;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceBuilder;
-import org.grouplens.lenskit.eval.config.EvalConfig;
+import org.grouplens.lenskit.eval.EvalConfig;
 import org.grouplens.lenskit.eval.data.GenericDataSource;
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric;

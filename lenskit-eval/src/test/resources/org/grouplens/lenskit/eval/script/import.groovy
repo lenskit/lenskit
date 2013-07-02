@@ -18,25 +18,8 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config
+package org.grouplens.lenskit.eval.script
 
-/**
- * Eval config script that invokes a closure rather than running a script.
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- */
-class ClosureScript extends EvalScript {
-    Closure closure
-
-    ClosureScript(EvalScriptEngine engine, Closure cl) {
-        super()
-        setEngine(engine)
-        closure = cl
-    }
-
-    @Override
-    def run() {
-        closure.setDelegate(this)
-        closure.setResolveStrategy(Closure.DELEGATE_FIRST)
-        return closure.call()
-    }
+trainTest {
+    def cls = ItemRecommender
 }

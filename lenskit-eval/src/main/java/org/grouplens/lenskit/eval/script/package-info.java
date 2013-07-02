@@ -18,31 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config;
-
-import java.lang.annotation.*;
-
 /**
- * Specify a delegate class to be used to configure an object of the type to which this annotation
- * is applied (typically either a builder or a task). When using a builder to instantiate a setter
- * or adder parameter, if the builder class has this annotation the specified class is used as the
- * delegate instead of the default {@link DefaultConfigDelegate} when invoking the builder closure.
- * <p>
- * The delegate class must have a public constructor that takes a single argument, the object to
- * be configured.
- * </p>
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 0.10
+ * Machinery for interpreting evaluator scripts.
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface ConfigDelegate {
-    /**
-     * The delegate implementation to use.
-     *
-     * @return The delegate class.
-     */
-    Class<?> value();
-}
+package org.grouplens.lenskit.eval.script;

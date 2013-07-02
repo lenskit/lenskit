@@ -24,8 +24,6 @@ package org.grouplens.lenskit.eval;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.AbstractFuture;
-import org.grouplens.lenskit.eval.config.EvalConfig;
-import org.grouplens.lenskit.eval.config.EvalProject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -78,7 +76,7 @@ public abstract class AbstractTask<T> extends AbstractFuture<T> implements EvalT
     /**
      * Get the command's configuration.
      *
-     * @deprecated Use {@link org.grouplens.lenskit.eval.config.EvalProject#getConfig()} directly.
+     * @deprecated Use {@link EvalProject#getConfig()} directly.
      * @return The command's configuration object.
      */
     @Nonnull

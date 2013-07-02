@@ -26,7 +26,7 @@ import static org.hamcrest.Matchers.*
 
 import it.unimi.dsi.fastutil.longs.LongArrayList
 import com.google.common.io.Files
-import org.grouplens.lenskit.eval.config.ConfigTestBase
+import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.junit.Test
 import org.grouplens.lenskit.eval.data.subsample.SubsampleMode
 import org.junit.Before

@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config;
+package org.grouplens.lenskit.eval;
 
 import com.google.common.collect.Iterables;
 import org.apache.tools.ant.BuildException;
@@ -30,7 +30,7 @@ import java.util.*;
 
 /**
  * An eval "project", the eval script equivalent of an Ant project.  This is used and configured
- * by an {@link EvalScript} and provides access to options, targets, etc.
+ * by an {@link org.grouplens.lenskit.eval.script.EvalScript} and provides access to options, targets, etc.
  *
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

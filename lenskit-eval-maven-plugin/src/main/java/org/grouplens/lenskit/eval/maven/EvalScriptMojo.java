@@ -35,9 +35,9 @@ import org.apache.tools.ant.Target;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.grouplens.lenskit.eval.TaskExecutionException;
-import org.grouplens.lenskit.eval.config.EvalConfig;
-import org.grouplens.lenskit.eval.config.EvalProject;
-import org.grouplens.lenskit.eval.config.EvalScriptEngine;
+import org.grouplens.lenskit.eval.EvalConfig;
+import org.grouplens.lenskit.eval.EvalProject;
+import org.grouplens.lenskit.eval.script.EvalScriptEngine;
 
 import javax.annotation.Nullable;
 import java.io.File;

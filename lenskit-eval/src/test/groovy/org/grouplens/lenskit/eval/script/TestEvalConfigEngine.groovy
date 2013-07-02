@@ -18,36 +18,50 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config
+package org.grouplens.lenskit.eval.script
 
 import org.junit.Before
+import org.junit.Test
+import static org.hamcrest.Matchers.*
+import static org.junit.Assert.*
+import org.junit.Ignore
 
 /**
- * Base/helper class for testing configuration code snippets. Provides an
- * method which runs a code snippet as if it were a config script and returns the result.
+ * Test the eval config engine and make sure it can actually execute tests.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-abstract class ConfigTestBase {
-    protected EvalScriptEngine engine
+class TestEvalConfigEngine {
+    EvalScriptEngine engine;
 
     @Before
-    public void createEngine() {
+    void createEngine() {
         engine = new EvalScriptEngine()
     }
 
-    /**
-     * Evalate a closure as if it were a config snippet.
-     * @param cl The code to run.
-     * @return The return value of evaluating {@code cl}.
-     */
-    protected def eval(@DelegatesTo(EvalScript) Closure cl) {
-        def script = new ClosureScript(engine, cl)
-        return engine.runScript(script, engine.createProject())
+    private def script(name) {
+        return new InputStreamReader(getClass().getResourceAsStream(name), "UTF-8")
     }
 
-    protected EvalScript evalScript(@DelegatesTo(EvalScript) Closure cl) {
-        def script = new ClosureScript(engine, cl);
-        engine.runScript(script, engine.createProject())
-        script
+    @Test @Ignore
+    void testSingleEmptyEval() {
+        def result = engine.execute(script("emptyTrainTest.groovy"))
+        assertThat(result, nullValue())
+    }
+
+    @Test @Ignore
+    void testDefaultImports() {
+        def result = engine.execute(script("import.groovy"))
+        assertThat(result, equalTo(1))
+    }
+
+    @Test @Ignore
+    void testMultiTasks() {
+        def result = engine.execute(script("multiple.groovy"))
+        def eval = env.defaultTask
+        assertThat(eval, instanceOf(TrainTestEvalTask))
+        def evals = env.getArgs
+        assertThat(evals.size(), equalTo(2))
+        assertTrue(evals.contains(eval));
+        assertTrue(evals.containsAll(eval.dependencies))
     }
 }

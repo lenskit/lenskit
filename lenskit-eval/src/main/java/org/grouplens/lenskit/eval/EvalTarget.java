@@ -1,4 +1,4 @@
-package org.grouplens.lenskit.eval.config;
+package org.grouplens.lenskit.eval;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -6,7 +6,6 @@ import com.google.common.util.concurrent.SettableFuture;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
-import org.grouplens.lenskit.eval.EvalTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

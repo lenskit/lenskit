@@ -18,10 +18,36 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config
+package org.grouplens.lenskit.eval.script
+
+import org.junit.Before
 
 /**
+ * Base/helper class for testing configuration code snippets. Provides an
+ * method which runs a code snippet as if it were a config script and returns the result.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+abstract class ConfigTestBase {
+    protected EvalScriptEngine engine
 
-trainTest {}
+    @Before
+    public void createEngine() {
+        engine = new EvalScriptEngine()
+    }
+
+    /**
+     * Evalate a closure as if it were a config snippet.
+     * @param cl The code to run.
+     * @return The return value of evaluating {@code cl}.
+     */
+    protected def eval(@DelegatesTo(EvalScript) Closure cl) {
+        def script = new ClosureScript(engine, cl)
+        return engine.runScript(script, engine.createProject())
+    }
+
+    protected EvalScript evalScript(@DelegatesTo(EvalScript) Closure cl) {
+        def script = new ClosureScript(engine, cl);
+        engine.runScript(script, engine.createProject())
+        script
+    }
+}

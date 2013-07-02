@@ -37,7 +37,7 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
-import org.grouplens.lenskit.eval.config.BuiltBy;
+import org.grouplens.lenskit.eval.script.BuiltBy;
 import org.grouplens.lenskit.eval.data.CSVDataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;

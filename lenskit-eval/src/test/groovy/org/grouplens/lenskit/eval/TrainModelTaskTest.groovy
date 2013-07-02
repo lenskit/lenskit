@@ -27,7 +27,7 @@ import org.grouplens.lenskit.baseline.GlobalMeanPredictor
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.event.SimpleRating
-import org.grouplens.lenskit.eval.config.ConfigTestBase
+import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.grouplens.lenskit.eval.data.GenericDataSource
 import org.grouplens.lenskit.vectors.MutableSparseVector
 import org.junit.Test

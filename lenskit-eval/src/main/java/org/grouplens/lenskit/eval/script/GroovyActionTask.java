@@ -18,9 +18,28 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config
+package org.grouplens.lenskit.eval.script;
+
+import groovy.lang.Closure;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Task;
 
 /**
- * Empty Groovy script for test purposes.
+ * A basic Ant task that executes a Groovy action. These tasks are added by {@link
+ * org.grouplens.lenskit.eval.script.TargetDelegate#perform(Closure)}.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 1.2
  */
+public class GroovyActionTask extends Task {
+    private Closure<?> closure;
+
+    public GroovyActionTask(Closure<?> cl) {
+        closure = cl;
+    }
+
+    @Override
+    public void execute() throws BuildException {
+        closure.call();
+    }
+}

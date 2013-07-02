@@ -24,7 +24,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.eval.config.ConfigDelegate;
+import org.grouplens.lenskit.eval.script.ConfigDelegate;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;

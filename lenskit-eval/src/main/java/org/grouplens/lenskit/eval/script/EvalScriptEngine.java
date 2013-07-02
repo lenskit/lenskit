@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config;
+package org.grouplens.lenskit.eval.script;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -28,6 +28,7 @@ import groovy.lang.GroovyShell;
 import org.apache.commons.lang3.builder.Builder;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.slf4j.Logger;
@@ -84,13 +85,13 @@ public class EvalScriptEngine {
      * Construct a new script engine.
      * @param loader The class loader to use.
      * @param props Additional properties to use when creating new projects.
-     * @see EvalProject#EvalProject(java.util.Properties)
+     * @see org.grouplens.lenskit.eval.EvalProject#EvalProject(java.util.Properties)
      */
     public EvalScriptEngine(ClassLoader loader, @Nullable Properties props) {
         CompilerConfiguration compConfig = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
         properties = props;
 
-        compConfig.setScriptBaseClass("org.grouplens.lenskit.eval.config.EvalScript");
+        compConfig.setScriptBaseClass("org.grouplens.lenskit.eval.script.EvalScript");
 
         ImportCustomizer imports = new ImportCustomizer();
         imports.addStarImports("org.grouplens.lenskit",

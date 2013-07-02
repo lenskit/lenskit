@@ -18,34 +18,9 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config;
-
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
-import org.grouplens.lenskit.eval.EvalTask;
-import org.grouplens.lenskit.eval.TaskExecutionException;
+package org.grouplens.lenskit.eval.script
 
 /**
- * Wrap an {@link EvalTask} as an Ant {@link Task}.
+ * Empty Groovy script for test purposes.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class EvalAntTask extends Task {
-    private final EvalTask<?> evalTask;
-
-    public EvalAntTask(EvalTask<?> task) {
-        evalTask = task;
-    }
-
-    public EvalTask<?> getEvalTask() {
-        return evalTask;
-    }
-
-    @Override
-    public void execute() throws BuildException {
-        try {
-            evalTask.execute();
-        } catch (TaskExecutionException e) {
-            throw new BuildException("error running eval task", e);
-        }
-    }
-}

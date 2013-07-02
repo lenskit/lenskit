@@ -18,28 +18,46 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.config;
+package org.grouplens.lenskit.eval.script;
 
 import groovy.lang.Closure;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
+import groovy.util.AntBuilder;
+import org.apache.tools.ant.Target;
 
 /**
- * A basic Ant task that executes a Groovy action. These tasks are added by {@link
- * org.grouplens.lenskit.eval.config.TargetDelegate#perform(Closure)}.
+ * Delegate to build a target.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.2
  */
-public class GroovyActionTask extends Task {
-    private Closure<?> closure;
+public class TargetDelegate {
+    private final AntBuilder ant;
+    private Target target;
 
-    public GroovyActionTask(Closure<?> cl) {
-        closure = cl;
+    public TargetDelegate(Target tgt) {
+        target = tgt;
+        ant = new LenskitAntBuilder(tgt.getProject(), tgt);
     }
 
-    @Override
-    public void execute() throws BuildException {
-        closure.call();
+    public void requires(Object... targets) {
+        for (Object tgt : targets) {
+            if (tgt instanceof Target) {
+                target.addDependency(((Target) tgt).getName());
+            } else {
+                target.addDependency(tgt.toString());
+            }
+
+        }
+
+    }
+
+    public void perform(Closure<?> cl) {
+        GroovyActionTask task = new GroovyActionTask(cl);
+        task.setProject(target.getProject());
+        target.addTask(task);
+    }
+
+    public final AntBuilder getAnt() {
+        return ant;
     }
 }
