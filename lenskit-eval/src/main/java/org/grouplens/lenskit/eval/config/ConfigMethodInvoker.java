@@ -270,8 +270,8 @@ public class ConfigMethodInvoker {
      * arguments.  If the last argument is a closure, it is witheld and used to configure the object
      * after it is constructed.  No extra type coercion is performed.
      *
-     * <p>If the object has an {@code evalConfig} property, that property is set to the engine's
-     * configuration.  Likewise, an {@code evalProject} property or {@code project} property with
+     * <p>If the object has a {@code setEvalConfig} method, that method is called with the project's
+     * configuration.  Likewise, an {@code setEvalProject} property or {@code set{roject} method with
      * type assignable from {@link EvalProject} is set to the project.
      *
      * @param type The type to construct.
@@ -292,19 +292,17 @@ public class ConfigMethodInvoker {
 
         metaclass = InvokerHelper.getMetaClass(obj);
 
-        MetaProperty configProp = metaclass.getMetaProperty("evalConfig");
-        if (configProp != null) {
-            configProp.setProperty(obj, project.getConfig());
+        MetaMethod mm = metaclass.getMetaMethod("setEvalConfig", new Class[]{EvalConfig.class});
+        if (mm != null) {
+            mm.invoke(obj, new Object[]{project.getConfig()});
         }
 
-        MetaProperty projectProp = metaclass.getMetaProperty("evalProject");
-        if (projectProp != null) {
-            projectProp.setProperty(obj, project);
-        } else {
-            projectProp = metaclass.getMetaProperty("project");
-            if (projectProp != null && projectProp.getType().isAssignableFrom(EvalProject.class)) {
-                projectProp.setProperty(obj, project);
-            }
+        mm = metaclass.getMetaMethod("setEvalProject", new Class[]{EvalProject.class});
+        if (mm == null) {
+            mm = metaclass.getMetaMethod("setProject", new Class[]{EvalProject.class});
+        }
+        if (mm != null) {
+            mm.invoke(obj, new Object[]{project});
         }
 
         if (split.getRight() != null) {

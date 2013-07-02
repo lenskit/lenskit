@@ -27,7 +27,7 @@ public class EvalProject {
      *              from the command line should be supplied; those should be set with
      *              {@link #setUserProperty(String, String)} so that they have Ant-like behavior.
      */
-    EvalProject(@Nullable Properties props) {
+    public EvalProject(@Nullable Properties props) {
         antProject = new Project();
         antProject.init();
         if (props != null) {
@@ -68,7 +68,7 @@ public class EvalProject {
      * @return An accessor for the project's configuration.
      */
     public EvalConfig getConfig() {
-        return new EvalConfig(antProject.getProperties(), random);
+        return new EvalConfig(antProject.getProperties());
     }
 
     /**

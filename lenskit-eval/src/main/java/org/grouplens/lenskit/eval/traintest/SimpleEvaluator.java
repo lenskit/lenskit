@@ -26,6 +26,7 @@ import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceBuilder;
 import org.grouplens.lenskit.eval.config.EvalConfig;
+import org.grouplens.lenskit.eval.config.EvalProject;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.crossfold.CrossfoldTask;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
@@ -35,35 +36,33 @@ import org.grouplens.lenskit.util.table.Table;
 
 import java.io.File;
 import java.util.Properties;
-import java.util.Random;
 import java.util.concurrent.Callable;
 
 public class SimpleEvaluator implements Callable<Table> {
-
-    private EvalConfig config;
+    private final EvalProject project;
     private TrainTestEvalTask result;
 
     /**
      * Construct a simple evaluator.
      */
     public SimpleEvaluator() {
-        this(new EvalConfig(new Properties(), new Random()));
+        this(null);
     }
 
     /**
      * Create a simple evaluator with a custom configuration.
      *
-     * @param cfg The eval configuration.
+     * @param props Properties for the eval configuration.
      */
-    public SimpleEvaluator(EvalConfig cfg) {
-        config = cfg;
+    public SimpleEvaluator(Properties props) {
+        project = new EvalProject(props);
         result = new TrainTestEvalTask("simple-eval");
-        result.setEvalConfig(cfg);
+        result.setProject(project);
         result.setOutput((File) null);
     }
 
     public EvalConfig getEvalConfig() {
-        return config;
+        return project.getConfig();
     }
 
     /**
@@ -125,7 +124,7 @@ public class SimpleEvaluator implements Callable<Table> {
                 .setSource(source)
                 .setPartitions(partitions)
                 .setHoldoutFraction(holdout);
-        cross.setEvalConfig(getEvalConfig());
+        cross.setProject(project);
         addDataset(cross);
         return this;
     }
@@ -303,7 +302,7 @@ public class SimpleEvaluator implements Callable<Table> {
      */
     @Override
     public Table call() throws TaskExecutionException {
-        result.setEvalConfig(getEvalConfig());
+        result.setProject(project);
         return result.call();
     }
 }

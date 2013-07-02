@@ -197,7 +197,7 @@ public class SubsampleTask extends AbstractTask<DataSource> {
             Closer closer = Closer.create();
             TableWriter subsampleWriter = closer.register(CSVWriter.open(subsampleFile, null));
             try {
-                mode.doSample(daoSnap, subsampleWriter, subsampleFraction, getEvalConfig());
+                mode.doSample(daoSnap, subsampleWriter, subsampleFraction, getProject().getRandom());
             } catch (Throwable th) {
                 throw closer.rethrow(th);
             } finally {

@@ -25,7 +25,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * The class that represents the set of properties passed in to a
@@ -47,33 +46,17 @@ public class EvalConfig {
     public static final String ANALYSIS_DIR_PROPERTY = "lenskit.eval.analysisDir";
     public static final String THREAD_COUNT_PROPERTY = "lenskit.eval.threadCount";
 
-    private final Random random;
     private final Map<String, String> properties;
 
     /**
      * Construct a new eval config using the specified properties.
      * @param props The properties to use.
      */
-    @SuppressWarnings("unchecked")
-    public EvalConfig(@Nonnull Map props, Random rng) {
-        properties = props;
-        random = rng;
-    }
-
-    /**
-     * Construct a new config.
-     * @param props The config properties.
-     * @deprecated Set up an {@link EvalProject} instead.
-     */
-    @Deprecated
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public EvalConfig(@Nonnull Map props) {
-        this(props, new Random());
+        properties = props;
     }
 
-    public Random getRandom() {
-        return random;
-    }
-    
     /**
      * Get the value of a property.
      *

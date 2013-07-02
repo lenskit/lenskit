@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval;
 
 import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.eval.config.EvalConfig;
+import org.grouplens.lenskit.eval.config.EvalProject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,7 +35,7 @@ import javax.annotation.Nullable;
  */
 public abstract class AbstractTask<T> implements EvalTask<T> {
     @Nullable private String name;
-    private EvalConfig config;
+    private EvalProject project;
 
     /**
      * Initialize a command with no name.
@@ -52,29 +53,36 @@ public abstract class AbstractTask<T> implements EvalTask<T> {
     }
 
     /**
-     * Set the configuration in use for this command.  The evaluation framework automatically
+     * Set the project this task is a member of.  The evaluation framework automatically
      * calls this method, it is not necessary to call it manually.
      *
-     * @param cfg The configuration.
+     * @param ep The eval project.
      * @return The command (for chaining).
      */
-    public AbstractTask<T> setEvalConfig(@Nonnull EvalConfig cfg) {
-        Preconditions.checkNotNull(cfg, "configuration cannot be null");
-        config = cfg;
+    public AbstractTask<T> setProject(@Nonnull EvalProject ep) {
+        Preconditions.checkNotNull(ep, "project cannot be null");
+        project = ep;
         return this;
+    }
+
+    @Nonnull
+    public EvalProject getProject() {
+        if (project == null) {
+            throw new IllegalStateException("no project configured");
+        }
+        return project;
     }
 
     /**
      * Get the command's configuration.
      *
+     * @deprecated Use {@link org.grouplens.lenskit.eval.config.EvalProject#getConfig()} directly.
      * @return The command's configuration object.
      */
     @Nonnull
+    @Deprecated
     public EvalConfig getEvalConfig() {
-        if (config == null) {
-            throw new IllegalStateException("no configuration is specified");
-        }
-        return config;
+        return getProject().getConfig();
     }
 
     /**

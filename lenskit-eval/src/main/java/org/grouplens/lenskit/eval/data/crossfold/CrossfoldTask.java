@@ -409,7 +409,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
             for (UserHistory<Rating> history : historyCursor) {
                 int foldNum = splits.get(history.getUserId());
                 List<Rating> ratings = new ArrayList<Rating>(history);
-                final int p = mode.partition(ratings, getEvalConfig().getRandom());
+                final int p = mode.partition(ratings, getProject().getRandom());
                 final int n = ratings.size();
 
                 for (int f = 0; f < partitionCount; f++) {
@@ -492,7 +492,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     protected Long2IntMap splitUsers(DataAccessObject dao) {
         Long2IntMap userMap = new Long2IntOpenHashMap();
         LongArrayList users = Cursors.makeList(dao.getUsers());
-        LongLists.shuffle(users, getEvalConfig().getRandom());
+        LongLists.shuffle(users, getProject().getRandom());
         LongListIterator iter = users.listIterator();
         while (iter.hasNext()) {
             final int idx = iter.nextIndex();

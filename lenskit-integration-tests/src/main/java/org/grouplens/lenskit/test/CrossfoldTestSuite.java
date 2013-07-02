@@ -53,10 +53,9 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
 
     @Test
     public void testAlgorithmAccuracy() throws TaskExecutionException, IOException {
-        Properties props =  new Properties(System.getProperties());
+        Properties props =  new Properties();
         props.setProperty(EvalConfig.DATA_DIR_PROPERTY, workDir.newFolder("data").getAbsolutePath());
-        EvalConfig config = new EvalConfig(props);
-        SimpleEvaluator evalCommand = new SimpleEvaluator(config);
+        SimpleEvaluator evalCommand = new SimpleEvaluator(props);
         LenskitAlgorithmInstanceBuilder algo = new LenskitAlgorithmInstanceBuilder();
         configureAlgorithm(algo.getFactory());
         evalCommand.addAlgorithm(algo);
