@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.util.parallel;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.*;
 import org.slf4j.Logger;
@@ -85,10 +86,13 @@ public class TaskGroupRunner {
         }
     }
 
-    private synchronized void cancelRemainingTasks() {
-        for (Future<?> task: activeTasks) {
+    private void cancelRemainingTasks() {
+        Set<Future<?>> tasks;
+        synchronized (this) {
+            tasks = ImmutableSet.copyOf(activeTasks);
+        }
+        for (Future<?> task: tasks) {
             task.cancel(true);
-            activeTasks.remove(task);
         }
     }
 
@@ -108,11 +112,11 @@ public class TaskGroupRunner {
         @Override
         public void onFailure(Throwable t) {
             logger.debug("task completed with error", t);
-            removeTask(future);
             if (!(t instanceof CancellationException)) {
                 errors.add(t);
                 cancelRemainingTasks();
             }
+            removeTask(future);
         }
     }
 }

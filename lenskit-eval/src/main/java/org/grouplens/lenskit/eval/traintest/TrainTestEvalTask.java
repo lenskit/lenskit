@@ -311,7 +311,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             List<TrainTestEvalJob> jobs = makeJobs(dataset);
             jobGroups.add(jobs);
         }
-        if (isolate) {
+        if (!isolate) {
             return Collections.singletonList(
                     (List<TrainTestEvalJob>) Lists.newArrayList(Iterables.concat(jobGroups)));
         } else {

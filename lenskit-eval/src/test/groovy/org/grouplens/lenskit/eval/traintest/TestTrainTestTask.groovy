@@ -25,6 +25,7 @@ import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.BaselineItemScorer
 import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.ItemMeanPredictor
+import org.grouplens.lenskit.baseline.UserMeanPredictor
 import org.grouplens.lenskit.data.dao.DataAccessException
 import org.grouplens.lenskit.eval.EvalConfig
 import org.grouplens.lenskit.eval.TaskExecutionException
@@ -248,7 +249,8 @@ class TestTrainTestTask {
                 bind BaselinePredictor to ItemMeanPredictor
             }
         }
-        assertThat(command.makeJobGroups(), hasSize(2));
+        assertThat(command.makeJobGroups(), hasSize(1));
+        assertThat(command.makeJobGroups()[0], hasSize(2));
         command.execute()
         assertThat(command.isDone(), equalTo(true))
         assertThat(command.get(), notNullValue())
@@ -272,9 +274,15 @@ class TestTrainTestTask {
                 bind ItemScorer to BaselineItemScorer
                 bind BaselinePredictor to ItemMeanPredictor
             }
+            algorithm {
+                bind ItemScorer to BaselineItemScorer
+                bind BaselinePredictor to UserMeanPredictor
+            }
         }
+        assertThat(command.evalConfig.threadCount, equalTo(2))
         assertThat(command.dataSources(), hasSize(3))
-        assertThat(command.makeJobGroups(), hasSize(3));
+        assertThat(command.makeJobGroups(), hasSize(1));
+        assertThat(command.makeJobGroups()[0], hasSize(6));
         try {
             command.execute()
             fail("command with bad ratings should fail");
