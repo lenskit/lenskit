@@ -20,13 +20,11 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
+import com.google.common.base.*;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
+import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.AbstractTask;
@@ -58,6 +56,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * The command that run the algorithm instance and output the prediction result file and the evaluation result file
@@ -67,7 +66,8 @@ import java.util.concurrent.Executors;
 public class TrainTestEvalTask extends AbstractTask<Table> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalTask.class);
 
-    private List<TTDataSet> dataSources;
+    private List<TTDataSet> dataSets;
+    private Queue<Future<?>> deferredDataSets;
     private List<AlgorithmInstance> algorithms;
     private List<TestUserMetric> metrics;
     private List<Pair<Symbol,String>> predictChannels;
@@ -101,7 +101,8 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
     public TrainTestEvalTask(String name) {
         super(name);
-        dataSources = new LinkedList<TTDataSet>();
+        dataSets = new LinkedList<TTDataSet>();
+        deferredDataSets = new LinkedList<Future<?>>();
         algorithms = new LinkedList<AlgorithmInstance>();
         metrics = new LinkedList<TestUserMetric>();
         modelMetrics = new LinkedList<ModelMetric>();
@@ -111,7 +112,19 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     public TrainTestEvalTask addDataset(TTDataSet source) {
-        dataSources.add(source);
+        dataSets.add(source);
+        return this;
+    }
+
+    /**
+     * Add a data set that is not yet available.  The data sets should be available by the time
+     * the task is executed.
+     *
+     * @param future A future containing a data set or list of data sets.
+     * @return The task (for chaining).
+     */
+    public TrainTestEvalTask addDataset(Future<?> future) {
+        deferredDataSets.add(future);
         return this;
     }
 
@@ -232,7 +245,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     List<TTDataSet> dataSources() {
-        return dataSources;
+        return dataSets;
     }
 
     List<AlgorithmInstance> getAlgorithms() {
@@ -273,6 +286,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      */
     @Override
     public Table perform() throws TaskExecutionException {
+        handleDeferredDataSets();
         List<List<TrainTestEvalJob>> jobGroups = makeJobGroups();
         setupTableLayouts();
 
@@ -305,9 +319,30 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return outputInMemory.build();
     }
 
+    void handleDeferredDataSets() throws TaskExecutionException {
+        while (!deferredDataSets.isEmpty()) {
+            Future<?> future = deferredDataSets.remove();
+            Object obj = null;
+            try {
+                obj = Uninterruptibles.getUninterruptibly(future);
+            } catch (ExecutionException e) {
+                throw new TaskExecutionException("deferred data set not available", e);
+            }
+            if (obj instanceof TTDataSet) {
+                dataSets.add((TTDataSet) obj);
+            } else if (obj instanceof Iterable) {
+                for (Object ds: (Iterable<?>) obj) {
+                    dataSets.add((TTDataSet) ds);
+                }
+            } else {
+                throw new RuntimeException("deferred action did not yield a data set");
+            }
+        }
+    }
+
     List<List<TrainTestEvalJob>> makeJobGroups() {
         List<List<TrainTestEvalJob>> jobGroups = Lists.newArrayList();
-        for (TTDataSet dataset : dataSources) {
+        for (TTDataSet dataset : dataSets) {
             List<TrainTestEvalJob> jobs = makeJobs(dataset);
             jobGroups.add(jobs);
         }
@@ -363,7 +398,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private void layoutCommonColumns(TableLayoutBuilder master) {
         master.addColumn("Algorithm");
         dataColumns = new HashMap<String, Integer>();
-        for (TTDataSet ds : dataSources) {
+        for (TTDataSet ds : dataSets) {
             for (String attr : ds.getAttributes().keySet()) {
                 if (!dataColumns.containsKey(attr)) {
                     dataColumns.put(attr, master.getColumnCount());

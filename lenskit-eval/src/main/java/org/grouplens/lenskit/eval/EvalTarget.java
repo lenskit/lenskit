@@ -39,22 +39,14 @@ import java.util.concurrent.*;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class EvalTarget extends Target implements ListenableFuture<Object> {
+    private static final Logger logger = LoggerFactory.getLogger(EvalTarget.class);
     protected final SettableFuture<Object> returnValue = SettableFuture.create();
     protected Future<?> lastTaskFuture = null;
     protected Task lastTask = null;
-    private transient volatile Logger logger;
-
-    protected Logger getLogger() {
-        if (logger == null) {
-            String name = String.format("%s(%s)".format(getClass().getName(), getName()));
-            logger = LoggerFactory.getLogger(name);
-        }
-        return logger;
-    }
 
     @Override
     public void addTask(Task task) {
-        getLogger().debug("adding task {}", task);
+        logger.debug("adding task {} to {}", task, getName());
         super.addTask(task);
         lastTask = task;
         if (task instanceof EvalAntTask) {
@@ -67,14 +59,14 @@ public class EvalTarget extends Target implements ListenableFuture<Object> {
     @Override
     public void execute() throws BuildException {
         try {
-            getLogger().info("beginning execution");
+            logger.info("beginning execution of {}", getName());
             Stopwatch watch = new Stopwatch().start();
             super.execute();
             watch.stop();
-            getLogger().info("execution finished in {}", watch);
+            logger.info("{} finished in {}", getName(), watch);
             if (lastTaskFuture != null) {
                 if (!lastTaskFuture.isDone()) {
-                    getLogger().error("{}: future for task {} did not complete", getName(), lastTask);
+                    logger.error("{}: future for task {} did not complete", getName(), lastTask);
                     returnValue.setException(new RuntimeException("task future didn't complete"));
                 } else {
                     while (!returnValue.isDone()) {
@@ -83,7 +75,7 @@ public class EvalTarget extends Target implements ListenableFuture<Object> {
                         } catch (ExecutionException ex) {
                             returnValue.setException(ex.getCause());
                         } catch (InterruptedException e) {
-                            getLogger().warn("task future get() was interrupted");
+                            logger.warn("{}: task future get() was interrupted", getName());
                             /* try again */
                         }
                     }

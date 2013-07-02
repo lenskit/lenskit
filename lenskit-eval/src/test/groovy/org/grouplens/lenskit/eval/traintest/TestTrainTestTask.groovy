@@ -248,6 +248,7 @@ class TestTrainTestTask {
                 bind ItemScorer to BaselineItemScorer
                 bind BaselinePredictor to ItemMeanPredictor
             }
+            output null
         }
         assertThat(command.makeJobGroups(), hasSize(1));
         assertThat(command.makeJobGroups()[0], hasSize(2));
@@ -278,6 +279,7 @@ class TestTrainTestTask {
                 bind ItemScorer to BaselineItemScorer
                 bind BaselinePredictor to UserMeanPredictor
             }
+            output null
         }
         assertThat(command.evalConfig.threadCount, equalTo(2))
         assertThat(command.dataSources(), hasSize(3))
