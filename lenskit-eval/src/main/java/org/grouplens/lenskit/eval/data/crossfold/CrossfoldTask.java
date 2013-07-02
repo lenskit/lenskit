@@ -316,7 +316,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      *
      */
     @Override
-    public List<TTDataSet> call() throws TaskExecutionException {
+    public List<TTDataSet> perform() throws TaskExecutionException {
         if (!getForce()) {
             UpToDateChecker check = new UpToDateChecker();
             check.addInput(source.lastModified());

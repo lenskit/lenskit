@@ -254,7 +254,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      *          Failure of the evaluation
      */
     @Override
-    public Table call() throws TaskExecutionException {
+    public Table perform() throws TaskExecutionException {
         setupJobGroups();
         setupTableLayouts();
 

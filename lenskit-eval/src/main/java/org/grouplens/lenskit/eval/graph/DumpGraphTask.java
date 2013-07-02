@@ -121,7 +121,7 @@ public class DumpGraphTask extends AbstractTask<File> {
     }
 
     @Override
-    public File call() throws TaskExecutionException {
+    public File perform() throws TaskExecutionException {
         if (output == null) {
             logger.error("no output file specified");
             throw new IllegalStateException("no graph output file specified");

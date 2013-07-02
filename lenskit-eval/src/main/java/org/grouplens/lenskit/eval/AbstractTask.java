@@ -22,6 +22,8 @@ package org.grouplens.lenskit.eval;
 
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+import com.google.common.util.concurrent.AbstractFuture;
 import org.grouplens.lenskit.eval.config.EvalConfig;
 import org.grouplens.lenskit.eval.config.EvalProject;
 
@@ -33,7 +35,7 @@ import javax.annotation.Nullable;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public abstract class AbstractTask<T> implements EvalTask<T> {
+public abstract class AbstractTask<T> extends AbstractFuture<T> implements EvalTask<T> {
     @Nullable private String name;
     private EvalProject project;
 
@@ -103,4 +105,25 @@ public abstract class AbstractTask<T> implements EvalTask<T> {
     public String getName() {
         return name;
     }
+
+    /**
+     * Execute the task.  This calls {@link #perform()}, exposing the return value (or execption)
+     * as the task's value.
+     *
+     * @throws TaskExecutionException
+     */
+    @Override
+    public void execute() throws TaskExecutionException {
+        T result;
+        try {
+            result = perform();
+        } catch (Exception ex) {
+            setException(ex);
+            Throwables.propagateIfPossible(ex, TaskExecutionException.class);
+            throw new RuntimeException("unexpected exception", ex);
+        }
+        set(result);
+    }
+
+    protected abstract T perform() throws TaskExecutionException;
 }

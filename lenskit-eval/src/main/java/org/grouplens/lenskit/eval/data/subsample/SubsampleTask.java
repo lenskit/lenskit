@@ -180,7 +180,7 @@ public class SubsampleTask extends AbstractTask<DataSource> {
      */
     @SuppressWarnings("PMD.AvoidCatchingThrowable")
     @Override
-    public DataSource call() throws TaskExecutionException {
+    public DataSource perform() throws TaskExecutionException {
         UpToDateChecker check = new UpToDateChecker();
         check.addInput(source.lastModified());
         File subsampleFile = getOutput();

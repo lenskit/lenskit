@@ -105,7 +105,7 @@ public class TrainModelTask<T> extends AbstractTask<T> {
 
     /**
      * Set the action to invoke.  The action's return value will be returned
-     * from {@link #call()}.
+     * from {@link #perform()}.
      * @param act The action to invoke.
      * @return The command (for chaining).
      */
@@ -116,7 +116,7 @@ public class TrainModelTask<T> extends AbstractTask<T> {
 
     @Override
     @SuppressWarnings("PMD.AvoidCatchingThrowable")
-    public T call() throws TaskExecutionException {
+    public T perform() throws TaskExecutionException {
         Preconditions.checkState(algorithm != null, "no algorithm specified");
         Preconditions.checkState(inputData != null, "no input data specified");
         Preconditions.checkState(inputData != null, "no action specified");

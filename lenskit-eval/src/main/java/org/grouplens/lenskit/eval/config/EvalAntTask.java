@@ -30,11 +30,7 @@ import org.grouplens.lenskit.eval.TaskExecutionException;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class EvalAntTask extends Task {
-    private EvalTask<?> evalTask;
-
-    public EvalAntTask() {
-        evalTask = null;
-    }
+    private final EvalTask<?> evalTask;
 
     public EvalAntTask(EvalTask<?> task) {
         evalTask = task;
@@ -44,14 +40,10 @@ public class EvalAntTask extends Task {
         return evalTask;
     }
 
-    public void setEvalTask(EvalTask<?> task) {
-        evalTask = task;
-    }
-
     @Override
     public void execute() throws BuildException {
         try {
-            evalTask.call();
+            evalTask.execute();
         } catch (TaskExecutionException e) {
             throw new BuildException("error running eval task", e);
         }

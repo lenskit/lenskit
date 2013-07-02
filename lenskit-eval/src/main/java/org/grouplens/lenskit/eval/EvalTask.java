@@ -20,24 +20,19 @@
  */
 package org.grouplens.lenskit.eval;
 
-import java.util.concurrent.Callable;
+import com.google.common.util.concurrent.ListenableFuture;
 
 /**
  * An evaluation task.
- * <p>Tasks should not attempt to implement semantic equality or hashing; they may be used
- * in sets and maps where identity equality and hashing are the right thing to do, as individual
- * task objects should be treated as distinct tasks.</p>
  *
- * @since 1.2
+ * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public interface EvalTask<T> extends Callable<T> {
+public interface EvalTask<T> extends ListenableFuture<T> {
     /**
-     * Execute the task.
+     * Execute the task.  After executing, task (as a future) should be done.
      *
-     * @return The task's return payload.
      * @throws TaskExecutionException If there is an error executing the task.
      */
-    @Override
-    T call() throws TaskExecutionException;
+    void execute() throws TaskExecutionException;
 }

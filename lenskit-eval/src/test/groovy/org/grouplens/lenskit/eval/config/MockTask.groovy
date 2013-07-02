@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.eval.config
 
-import org.grouplens.lenskit.eval.EvalTask
+import org.grouplens.lenskit.eval.AbstractTask
 import org.grouplens.lenskit.eval.TaskExecutionException
 
 /**
@@ -28,7 +28,7 @@ import org.grouplens.lenskit.eval.TaskExecutionException
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class MockTask implements EvalTask {
+class MockTask extends AbstractTask {
     Closure action
 
     void setAction(Closure cl) {
@@ -36,7 +36,7 @@ class MockTask implements EvalTask {
     }
 
     @Override
-    Object call() throws TaskExecutionException {
+    Object perform() throws TaskExecutionException {
         action.call()
     }
 }

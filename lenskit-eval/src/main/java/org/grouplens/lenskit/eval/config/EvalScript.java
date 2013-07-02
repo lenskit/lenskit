@@ -22,6 +22,7 @@ package org.grouplens.lenskit.eval.config;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.Uninterruptibles;
 import groovy.lang.*;
 import groovy.util.AntBuilder;
 import org.apache.commons.lang3.builder.Builder;
@@ -38,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Base class for evaluator configuration scripts. It contains the metaclass
@@ -174,12 +176,12 @@ public class EvalScript extends Script implements GroovyObject {
     }
     //endregion
 
-    public Target target(String name, @DelegatesTo(TargetDelegate.class) Closure<?> closure) {
+    public EvalTarget target(String name, @DelegatesTo(TargetDelegate.class) Closure<?> closure) {
         if (currentTarget != null) {
             throw new IllegalStateException("cannot nest targets");
         }
 
-        Target target = new Target();
+        EvalTarget target = new EvalTarget();
         target.setName(name);
         target.setProject(getAntProject());
         TargetDelegate delegate = new TargetDelegate(target);
@@ -218,17 +220,22 @@ public class EvalScript extends Script implements GroovyObject {
         if (obj instanceof Builder) {
             return ((Builder<?>) obj).build();
         } else if (obj instanceof EvalTask) {
+            EvalTask<?> task = (EvalTask<?>) obj;
             if (currentTarget == null) {
                 try {
-                    return ((EvalTask<?>) obj).call();
+                    task.execute();
+                    return Uninterruptibles.getUninterruptibly(task);
                 } catch (TaskExecutionException e) {
+                    throw new RuntimeException("task failure", e);
+                } catch (ExecutionException e) {
                     throw new RuntimeException("task failure", e);
                 }
             } else {
-                EvalAntTask task = new EvalAntTask((EvalTask<?>) obj);
-                task.setProject(getAntProject());
-                task.setOwningTarget(currentTarget);
-                currentTarget.addTask(task);
+                EvalAntTask aTask = new EvalAntTask(task);
+                aTask.setProject(getAntProject());
+                aTask.setOwningTarget(currentTarget);
+                aTask.init();
+                currentTarget.addTask(aTask);
                 return obj;
             }
         } else {

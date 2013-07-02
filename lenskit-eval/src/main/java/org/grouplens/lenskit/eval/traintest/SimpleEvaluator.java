@@ -99,7 +99,7 @@ public class SimpleEvaluator implements Callable<Table> {
      */
     public SimpleEvaluator addDataset(CrossfoldTask cross){
         try {
-            for (TTDataSet data: cross.call()) {
+            for (TTDataSet data: cross.perform()) {
                 result.addDataset(data);
             }
         }
@@ -303,7 +303,7 @@ public class SimpleEvaluator implements Callable<Table> {
     @Override
     public Table call() throws TaskExecutionException {
         result.setProject(project);
-        return result.call();
+        return result.perform();
     }
 }
 

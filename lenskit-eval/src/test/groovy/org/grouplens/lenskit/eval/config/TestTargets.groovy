@@ -21,10 +21,10 @@
 package org.grouplens.lenskit.eval.config
 
 import org.apache.tools.ant.BuildException
+import org.grouplens.lenskit.eval.EvalTask
 import org.junit.Test
 
-import static org.hamcrest.Matchers.equalTo
-import static org.hamcrest.Matchers.nullValue
+import static org.hamcrest.Matchers.*
 import static org.junit.Assert.*
 
 /**
@@ -190,5 +190,28 @@ class TestTargets extends ConfigTestBase {
         } catch (BuildException e) {
             assertThat(e.getCause(), nullValue());
         }
+    }
+
+    @Test
+    void testTargetFuture() {
+        EvalTask task = null
+        EvalTarget tgt = null
+        def script = evalScript {
+            tgt = target("target") {
+                task = mock {
+                    action {
+                        "Goodbye, moon"
+                    }
+                }
+            }
+        }
+        assertThat(task, notNullValue())
+        assertThat(tgt, notNullValue())
+        assertThat(task.isDone(), equalTo(false))
+        assertThat(tgt.isDone(), equalTo(false))
+        script.project.executeTarget("target")
+        assertThat(task.isDone(), equalTo(true))
+        assertThat(task.get(), equalTo("Goodbye, moon"))
+        assertThat(tgt.get(), equalTo("Goodbye, moon"))
     }
 }
