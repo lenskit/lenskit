@@ -43,17 +43,6 @@ public class TestEvalScriptConfig {
         esc = new EvalConfig(props);
     }
 
-    /**
-     * Make sure that changes to the Properties object don't change
-     * the EvalConfig after construction.
-     */
-    @Test
-    public void testClone() {
-        assertEquals("bar", esc.get("foo"));
-        props.setProperty("foo", "foobar");
-        assertEquals("bar", esc.get("foo"));
-    }
-
     @Test
     public void testGet() {
         assertEquals("bar", esc.get("foo"));

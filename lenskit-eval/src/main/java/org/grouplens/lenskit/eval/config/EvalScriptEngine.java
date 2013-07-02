@@ -21,7 +21,9 @@
 package org.grouplens.lenskit.eval.config;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import groovy.lang.Binding;
+import groovy.lang.GroovyRuntimeException;
 import groovy.lang.GroovyShell;
 import org.apache.commons.lang3.builder.Builder;
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -57,23 +59,36 @@ public class EvalScriptEngine {
 
     protected ClassLoader classLoader;
     protected GroovyShell shell;
-    @Nonnull
-    protected final EvalConfig config;
+    @Nullable
+    protected final Properties properties;
 
     @SuppressWarnings("rawtypes")
     private final Map<Class, Class> builders = new HashMap<Class, Class>();
 
+    /**
+     * Construct a new script engine. The engine uses the current thread's classloader.
+     */
     public EvalScriptEngine() {
         this(Thread.currentThread().getContextClassLoader());
     }
 
+    /**
+     * Construct a new script engine.
+     * @param loader The class loader to use.
+     */
     public EvalScriptEngine(ClassLoader loader) {
-        this(loader, new Properties(System.getProperties()));
+        this(loader, null);
     }
 
-    public EvalScriptEngine(ClassLoader loader, Properties configProperties) {
+    /**
+     * Construct a new script engine.
+     * @param loader The class loader to use.
+     * @param props Additional properties to use when creating new projects.
+     * @see EvalProject#EvalProject(java.util.Properties)
+     */
+    public EvalScriptEngine(ClassLoader loader, @Nullable Properties props) {
         CompilerConfiguration compConfig = new CompilerConfiguration(CompilerConfiguration.DEFAULT);
-        config = new EvalConfig(configProperties);
+        properties = props;
 
         compConfig.setScriptBaseClass("org.grouplens.lenskit.eval.config.EvalScript");
 
@@ -88,31 +103,46 @@ public class EvalScriptEngine {
         shell = new GroovyShell(loader, new Binding(), compConfig);
         classLoader = loader;
 
-        loadBuilders();
+        loadExternalMethods();
     }
 
     /**
-     * Load a script from a file.
+     * Create a new eval project.
+     * @return The eval project.
+     */
+    public EvalProject createProject() {
+        return new EvalProject(properties);
+    }
+
+    //region Loading and running scripts
+    /**
+     * Run a script from a file.
      *
-     * @param file The file to read.
+     * @param file The file to run.
+     * @param project The project to run the script against.
      * @return The script as parsed and compiled by Groovy.
      * @throws IOException if the file cannot be read.
      */
-    protected EvalScript loadScript(File file) throws IOException {
+    public Object runScript(File file, EvalProject project) throws IOException, TaskExecutionException {
         EvalScript script = (EvalScript) shell.parse(file);
-        script.setEngine(this);
-        return script;
+        return runScript(script, project);
     }
 
     /**
-     * Load a script from a reader.
+     * Run a script from a reader.
      *
      * @param in The reader to read.
+     * @param project The project to run the script against.
      * @return The script as parsed and compiled by Groovy.
      */
-    protected EvalScript loadScript(Reader in) {
-        EvalScript script = (EvalScript) shell.parse(in);
-        script.setEngine(this);
+    public Object runScript(Reader in, EvalProject project) throws IOException {
+        EvalScript script;
+        try {
+            script =  (EvalScript) shell.parse(in);
+        } catch (GroovyRuntimeException e) {
+            Throwables.propagateIfInstanceOf(e, IOException.class);
+            throw e;
+        }
         return script;
     }
 
@@ -120,18 +150,19 @@ public class EvalScriptEngine {
      * Run an evaluation config script and get the evaluations it produces.
      *
      * @param script The script to run (as loaded by Groovy)
-     * @return A list of evaluations produced by {@code script}.
+     * @param project The project to run the script on.
+     * @return The return value of the script.
      * @throws org.grouplens.lenskit.eval.TaskExecutionException if the script is invalid or produces an error.
      */
     @Nullable
-    protected Object runScript(EvalScript script, String[] args) throws TaskExecutionException {
-        script.setBinding(new Binding(args));
+    public Object runScript(EvalScript script, EvalProject project) throws TaskExecutionException {
+        script.setEngine(this);
+        script.setProject(project);
         Object result = null;
         try {
             result = script.run();
         } catch (RuntimeException e) {
-            throw new TaskExecutionException("error running configuration script", e);
-        } catch (LinkageError e) {
+            Throwables.propagateIfInstanceOf(e.getCause(), TaskExecutionException.class);
             throw new TaskExecutionException("error running configuration script", e);
         }
         return result;
@@ -146,24 +177,11 @@ public class EvalScriptEngine {
      * @throws IOException      if there is an error reading the file
      */
     @Nullable
-    public Object execute(File file) throws TaskExecutionException, IOException {
+    public EvalProject loadProject(File file) throws TaskExecutionException, IOException {
         logger.debug("loading script file {}", file);
-        return execute(file, new String[]{});
-    }
-
-    /**
-     * Load a set of evaluations from a script file.
-     *
-     * @param file A Groovy script to configure the evaluator.
-     * @param args The command line arguments for the script.
-     * @return A list of evaluations to run.
-     * @throws org.grouplens.lenskit.eval.TaskExecutionException if there is a configuration error
-     * @throws IOException      if there is an error reading the file
-     */
-    @Nullable
-    public Object execute(File file, String[] args) throws TaskExecutionException, IOException {
-        logger.debug("loading script file {}", file);
-        return runScript(loadScript(file), args);
+        EvalProject project = new EvalProject(properties);
+        runScript(file, project);
+        return project;
     }
 
     /**
@@ -174,32 +192,14 @@ public class EvalScriptEngine {
      * @throws org.grouplens.lenskit.eval.TaskExecutionException if there is a configuration error
      */
     @Nullable
-    public Object execute(Reader in) throws TaskExecutionException {
-        return execute(in, new String[]{});
+    public Object loadProject(Reader in) throws TaskExecutionException, IOException {
+        EvalProject project = createProject();
+        runScript(in, project);
+        return project;
     }
+    //endregion
 
-    /**
-     * Load a set of evaluations from an input stream.
-     *
-     * @param in   The input stream
-     * @param args The command line arguments for the script.
-     * @return A list of evaluations
-     * @throws org.grouplens.lenskit.eval.TaskExecutionException if there is a configuration error
-     */
-    @Nullable
-    public Object execute(Reader in, String[] args) throws TaskExecutionException {
-        return runScript(loadScript(in), args);
-    }
-
-    /**
-     * Get the eval script config.
-     * @return The eval configuration.
-     */
-    @Nonnull
-    public EvalConfig getConfig() {
-        return config;
-    }
-
+    //region External method lookup
     private <R> Class<? extends R> lookupMethod(Class<R> root, String key, String name) {
         // FIXME Cache these lookups
         String path = METHOD_PATH + name + ".properties";
@@ -316,10 +316,10 @@ public class EvalScriptEngine {
     }
 
     /**
-     * Register a default set of builders.
+     * Register a default set of external methods.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    protected void loadBuilders() {
+    protected void loadExternalMethods() {
         Properties props = new Properties();
         try {
             for (URL url : Collections.list(classLoader.getResources("META-INF/lenskit-eval/builders.properties"))) {
@@ -357,4 +357,5 @@ public class EvalScriptEngine {
             registerCommand(cls, cmd);
         }
     }
+    //endregion
 }

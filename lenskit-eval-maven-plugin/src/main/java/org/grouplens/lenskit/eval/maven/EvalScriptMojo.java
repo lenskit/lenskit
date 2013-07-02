@@ -194,7 +194,8 @@ public class EvalScriptMojo extends AbstractMojo {
         for(File f:files) {
             try {
                 getLog().info("Loading evalution script from " + f.getPath());
-                engine.execute(f);
+                // FIXME Use the project properly
+                engine.loadProject(f);
             } catch (TaskExecutionException e) {
                 Throwable report = StackTraceUtils.deepSanitize(e).getCause();
                 if (report == null) {

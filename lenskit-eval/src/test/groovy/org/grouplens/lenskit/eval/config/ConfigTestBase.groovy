@@ -42,12 +42,12 @@ abstract class ConfigTestBase {
      */
     protected def eval(@DelegatesTo(EvalScript) Closure cl) {
         def script = new ClosureScript(engine, cl)
-        return engine.runScript(script)
+        return engine.runScript(script, engine.createProject())
     }
 
     protected EvalScript evalScript(@DelegatesTo(EvalScript) Closure cl) {
         def script = new ClosureScript(engine, cl);
-        engine.runScript(script)
+        engine.runScript(script, engine.createProject())
         script
     }
 }

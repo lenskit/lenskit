@@ -64,7 +64,8 @@ public class EvalCLI {
         File f = options.getScriptFile();
         logger.info("loading evaluation from {}", f);
         try {
-            engine.execute(f, options.getArgs());
+            // FIXME Use the project properly
+            engine.loadProject(f);
         } catch (TaskExecutionException e) {
             // we handle these specially
             reportError(e.getCause(), "%s: %s", f.getPath(), e.getMessage());

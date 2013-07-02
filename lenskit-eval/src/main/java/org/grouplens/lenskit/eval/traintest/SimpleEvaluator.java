@@ -34,6 +34,8 @@ import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.util.table.Table;
 
 import java.io.File;
+import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.Callable;
 
 public class SimpleEvaluator implements Callable<Table> {
@@ -45,7 +47,7 @@ public class SimpleEvaluator implements Callable<Table> {
      * Construct a simple evaluator.
      */
     public SimpleEvaluator() {
-        this(new EvalConfig());
+        this(new EvalConfig(new Properties(), new Random()));
     }
 
     /**

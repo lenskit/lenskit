@@ -20,11 +20,11 @@
  */
 package org.grouplens.lenskit.eval.config;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import groovy.lang.*;
 import groovy.util.AntBuilder;
 import org.apache.commons.lang3.builder.Builder;
-import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
@@ -48,37 +48,59 @@ import java.util.List;
 public class EvalScript extends Script implements GroovyObject {
     public final Logger logger = LoggerFactory.getLogger(getClass());
     private EvalScriptEngine engine;
-    private ScriptHelper scriptHelper;
-    private Project project;
+    private ConfigMethodInvoker helper;
+    private EvalProject project;
     private Target currentTarget;
     private AntBuilder ant;
 
-    public EvalScript() {
-        this(null);
-    }
-
-    public EvalScript(EvalScriptEngine eng) {
-        engine = eng;
-        if (eng != null) {
-            scriptHelper = new ScriptHelper(engine);
-        }
-        project = new Project();
-        project.init();
-        ant = new AntBuilder(project);
-    }
+    public EvalScript() {}
 
     //region Properties
     public EvalConfig getConfig() {
-        return engine.config;
+        return project.getConfig();
     }
 
+    /**
+     * Get the engine in use for this script.
+     * @return The script engine for this script.
+     */
     public EvalScriptEngine getEngine() {
+        Preconditions.checkState(engine != null, "no script engine configured");
         return engine;
     }
 
+    /**
+     * Set the engine this script should use.
+     * @param ece The engine to be used by this script.
+     */
     public void setEngine(EvalScriptEngine ece) {
         engine = ece;
-        scriptHelper = new ScriptHelper(ece);
+        if (project != null) {
+            helper = new ConfigMethodInvoker(ece, project);
+        }
+    }
+
+    /**
+     * Get the eval project configured by this script.
+     * @return The eval project.
+     * @throws IllegalStateException if no eval project has been configured.
+     * @see #setProject(EvalProject)
+     */
+    public EvalProject getProject() {
+        Preconditions.checkState(project != null, "no project configured");
+        return project;
+    }
+
+    /**
+     * Set the eval project to be configured by this script.
+     * @param prj The eval project to configure.
+     */
+    public void setProject(EvalProject prj) {
+        project = prj;
+        ant = new LenskitAntBuilder(getAntProject());
+        if (engine != null) {
+            helper = new ConfigMethodInvoker(engine, project);
+        }
     }
 
     /**
@@ -93,14 +115,15 @@ public class EvalScript extends Script implements GroovyObject {
     /**
      * Get the Ant project.
      */
-    public Project getProject() {
-        return project;
+    public Project getAntProject() {
+        return getProject().getAntProject();
     }
 
     /**
      * Get the Ant builder.
      */
     public AntBuilder getAnt() {
+        Preconditions.checkState(ant != null, "no project configured");
         return ant;
     }
     //endregion
@@ -109,21 +132,19 @@ public class EvalScript extends Script implements GroovyObject {
     /**
      * Evaluate another script.
      * @param file The script to evaluate.
-     * @param args The arguments to the script.
      * @return The return value of the script (typically the return value of its last expression).
      */
-    public Object evalScript(File file, String... args) throws IOException, TaskExecutionException {
-        return engine.execute(file, args);
+    public Object evalScript(File file) throws IOException, TaskExecutionException {
+        return engine.runScript(file, project);
     }
 
     /**
      * Evaluate another script.
      * @param fn The script to evaluate.
-     * @param args The arguments to the script.
      * @return The return value of the script (typically the return value of its last expression).
      */
-    public Object evalScript(String fn, String... args) throws IOException, TaskExecutionException {
-        return evalScript(new File(fn), args);
+    public Object evalScript(String fn) throws IOException, TaskExecutionException {
+        return evalScript(new File(fn));
     }
 
     /**
@@ -160,7 +181,7 @@ public class EvalScript extends Script implements GroovyObject {
 
         Target target = new Target();
         target.setName(name);
-        target.setProject(project);
+        target.setProject(getAntProject());
         TargetDelegate delegate = new TargetDelegate(target);
         currentTarget = target;
         try {
@@ -168,7 +189,7 @@ public class EvalScript extends Script implements GroovyObject {
         } finally {
             currentTarget = null;
         }
-        project.addTarget(target);
+        getAntProject().addTarget(target);
         return target;
     }
 
@@ -178,7 +199,7 @@ public class EvalScript extends Script implements GroovyObject {
         logger.debug("searching for eval command {}", name);
         Object obj = null;
         try {
-            obj = scriptHelper.callExternalMethod(name, args);
+            obj = helper.callExternalMethod(name, args);
         } catch (NoSuchMethodException e) {
             throw new MissingMethodException(name, getClass(), args, true);
         }
@@ -193,7 +214,7 @@ public class EvalScript extends Script implements GroovyObject {
                 }
             } else {
                 EvalAntTask task = new EvalAntTask((EvalTask<?>) obj);
-                task.setProject(project);
+                task.setProject(getAntProject());
                 task.setOwningTarget(currentTarget);
                 currentTarget.addTask(task);
                 return obj;
@@ -206,10 +227,6 @@ public class EvalScript extends Script implements GroovyObject {
     @Override
     public Object run() {
         throw new UnsupportedOperationException("script not implemented");
-    }
-
-    void runTarget(String target) throws BuildException {
-        project.executeTarget(target);
     }
     //endregion
 }

@@ -22,7 +22,7 @@ package org.grouplens.lenskit.eval.traintest
 
 import com.google.common.io.Files
 import org.grouplens.lenskit.eval.config.EvalScript
-import org.grouplens.lenskit.eval.config.ScriptHelper
+import org.grouplens.lenskit.eval.config.ConfigMethodInvoker
 import org.grouplens.lenskit.eval.data.CSVDataSource
 
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
@@ -77,8 +77,10 @@ class TestTrainTestTask {
     void setupDelegate() {
         engine = new EvalScriptEngine()
         command = new TrainTestEvalTask("TTcommand")
-        script = new EvalScript(engine)
-        delegate = new DefaultConfigDelegate(new ScriptHelper(engine), command)
+        script = new EvalScript()
+        script.setEngine(engine)
+        script.setProject(engine.createProject());
+        delegate = new DefaultConfigDelegate(new ConfigMethodInvoker(engine, script.project), command)
     }
 
     @After

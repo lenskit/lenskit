@@ -46,15 +46,15 @@ import org.codehaus.groovy.runtime.InvokerHelper;
  * @since 0.10
  */
 public class DefaultConfigDelegate extends GroovyObjectSupport {
-    protected final ScriptHelper scriptHelper;
+    protected final ConfigMethodInvoker helper;
     protected final Object target;
 
     /**
      * Construct a new command delegate.
      * @param target The command to use when pretending methods.
      */
-    public DefaultConfigDelegate(ScriptHelper ch, Object target) {
-        this.scriptHelper = ch;
+    public DefaultConfigDelegate(ConfigMethodInvoker ch, Object target) {
+        this.helper = ch;
         this.target = target;
     }
 
@@ -67,7 +67,7 @@ public class DefaultConfigDelegate extends GroovyObjectSupport {
     }
 
     public Object methodMissing(String name, Object args) {
-        return scriptHelper.invokeConfigurationMethod(target, name,
+        return helper.invokeConfigurationMethod(target, name,
                                                       InvokerHelper.asArray(args));
     }
 }

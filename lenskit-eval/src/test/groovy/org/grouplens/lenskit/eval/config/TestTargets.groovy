@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.nullValue
 import static org.junit.Assert.*
 
 /**
- * Teset that targets behave as expected.
+ * Test that targets behave as expected.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -47,7 +47,7 @@ class TestTargets extends ConfigTestBase {
         }
         assertThat(ranTarget, equalTo(true))
         assertThat(ranAction, equalTo(false))
-        script.runTarget("foobar")
+        script.project.executeTarget("foobar")
         assertThat(ranAction, equalTo(true))
     }
 
@@ -71,7 +71,7 @@ class TestTargets extends ConfigTestBase {
         assertThat(ranTarget, equalTo(true))
         assertThat(configuredTask, equalTo(true))
         assertThat(ranAction, equalTo(false))
-        script.runTarget("testing")
+        script.project.executeTarget("testing")
         assertThat(ranAction, equalTo(true))
     }
 
@@ -102,7 +102,7 @@ class TestTargets extends ConfigTestBase {
         assertThat(ranTarget, equalTo(true))
         assertThat(configuredTask, equalTo(true))
         assertThat(ranAction, equalTo(false))
-        script.runTarget("testing")
+        script.project.executeTarget("testing")
         assertThat(ranAction, equalTo(true))
         assertThat(ranIgnored, equalTo(false))
     }
@@ -136,7 +136,7 @@ class TestTargets extends ConfigTestBase {
         assertThat(ranTarget, equalTo(true))
         assertThat(configuredTask, equalTo(true))
         assertThat(ranAction, equalTo(false))
-        script.runTarget("testing")
+        script.project.executeTarget("testing")
         assertThat(ranAction, equalTo(true))
         assertThat(ranRequired, equalTo(true))
     }
@@ -172,7 +172,7 @@ class TestTargets extends ConfigTestBase {
         assertThat(ranTarget, equalTo(true))
         assertThat(configuredTask, equalTo(true))
         assertThat(ranAction, equalTo(false))
-        script.runTarget("testing")
+        script.project.executeTarget("testing")
         assertThat(ranAction, equalTo(true))
         assertThat(ranRequired, equalTo(true))
     }
@@ -185,7 +185,7 @@ class TestTargets extends ConfigTestBase {
             }
         }
         try {
-            script.runTarget("ant")
+            script.project.executeTarget("ant")
             fail("ant target should fail")
         } catch (BuildException e) {
             assertThat(e.getCause(), nullValue());

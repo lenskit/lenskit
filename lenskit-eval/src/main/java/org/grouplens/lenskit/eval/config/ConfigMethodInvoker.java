@@ -31,6 +31,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.grouplens.lenskit.config.GroovyUtils;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -42,11 +43,13 @@ import java.util.Arrays;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @SuppressWarnings("rawtypes")
-public class ScriptHelper {
-    private EvalScriptEngine engine;
+public class ConfigMethodInvoker {
+    private final EvalScriptEngine engine;
+    private final EvalProject project;
 
-    public ScriptHelper(EvalScriptEngine engine) {
+    public ConfigMethodInvoker(@Nonnull EvalScriptEngine engine, @Nonnull EvalProject project) {
         this.engine = engine;
+        this.project = project;
     }
 
     Iterable<Method> getOneArgMethods(Object obj, final String name) {
@@ -268,7 +271,8 @@ public class ScriptHelper {
      * after it is constructed.  No extra type coercion is performed.
      *
      * <p>If the object has an {@code evalConfig} property, that property is set to the engine's
-     * configuration.
+     * configuration.  Likewise, an {@code evalProject} property or {@code project} property with
+     * type assignable from {@link EvalProject} is set to the project.
      *
      * @param type The type to construct.
      * @param args The arguments.
@@ -286,9 +290,21 @@ public class ScriptHelper {
             throw e;
         }
 
-        MetaProperty configProp = InvokerHelper.getMetaClass(obj).getMetaProperty("evalConfig");
+        metaclass = InvokerHelper.getMetaClass(obj);
+
+        MetaProperty configProp = metaclass.getMetaProperty("evalConfig");
         if (configProp != null) {
-            configProp.setProperty(obj, engine.getConfig());
+            configProp.setProperty(obj, project.getConfig());
+        }
+
+        MetaProperty projectProp = metaclass.getMetaProperty("evalProject");
+        if (projectProp != null) {
+            projectProp.setProperty(obj, project);
+        } else {
+            projectProp = metaclass.getMetaProperty("project");
+            if (projectProp != null && projectProp.getType().isAssignableFrom(EvalProject.class)) {
+                projectProp.setProperty(obj, project);
+            }
         }
 
         if (split.getRight() != null) {

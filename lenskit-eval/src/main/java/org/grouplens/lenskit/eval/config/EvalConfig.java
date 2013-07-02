@@ -22,8 +22,9 @@ package org.grouplens.lenskit.eval.config;
 
 import org.apache.commons.lang3.BooleanUtils;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -46,32 +47,31 @@ public class EvalConfig {
     public static final String ANALYSIS_DIR_PROPERTY = "lenskit.eval.analysisDir";
     public static final String THREAD_COUNT_PROPERTY = "lenskit.eval.threadCount";
 
-    private Random random = new Random();
-    
-    private Properties properties;
-
-    /**
-     * Construct a new eval config using the system properties.
-     */
-    public EvalConfig() {
-        this(System.getProperties());
-    }
+    private final Random random;
+    private final Map<String, String> properties;
 
     /**
      * Construct a new eval config using the specified properties.
      * @param props The properties to use.
      */
-    public EvalConfig(Properties props) {
-        properties = (Properties) props.clone();
+    @SuppressWarnings("unchecked")
+    public EvalConfig(@Nonnull Map props, Random rng) {
+        properties = props;
+        random = rng;
     }
 
     /**
-     * Set the random number generator.
-     * 
-     * @param random The random number generator
+     * Construct a new config.
+     * @param props The config properties.
+     * @deprecated Set up an {@link EvalProject} instead.
      */
-    public void setRandom(Random random) {
-        this.random = random;
+    @Deprecated
+    public EvalConfig(@Nonnull Map props) {
+        this(props, new Random());
+    }
+
+    public Random getRandom() {
+        return random;
     }
     
     /**
@@ -82,7 +82,12 @@ public class EvalConfig {
      * @return The value of the property
      */
     public String get(String key, @Nullable String defaultValue) {
-        return properties.getProperty(key, defaultValue);
+        String val = properties.get(key);
+        if (val == null) {
+            return defaultValue;
+        } else {
+            return val;
+        }
     }
 
     /**
@@ -139,14 +144,4 @@ public class EvalConfig {
             return count;
         }
     }
-
-    /**
-     * Get the random number generator.
-     * 
-     * @return The random number generator.
-     */
-    public Random getRandom() {
-        return random;
-    }
-
 }

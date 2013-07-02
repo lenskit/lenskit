@@ -28,7 +28,8 @@ class ClosureScript extends EvalScript {
     Closure closure
 
     ClosureScript(EvalScriptEngine engine, Closure cl) {
-        super(engine)
+        super()
+        setEngine(engine)
         closure = cl
     }
 
