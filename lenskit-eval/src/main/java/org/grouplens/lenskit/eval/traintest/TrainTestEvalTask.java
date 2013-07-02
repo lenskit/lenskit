@@ -67,7 +67,6 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalTask.class);
 
     private List<TTDataSet> dataSets;
-    private Queue<Future<?>> deferredDataSets;
     private List<AlgorithmInstance> algorithms;
     private List<TestUserMetric> metrics;
     private List<Pair<Symbol,String>> predictChannels;
@@ -102,7 +101,6 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     public TrainTestEvalTask(String name) {
         super(name);
         dataSets = new LinkedList<TTDataSet>();
-        deferredDataSets = new LinkedList<Future<?>>();
         algorithms = new LinkedList<AlgorithmInstance>();
         metrics = new LinkedList<TestUserMetric>();
         modelMetrics = new LinkedList<ModelMetric>();
@@ -113,18 +111,6 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
     public TrainTestEvalTask addDataset(TTDataSet source) {
         dataSets.add(source);
-        return this;
-    }
-
-    /**
-     * Add a data set that is not yet available.  The data sets should be available by the time
-     * the task is executed.
-     *
-     * @param future A future containing a data set or list of data sets.
-     * @return The task (for chaining).
-     */
-    public TrainTestEvalTask addDataset(Future<?> future) {
-        deferredDataSets.add(future);
         return this;
     }
 
@@ -286,7 +272,6 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      */
     @Override
     public Table perform() throws TaskExecutionException {
-        handleDeferredDataSets();
         List<List<TrainTestEvalJob>> jobGroups = makeJobGroups();
         setupTableLayouts();
 
@@ -317,27 +302,6 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         }
 
         return outputInMemory.build();
-    }
-
-    void handleDeferredDataSets() throws TaskExecutionException {
-        while (!deferredDataSets.isEmpty()) {
-            Future<?> future = deferredDataSets.remove();
-            Object obj = null;
-            try {
-                obj = Uninterruptibles.getUninterruptibly(future);
-            } catch (ExecutionException e) {
-                throw new TaskExecutionException("deferred data set not available", e);
-            }
-            if (obj instanceof TTDataSet) {
-                dataSets.add((TTDataSet) obj);
-            } else if (obj instanceof Iterable) {
-                for (Object ds: (Iterable<?>) obj) {
-                    dataSets.add((TTDataSet) ds);
-                }
-            } else {
-                throw new RuntimeException("deferred action did not yield a data set");
-            }
-        }
     }
 
     List<List<TrainTestEvalJob>> makeJobGroups() {

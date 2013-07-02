@@ -21,8 +21,17 @@
 package org.grouplens.lenskit.eval.script;
 
 import com.google.common.base.*;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import groovy.lang.*;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.Uninterruptibles;
+import groovy.lang.Closure;
+import groovy.lang.GroovyRuntimeException;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaMethod;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.Builder;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
@@ -32,12 +41,20 @@ import org.codehaus.groovy.runtime.InvokerHelper;
 import org.grouplens.lenskit.config.GroovyUtils;
 import org.grouplens.lenskit.eval.EvalConfig;
 import org.grouplens.lenskit.eval.EvalProject;
+import org.grouplens.lenskit.util.Functional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+import static com.google.common.util.concurrent.JdkFutureAdapters.listenInPoolThread;
 
 /**
  * Utilities for searching for methods of configurable objects.
@@ -48,10 +65,33 @@ import java.util.Arrays;
 public class ConfigMethodInvoker {
     private final EvalScriptEngine engine;
     private final EvalProject project;
+    private final Map<Object,List<ListenableFuture<?>>> objectDependencies = Maps.newIdentityHashMap();
 
     public ConfigMethodInvoker(@Nonnull EvalScriptEngine engine, @Nonnull EvalProject project) {
         this.engine = engine;
         this.project = project;
+    }
+
+    public synchronized void registerDep(Object obj, ListenableFuture<?> dep) {
+        List<ListenableFuture<?>> deps = objectDependencies.get(obj);
+        if (deps == null) {
+            deps = Lists.newLinkedList();
+            objectDependencies.put(obj, deps);
+        }
+        deps.add(dep);
+    }
+
+    public synchronized List<ListenableFuture<?>> getDeps(Object obj) {
+        List<ListenableFuture<?>> deps = objectDependencies.get(obj);
+        if (deps == null) {
+            return Collections.emptyList();
+        } else {
+            return ImmutableList.copyOf(deps);
+        }
+    }
+
+    public synchronized void clearDeps(Object obj) {
+        objectDependencies.remove(obj);
     }
 
     Iterable<Method> getOneArgMethods(Object obj, final String name) {
@@ -65,6 +105,35 @@ public class ConfigMethodInvoker {
                 }
             }
         });
+    }
+
+    Object finishBuilder(final Builder<?> builder) {
+        List<ListenableFuture<?>> deps = getDeps(builder);
+        clearDeps(builder);
+        if (deps.isEmpty()) {
+            return builder.build();
+        } else {
+            ListenableFuture<List<Object>> ideps = Futures.allAsList(deps);
+            if (ideps.isDone()) {
+                return builder.build();
+            } else {
+                return Futures.transform(ideps, new Function<List<Object>, Object>() {
+                    @Nullable
+                    @Override
+                    public Object apply(@Nullable List<Object> input) {
+                        return builder.build();
+                    }
+                });
+            }
+        }
+    }
+
+    Object transform(Object obj, Function<Object,?> function) {
+        if (obj instanceof Future) {
+            return Futures.transform(listenInPoolThread((Future) obj), function);
+        } else {
+            return function.apply(obj);
+        }
     }
 
     /**
@@ -102,7 +171,12 @@ public class ConfigMethodInvoker {
                         Builder builder;
                         try {
                             builder = constructAndConfigure(bldClass, args);
-                            return method.invoke(self, builder.build());
+                            Object val = transform(finishBuilder(builder),
+                                                   Functional.invokeMethod(method, self));
+                            if (val instanceof ListenableFuture) {
+                                registerDep(self, (ListenableFuture<?>) val);
+                            }
+                            return val;
                         } catch (ReflectiveOperationException e) {
                             throw Throwables.propagate(e);
                         }
@@ -333,11 +407,33 @@ public class ConfigMethodInvoker {
         } else {
             throw new NoSuchMethodException(name);
         }
-
     }
 
-    public Object invokeConfigurationMethod(final Object target, final String name, final Object[] args) {
+    public Object invokeConfigurationMethod(final Object target, final String name, Object... args) {
         Preconditions.checkNotNull(target, "target object");
+
+        if (args.length == 1 && args[0] instanceof Future) {
+            Future<?> f = (Future<?>) args[0];
+            if (f.isDone()) {
+                try {
+                    Object arg = Uninterruptibles.getUninterruptibly(f);
+                    return invokeConfigurationMethod(target, name, arg);
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e.getCause());
+                }
+            } else {
+                Function<Object,Object> recur = new Function<Object, Object>() {
+                    @Nullable
+                    @Override
+                    public Object apply(@Nullable Object input) {
+                        return invokeConfigurationMethod(target, name, input);
+                    }
+                };
+                ListenableFuture<?> f2 = Futures.transform(listenInPoolThread(f), recur);
+                registerDep(target, f2);
+                return f2;
+            }
+        }
 
         final String setterName = "set" + StringUtils.capitalize(name);
         final String adderName = "add" + StringUtils.capitalize(name);

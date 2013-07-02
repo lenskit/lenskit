@@ -23,15 +23,31 @@ package org.grouplens.lenskit.eval;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Future;
+
 /**
  * Wrap an {@link EvalTask} as an Ant {@link Task}.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class EvalAntTask extends Task {
     private final EvalTask<?> evalTask;
+    private final Iterable<? extends Future<?>> dependencies;
 
     public EvalAntTask(EvalTask<?> task) {
+        this(task, Collections.<Future<?>>emptyList());
+    }
+
+    /**
+     * Construct an Ant wrapper for an eval task.
+     * @param task The eval task.
+     * @param deps The tasks dependencies. These are not used directly; they are just checked to
+     *             make sure they are all satisfied before the task is executed.
+     */
+    public EvalAntTask(EvalTask<?> task, Iterable<? extends Future<?>> deps) {
         evalTask = task;
+        dependencies = deps;
     }
 
     public EvalTask<?> getEvalTask() {
@@ -40,6 +56,11 @@ public class EvalAntTask extends Task {
 
     @Override
     public void execute() throws BuildException {
+        for (Future<?> dep: dependencies) {
+            if (!dep.isDone()) {
+                throw new BuildException("dependency not yet satisfied");
+            }
+        }
         try {
             evalTask.execute();
         } catch (TaskExecutionException e) {

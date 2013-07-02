@@ -30,6 +30,11 @@ import org.grouplens.lenskit.eval.TaskExecutionException
  */
 class MockTask extends AbstractTask {
     Closure action
+    Object wombat
+
+    def setWombat(arg) {
+        wombat = arg
+    }
 
     void setAction(Closure cl) {
         action = cl
@@ -37,6 +42,6 @@ class MockTask extends AbstractTask {
 
     @Override
     Object perform() throws TaskExecutionException {
-        action.call()
+        action.call(wombat)
     }
 }

@@ -23,7 +23,10 @@ package org.grouplens.lenskit.eval.script
 import org.apache.tools.ant.BuildException
 import org.grouplens.lenskit.eval.EvalTarget
 import org.grouplens.lenskit.eval.EvalTask
+import org.grouplens.lenskit.eval.TaskExecutionException
 import org.junit.Test
+
+import java.util.concurrent.Future
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.*
@@ -214,5 +217,61 @@ class TestTargets extends ConfigTestBase {
         assertThat(task.isDone(), equalTo(true))
         assertThat(task.get(), equalTo("Goodbye, moon"))
         assertThat(tgt.get(), equalTo("Goodbye, moon"))
+    }
+
+    @Test
+    void testTargetFutureDeferral() {
+        EvalTarget tgt = null
+        MockTask task = null
+        def script = evalScript {
+            def foo = target("dep") {
+                mock {
+                    action { 42 }
+                }
+            }
+            tgt = target("target") {
+                requires foo
+                task = mock {
+                    wombat foo
+                    action {
+                        "The world is ${it}"
+                    }
+                }
+            }
+        }
+        assertThat(tgt.isDone(), equalTo(false))
+        assertThat(task.wombat, nullValue())
+        script.project.executeTarget("target")
+        assertThat(tgt.isDone(), equalTo(true))
+        assertThat(tgt.get().toString(), equalTo("The world is 42"))
+    }
+
+    @Test
+    void testBadTargetFutureDeferral() {
+        EvalTarget tgt = null
+        MockTask task = null
+        def script = evalScript {
+            def foo = target("dep") {
+                mock {
+                    action { 42 }
+                }
+            }
+            tgt = target("target") {
+                task = mock {
+                    wombat foo
+                    action {
+                        "The world is ${it}"
+                    }
+                }
+            }
+        }
+        assertThat(tgt.isDone(), equalTo(false))
+        assertThat(task.wombat, nullValue())
+        try {
+            script.project.executeTarget("target")
+            fail("missing dependency should trigger failure")
+        } catch (BuildException e) {
+            /* expected */
+        }
     }
 }

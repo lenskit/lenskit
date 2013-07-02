@@ -21,16 +21,63 @@
 package org.grouplens.lenskit.util;
 
 import com.google.common.base.Function;
-import com.google.common.base.Functions;
+import com.google.common.base.Throwables;
+import org.apache.commons.lang3.tuple.Pair;
+
+import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
- * Additional function utilities to go with {@link Functions}.
- *
+ * Functional-style utilities to go with Guava.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 0.9
  */
-public final class MoreFunctions {
-    private MoreFunctions() {}
+public final class Functional {
+    private Functional() {}
+
+    public static <T> Function<Pair<T,?>,T> pairLeft() {
+        return new Function<Pair<T, ?>, T>() {
+            @Nullable
+            @Override
+            public T apply(@Nullable Pair<T, ?> input) {
+                if (input == null) {
+                    return null;
+                } else {
+                    return input.getLeft();
+                }
+            }
+        };
+    }
+
+    public static <T> Function<Pair<?, T>,T> pairRight() {
+        return new Function<Pair<?, T>, T>() {
+            @Nullable
+            @Override
+            public T apply(@Nullable Pair<?, T> input) {
+                if (input == null) {
+                    return null;
+                } else {
+                    return input.getRight();
+                }
+            }
+        };
+    }
+
+    public static <T> Function<T, Object> invokeMethod(final Method method, final Object target) {
+        return new Function<T, Object>() {
+            @Nullable
+            @Override
+            public Object apply(@Nullable T input) {
+                try {
+                    return method.invoke(target, input);
+                } catch (IllegalAccessException e) {
+                    throw Throwables.propagate(e);
+                } catch (InvocationTargetException e) {
+                    throw Throwables.propagate(e);
+                }
+            }
+        };
+    }
 
     /**
      * Identity function casting its arguments to a particular type.

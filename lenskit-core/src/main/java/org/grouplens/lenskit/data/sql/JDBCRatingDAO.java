@@ -43,7 +43,7 @@ import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.event.AbstractEventCursor;
 import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.util.MoreFunctions;
+import org.grouplens.lenskit.util.Functional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -357,7 +357,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
     @Override
     public <E extends Event> Cursor<E> getEvents(Class<E> type, SortOrder order) {
         if (type.isAssignableFrom(Rating.class)) {
-            return Cursors.transform(getEvents(order), MoreFunctions.cast(type));
+            return Cursors.transform(getEvents(order), Functional.cast(type));
         } else {
             return Cursors.empty();
         }
@@ -377,7 +377,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
     @Override
     public <E extends Event> Cursor<E> getUserEvents(long uid, Class<E> type) {
         if (type.isAssignableFrom(Rating.class)) {
-            return Cursors.transform(getUserEvents(uid), MoreFunctions.cast(type));
+            return Cursors.transform(getUserEvents(uid), Functional.cast(type));
         } else {
             return Cursors.empty();
         }
@@ -397,7 +397,7 @@ public class JDBCRatingDAO extends AbstractDataAccessObject {
     @Override
     public <E extends Event> Cursor<E> getItemEvents(long iid, Class<E> type) {
         if (type.isAssignableFrom(Rating.class)) {
-            return Cursors.transform(getItemEvents(iid), MoreFunctions.cast(type));
+            return Cursors.transform(getItemEvents(iid), Functional.cast(type));
         } else {
             return Cursors.empty();
         }

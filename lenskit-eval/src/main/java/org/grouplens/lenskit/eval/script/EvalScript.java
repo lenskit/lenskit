@@ -21,8 +21,9 @@
 package org.grouplens.lenskit.eval.script;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.Uninterruptibles;
+import com.google.common.util.concurrent.*;
 import groovy.lang.*;
 import groovy.util.AntBuilder;
 import org.apache.commons.lang3.builder.Builder;
@@ -217,20 +218,34 @@ public class EvalScript extends Script implements GroovyObject {
             throw new MissingMethodException(name, getClass(), args, true);
         }
         if (obj instanceof Builder) {
-            return ((Builder<?>) obj).build();
+            return helper.finishBuilder((Builder<?>) obj);
         } else if (obj instanceof EvalTask) {
-            EvalTask<?> task = (EvalTask<?>) obj;
+            final EvalTask<?> task = (EvalTask<?>) obj;
             if (currentTarget == null) {
                 try {
-                    task.execute();
-                    return Uninterruptibles.getUninterruptibly(task);
-                } catch (TaskExecutionException e) {
-                    throw new RuntimeException("task failure", e);
+                    ListenableFuture<List<Object>> deps = Futures.allAsList(helper.getDeps(task));
+                    helper.clearDeps(task);
+                    Runnable execute = new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                task.execute();
+                            } catch (TaskExecutionException e) {
+                                throw new RuntimeException("task failure", e);
+                            }
+                        }
+                    };
+                    deps.addListener(execute, MoreExecutors.sameThreadExecutor());
+                    if (task.isDone()) {
+                        return Uninterruptibles.getUninterruptibly(task);
+                    } else {
+                        return task;
+                    }
                 } catch (ExecutionException e) {
                     throw new RuntimeException("task failure", e);
                 }
             } else {
-                EvalAntTask aTask = new EvalAntTask(task);
+                EvalAntTask aTask = new EvalAntTask(task, helper.getDeps(task));
                 aTask.setProject(getAntProject());
                 aTask.setOwningTarget(currentTarget);
                 aTask.init();
