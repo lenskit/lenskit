@@ -21,9 +21,9 @@
 package org.grouplens.lenskit.eval;
 
 import com.google.common.collect.Iterables;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.PropertyHelper;
+import org.apache.tools.ant.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -36,6 +36,7 @@ import java.util.*;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class EvalProject {
+    private static final Logger logger = LoggerFactory.getLogger(EvalProject.class);
     private Project antProject;
     private Random random = new Random();
     private String defaultTarget;
@@ -50,6 +51,7 @@ public class EvalProject {
     public EvalProject(@Nullable Properties props) {
         antProject = new Project();
         antProject.init();
+        antProject.addBuildListener(new Listener());
         if (props != null) {
             PropertyHelper ph = PropertyHelper.getPropertyHelper(antProject);
             for (Map.Entry<Object,Object> prop: props.entrySet()) {
@@ -144,5 +146,67 @@ public class EvalProject {
 
     public void setDefaultTarget(String defaultTarget) {
         this.defaultTarget = defaultTarget;
+    }
+
+    private static class Listener implements BuildListener {
+        String target;
+        String task;
+
+        @Override
+        public void buildStarted(BuildEvent event) {
+            logger.info("started build of project " + event.getProject());
+        }
+
+        @Override
+        public void buildFinished(BuildEvent event) {
+            logger.info("finished build of project " + event.getProject());
+        }
+
+        @Override
+        public void targetStarted(BuildEvent event) {
+            target = event.getTarget().getName();
+            logger.info("running target " + target);
+        }
+
+        @Override
+        public void targetFinished(BuildEvent event) {
+            logger.debug("finished target {}", event.getTarget().getName());
+            target = null;
+        }
+
+        @Override
+        public void taskStarted(BuildEvent event) {
+            task = event.getTask().getTaskName();
+            logger.info("running task {}", task);
+        }
+
+        @Override
+        public void taskFinished(BuildEvent event) {
+            logger.debug("task {} finished", event.getTask().getTaskName());
+            task = null;
+        }
+
+        @Override
+        public void messageLogged(BuildEvent event) {
+            // FIXME Log at appropriate levels
+            Target tgt = event.getTarget();
+            switch (event.getPriority()) {
+            case Project.MSG_ERR:
+                logger.error("{}:{}: {}", target, task, event.getMessage());
+                break;
+            case Project.MSG_WARN:
+                logger.warn("{}:{}: {}", target, task, event.getMessage());
+                break;
+            case Project.MSG_INFO:
+                logger.info("{}:{}: {}", target, task, event.getMessage());
+                break;
+            case Project.MSG_DEBUG:
+                logger.debug("{}:{}: {}", target, task, event.getMessage());
+                break;
+            case Project.MSG_VERBOSE:
+                logger.trace("{}:{}: {}", target, task, event.getMessage());
+                break;
+            }
+        }
     }
 }

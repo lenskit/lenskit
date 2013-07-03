@@ -42,6 +42,7 @@ public class EvalConfig {
     public static final String SKIP_PROPERTY = "lenskit.eval.skip";
     public static final String EVAL_SCRIPT_PROPERTY = "lenskit.eval.script";
     public static final String EVAL_SCRIPTFILES_PROPERTY = "lenskit.eval.scripts";
+    public static final String SCRIPT_DIR_PROPERTY = "lenskit.eval.scriptDir";
     public static final String DATA_DIR_PROPERTY = "lenskit.eval.dataDir";
     public static final String ANALYSIS_DIR_PROPERTY = "lenskit.eval.analysisDir";
     public static final String THREAD_COUNT_PROPERTY = "lenskit.eval.threadCount";
@@ -108,6 +109,15 @@ public class EvalConfig {
      */
     public String getDataDir() {
         return get(DATA_DIR_PROPERTY, ".");
+    }
+
+    /**
+     * Get the data directory for this evaluation.
+     *
+     * @return The data directory, or "." if none has been set.
+     */
+    public String getScriptDir() {
+        return get(SCRIPT_DIR_PROPERTY, ".");
     }
 
     /**

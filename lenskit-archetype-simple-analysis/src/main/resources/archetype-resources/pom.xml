@@ -70,29 +70,6 @@
         </configuration>
       </plugin>
 
-      <!-- This use of the ant plugin first creates the data directory and 
-	   then fetches the ml-100k dataset. -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.5</version>
-        <executions>
-          <execution>
-            <id>fetch-mldata</id>
-            <phase>lenskit-pre-eval</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target>
-                <ant antfile="get-data.xml" target="prepare-100k"
-		     dir="\${basedir}" />
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <!-- Run the lenskit eval plugin that executes Groovy and R scripts. -->
       <plugin>
         <artifactId>lenskit-eval-maven-plugin</artifactId>
@@ -100,31 +77,16 @@
         <version>\${lenskit.version}</version>
         <extensions>true</extensions>
 
-	<!-- The default execution for the lenskit-eval-maven-plugin
-	     will run the run-eval goal in the lenskit-eval phase to
-	     run your Groovy script to evaluate the recommenders you
-	     are comparing.  The configuration here configures the
-	     plugin, including all of its MOJOs.  -->
+        <!-- The default execution for the lenskit-eval-maven-plugin
+             will run the run-eval goal in the lenskit-eval phase to
+             run your Groovy script to evaluate the recommenders you
+             are comparing.  The configuration here configures the
+             plugin, including all of its MOJOs.  -->
 
-	<configuration>
-	  <script>eval-simple.groovy</script>
-	  <analysisScript>chart.R</analysisScript>
-	</configuration>
-
-        <executions>
-          <!-- This execution runs the run-r goal from the
-	       lenskit-eval-maven-plugin to perform R data analysis to
-	       produce the graphs from our runs. -->
-
-          <execution>
-            <id>run-r</id>
-            <phase>lenskit-analyze</phase>
-            <goals>
-              <goal>run-r</goal>
-            </goals>
-          </execution>
-
-        </executions>
+        <configuration>
+          <script>eval-simple.groovy</script>
+          <analysisScript>chart.R</analysisScript>
+        </configuration>
       </plugin>
 
       <!-- This plugin cleans out files that are no longer needed. -->

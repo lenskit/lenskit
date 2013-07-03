@@ -35,6 +35,10 @@ public class EvalAntTask extends Task {
     private final EvalTask<?> evalTask;
     private final Iterable<? extends Future<?>> dependencies;
 
+    /**
+     * Construct a new eval task wrapper.
+     * @param task The eval task to wrap.
+     */
     public EvalAntTask(EvalTask<?> task) {
         this(task, Collections.<Future<?>>emptyList());
     }
@@ -66,5 +70,10 @@ public class EvalAntTask extends Task {
         } catch (TaskExecutionException e) {
             throw new BuildException("error running eval task", e);
         }
+    }
+
+    @Override
+    public String toString() {
+        return evalTask.toString();
     }
 }
