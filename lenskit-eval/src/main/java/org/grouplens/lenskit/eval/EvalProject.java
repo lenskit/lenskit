@@ -188,8 +188,6 @@ public class EvalProject {
 
         @Override
         public void messageLogged(BuildEvent event) {
-            // FIXME Log at appropriate levels
-            Target tgt = event.getTarget();
             switch (event.getPriority()) {
             case Project.MSG_ERR:
                 logger.error("{}:{}: {}", target, task, event.getMessage());
