@@ -73,6 +73,7 @@ public class ConfigMethodInvoker {
     }
 
     public synchronized void registerDep(Object obj, ListenableFuture<?> dep) {
+        Preconditions.checkArgument(obj != dep, "Object cannot depend on itself");
         List<ListenableFuture<?>> deps = objectDependencies.get(obj);
         if (deps == null) {
             deps = Lists.newLinkedList();
@@ -173,7 +174,7 @@ public class ConfigMethodInvoker {
                             builder = constructAndConfigure(bldClass, args);
                             Object val = transform(finishBuilder(builder),
                                                    Functional.invokeMethod(method, self));
-                            if (val instanceof ListenableFuture) {
+                            if (val != self && val instanceof ListenableFuture) {
                                 registerDep(self, (ListenableFuture<?>) val);
                             }
                             return val;
