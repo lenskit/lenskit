@@ -122,16 +122,16 @@ class TrainTestEvalJob implements Runnable {
     }
 
     @Override
-    @SuppressWarnings("PMD.AvoidCatchingThrowable")
     public void run() {
         try {
-            execute();
+            runEvaluations();
         } catch (Exception e) {
             throw new TrainTestJobException(e);
         }
     }
 
-    private void execute() throws IOException, RecommenderBuildException {
+    @SuppressWarnings("PMD.AvoidCatchingThrowable")
+    private void runEvaluations() throws IOException, RecommenderBuildException {
         Closer closer = Closer.create();
         try {
             TableWriter userTable = userOutputSupplier.get();
