@@ -272,6 +272,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      *          Failure of the evaluation
      */
     @Override
+    @SuppressWarnings("PMD.AvoidCatchingThrowable")
     public Table perform() throws TaskExecutionException {
         List<List<TrainTestEvalJob>> jobGroups = makeJobGroups();
         setupTableLayouts();
