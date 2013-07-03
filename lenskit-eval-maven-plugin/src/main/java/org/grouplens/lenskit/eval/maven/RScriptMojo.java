@@ -42,10 +42,12 @@ import static org.apache.commons.io.FileUtils.copyFile;
  * Run an R script for statistical analysis.
  * 
  * @author GroupLens Research <ekstrand@cs.umn.edu>
+ * @deprecated Run R from within the eval script, using the Ant exec task instead.
  */
 @Mojo(name = "run-r",
         requiresDependencyResolution = ResolutionScope.RUNTIME,
         threadSafe = true)
+@Deprecated
 public class RScriptMojo extends AbstractMojo {
     /**
      * The project. Gives access to Maven state.
