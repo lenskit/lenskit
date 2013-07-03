@@ -83,7 +83,7 @@ public final class LKFileUtils {
         } catch (Exception ex) {
             Closeables.close(istream, true);
             Throwables.propagateIfPossible(ex, IOException.class);
-            throw new RuntimeException("unexpected exception", ex);
+            throw Throwables.propagate(ex);
         }
     }
 
@@ -144,7 +144,7 @@ public final class LKFileUtils {
         } catch (Exception ex) {
             Closeables.close(ostream, true);
             Throwables.propagateIfPossible(ex, IOException.class);
-            throw new RuntimeException("unexpected exception", ex);
+            throw Throwables.propagate(ex);
         }
     }
 
