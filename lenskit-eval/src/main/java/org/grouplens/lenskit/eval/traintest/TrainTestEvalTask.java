@@ -24,6 +24,7 @@ import com.google.common.base.*;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
+import com.google.common.io.Closer;
 import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.Recommender;
@@ -275,33 +276,47 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         List<List<TrainTestEvalJob>> jobGroups = makeJobGroups();
         setupTableLayouts();
 
-        int nthreads = getEvalConfig().getThreadCount();
         logger.info("Starting evaluation");
-        this.prepareEval();
-        logger.info("Running evaluator with {} threads", nthreads);
-        ExecutorService exec = Executors.newFixedThreadPool(nthreads);
-
+        Closer closer = Closer.create();
         try {
-            for (List<TrainTestEvalJob> group: jobGroups) {
-                TaskGroupRunner runner = TaskGroupRunner.create(exec);
-                runner.submitAll(group);
+            try {
+                this.prepareEval(closer);
                 try {
-                    runner.waitForAll();
-                } catch (ExecutionException e) {
-                    Throwable cause = e.getCause();
-                    if (cause instanceof TrainTestJobException) {
-                        cause = cause.getCause();
-                    }
-                    throw new TaskExecutionException(cause);
-                } catch (TrainTestJobException e) {
-                    throw new TaskExecutionException(e);
+                    runEvaluations(jobGroups);
+                } finally {
+                    cleanUp();
                 }
+            } catch (Throwable th) {
+                throw closer.rethrow(th);
+            } finally {
+                closer.close();
             }
-        } finally {
-            cleanUp();
+        } catch (IOException e) {
+            throw new TaskExecutionException("I/O error", e);
         }
 
         return outputInMemory.build();
+    }
+
+    private void runEvaluations(List<List<TrainTestEvalJob>> jobGroups) throws TaskExecutionException {
+        int nthreads = getEvalConfig().getThreadCount();
+        logger.info("Running evaluator with {} threads", nthreads);
+        ExecutorService exec = Executors.newFixedThreadPool(nthreads);
+        for (List<TrainTestEvalJob> group: jobGroups) {
+            TaskGroupRunner runner = TaskGroupRunner.create(exec);
+            runner.submitAll(group);
+            try {
+                runner.waitForAll();
+            } catch (ExecutionException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof TrainTestJobException) {
+                    cause = cause.getCause();
+                }
+                throw new TaskExecutionException(cause);
+            } catch (TrainTestJobException e) {
+                throw new TaskExecutionException(e);
+            }
+        }
     }
 
     List<List<TrainTestEvalJob>> makeJobGroups() {
@@ -437,35 +452,20 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     /**
      * Prepare the evaluation by opening all outputs and initializing metrics.
      */
-    private void prepareEval() {
+    private void prepareEval(Closer closer) throws IOException {
         logger.info("Starting evaluation");
         List<TableWriter> tableWriters = new ArrayList<TableWriter>();
         outputInMemory = new TableBuilder(outputLayout);
         tableWriters.add(outputInMemory);
         if (outputFile != null) {
-            try {
-                tableWriters.add(CSVWriter.open(outputFile, outputLayout));
-            } catch (IOException e) {
-                throw new RuntimeException("Error opening output table", e);
-            }
+            tableWriters.add(closer.register(CSVWriter.open(outputFile, outputLayout)));
         }
         output = new MultiplexedTableWriter(outputLayout, tableWriters);
         if (userOutputFile != null) {
-            try {
-                userOutput = CSVWriter.open(userOutputFile, userLayout);
-            } catch (IOException e) {
-                Closeables.closeQuietly(output);
-                throw new RuntimeException("Error opening user output table", e);
-            }
+            userOutput = closer.register(CSVWriter.open(userOutputFile, userLayout));
         }
         if (predictOutputFile != null) {
-            try {
-                predictOutput = CSVWriter.open(predictOutputFile, predictLayout);
-            } catch (IOException e) {
-                Closeables.closeQuietly(userOutput);
-                Closeables.closeQuietly(output);
-                throw new RuntimeException("Error opening prediction table", e);
-            }
+            predictOutput = closer.register(CSVWriter.open(predictOutputFile, predictLayout));
         }
         for (Metric<TrainTestEvalTask> metric : Iterables.concat(predictMetrics, modelMetrics)) {
             metric.startEvaluation(this);
@@ -475,7 +475,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     /**
      * Finalize metrics and close output files.
      */
-    private void cleanUp() {
+    private void cleanUp() throws IOException {
         for (Metric<TrainTestEvalTask> metric : Iterables.concat(predictMetrics, modelMetrics)) {
             metric.finishEvaluation();
         }
@@ -483,20 +483,9 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             throw new IllegalStateException("evaluation not running");
         }
         logger.info("Evaluation finished");
-        try {
-            // FIXME Catch all exceptions closing output
-            output.close();
-            if (userOutput != null) {
-                userOutput.close();
-            }
-            if (predictOutput != null) {
-                predictOutput.close();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Error closing output", e);
-        } finally {
-            output = null;
-        }
+        output = null;
+        userOutput = null;
+        predictOutput = null;
     }
 
     /**
