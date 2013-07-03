@@ -20,12 +20,13 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.base.*;
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.io.Closeables;
 import com.google.common.io.Closer;
-import com.google.common.util.concurrent.Uninterruptibles;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.AbstractTask;
@@ -57,7 +58,6 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 /**
  * The command that run the algorithm instance and output the prediction result file and the evaluation result file
@@ -287,7 +287,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                     cleanUp();
                 }
             } catch (Throwable th) {
-                throw closer.rethrow(th);
+                throw closer.rethrow(th, TaskExecutionException.class);
             } finally {
                 closer.close();
             }
