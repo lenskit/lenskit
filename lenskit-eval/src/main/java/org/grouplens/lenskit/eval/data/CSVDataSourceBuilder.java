@@ -122,7 +122,7 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
      * @return Whether the data source will have caching inabled.
      */
     public boolean getCache() {
-        return getCache();
+        return cache;
     }
 
     /**
