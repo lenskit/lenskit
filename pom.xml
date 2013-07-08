@@ -257,11 +257,6 @@
             <fork>true</fork>
           </configuration>
         </plugin>
-        <plugin>
-          <groupId>org.codehaus.groovy</groupId>
-          <artifactId>groovy-eclipse-compiler</artifactId>
-          <version>${groovy.eclipse.version}</version>
-        </plugin>
 
         <!--JavaDoc -->
         <plugin>
