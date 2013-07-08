@@ -45,6 +45,7 @@ import org.grouplens.lenskit.util.Functional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -178,7 +179,7 @@ public class ConfigMethodInvoker {
                                 registerDep(self, (ListenableFuture<?>) val);
                             }
                             return val;
-                        } catch (ReflectiveOperationException e) {
+                        } catch (NoSuchMethodException e) {
                             throw Throwables.propagate(e);
                         }
                     }
@@ -282,19 +283,29 @@ public class ConfigMethodInvoker {
             final Class<?> cls = (Class) objects[0];
             Class[] at2 = {cls};
             final MetaMethod method = metaclass.pickMethod(name, at2);
+
             if (method != null) {
-                return new Supplier<Object>() {
-                    @Override
-                    public Object get() {
-                        Object[] objs;
-                        try {
-                            objs = new Object[]{cls.newInstance()};
-                        } catch (ReflectiveOperationException e) {
-                            throw Throwables.propagate(e);
+                try {
+                    final Constructor ctor = cls.getConstructor();
+                    return new Supplier<Object>() {
+                        @Override
+                        public Object get() {
+                            Object[] objs;
+                            try {
+                                objs = new Object[]{ctor.newInstance()};
+                            } catch (InstantiationException e) {
+                                throw new RuntimeException("cannot instantiate " + cls, e);
+                            } catch (IllegalAccessException e) {
+                                throw new RuntimeException("cannot instantiate " + cls, e);
+                            } catch (InvocationTargetException e) {
+                                throw new RuntimeException("cannot instantiate " + cls, e);
+                            }
+                            return method.doMethodInvoke(self, objs);
                         }
-                        return method.doMethodInvoke(self, objs);
-                    }
-                };
+                    };
+                } catch (NoSuchMethodException e) {
+                    /* no constructor avaialble, ignore */
+                }
             }
         }
 
@@ -320,7 +331,13 @@ public class ConfigMethodInvoker {
             Class<?> dlgClass = annot.value();
             try {
                 return ConstructorUtils.invokeConstructor(dlgClass, target);
-            } catch (ReflectiveOperationException e) {
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException("error constructing " + dlgClass, e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException("error constructing " + dlgClass, e);
+            } catch (InstantiationException e) {
+                throw new RuntimeException("error constructing " + dlgClass, e);
+            } catch (IllegalAccessException e) {
                 throw new RuntimeException("error constructing " + dlgClass, e);
             }
         }
@@ -402,8 +419,8 @@ public class ConfigMethodInvoker {
         if (mtype != null) {
             try {
                 return constructAndConfigure(mtype, args);
-            } catch (ReflectiveOperationException e) {
-                throw new RuntimeException("error instantiating and configuring " + mtype.toString(), e);
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException("cannot find suitable for " + mtype.toString(), e);
             }
         } else {
             throw new NoSuchMethodException(name);
