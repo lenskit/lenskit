@@ -250,6 +250,9 @@
             <target>1.6</target>
             <showWarnings>true</showWarnings>
             <showDeprecation>true</showDeprecation>
+            <!-- Enable incremental compilation. Yes, that's what this does.
+                 See MCOMPILER-209. -->
+            <useIncrementalCompilation>false</useIncrementalCompilation>
             <compilerArgs>
               <compilerArg>-Xlint</compilerArg>
               <compilerArg>-Xlint:-processing</compilerArg>
