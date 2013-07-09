@@ -299,24 +299,20 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     public void testAddValue() {
         MutableSparseVector msv = simpleVector();
        
-        // The following test is for the 2.0 behavior, and should be uncommented at 2.0 time.
-//        try {
-//            msv.add(12, 12);
-//            fail("should throw IllegalStateException because the key is not in the keyset");
-//        } catch(IllegalStateException iae) { /* skip */ }
-        assertThat(msv.add(12, 12), notANumber());  // pre 2.0 behavior
-        
+        try {
+            msv.add(12, 12);
+            fail("should throw IllegalStateException because the key is not in the keyset");
+        } catch(IllegalArgumentException iae) { /* skip */ }
+
         msv.add(3, 1);
         assertThat(msv.get(3), closeTo(2.5));
         
         msv.unset(3);
         
-        // The following test is for the 2.0 behavior, and should be uncommented at 2.0 time.
-//        try {
-//            msv.add(3, 12);
-//            fail("should throw IllegalStateException because the key is not set to a value");
-//        } catch(IllegalStateException iae) { /* skip */ }
-        assertThat(msv.add(3, 12), notANumber());  // pre 2.0 behavior
+        try {
+            msv.add(3, 12);
+            fail("should throw IllegalStateException because the key is not set to a value");
+        } catch(IllegalArgumentException iae) { /* skip */ }
 
      }
 
@@ -437,7 +433,12 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     
     @Test
     public void testAddToItem() {
-        assertThat(emptyVector().add(5, 5), notANumber());
+        try {
+            emptyVector().add(5, 5);
+            fail("add with invalid key should throw exception");
+        } catch (IllegalArgumentException e) {
+            /* expected */
+        }
         MutableSparseVector v = simpleVector();
         assertThat(v.add(7, 2), closeTo(5.5));
         assertThat(v.get(7), closeTo(5.5));
@@ -602,6 +603,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     // } catch (IllegalArgumentException iae) { /* skip */ }
     // }
 
+    @Override
     @Test
     public void testVectorEntryMethods() {
         MutableSparseVector simple = simpleVector();

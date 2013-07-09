@@ -371,15 +371,12 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
-     * Add a value to the specified entry. The key must be in the key domain, and must have a value.
+     * Add a value to the specified entry. The key must be in the key set.
      * 
-     * Note that the return value on a missing key will be changed in 2.0 to throwing an IllegalArgumentException
-     * so code should not rely on Double.NaN coming back.  In general, this function should only be called
-     * on keys that are in the key set and that already have a value.
-     *
      * @param key   The key whose value should be added.
      * @param value The value to increase it by.
-     * @return The new value (or {@link Double#NaN} if no such key existed).
+     * @return The new value.
+     * @throws IllegalArgumentException if the key is not in the key set.
      */
     public double add(long key, double value) {
         checkFrozen();
@@ -387,8 +384,10 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         if (idx >= 0 && usedKeys.get(idx)) {
             values[idx] += value;
             return values[idx];
+        } else if (idx >= 0) {
+            throw new IllegalArgumentException("key " + key + " not set");
         } else {
-            return Double.NaN;
+            throw new IllegalArgumentException("invalid key " + key);
         }
     }
 
