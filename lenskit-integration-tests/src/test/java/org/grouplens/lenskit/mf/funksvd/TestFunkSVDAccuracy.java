@@ -25,18 +25,9 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.baseline.MeanDamping;
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.iterative.IterationCount;
-import org.grouplens.lenskit.knn.NeighborhoodSize;
-import org.grouplens.lenskit.knn.item.ItemItemScorer;
-import org.grouplens.lenskit.knn.item.ItemSimilarity;
 import org.grouplens.lenskit.test.CrossfoldTestSuite;
-import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.util.table.Table;
-import org.grouplens.lenskit.vectors.similarity.CosineVectorSimilarity;
-import org.grouplens.lenskit.vectors.similarity.SimilarityDamping;
-import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
 
 import static org.hamcrest.Matchers.closeTo;
 import static org.junit.Assert.assertThat;
