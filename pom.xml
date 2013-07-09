@@ -43,9 +43,9 @@
     <lenskit.web.path>file:///web/research/lenskit.grouplens.org/maven-site/</lenskit.web.path>
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
     <javadoc.cite.database>${basedir}/etc/references.rdf</javadoc.cite.database>
-    <groovy.version>1.8.6</groovy.version>
-    <gmaven.version>1.5</gmaven.version>
-    <gmaven.runtime>1.8</gmaven.runtime>
+    <groovy.version>2.1.5</groovy.version>
+    <groovy.eclipse.version>2.7.0-01</groovy.eclipse.version>
+    <groovy.eclipse.batch>2.1.5-03</groovy.eclipse.batch>
     <lenskit.clean.removeAll>false</lenskit.clean.removeAll>
   </properties>
 
@@ -61,16 +61,16 @@
     <module>lenskit-api</module>
     <module>lenskit-data-structures</module>
     <module>lenskit-core</module>
-    <module>lenskit-test</module>
+    <module>lenskit-groovy</module>
     <module>lenskit-eval</module>
-    <module>lenskit-eval-maven-plugin</module>
     <module>lenskit-knn</module>
     <module>lenskit-svd</module>
     <module>lenskit-slopeone</module>
     <module>lenskit-archetype-simple-analysis</module>
     <module>lenskit-archetype-fancy-analysis</module>
+    <module>lenskit-eval-maven-plugin</module>
+    <module>lenskit-test</module>
     <module>lenskit-package</module>
-    <module>lenskit-integration-tests</module>
   </modules>
 
   <repositories>
@@ -115,12 +115,22 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.7.2</version>
+        <version>1.7.5</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-nop</artifactId>
-        <version>1.7.2</version>
+        <version>1.7.5</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jul-to-slf4j</artifactId>
+        <version>1.7.5</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>1.7.5</version>
       </dependency>
 
       <!-- metadata -->
@@ -240,6 +250,9 @@
             <target>1.6</target>
             <showWarnings>true</showWarnings>
             <showDeprecation>true</showDeprecation>
+            <!-- Enable incremental compilation. Yes, that's what this does.
+                 See MCOMPILER-209. -->
+            <useIncrementalCompilation>false</useIncrementalCompilation>
             <compilerArgs>
               <compilerArg>-Xlint</compilerArg>
               <compilerArg>-Xlint:-processing</compilerArg>
@@ -291,6 +304,11 @@
         <!-- Packaging and build assistance -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>1.1.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
           <version>2.4</version>
         </plugin>
@@ -315,7 +333,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>2.3</version>
+          <version>2.4</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -346,7 +364,6 @@
             </dependency>
           </dependencies>
         </plugin>
-
       </plugins>
 
     </pluginManagement>
@@ -357,7 +374,6 @@
         <!-- LensKit requires Java 1.6 or better. -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.1.1</version>
         <configuration>
           <rules>
             <requireJavaVersion>
@@ -563,12 +579,12 @@
             <executions>
               <execution>
                 <id>default-single</id>
-                <phase>site</phase>
+                <phase>package</phase>
                 <goals>
                   <goal>single</goal>
                 </goals>
                 <configuration>
-                  <outputDirectory>${project.build.directory}/site/downloads</outputDirectory>
+                  <outputDirectory>${project.build.directory}</outputDirectory>
                   <tarLongFileMode>gnu</tarLongFileMode>
                   <descriptors>
                     <descriptor>src/assemble/source-package.xml</descriptor>
@@ -584,8 +600,8 @@
             <inherited>false</inherited>
             <executions>
               <execution>
-                <id>copy-binary-package</id>
-                <phase>post-site</phase>
+                <id>copy-downlaods</id>
+                <phase>site</phase>
                 <goals><goal>run</goal></goals>
                 <configuration>
                   <target>
@@ -593,6 +609,12 @@
                       <fileset dir="${basedir}/lenskit-package/target">
                         <include name="lenskit-${project.version}.zip" />
                         <include name="lenskit-${project.version}.tar.gz" />
+                      </fileset>
+                    </copy>
+                    <copy todir="${project.build.directory}/site/downloads">
+                      <fileset dir="${project.build.directory}">
+                        <include name="lenskit-${project.version}-source.zip" />
+                        <include name="lenskit-${project.version}-source.tar.gz" />
                       </fileset>
                     </copy>
                   </target>
@@ -605,12 +627,16 @@
     </profile>
 
     <profile>
-      <id>lint</id>
+      <id>integration-tests</id>
       <activation>
+        <activeByDefault>true</activeByDefault>
         <property>
           <name>lenskit.ci</name>
         </property>
       </activation>
+      <modules>
+        <module>lenskit-integration-tests</module>
+      </modules>
     </profile>
   </profiles>
 </project>

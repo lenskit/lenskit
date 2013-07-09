@@ -77,6 +77,15 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
     }
 
     /**
+     * Get the preference domain.
+     * @return The preference domain
+     */
+    @Nullable
+    public PreferenceDomain getPreferenceDomain() {
+        return preferenceDomain;
+    }
+
+    /**
      * Get the baseline predictor.
      *
      * @return The baseline predictor, or {@code null} if no baseline is configured.

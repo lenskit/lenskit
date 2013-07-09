@@ -142,6 +142,22 @@ public final class GraphtUtils {
     }
 
     /**
+     * Replace the DAO node in a graph with a placeholder.
+     * @param spi The SPI to use.
+     * @param graph The graph (this will be modified).
+     * @return The new placeholder node that has been used to replace the DAO node in the graph,
+     *         or {@code null} if the original graph had no DAO node.
+     */
+    public static Node replaceDAONode(InjectSPI spi, Graph graph) {
+        Node daoNode = findDAONode(graph);
+        Node daoPlaceholder = null;
+        if (daoNode != null) {
+            daoPlaceholder = GraphtUtils.replaceNodeWithPlaceholder(spi, graph, daoNode);
+        }
+        return daoPlaceholder;
+    }
+
+    /**
      * Remove transient edges from a set.
      *
      * @param edges The set of edges.

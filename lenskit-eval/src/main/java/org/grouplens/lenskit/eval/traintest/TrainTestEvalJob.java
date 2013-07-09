@@ -35,8 +35,6 @@ import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.eval.ExecutionInfo;
-import org.grouplens.lenskit.eval.Job;
-import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.RecommenderInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
@@ -61,7 +59,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
-public class TrainTestEvalJob implements Job<Void> {
+class TrainTestEvalJob implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalJob.class);
 
     private final int numRecs;
@@ -124,18 +122,16 @@ public class TrainTestEvalJob implements Job<Void> {
     }
 
     @Override
-    public String getName() {
-        return algorithm.getName();
+    public void run() {
+        try {
+            runEvaluation();
+        } catch (Exception e) {
+            throw new TrainTestJobException(e);
+        }
     }
 
-    @Override
-    public String getDescription() {
-        return algorithm.toString() + " on " + data.getName();
-    }
-
-    @Override
     @SuppressWarnings("PMD.AvoidCatchingThrowable")
-    public Void call() throws RecommenderBuildException, IOException {
+    private void runEvaluation() throws IOException, RecommenderBuildException {
         Closer closer = Closer.create();
         try {
             TableWriter userTable = userOutputSupplier.get();
@@ -223,8 +219,6 @@ public class TrainTestEvalJob implements Job<Void> {
         } finally {
             closer.close();
         }
-
-        return null;
     }
 
     private ExecutionInfo buildExecInfo() {

@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval.graph;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
-import groovy.json.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import javax.annotation.Nullable;
 import java.io.BufferedWriter;

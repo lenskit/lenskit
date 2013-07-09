@@ -27,7 +27,9 @@ package org.grouplens.lenskit;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  * @see RecommenderEngine
+ * @deprecated How you get a {@link RecommenderEngine} is implementation-specific.
  */
+@Deprecated
 public interface RecommenderEngineFactory {
     /**
      * Create a new recommender engine.

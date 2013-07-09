@@ -29,6 +29,7 @@ import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.event.Rating;
@@ -126,6 +127,11 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
 
             return new PackedPreferenceSnapshot(data);
         }
+    }
+
+    public static PreferenceSnapshot pack(DataAccessObject dao) {
+        Provider p = new Provider(dao);
+        return p.get();
     }
 
     private PackedPreferenceData data;

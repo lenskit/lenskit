@@ -5,12 +5,10 @@ recommender algorithms.
 
 The key user files are:
 
-* get-data.xml: an ant script that fetches one of the datasets from
-  MovieLens, and unzips it.  Run automatically by Maven when needed.
-
 * eval-simple.groovy: a groovy script that runs against the fetched
   dataset performing simple evaluations of some recommender
-  algorithms.
+  algorithms. It also downloads the ML-100K data set and runs R to
+  produce charts of the algorithm performance.
 
 * chart.R: an R script that runs against the results of the evaluation
   to produce some simple charts.

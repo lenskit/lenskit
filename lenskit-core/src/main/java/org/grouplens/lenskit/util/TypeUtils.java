@@ -26,6 +26,7 @@ import static com.google.common.collect.Iterables.transform;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.google.common.base.Function;
@@ -33,6 +34,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import javax.annotation.Nullable;
 
 /**
  * Various type utilities used in LensKit.
@@ -115,28 +118,46 @@ public class TypeUtils {
     }
 
     /**
-     * Function that gets the class for its argument.  This function does not accept nulls.
-     *
+     * Function that gets the class for its argument.
      * @param supertype A class known to be a valid supertype for any argument.
+     * @param acceptNull Whether nulls are accepted & passed through. If {@code false}, the function
+     *                   will never return {@code null}.
      */
-    public static <T> Function<T, Class<? extends T>> extractClass(final Class<T> supertype) {
+    public static <T> Function<T, Class<? extends T>> extractClass(final Class<T> supertype, final boolean acceptNull) {
         return new Function<T, Class<? extends T>>() {
             @Override
-            @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
-            public Class<? extends T> apply(T input) {
-                if (input == null) {
-                    throw new NullPointerException("null class");
-                } else {
+            public Class<? extends T> apply(@Nullable T input) {
+                if (input != null) {
                     return input.getClass().asSubclass(supertype);
+                } else if (acceptNull) {
+                    return null;
+                } else {
+                    throw new NullPointerException();
                 }
             }
         };
     }
 
     /**
+     * Function that gets the class for its argument.  This function does not accept nulls.
+     *
+     * @param supertype A class known to be a valid supertype for any argument.
+     */
+    public static <T> Function<T, Class<? extends T>> extractClass(final Class<T> supertype) {
+        return extractClass(supertype, false);
+    }
+
+    /**
      * Function that gets the class for its argument.
      */
-    public static Function<?, Class<?>> extractClass() {
+    public static Function<Object, Class<?>> extractClass() {
         return extractClass(Object.class);
+    }
+
+    /**
+     * Function that gets the class for its argument.
+     */
+    public static Function<Object, Class<?>> extractClass(boolean acceptNull) {
+        return extractClass(Object.class, acceptNull);
     }
 }

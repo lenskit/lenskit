@@ -30,7 +30,7 @@ import static java.lang.Math.max;
 
 /**
  * Apply significance weighting to a similarity function. The threshold
- * is configured with the {@link WeightThreshold} parameter.
+ * is configured with the {@link SigWeightThreshold} parameter.
  *
  * <p>Significance weighting decreases the similarity between two vectors when
  * the number of common entities between the two vectors is low.  For a threshold
@@ -44,7 +44,7 @@ import static java.lang.Math.max;
  * <i>Information Retrieval</i> Vol. 5 Issue 4 (October 2002), pp. 287-310.</li>
  * </ul>
  *
- * @see WeightThreshold
+ * @see SigWeightThreshold
  */
 @Shareable
 public class SignificanceWeightedVectorSimilarity implements VectorSimilarity, Serializable {
@@ -59,6 +59,14 @@ public class SignificanceWeightedVectorSimilarity implements VectorSimilarity, S
                                                 VectorSimilarity sim) {
         threshold = thresh;
         delegate = sim;
+    }
+
+    /**
+     * Get the underlying similarity (for debuggin purposes).
+     * @return The wrapped vector similarity.
+     */
+    public VectorSimilarity getDelegate() {
+        return delegate;
     }
 
     @Override
@@ -79,4 +87,8 @@ public class SignificanceWeightedVectorSimilarity implements VectorSimilarity, S
         return delegate.isSymmetric();
     }
 
+    @Override
+    public String toString() {
+        return String.format("SigWeight(%s, %d)", delegate, threshold);
+    }
 }

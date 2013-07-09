@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import com.google.common.base.Function;
+
 import javax.annotation.Nullable;
 
 /**
@@ -181,12 +183,31 @@ public final class VectorEntry implements Cloneable {
     @Override
     public String toString() {
         return "VectorEntry:"
-                + " vector=" + vector
-                + " index=" + index 
+                + " index=" + index
                 + " key=" + key 
                 + " value=" + value
                 + " isSet=" + isSet;
     }
 
+    /**
+     * A function that copies (clones) vector entries.
+     * @return A function that copies vector entries.
+     */
+    static Function<VectorEntry, VectorEntry> copyFunction() {
+        return CopyFunction.INSTANCE;
+    }
+    private static enum CopyFunction implements Function<VectorEntry,VectorEntry> {
+        INSTANCE;
 
+        @Nullable
+        @Override
+        public VectorEntry apply(@Nullable VectorEntry input) {
+            if (input == null) {
+                return null;
+            } else {
+                return input.clone();
+            }
+        }
+
+    }
 }

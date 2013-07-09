@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval.algorithm;
 import com.google.common.base.Supplier;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.eval.ExecutionInfo;
-import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
+import org.grouplens.lenskit.eval.traintest.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 
 import javax.annotation.Nonnull;
@@ -32,6 +32,8 @@ import java.util.Map;
 /**
  * An algorithm instance. On its own, this doesn't do much; it exists to share some
  * metadata between {@link LenskitAlgorithmInstance} and {@link ExternalAlgorithmInstance}.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface AlgorithmInstance {
     /**

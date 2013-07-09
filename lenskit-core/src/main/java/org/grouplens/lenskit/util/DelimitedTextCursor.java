@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.util;
 
+import com.google.common.base.Throwables;
 import org.grouplens.lenskit.cursors.AbstractPollingCursor;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 
@@ -101,6 +102,10 @@ public class DelimitedTextCursor extends AbstractPollingCursor<String[]> {
 
     @Override
     public void close() {
-        LKFileUtils.close(input);
+        try {
+            input.close();
+        } catch (IOException ex) {
+            throw Throwables.propagate(ex);
+        }
     }
 }

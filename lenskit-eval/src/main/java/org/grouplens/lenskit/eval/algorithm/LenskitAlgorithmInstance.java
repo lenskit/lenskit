@@ -27,6 +27,7 @@ import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -34,8 +35,8 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.ExecutionInfo;
-import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
-import org.grouplens.lenskit.eval.config.BuilderCommand;
+import org.grouplens.lenskit.eval.traintest.SharedPreferenceSnapshot;
+import org.grouplens.lenskit.eval.script.BuiltBy;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ import java.util.Map;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@BuilderCommand(LenskitAlgorithmInstanceCommand.class)
+@BuiltBy(LenskitAlgorithmInstanceBuilder.class)
 public class LenskitAlgorithmInstance implements AlgorithmInstance {
     private static final Logger logger = LoggerFactory.getLogger(LenskitAlgorithmInstance.class);
     @Nullable
@@ -104,6 +105,10 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
     @Nonnull
     public LenskitRecommenderEngineFactory getFactory() {
         return factory;
+    }
+
+    public LenskitConfiguration getConfig() {
+        return factory.getConfig();
     }
 
     public LenskitRecommender buildRecommender(DataAccessObject dao,

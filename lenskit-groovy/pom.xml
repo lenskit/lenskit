@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>lenskit</artifactId>
+    <groupId>org.grouplens.lenskit</groupId>
+    <version>2.0-SNAPSHOT</version>
+    <relativePath>..</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>lenskit-groovy</artifactId>
+  <name>LensKit Groovy DSL</name>
+  <description>
+    Groovy-based DSL for configuring LensKit recommenders.
+  </description>
+
+  <properties>
+    <!-- Setting the compiler to groovy-eclipse-compiler tells Eclipse this is a Groovy project.
+         Later in this file, a profile overrides this when run from the command line. -->
+    <maven.compiler.compilerId>groovy-eclipse-compiler</maven.compiler.compilerId>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-core</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-all</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-test</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-testCompile</id>
+            <configuration>
+              <compilerId>groovy-eclipse-compiler</compilerId>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-eclipse-compiler</artifactId>
+            <version>${groovy.eclipse.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-eclipse-batch</artifactId>
+            <version>${groovy.eclipse.batch}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <!-- This profile will activate whenever maven.home is set, which should be any time Maven
+           is run from the command line. It reverts the compiler back to javac, so that we can
+           compile correctly. -->
+      <id>non-eclipse</id>
+      <activation>
+        <property>
+          <name>maven.home</name>
+        </property>
+      </activation>
+      <properties>
+        <maven.compiler.compilerId>javac</maven.compiler.compilerId>
+      </properties>
+    </profile>
+  </profiles>
+</project>

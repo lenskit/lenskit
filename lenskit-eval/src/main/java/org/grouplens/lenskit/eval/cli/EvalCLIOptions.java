@@ -22,7 +22,7 @@ package org.grouplens.lenskit.eval.cli;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.cli.*;
-import org.grouplens.lenskit.eval.config.EvalConfig;
+import org.grouplens.lenskit.eval.EvalConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

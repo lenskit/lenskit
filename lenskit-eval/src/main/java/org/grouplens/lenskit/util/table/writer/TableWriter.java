@@ -52,7 +52,7 @@ public interface TableWriter extends Closeable {
      *
      * @param row A row of values.  If the table requires more columns, the remaining columns are
      *            empty. The row is copied if necessary; the caller is free to re-use the same array
-     *            for future calls.
+     *            for returnValue calls.
      * @throws IOException              if an error occurs writing the row.
      * @throws IllegalArgumentException if {@code row} has the incorrect number of columns.
      */
@@ -63,7 +63,7 @@ public interface TableWriter extends Closeable {
      *
      * @param row A row of values.  If the table requires more columns, the remaining columns are
      *            empty. The row is copied if necessary; the caller is free to re-use the same array
-     *            for future calls.
+     *            for returnValue calls.
      * @throws IOException              if an error occurs writing the row.
      * @throws IllegalArgumentException if {@code row} has the incorrect number of columns.
      * @since 1.1

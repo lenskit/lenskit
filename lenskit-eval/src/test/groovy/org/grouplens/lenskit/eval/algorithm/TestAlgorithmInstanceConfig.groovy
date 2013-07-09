@@ -25,7 +25,7 @@ import org.grouplens.lenskit.baseline.BaselineItemScorer
 import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
-import org.grouplens.lenskit.eval.config.ConfigTestBase
+import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
 import org.grouplens.lenskit.iterative.MinimumIterations
 import org.grouplens.lenskit.iterative.StoppingThreshold

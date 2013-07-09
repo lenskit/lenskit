@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.eval.metrics;
 
-import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand;
+import org.grouplens.lenskit.eval.traintest.TrainTestEvalTask;
 
 /**
  * Abstract base implementation of {@link TestUserMetric}.
@@ -29,6 +29,6 @@ import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand;
  * @since 0.10
  */
 public abstract class AbstractTestUserMetric
-        extends AbstractMetric<TrainTestEvalCommand>
+        extends AbstractMetric<TrainTestEvalTask>
         implements TestUserMetric {
 }

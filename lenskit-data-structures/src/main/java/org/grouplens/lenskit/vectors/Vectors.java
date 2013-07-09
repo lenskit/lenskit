@@ -74,7 +74,9 @@ public final class Vectors {
      * iterable contains the entries for a key appearing in one or both vectors.  If a key is only
      * in one vector's key set, that vector entry is returned (as {@link Pair#getLeft()} for v1 and
      * {@link Pair#getRight()} for v2) and the other is null.  If the key is in both vector's key
-     * sets, both entries are returned.
+     * sets, both entries are returned.  The key domains are not handled separately; this method
+     * does <emph>not</emph> return entries that appear in a vector's key domain but neither vector's
+     * key set.
      *
      * @param v1 The first vector.
      * @param v2 The second vector.
@@ -115,8 +117,8 @@ public final class Vectors {
         private MutablePair<VectorEntry,VectorEntry> pair;
 
         public FastUnionIterImpl(SparseVector v1, SparseVector v2) {
-            p1 = CollectionUtils.pointer(v1.fastIterator());
-            p2 = CollectionUtils.pointer(v2.fastIterator());
+            p1 = v1.fastPointer();
+            p2 = v2.fastPointer();
             leftEnt = new VectorEntry(v1, -1, 0, 0, false);
             rightEnt = new VectorEntry(v2, -1, 0, 0, false);
             pair = new MutablePair<VectorEntry,VectorEntry>(leftEnt, rightEnt);
@@ -230,8 +232,8 @@ public final class Vectors {
         private MutablePair<VectorEntry,VectorEntry> pair;
 
         public FastIntersectIterImpl(SparseVector v1, SparseVector v2) {
-            p1 = CollectionUtils.pointer(v1.fastIterator());
-            p2 = CollectionUtils.pointer(v2.fastIterator());
+            p1 = v1.fastPointer();
+            p2 = v2.fastPointer();
             leftEnt = new VectorEntry(v1, -1, 0, 0, false);
             rightEnt = new VectorEntry(v2, -1, 0, 0, false);
             pair = MutablePair.of(leftEnt, rightEnt);
@@ -359,8 +361,8 @@ public final class Vectors {
         private final Pointer<VectorEntry> p2;
 
         IteratorImpl(SparseVector v1, SparseVector v2) {
-            p1 = CollectionUtils.pointer(v1.iterator());
-            p2 = CollectionUtils.pointer(v2.iterator());
+            p1 = v1.fastPointer();
+            p2 = v2.fastPointer();
         }
 
         @Override
