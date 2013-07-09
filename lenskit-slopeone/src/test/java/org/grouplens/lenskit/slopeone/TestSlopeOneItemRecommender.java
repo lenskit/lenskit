@@ -24,9 +24,9 @@ import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
@@ -55,13 +55,13 @@ public class TestSlopeOneItemRecommender {
 
         DAOFactory daof = new EventCollectionDAO.Factory(rs);
 
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
-        factory.bind(ItemScorer.class).to(SlopeOneItemScorer.class);
-        factory.bind(ItemRecommender.class).to(SlopeOneRecommender.class);
-        factory.bind(PreferenceDomain.class).to(new PreferenceDomain(1, 5));
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(ItemScorer.class).to(SlopeOneItemScorer.class);
+        config.bind(ItemRecommender.class).to(SlopeOneRecommender.class);
+        config.bind(PreferenceDomain.class).to(new PreferenceDomain(1, 5));
         // factory.setComponent(UserVectorNormalizer.class, IdentityVectorNormalizer.class);
-        factory.bind(BaselinePredictor.class).to(ItemUserMeanPredictor.class);
-        engine = factory.create();
+        config.bind(BaselinePredictor.class).to(ItemUserMeanPredictor.class);
+        engine = LenskitRecommenderEngine.build(daof, config);
     }
 
     @SuppressWarnings("deprecation")

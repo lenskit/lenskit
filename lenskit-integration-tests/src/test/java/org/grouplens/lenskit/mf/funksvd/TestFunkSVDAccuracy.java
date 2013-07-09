@@ -45,7 +45,7 @@ public class TestFunkSVDAccuracy extends CrossfoldTestSuite {
               .to(FunkSVDItemScorer.class);
         config.bind(BaselinePredictor.class)
               .to(ItemUserMeanPredictor.class);
-        config.in(ItemUserMeanPredictor.class)
+        config.within(ItemUserMeanPredictor.class)
               .set(MeanDamping.class)
               .to(10);
         config.set(FeatureCount.class).to(25);

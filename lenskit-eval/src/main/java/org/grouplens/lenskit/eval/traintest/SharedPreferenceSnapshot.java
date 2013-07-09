@@ -36,9 +36,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.io.Serializable;
 
 @Shareable
-public class SharedPreferenceSnapshot implements PreferenceSnapshot {
+public class SharedPreferenceSnapshot implements PreferenceSnapshot, Serializable {
+    private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(SharedPreferenceSnapshot.class);
     private final PreferenceSnapshot snapshot;
 

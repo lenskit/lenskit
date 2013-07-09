@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.eval.algorithm;
 
 import org.grouplens.lenskit.config.LenskitConfigDSL;
-import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 
 import java.util.Map;
@@ -40,6 +39,8 @@ public class AlgorithmInstanceBuilderDelegate extends LenskitConfigDSL {
         this.builder = builder;
     }
 
+    @Deprecated
+    @SuppressWarnings("deprecation")
     public LenskitRecommenderEngineFactory getFactory() {
         return builder.getFactory();
     }

@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.test;
 
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.eval.EvalConfig;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceBuilder;

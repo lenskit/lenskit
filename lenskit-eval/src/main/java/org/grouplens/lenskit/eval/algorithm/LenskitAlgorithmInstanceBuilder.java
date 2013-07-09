@@ -40,12 +40,14 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
     private String name;
     private Map<String, Object> attributes = new HashMap<String, Object>();
     private boolean preload;
+    @SuppressWarnings("deprecation")
     private LenskitRecommenderEngineFactory factory;
 
     public LenskitAlgorithmInstanceBuilder() {
         this("Unnamed Algorithm");
     }
 
+    @SuppressWarnings("deprecation")
     public LenskitAlgorithmInstanceBuilder(String name) {
         this.name = name;
         factory = new LenskitRecommenderEngineFactory();
@@ -123,6 +125,7 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
      *         instantiated to a fresh, empty factory.
      * @deprecated Use {@link #getConfig()} instead.
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     public LenskitRecommenderEngineFactory getFactory() {
         return factory;
@@ -134,7 +137,7 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
 
     @Override
     public LenskitAlgorithmInstance build() {
-        return new LenskitAlgorithmInstance(getName(), factory, attributes, preload);
+        return new LenskitAlgorithmInstance(getName(), factory.getConfig(), attributes, preload);
     }
 
 }

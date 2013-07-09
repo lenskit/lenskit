@@ -22,6 +22,7 @@ package org.grouplens.lenskit.knn.item.model;
 
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -55,17 +56,17 @@ public class TestNormalizingItemItemRecommenderBuild {
         rs.add(Ratings.make(8, 5, 4));
         DAOFactory daof = new EventCollectionDAO.Factory(rs);
 
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
-        factory.bind(ItemItemModel.class).toProvider(NormalizingItemItemModelBuilder.class);
-        factory.bind(ItemScorer.class).to(ItemItemScorer.class);
-        factory.bind(ItemRecommender.class).to(ItemItemRecommender.class);
-        factory.bind(GlobalItemRecommender.class).to(ItemItemGlobalRecommender.class);
-        factory.bind(GlobalItemScorer.class).to(ItemItemGlobalScorer.class);
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(ItemItemModel.class).toProvider(NormalizingItemItemModelBuilder.class);
+        config.bind(ItemScorer.class).to(ItemItemScorer.class);
+        config.bind(ItemRecommender.class).to(ItemItemRecommender.class);
+        config.bind(GlobalItemRecommender.class).to(ItemItemGlobalRecommender.class);
+        config.bind(GlobalItemScorer.class).to(ItemItemGlobalScorer.class);
         // this is the default
 //        factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
 //                             IdentityVectorNormalizer.class);
 
-        engine = factory.create();
+        engine = LenskitRecommenderEngine.build(daof, config);
     }
 
     @SuppressWarnings("deprecation")

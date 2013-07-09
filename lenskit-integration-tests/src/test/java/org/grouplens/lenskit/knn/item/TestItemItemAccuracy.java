@@ -24,7 +24,6 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.test.CrossfoldTestSuite;
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
@@ -52,10 +51,10 @@ public class TestItemItemAccuracy extends CrossfoldTestSuite {
               .to(ItemUserMeanPredictor.class);
         config.bind(UserVectorNormalizer.class)
               .to(BaselineSubtractingUserVectorNormalizer.class);
-        config.in(ItemSimilarity.class)
+        config.within(ItemSimilarity.class)
               .bind(VectorSimilarity.class)
               .to(CosineVectorSimilarity.class);
-        config.in(ItemSimilarity.class)
+        config.within(ItemSimilarity.class)
               .set(SimilarityDamping.class)
               .to(100.0);
         config.set(NeighborhoodSize.class).to(30);

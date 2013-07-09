@@ -81,7 +81,7 @@ public class SlopeOneItemScorer extends AbstractItemScorer {
                     scores.set(e, predValue);
                 } else {
                     nUnpred += 1;
-                    scores.clear(e);
+                    scores.unset(e);
                 }
             }
         }

@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.eval.metrics.predict;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
@@ -31,6 +32,7 @@ import org.grouplens.lenskit.transform.quantize.PreferenceDomainQuantizer;
 import org.grouplens.lenskit.transform.quantize.Quantizer;
 import org.grouplens.lenskit.util.statistics.MutualInformationAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.grouplens.lenskit.vectors.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,9 +88,9 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
             // TODO Re-use accumulators
             MutualInformationAccumulator accum = new MutualInformationAccumulator(quantizer.getCount());
 
-            for (Vectors.EntryPair e: Vectors.paired(ratings, predictions)) {
-                accum.count(quantizer.index(e.getValue1()),
-                            quantizer.index(e.getValue2()));
+            for (Pair<VectorEntry,VectorEntry> e: Vectors.fastIntersect(ratings, predictions)) {
+                accum.count(quantizer.index(e.getLeft().getValue()),
+                            quantizer.index(e.getRight().getValue()));
             }
 
             if (accum.getCount() > 0) {
