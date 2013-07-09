@@ -197,6 +197,24 @@ class TestTargets extends ConfigTestBase {
     }
 
     @Test
+    void testAntBlock() {
+        def script = evalScript {
+            target("ant") {
+                ant {
+                    echo(message: "hello, world")
+                    delegate.fail(message: "failure")
+                }
+            }
+        }
+        try {
+            script.project.executeTarget("ant")
+            fail("ant target should fail")
+        } catch (BuildException e) {
+            assertThat(e.getCause(), nullValue());
+        }
+    }
+
+    @Test
     void testTargetFuture() {
         EvalTask task = null
         EvalTarget tgt = null

@@ -21,8 +21,10 @@
 package org.grouplens.lenskit.eval.script;
 
 import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
 import groovy.util.AntBuilder;
 import org.apache.tools.ant.Target;
+import org.apache.tools.ant.Task;
 
 /**
  * Delegate to build a target.
@@ -59,5 +61,12 @@ public class TargetDelegate {
 
     public final AntBuilder getAnt() {
         return ant;
+    }
+
+    /**
+     * Invoke an Ant block.
+     */
+    public Task ant(Closure<?> block) {
+        return (Task) getAnt().invokeMethod("sequential", block);
     }
 }

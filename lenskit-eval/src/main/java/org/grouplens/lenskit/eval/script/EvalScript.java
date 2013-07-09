@@ -30,6 +30,7 @@ import org.apache.commons.lang3.builder.Builder;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
+import org.apache.tools.ant.Task;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.grouplens.lenskit.config.GroovyUtils;
 import org.grouplens.lenskit.eval.*;
@@ -128,6 +129,13 @@ public class EvalScript extends Script implements GroovyObject {
         Preconditions.checkState(ant != null, "no project configured");
         return ant;
     }
+
+    /**
+     * Invoke an Ant block.
+     */
+    public Task ant(Closure<?> block) {
+        return (Task) getAnt().invokeMethod("sequential", block);
+    }
     //endregion
 
     //region Utilities
@@ -176,7 +184,9 @@ public class EvalScript extends Script implements GroovyObject {
     }
     //endregion
 
-    public EvalTarget target(String name, @DelegatesTo(TargetDelegate.class) Closure<?> closure) {
+    public EvalTarget target(String name,
+                             @DelegatesTo(value=TargetDelegate.class,
+                                          strategy=Closure.DELEGATE_FIRST) Closure<?> closure) {
         if (currentTarget != null) {
             throw new IllegalStateException("cannot nest targets");
         }
