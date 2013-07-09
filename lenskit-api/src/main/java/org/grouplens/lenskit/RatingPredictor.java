@@ -38,14 +38,13 @@ import java.util.Collection;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
-public interface RatingPredictor extends ItemScorer {
+public interface RatingPredictor {
     /**
      * Query whether this predictor can actually use user history.
      *
      * @return {@code true} if the history passed to one of the history-based
      *         methods may be used, and {@code false} if it will be ignored.
      */
-    @Override
     boolean canUseHistory();
 
     /**
@@ -120,54 +119,4 @@ public interface RatingPredictor extends ItemScorer {
      */
     void predict(@Nonnull UserHistory<? extends Event> profile,
                  @Nonnull MutableSparseVector predictions);
-
-    /**
-     * {@inheritDoc}
-     * @deprecated Use {@link #predict(long, long)}
-     */
-    @Deprecated
-    @Override
-    double score(long user, long item);
-
-    /**
-     * {@inheritDoc}
-     * @deprecated Use {@link #predict(long, Collection)}
-     */
-    @Deprecated
-    @Nonnull
-    @Override
-    SparseVector score(long user, @Nonnull Collection<Long> items);
-
-    /**
-     * {@inheritDoc}
-     * @deprecated Use {@link #predict(long, MutableSparseVector)}
-     */
-    @Deprecated
-    @Override
-    void score(long user, @Nonnull MutableSparseVector scores);
-
-    /**
-     * {@inheritDoc}
-     * @deprecated Use {@link #predict(UserHistory, long)}
-     */
-    @Deprecated
-    @Override
-    double score(@Nonnull UserHistory<? extends Event> profile, long item);
-
-    /**
-     * {@inheritDoc}
-     * @deprecated Use {@link #predict(UserHistory, Collection)}
-     */
-    @Deprecated
-    @Nonnull
-    @Override
-    SparseVector score(@Nonnull UserHistory<? extends Event> profile, @Nonnull Collection<Long> items);
-
-    /**
-     * {@inheritDoc}
-     * @deprecated Use {@link #predict(UserHistory, MutableSparseVector)}
-     */
-    @Deprecated
-    @Override
-    void score(@Nonnull UserHistory<? extends Event> profile, @Nonnull MutableSparseVector scores);
 }

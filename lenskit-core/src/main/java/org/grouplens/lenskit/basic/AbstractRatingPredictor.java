@@ -136,42 +136,4 @@ public abstract class AbstractRatingPredictor implements RatingPredictor {
     public boolean canUseHistory() {
         return true;
     }
-
-    @Deprecated
-    @Override
-    public double score(long user, long item) {
-        return predict(user, item);
-    }
-
-    @Deprecated
-    @Nonnull
-    @Override
-    public SparseVector score(long user, @Nonnull Collection<Long> items) {
-        return predict(user, items);
-    }
-
-    @Deprecated
-    @Override
-    public void score(long user, @Nonnull MutableSparseVector scores) {
-        predict(user, scores);
-    }
-
-    @Deprecated
-    @Override
-    public double score(@Nonnull UserHistory<? extends Event> profile, long item) {
-        return predict(profile, item);
-    }
-
-    @Deprecated
-    @Nonnull
-    @Override
-    public SparseVector score(@Nonnull UserHistory<? extends Event> profile, @Nonnull Collection<Long> items) {
-        return predict(profile, items);
-    }
-
-    @Deprecated
-    @Override
-    public void score(@Nonnull UserHistory<? extends Event> profile, @Nonnull MutableSparseVector scores) {
-        predict(profile, scores);
-    }
 }

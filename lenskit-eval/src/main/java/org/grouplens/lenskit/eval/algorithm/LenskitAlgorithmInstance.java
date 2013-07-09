@@ -181,7 +181,7 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
             RatingPredictor rp = recommender.getRatingPredictor();
             if (rp == null) return null;
 
-            return rp.score(uid, testItems);
+            return rp.predict(uid, testItems);
         }
 
         @Override
