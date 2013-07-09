@@ -24,6 +24,7 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.baseline.MeanDamping;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
@@ -48,16 +49,16 @@ import static org.junit.Assert.assertThat;
 public class TestFunkSVDAccuracy extends CrossfoldTestSuite {
     @SuppressWarnings("unchecked")
     @Override
-    protected void configureAlgorithm(LenskitRecommenderEngineFactory factory) {
-        factory.bind(ItemScorer.class)
-               .to(FunkSVDItemScorer.class);
-        factory.bind(BaselinePredictor.class)
-               .to(ItemUserMeanPredictor.class);
-        factory.in(ItemUserMeanPredictor.class)
-               .set(MeanDamping.class)
-               .to(10);
-        factory.set(FeatureCount.class).to(25);
-        factory.set(IterationCount.class).to(125);
+    protected void configureAlgorithm(LenskitConfiguration config) {
+        config.bind(ItemScorer.class)
+              .to(FunkSVDItemScorer.class);
+        config.bind(BaselinePredictor.class)
+              .to(ItemUserMeanPredictor.class);
+        config.in(ItemUserMeanPredictor.class)
+              .set(MeanDamping.class)
+              .to(10);
+        config.set(FeatureCount.class).to(25);
+        config.set(IterationCount.class).to(125);
     }
 
     @Override

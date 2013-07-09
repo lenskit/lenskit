@@ -23,6 +23,7 @@ package org.grouplens.lenskit.knn.item;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.knn.item.model.NormalizingItemItemModelBuilder;
@@ -40,25 +41,25 @@ import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
 public class TestNormalizingItemItemAccuracy extends TestItemItemAccuracy {
     @SuppressWarnings("unchecked")
     @Override
-    protected void configureAlgorithm(LenskitRecommenderEngineFactory factory) {
-        factory.bind(ItemItemModel.class)
-                .toProvider(NormalizingItemItemModelBuilder.class);
-        factory.bind(ItemScorer.class)
-                .to(ItemItemScorer.class);
-        factory.bind(BaselinePredictor.class)
-                .to(ItemUserMeanPredictor.class);
-        factory.bind(UserVectorNormalizer.class)
-                .to(BaselineSubtractingUserVectorNormalizer.class);
-        factory.bind(ItemVectorNormalizer.class)
-                .to(DefaultItemVectorNormalizer.class);
-        factory.bind(VectorTruncator.class)
-                .to(NoOpTruncator.class);
-        factory.in(ItemSimilarity.class)
-                .bind(VectorSimilarity.class)
-                .to(CosineVectorSimilarity.class);
-        factory.in(ItemSimilarity.class)
-                .set(SimilarityDamping.class)
-                .to(100.0);
-        factory.set(NeighborhoodSize.class).to(30);
+    protected void configureAlgorithm(LenskitConfiguration config) {
+        config.bind(ItemItemModel.class)
+              .toProvider(NormalizingItemItemModelBuilder.class);
+        config.bind(ItemScorer.class)
+              .to(ItemItemScorer.class);
+        config.bind(BaselinePredictor.class)
+              .to(ItemUserMeanPredictor.class);
+        config.bind(UserVectorNormalizer.class)
+              .to(BaselineSubtractingUserVectorNormalizer.class);
+        config.bind(ItemVectorNormalizer.class)
+              .to(DefaultItemVectorNormalizer.class);
+        config.bind(VectorTruncator.class)
+              .to(NoOpTruncator.class);
+        config.in(ItemSimilarity.class)
+              .bind(VectorSimilarity.class)
+              .to(CosineVectorSimilarity.class);
+        config.in(ItemSimilarity.class)
+              .set(SimilarityDamping.class)
+              .to(100.0);
+        config.set(NeighborhoodSize.class).to(30);
     }
 }
