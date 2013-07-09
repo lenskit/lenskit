@@ -20,23 +20,23 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import org.grouplens.lenskit.ItemRecommender;
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.basic.TopNItemRecommender;
+import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.LenskitRecommender;
+import org.grouplens.lenskit.core.LenskitRecommenderEngine;
+import org.grouplens.lenskit.test.ML100KTestSuite;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.basic.TopNItemRecommender;
-import org.grouplens.lenskit.core.LenskitRecommender;
-import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.test.ML100KTestSuite;
-import org.junit.Test;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
 /**
  * Do major tests on the item-item recommender.
@@ -46,15 +46,15 @@ import org.junit.Test;
 public class TestLeastSquaresBuildSerialize extends ML100KTestSuite {
     @Test
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
-        factory.bind(ItemRecommender.class)
-               .to(TopNItemRecommender.class);
-        factory.bind(ItemScorer.class)
-               .to(BaselineItemScorer.class);
-        factory.bind(BaselinePredictor.class)
-               .to(LeastSquaresPredictor.class);
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(ItemRecommender.class)
+              .to(TopNItemRecommender.class);
+        config.bind(ItemScorer.class)
+              .to(BaselineItemScorer.class);
+        config.bind(BaselinePredictor.class)
+              .to(LeastSquaresPredictor.class);
 
-        LenskitRecommenderEngine engine = factory.create();
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
         assertThat(engine, notNullValue());
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();

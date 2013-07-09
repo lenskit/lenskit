@@ -28,9 +28,9 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.basic.TopNItemRecommender;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.test.ML100KTestSuite;
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
@@ -42,9 +42,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -55,20 +53,20 @@ import static org.junit.Assert.assertThat;
 public class TestUserUserBuildSerialize extends ML100KTestSuite {
     @Test
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
-        factory.bind(ItemRecommender.class)
-               .to(TopNItemRecommender.class);
-        factory.bind(ItemScorer.class)
-               .to(UserUserItemScorer.class);
-        factory.within(UserVectorSimilarity.class)
-               .bind(VectorSimilarity.class)
-               .to(CosineVectorSimilarity.class);
-        factory.bind(UserVectorNormalizer.class)
-               .to(BaselineSubtractingUserVectorNormalizer.class);
-        factory.bind(BaselinePredictor.class)
-               .to(ItemUserMeanPredictor.class);
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(ItemRecommender.class)
+              .to(TopNItemRecommender.class);
+        config.bind(ItemScorer.class)
+              .to(UserUserItemScorer.class);
+        config.within(UserVectorSimilarity.class)
+              .bind(VectorSimilarity.class)
+              .to(CosineVectorSimilarity.class);
+        config.bind(UserVectorNormalizer.class)
+              .to(BaselineSubtractingUserVectorNormalizer.class);
+        config.bind(BaselinePredictor.class)
+              .to(ItemUserMeanPredictor.class);
 
-        LenskitRecommenderEngine engine = factory.create();
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
         assertThat(engine, notNullValue());
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
