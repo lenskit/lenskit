@@ -348,7 +348,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     }
 
     @Test
-    public void testUnset() {
+    public void testSimpleUnset() {
         long[] keys = { 2, 5 };
         MutableSparseVector v =
                 new MutableSparseVector(new LongSortedArraySet(keys));
