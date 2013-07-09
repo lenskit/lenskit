@@ -327,7 +327,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(v.get(2), notANumber());
     }
 
-    @Test
+    @Test @SuppressWarnings("deprecation")
     public void testClear() {
         long[] keys = { 2, 5 };
         MutableSparseVector v =
@@ -341,6 +341,26 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
                    equalTo((Set<Long>) Sets.newHashSet(2l)));
 
         v.clear(2);
+        assertThat(v.isEmpty(), equalTo(true));
+        assertThat(v.size(), equalTo(0));
+        assertThat(v.get(2), notANumber());
+        assertThat(v.set(2, Math.E), notANumber());
+    }
+
+    @Test
+    public void testUnset() {
+        long[] keys = { 2, 5 };
+        MutableSparseVector v =
+                new MutableSparseVector(new LongSortedArraySet(keys));
+        assertThat(v.set(2, Math.PI), notANumber());
+        assertThat(v.size(), equalTo(1));
+        assertThat(v.get(2), closeTo(Math.PI));
+        assertThat(v.containsKey(2), equalTo(true));
+        assertThat(v.containsKey(5), equalTo(false));
+        assertThat(v.keySet(),
+                   equalTo((Set<Long>) Sets.newHashSet(2l)));
+
+        v.unset(2);
         assertThat(v.isEmpty(), equalTo(true));
         assertThat(v.size(), equalTo(0));
         assertThat(v.get(2), notANumber());
@@ -498,7 +518,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(v.containsKey(9), equalTo(false));
         assertThat(v.get(9), notANumber());
         assertThat(v.get(3), closeTo(Math.PI));
-        v.clear(3);
+        v.unset(3);
         assertThat(v.size(), equalTo(1));
         assertArrayEquals(new Long[] { 7L }, v.keySet().toArray(new Long[0]));
         assertThat(v.get(7), closeTo(Math.E));
@@ -516,7 +536,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         long[] keys = { 3, 7, 9 };
         double[] values = { Math.PI, Math.E, 0.42 };
         MutableSparseVector v = MutableSparseVector.wrap(keys, values);
-        v.clear(7);
+        v.unset(7);
         assertThat(v.size(), equalTo(2));
         ImmutableSparseVector f = v.freeze();
         assertThat(f.size(), equalTo(2));
@@ -530,7 +550,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     @Test
     public void testWithDefaultCleared() {
         MutableSparseVector v = simpleVector();
-        v.clear(8);
+        v.unset(8);
         assertThat(v.get(8, -1), closeTo(-1));
         assertThat(v.get(8, 42), closeTo(42));
         assertThat(v.get(8, -7), closeTo(-7));
@@ -545,7 +565,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         // number of items.
         assertThat(Iterators.size(simple.iterator()), equalTo(3));
 
-        simple.clear(8);
+        simple.unset(8);
         assertThat(Iterators.size(simple.iterator()), equalTo(2));
         assertThat(Iterators.size(simple.fast(VectorEntry.State.EITHER)
             .iterator()), equalTo(3));
