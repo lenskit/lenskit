@@ -75,8 +75,8 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         this.model = model;
         this.rule = rule;
 
-        featureCount = model.featureCount;
-        clamp = model.clampingFunction;
+        featureCount = model.getFeatureCount();
+        clamp = model.getClampingFunction();
     }
 
     @Nullable
@@ -100,7 +100,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
     private void predict(long user, double[] uprefs, MutableSparseVector output) {
         for (VectorEntry e : output.fast()) {
             final long item = e.getKey();
-            final int iidx = model.itemIndex.getIndex(item);
+            final int iidx = model.getItemIndex().getIndex(item);
 
             if (iidx < 0) {
                 continue;
@@ -108,7 +108,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
 
             double score = e.getValue();
             for (int f = 0; f < featureCount; f++) {
-                score += uprefs[f] * model.itemFeatures[f][iidx];
+                score += uprefs[f] * model.getItemFeatures()[f][iidx];
                 score = clamp.apply(user, item, score);
             }
             output.set(e, score);
@@ -128,7 +128,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         LongSet allItems = new LongOpenHashSet(items);
         allItems.addAll(ratings.keySet());
         MutableSparseVector estimates = new MutableSparseVector(allItems);
-        model.baseline.predict(user, ratings, estimates);
+        model.getBaseline().predict(user, ratings, estimates);
         return estimates;
     }
 
@@ -136,7 +136,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
     public void score(@Nonnull UserHistory<? extends Event> userHistory,
                       @Nonnull MutableSparseVector scores) {
         long user = userHistory.getUserId();
-        int uidx = model.userIndex.getIndex(user);
+        int uidx = model.getUserIndex().getIndex(user);
         SparseVector ratings = Ratings.userRatingVector(dao.getUserEvents(user, Rating.class));
 
         MutableSparseVector estimates = initialEstimates(user, ratings, scores.keyDomain());
@@ -149,14 +149,14 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
 
         double[] uprefs;
         if (uidx < 0) {
-            uprefs = new double[model.featureCount];
-            for (int i = 0; i < model.featureCount; i++) {
+            uprefs = new double[model.getFeatureCount()];
+            for (int i = 0; i < model.getFeatureCount(); i++) {
                 uprefs[i] = model.getFeatureInfo(i).getUserAverage();
             }
         } else {
             uprefs = new double[featureCount];
             for (int i = 0; i < featureCount; i++) {
-                uprefs[i] = model.userFeatures[i][uidx];
+                uprefs[i] = model.getUserFeatures()[i][uidx];
             }
         }
 
@@ -182,11 +182,11 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
 
         // After training this feature, we need to update each rating's cached
         // value to accommodate it.
-        double[] ifvs = model.itemFeatures[feature];
+        double[] ifvs = model.getItemFeatures()[feature];
         for (VectorEntry itemId : ratings.fast()) {
             final long iid = itemId.getKey();
             double est = estimates.get(iid);
-            double offset = uprefs[feature] * ifvs[model.itemIndex.getIndex(iid)];
+            double offset = uprefs[feature] * ifvs[model.getItemIndex().getIndex(iid)];
             est = clamp.apply(user, iid, est + offset);
             estimates.set(iid, est);
         }
@@ -200,17 +200,17 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         int n = 0;
         for (VectorEntry e: ratings.fast()) {
             final long iid = e.getKey();
-            final int iidx = model.itemIndex.getIndex(iid);
+            final int iidx = model.getItemIndex().getIndex(iid);
 
             // Step 1: Compute the trailing value for this item-feature pair
             double trailingValue = 0.0;
             for (int f = feature + 1; f < featureCount; f++) {
-                trailingValue += uprefs[f] * model.itemFeatures[f][iidx];
+                trailingValue += uprefs[f] * model.getItemFeatures()[f][iidx];
             }
 
             // Step 2: Save the old feature values before computing the new ones
             final double ouf = uprefs[feature];
-            final double oif = model.itemFeatures[feature][iidx];
+            final double oif = model.getItemFeatures()[feature][iidx];
 
             // Step 3: Compute the error
             final double err = rule.computeError(user, iid, trailingValue,
