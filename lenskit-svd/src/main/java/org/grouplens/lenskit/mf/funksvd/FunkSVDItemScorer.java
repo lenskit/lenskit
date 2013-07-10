@@ -182,11 +182,10 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
 
         // After training this feature, we need to update each rating's cached
         // value to accommodate it.
-        double[] ifvs = model.getItemFeatures()[feature];
         for (VectorEntry itemId : ratings.fast()) {
             final long iid = itemId.getKey();
             double est = estimates.get(iid);
-            double offset = uprefs[feature] * ifvs[model.getItemIndex().getIndex(iid)];
+            double offset = uprefs[feature] * model.getItemFeature(iid, feature);
             est = clamp.apply(user, iid, est + offset);
             estimates.set(iid, est);
         }

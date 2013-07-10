@@ -119,6 +119,7 @@ public final class FunkSVDModel implements Serializable {
     /**
      * The item-feature matrix (features, then items).  Do not modify this array.
      */
+    @Deprecated
     public double[][] getItemFeatures() {
         return itemFeatures;
     }
@@ -126,6 +127,7 @@ public final class FunkSVDModel implements Serializable {
     /**
      * The user-feature matrix (features, then users).  Do not modify this array.
      */
+    @Deprecated
     public double[][] getUserFeatures() {
         return userFeatures;
     }
@@ -156,5 +158,35 @@ public final class FunkSVDModel implements Serializable {
      */
     public BaselinePredictor getBaseline() {
         return baseline;
+    }
+
+    /**
+     * Get a particular feature value for an item.
+     * @param iid The item ID.
+     * @param feature The feature.
+     * @return The item-feature value, or 0 if the item was not in the training set.
+     */
+    public double getItemFeature(long iid, int feature) {
+        int iidx = itemIndex.getIndex(iid);
+        if (iidx < 0) {
+            return 0;
+        } else {
+            return itemFeatures[feature][iidx];
+        }
+    }
+
+    /**
+     * Get a particular feature value for an user.
+     * @param uid The item ID.
+     * @param feature The feature.
+     * @return The user-feature value, or 0 if the user was not in the training set.
+     */
+    public double getUserFeature(long uid, int feature) {
+        int uidx = userIndex.getIndex(uid);
+        if (uidx < 0) {
+            return 0;
+        } else {
+            return userFeatures[feature][uidx];
+        }
     }
 }
