@@ -20,18 +20,16 @@
  */
 package org.grouplens.lenskit.data.history;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import org.grouplens.lenskit.data.AbstractUserHistory;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Basic user rating profile backed by a collection of ratings. The event list
@@ -42,19 +40,23 @@ import com.google.common.collect.Lists;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> implements UserHistory<E> {
-    private long user;
-    private List<E> events;
+    private final long user;
+    private final ImmutableList<E> events;
 
     /**
      * Construct a new basic user profile.
      *
      * @param u  The user ID.
-     * @param es The list of events in this user's history. All events must
-     *           be for the user.
+     * @param es The list of events in this user's history.  All events must
+     *           be for the user.  The list is defensively copied to preserve
+     *           immutability (using {@link ImmutableList#copyOf(java.util.Collection)},
+     *           so immutable lists are used as-is).
+     * @deprecated Use {@link History#forUser(long, java.util.List)} instead.
      */
-    public BasicUserHistory(long u, List<E> es) {
-        this.user = u;
-        this.events = es;
+    @Deprecated
+    public BasicUserHistory(long u, List<? extends E> es) {
+        user = u;
+        events = ImmutableList.copyOf(es);
     }
 
     @Override
@@ -79,7 +81,7 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
 
     @Override
     public List<E> subList(int from, int to) {
-        return Collections.unmodifiableList(events.subList(from, to));
+        return events.subList(from, to);
     }
 
     @Override
@@ -99,7 +101,7 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
      */
     @Override
     public <T extends Event> UserHistory<T> filter(Class<T> type) {
-        List<T> evts = Lists.newArrayList(Iterables.filter(this, type));
+        List<T> evts = ImmutableList.copyOf(Iterables.filter(this, type));
         return new BasicUserHistory<T>(getUserId(), evts);
     }
 
@@ -110,7 +112,7 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
      */
     @Override
     public UserHistory<E> filter(Predicate<? super E> pred) {
-        List<E> evts = Lists.newArrayList(Iterables.filter(this, pred));
+        List<E> evts = ImmutableList.copyOf(Iterables.filter(this, pred));
         return new BasicUserHistory<E>(getUserId(), evts);
     }
 }

@@ -31,7 +31,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 
 /**
- * Represents a user profile, associating a list of events with a user. The
+ * Represents a user profile, associating an immutable list of events with a user. The
  * events are in timestamp order. Histories also can memoize summaries and other
  * computed properties of themselves.
  *

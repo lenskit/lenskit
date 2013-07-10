@@ -20,15 +20,13 @@
  */
 package org.grouplens.lenskit.data;
 
+import com.google.common.base.Function;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.util.AbstractList;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-
-import com.google.common.base.Function;
 
 /**
  * An abstract implementation of {@link UserHistory} to provide default
@@ -40,20 +38,27 @@ import com.google.common.base.Function;
  */
 public abstract class AbstractUserHistory<E extends Event> extends AbstractList<E> implements UserHistory<E> {
     @SuppressWarnings("rawtypes")
-    private final Map<Function, Object> memTable = new ConcurrentHashMap<Function, Object>();
+    private transient Map<Function, Object> memTable;
+    private transient volatile LongSet itemSet;
 
     @Override
     public LongSet itemSet() {
-        LongSet items = new LongOpenHashSet();
-        for (Event e : this) {
-            items.add(e.getItemId());
+        if (itemSet == null) {
+            LongSet items = new LongOpenHashSet();
+            for (Event e : this) {
+                items.add(e.getItemId());
+            }
+            itemSet = items;
         }
-        return items;
+        return itemSet;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T> T memoize(Function<? super UserHistory<E>, ? extends T> func) {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public synchronized <T> T memoize(Function<? super UserHistory<E>, ? extends T> func) {
+        if (memTable == null) {
+            memTable = new HashMap<Function, Object>();
+        }
         if (!memTable.containsKey(func)) {
             memTable.put(func, func.apply(this));
         }
