@@ -68,8 +68,7 @@ public abstract class AbstractUserHistory<E extends Event> extends AbstractList<
     private static enum ItemSetFunction implements Function<UserHistory<? extends Event>, LongSet> {
         INSTANCE;
 
-        @Nullable
-        @Override
+        @Nullable @Override
         public LongSet apply(@Nullable UserHistory<? extends Event> input) {
             if (input == null) {
                 return null;
@@ -81,7 +80,5 @@ public abstract class AbstractUserHistory<E extends Event> extends AbstractList<
                 return items;
             }
         }
-
-
     }
 }
