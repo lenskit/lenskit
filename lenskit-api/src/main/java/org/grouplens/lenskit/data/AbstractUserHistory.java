@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
 import java.util.AbstractList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
  * An abstract implementation of {@link UserHistory} to provide default
@@ -40,9 +39,6 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  */
 public abstract class AbstractUserHistory<E extends Event> extends AbstractList<E> implements UserHistory<E> {
     @SuppressWarnings("rawtypes")
-    private static final AtomicReferenceFieldUpdater<AbstractUserHistory, Map>
-    memTableUpdater = AtomicReferenceFieldUpdater.newUpdater(AbstractUserHistory.class, Map.class, "memTable");
-    @SuppressWarnings("rawtypes")
     private transient volatile Map<Function, Object> memTable;
 
     @Override
@@ -53,15 +49,15 @@ public abstract class AbstractUserHistory<E extends Event> extends AbstractList<
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public <T> T memoize(Function<? super UserHistory<E>, ? extends T> func) {
-        Map<Function,Object> table = memTableUpdater.get(this);
-        if (table == null) {
-            table = new ConcurrentHashMap<Function, Object>();
-            memTableUpdater.compareAndSet(this, null, table);
-            // at this point, the memory table updater is not null
-            // it either has our memory table, or another one from a competing thread
-            table = memTable;
+        if (memTable == null) {
+            synchronized (this) {
+                if (memTable == null) {
+                    memTable = new ConcurrentHashMap<Function, Object>();
+                }
+            }
         }
-        assert table != null;
+
+        Map<Function,Object> table = memTable;
         if (!table.containsKey(func)) {
             // worst case scenario: we compute the function twice. This is permissible.
             table.put(func, func.apply(this));
