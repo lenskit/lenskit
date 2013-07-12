@@ -20,8 +20,10 @@
  */
 package org.grouplens.lenskit.vectors.similarity;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.grouplens.lenskit.vectors.Vectors;
 
 import javax.inject.Inject;
@@ -80,9 +82,9 @@ public class PearsonCorrelation implements VectorSimilarity, Serializable {
         double dot = 0;
         int nCoratings = 0;
 
-        for (Vectors.EntryPair pair : Vectors.pairedFast(vec1, vec2)) {
-            final double v1 = pair.getValue1() - mu1;
-            final double v2 = pair.getValue2() - mu2;
+        for (Pair<VectorEntry,VectorEntry> pair: Vectors.fastIntersect(vec1, vec2)) {
+            final double v1 = pair.getLeft().getValue() - mu1;
+            final double v2 = pair.getRight().getValue() - mu2;
             var1 += v1 * v1;
             var2 += v2 * v2;
             dot += v1 * v2;

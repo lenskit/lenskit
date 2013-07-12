@@ -62,7 +62,7 @@ public class SimpleRatingPredictorTest {
                     scores.set(e, -1);
                     break;
                 default:
-                    scores.clear(e);
+                    scores.unset(e);
                 }
             }
         }

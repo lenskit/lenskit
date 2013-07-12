@@ -18,50 +18,31 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.algorithm;
+package org.grouplens.lenskit.data.history;
 
-import org.grouplens.lenskit.config.LenskitConfigDSL;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
 
-import java.util.Map;
+import java.util.List;
 
 /**
- * Groovy delegate for configuring {@code AlgorithmInstanceCommand}s.
+ * Utility methods for user histories.
  *
+ * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 0.10
  */
-public class AlgorithmInstanceBuilderDelegate extends LenskitConfigDSL {
-    private LenskitAlgorithmInstanceBuilder builder;
+public final class History {
+    private History() {}
 
-    public AlgorithmInstanceBuilderDelegate(LenskitAlgorithmInstanceBuilder builder) {
-        super(builder.getConfig());
-        this.builder = builder;
-    }
-
-    @Deprecated
+    /**
+     * Create a history for a particular user.
+     * @param id The user ID.
+     * @param events The events.
+     * @param <E> The root type of the events in the history.
+     * @return A history object.
+     */
     @SuppressWarnings("deprecation")
-    public LenskitRecommenderEngineFactory getFactory() {
-        return builder.getFactory();
-    }
-
-    public Map<String, Object> getAttributes() {
-        return builder.getAttributes();
-    }
-
-    public boolean getPreload() {
-        return builder.getPreload();
-    }
-
-    public void setPreload(boolean pl) {
-        builder.setPreload(pl);
-    }
-
-    public String getName() {
-        return builder.getName();
-    }
-
-    public void setName(String name) {
-        builder.setName(name);
+    public static <E extends Event> UserHistory<E> forUser(long id, List<? extends E> events) {
+        return new BasicUserHistory<E>(id, events);
     }
 }

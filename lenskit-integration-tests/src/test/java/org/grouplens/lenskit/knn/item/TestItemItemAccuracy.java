@@ -23,7 +23,7 @@ package org.grouplens.lenskit.knn.item;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.test.CrossfoldTestSuite;
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
@@ -44,20 +44,20 @@ import static org.junit.Assert.assertThat;
 public class TestItemItemAccuracy extends CrossfoldTestSuite {
     @SuppressWarnings("unchecked")
     @Override
-    protected void configureAlgorithm(LenskitRecommenderEngineFactory factory) {
-        factory.bind(ItemScorer.class)
-               .to(ItemItemScorer.class);
-        factory.bind(BaselinePredictor.class)
-               .to(ItemUserMeanPredictor.class);
-        factory.bind(UserVectorNormalizer.class)
-               .to(BaselineSubtractingUserVectorNormalizer.class);
-        factory.in(ItemSimilarity.class)
-               .bind(VectorSimilarity.class)
-               .to(CosineVectorSimilarity.class);
-        factory.in(ItemSimilarity.class)
-               .set(SimilarityDamping.class)
-               .to(100.0);
-        factory.set(NeighborhoodSize.class).to(30);
+    protected void configureAlgorithm(LenskitConfiguration config) {
+        config.bind(ItemScorer.class)
+              .to(ItemItemScorer.class);
+        config.bind(BaselinePredictor.class)
+              .to(ItemUserMeanPredictor.class);
+        config.bind(UserVectorNormalizer.class)
+              .to(BaselineSubtractingUserVectorNormalizer.class);
+        config.within(ItemSimilarity.class)
+              .bind(VectorSimilarity.class)
+              .to(CosineVectorSimilarity.class);
+        config.within(ItemSimilarity.class)
+              .set(SimilarityDamping.class)
+              .to(100.0);
+        config.set(NeighborhoodSize.class).to(30);
     }
 
     @Override

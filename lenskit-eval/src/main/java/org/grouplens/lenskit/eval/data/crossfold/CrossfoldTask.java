@@ -245,7 +245,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
             return trainFilePattern;
         } else {
             StringBuilder sb = new StringBuilder();
-            String dir = getEvalConfig().getDataDir();
+            String dir = getProject().getConfig().getDataDir();
             if (dir == null) {
                 dir = ".";
             }
@@ -264,7 +264,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
             return testFilePattern;
         } else {
             StringBuilder sb = new StringBuilder();
-            String dir = getEvalConfig().getDataDir();
+            String dir = getProject().getConfig().getDataDir();
             if (dir == null) {
                 dir = ".";
             }
@@ -301,7 +301,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     }
 
     public boolean getForce() {
-        return isForced || getEvalConfig().force();
+        return isForced || getProject().getConfig().force();
     }
 
     public boolean getSplitUsers() {

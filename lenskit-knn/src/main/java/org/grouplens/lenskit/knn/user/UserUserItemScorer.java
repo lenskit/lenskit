@@ -107,7 +107,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
                 scores.set(e, sum / weight);
             } else {
                 nmissing = 0;
-                scores.clear(e);
+                scores.unset(e);
             }
         }
 

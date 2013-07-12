@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.test;
 
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.eval.EvalConfig;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceBuilder;
@@ -47,7 +47,7 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
     @Rule
     public TemporaryFolder workDir = new TemporaryFolder();
 
-    protected abstract void configureAlgorithm(LenskitRecommenderEngineFactory factory);
+    protected abstract void configureAlgorithm(LenskitConfiguration config);
 
     protected abstract void checkResults(Table table);
 
@@ -57,7 +57,7 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
         props.setProperty(EvalConfig.DATA_DIR_PROPERTY, workDir.newFolder("data").getAbsolutePath());
         SimpleEvaluator evalCommand = new SimpleEvaluator(props);
         LenskitAlgorithmInstanceBuilder algo = new LenskitAlgorithmInstanceBuilder();
-        configureAlgorithm(algo.getFactory());
+        configureAlgorithm(algo.getConfig());
         evalCommand.addAlgorithm(algo);
 
         evalCommand.addDataset(new GenericDataSource("ml-100k", daoFactory), 5, 0.2);

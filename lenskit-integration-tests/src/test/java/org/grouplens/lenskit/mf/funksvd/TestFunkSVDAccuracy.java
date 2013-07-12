@@ -20,26 +20,16 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.baseline.MeanDamping;
-import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.LenskitRecommender;
-import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.iterative.IterationCount;
-import org.grouplens.lenskit.test.ML100KTestSuite;
-import org.junit.Test;
+import org.grouplens.lenskit.test.CrossfoldTestSuite;
+import org.grouplens.lenskit.util.table.Table;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.closeTo;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -47,41 +37,26 @@ import static org.junit.Assert.assertThat;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TestFunkSVDBuildSerialize extends ML100KTestSuite {
+public class TestFunkSVDAccuracy extends CrossfoldTestSuite {
     @SuppressWarnings("unchecked")
-    @Test
-    public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
-        LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(ItemRecommender.class)
-              .to(TopNItemRecommender.class);
+    @Override
+    protected void configureAlgorithm(LenskitConfiguration config) {
         config.bind(ItemScorer.class)
               .to(FunkSVDItemScorer.class);
         config.bind(BaselinePredictor.class)
               .to(ItemUserMeanPredictor.class);
-        config.set(FeatureCount.class).to(10);
-        config.set(IterationCount.class).to(10);
         config.within(ItemUserMeanPredictor.class)
               .set(MeanDamping.class)
-              .to(25);
+              .to(10);
+        config.set(FeatureCount.class).to(25);
+        config.set(IterationCount.class).to(125);
+    }
 
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
-        assertThat(engine, notNullValue());
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        engine.write(out);
-        byte[] bytes = out.toByteArray();
-
-        ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-        LenskitRecommenderEngine loaded = LenskitRecommenderEngine.load(daoFactory, in);
-        assertThat(loaded, notNullValue());
-        LenskitRecommender rec = loaded.open();
-        try {
-            assertThat(rec.getItemScorer(),
-                       instanceOf(FunkSVDItemScorer.class));
-            assertThat(rec.get(FunkSVDModel.class),
-                       notNullValue());
-        } finally {
-            rec.close();
-        }
+    @Override
+    protected void checkResults(Table table) {
+        assertThat(table.column("MAE").average(),
+                   closeTo(0.74, 0.025));
+        assertThat(table.column("RMSE.ByUser").average(),
+                   closeTo(0.92 , 0.05));
     }
 }

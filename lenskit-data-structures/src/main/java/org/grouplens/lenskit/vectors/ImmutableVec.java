@@ -37,10 +37,21 @@ public final class ImmutableVec extends Vec {
 
     /**
      * Construct a new immutable vector.
-     * @param v The vector's contents. This array is copied for safety.
+     * @param v The vector's contents.
      */
     private ImmutableVec(double[] v) {
-        super(Arrays.copyOf(v, v.length));
+        super(v);
+    }
+
+    /**
+     * Create a new immutable vector backed by an array.
+     *
+     * @param data The data array.
+     * @return A new vector wrapping the specified array. It is the caller's responsibility to make
+     *         sure that this cannot be modified anymore.
+     */
+    static ImmutableVec wrap(double[] data) {
+        return new ImmutableVec(data);
     }
 
     /**
@@ -50,7 +61,7 @@ public final class ImmutableVec extends Vec {
      * @return A vector containing the data in {@code data}.
      */
     public static ImmutableVec make(double[] data) {
-        return new ImmutableVec(data);
+        return new ImmutableVec(Arrays.copyOf(data, data.length));
     }
 
     @Override

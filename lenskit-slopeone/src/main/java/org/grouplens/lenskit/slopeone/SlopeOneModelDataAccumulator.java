@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.*;
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.vectors.*;
@@ -67,9 +68,9 @@ public class SlopeOneModelDataAccumulator {
         if (id1 < id2) {
             int coratings = 0;
             double deviation = 0.0;
-            for (Vectors.EntryPair pair : Vectors.pairedFast(itemVec1, itemVec2)) {
+            for (Pair<VectorEntry,VectorEntry> pair: Vectors.fastIntersect(itemVec1, itemVec2)) {
                 coratings++;
-                deviation += pair.getValue1() - pair.getValue2();
+                deviation += pair.getLeft().getValue() - pair.getRight().getValue();
             }
             deviation = (coratings == 0) ? Double.NaN : deviation;
 

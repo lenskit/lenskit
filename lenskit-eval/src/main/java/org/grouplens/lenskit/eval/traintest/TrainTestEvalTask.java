@@ -300,7 +300,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     private void runEvaluations(List<List<TrainTestEvalJob>> jobGroups) throws TaskExecutionException {
-        int nthreads = getEvalConfig().getThreadCount();
+        int nthreads = getProject().getConfig().getThreadCount();
         logger.info("Running evaluator with {} threads", nthreads);
         ExecutorService exec = Executors.newFixedThreadPool(nthreads);
         for (List<TrainTestEvalJob> group: jobGroups) {

@@ -23,6 +23,8 @@ package org.grouplens.lenskit.knn.user;
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.basic.TopNItemRecommender;
+import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
@@ -53,11 +55,11 @@ public class TestUserUserRecommenderBuild {
 
         DAOFactory daof = new EventCollectionDAO.Factory(rs);
 
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daof);
-        factory.bind(ItemScorer.class).to(UserUserItemScorer.class);
-        factory.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(ItemScorer.class).to(UserUserItemScorer.class);
+        config.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
 
-        engine = factory.create();
+        engine = LenskitRecommenderEngine.build(daof, config);
     }
 
     @SuppressWarnings("deprecation")

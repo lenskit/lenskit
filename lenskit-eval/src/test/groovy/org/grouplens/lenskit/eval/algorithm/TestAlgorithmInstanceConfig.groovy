@@ -77,10 +77,7 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
             }
         }
         def algo = obj as LenskitAlgorithmInstance
-        def fact = algo.getFactory()
-        fact.setDAOFactory(new EventCollectionDAO.Factory([]))
-        def engine = fact.create()
-        def rec = engine.open()
+        def rec = algo.buildRecommender(new EventCollectionDAO([]), null, null, null, true);
         try {
             def stop = rec.get(ThresholdStoppingCondition)
             assertThat(stop.threshold,
@@ -117,10 +114,7 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
             }
         }
         def algo = obj as LenskitAlgorithmInstance
-        def fact = algo.getFactory()
-        fact.setDAOFactory(new EventCollectionDAO.Factory([]))
-        def engine = fact.create()
-        def rec = engine.open()
+        def rec = algo.buildRecommender(new EventCollectionDAO([]), null, null, null, true);
         try {
             def stop = rec.get(ThresholdStoppingCondition)
             assertThat(stop.threshold,

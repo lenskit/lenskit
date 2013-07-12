@@ -30,14 +30,13 @@ import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.ExecutionInfo;
-import org.grouplens.lenskit.eval.traintest.SharedPreferenceSnapshot;
-import org.grouplens.lenskit.eval.script.BuiltBy;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.script.BuiltBy;
+import org.grouplens.lenskit.eval.traintest.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,19 +58,19 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
     @Nullable
     private final String algoName;
     @Nonnull
-    private final LenskitRecommenderEngineFactory factory;
+    private final LenskitConfiguration config;
     @Nonnull
     private final Map<String, Object> attributes;
     private final boolean preload;
 
-    public LenskitAlgorithmInstance(String name, LenskitRecommenderEngineFactory factory) {
-        this(name, factory, Collections.<String, Object>emptyMap(), false);
+    public LenskitAlgorithmInstance(String name, LenskitConfiguration config) {
+        this(name, config, Collections.<String, Object>emptyMap(), false);
     }
 
-    public LenskitAlgorithmInstance(String name, LenskitRecommenderEngineFactory factory, Map<String, Object> attributes, boolean preload) {
+    public LenskitAlgorithmInstance(String name, LenskitConfiguration cfg, Map<String, Object> attrs, boolean preload) {
         algoName = name;
-        this.factory = factory;
-        this.attributes = attributes;
+        config = cfg;
+        attributes = attrs;
         this.preload = preload;
     }
 
@@ -103,24 +102,21 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
     }
 
     @Nonnull
-    public LenskitRecommenderEngineFactory getFactory() {
-        return factory;
-    }
-
     public LenskitConfiguration getConfig() {
-        return factory.getConfig();
+        return config;
     }
 
     public LenskitRecommender buildRecommender(DataAccessObject dao,
                                                @Nullable final Supplier<? extends PreferenceSnapshot> sharedSnapshot,
-                                               PreferenceDomain dom, ExecutionInfo info,
+                                               @Nullable PreferenceDomain dom,
+                                               @Nullable ExecutionInfo info,
                                                boolean shouldClose) throws RecommenderBuildException {
         try {
-            // Copy the factory & set up a shared rating snapshot
-            LenskitRecommenderEngineFactory fac2 = factory.clone();
+            // Copy the config & set up a shared rating snapshot
+            LenskitConfiguration cfg = new LenskitConfiguration(config);
 
             if (dom != null) {
-                fac2.bind(PreferenceDomain.class).to(dom);
+                cfg.bind(PreferenceDomain.class).to(dom);
             }
 
             if (sharedSnapshot != null) {
@@ -130,14 +126,14 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
                         return sharedSnapshot.get();
                     }
                 };
-                fac2.bind(PreferenceSnapshot.class).toProvider(prv);
+                cfg.bind(PreferenceSnapshot.class).toProvider(prv);
             }
 
             if (info != null) {
-                fac2.bind(ExecutionInfo.class).to(info);
+                cfg.bind(ExecutionInfo.class).to(info);
             }
 
-            LenskitRecommenderEngine engine = fac2.create(dao);
+            LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(dao, cfg);
 
             return engine.open(dao, shouldClose);
         } catch (RuntimeException e) {

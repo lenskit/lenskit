@@ -333,7 +333,7 @@ public abstract class SparseVectorTestCommon {
         assertThat(keys, equalTo(new Long[]{3l, 7l, 8l}));
     }
 
-    @Test
+    @Test @SuppressWarnings("deprecation")
     public void testVectorsGetPairedValues() {
         Iterator<Vectors.EntryPair> noPairs = Vectors.pairedIterator(emptyVector(), simpleVector());
         assertFalse(noPairs.hasNext());
@@ -358,6 +358,7 @@ public abstract class SparseVectorTestCommon {
         assertNull(pairIter.next());
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testVectorsGetPairedValuesFast() {
         Iterator<Vectors.EntryPair> noPairs =

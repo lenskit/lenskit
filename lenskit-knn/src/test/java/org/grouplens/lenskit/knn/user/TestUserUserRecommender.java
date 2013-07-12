@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
@@ -69,17 +71,17 @@ public class TestUserUserRecommender {
         rs.add(Ratings.make(6, 9, 4));
         rs.add(Ratings.make(5, 9, 4));
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.bind(ItemScorer.class).to(UserUserItemScorer.class);
-        factory.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
-        factory.in(UserSimilarity.class)
-               .bind(VectorSimilarity.class)
-               .to(PearsonCorrelation.class);
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(ItemScorer.class).to(UserUserItemScorer.class);
+        config.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
+        config.within(UserSimilarity.class)
+              .bind(VectorSimilarity.class)
+              .to(PearsonCorrelation.class);
         // this is the default
 /*        factory.setComponent(UserVectorNormalizer.class,
                              VectorNormalizer.class,
                              IdentityVectorNormalizer.class);*/
-        RecommenderEngine engine = factory.create();
+        RecommenderEngine engine = LenskitRecommenderEngine.build(manager, config);
         rec = engine.open();
         dao = manager.create();
     }

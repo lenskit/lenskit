@@ -20,19 +20,13 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
+import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
@@ -43,6 +37,12 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @Ignore("Unstable based on parameters")
 public class TestFunkSVDRecommender {
@@ -70,17 +70,17 @@ public class TestFunkSVDRecommender {
         rs.add(Ratings.make(1, 9, 3));
         rs.add(Ratings.make(3, 9, 4));
 
-        EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.bind(PreferenceSnapshot.class).to(PackedPreferenceSnapshot.class);
-        factory.bind(ItemScorer.class).to(FunkSVDItemScorer.class);
-        factory.bind(BaselinePredictor.class).to(UserMeanPredictor.class);
-        factory.bind(Integer.class).withQualifier(FeatureCount.class).to(100);
+        EventCollectionDAO.Factory daoF = new EventCollectionDAO.Factory(rs);
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(PreferenceSnapshot.class).to(PackedPreferenceSnapshot.class);
+        config.bind(ItemScorer.class).to(FunkSVDItemScorer.class);
+        config.bind(BaselinePredictor.class).to(UserMeanPredictor.class);
+        config.bind(Integer.class).withQualifier(FeatureCount.class).to(100);
         // FIXME: Don't use 100 features.
-        RecommenderEngine engine = factory.create();
+        RecommenderEngine engine = LenskitRecommenderEngine.build(daoF, config);
         svdRecommender = engine.open();
         recommender = svdRecommender.getItemRecommender();
-        dao = manager.create();
+        dao = daoF.create();
     }
 
 

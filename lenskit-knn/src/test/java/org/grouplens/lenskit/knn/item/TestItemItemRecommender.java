@@ -26,9 +26,9 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
@@ -77,14 +77,14 @@ public class TestItemItemRecommender {
         rs.add(Ratings.make(1, 9, 3));
         rs.add(Ratings.make(3, 9, 4));
         EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.bind(ItemScorer.class).to(ItemItemScorer.class);
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(ItemScorer.class).to(ItemItemScorer.class);
         // this is the default
-        factory.bind(UserVectorNormalizer.class)
-               .to(DefaultUserVectorNormalizer.class);
-        factory.bind(VectorNormalizer.class)
-               .to(IdentityVectorNormalizer.class);
-        LenskitRecommenderEngine engine = factory.create();
+        config.bind(UserVectorNormalizer.class)
+              .to(DefaultUserVectorNormalizer.class);
+        config.bind(VectorNormalizer.class)
+              .to(IdentityVectorNormalizer.class);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(manager, config);
         session = engine.open();
         recommender = session.getItemRecommender();
     }

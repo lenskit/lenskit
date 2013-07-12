@@ -20,15 +20,13 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.basic.TopNItemRecommender;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -66,21 +64,21 @@ public class TestFunkSVDRecommenderBuild {
 
     @SuppressWarnings({"deprecation", "unchecked"})
     private LenskitRecommenderEngine makeEngine() throws RecommenderBuildException {
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
-        factory.bind(PreferenceSnapshot.class)
-               .to(PackedPreferenceSnapshot.class);
-        factory.bind(ItemScorer.class)
-               .to(FunkSVDItemScorer.class);
-        factory.bind(BaselinePredictor.class)
-               .to(UserMeanPredictor.class);
-        factory.bind(StoppingCondition.class)
-               .to(IterationCountStoppingCondition.class);
-        factory.set(IterationCount.class)
-               .to(10);
-        factory.set(FeatureCount.class)
-               .to(20);
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(PreferenceSnapshot.class)
+              .to(PackedPreferenceSnapshot.class);
+        config.bind(ItemScorer.class)
+              .to(FunkSVDItemScorer.class);
+        config.bind(BaselinePredictor.class)
+              .to(UserMeanPredictor.class);
+        config.bind(StoppingCondition.class)
+              .to(IterationCountStoppingCondition.class);
+        config.set(IterationCount.class)
+              .to(10);
+        config.set(FeatureCount.class)
+              .to(20);
 
-        return factory.create();
+        return LenskitRecommenderEngine.build(daoFactory, config);
     }
 
     @SuppressWarnings("deprecation")

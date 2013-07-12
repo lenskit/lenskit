@@ -44,9 +44,9 @@ import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
@@ -65,9 +65,7 @@ import java.util.List;
 import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -88,15 +86,15 @@ public class TestItemItemGlobalRecommender {
         rs.add(Ratings.make(4, 5, 1));
         rs.add(Ratings.make(4, 7, 1));
         rs.add(Ratings.make(4, 10, 1));
-        EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(manager);
-        factory.bind(GlobalItemScorer.class).to(ItemItemGlobalScorer.class);
+        EventCollectionDAO.Factory dao = new EventCollectionDAO.Factory(rs);
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(GlobalItemScorer.class).to(ItemItemGlobalScorer.class);
         // this is the default
-        factory.bind(UserVectorNormalizer.class)
-                .to(DefaultUserVectorNormalizer.class);
-        factory.bind(VectorNormalizer.class)
-               .to(IdentityVectorNormalizer.class);
-        LenskitRecommenderEngine engine = factory.create();
+        config.bind(UserVectorNormalizer.class)
+              .to(DefaultUserVectorNormalizer.class);
+        config.bind(VectorNormalizer.class)
+              .to(IdentityVectorNormalizer.class);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(dao, config);
         session = engine.open();
         gRecommender = session.getGlobalItemRecommender();
     }

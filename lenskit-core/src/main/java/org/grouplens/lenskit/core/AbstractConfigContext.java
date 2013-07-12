@@ -45,17 +45,17 @@ public abstract class AbstractConfigContext extends AbstractContext implements L
         return bind(annot.value()).withQualifier(param);
     }
     
-    @Override
+    @Override @Deprecated
     public LenskitConfigContext in(Class<?> type) {
         return within(type);
     }
     
-    @Override
+    @Override @Deprecated
     public LenskitConfigContext in(@Nullable Class<? extends Annotation> qualifier, Class<?> type) {
         return within(qualifier, type);
     }
     
-    @Override
+    @Override @Deprecated
     public LenskitConfigContext in(@Nullable Annotation qualifier, Class<?> type) {
         return within(qualifier, type);
     }
