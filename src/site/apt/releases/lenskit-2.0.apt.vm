@@ -1,0 +1,8 @@
+#parse("relnotes.vm")
+#stdHeader("2.0")
+
+  * Remove many deprecated classes and methods.
+
+  * <<<RatingPredictor>>> no longer extends <<<ItemScorer>>>.
+
+  []

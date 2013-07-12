@@ -8,6 +8,8 @@
 
 LensKit Releases
 
+  #release("2.0")
+
   #release("1.3")
 
   #release("1.2")
