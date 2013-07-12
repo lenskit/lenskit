@@ -6,3 +6,10 @@
   * <<<RatingPredictor>>> no longer extends <<<ItemScorer>>>.
 
   []
+
+* Data Structures
+
+  * More <<<SparseVectors>>> methods now throw <<<IllegalArgumentException>>> on invalid keys,
+    rather than being no-ops or returning <<<NaN>>>.
+
+  []
