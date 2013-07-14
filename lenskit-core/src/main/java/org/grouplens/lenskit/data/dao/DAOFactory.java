@@ -20,8 +20,6 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-
 /**
  * Factory to create new DAOs. This is used when something needs to be able to
  * create DAOs at will.

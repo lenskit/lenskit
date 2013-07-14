@@ -29,7 +29,6 @@ import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
@@ -152,17 +151,17 @@ public class TestFunkSVDRecommenderBuild {
     @SuppressWarnings("unchecked")
     @Test
     public void testPredictUpdates() throws RecommenderBuildException {
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
-        factory.bind(ItemScorer.class)
-               .to(FunkSVDItemScorer.class);
-        factory.bind(BaselinePredictor.class)
-               .to(ItemUserMeanPredictor.class);
-        factory.set(IterationCount.class)
-               .to(10);
-        factory.bind(RuntimeUpdate.class, FunkSVDUpdateRule.class)
-               .to(FunkSVDUpdateRule.class);
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(ItemScorer.class)
+              .to(FunkSVDItemScorer.class);
+        config.bind(BaselinePredictor.class)
+              .to(ItemUserMeanPredictor.class);
+        config.set(IterationCount.class)
+              .to(10);
+        config.bind(RuntimeUpdate.class, FunkSVDUpdateRule.class)
+              .to(FunkSVDUpdateRule.class);
 
-        LenskitRecommenderEngine engine = factory.create();
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
 
         LenskitRecommender rec = engine.open();
         try {
