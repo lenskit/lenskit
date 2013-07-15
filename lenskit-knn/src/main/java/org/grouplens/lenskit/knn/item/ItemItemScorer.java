@@ -24,6 +24,7 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -67,7 +68,7 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemScorer {
      * @param algo   The item scoring algorithm.  It converts neighborhoods to scores.
      */
     @Inject
-    public ItemItemScorer(DataAccessObject dao, ItemItemModel m,
+    public ItemItemScorer(UserEventDAO dao, ItemItemModel m,
                           UserHistorySummarizer sum,
                           NeighborhoodScorer scorer,
                           ItemScoreAlgorithm algo,

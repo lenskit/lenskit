@@ -31,6 +31,8 @@ import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
@@ -38,7 +40,6 @@ import org.grouplens.lenskit.transform.normalize.IdentityVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -75,15 +76,16 @@ public class TestItemItemRecommender {
         rs.add(Ratings.make(6, 8, 2));
         rs.add(Ratings.make(1, 9, 3));
         rs.add(Ratings.make(3, 9, 4));
-        EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
+        EventCollectionDAO dao = new EventCollectionDAO(rs);
         LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(dao);
         config.bind(ItemScorer.class).to(ItemItemScorer.class);
         // this is the default
         config.bind(UserVectorNormalizer.class)
               .to(DefaultUserVectorNormalizer.class);
         config.bind(VectorNormalizer.class)
               .to(IdentityVectorNormalizer.class);
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(manager, config);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         session = engine.createRecommender();
         recommender = session.getItemRecommender();
     }
@@ -324,12 +326,7 @@ public class TestItemItemRecommender {
 
     //Helper method to retrieve user's user and create SparseVector
     private UserHistory<Rating> getRatings(long user) {
-        DataAccessObject dao = session.getDataAccessObject();
-        return dao.getUserHistory(user, Rating.class);
-    }
-
-    @After
-    public void cleanUp() {
-        session.close();
+        UserEventDAO dao = session.get(UserEventDAO.class);
+        return dao.getEventsForUser(user, Rating.class);
     }
 }

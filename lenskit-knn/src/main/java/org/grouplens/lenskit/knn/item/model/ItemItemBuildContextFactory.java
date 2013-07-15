@@ -23,8 +23,11 @@ package org.grouplens.lenskit.knn.item.model;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.cursors.LongCursor;
+import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.dao.ItemDAO;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
@@ -44,15 +47,17 @@ public class ItemItemBuildContextFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemItemBuildContextFactory.class);
 
-    private final DataAccessObject dao;
+    private final UserEventDAO userEventDAO;
+    private final ItemDAO itemDAO;
     private final UserVectorNormalizer normalizer;
     private final UserHistorySummarizer userSummarizer;
 
     @Inject
-    public ItemItemBuildContextFactory(DataAccessObject dao,
+    public ItemItemBuildContextFactory(UserEventDAO edao, ItemDAO idao,
                                        UserVectorNormalizer normalizer,
                                        UserHistorySummarizer userSummarizer) {
-        this.dao = dao;
+        userEventDAO = edao;
+        itemDAO = idao;
         this.normalizer = normalizer;
         this.userSummarizer = userSummarizer;
     }
@@ -68,7 +73,7 @@ public class ItemItemBuildContextFactory {
         logger.debug("using summarizer {}", userSummarizer);
 
 
-        LongCollection ilist = Cursors.makeList(dao.getItems());
+        LongCollection ilist = itemDAO.getItemIds();
         LongSortedSet items = new LongSortedArraySet(ilist);
 
         logger.debug("Building item data");
@@ -107,11 +112,11 @@ public class ItemItemBuildContextFactory {
             workMatrix.put(iid, new Long2DoubleOpenHashMap(20));
         }
 
-        LongCursor userCursor = dao.getUsers();
+        Cursor<UserHistory<Event>> users = userEventDAO.streamEventsByUser();
         try {
-            while (userCursor.hasNext()) {
-                long uid = userCursor.nextLong();
-                SparseVector summary = userSummarizer.summarize(dao.getUserHistory(uid));
+            for (UserHistory<Event> user: users) {
+                long uid = user.getUserId();
+                SparseVector summary = userSummarizer.summarize(user);
                 MutableSparseVector normed = summary.mutableCopy();
                 normalizer.normalize(uid, summary, normed);
 
@@ -123,7 +128,7 @@ public class ItemItemBuildContextFactory {
                 }
             }
         } finally {
-            userCursor.close();
+            users.close();
         }
 
         return workMatrix;

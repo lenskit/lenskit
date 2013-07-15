@@ -23,6 +23,7 @@ package org.grouplens.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.basic.AbstractGlobalItemScorer;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
@@ -45,9 +46,7 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer {
     ItemScoreAlgorithm algorithm;
 
     @Inject
-    public ItemItemGlobalScorer(DataAccessObject dao, ItemItemModel m,
-                                ItemScoreAlgorithm algo) {
-        super(dao);
+    public ItemItemGlobalScorer(ItemItemModel m, ItemScoreAlgorithm algo) {
         model = m;
         // The global item scorer use the SimilaritySumNeighborhoodScorer for the unary ratings
         this.scorer = new SimilaritySumNeighborhoodScorer();

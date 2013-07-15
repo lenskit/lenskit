@@ -48,6 +48,7 @@ import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
@@ -86,15 +87,16 @@ public class TestItemItemGlobalRecommender {
         rs.add(Ratings.make(4, 5, 1));
         rs.add(Ratings.make(4, 7, 1));
         rs.add(Ratings.make(4, 10, 1));
-        EventCollectionDAO.Factory dao = new EventCollectionDAO.Factory(rs);
+        EventCollectionDAO dao = new EventCollectionDAO(rs);
         LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(dao);
         config.bind(GlobalItemScorer.class).to(ItemItemGlobalScorer.class);
         // this is the default
         config.bind(UserVectorNormalizer.class)
               .to(DefaultUserVectorNormalizer.class);
         config.bind(VectorNormalizer.class)
               .to(IdentityVectorNormalizer.class);
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(dao, config);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         session = engine.createRecommender();
         gRecommender = session.getGlobalItemRecommender();
     }

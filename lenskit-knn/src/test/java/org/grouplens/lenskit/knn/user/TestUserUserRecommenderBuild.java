@@ -25,8 +25,8 @@ import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.junit.Before;
@@ -52,13 +52,14 @@ public class TestUserUserRecommenderBuild {
         rs.add(Ratings.make(8, 4, 5));
         rs.add(Ratings.make(8, 5, 4));
 
-        DAOFactory daof = new EventCollectionDAO.Factory(rs);
+        EventDAO dao = new EventCollectionDAO(rs);
 
         LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(dao);
         config.bind(ItemScorer.class).to(UserUserItemScorer.class);
         config.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
 
-        engine = LenskitRecommenderEngine.build(daof, config);
+        engine = LenskitRecommenderEngine.build(config);
     }
 
     @SuppressWarnings("deprecation")
@@ -66,17 +67,13 @@ public class TestUserUserRecommenderBuild {
     public void testUserUserRecommenderEngineCreate() {
         Recommender rec = engine.createRecommender();
 
-        try {
-            assertThat(rec.getItemScorer(),
-                       instanceOf(UserUserItemScorer.class));
-            assertThat(rec.getItemRecommender(),
-                       instanceOf(TopNItemRecommender.class));
-            RatingPredictor pred = rec.getRatingPredictor();
-            assertThat(pred, instanceOf(SimpleRatingPredictor.class));
-            assertThat(((SimpleRatingPredictor) pred).getScorer(),
-                       sameInstance(rec.getItemScorer()));
-        } finally {
-            rec.close();
-        }
+        assertThat(rec.getItemScorer(),
+                   instanceOf(UserUserItemScorer.class));
+        assertThat(rec.getItemRecommender(),
+                   instanceOf(TopNItemRecommender.class));
+        RatingPredictor pred = rec.getRatingPredictor();
+        assertThat(pred, instanceOf(SimpleRatingPredictor.class));
+        assertThat(((SimpleRatingPredictor) pred).getScorer(),
+                   sameInstance(rec.getItemScorer()));
     }
 }

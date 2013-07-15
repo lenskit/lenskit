@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
@@ -51,7 +52,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
     protected final UserVectorNormalizer normalizer;
 
     @Inject
-    public UserUserItemScorer(DataAccessObject dao, NeighborhoodFinder nbrf,
+    public UserUserItemScorer(UserEventDAO dao, NeighborhoodFinder nbrf,
                               UserVectorNormalizer norm) {
         super(dao);
         neighborhoodFinder = nbrf;

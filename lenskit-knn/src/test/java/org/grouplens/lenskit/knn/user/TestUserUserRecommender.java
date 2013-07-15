@@ -20,32 +20,34 @@
  */
 package org.grouplens.lenskit.knn.user;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.ItemRecommender;
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.vectors.similarity.PearsonCorrelation;
 import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 public class TestUserUserRecommender {
-    private Recommender rec;
-    private EventCollectionDAO dao;
+    private LenskitRecommender rec;
 
     @SuppressWarnings("deprecation")
     @Before
@@ -69,8 +71,9 @@ public class TestUserUserRecommender {
         rs.add(Ratings.make(3, 9, 4));
         rs.add(Ratings.make(6, 9, 4));
         rs.add(Ratings.make(5, 9, 4));
-        EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
+        EventDAO dao = new EventCollectionDAO(rs);
         LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(dao);
         config.bind(ItemScorer.class).to(UserUserItemScorer.class);
         config.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
         config.within(UserSimilarity.class)
@@ -80,9 +83,8 @@ public class TestUserUserRecommender {
 /*        factory.setComponent(UserVectorNormalizer.class,
                              VectorNormalizer.class,
                              IdentityVectorNormalizer.class);*/
-        RecommenderEngine engine = LenskitRecommenderEngine.build(manager, config);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         rec = engine.createRecommender();
-        dao = manager.create();
     }
 
     /**
@@ -344,12 +346,7 @@ public class TestUserUserRecommender {
 
     //Helper method to retrieve user's user and create SparseVector
     private UserHistory<Rating> getUserRatings(long user) {
-        return dao.getUserHistory(user, Rating.class);
-    }
-
-    @After
-    public void cleanUp() {
-        rec.close();
-        dao.close();
+        UserEventDAO dao = rec.get(UserEventDAO.class);
+        return dao.getEventsForUser(user, Rating.class);
     }
 }

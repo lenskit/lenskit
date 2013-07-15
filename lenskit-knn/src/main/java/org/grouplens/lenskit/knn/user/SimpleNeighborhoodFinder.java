@@ -22,10 +22,10 @@ package org.grouplens.lenskit.knn.user;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.dao.ItemEventDAO;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
@@ -78,7 +78,8 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         }
     }
 
-    private final DataAccessObject dataSource;
+    private final UserEventDAO userDAO;
+    private final ItemEventDAO itemDAO;
     private final int neighborhoodSize;
     private final UserSimilarity similarity;
     private final UserVectorNormalizer normalizer;
@@ -87,16 +88,18 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     /**
      * Construct a new user-user recommender.
      *
-     * @param data  The data source to scan.
+     * @param udao  The user-event DAO.
+     * @param idao  The item-event DAO.
      * @param nnbrs The number of neighbors to consider for each item.
      * @param sim   The similarity function to use.
      */
     @Inject
-    public SimpleNeighborhoodFinder(DataAccessObject data,
+    public SimpleNeighborhoodFinder(UserEventDAO udao, ItemEventDAO idao,
                                     @NeighborhoodSize int nnbrs,
                                     UserSimilarity sim,
                                     UserVectorNormalizer norm) {
-        dataSource = data;
+        userDAO = udao;
+        itemDAO = idao;
         neighborhoodSize = nnbrs;
         similarity = sim;
         normalizer = norm;
@@ -179,20 +182,9 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
 
         LongIterator items = itemSet.iterator();
         while (items.hasNext()) {
-            final long item = items.nextLong();
-            Cursor<Rating> ratings = dataSource.getItemEvents(item, Rating.class);
-            try {
-                for (Rating r : ratings) {
-                    long uid = r.getUserId();
-                    if (uid == user) {
-                        continue;
-                    }
-                    users.add(uid);
-                }
-            } finally {
-                ratings.close();
-            }
+            users.addAll(itemDAO.getUsersForItem(items.nextLong()));
         }
+        users.remove(user);
 
         return users;
     }
@@ -204,7 +196,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
      * @return The user's rating vector.
      */
     private synchronized SparseVector getUserRatingVector(long user) {
-        List<Rating> ratings = Cursors.makeList(dataSource.getUserEvents(user, Rating.class));
+        List<Rating> ratings = userDAO.getEventsForUser(user, Rating.class);
         CacheEntry e = userVectorCache.get(user);
 
         // check rating count
