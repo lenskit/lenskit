@@ -36,6 +36,24 @@ import org.grouplens.lenskit.symbols.TypedSymbol;
 public abstract class AbstractScoredId implements ScoredId {
 
     private transient volatile int hashCode;
+    private transient volatile String stringRepr;
+
+    @Override
+    public String toString() {
+        if (stringRepr == null) {
+            StringBuilder bld = new StringBuilder();
+            bld.append("score(")
+               .append(getId())
+               .append(") = ")
+               .append(getScore());
+            int nchans = getChannels().size() + getTypedChannels().size();
+            if (nchans > 0) {
+                bld.append(" [with ").append(nchans).append(" channels]");
+            }
+            stringRepr = bld.toString();
+        }
+        return stringRepr;
+    }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
