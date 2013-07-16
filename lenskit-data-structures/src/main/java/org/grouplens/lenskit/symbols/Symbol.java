@@ -20,8 +20,10 @@
  */
 package org.grouplens.lenskit.symbols;
 
-import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+import com.google.common.collect.Maps;
 
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -33,14 +35,6 @@ import java.util.Map;
  * created with a String, and a unique Symbol is assigned to this
  * String.  Any fetches of that String will return the same Symbol.
  * <p>
- * Symbols are NOT guaranteed to return the same internal value each
- * time they are used.  If the Symbol is serialized, the string should
- * be stored, NOT the internal value underlying the Symbol.
- * <p>
- * Symbols are intended to be efficient, but they are implemented
- * assuming there will not be *too* many of them.  If your program
- * needs thousands, the implementation should be changed.
- * <p>
  * Symbols cannot be constructed, but must be fetched through the "of"
  * operator.
  * <p>
@@ -50,19 +44,23 @@ import java.util.Map;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
-public final class Symbol {
+public final class Symbol implements Serializable {
     // Variables shared by all instances
-    private static Map<String, Symbol> name2SymbolMap = new Reference2ObjectArrayMap<String, Symbol>();
+    private static final Map<String, Symbol> name2SymbolMap = Maps.newHashMap();
+    private static final long serialVersionUID = 1L;
 
     // Variables unique to each instance
-    private final String strSymbol;    // The name of the symbol, which is the string used to create it.
+    private final String name;    // The name of the symbol, which is the string used to create it.
 
     // The only constructor is private, so Symbols can only be created
     // through the public interface.
     private Symbol(String name) {
-        strSymbol = name;
+        this.name = name;
     }
 
+    private Object readResolve() throws ObjectStreamException {
+        return of(name);
+    }
 
     /**
      * Get a unique symbol for {@var name}.
@@ -85,13 +83,12 @@ public final class Symbol {
      *
      * @return the string name that was used to create the symbol
      */
-    public synchronized String getName() {
-        return this.strSymbol;
+    public String getName() {
+        return name;
     }
 
     @Override
     public String toString() {
         return String.format("Symbol.of(%s)", this.getName());
     }
-
 }

@@ -20,8 +20,12 @@
  */
 package org.grouplens.lenskit.symbols;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
+import java.io.InputStream;
+
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.*;
 
 /**
@@ -71,6 +75,12 @@ public class TestTypedSymbols {
         TypedSymbol<Integer> sfoo = TypedSymbol.of(Integer.class, "foo");
         assertEquals("TypedSymbol.of(bar,String)", sbar.toString());
         assertEquals("TypedSymbol.of(foo,Integer)", sfoo.toString());
-        
+    }
+
+    @Test
+    public void testSerialize() {
+        TypedSymbol<InputStream> sbar = TypedSymbol.of(InputStream.class, "ratings");
+        TypedSymbol<InputStream> cloned = SerializationUtils.clone(sbar);
+        assertThat(cloned, sameInstance(sbar));
     }
 }

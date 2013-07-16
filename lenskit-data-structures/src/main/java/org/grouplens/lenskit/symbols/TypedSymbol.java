@@ -23,6 +23,10 @@ package org.grouplens.lenskit.symbols;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -34,7 +38,8 @@ import java.util.Map;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
-public final class TypedSymbol<K> {
+public final class TypedSymbol<K> implements Serializable {
+    private static final long serialVersionUID = -1L;
     private static Map<Pair<Class,Symbol>,TypedSymbol> symbolCache = Maps.newHashMap();
 
     private final Class<K> type;
@@ -45,6 +50,10 @@ public final class TypedSymbol<K> {
     private TypedSymbol(Class<K> clazz, Symbol sym) {
         type = clazz;
         symbol = sym;
+    }
+
+    private Object readResolve() throws ObjectStreamException {
+        return of(type, symbol);
     }
 
     /**
@@ -100,5 +109,28 @@ public final class TypedSymbol<K> {
     @Override
     public String toString() {
         return String.format("TypedSymbol.of(%s,%s)", this.getName(), this.getType().getSimpleName());
-    }    
+    }
+
+    private Object writeReplace() {
+        return new SerialProxy(type, symbol);
+    }
+
+    private void readObject(ObjectInputStream stream) throws ObjectStreamException {
+        throw new InvalidObjectException("must use serialization proxy");
+    }
+
+    private static class SerialProxy implements Serializable {
+        private static final long serialVersionUID = 1L;
+        private final Class type;
+        private final Symbol symbol;
+
+        public SerialProxy(Class type, Symbol symbol) {
+            this.type = type;
+            this.symbol = symbol;
+        }
+
+        private Object readResolve() throws ObjectStreamException {
+            return TypedSymbol.of(type, symbol);
+        }
+    }
 }
