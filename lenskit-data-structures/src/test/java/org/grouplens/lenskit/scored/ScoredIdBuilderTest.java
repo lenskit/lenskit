@@ -32,7 +32,7 @@ import org.junit.Test;
 public class ScoredIdBuilderTest {
 
     private final Symbol fooSym = Symbol.of("foo");
-    private final TypedSymbol<Integer> fooIntSym = TypedSymbol.of("foo", Integer.class);
+    private final TypedSymbol<Integer> fooIntSym = TypedSymbol.of(Integer.class, "foo");
     
     @Test
     public void testScoredIdBuilder() {

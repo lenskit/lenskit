@@ -40,8 +40,8 @@ public class ScoredIdImplTest {
 
     private final Symbol fooSym = Symbol.of("foo");
     private final Symbol barSym = Symbol.of("bar");
-    private final TypedSymbol<Integer> fooIntSym = TypedSymbol.of("foo", Integer.class);
-    private final TypedSymbol<String> barStrSym = TypedSymbol.of("bar", String.class);
+    private final TypedSymbol<Integer> fooIntSym = TypedSymbol.of(Integer.class, "foo");
+    private final TypedSymbol<String> barStrSym = TypedSymbol.of(String.class, "bar");
     
     
     @Test

@@ -26,13 +26,9 @@ import java.util.Set;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.scored.ScoredIdBuilder;
 import org.grouplens.lenskit.symbols.Symbol;
-import org.grouplens.lenskit.symbols.TestSymbols;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.Vectors;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -40,7 +36,7 @@ public class TestSparseVectorScoredIds {
     private final Symbol fooSym = Symbol.of("foo");
     private final Symbol barSym = Symbol.of("bar");
     private final Symbol bazSym = Symbol.of("baz");
-    private final TypedSymbol<String> tsym = TypedSymbol.of("test.wombat", String.class);
+    private final TypedSymbol<String> tsym = TypedSymbol.of(String.class, "test.wombat");
     
     @Test
     public void testSparseVectorScoredIds() {

@@ -20,77 +20,55 @@
  */
 package org.grouplens.lenskit.symbols;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.common.collect.Maps;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.Map;
 
 /**
- * Interface to persistent symbols with associated type information.
+ * A symbol associated with a particular type.  Conceptually, each type can have a collection of
+ * symbols associated with it; that association is represented represented by this class.
  *
- * <p>
- * A Symbol is an inexpensive object that behaves like a singleton --
- * except that you can create as many as you want.  Each TypedSymbol 
- * is created with a String and a class, and a unique Symbol is assigned 
- * to this pair.  Any fetches of that String and class will return the same Symbol.
- * <p>
- * Symbols are NOT guaranteed to return the same internal value each
- * time they are used.  If the Symbol is serialized, the string should
- * be stored, NOT the internal value underlying the Symbol.
- * <p>
- * Symbols are intended to be efficient, but they are implemented
- * assuming there will not be *too* many of them.  If your program
- * needs thousands, the implementation should be changed.
- * <p>
- * Symbols cannot be constructed, but must be fetched through the "of"
- * operator.
- * <p>
- * Symbols are hashable, because they are singletons, so the default hashCode
- * based on Object address should work.
- *
+ * @since 1.3
+ * @see Symbol
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public final class TypedSymbol<K> {
-    
-    // Variables shared by all instances
-    private static List<TypedSymbol<?>> typedSymbols = new ArrayList<TypedSymbol<?>>();
-    
-    // Variables unique to each instance
-    private final String strSymbol;    // The name of the symbol, which is the string used to create it.
-    private final Class<K> type;    // The type of the symbol
+    private static Map<Pair<Class,Symbol>,TypedSymbol> symbolCache = Maps.newHashMap();
 
-    // The only constructors are private, so Symbols can only be created
-    // through the public interface.
-    private TypedSymbol() {
-        this("",null);
-    }
+    private final Class<K> type;
+    private final Symbol symbol;
 
     // The only constructor is private, so Symbols can only be created
     // through the public interface.
-    private TypedSymbol(String name, Class<K> clazz) {
-        strSymbol = name;
+    private TypedSymbol(Class<K> clazz, Symbol sym) {
         type = clazz;
+        symbol = sym;
     }
-
 
     /**
      * Get a unique symbol for {@var name} and {@var type}.
      *
-     * @param name the name for this symbol during this execution of
-     *             the program
-     * @param type the type for this symbol during this execution of
-     *             the program
+     * @param type The type for the type-symbol pair.
+     * @param name The name for the type-symbol pair.
      * @return the new symbol
      */
     @SuppressWarnings("unchecked")
-    public static synchronized <T> TypedSymbol<T> of(String name, Class<T> type) {
-        for(TypedSymbol<?> ts : typedSymbols) {
-            if(ts.getName().equals(name) && ts.getType().equals(type)) {
-                return (TypedSymbol<T>) ts;
-            }
+    public static <T> TypedSymbol<T> of(Class<T> type, String name) {
+        return of(type, Symbol.of(name));
+    }
+
+    @SuppressWarnings("unchecked")
+    public static synchronized <T> TypedSymbol<T> of(Class<T> type, Symbol sym) {
+        Pair<Class,Symbol> key = Pair.of((Class) type, sym);
+        TypedSymbol tsym = symbolCache.get(key);
+        if (tsym == null) {
+            tsym = new TypedSymbol<T>(type, sym);
+            symbolCache.put(key, tsym);
         }
-        TypedSymbol<T> newSymbol = new TypedSymbol<T>(name, type);
-        typedSymbols.add(newSymbol);
-        return newSymbol;
+        assert tsym.getType().equals(type);
+        return tsym;
     }
 
     /**
@@ -98,17 +76,25 @@ public final class TypedSymbol<K> {
      *
      * @return the string name that was used to create the symbol
      */
-    public synchronized String getName() {
-        return this.strSymbol;
+    public String getName() {
+        return symbol.getName();
     }
     
     /**
-     * Get the type for a symbol
+     * Get the type for a typed symbol.
      * 
      * @return the type that was used to create the symbol.
      */
     public Class<K> getType() {
         return type;
+    }
+
+    /**
+     * Get the symbol.
+     * @return The symbol associated with the type.
+     */
+    public Symbol getSymbol() {
+        return symbol;
     }
 
     @Override

@@ -30,10 +30,10 @@ import java.util.Collections;
 import static org.junit.Assert.*;
 
 public class TestMutableSparseVectorTypedChannels {
-    private static final TypedSymbol<String> fooStrSym = TypedSymbol.of("foo", String.class);
-    private static final TypedSymbol<String> barStrSym = TypedSymbol.of("bar", String.class);
-    private static final TypedSymbol<Integer> fooIntSym = TypedSymbol.of("foo", Integer.class);
-    private static final TypedSymbol<Integer> barIntSym = TypedSymbol.of("bar", Integer.class);
+    private static final TypedSymbol<String> fooStrSym = TypedSymbol.of(String.class, "foo");
+    private static final TypedSymbol<String> barStrSym = TypedSymbol.of(String.class, "bar");
+    private static final TypedSymbol<Integer> fooIntSym = TypedSymbol.of(Integer.class, "foo");
+    private static final TypedSymbol<Integer> barIntSym = TypedSymbol.of(Integer.class, "bar");
 
     @Test
     public void testAddChanel(){

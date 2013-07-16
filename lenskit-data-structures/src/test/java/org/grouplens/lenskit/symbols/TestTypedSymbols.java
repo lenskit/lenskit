@@ -23,7 +23,6 @@ package org.grouplens.lenskit.symbols;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -31,46 +30,45 @@ import static org.hamcrest.Matchers.*;
 public class TestTypedSymbols {
     @Test
     public void testConstruction() {
-        assertSame(TypedSymbol.of("foo", String.class), TypedSymbol.of("foo", String.class));
-        assertSame(TypedSymbol.of("foo", Integer.class), TypedSymbol.of("foo", Integer.class));
-        assertNotSame(TypedSymbol.of("foo", String.class), TypedSymbol.of("foo", Integer.class));
-        assertSame(TypedSymbol.of("bar", String.class), TypedSymbol.of("bar", String.class));
-        assertNotSame(TypedSymbol.of("foo", String.class), TypedSymbol.of("bar", String.class));
-        assertNotSame(TypedSymbol.of("bar", String.class), TypedSymbol.of("foo", Integer.class));
+        assertSame(TypedSymbol.of(String.class, "foo"), TypedSymbol.of(String.class, "foo"));
+        assertSame(TypedSymbol.of(Integer.class, "foo"), TypedSymbol.of(Integer.class, "foo"));
+        assertNotSame(TypedSymbol.of(String.class, "foo"), TypedSymbol.of(Integer.class, "foo"));
+        assertSame(TypedSymbol.of(String.class, "bar"), TypedSymbol.of(String.class, "bar"));
+        assertNotSame(TypedSymbol.of(String.class, "foo"), TypedSymbol.of(String.class, "bar"));
+        assertNotSame(TypedSymbol.of(String.class, "bar"), TypedSymbol.of(Integer.class, "foo"));
     }
 
     @Test
     public void testEquals() {
-        TypedSymbol<String> ss11 = TypedSymbol.of("1", String.class);
-        TypedSymbol<String> ss12 = TypedSymbol.of("1", String.class);
-        TypedSymbol<String> ss21 = TypedSymbol.of("2", String.class);
-        TypedSymbol<String> ss22 = TypedSymbol.of("2", String.class);
-        TypedSymbol<Integer> si1 = TypedSymbol.of("1", Integer.class);
-        TypedSymbol<Integer> si2 = TypedSymbol.of("1", Integer.class);
+        TypedSymbol<String> ss11 = TypedSymbol.of(String.class, "1");
+        TypedSymbol<String> ss12 = TypedSymbol.of(String.class, "1");
+        TypedSymbol<String> ss21 = TypedSymbol.of(String.class, "2");
+        TypedSymbol<String> ss22 = TypedSymbol.of(String.class, "2");
+        TypedSymbol<Integer> si1 = TypedSymbol.of(Integer.class, "1");
+        TypedSymbol<Integer> si2 = TypedSymbol.of(Integer.class, "1");
         assertTrue(ss11.equals(ss12));
         assertTrue(ss21.equals(ss22));
         assertTrue(si1.equals(si2));
         assertFalse(ss11.equals(ss21));
         assertFalse(ss11.equals(si1));
-        
     }
 
     @Test
     public void testGetName() {
-        assertEquals("foo", TypedSymbol.of("foo", String.class).getName());
-        assertEquals("bar", TypedSymbol.of("bar", String.class).getName());
+        assertEquals("foo", TypedSymbol.of(String.class, "foo").getName());
+        assertEquals("bar", TypedSymbol.of(String.class, "bar").getName());
     }
     
     @Test
     public void testGetType() {
-        assertEquals(String.class, TypedSymbol.of("foo", String.class).getType());
-        assertEquals(Integer.class, TypedSymbol.of("foo", Integer.class).getType());
+        assertEquals(String.class, TypedSymbol.of(String.class, "foo").getType());
+        assertEquals(Integer.class, TypedSymbol.of(Integer.class, "foo").getType());
     }
     
     @Test
     public void testToString() {
-        TypedSymbol<String> sbar = TypedSymbol.of("bar", String.class);
-        TypedSymbol<Integer> sfoo = TypedSymbol.of("foo", Integer.class);
+        TypedSymbol<String> sbar = TypedSymbol.of(String.class, "bar");
+        TypedSymbol<Integer> sfoo = TypedSymbol.of(Integer.class, "foo");
         assertEquals("TypedSymbol.of(bar,String)", sbar.toString());
         assertEquals("TypedSymbol.of(foo,Integer)", sfoo.toString());
         
