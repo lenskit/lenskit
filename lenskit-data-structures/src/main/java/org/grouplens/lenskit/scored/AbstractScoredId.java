@@ -75,6 +75,7 @@ public abstract class AbstractScoredId implements ScoredId {
                 sum += s.hashCode();
                 sum += channel(s).hashCode();
             }
+            builder.append(sum);
             
             hashCode = builder.build();
         }
