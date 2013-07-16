@@ -39,33 +39,35 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
     private final double score;
     @SuppressFBWarnings("SE_BAD_FIELD")
     @Nonnull
-    private final Reference2DoubleMap<Symbol> channelMap;
+    private final Reference2DoubleMap<Symbol> channels;
     @SuppressFBWarnings("SE_BAD_FIELD")
     @Nonnull
-    private final Map<TypedSymbol<?>, ?> typedChannelMap;
+    private final Map<TypedSymbol<?>, ?> typedChannels;
 
     public ScoredIdImpl(long id, double score) {
         this(id, score, null, null);
     }
 
     /**
-     * @param typedChannelMap a map from TypedSymbol<K> to the object in that side channel. 
-     *                        It is assumed that for each key TypedSymbol<K> in the map that the value
-     *                        is of type K.  
+     * Construct a new {@link ScoredId}.
+     * @param id The ID.
+     * @param score The score.
+     * @param chans The side channel map.
+     * @param tChans The typed side channel map.
      */
-    public ScoredIdImpl(long id, double score, Reference2DoubleMap<Symbol> channelMap, 
-            Reference2ObjectMap<TypedSymbol<?>, ?> typedChannelMap) {
+    public ScoredIdImpl(long id, double score, Reference2DoubleMap<Symbol> chans,
+            Reference2ObjectMap<TypedSymbol<?>, ?> tChans) {
         this.id = id;
         this.score = score;
-        if (channelMap != null) {
-            this.channelMap = new Reference2DoubleArrayMap<Symbol>(channelMap);
+        if (chans != null) {
+            this.channels = new Reference2DoubleArrayMap<Symbol>(chans);
         } else {
-            this.channelMap = Reference2DoubleMaps.EMPTY_MAP;
+            this.channels = Reference2DoubleMaps.EMPTY_MAP;
         }
-        if (typedChannelMap != null) {
-            this.typedChannelMap = ImmutableMap.copyOf(typedChannelMap);
+        if (tChans != null) {
+            this.typedChannels = ImmutableMap.copyOf(tChans);
         } else {
-            this.typedChannelMap = Collections.emptyMap();
+            this.typedChannels = Collections.emptyMap();
         }
     }
 
@@ -81,18 +83,18 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
 
     @Override
     public boolean hasChannel(Symbol s) {
-        return channelMap.containsKey(s);
+        return channels.containsKey(s);
     }
 
     @Override
     public boolean hasChannel(TypedSymbol<?> s) {
-        return typedChannelMap.containsKey(s);
+        return typedChannels.containsKey(s);
     }
 
     @Override
     public double channel(Symbol s) {
         if (hasChannel(s)) {
-            return channelMap.get(s);
+            return channels.get(s);
         }
         throw new IllegalArgumentException("No existing channel under name " + s.getName());
     }
@@ -101,18 +103,18 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
     @Override
     public <K> K channel(TypedSymbol<K> s) {
         if (hasChannel(s)) {
-            return (K) typedChannelMap.get(s);
+            return (K) typedChannels.get(s);
         }
         throw new IllegalArgumentException("No existing typed channel under name " + s.getName());
     }
 
     @Override
     public Set<Symbol> getChannels() {
-        return Collections.unmodifiableSet(channelMap.keySet());
+        return Collections.unmodifiableSet(channels.keySet());
     }
 
     @Override
     public Set<TypedSymbol<?>> getTypedChannels() {
-        return typedChannelMap.keySet();
+        return typedChannels.keySet();
     }
 }
