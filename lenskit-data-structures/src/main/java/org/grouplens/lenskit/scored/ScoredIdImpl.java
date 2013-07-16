@@ -20,16 +20,16 @@
  */
 package org.grouplens.lenskit.scored;
 
+import com.google.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
-import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+import it.unimi.dsi.fastutil.objects.*;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 class ScoredIdImpl extends AbstractScoredId implements Serializable {
@@ -38,9 +38,11 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
     private final long id;
     private final double score;
     @SuppressFBWarnings("SE_BAD_FIELD")
+    @Nonnull
     private final Reference2DoubleMap<Symbol> channelMap;
     @SuppressFBWarnings("SE_BAD_FIELD")
-    private final Reference2ObjectMap<TypedSymbol<?>, ?> typedChannelMap;
+    @Nonnull
+    private final Map<TypedSymbol<?>, ?> typedChannelMap;
 
     public ScoredIdImpl(long id, double score) {
         this(id, score, null, null);
@@ -58,12 +60,12 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
         if (channelMap != null) {
             this.channelMap = new Reference2DoubleArrayMap<Symbol>(channelMap);
         } else {
-            this.channelMap = null;
+            this.channelMap = Reference2DoubleMaps.EMPTY_MAP;
         }
         if (typedChannelMap != null) {
-            this.typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>(typedChannelMap);
+            this.typedChannelMap = ImmutableMap.copyOf(typedChannelMap);
         } else {
-            this.typedChannelMap = null;
+            this.typedChannelMap = Collections.emptyMap();
         }
     }
 
@@ -79,12 +81,12 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
 
     @Override
     public boolean hasChannel(Symbol s) {
-        return channelMap != null && channelMap.containsKey(s);
+        return channelMap.containsKey(s);
     }
 
     @Override
     public boolean hasChannel(TypedSymbol<?> s) {
-        return typedChannelMap != null && typedChannelMap.containsKey(s);
+        return typedChannelMap.containsKey(s);
     }
 
     @Override
@@ -106,19 +108,11 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
 
     @Override
     public Set<Symbol> getChannels() {
-        if (channelMap != null) {
-            return Collections.unmodifiableSet(channelMap.keySet());
-        } else {
-            return Collections.emptySet();
-        }
+        return Collections.unmodifiableSet(channelMap.keySet());
     }
 
     @Override
     public Set<TypedSymbol<?>> getTypedChannels() {
-        if (typedChannelMap != null) {
-            return Collections.unmodifiableSet(typedChannelMap.keySet());
-        } else {
-            return Collections.emptySet();
-        }
+        return typedChannelMap.keySet();
     }
 }
