@@ -32,14 +32,14 @@ import java.lang.annotation.Annotation;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see 1.0
  */
-public class ContextWrapper extends AbstractConfigContext {
+class ContextWrapper extends AbstractConfigContext {
     private Context base;
 
     /**
      * Construct a new wrapper around a Grapht context.
      * @param ctx The Grapht context.
      */
-    public ContextWrapper(Context ctx) {
+    ContextWrapper(Context ctx) {
         base = ctx;
     }
 
