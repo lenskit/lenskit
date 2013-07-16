@@ -23,6 +23,7 @@ package org.grouplens.lenskit.scored;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
@@ -70,12 +71,34 @@ class VectorEntryScoredId extends AbstractScoredId {
     }
 
     @Override
+    public Set<TypedSymbol<?>> getTypedChannels() {
+        ReferenceArraySet<TypedSymbol<?>> res = new ReferenceArraySet<TypedSymbol<?>>();
+        for (TypedSymbol<?> s: vector.getTypedChannels()) {
+            // FIXME Make this O(1)
+            if (vector.channel(s).containsKey(ent.getKey())) {
+                res.add(s);
+            }
+        }
+        return res;
+    }
+
+    @Override
     public double channel(Symbol s) {
         return vector.channel(s).get(ent);
     }
 
     @Override
+    public <T> T channel(TypedSymbol<T> s) {
+        return vector.channel(s).get(ent.getKey());
+    }
+
+    @Override
     public boolean hasChannel(Symbol s) {
+        return vector.hasChannel(s) && vector.channel(s).containsKey(ent.getKey());
+    }
+
+    @Override
+    public boolean hasChannel(TypedSymbol s) {
         return vector.hasChannel(s) && vector.channel(s).containsKey(ent.getKey());
     }
 

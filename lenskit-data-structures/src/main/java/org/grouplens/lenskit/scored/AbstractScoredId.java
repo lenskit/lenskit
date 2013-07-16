@@ -24,6 +24,7 @@ import com.google.common.primitives.Doubles;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 
 /**
  * A base class for {@code ScoredId} implementations providing
@@ -36,6 +37,7 @@ public abstract class AbstractScoredId implements ScoredId {
 
     private transient volatile int hashCode;
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public int hashCode() {
         if (hashCode == 0) {
@@ -49,11 +51,19 @@ public abstract class AbstractScoredId implements ScoredId {
                 sum += Doubles.hashCode(channel(s));
             }
             builder.append(sum);
+            
+            sum = 0;
+            for (TypedSymbol s : getTypedChannels()) {
+                sum += s.hashCode();
+                sum += channel(s).hashCode();
+            }
+            
             hashCode = builder.build();
         }
         return hashCode;
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public boolean equals(Object o) {
         if (o == this) {
@@ -63,7 +73,8 @@ public abstract class AbstractScoredId implements ScoredId {
             EqualsBuilder builder = new EqualsBuilder()
                     .append(getId(), oid.getId())
                     .append(getScore(), oid.getScore())
-                    .append(getChannels(), oid.getChannels());
+                    .append(getChannels(), oid.getChannels())
+                    .append(getTypedChannels(), oid.getTypedChannels());
 
             // Try to avoid iterating through side channels if possible
             if (!builder.isEquals()) {
@@ -71,6 +82,10 @@ public abstract class AbstractScoredId implements ScoredId {
             }
 
             for (Symbol s : getChannels()) {
+                builder.append(channel(s), oid.channel(s));
+            }
+            
+            for (TypedSymbol s : getTypedChannels()) {
                 builder.append(channel(s), oid.channel(s));
             }
             return builder.isEquals();

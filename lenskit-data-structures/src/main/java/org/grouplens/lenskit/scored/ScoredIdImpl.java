@@ -23,17 +23,15 @@ package org.grouplens.lenskit.scored;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
 
-/**
- * Basic implementation of {@link ScoredId}.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- */
 class ScoredIdImpl extends AbstractScoredId implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -41,29 +39,31 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
     private final double score;
     @SuppressFBWarnings("SE_BAD_FIELD")
     private final Reference2DoubleMap<Symbol> channelMap;
+    @SuppressFBWarnings("SE_BAD_FIELD")
+    private final Reference2ObjectMap<TypedSymbol<?>, ?> typedChannelMap;
 
-    /**
-     * Construct a scored ID with no channels.
-     * @param id The ID.
-     * @param score The score.
-     */
     public ScoredIdImpl(long id, double score) {
-        this(id, score, null);
+        this(id, score, null, null);
     }
 
     /**
-     * Construct a scored ID.
-     * @param id The ID.
-     * @param score The score.
-     * @param channelMap The side channels for this ID.
+     * @param typedChannelMap a map from TypedSymbol<K> to the object in that side channel. 
+     *                        It is assumed that for each key TypedSymbol<K> in the map that the value
+     *                        is of type K.  
      */
-    public ScoredIdImpl(long id, double score, Reference2DoubleMap<Symbol> channelMap) {
+    public ScoredIdImpl(long id, double score, Reference2DoubleMap<Symbol> channelMap, 
+            Reference2ObjectMap<TypedSymbol<?>, ?> typedChannelMap) {
         this.id = id;
         this.score = score;
         if (channelMap != null) {
             this.channelMap = new Reference2DoubleArrayMap<Symbol>(channelMap);
         } else {
             this.channelMap = null;
+        }
+        if (typedChannelMap != null) {
+            this.typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>(typedChannelMap);
+        } else {
+            this.typedChannelMap = null;
         }
     }
 
@@ -83,6 +83,11 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
     }
 
     @Override
+    public boolean hasChannel(TypedSymbol<?> s) {
+        return typedChannelMap != null && typedChannelMap.containsKey(s);
+    }
+
+    @Override
     public double channel(Symbol s) {
         if (hasChannel(s)) {
             return channelMap.get(s);
@@ -90,10 +95,28 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
         throw new IllegalArgumentException("No existing channel under name " + s.getName());
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public <K> K channel(TypedSymbol<K> s) {
+        if (hasChannel(s)) {
+            return (K) typedChannelMap.get(s);
+        }
+        throw new IllegalArgumentException("No existing typed channel under name " + s.getName());
+    }
+
     @Override
     public Set<Symbol> getChannels() {
         if (channelMap != null) {
             return Collections.unmodifiableSet(channelMap.keySet());
+        } else {
+            return Collections.emptySet();
+        }
+    }
+
+    @Override
+    public Set<TypedSymbol<?>> getTypedChannels() {
+        if (typedChannelMap != null) {
+            return Collections.unmodifiableSet(typedChannelMap.keySet());
         } else {
             return Collections.emptySet();
         }

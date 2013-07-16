@@ -23,13 +23,16 @@ package org.grouplens.lenskit.scored;
 import static org.junit.Assert.*;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.junit.Test;
 
 public class ScoredIdBuilderTest {
 
     private final Symbol fooSym = Symbol.of("foo");
+    private final TypedSymbol<Integer> fooIntSym = TypedSymbol.of("foo", Integer.class);
     
     @Test
     public void testScoredIdBuilder() {
@@ -69,31 +72,44 @@ public class ScoredIdBuilderTest {
         assertEquals(sib, sib.addChannel(fooSym, 1.0));
         Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
         channels.put(fooSym,1.0);
-        assertEquals(new ScoredIdImpl(1, 2, channels), sib.build());
+        assertEquals(new ScoredIdImpl(1, 2, channels, null), sib.build());
+    }
+
+    @Test
+    public void testAddTypedChannel() {
+        ScoredIdBuilder sib = new ScoredIdBuilder(1, 2);
+        assertEquals(sib, sib.addChannel(fooIntSym, 1));
+        Reference2ObjectArrayMap<TypedSymbol<?>, Object> typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>();
+        typedChannels.put(fooIntSym, 1);
+        assertEquals(new ScoredIdImpl(1, 2, null, typedChannels), sib.build());
     }
 
     @Test
     public void testClearChannels() {
         ScoredIdBuilder sib = new ScoredIdBuilder(1, 2);
         assertEquals(sib, sib.addChannel(fooSym, 1.0));
+        assertEquals(sib, sib.addChannel(fooIntSym, 1));
         assertEquals(sib, sib.clearChannels());
-        Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
-        assertEquals(new ScoredIdImpl(1, 2, channels), sib.build());
+        assertEquals(new ScoredIdImpl(1, 2, null, null), sib.build());
     }
 
     @Test
     public void testStateness() {
         ScoredIdBuilder sib = new ScoredIdBuilder(1, 2);
         assertEquals(sib, sib.addChannel(fooSym, 1.0));
+        assertEquals(sib, sib.addChannel(fooIntSym, 1));
         Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
         channels.put(fooSym,1.0);
+        Reference2ObjectArrayMap<TypedSymbol<?>, Object> typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>();
+        typedChannels.put(fooIntSym, 1);
         ScoredId sid = sib.build();
         sib.setId(3);
         sib.setScore(4);
         sib.addChannel(fooSym, 2.0);
-        assertEquals(new ScoredIdImpl(1, 2, channels), sid);
+        sib.addChannel(fooIntSym, 2);
+        assertEquals(new ScoredIdImpl(1, 2, channels, typedChannels), sid);
         sib.clearChannels();
-        assertEquals(new ScoredIdImpl(1, 2, channels), sid);
+        assertEquals(new ScoredIdImpl(1, 2, channels, typedChannels), sid);
     }
 
 }

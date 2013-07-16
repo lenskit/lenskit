@@ -33,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.collections.*;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -808,6 +809,17 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @return whether this vector has such a channel right now.
      */
     public abstract boolean hasChannel(Symbol channelSymbol);
+    
+    /**
+     * Return whether this sparse vector has a typed channel stored under a
+     * particular typed symbol.  (Symbols are sort of like names, but more
+     * efficient.)
+     *
+     * @param channelSymbol the typed symbol under which the channel was
+     *                      stored in the vector.
+     * @return whether this vector has such a channel right now.
+     */
+    public abstract boolean hasChannel(TypedSymbol<?> channelSymbol);
 
     /**
      * Fetch the channel stored under a particular symbol.
@@ -819,6 +831,18 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      *                                  that symbol
      */
     public abstract SparseVector channel(Symbol channelSymbol);
+    
+    /**
+     * Fetch the channel stored under a particular typed symbol.
+     *
+     * @param channelSymbol the typed symbol under which the channel was/is
+     *                      stored in the vector.
+     * @return the channel, which is itself a map from the key domain to objects of
+     *                      the channel's type
+     * @throws IllegalArgumentException if there is no channel under
+     *                                  that typed symbol
+     */
+    public abstract <K> Long2ObjectMap<K> channel(TypedSymbol<K> channelSymbol);
 
     /**
      * Retrieve all symbols that map to side channels for this vector.
@@ -826,4 +850,11 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      *         of the vector.
      */
     public abstract Set<Symbol> getChannels();
+
+    /**
+     * Retrieve all symbols that map to typed side channels for this vector.
+     * @return A set of symbols, each of which identifies a side channel
+     *         of the vector.
+     */
+    public abstract Set<TypedSymbol<?>> getTypedChannels();
 }

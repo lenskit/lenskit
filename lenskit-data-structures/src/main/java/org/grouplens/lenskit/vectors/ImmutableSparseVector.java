@@ -23,16 +23,16 @@ package org.grouplens.lenskit.vectors;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 
+import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
-
-import javax.annotation.concurrent.Immutable;
-
-import org.grouplens.lenskit.symbols.Symbol;
 
 /**
  * Immutable sparse vectors. These vectors cannot be changed, even by other
@@ -47,6 +47,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
 
     @SuppressFBWarnings("SE_BAD_FIELD")
     private final Map<Symbol, ImmutableSparseVector> channelMap;
+    private final Map<TypedSymbol<?>,ImmutableTypedSideChannel<?>> typedChannelMap;
 
     private transient volatile Double norm = null;
     private transient volatile Double sum = null;
@@ -69,6 +70,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     public ImmutableSparseVector(Long2DoubleMap ratings) {
         super(ratings);
         channelMap = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
+        typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>,ImmutableTypedSideChannel<?>>();
     }
 
     /**
@@ -97,6 +99,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     protected ImmutableSparseVector(long[] ks, double[] vs, int sz) {
         super(ks, vs, sz);
         channelMap = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
+        typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>,ImmutableTypedSideChannel<?>>();
     }
 
     /**
@@ -105,16 +108,19 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      * is not checked.  The new vector will have a copy of the
      * channels that are passed into it.
      *
-     * @param ks       the key array (will be the key domain).
-     * @param vs       the value array.
-     * @param sz       the length to actually use.
-     * @param used     the keys that actually have values currently.
-     * @param channels The side channel values.
+     * @param ks            the key array (will be the key domain).
+     * @param vs            the value array.
+     * @param sz            the length to actually use.
+     * @param used          the keys that actually have values currently.
+     * @param channels      The side channel values.
+     * @param typedChannels The typed side channel values.
      */
     ImmutableSparseVector(long[] ks, double[] vs, int sz, BitSet used,
-                          Map<Symbol, ImmutableSparseVector> channels) {
+                          Map<Symbol, ImmutableSparseVector> channels,
+                          Map<TypedSymbol<?>,ImmutableTypedSideChannel<?>> typedChannels) {
         super(ks, vs, sz, used);
         channelMap = channels;
+        typedChannelMap = typedChannels;
     }
 
     @Override
@@ -130,6 +136,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
         return this;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public MutableSparseVector mutableCopy() {
         MutableSparseVector result = new MutableSparseVector(keys, Arrays.copyOf(values, domainSize),
@@ -137,12 +144,22 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
         for (Map.Entry<Symbol, ImmutableSparseVector> entry : channelMap.entrySet()) {
             result.addChannel(entry.getKey(), entry.getValue().mutableCopy());
         }
+        for (Entry<TypedSymbol<?>, ImmutableTypedSideChannel<?>> entry : typedChannelMap.entrySet()) {
+            TypedSymbol ts = entry.getKey();
+            ImmutableTypedSideChannel val = entry.getValue();
+            result.addChannel(ts,val.mutableCopy());
+        }
+        
         return result;
     }
 
     @Override
     public boolean hasChannel(Symbol channelSymbol) {
         return channelMap.containsKey(channelSymbol);
+    }
+    @Override
+    public boolean hasChannel(TypedSymbol<?> channelSymbol) {
+        return typedChannelMap.containsKey(channelSymbol);
     }
 
     @Override
@@ -154,9 +171,27 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
                                                    channelSymbol.getName());
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public <K> ImmutableTypedSideChannel<K> channel(TypedSymbol<K> channelSymbol) {
+        if (hasChannel(channelSymbol)) {
+            return (ImmutableTypedSideChannel<K>) typedChannelMap.get(channelSymbol);
+        }
+        throw new IllegalArgumentException("No existing channel under name " +
+                                                   channelSymbol.getName() +
+                                                   " of type " + 
+                                                   channelSymbol.getType().getSimpleName());
+    }
+
     @Override
     public Set<Symbol> getChannels() {
         return channelMap.keySet();
+    }
+    
+    @SuppressWarnings("rawtypes")
+    @Override
+    public Set<TypedSymbol<?>> getTypedChannels() {
+        return typedChannelMap.keySet();
     }
 
     // We override these three functions in the case that this vector is Immutable,
