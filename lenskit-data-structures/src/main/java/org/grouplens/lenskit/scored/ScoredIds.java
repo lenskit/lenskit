@@ -23,6 +23,7 @@ package org.grouplens.lenskit.scored;
 import org.grouplens.lenskit.collections.CopyingFastCollection;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
@@ -66,7 +67,9 @@ public final class ScoredIds {
             for (Symbol s: elt.getChannels()) {
                 builder.addChannel(s, elt.channel(s));
             }
-
+            for (TypedSymbol s: elt.getTypedChannels()) {
+                builder.addChannel(s, elt.channel(s));
+            }
             return builder.build();
         }
 

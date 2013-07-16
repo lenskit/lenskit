@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.symbols;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -59,5 +60,12 @@ public class TestSymbols {
         assertThat(Symbol.of("foo").toString(), equalTo("Symbol.of(foo)"));
         assertThat(sbar.toString(), equalTo("Symbol.of(bar)"));
         assertThat(sfoo.toString(), equalTo("Symbol.of(foo)"));
+    }
+
+    @Test
+    public void testSerialize() {
+        Symbol sbar = Symbol.of("bar");
+        Symbol cloned = SerializationUtils.clone(sbar);
+        assertThat(cloned, sameInstance(sbar));
     }
 }
