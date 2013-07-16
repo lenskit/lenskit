@@ -35,11 +35,9 @@ import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import java.io.Serializable;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
+
 /**
  * Mutable version of sparse vector.
  *
@@ -1005,12 +1003,12 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
     @Override
     public Set<Symbol> getChannels() {
-        return channelMap.keySet();
+        return Collections.unmodifiableSet(channelMap.keySet());
     }
 
     @Override
     public Set<TypedSymbol<?>> getTypedChannels() {
-        return typedChannelMap.keySet();
+        return Collections.unmodifiableSet(typedChannelMap.keySet());
     }
 
     private static class IdComparator extends AbstractIntComparator {

@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import com.google.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
@@ -28,11 +29,8 @@ import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * Immutable sparse vectors. These vectors cannot be changed, even by other
@@ -69,8 +67,8 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      */
     public ImmutableSparseVector(Long2DoubleMap ratings) {
         super(ratings);
-        channelMap = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
-        typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>,ImmutableTypedSideChannel<?>>();
+        channelMap = Collections.emptyMap();
+        typedChannelMap = Collections.emptyMap();
     }
 
     /**
@@ -98,8 +96,8 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      */
     protected ImmutableSparseVector(long[] ks, double[] vs, int sz) {
         super(ks, vs, sz);
-        channelMap = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
-        typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>,ImmutableTypedSideChannel<?>>();
+        channelMap = Collections.emptyMap();
+        typedChannelMap = Collections.emptyMap();
     }
 
     /**
@@ -119,8 +117,8 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
                           Map<Symbol, ImmutableSparseVector> channels,
                           Map<TypedSymbol<?>,ImmutableTypedSideChannel<?>> typedChannels) {
         super(ks, vs, sz, used);
-        channelMap = channels;
-        typedChannelMap = typedChannels;
+        channelMap = ImmutableMap.copyOf(channels);
+        typedChannelMap = ImmutableMap.copyOf(typedChannels);
     }
 
     @Override
