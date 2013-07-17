@@ -20,11 +20,17 @@
  */
 package org.grouplens.lenskit.test;
 
+import org.grouplens.lenskit.cursors.Cursors;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
+import org.grouplens.lenskit.util.io.CompressionMode;
 import org.junit.Before;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assume.assumeThat;
@@ -38,7 +44,7 @@ public class ML100KTestSuite {
     protected final String ML100K_PROPERTY = "lenskit.movielens.100k";
     protected final String INPUT_FILE_NAME = "u.data";
 
-    protected DAOFactory daoFactory;
+    protected EventDAO dao;
 
     @Before
     public void createDAOFactory() throws FileNotFoundException {
@@ -59,6 +65,8 @@ public class ML100KTestSuite {
             throw new FileNotFoundException("ML data set at " + inputFile + ". " +
                                             "See <https://bitbucket.org/grouplens/lenskit/wiki/ML100K>.");
         }
-        daoFactory = SimpleFileRatingDAO.Factory.caching(inputFile, "\t");
+        EventDAO fileDao = new SimpleFileRatingDAO(inputFile, "\t", CompressionMode.NONE);
+        List<Event> events = Cursors.makeList(fileDao.streamEvents());
+        dao = new EventCollectionDAO(events);
     }
 }

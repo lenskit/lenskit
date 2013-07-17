@@ -27,6 +27,9 @@ import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
+import org.grouplens.lenskit.core.SymbolMapping;
+import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.test.ML100KTestSuite;
 import org.junit.Test;
 
@@ -46,7 +49,10 @@ import static org.junit.Assert.assertThat;
 public class TestLeastSquaresBuildSerialize extends ML100KTestSuite {
     @Test
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
+        TypedSymbol<EventDAO> sym = TypedSymbol.of(EventDAO.class, "DAO");
+        SymbolMapping mapping = SymbolMapping.newBuilder().put(sym, dao).build();
         LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).toSymbol(sym);
         config.bind(ItemRecommender.class)
               .to(TopNItemRecommender.class);
         config.bind(ItemScorer.class)
@@ -54,25 +60,23 @@ public class TestLeastSquaresBuildSerialize extends ML100KTestSuite {
         config.bind(BaselinePredictor.class)
               .to(LeastSquaresPredictor.class);
 
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config, mapping);
         assertThat(engine, notNullValue());
+        engine.setSymbolMapping(null);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         engine.write(out);
         byte[] bytes = out.toByteArray();
 
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-        LenskitRecommenderEngine loaded = LenskitRecommenderEngine.load(daoFactory, in);
+        LenskitRecommenderEngine loaded = LenskitRecommenderEngine.load(in);
         assertThat(loaded, notNullValue());
+        loaded.setSymbolMapping(mapping);
 
         LenskitRecommender rec = loaded.createRecommender();
-        try {
-            assertThat(rec.getItemScorer(),
-                       instanceOf(BaselineItemScorer.class));
-            assertThat(rec.get(BaselinePredictor.class),
-                       instanceOf(LeastSquaresPredictor.class));
-        } finally {
-            rec.close();
-        }
+        assertThat(rec.getItemScorer(),
+                   instanceOf(BaselineItemScorer.class));
+        assertThat(rec.get(BaselinePredictor.class),
+                   instanceOf(LeastSquaresPredictor.class));
     }
 }
