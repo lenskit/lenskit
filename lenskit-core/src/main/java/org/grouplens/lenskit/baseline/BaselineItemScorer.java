@@ -24,7 +24,7 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -54,7 +54,7 @@ public class BaselineItemScorer extends AbstractItemScorer {
      *                 the baseline is only used to supply predictions that it declines to.
      */
     @Inject
-    public BaselineItemScorer(DataAccessObject dao,
+    public BaselineItemScorer(UserEventDAO dao,
                               BaselinePredictor baseline,
                               @Nullable @PrimaryScorer ItemScorer scorer) {
         super(dao);

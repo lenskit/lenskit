@@ -27,7 +27,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
 
@@ -45,7 +45,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder implements Provider<GlobalMeanPredictor> {
-        private DataAccessObject dao;
+        private EventDAO dao;
 
         /**
          * Construct a new provider.
@@ -53,7 +53,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
          * @param dao The DAO.
          */
         @Inject
-        public Builder(@Transient DataAccessObject dao) {
+        public Builder(@Transient EventDAO dao) {
             this.dao = dao;
         }
 
@@ -83,11 +83,11 @@ public class GlobalMeanPredictor extends ConstantPredictor {
      * @param dao The DAO to average.
      * @return The average of the rating values stored in {@var ratings}.
      */
-    public static double computeMeanRating(DataAccessObject dao) {
+    public static double computeMeanRating(EventDAO dao) {
         double total = 0;
         long count = 0;
 
-        Cursor<Rating> ratings = dao.getEvents(Rating.class);
+        Cursor<Rating> ratings = dao.streamEvents(Rating.class);
         try {
             for (Rating r : ratings.fast()) {
                 Preference p = r.getPreference();

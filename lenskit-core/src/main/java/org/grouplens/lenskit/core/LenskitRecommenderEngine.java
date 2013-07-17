@@ -24,14 +24,10 @@ import com.google.common.base.Preconditions;
 import org.grouplens.grapht.Injector;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
-import org.grouplens.grapht.spi.CachePolicy;
-import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.grapht.spi.reflect.ReflectionInjectSPI;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.RecommenderEngine;
-import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import javax.annotation.Nonnull;
 import java.io.*;
@@ -48,49 +44,16 @@ import java.io.*;
 public final class LenskitRecommenderEngine implements RecommenderEngine {
     private final Graph dependencies;
     private final Node rootNode;
-    private final Node daoPlaceholder;
 
     private final InjectSPI spi;
 
-    private final DAOFactory factory;
-
-    LenskitRecommenderEngine(DAOFactory factory, Graph dependencies,
-                             Node daoNode, InjectSPI spi) {
+    LenskitRecommenderEngine(Graph dependencies, InjectSPI spi) {
         Preconditions.checkArgument(spi instanceof ReflectionInjectSPI,
                                     "SPI must be a reflection SPI");
-        this.factory = factory;
         this.dependencies = dependencies;
         this.spi = spi;
 
         rootNode = dependencies.getNode(null);
-        daoPlaceholder = daoNode;
-    }
-
-    /**
-     * Create a new LenskitRecommenderEngine by reading a previously serialized
-     * engine from the given file.
-     *
-     * @param factory The DAO factory.
-     * @param file    The file from which to load the recommender engine.
-     * @throws IOException            if there's an error reading the file.
-     * @throws ClassNotFoundException if the graph references a missing class.
-     * @deprecated Use {@link #load(DAOFactory, File)} instead.
-     */
-    @SuppressWarnings("unchecked")
-    @Deprecated
-    public LenskitRecommenderEngine(DAOFactory factory,
-                                    File file) throws IOException, ClassNotFoundException {
-        // TODO Make this delegate to load
-        this.factory = factory;
-        ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
-        try {
-            spi = new ReflectionInjectSPI();
-            dependencies = (Graph) in.readObject();
-            rootNode = dependencies.getNode(null);
-            daoPlaceholder = GraphtUtils.findDAONode(dependencies);
-        } finally {
-            in.close();
-        }
     }
 
     /**
@@ -99,40 +62,37 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * except it will use the new DAOFactory. It is assumed that the file was
      * created by using {@link #write(OutputStream)}.
      *
-     * @param factory The DAO factory.
      * @param file The file from which to load the engine.
      * @return The loaded recommender engine.
      * @throws IOException If there is an error reading from the file.
      * @throws RecommenderConfigurationException If the configuration cannot be used.
      */
-    public static LenskitRecommenderEngine load(DAOFactory factory, File file) throws IOException, RecommenderConfigurationException {
+    public static LenskitRecommenderEngine load(File file) throws IOException, RecommenderConfigurationException {
         FileInputStream input = new FileInputStream(file);
         try {
-            return load(factory, input);
+            return load(input);
         } finally {
             input.close();
         }
     }
 
     /**
-     * Create a new LenskitRecommenderEngine by reading a previously serialized
-     * engine from the given input stream. The new engine will be identical to the old
-     * except it will use the new DAOFactory. It is assumed that the file was
-     * created by using {@link #write(OutputStream)}.
+     * Create a new LenskitRecommenderEngine by reading a previously serialized engine from the
+     * given input stream. The new engine will be identical to the old. It is assumed that the file
+     * was created by using {@link #write(OutputStream)}.
      *
-     * @param factory The DAO factory.
      * @param input The stream from which to load the engine.
      * @return The loaded recommender engine.
      * @throws IOException If there is an error reading from the file.
-     * @throws RecommenderConfigurationException If the configuration cannot be used.
+     * @throws RecommenderConfigurationException
+     *                     If the configuration cannot be used.
      */
-    public static LenskitRecommenderEngine load(DAOFactory factory, InputStream input) throws IOException, RecommenderConfigurationException {
+    public static LenskitRecommenderEngine load(InputStream input) throws IOException, RecommenderConfigurationException {
         InjectSPI spi = new ReflectionInjectSPI();
         ObjectInputStream in = new ObjectInputStream(input);
         try {
             Graph dependencies = (Graph) in.readObject();
-            Node daoNode = GraphtUtils.findDAONode(dependencies);
-            return new LenskitRecommenderEngine(factory, dependencies, daoNode, spi);
+            return new LenskitRecommenderEngine(dependencies, spi);
         } catch (ClassNotFoundException e) {
             throw new RecommenderConfigurationException(e);
         } finally {
@@ -167,7 +127,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      *
      * @param stream The file to write the rec engine to.
      * @throws IOException if there is an error serializing the engine.
-     * @see #load(DAOFactory, InputStream)
+     * @see #load(InputStream)
      */
     public void write(@Nonnull OutputStream stream) throws IOException {
         ObjectOutputStream out = new ObjectOutputStream(stream);
@@ -180,37 +140,9 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
 
     @Override
     public LenskitRecommender open() {
-        if (factory == null) {
-            throw new IllegalStateException("No DAO creator supplied");
-        }
-        DataAccessObject dao = factory.create();
-        try {
-            return open(dao, true);
-        } catch (RuntimeException e) {
-            dao.close();
-            throw e;
-        }
-    }
-
-    /**
-     * Open a recommender with a specific data connection. The client code must
-     * close the recommender when it is finished with it.
-     *
-     * @param dao         The DAO to connect the recommender to.
-     * @param shouldClose If {@code true}, then the recommender should close the
-     *                    DAO when it is closed.
-     * @return A recommender ready for use and backed by {@var dao}.
-     */
-    public LenskitRecommender open(@Nonnull DataAccessObject dao, boolean shouldClose) {
-        Preconditions.checkNotNull(dao, "Cannot open with null DAO");
         // Set up a session graph with the DAO node
-        Graph sgraph = dependencies.clone();
-        Node daoNode = new Node(new CachedSatisfaction(spi.satisfy(dao), CachePolicy.NO_PREFERENCE));
-        if (daoPlaceholder != null) {
-            sgraph.replaceNode(daoPlaceholder, daoNode);
-        }
-        Injector inj = new StaticInjector(spi, sgraph, rootNode);
-        return new LenskitRecommender(inj, dao, shouldClose);
+        Injector inj = new StaticInjector(spi, dependencies, rootNode);
+        return new LenskitRecommender(inj);
     }
 
     /**
@@ -226,33 +158,12 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * Build a LensKit recommender engine from a configuration.  The resulting recommender is
      * independent of any subsequent modifications to the configuration.
      *
-     * @param daoFactory The DAO factory to use.
      * @param config     The configuration.
      * @return The recommender engine.
      */
-    public static LenskitRecommenderEngine build(DAOFactory daoFactory, LenskitConfiguration config) throws RecommenderBuildException {
-        DataAccessObject dao = daoFactory.snapshot();
-        try {
-            Graph graph = RecommenderInstantiator.forConfig(config, dao).instantiate();
-            Node daoNode = GraphtUtils.replaceDAONode(config.getSPI(), graph);
-            return new LenskitRecommenderEngine(daoFactory, graph, daoNode, config.getSPI());
-        } finally {
-            dao.close();
-        }
-    }
-
-    /**
-     * Build a LensKit recommender engine from a configuration and a DAO.  The resulting recommender
-     * is independent of any subsequent modifications to the configuration.  It is slightly broken;
-     * {@link #open()} will not work, only {@link #open(DataAccessObject, boolean)}.
-     *
-     * @param dao    The DAO to use. This DAO will not be closed.
-     * @param config The configuration.
-     * @return The recommender engine.
-     */
-    public static LenskitRecommenderEngine build(DataAccessObject dao, LenskitConfiguration config) throws RecommenderBuildException {
-        Graph graph = RecommenderInstantiator.forConfig(config, dao).instantiate();
-        Node daoNode = GraphtUtils.replaceDAONode(config.getSPI(), graph);
-        return new LenskitRecommenderEngine(null, graph, daoNode, config.getSPI());
+    public static LenskitRecommenderEngine build(LenskitConfiguration config) throws RecommenderBuildException {
+        Graph graph = RecommenderInstantiator.forConfig(config).instantiate();
+//        Node daoNode = GraphtUtils.replaceDAONode(config.getSPI(), graph);
+        return new LenskitRecommenderEngine(graph, config.getSPI());
     }
 }

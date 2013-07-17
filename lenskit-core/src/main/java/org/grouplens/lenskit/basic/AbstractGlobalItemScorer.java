@@ -27,7 +27,7 @@ import java.util.Collection;
 import javax.annotation.Nonnull;
 
 import org.grouplens.lenskit.GlobalItemScorer;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -38,21 +38,6 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class AbstractGlobalItemScorer implements GlobalItemScorer {
-    /**
-     * The DAO passed to the constructor.
-     */
-    @Nonnull
-    protected final DataAccessObject dao;
-
-    /**
-     * Initialize the abstract item scorer.
-     *
-     * @param dao The data access object to use for retrieving histories.
-     */
-    protected AbstractGlobalItemScorer(@Nonnull DataAccessObject dao) {
-        this.dao = dao;
-    }
-
     /**
      * {@inheritDoc}
      * <p>Delegate to {@link #globalScore(Collection, Collection)}.

@@ -21,15 +21,12 @@
 package org.grouplens.lenskit.basic;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+
+import javax.annotation.Nullable;
+import java.util.Set;
 
 
 /**
@@ -40,17 +37,6 @@ import org.grouplens.lenskit.data.dao.DataAccessObject;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class AbstractGlobalItemRecommender implements GlobalItemRecommender {
-    protected final DataAccessObject dao;
-
-    /**
-     * Initialize the recommender.
-     *
-     * @param dao The DAO.
-     */
-    protected AbstractGlobalItemRecommender(DataAccessObject dao) {
-        this.dao = dao;
-    }
-
     /**
      * {@inheritDoc}
      * <p>Delegates to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.

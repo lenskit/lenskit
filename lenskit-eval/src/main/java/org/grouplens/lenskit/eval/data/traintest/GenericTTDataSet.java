@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.eval.data.traintest;
 
 import com.google.common.base.Preconditions;
-import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.GenericDataSource;

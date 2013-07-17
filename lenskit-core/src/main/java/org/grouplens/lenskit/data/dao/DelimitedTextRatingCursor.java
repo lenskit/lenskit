@@ -49,15 +49,6 @@ public class DelimitedTextRatingCursor extends AbstractEventCursor<Rating> {
     /**
      * Construct a rating cursor from a reader.
      *
-     * @param s The reader to read.
-     */
-    public DelimitedTextRatingCursor(@WillCloseWhenClosed @Nonnull BufferedReader s) {
-        this(s, null, System.getProperty("lenskit.delimiter", "\t"));
-    }
-
-    /**
-     * Construct a rating cursor from a reader.
-     *
      * @param s         The reader to read.
      * @param name      The file name (for error messages).
      * @param delimiter The delimiter.

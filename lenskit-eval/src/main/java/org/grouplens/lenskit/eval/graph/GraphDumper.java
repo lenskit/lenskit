@@ -33,7 +33,6 @@ import org.grouplens.grapht.spi.*;
 import org.grouplens.grapht.spi.reflect.*;
 import org.grouplens.lenskit.core.GraphtUtils;
 import org.grouplens.lenskit.core.Parameter;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

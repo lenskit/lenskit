@@ -81,8 +81,8 @@ public class TestPackedPreferenceSnapshot {
         rs.add(rating(1, 11, 5, 1));
         rs.add(rating(3, 11, 5, 2));
         rs.add(rating(4, 11, 5, 1));
-        EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        snap = new PackedPreferenceSnapshot.Provider(manager.create()).get();
+        EventCollectionDAO dao = new EventCollectionDAO(rs);
+        snap = new PackedPreferenceSnapshot.Provider(dao).get();
     }
 
     @Test

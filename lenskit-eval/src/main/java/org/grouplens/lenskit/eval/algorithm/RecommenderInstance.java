@@ -23,7 +23,6 @@ package org.grouplens.lenskit.eval.algorithm;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nullable;

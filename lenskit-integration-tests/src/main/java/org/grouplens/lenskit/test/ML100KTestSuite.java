@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.test;
 
-import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
 import org.junit.Before;
 

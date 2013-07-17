@@ -45,7 +45,7 @@ class TestCSVFileConfig extends ConfigTestBase {
         }
         assertThat(source, notNullValue())
         assertThat(source.name, equalTo("ml-100k.dat"))
-        assertThat(source.file, equalTo(new File("ml-100k.dat")))
+        assertThat(source.getSourceFile, equalTo(new File("ml-100k.dat")))
         assertThat(source.delimiter, equalTo(","))
     }
 
@@ -58,7 +58,7 @@ class TestCSVFileConfig extends ConfigTestBase {
             }
         }
         assertThat(source.name, equalTo("ml-100k"))
-        assertThat(source.file, equalTo(new File("ml-100k/u.data")))
+        assertThat(source.getSourceFile, equalTo(new File("ml-100k/u.data")))
         assertThat(source.delimiter, equalTo("::"))
     }
 
@@ -70,7 +70,7 @@ class TestCSVFileConfig extends ConfigTestBase {
             }
         }
         assertThat(source.name, equalTo("ml-100k.dat"))
-        assertThat(source.file, equalTo(new File("ml-100k.dat")))
+        assertThat(source.getSourceFile, equalTo(new File("ml-100k.dat")))
     }
 
     @Test
@@ -99,6 +99,6 @@ class TestCSVFileConfig extends ConfigTestBase {
             }
         }
         assertThat(source.name, equalTo("ml-100k"))
-        assertThat(source.file, equalTo(new File("ml-100k.csv")))
+        assertThat(source.getSourceFile, equalTo(new File("ml-100k.csv")))
     }
 }

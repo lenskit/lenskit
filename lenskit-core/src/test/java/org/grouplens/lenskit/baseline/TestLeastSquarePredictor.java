@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
@@ -65,8 +64,7 @@ public class TestLeastSquarePredictor {
         rs.add(Ratings.make(1, 6, 3));
         rs.add(Ratings.make(3, 6, 4));
 
-        final EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        final DataAccessObject dao = manager.create();
+        final EventCollectionDAO dao = new EventCollectionDAO(rs);
         final Provider<PackedPreferenceSnapshot> provider = new PackedPreferenceSnapshot.Provider(dao);
         snapshot = provider.get();
         final StoppingCondition stop = new ThresholdStoppingCondition(0.1, 10);

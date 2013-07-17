@@ -32,7 +32,6 @@ import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;

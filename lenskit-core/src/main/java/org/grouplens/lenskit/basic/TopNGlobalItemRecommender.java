@@ -26,8 +26,7 @@ import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
 import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -43,11 +42,11 @@ import javax.inject.Inject;
  * @since 1.1
  */
 public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
-
+    protected final ItemDAO itemDAO;
     protected final GlobalItemScorer scorer;
 
-    public TopNGlobalItemRecommender(DataAccessObject dao, GlobalItemScorer scorer) {
-        super(dao);
+    public TopNGlobalItemRecommender(ItemDAO idao, GlobalItemScorer scorer) {
+        itemDAO = idao;
         this.scorer = scorer;
     }
 
@@ -58,7 +57,7 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
     @Override
     protected ScoredLongList globalRecommend(LongSet items, int n, LongSet candidates, LongSet exclude) {
         if (candidates == null) {
-            candidates = Cursors.makeSet(dao.getItems());
+            candidates = itemDAO.getItemIds();
         }
         if (exclude == null) {
             exclude = getDefaultExcludes(items);
@@ -114,13 +113,13 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
      * the default provider for {@link GlobalItemRecommender}.
      */
     public static class Provider implements javax.inject.Provider<TopNGlobalItemRecommender> {
-        private final DataAccessObject dao;
+        private final ItemDAO itemDAO;
         private final GlobalItemScorer scorer;
 
         @Inject
-        public Provider(DataAccessObject dao,
+        public Provider(ItemDAO dao,
                         @Nullable GlobalItemScorer s) {
-            this.dao = dao;
+            itemDAO = dao;
             scorer = s;
         }
 
@@ -129,7 +128,7 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
             if (scorer == null) {
                 return null;
             } else {
-                return new TopNGlobalItemRecommender(dao, scorer);
+                return new TopNGlobalItemRecommender(itemDAO, scorer);
             }
         }
     }

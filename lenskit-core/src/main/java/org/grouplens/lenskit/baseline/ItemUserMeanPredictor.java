@@ -24,7 +24,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.util.IdMeanAccumulator;
@@ -68,7 +68,7 @@ public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
      */
     public static class Builder implements Provider<ItemUserMeanPredictor> {
         private double damping = 0;
-        private DataAccessObject dao;
+        private EventDAO dao;
 
         /**
          * Construct a new provider.
@@ -78,7 +78,7 @@ public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
          *            towards the global mean.
          */
         @Inject
-        public Builder(@Transient DataAccessObject dao,
+        public Builder(@Transient EventDAO dao,
                        @MeanDamping double d) {
             this.dao = dao;
             damping = d;
@@ -93,7 +93,7 @@ public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
              */
             final double globalMean;
             final ImmutableSparseVector itemMeanOffsets;
-            Cursor<Rating> ratings = dao.getEvents(Rating.class);
+            Cursor<Rating> ratings = dao.streamEvents(Rating.class);
             try {
                 IdMeanAccumulator accum = new IdMeanAccumulator();
                 for (Rating r: ratings.fast()) {
@@ -110,7 +110,7 @@ public class ItemUserMeanPredictor extends AbstractBaselinePredictor {
 
             // Pass 2: compute user offsets
             ImmutableSparseVector userMeanOffsets;
-            ratings = dao.getEvents(Rating.class);
+            ratings = dao.streamEvents(Rating.class);
             try {
                 // accumulate the user's offsets from item means
                 IdMeanAccumulator uAccum = new IdMeanAccumulator();

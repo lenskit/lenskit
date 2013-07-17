@@ -27,7 +27,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.util.IdMeanAccumulator;
@@ -63,7 +63,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
      */
     public static class Builder implements Provider<ItemMeanPredictor> {
         private double damping = 0;
-        private DataAccessObject dao;
+        private EventDAO dao;
 
         /**
          * Construct a new provider.
@@ -73,7 +73,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
          *                global mean.
          */
         @Inject
-        public Builder(@Transient DataAccessObject dao,
+        public Builder(@Transient EventDAO dao,
                        @MeanDamping double damping) {
             this.dao = dao;
             this.damping = damping;
@@ -84,7 +84,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
             final ImmutableSparseVector itemMeans;
             final double globalMean;
 
-            Cursor<Rating> ratings = dao.getEvents(Rating.class);
+            Cursor<Rating> ratings = dao.streamEvents(Rating.class);
             try {
                 IdMeanAccumulator accum = new IdMeanAccumulator();
                 for (Rating r: ratings.fast()) {

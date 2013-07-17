@@ -29,7 +29,7 @@ import javax.annotation.Nonnull;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -45,14 +45,14 @@ public abstract class AbstractItemScorer implements ItemScorer {
      * The DAO passed to the constructor.
      */
     @Nonnull
-    protected final DataAccessObject dao;
+    protected final UserEventDAO dao;
 
     /**
      * Initialize the abstract item scorer.
      *
      * @param dao The data access object to use for retrieving histories.
      */
-    protected AbstractItemScorer(@Nonnull DataAccessObject dao) {
+    protected AbstractItemScorer(@Nonnull UserEventDAO dao) {
         this.dao = dao;
     }
 
@@ -64,7 +64,7 @@ public abstract class AbstractItemScorer implements ItemScorer {
      * @return The event history for this user.
      */
     protected UserHistory<? extends Event> getUserHistory(long user) {
-        return dao.getUserHistory(user);
+        return dao.getEventsForUser(user);
     }
 
     /**

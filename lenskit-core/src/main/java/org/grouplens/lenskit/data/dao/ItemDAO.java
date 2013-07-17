@@ -20,28 +20,20 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-/**
- * Factory to create new DAOs. This is used when something needs to be able to
- * create DAOs at will.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @compat Public
- */
-public interface DAOFactory {
-    /**
-     * Create a new DAO.
-     *
-     * @return A new DAO. The caller is responsible for closing it.
-     */
-    DataAccessObject create();
+import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 
+/**
+ * DAO for items. The base interface only exposes the set of item IDs.
+ *
+ * @since 1.3
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
+@DefaultImplementation(StreamingItemDAO.class)
+public interface ItemDAO {
     /**
-     * Create a snapshot DAO. Snapshot DAOs provide access to an immutable
-     * snapshot of data for use in recommender training/building.
-     * {@link LenskitRecommenderEngineFactory} uses a snapshot DAO in to build
-     * recommenders, and a normal DAO to create sessions.
-     *
-     * @return A snapshotted DAO. The caller is responsible for closing it.
+     * Get all known item IDs.
+     * @return The set of known item IDs.
      */
-    DataAccessObject snapshot();
+    LongSet getItemIds();
 }

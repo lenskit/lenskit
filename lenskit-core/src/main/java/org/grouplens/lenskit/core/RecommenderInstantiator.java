@@ -33,7 +33,6 @@ import org.grouplens.grapht.spi.Desire;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,14 +55,8 @@ public final class RecommenderInstantiator {
         return new RecommenderInstantiator(spi, g);
     }
 
-    public static RecommenderInstantiator forConfig(LenskitConfiguration config,
-                                                    Class<? extends DataAccessObject> daoType) throws RecommenderConfigurationException {
-        return new RecommenderInstantiator(config.getSPI(), config.buildGraph(daoType));
-    }
-
-    public static RecommenderInstantiator forConfig(LenskitConfiguration config,
-                                                    DataAccessObject dao) throws RecommenderConfigurationException {
-        return new RecommenderInstantiator(config.getSPI(), config.buildGraph(dao));
+    public static RecommenderInstantiator forConfig(LenskitConfiguration config) throws RecommenderConfigurationException {
+        return new RecommenderInstantiator(config.getSPI(), config.buildGraph());
     }
 
     private RecommenderInstantiator(InjectSPI spi, Graph g) {
@@ -84,7 +77,7 @@ public final class RecommenderInstantiator {
     /**
      * Instantiate the recommender graph.  This requires the graph to have been resolved with a real
      * DAO instance, not just a class, if anything references the DAO.  Use {@link
-     * LenskitConfiguration#buildGraph(org.grouplens.lenskit.data.dao.DataAccessObject)} to get such
+     * LenskitConfiguration#buildGraph()} to get such
      * a graph.
      *
      * @return A new instantiated recommender graph.

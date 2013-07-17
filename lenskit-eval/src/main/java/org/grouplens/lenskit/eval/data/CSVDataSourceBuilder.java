@@ -23,7 +23,6 @@ package org.grouplens.lenskit.eval.data;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 
 import javax.annotation.Nonnull;

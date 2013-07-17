@@ -26,8 +26,6 @@ import com.google.common.io.Closer;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitRecommender;
-import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.util.LogContext;

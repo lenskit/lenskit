@@ -18,32 +18,41 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-/**
- *
- */
 package org.grouplens.lenskit.data.dao;
 
+import org.grouplens.grapht.annotation.DefaultImplementation;
+import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.UserHistory;
+
 /**
- * Exception thrown when a data source receives an unsupported query.
+ * DAO to retrieve events by user.
  *
+ * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @compat Public
  */
-public class UnsupportedQueryException extends IllegalArgumentException {
-    private static final long serialVersionUID = -1340119072527578247L;
+@DefaultImplementation(StreamingUserEventDAO.class)
+public interface UserEventDAO {
+    /**
+     * Stream events grouped by user.
+     *
+     * @return A cursor of user histories.
+     */
+    Cursor<UserHistory<Event>> streamEventsByUser();
 
     /**
-     * Create a new exception.
+     * Get the events for a specific user.
+     * @param user The user ID.
+     * @return The user's history, or {@code null} if the user is unknown.
      */
-    public UnsupportedQueryException() {
-    }
+    UserHistory<Event> getEventsForUser(long user);
 
     /**
-     * Create a new exception with a message.
-     * @param message The error description.
+     * Get the events for a specific user, filtering by type.
+     *
+     * @param user The user ID.
+     * @param type The type of events to retrieve.
+     * @return The user's history, or {@code null} if the user is unknown.
      */
-    public UnsupportedQueryException(String message) {
-        super(message);
-    }
-
+    <E extends Event> UserHistory<E> getEventsForUser(long user, Class<E> type);
 }

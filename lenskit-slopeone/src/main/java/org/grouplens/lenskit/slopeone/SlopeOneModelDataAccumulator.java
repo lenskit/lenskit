@@ -23,7 +23,6 @@ package org.grouplens.lenskit.slopeone;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.vectors.*;
 
 import java.util.Map;

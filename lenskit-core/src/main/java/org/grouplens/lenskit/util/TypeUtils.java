@@ -49,7 +49,8 @@ public class TypeUtils {
      * resulting set is the set of all subclasses of {@var parent} such that
      * there exists some object in {@var objects} assignable to one of them.
      *
-     * @param objects A collection of objects.
+     * @param objects A collection of objects.  This iterable may be fast (returning a modified
+     *                version of the same object).
      * @param parent  The parent type of interest.
      * @return The set of types applicable to objects in {@var objects}.
      */
@@ -159,5 +160,20 @@ public class TypeUtils {
      */
     public static Function<Object, Class<?>> extractClass(boolean acceptNull) {
         return extractClass(Object.class, acceptNull);
+    }
+
+    /**
+     * A predicate that accepts classes which are subtypes of (assignable to) the parent class.
+     * @param parent The parent class.
+     * @return A predicate that returns {@code true} when applied to a subtype of {@code parent}.
+     *         That is, it implements {@code paret.isAssignableFrom(type)}.
+     */
+    public static Predicate<Class<?>> subtypePredicate(final Class<?> parent) {
+        return new Predicate<Class<?>>() {
+            @Override
+            public boolean apply(@Nullable Class<?> input) {
+                return parent.isAssignableFrom(input);
+            }
+        };
     }
 }

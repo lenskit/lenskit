@@ -26,7 +26,7 @@ import org.grouplens.lenskit.baseline.MeanDamping;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -69,7 +69,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
      */
     public static class Builder implements Provider<MeanVarianceNormalizer> {
         private final double damping;
-        private final DataAccessObject dao;
+        private final EventDAO dao;
 
         /**
          * Create a new mean-variance normalizer builder.
@@ -79,7 +79,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
          *            additional {@var d} ratings that are equal to the global mean.
          */
         @Inject
-        public Builder(@Transient DataAccessObject dao,
+        public Builder(@Transient EventDAO dao,
                        @MeanDamping double d) {
             this.dao = dao;
             damping = d;
@@ -92,7 +92,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
             if (damping != 0) {
                 double sum = 0;
 
-                Cursor<Rating> ratings = dao.getEvents(Rating.class);
+                Cursor<Rating> ratings = dao.streamEvents(Rating.class);
                 int numRatings = 0;
                 for (Rating r : ratings.fast()) {
                     Preference p = r.getPreference();
@@ -104,7 +104,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
                 ratings.close();
                 final double mean = sum / numRatings;
 
-                ratings = dao.getEvents(Rating.class);
+                ratings = dao.streamEvents(Rating.class);
                 sum = 0;
 
                 for (Rating r : ratings.fast()) {

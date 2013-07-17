@@ -25,7 +25,7 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
@@ -57,7 +57,7 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
     private final PreferenceDomain preferenceDomain;
 
     @Inject
-    public SimpleRatingPredictor(DataAccessObject dao, ItemScorer scorer,
+    public SimpleRatingPredictor(UserEventDAO dao, ItemScorer scorer,
                                  @Nullable BaselinePredictor baseline,
                                  @Nullable PreferenceDomain domain) {
         // TODO Make abstract rating predictors & item scorers not need the DAO
@@ -123,13 +123,13 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
      * the default provider for {@link RatingPredictor}
      */
     public static class Provider implements javax.inject.Provider<RatingPredictor> {
-        private final DataAccessObject dao;
+        private final UserEventDAO dao;
         private final ItemScorer scorer;
         private final BaselinePredictor baseline;
         private final PreferenceDomain domain;
 
         @Inject
-        public Provider(DataAccessObject dao,
+        public Provider(UserEventDAO dao,
                         @Nullable ItemScorer s,
                         @Nullable BaselinePredictor bp,
                         @Nullable PreferenceDomain dom) {

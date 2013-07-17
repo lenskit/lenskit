@@ -29,8 +29,7 @@ import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
@@ -62,10 +61,10 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
      * DataAccessObject.
      */
     public static class Provider implements javax.inject.Provider<PackedPreferenceSnapshot> {
-        private final DataAccessObject dao;
+        private final EventDAO dao;
 
         @Inject
-        public Provider(@Transient DataAccessObject dao) {
+        public Provider(@Transient EventDAO dao) {
             this.dao = dao;
         }
 
@@ -82,7 +81,7 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
 
             // Since we iterate in timestamp order, we can just overwrite
             // old data for a user-item pair with new data.
-            Cursor<Rating> ratings = dao.getEvents(Rating.class, SortOrder.TIMESTAMP);
+            Cursor<Rating> ratings = dao.streamEvents(Rating.class, SortOrder.TIMESTAMP);
             try {
                 for (Rating r : ratings.fast()) {
                     final long user = r.getUserId();
@@ -129,7 +128,7 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
         }
     }
 
-    public static PreferenceSnapshot pack(DataAccessObject dao) {
+    public static PreferenceSnapshot pack(EventDAO dao) {
         Provider p = new Provider(dao);
         return p.get();
     }

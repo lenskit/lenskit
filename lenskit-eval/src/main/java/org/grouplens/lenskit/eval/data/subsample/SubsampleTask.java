@@ -27,8 +27,6 @@ import java.io.IOException;
 import javax.annotation.Nullable;
 
 import com.google.common.io.Closer;
-import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.data.CSVDataSourceBuilder;

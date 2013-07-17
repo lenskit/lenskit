@@ -24,7 +24,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.dao.SortOrder;
-import org.grouplens.lenskit.data.dao.UnsupportedQueryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -234,7 +233,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
             }
             break;
         default:
-            throw new UnsupportedQueryException();
+            throw new IllegalArgumentException("unknown sort order " + order);
         }
     }
 
@@ -274,6 +273,17 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
         query.append(" WHERE ").append(itemColumn).append(" = ?");
         rqFinish(query);
         logger.debug("Item rating query: {}", query);
+        return query.toString();
+    }
+
+    @Override
+    public String prepareItemUsers() {
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT DISTINCT ").append(userColumn)
+             .append(" FROM ").append(tableName)
+             .append(" WHERE ").append(itemColumn).append(" = ?");
+        rqFinish(query);
+        logger.debug("Item user query: {}", query);
         return query.toString();
     }
 }

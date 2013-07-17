@@ -24,7 +24,7 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.basic.AbstractRatingPredictor;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
@@ -46,7 +46,7 @@ public class QuantizedRatingPredictor extends AbstractRatingPredictor implements
      * @param q The quantizer.
      */
     @Inject
-    public QuantizedRatingPredictor(DataAccessObject dao, RatingPredictor base, Quantizer q) {
+    public QuantizedRatingPredictor(UserEventDAO dao, RatingPredictor base, Quantizer q) {
         super(dao);
         basePredictor = base;
         quantizer = q;

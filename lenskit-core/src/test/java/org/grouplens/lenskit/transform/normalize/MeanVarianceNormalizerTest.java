@@ -20,13 +20,12 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +40,7 @@ public class MeanVarianceNormalizerTest {
     private final static double MIN_DOUBLE_PRECISION = 0.00001;
     private int eid = 0;
 
-    private DataAccessObject dao;
+    private EventDAO dao;
     private ImmutableSparseVector userRatings;
     private ImmutableSparseVector uniformUserRatings;
 
@@ -72,12 +71,7 @@ public class MeanVarianceNormalizerTest {
         addRating(ratings, 1, 4, 3);
         addRating(ratings, 1, 5, 3);
         addRating(ratings, 1, 6, 3);
-        dao = new EventCollectionDAO.Factory(ratings).create();
-    }
-
-    @After
-    public void close() {
-        dao.close();
+        dao = new EventCollectionDAO(ratings);
     }
 
     @Test

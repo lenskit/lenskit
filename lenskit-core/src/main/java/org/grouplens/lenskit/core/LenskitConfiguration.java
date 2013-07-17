@@ -28,7 +28,6 @@ import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.spi.CachePolicy;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.lenskit.*;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -40,7 +39,7 @@ import static org.grouplens.lenskit.core.ContextWrapper.coerce;
 
 /**
  * A LensKit algorithm configuration.  Once you have a configuration, you can pass it to
- * {@link LenskitRecommenderEngine#build(org.grouplens.lenskit.data.dao.DAOFactory, LenskitConfiguration)}
+ * {@link LenskitRecommenderEngine#build(LenskitConfiguration)}
  * to build a recommender engine.
  *
  * @since 1.2
@@ -161,52 +160,11 @@ public class LenskitConfiguration extends AbstractConfigContext {
      * Get a mockup of the full recommender graph. This fully resolves the graph so that
      * it can be analyzed, but does not create any objects.
      *
-     * @param daoType The type of the DAO (so resolution can be successful in the face of
-     *                dependencies on DAO subtypes).
-     * @return The full graph.
-     */
-    public Graph buildGraph(Class<? extends DataAccessObject> daoType) throws RecommenderConfigurationException {
-        BindingFunctionBuilder cfg = bindings.clone();
-        if (daoType == null) {
-            cfg.getRootContext().bind(DataAccessObject.class).toNull();
-        } else {
-            cfg.getRootContext().bind(DataAccessObject.class).to(daoType);
-            cfg.getRootContext().bind(daoType).toNull();
-        }
-        try {
-            return resolveGraph(cfg);
-        } catch (SolverException e) {
-            throw new RecommenderConfigurationException("Cannot resolve configuration graph", e);
-        }
-    }
-
-    /**
-     * Get a mockup of the full recommender graph. This fully resolves the graph so that
-     * it can be analyzed, but does not create any objects.  Use {@link #buildGraph(Class)} if your
-     * configuration depends on a custom DAO subclass.
-     *
      * @return The full graph.
      */
     public Graph buildGraph() throws RecommenderConfigurationException {
-        return buildGraph(DataAccessObject.class);
-    }
-
-    /**
-     * Get the full recommender graph with a live DAO.  This does not instantiate any other nodes.
-     *
-     * @param dao The DAO object.
-     * @return The full configuration graph with the live DAO in place.
-     */
-    public Graph buildGraph(DataAccessObject dao) throws RecommenderConfigurationException {
-        BindingFunctionBuilder cfg = bindings.clone();
-        if (dao == null) {
-            cfg.getRootContext().bind(DataAccessObject.class).toNull();
-        } else {
-            cfg.getRootContext().bind(DataAccessObject.class).to(dao);
-        }
-
         try {
-            return resolveGraph(cfg);
+            return resolveGraph(bindings);
         } catch (SolverException e) {
             throw new RecommenderConfigurationException("Cannot resolve configuration graph", e);
         }

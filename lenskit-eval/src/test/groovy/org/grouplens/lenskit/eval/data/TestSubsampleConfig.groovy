@@ -32,8 +32,7 @@ import org.grouplens.lenskit.eval.data.subsample.SubsampleMode
 import org.junit.Before
 import org.junit.After
 import org.grouplens.lenskit.cursors.Cursors
-import org.grouplens.lenskit.data.dao.DAOFactory
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;

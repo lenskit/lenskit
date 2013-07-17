@@ -25,7 +25,6 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;

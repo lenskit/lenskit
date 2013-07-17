@@ -31,7 +31,7 @@ import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 
 
 /**
@@ -43,14 +43,14 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
     /**
      * The DAO provided at construct time.
      */
-    protected final DataAccessObject dao;
+    protected final UserEventDAO dao;
 
     /**
      * Initialize the recommender.
      *
      * @param dao The DAO.
      */
-    protected AbstractItemRecommender(DataAccessObject dao) {
+    protected AbstractItemRecommender(UserEventDAO dao) {
         this.dao = dao;
     }
 
@@ -172,7 +172,7 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
      * @return The history for the specified user.
      */
     protected UserHistory<? extends Event> getUserHistory(long user) {
-        return dao.getUserHistory(user);
+        return dao.getEventsForUser(user);
     }
 
     /**

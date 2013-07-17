@@ -22,7 +22,6 @@ package org.grouplens.lenskit.eval.data.traintest;
 
 import java.util.Map;
 
-import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.script.BuiltBy;
 

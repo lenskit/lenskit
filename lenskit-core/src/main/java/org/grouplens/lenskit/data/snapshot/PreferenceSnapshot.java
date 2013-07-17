@@ -23,7 +23,6 @@ package org.grouplens.lenskit.data.snapshot;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.util.Index;
 import org.grouplens.lenskit.vectors.SparseVector;

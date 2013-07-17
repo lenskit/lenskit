@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.core;
 
-import com.sun.org.apache.bcel.internal.generic.LREM;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
@@ -37,8 +36,8 @@ import org.grouplens.lenskit.baseline.GlobalMeanPredictor;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.iterative.StoppingThreshold;
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition;
 import org.junit.Before;
@@ -56,18 +55,18 @@ import static org.junit.Assert.assertThat;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class LenskitRecommenderEngineTest {
-    private DAOFactory daoFactory;
+    private EventDAO dao;
 
     @Before
     public void setup() {
-        daoFactory = new EventCollectionDAO.Factory(Collections.<Event>emptyList());
+        dao = new EventCollectionDAO(Collections.<Event>emptyList());
     }
 
     @Test
     public void testBasicRec() throws RecommenderBuildException {
         LenskitConfiguration config = configureBasicRecommender();
 
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         verifyBasicRecommender(engine);
     }
 
@@ -79,6 +78,8 @@ public class LenskitRecommenderEngineTest {
               .to(TopNItemRecommender.class);
         config.bind(BaselinePredictor.class)
               .to(ConstantPredictor.class);
+        config.bind(EventDAO.class)
+              .to(dao);
         return config;
     }
 
@@ -107,7 +108,7 @@ public class LenskitRecommenderEngineTest {
               .to(ConstantPredictor.class);
         config.addRoot(BaselinePredictor.class);
 
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         LenskitRecommender rec = engine.open();
         try {
             assertThat(rec.get(BaselinePredictor.class),
@@ -125,7 +126,7 @@ public class LenskitRecommenderEngineTest {
         config.bind(ItemScorer.class)
               .to(BaselineItemScorer.class);
 
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
 
         LenskitRecommender rec1 = engine.open();
         LenskitRecommender rec2 = engine.open();
@@ -158,7 +159,7 @@ public class LenskitRecommenderEngineTest {
         LenskitConfiguration config = new LenskitConfiguration();
         config.set(StoppingThreshold.class).to(0.042);
         config.addRoot(ThresholdStoppingCondition.class);
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         LenskitRecommender rec = engine.open();
         ThresholdStoppingCondition stop = rec.get(ThresholdStoppingCondition.class);
         assertThat(stop, notNullValue());
@@ -186,7 +187,7 @@ public class LenskitRecommenderEngineTest {
     public void testBasicNoInstance() throws RecommenderBuildException, IOException, ClassNotFoundException {
         LenskitConfiguration config = configureBasicRecommender();
 
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
 
         Graph g = engine.getDependencies();
         // make sure we have no record of an instance dao
@@ -205,11 +206,11 @@ public class LenskitRecommenderEngineTest {
     public void testSerialize() throws RecommenderBuildException, IOException, ClassNotFoundException {
         LenskitConfiguration config = configureBasicRecommender();
 
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         File tfile = File.createTempFile("lenskit", "engine");
         try {
             engine.write(tfile);
-            LenskitRecommenderEngine e2 = LenskitRecommenderEngine.load(daoFactory, tfile);
+            LenskitRecommenderEngine e2 = LenskitRecommenderEngine.load(tfile);
             verifyBasicRecommender(e2);
         } finally {
             tfile.delete();
@@ -223,7 +224,7 @@ public class LenskitRecommenderEngineTest {
     public void testSubclassedDAO() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration();
         config.addRoot(SubclassedDAODepComponent.class);
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         LenskitRecommender rec = engine.open();
         try {
             SubclassedDAODepComponent dep = rec.get(SubclassedDAODepComponent.class);

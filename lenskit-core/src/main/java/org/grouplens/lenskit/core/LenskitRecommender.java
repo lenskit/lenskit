@@ -27,37 +27,30 @@ import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 /**
  * Recommender implementation built on LensKit containers.  Recommenders built
- * with {@link LenskitRecommenderEngineFactory} will produce this type of
+ * with {@link LenskitRecommenderEngine} will produce this type of
  * recommender.
  *
  * <p>The {@link Recommender} interface will meet most needs, so most users can
  * ignore this class.  However, if you need to inspect internal components of a
  * recommender (e.g. extract the item-item similarity matrix), this class and its
- * {@link #getComponent(Class)} method can be useful.
+ * {@link #get(Class)} method can be useful.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public class LenskitRecommender implements Recommender {
     private final Injector injector;
-    private final DataAccessObject dao;
-    private final boolean shouldCloseDao;
 
     /**
      * Create a new LensKit recommender.
      *
-     * @param injector       The injector housing this recommender's configuration.
-     * @param dao            The DAO backing this recommender session.
-     * @param shouldCloseDao Whether the session should close the DAO.
+     * @param injector The injector housing this recommender's configuration.
      */
-    public LenskitRecommender(Injector injector, DataAccessObject dao, boolean shouldCloseDao) {
+    public LenskitRecommender(Injector injector) {
         this.injector = injector;
-        this.dao = dao;
-        this.shouldCloseDao = shouldCloseDao;
     }
 
     /**
@@ -90,32 +83,7 @@ public class LenskitRecommender implements Recommender {
     }
 
     @Override
-    public void close() {
-        if (shouldCloseDao) {
-            dao.close();
-        }
-    }
-
-    /**
-     * Get the DAO for this recommender session.
-     *
-     * @return The DAO, or {@var null} if this recommender is not connected
-     *         to a DAO.  All LensKit recommenders are connected to DAOs; recommenders
-     *         from other frameworks that are adapted to the LensKit API may not be.
-     */
-    public DataAccessObject getDataAccessObject() {
-        return dao;
-    }
-
-    /**
-     * Get the DAO.
-     * @return The DAO.
-     * @deprecated Use {@link #getDataAccessObject()}.
-     */
-    @Deprecated
-    public DataAccessObject getRatingDataAccessObject() {
-        return dao;
-    }
+    public void close() {}
 
     @Override
     public ItemRecommender getItemRecommender() {

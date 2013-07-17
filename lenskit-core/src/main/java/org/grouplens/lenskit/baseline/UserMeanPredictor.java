@@ -24,7 +24,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.util.IdMeanAccumulator;
@@ -61,7 +61,7 @@ public class UserMeanPredictor extends AbstractBaselinePredictor {
      */
     public static class Builder implements Provider<UserMeanPredictor> {
         private double damping = 0;
-        private DataAccessObject dao;
+        private EventDAO dao;
 
         /**
          * Create a new user mean predictor.
@@ -70,7 +70,7 @@ public class UserMeanPredictor extends AbstractBaselinePredictor {
          * @param damping The damping term.
          */
         @Inject
-        public Builder(@Transient DataAccessObject dao,
+        public Builder(@Transient EventDAO dao,
                        @MeanDamping double damping) {
             this.dao = dao;
             this.damping = damping;
@@ -84,7 +84,7 @@ public class UserMeanPredictor extends AbstractBaselinePredictor {
 
             final ImmutableSparseVector userMeans;
             final double mean;
-            Cursor<Rating> cur = dao.getEvents(Rating.class);
+            Cursor<Rating> cur = dao.streamEvents(Rating.class);
             try {
                 IdMeanAccumulator accum = new IdMeanAccumulator();
                 // TODO Make this work properly with multiple ratings

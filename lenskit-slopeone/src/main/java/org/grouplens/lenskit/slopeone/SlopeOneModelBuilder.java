@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.slopeone;
 
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.knn.item.model.ItemItemBuildContext;
 import org.grouplens.lenskit.knn.item.model.ItemItemBuildContextFactory;
 

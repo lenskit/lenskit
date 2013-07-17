@@ -23,8 +23,6 @@ package org.grouplens.lenskit.eval.data;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
 import org.grouplens.lenskit.data.event.Rating;

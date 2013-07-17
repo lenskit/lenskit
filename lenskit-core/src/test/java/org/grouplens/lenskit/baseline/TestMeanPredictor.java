@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
@@ -53,7 +52,7 @@ import org.junit.Test;
  */
 public class TestMeanPredictor {
     private static final double RATINGS_DAT_MEAN = 3.75;
-    private DataAccessObject dao;
+    private EventCollectionDAO dao;
 
     @Before
     public void createRatingSource() {
@@ -63,12 +62,7 @@ public class TestMeanPredictor {
         rs.add(new SimpleRating(3, 8, 4, 5));
         rs.add(new SimpleRating(4, 8, 5, 4));
 
-        dao = new EventCollectionDAO.Factory(rs).create();
-    }
-
-    @After
-    public void closeRatingSession() {
-        dao.close();
+        dao = new EventCollectionDAO(rs);
     }
 
     LongSortedSet itemSet(long item) {

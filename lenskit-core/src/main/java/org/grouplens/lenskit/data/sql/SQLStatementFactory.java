@@ -22,7 +22,6 @@ package org.grouplens.lenskit.data.sql;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.SortOrder;
 
 /**
@@ -37,7 +36,7 @@ import org.grouplens.lenskit.data.dao.SortOrder;
 @Immutable
 public interface SQLStatementFactory {
     /**
-     * Prepare a statement to satisfy {@link DataAccessObject#getUsers()}.
+     * Prepare a statement to satisfy {@link org.grouplens.lenskit.data.dao.UserDAO#getUserIds()}.
      * Querying the statement should return one column per row containing the
      * numeric user ID.
      *
@@ -56,7 +55,7 @@ public interface SQLStatementFactory {
     String prepareUserCount();
 
     /**
-     * Prepare a statement to satisfy {@link DataAccessObject#getItems()}.
+     * Prepare a statement to satisfy {@link org.grouplens.lenskit.data.dao.ItemDAO#getItemIds()}.
      * Querying the statement should return one column per row containing the
      * numeric item ID.
      *
@@ -75,7 +74,7 @@ public interface SQLStatementFactory {
 
     /**
      * Prepare a statement to satisfy
-     * {@link DataAccessObject#getEvents(SortOrder)}. Each row should contain
+     * {@link org.grouplens.lenskit.data.dao.EventDAO#streamEvents(Class, SortOrder)}. Each row should contain
      * four or five columns: the event ID, the user ID, the item ID, the rating,
      * and (optionally) the timestamp. The timestamp column is allowed to
      * contain NULL values or to be omitted entirely. ID, user, item, and rating
@@ -87,8 +86,8 @@ public interface SQLStatementFactory {
 
     /**
      * Prepare a statement to satisfy
-     * {@link DataAccessObject#getUserEvents(long)}. The returned rows should be
-     * as in {@link #prepareEvents(Connection, SortOrder)}, and the prepared
+     * {@link org.grouplens.lenskit.data.dao.UserEventDAO#getEventsForUser(long)}. The returned rows should be
+     * as in {@link #prepareEvents(SortOrder)}, and the prepared
      * statement should take a single parameter for the user ID.
      *
      * @return A string for a sql query returning user rating data. The ratings
@@ -97,13 +96,22 @@ public interface SQLStatementFactory {
     String prepareUserEvents();
 
     /**
-     * Prepare a statement to satisfy
-     * {@link DataAccessObject#getItemEvents(long)}. The returned rows should be
-     * as in {@link #prepareEvents(Connection, SortOrder)}, and the prepared
+     * Prepare a statement to satisfy {@link org.grouplens.lenskit.data.dao.ItemEventDAO#getEventsForItem(long)}.
+     * The returned rows should be as in {@link #prepareEvents(SortOrder)}, and the prepared
      * statement should take a single parameter for the item ID.
      *
-     * @return A string for a sql query returning item rating data. The ratings
-     *         must be ordered first by user ID, then by timestamp.
+     * @return A string for a sql query returning item rating data. The ratings must be ordered
+     *         first by user ID, then by timestamp.
      */
     String prepareItemEvents();
+
+    /**
+     * Prepare a statement to satisfy {@link org.grouplens.lenskit.data.dao.ItemEventDAO#getUsersForItem(long)}.
+     * The returned rows should each contain a user ID as their only column, and the statement
+     * should take a single parameter for the item ID.
+     *
+     * @return A string for a sql query returning item rating data. The ratings must be ordered
+     *         first by user ID, then by timestamp.
+     */
+    String prepareItemUsers();
 }
