@@ -83,8 +83,8 @@ public final class RecommenderInstantiator {
      * @return A new instantiated recommender graph.
      * @throws RecommenderBuildException If there is an error instantiating the graph.
      */
-    public Graph instantiate() throws RecommenderBuildException {
-        final StaticInjector injector = new StaticInjector(spi, graph);
+    public Graph instantiate(SymbolMapping map) throws RecommenderBuildException {
+        final StaticInjector injector = new StaticInjector(spi, graph, null, map);
         return replaceShareableNodes(new Function<Node, Node>() {
             @Nullable
             @Override

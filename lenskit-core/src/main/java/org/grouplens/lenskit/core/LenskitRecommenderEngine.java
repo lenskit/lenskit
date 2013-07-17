@@ -30,6 +30,7 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.RecommenderEngine;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.*;
 
 /**
@@ -46,14 +47,16 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     private final Node rootNode;
 
     private final InjectSPI spi;
+    private SymbolMapping symbolMapping;
 
-    LenskitRecommenderEngine(Graph dependencies, InjectSPI spi) {
+    LenskitRecommenderEngine(Graph dependencies, InjectSPI spi, @Nonnull SymbolMapping map) {
         Preconditions.checkArgument(spi instanceof ReflectionInjectSPI,
                                     "SPI must be a reflection SPI");
         this.dependencies = dependencies;
         this.spi = spi;
 
         rootNode = dependencies.getNode(null);
+        symbolMapping = map;
     }
 
     /**
@@ -92,7 +95,8 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
         ObjectInputStream in = new ObjectInputStream(input);
         try {
             Graph dependencies = (Graph) in.readObject();
-            return new LenskitRecommenderEngine(dependencies, spi);
+            SymbolMapping map = (SymbolMapping) in.readObject();
+            return new LenskitRecommenderEngine(dependencies, spi, map);
         } catch (ClassNotFoundException e) {
             throw new RecommenderConfigurationException(e);
         } finally {
@@ -133,15 +137,46 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
         ObjectOutputStream out = new ObjectOutputStream(stream);
         try {
             out.writeObject(dependencies);
+            out.writeObject(symbolMapping);
         } finally {
             out.close();
         }
     }
 
+    /**
+     * Get the current symbol mapping for this engine.
+     * @return The symbol mapping for the recommnder engine.
+     */
+    public SymbolMapping getSymbolMapping() {
+        return symbolMapping;
+    }
+
+    /**
+     * Set the symbol mapping to be used by this engine.  This should be set to {@code null} before
+     * serializing a recommender.
+     *
+     * @param mapping The symbol mapping.
+     */
+    public void setSymbolMapping(@Nullable SymbolMapping mapping) {
+        if (mapping == null) {
+            symbolMapping = SymbolMapping.empty();
+        } else {
+            symbolMapping = mapping;
+        }
+    }
+
     @Override
     public LenskitRecommender createRecommender() {
-        // Set up a session graph with the DAO node
-        Injector inj = new StaticInjector(spi, dependencies, rootNode);
+        return createRecommender(symbolMapping);
+    }
+
+    /**
+     * Construct a recommender with a specified symbol mapping.
+     * @param map The symbol mapping to use. This overrides {@link #getSymbolMapping()}.
+     * @return The recommender.
+     */
+    public LenskitRecommender createRecommender(SymbolMapping map) {
+        Injector inj = new StaticInjector(spi, dependencies, rootNode, map);
         return new LenskitRecommender(inj);
     }
 
@@ -159,11 +194,28 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * independent of any subsequent modifications to the configuration.
      *
      * @param config     The configuration.
+     * @param map The symbol mapping to use for the engine build.  Once the engine is built, this
+     *            also its {@linkplain #setSymbolMapping(SymbolMapping) symbol mapping}; you might
+     *            want to change that if you're going to serialize.
+     * @return The recommender engine.
+     */
+    public static LenskitRecommenderEngine build(LenskitConfiguration config, SymbolMapping map) throws RecommenderBuildException {
+        if (map == null) {
+            map = SymbolMapping.empty();
+        }
+        Graph graph = RecommenderInstantiator.forConfig(config).instantiate(map);
+        return new LenskitRecommenderEngine(graph, config.getSPI(), map);
+    }
+
+    /**
+     * Build a LensKit recommender engine from a configuration.  The resulting recommender is
+     * independent of any subsequent modifications to the configuration.  The recommender is built
+     * without a symbol mapping.
+     *
+     * @param config     The configuration.
      * @return The recommender engine.
      */
     public static LenskitRecommenderEngine build(LenskitConfiguration config) throws RecommenderBuildException {
-        Graph graph = RecommenderInstantiator.forConfig(config).instantiate();
-//        Node daoNode = GraphtUtils.replaceDAONode(config.getSPI(), graph);
-        return new LenskitRecommenderEngine(graph, config.getSPI());
+        return build(config, SymbolMapping.empty());
     }
 }

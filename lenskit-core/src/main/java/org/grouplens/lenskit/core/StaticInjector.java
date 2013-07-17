@@ -26,6 +26,7 @@ import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.*;
 import org.grouplens.grapht.util.MemoizingProvider;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
@@ -41,6 +42,7 @@ class StaticInjector implements Injector {
     private Graph graph;
     private Node root;
     private Map<Node, Provider<?>> providerCache;
+    private final SymbolMapping symbolMapping;
 
     /**
      * Create a new static injector. The node labelled with
@@ -61,10 +63,23 @@ class StaticInjector implements Injector {
      * @param rt  The root node.
      */
     public StaticInjector(InjectSPI spi, Graph g, Node rt) {
+        this(spi, g, rt, SymbolMapping.empty());
+    }
+
+    /**
+     * Create a new static injector with a specified root node and symbol mapping.
+     *
+     * @param spi The inject SPI.
+     * @param g   The object graph.
+     * @param rt  The root node.
+     * @param map The symbol mapping.
+     */
+    public StaticInjector(InjectSPI spi, Graph g, Node rt, SymbolMapping map) {
         this.spi = spi;
         graph = g;
         root = rt;
         providerCache = new HashMap<Node, Provider<?>>();
+        symbolMapping = map;
     }
 
     @Override
@@ -133,18 +148,25 @@ class StaticInjector implements Injector {
         if (provider == null) {
             CachedSatisfaction lbl = node.getLabel();
             assert lbl != null;
-            Provider<?> np = lbl.getSatisfaction().makeProvider(new DepSrc(node));
+            provider = lbl.getSatisfaction().makeProvider(new DepSrc(node));
             CachePolicy pol = lbl.getCachePolicy();
             if (pol == CachePolicy.NO_PREFERENCE) {
                 pol = lbl.getSatisfaction().getDefaultCachePolicy();
             }
+            if (provider instanceof SymbolProvider) {
+                // symbol providers are placeholders, must look it up.
+                TypedSymbol<?> sym = ((SymbolProvider) provider).getSymbol();
+                provider = symbolMapping.get(sym);
+                if (provider == null) {
+                    throw new RuntimeException("no provider found for " + sym);
+                }
+            }
             switch (pol) {
             case NEW_INSTANCE:
-                provider = np;
                 break;
             default:
                 // TODO allow default policy to be specified
-                provider = new MemoizingProvider(np);
+                provider = new MemoizingProvider(provider);
                 break;
             }
             providerCache.put(node, provider);
