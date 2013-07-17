@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
@@ -50,7 +51,7 @@ import javax.inject.Inject;
 public class FunkSVDItemScorer extends AbstractItemScorer {
 
     protected final FunkSVDModel model;
-    private DataAccessObject dao;
+    private UserEventDAO dao;
     private final int featureCount;
     private final ClampingFunction clamp;
 
@@ -67,7 +68,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
      *              values based on their profile when scores are requested.
      */
     @Inject
-    public FunkSVDItemScorer(DataAccessObject dao, FunkSVDModel model,
+    public FunkSVDItemScorer(UserEventDAO dao, FunkSVDModel model,
                              @Nullable @RuntimeUpdate FunkSVDUpdateRule rule) {
         super(dao);
         this.dao = dao;
@@ -136,7 +137,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
                       @Nonnull MutableSparseVector scores) {
         long user = userHistory.getUserId();
         int uidx = model.getUserIndex().getIndex(user);
-        SparseVector ratings = Ratings.userRatingVector(dao.getUserEvents(user, Rating.class));
+        SparseVector ratings = Ratings.userRatingVector(dao.getEventsForUser(user, Rating.class));
 
         MutableSparseVector estimates = initialEstimates(user, ratings, scores.keyDomain());
         // propagate estimates to the output scores

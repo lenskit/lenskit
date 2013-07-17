@@ -28,11 +28,11 @@ import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -48,7 +48,7 @@ public class TestFunkSVDRecommender {
 
     private static Recommender svdRecommender;
     private static ItemRecommender recommender;
-    private static DataAccessObject dao;
+    private static EventDAO dao;
 
     @SuppressWarnings("deprecation")
     @BeforeClass
@@ -69,17 +69,16 @@ public class TestFunkSVDRecommender {
         rs.add(Ratings.make(1, 9, 3));
         rs.add(Ratings.make(3, 9, 4));
 
-        EventCollectionDAO.Factory daoF = new EventCollectionDAO.Factory(rs);
+        dao = new EventCollectionDAO(rs);
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(PreferenceSnapshot.class).to(PackedPreferenceSnapshot.class);
         config.bind(ItemScorer.class).to(FunkSVDItemScorer.class);
         config.bind(BaselinePredictor.class).to(UserMeanPredictor.class);
         config.bind(Integer.class).withQualifier(FeatureCount.class).to(100);
         // FIXME: Don't use 100 features.
-        RecommenderEngine engine = LenskitRecommenderEngine.build(daoF, config);
+        RecommenderEngine engine = LenskitRecommenderEngine.build(config);
         svdRecommender = engine.createRecommender();
         recommender = svdRecommender.getItemRecommender();
-        dao = daoF.create();
     }
 
 
@@ -235,11 +234,5 @@ public class TestFunkSVDRecommender {
         recs = recommender.recommend(6, -1, null, exclude);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(7));
-    }
-
-    @AfterClass
-    public static void cleanUp() {
-        svdRecommender.close();
-        dao.close();
     }
 }

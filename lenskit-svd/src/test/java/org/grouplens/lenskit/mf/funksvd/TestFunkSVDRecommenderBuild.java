@@ -20,7 +20,10 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
@@ -29,8 +32,8 @@ import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
@@ -48,7 +51,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 public class TestFunkSVDRecommenderBuild {
-    private DAOFactory daoFactory;
+    private EventCollectionDAO dao;
 
     @Before
     public void setup() throws RecommenderBuildException {
@@ -58,12 +61,13 @@ public class TestFunkSVDRecommenderBuild {
         rs.add(Ratings.make(8, 4, 5));
         rs.add(Ratings.make(8, 5, 4));
 
-        daoFactory = new EventCollectionDAO.Factory(rs);
+        dao = new EventCollectionDAO(rs);
     }
 
     @SuppressWarnings({"deprecation", "unchecked"})
     private LenskitRecommenderEngine makeEngine() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(dao);
         config.bind(PreferenceSnapshot.class)
               .to(PackedPreferenceSnapshot.class);
         config.bind(ItemScorer.class)
@@ -77,7 +81,7 @@ public class TestFunkSVDRecommenderBuild {
         config.set(FeatureCount.class)
               .to(20);
 
-        return LenskitRecommenderEngine.build(daoFactory, config);
+        return LenskitRecommenderEngine.build(config);
     }
 
     @SuppressWarnings("deprecation")
@@ -86,20 +90,16 @@ public class TestFunkSVDRecommenderBuild {
         LenskitRecommenderEngine engine = makeEngine();
         Recommender rec = engine.createRecommender();
 
-        try {
-            assertThat(rec.getItemScorer(),
-                       instanceOf(FunkSVDItemScorer.class));
-            assertThat(rec.getItemRecommender(),
-                       instanceOf(TopNItemRecommender.class));
-            RatingPredictor pred = rec.getRatingPredictor();
-            assertThat(pred, instanceOf(SimpleRatingPredictor.class));
-            assertThat(((SimpleRatingPredictor) pred).getScorer(),
-                       sameInstance(rec.getItemScorer()));
-            assertThat(((FunkSVDItemScorer) rec.getItemScorer()).getUpdateRule(),
-                       nullValue());
-        } finally {
-            rec.close();
-        }
+        assertThat(rec.getItemScorer(),
+                   instanceOf(FunkSVDItemScorer.class));
+        assertThat(rec.getItemRecommender(),
+                   instanceOf(TopNItemRecommender.class));
+        RatingPredictor pred = rec.getRatingPredictor();
+        assertThat(pred, instanceOf(SimpleRatingPredictor.class));
+        assertThat(((SimpleRatingPredictor) pred).getScorer(),
+                   sameInstance(rec.getItemScorer()));
+        assertThat(((FunkSVDItemScorer) rec.getItemScorer()).getUpdateRule(),
+                   nullValue());
     }
 
     @Test
@@ -107,18 +107,14 @@ public class TestFunkSVDRecommenderBuild {
         LenskitRecommenderEngine engine = makeEngine();
         LenskitRecommender rec = engine.createRecommender();
 
-        try {
-            FunkSVDModel model = rec.get(FunkSVDModel.class);
-            assertThat(model, notNullValue());
-            assertThat(model.getFeatureInfo().size(),
-                       equalTo(20));
-            for (FeatureInfo feat: model.getFeatureInfo()) {
-                assertThat(feat.getIterCount(), equalTo(10));
-                assertThat(feat.getLastDeltaRMSE(),
-                           greaterThan(0.0));
-            }
-        } finally {
-            rec.close();
+        FunkSVDModel model = rec.get(FunkSVDModel.class);
+        assertThat(model, notNullValue());
+        assertThat(model.getFeatureInfo().size(),
+                   equalTo(20));
+        for (FeatureInfo feat: model.getFeatureInfo()) {
+            assertThat(feat.getIterCount(), equalTo(10));
+            assertThat(feat.getLastDeltaRMSE(),
+                       greaterThan(0.0));
         }
     }
 
@@ -127,22 +123,13 @@ public class TestFunkSVDRecommenderBuild {
         LenskitRecommenderEngine engine = makeEngine();
         LenskitRecommender rec1 = null;
         LenskitRecommender rec2 = null;
-        try {
-            rec1 = engine.createRecommender();
-            rec2 = engine.createRecommender();
+        rec1 = engine.createRecommender();
+        rec2 = engine.createRecommender();
 
-            assertThat(rec1.getItemScorer(),
-                       not(sameInstance(rec2.getItemScorer())));
-            assertThat(rec1.get(FunkSVDModel.class),
-                       sameInstance(rec2.get(FunkSVDModel.class)));
-        } finally {
-            if (rec2 != null) {
-                rec2.close();
-            }
-            if (rec1 != null) {
-                rec1.close();
-            }
-        }
+        assertThat(rec1.getItemScorer(),
+                   not(sameInstance(rec2.getItemScorer())));
+        assertThat(rec1.get(FunkSVDModel.class),
+                   sameInstance(rec2.get(FunkSVDModel.class)));
     }
 
     /**
@@ -152,6 +139,7 @@ public class TestFunkSVDRecommenderBuild {
     @Test
     public void testPredictUpdates() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(dao);
         config.bind(ItemScorer.class)
               .to(FunkSVDItemScorer.class);
         config.bind(BaselinePredictor.class)
@@ -161,17 +149,13 @@ public class TestFunkSVDRecommenderBuild {
         config.bind(RuntimeUpdate.class, FunkSVDUpdateRule.class)
               .to(FunkSVDUpdateRule.class);
 
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
 
         LenskitRecommender rec = engine.createRecommender();
-        try {
-            ItemScorer scorer = rec.getItemScorer();
-            assertThat(scorer, instanceOf(FunkSVDItemScorer.class));
-            FunkSVDItemScorer fsvd = (FunkSVDItemScorer) scorer;
-            assertThat(fsvd.getUpdateRule(),
-                       not(nullValue()));
-        } finally {
-            rec.close();
-        }
+        ItemScorer scorer = rec.getItemScorer();
+        assertThat(scorer, instanceOf(FunkSVDItemScorer.class));
+        FunkSVDItemScorer fsvd = (FunkSVDItemScorer) scorer;
+        assertThat(fsvd.getUpdateRule(),
+                   not(nullValue()));
     }
 }
