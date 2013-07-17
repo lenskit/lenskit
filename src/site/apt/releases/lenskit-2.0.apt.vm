@@ -5,6 +5,14 @@
 
   * <<<RatingPredictor>>> no longer extends <<<ItemScorer>>>.
 
+  * <<<Recommender>>>s are no longer <<<Closeable>>>, and do not need to be closed.  They can
+    be left to be garbage collected.  To reflect this, <<<RecommenderEngine.open()>>> has been
+    renamed <<<createRecommender()>>>.
+
+  * The way DAOs work has been completely rewritten.  There is non longer a monolithic
+    <<<DataAccessObject>>>, but several modular DAO instances.  Documentation on this is
+    forthcoming.
+
   []
 
 * Data Structures
