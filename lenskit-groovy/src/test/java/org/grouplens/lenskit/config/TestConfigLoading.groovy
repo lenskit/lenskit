@@ -31,6 +31,7 @@ import org.grouplens.lenskit.core.LenskitConfiguration
 import org.grouplens.lenskit.core.LenskitRecommenderEngine
 
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
+import org.grouplens.lenskit.data.dao.EventDAO
 import org.grouplens.lenskit.vectors.similarity.PearsonCorrelation
 import org.grouplens.lenskit.vectors.similarity.SignificanceWeightedVectorSimilarity
 import org.grouplens.lenskit.vectors.similarity.VectorSimilarity
@@ -40,7 +41,7 @@ import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
 class TestConfigLoading {
-    DAOFactory factory = new EventCollectionDAO.Factory([])
+    EventDAO dao = new EventCollectionDAO([])
 
     @Test
     void testLoadBasicConfig() {
@@ -49,18 +50,15 @@ class TestConfigLoading {
             bind ItemScorer to BaselineItemScorer
             set ConstantPredictor.Value to Math.PI
         }
-        def engine = LenskitRecommenderEngine.build(factory, config)
+        config.bind(EventDAO).to(dao)
+        def engine = LenskitRecommenderEngine.build(config)
         def rec = engine.createRecommender()
-        try {
-            assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer))
-            assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
-            assertThat(rec.getGlobalItemRecommender(), nullValue());
-            def bl = rec.get(BaselinePredictor)
-            assertThat(bl, instanceOf(ConstantPredictor))
-            assertThat(bl.value, equalTo(Math.PI))
-        } finally {
-            rec.close()
-        }
+        assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer))
+        assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
+        assertThat(rec.getGlobalItemRecommender(), nullValue());
+        def bl = rec.get(BaselinePredictor)
+        assertThat(bl, instanceOf(ConstantPredictor))
+        assertThat(bl.value, equalTo(Math.PI))
     }
 
     @Test
@@ -69,17 +67,14 @@ class TestConfigLoading {
             root VectorSimilarity
             bind VectorSimilarity to PearsonCorrelation
         }
-        def engine = LenskitRecommenderEngine.build(factory, config)
+        config.bind(EventDAO).to(dao)
+        def engine = LenskitRecommenderEngine.build(config)
         def rec = engine.createRecommender()
-        try {
-            assertThat(rec.getItemScorer(), nullValue());
-            assertThat(rec.getItemRecommender(), nullValue())
-            assertThat(rec.getGlobalItemRecommender(), nullValue());
-            assertThat(rec.get(VectorSimilarity),
-                       instanceOf(PearsonCorrelation))
-        } finally {
-            rec.close()
-        }
+        assertThat(rec.getItemScorer(), nullValue());
+        assertThat(rec.getItemRecommender(), nullValue())
+        assertThat(rec.getGlobalItemRecommender(), nullValue());
+        assertThat(rec.get(VectorSimilarity),
+                   instanceOf(PearsonCorrelation))
     }
 
     @Test
@@ -91,19 +86,16 @@ class TestConfigLoading {
                 bind VectorSimilarity to PearsonCorrelation
             }
         }
-        def engine = LenskitRecommenderEngine.build(factory, config)
+        config.bind(EventDAO).to(dao)
+        def engine = LenskitRecommenderEngine.build(config)
         def rec = engine.createRecommender()
-        try {
-            assertThat(rec.getItemScorer(), nullValue());
-            assertThat(rec.getItemRecommender(), nullValue())
-            assertThat(rec.getGlobalItemRecommender(), nullValue());
-            def sim = rec.get(VectorSimilarity)
-            assertThat(sim,
-                       instanceOf(SignificanceWeightedVectorSimilarity))
-            assertThat(sim.delegate, instanceOf(PearsonCorrelation))
-        } finally {
-            rec.close()
-        }
+        assertThat(rec.getItemScorer(), nullValue());
+        assertThat(rec.getItemRecommender(), nullValue())
+        assertThat(rec.getGlobalItemRecommender(), nullValue());
+        def sim = rec.get(VectorSimilarity)
+        assertThat(sim,
+                   instanceOf(SignificanceWeightedVectorSimilarity))
+        assertThat(sim.delegate, instanceOf(PearsonCorrelation))
     }
 
     @Test
@@ -113,35 +105,29 @@ class TestConfigLoading {
 bind BaselinePredictor to ConstantPredictor
 bind ItemScorer to BaselineItemScorer
 set ConstantPredictor.Value to Math.PI""");
-        def engine = LenskitRecommenderEngine.build(factory, config)
+        config.bind(EventDAO).to(dao)
+        def engine = LenskitRecommenderEngine.build(config)
         def rec = engine.createRecommender()
-        try {
-            assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer))
-            assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
-            assertThat(rec.getGlobalItemRecommender(), nullValue());
-            def bl = rec.get(BaselinePredictor)
-            assertThat(bl, instanceOf(ConstantPredictor))
-            assertThat(bl.value, equalTo(Math.PI))
-        } finally {
-            rec.close()
-        }
+        assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer))
+        assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
+        assertThat(rec.getGlobalItemRecommender(), nullValue());
+        def bl = rec.get(BaselinePredictor)
+        assertThat(bl, instanceOf(ConstantPredictor))
+        assertThat(bl.value, equalTo(Math.PI))
     }
 
     @Test
     void testLoadBasicURL() {
         LenskitConfiguration config = ConfigHelpers.load(getClass().getResource("test-config.groovy"))
-        def engine = LenskitRecommenderEngine.build(factory, config)
+        config.bind(EventDAO).to(dao)
+        def engine = LenskitRecommenderEngine.build(config)
         def rec = engine.createRecommender()
-        try {
-            assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer))
-            assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
-            assertThat(rec.getGlobalItemRecommender(), nullValue());
-            def bl = rec.get(BaselinePredictor)
-            assertThat(bl, instanceOf(ConstantPredictor))
-            assertThat(bl.value, equalTo(Math.PI))
-        } finally {
-            rec.close()
-        }
+        assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer))
+        assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
+        assertThat(rec.getGlobalItemRecommender(), nullValue());
+        def bl = rec.get(BaselinePredictor)
+        assertThat(bl, instanceOf(ConstantPredictor))
+        assertThat(bl.value, equalTo(Math.PI))
     }
 
     @Test
@@ -151,22 +137,19 @@ set ConstantPredictor.Value to Math.PI""");
             bind ItemScorer to BaselineItemScorer
             domain minimum: 1, maximum: 5, precision: 0.5
         }
-        def engine = LenskitRecommenderEngine.build(factory, config)
+        config.bind(EventDAO).to(dao)
+        def engine = LenskitRecommenderEngine.build(config)
         def rec = engine.createRecommender()
-        try {
-            assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer));
-            assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
-            def rp = rec.getRatingPredictor()
-            assertThat(rp, instanceOf(SimpleRatingPredictor))
-            assertThat((rp as SimpleRatingPredictor).scorer,
-                       sameInstance(rec.getItemScorer()))
-            def dom = (rp as SimpleRatingPredictor).preferenceDomain
-            assertThat(dom, notNullValue());
-            assertThat(dom.minimum, equalTo(1.0d))
-            assertThat(dom.maximum, equalTo(5.0d))
-            assertThat(dom.precision, equalTo(0.5d))
-        } finally {
-            rec.close()
-        }
+        assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer));
+        assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
+        def rp = rec.getRatingPredictor()
+        assertThat(rp, instanceOf(SimpleRatingPredictor))
+        assertThat((rp as SimpleRatingPredictor).scorer,
+                   sameInstance(rec.getItemScorer()))
+        def dom = (rp as SimpleRatingPredictor).preferenceDomain
+        assertThat(dom, notNullValue());
+        assertThat(dom.minimum, equalTo(1.0d))
+        assertThat(dom.maximum, equalTo(5.0d))
+        assertThat(dom.precision, equalTo(0.5d))
     }
 }
