@@ -119,8 +119,8 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
 
     /**
      * An intelligent provider for simple rating predictors. It provides a simple rating predictor
-     * if there is an {@link ItemScorer} available, and returns {@code null} otherwise.  This is
-     * the default provider for {@link RatingPredictor}
+     * if there are an {@link ItemScorer} and {@link UserEventDAO} available, and returns
+     * {@code null} otherwise.  This is the default provider for {@link RatingPredictor}.
      */
     public static class Provider implements javax.inject.Provider<RatingPredictor> {
         private final UserEventDAO dao;
@@ -128,8 +128,16 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
         private final BaselinePredictor baseline;
         private final PreferenceDomain domain;
 
+        /**
+         * Construct an automatic provider.
+         *
+         * @param dao The user-event DAO.  If {@code null}, no rating predictor will be supplied.
+         * @param s The item scorer.  If {@code null}, no rating predictor will be supplied.
+         * @param bp The baseline predictor, if configured.
+         * @param dom The preference domain, if known.
+         */
         @Inject
-        public Provider(UserEventDAO dao,
+        public Provider(@Nullable UserEventDAO dao,
                         @Nullable ItemScorer s,
                         @Nullable BaselinePredictor bp,
                         @Nullable PreferenceDomain dom) {
@@ -141,7 +149,7 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
 
         @Override
         public RatingPredictor get() {
-            if (scorer == null) {
+            if (scorer == null || dao == null) {
                 return null;
             } else {
                 return new SimpleRatingPredictor(dao, scorer, baseline, domain);
