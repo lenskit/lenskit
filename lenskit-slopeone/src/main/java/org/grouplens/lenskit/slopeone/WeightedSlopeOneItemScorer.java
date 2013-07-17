@@ -23,6 +23,7 @@ package org.grouplens.lenskit.slopeone;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -38,7 +39,7 @@ import javax.inject.Inject;
  */
 public class WeightedSlopeOneItemScorer extends SlopeOneItemScorer {
     @Inject
-    public WeightedSlopeOneItemScorer(DataAccessObject dao, SlopeOneModel model,
+    public WeightedSlopeOneItemScorer(UserEventDAO dao, SlopeOneModel model,
                                       @Nullable PreferenceDomain dom) {
         super(dao, model, dom);
     }

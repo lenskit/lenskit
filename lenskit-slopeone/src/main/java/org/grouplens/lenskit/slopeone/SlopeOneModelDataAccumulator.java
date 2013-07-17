@@ -20,9 +20,12 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.cursors.Cursors;
+import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.vectors.*;
 
 import java.util.Map;
@@ -39,12 +42,14 @@ public class SlopeOneModelDataAccumulator {
      * @param damping   A damping term for deviation calculations.
      * @param dao       The DataAccessObject interfacing with the data for the model
      */
-    public SlopeOneModelDataAccumulator(double damping, DataAccessObject dao) {
+    public SlopeOneModelDataAccumulator(double damping, ItemDAO dao) {
         this.damping = damping;
-        LongList items = Cursors.makeList(dao.getItems());
+        LongSet items = dao.getItemIds();
 
         workMatrix = new Long2ObjectOpenHashMap<MutableSparseVector>(items.size());
-        for (long item : items) {
+        LongIterator iter = items.iterator();
+        while (iter.hasNext()) {
+            long item = iter.nextLong();
             workMatrix.put(item, new MutableSparseVector(items));
             workMatrix.get(item).addChannel(SlopeOneModel.CORATINGS_SYMBOL);
         }

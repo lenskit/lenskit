@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -43,7 +44,7 @@ public class SlopeOneItemScorer extends AbstractItemScorer {
     protected final PreferenceDomain domain;
 
     @Inject
-    public SlopeOneItemScorer(DataAccessObject dao,
+    public SlopeOneItemScorer(UserEventDAO dao,
                               SlopeOneModel model,
                               @Nullable PreferenceDomain dom) {
         super(dao);

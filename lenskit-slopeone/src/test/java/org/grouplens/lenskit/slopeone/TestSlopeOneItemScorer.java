@@ -20,12 +20,18 @@
  */
 package org.grouplens.lenskit.slopeone;
 
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.data.pref.PreferenceDomainBuilder;
 import org.grouplens.lenskit.knn.item.model.ItemItemBuildContextFactory;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.junit.Test;
@@ -39,17 +45,8 @@ public class TestSlopeOneItemScorer {
 
     private static final double EPSILON = 1.0e-6;
 
-    private SlopeOneModel getModel(DataAccessObject dao) {
-        UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
-        ItemItemBuildContextFactory contextFactory = new ItemItemBuildContextFactory(
-                dao, new DefaultUserVectorNormalizer(), summarizer);
-        SlopeOneModelBuilder provider = new SlopeOneModelBuilder(
-                dao, contextFactory, 0);
-        return provider.get();
-    }
-
     @Test
-    public void testPredict1() {
+    public void testPredict1() throws RecommenderBuildException {
 
         List<Rating> rs = new ArrayList<Rating>();
         rs.add(Ratings.make(1, 6, 4));
@@ -67,11 +64,15 @@ public class TestSlopeOneItemScorer {
         rs.add(Ratings.make(1, 9, 3));
         rs.add(Ratings.make(3, 9, 4));
 
-        EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        DataAccessObject dao = manager.create();
-        SlopeOneModel model = getModel(dao);
-        SlopeOneItemScorer predictor =
-                new SlopeOneItemScorer(dao, model, null);
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(new EventCollectionDAO(rs));
+        config.bind(ItemScorer.class).to(SlopeOneItemScorer.class);
+        config.bind(PreferenceDomain.class).to(new PreferenceDomainBuilder(1, 5)
+                                                       .setPrecision(1)
+                                                       .build());
+        ItemScorer predictor = LenskitRecommenderEngine.build(config)
+                                                       .createRecommender()
+                                                       .getItemScorer();
 
         assertEquals(7 / 3.0, predictor.score(2, 9), EPSILON);
         assertEquals(13 / 3.0, predictor.score(3, 6), EPSILON);
@@ -86,7 +87,7 @@ public class TestSlopeOneItemScorer {
     }
 
     @Test
-    public void testPredict2() {
+    public void testPredict2() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
         rs.add(Ratings.make(1, 4, 3.5));
         rs.add(Ratings.make(2, 4, 5));
@@ -96,11 +97,15 @@ public class TestSlopeOneItemScorer {
         rs.add(Ratings.make(2, 7, 4));
         rs.add(Ratings.make(3, 7, 1.5));
 
-        EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        DataAccessObject dao = manager.create();
-        SlopeOneModel model = getModel(dao);
-        SlopeOneItemScorer predictor =
-                new SlopeOneItemScorer(dao, model, new PreferenceDomain(1,5,1));
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(new EventCollectionDAO(rs));
+        config.bind(ItemScorer.class).to(SlopeOneItemScorer.class);
+        config.bind(PreferenceDomain.class).to(new PreferenceDomainBuilder(1, 5)
+                                                       .setPrecision(1)
+                                                       .build());
+        ItemScorer predictor = LenskitRecommenderEngine.build(config)
+                                                       .createRecommender()
+                                                       .getItemScorer();
 
         assertEquals(5, predictor.score(1, 5), EPSILON);
         assertEquals(2.25, predictor.score(1, 6), EPSILON);
