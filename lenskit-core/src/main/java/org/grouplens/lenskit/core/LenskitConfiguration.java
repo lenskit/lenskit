@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.core;
 
-import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.BindingFunctionBuilder;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.solver.DefaultDesireBindingFunction;
@@ -101,13 +100,8 @@ public class LenskitConfiguration extends AbstractConfigContext {
     }
 
     @Override
-    public <T> Binding<T> bind(Class<T> type) {
-        return bindings.getRootContext().bind(type);
-    }
-
-    @Override
-    public <T> Binding<T> bind(Class<? extends Annotation> qualifier, Class<T> type) {
-        return bind(type).withQualifier(qualifier);
+    public <T> LenskitBinding<T> bind(Class<T> type) {
+        return ContextWrapper.coerce(bindings.getRootContext()).bind(type);
     }
 
     @Override

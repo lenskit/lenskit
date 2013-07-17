@@ -35,6 +35,16 @@ import java.lang.annotation.Annotation;
  */
 public abstract class AbstractConfigContext extends AbstractContext implements LenskitConfigContext {
     @Override
+    public <T> LenskitBinding<T> bind(Class<? extends Annotation> qual, Class<T> type) {
+        return LenskitBindingImpl.wrap(super.bind(qual, type));
+    }
+
+    @Override
+    public <T> LenskitBinding<T> bindAny(Class<T> type) {
+        return LenskitBindingImpl.wrap(super.bindAny(type));
+    }
+
+    @Override
     @SuppressWarnings("rawtypes")
     public Binding set(Class<? extends Annotation> param) {
         Preconditions.checkNotNull(param);

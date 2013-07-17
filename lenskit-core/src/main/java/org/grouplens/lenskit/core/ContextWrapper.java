@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.core;
 
-import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.Context;
 
 import javax.annotation.Nullable;
@@ -58,13 +57,8 @@ class ContextWrapper extends AbstractConfigContext {
     }
 
     @Override
-    public <T> Binding<T> bind(Class<T> type) {
-        return base.bind(type);
-    }
-
-    @Override
-    public <T> Binding<T> bind(Class<? extends Annotation> qualifier, Class<T> type) {
-        return base.bind(type).withQualifier(qualifier);
+    public <T> LenskitBinding<T> bind(Class<T> type) {
+        return LenskitBindingImpl.wrap(base.bind(type));
     }
 
     @Override
