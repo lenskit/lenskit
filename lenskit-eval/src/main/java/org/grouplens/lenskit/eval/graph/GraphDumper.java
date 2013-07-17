@@ -160,12 +160,7 @@ class GraphDumper {
         public String visitNull() {
             NodeBuilder nb = NodeBuilder.create(nodeId);
             nb.setShape("ellipse");
-            Class<?> type = satisfaction.getErasedType();
-            if (DataAccessObject.class.isAssignableFrom(type)) {
-                nb.setLabel("DAO");
-            } else {
-                nb.setLabel("null");
-            }
+            nb.setLabel("null");
             GVNode node = nb.build();
             try {
                 writer.putNode(node);

@@ -22,7 +22,9 @@ package org.grouplens.lenskit.eval.data.traintest;
 
 import java.util.Map;
 
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.script.BuiltBy;
 
 import javax.annotation.Nullable;
@@ -68,16 +70,30 @@ public interface TTDataSet {
     /**
      * Get the training data.
      *
-     * @return A DAO factory returning the training data.
+     * @return A data source containing the training data.
      */
-    DAOFactory getTrainFactory();
+    DataSource getTrainingData();
+
+    /**
+     * Get the training data.
+     *
+     * @return An event DAO encompassing the training data.
+     */
+    EventDAO getTrainingDAO();
+
+    /**
+     * Get the training data.
+     *
+     * @return A data source containing the test data.
+     */
+    DataSource getTestData();
 
     /**
      * Get the test data.
      *
      * @return A DAO factory returning the test data.
      */
-    DAOFactory getTestFactory();
+    EventDAO getTestDAO();
 
     /**
      * Get the last modification time of this data set.

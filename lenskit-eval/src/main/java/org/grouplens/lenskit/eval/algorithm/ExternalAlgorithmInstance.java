@@ -22,7 +22,6 @@ package org.grouplens.lenskit.eval.algorithm;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
@@ -31,10 +30,12 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.ExecutionInfo;
-import org.grouplens.lenskit.eval.traintest.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.script.BuiltBy;
 import org.grouplens.lenskit.eval.data.CSVDataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
@@ -49,6 +50,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.inject.Provider;
 import java.io.*;
 import java.util.List;
 import java.util.Map;
@@ -106,10 +108,10 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
         return sb.toString();
     }
 
-    private File trainingFile(TTDataSet data) {
+    private File trainingFile(TTDataSet data) throws IOException {
         try {
             GenericTTDataSet gds = (GenericTTDataSet) data;
-            CSVDataSource csv = (CSVDataSource) gds.getTrainData();
+            CSVDataSource csv = (CSVDataSource) gds.getTrainingData();
             if (",".equals(csv.getDelimiter())) {
                 File file = csv.getFile();
                 logger.debug("using training file {}", file);
@@ -118,57 +120,60 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
         } catch (ClassCastException e) {
             /* No-op - this is fine, we will make a file. */
         }
-        File file = makeCSV(data.getTrainFactory(), getName() + ".train.csv", true);
+        File file = makeCSV(data.getTrainingDAO(), getName() + ".train.csv", true);
         logger.debug("wrote training file {}", file);
         return file;
     }
 
-    private File testFile(TTDataSet data) {
-        File file = makeCSV(data.getTestFactory(), getName() + ".test.csv", false);
+    private File testFile(TTDataSet data) throws IOException {
+        File file = makeCSV(data.getTestDAO(), getName() + ".test.csv", false);
         logger.debug("wrote test file {}", file);
         return file;
     }
 
-    private File makeCSV(DAOFactory daof, String fn, boolean writeRatings) {
+    private File makeCSV(EventDAO dao, String fn, boolean writeRatings) throws IOException {
         // TODO Make this not re-copy data unnecessarily
         File file = new File(workDir, fn);
-        DataAccessObject dao = daof.create();
+        Object[] row = new Object[writeRatings ? 3 : 2];
+        TableWriter table = CSVWriter.open(file, null);
         try {
-            Object[] row = new Object[writeRatings ? 3 : 2];
-            TableWriter table = CSVWriter.open(file, null);
+            Cursor<Rating> ratings = dao.streamEvents(Rating.class);
             try {
-                Cursor<Rating> ratings = dao.getEvents(Rating.class);
-                try {
-                    for (Rating r: ratings) {
-                        Preference p = r.getPreference();
-                        if (p != null) {
-                            row[0] = r.getUserId();
-                            row[1] = r.getItemId();
-                            if (writeRatings) {
-                                row[2] = p.getValue();
-                            }
-                            table.writeRow(row);
+                for (Rating r: ratings) {
+                    Preference p = r.getPreference();
+                    if (p != null) {
+                        row[0] = r.getUserId();
+                        row[1] = r.getItemId();
+                        if (writeRatings) {
+                            row[2] = p.getValue();
                         }
+                        table.writeRow(row);
                     }
-                } finally {
-                    ratings.close();
                 }
             } finally {
-                table.close();
+                ratings.close();
             }
-        } catch (IOException e) {
-            throw new RuntimeException("error writing " + fn, e);
         } finally {
-            dao.close();
+            table.close();
         }
         return file;
     }
 
     @Override
-    public RecommenderInstance makeTestableRecommender(TTDataSet data, Supplier<SharedPreferenceSnapshot> snapshot,
+    public RecommenderInstance makeTestableRecommender(TTDataSet data, Provider<? extends PreferenceSnapshot> snapshot,
                                                        ExecutionInfo info) throws RecommenderBuildException {
-        final File train = trainingFile(data);
-        final File test = testFile(data);
+        final File train;
+        try {
+            train = trainingFile(data);
+        } catch (IOException e) {
+            throw new RecommenderBuildException("error preparing training file", e);
+        }
+        final File test;
+        try {
+            test = testFile(data);
+        } catch (IOException e) {
+            throw new RecommenderBuildException("error preparing test file", e);
+        }
         final File output = new File(workDir,
                                      String.format("%s-%s.predictions.csv", getName(), data.getName()));
         List<String> args = Lists.transform(command, new Function<String, String>() {
@@ -222,7 +227,7 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
             throw new RecommenderBuildException("recommender produced no output", e);
         }
 
-        return new RecInstance(data.getTrainFactory(), vectors);
+        return new RecInstance(data.getTrainingData().getUserEventDAO(), vectors);
     }
 
     private Long2ObjectMap<SparseVector> readPredictions(File predFile) throws FileNotFoundException, RecommenderBuildException {
@@ -255,16 +260,16 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
     }
 
     private static class RecInstance implements RecommenderInstance {
-        private final DataAccessObject dao;
+        private final UserEventDAO dao;
         private final Long2ObjectMap<SparseVector> vectors;
 
-        public RecInstance(DAOFactory daof, Long2ObjectMap<SparseVector> vs) {
-            dao = daof.create();
+        public RecInstance(UserEventDAO dao, Long2ObjectMap<SparseVector> vs) {
+            this.dao = dao;
             vectors = vs;
         }
 
         @Override
-        public DataAccessObject getDAO() {
+        public UserEventDAO getUserEventDAO() {
             return dao;
         }
 
@@ -281,11 +286,6 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
         @Override
         public Recommender getRecommender() {
             return null;
-        }
-
-        @Override
-        public void close() {
-            dao.close();
         }
     }
 

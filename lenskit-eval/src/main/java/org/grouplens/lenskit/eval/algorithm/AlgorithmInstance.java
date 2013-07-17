@@ -22,11 +22,13 @@ package org.grouplens.lenskit.eval.algorithm;
 
 import com.google.common.base.Supplier;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.traintest.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 
 import javax.annotation.Nonnull;
+import javax.inject.Provider;
 import java.util.Map;
 
 /**
@@ -52,6 +54,7 @@ public interface AlgorithmInstance {
     /**
      * Create a testable recommender instance from this algorithm.
      *
+     *
      * @param data     The data set. The test data should only be used if the recommender needs to
      *                 capture the test data (e.g. an external program that will produce predictions
      *                 en mass).
@@ -60,6 +63,6 @@ public interface AlgorithmInstance {
      * @return A recommender instance for testing this algorithm.
      */
     RecommenderInstance makeTestableRecommender(TTDataSet data,
-                                                Supplier<SharedPreferenceSnapshot> snapshot,
+                                                Provider<? extends PreferenceSnapshot> snapshot,
                                                 ExecutionInfo info) throws RecommenderBuildException;
 }

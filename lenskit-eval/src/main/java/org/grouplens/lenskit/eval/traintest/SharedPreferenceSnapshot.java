@@ -20,21 +20,23 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.base.Supplier;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.Index;
+import org.grouplens.lenskit.util.SoftMemoizingProvider;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.inject.Provider;
 import java.io.Serializable;
 
 @Shareable
@@ -95,29 +97,24 @@ public class SharedPreferenceSnapshot implements PreferenceSnapshot, Serializabl
      * @param data The data set.
      * @return A supplier that provides access to a shared preference snapshot.
      */
-    public static Supplier<SharedPreferenceSnapshot> supplier(TTDataSet data) {
-        return new CachedSupplier(data);
+    public static Provider<PreferenceSnapshot> provider(TTDataSet data) {
+        return new SnapProvider(data);
     }
 
-    private static class CachedSupplier implements Supplier<SharedPreferenceSnapshot> {
+    private static class SnapProvider extends SoftMemoizingProvider<PreferenceSnapshot> {
         private final TTDataSet dataSet;
 
-        public CachedSupplier(@Nonnull TTDataSet data) {
+        public SnapProvider(@Nonnull TTDataSet data) {
             dataSet = data;
         }
 
         @Override
-        public SharedPreferenceSnapshot get() {
+        public SharedPreferenceSnapshot newValue() {
             logger.info("Loading snapshot for {}", dataSet.getName());
             StopWatch timer = new StopWatch();
             timer.start();
-            DataAccessObject dao = dataSet.getTrainFactory().snapshot();
-            PreferenceSnapshot snapshot;
-            try {
-                snapshot = PackedPreferenceSnapshot.pack(dao);
-            } finally {
-                dao.close();
-            }
+            EventDAO dao = dataSet.getTrainingDAO();
+            PreferenceSnapshot snapshot = PackedPreferenceSnapshot.pack(dao);
             timer.stop();
             logger.info("Rating snapshot for {} loaded in {}",
                         dataSet.getName(), timer);

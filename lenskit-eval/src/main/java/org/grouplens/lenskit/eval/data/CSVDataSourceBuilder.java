@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.eval.data;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
@@ -33,13 +32,12 @@ import java.io.File;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
+public class CSVDataSourceBuilder implements Builder<DataSource> {
     private String name;
     String delimiter = ",";
     File inputFile;
     boolean cache = true;
     PreferenceDomain domain;
-    Function<DAOFactory, DAOFactory> wrapper;
 
     public CSVDataSourceBuilder() {}
 
@@ -149,23 +147,6 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
         return this;
     }
 
-    public Function<DAOFactory,DAOFactory> getWrapper() {
-        return wrapper;
-    }
-
-    /**
-     * Set a wrapper function to apply to the resulting DAOs. The data source command
-     * wraps its DAO with this function, allowing it to be augmented with additional
-     * information or transformations if desired.
-     *
-     * @param wrapFun The DAO wrapper function.
-     * @return The command (for chaining).
-     */
-    public CSVDataSourceBuilder setWrapper(Function<DAOFactory, DAOFactory> wrapFun) {
-        wrapper = wrapFun;
-        return this;
-    }
-
     /**
      * Build the data source. At least one of {@link #setName(String)} or
      * {@link #setFile(File)} must be called prior to building.
@@ -184,6 +165,6 @@ public class CSVDataSourceBuilder implements Builder<CSVDataSource> {
         }
         // by now we should have a file
         Preconditions.checkState(inputFile != null, "no input file specified");
-        return new CSVDataSource(getName(), inputFile, delimiter, cache, domain, wrapper);
+        return new CSVDataSource(getName(), inputFile, delimiter, cache, domain);
     }
 }

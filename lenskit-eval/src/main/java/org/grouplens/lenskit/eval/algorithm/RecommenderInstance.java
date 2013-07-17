@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.algorithm;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nullable;
@@ -33,12 +34,12 @@ import java.io.Closeable;
  * a new recommender is opened. If the test data needs to be pre-supplied, it has been.
  * This class is only used for evaluations.
  */
-public interface RecommenderInstance extends Closeable {
+public interface RecommenderInstance {
     /**
      * Get the DAO backing the recommender (the training DAO).
      * @return The training DAO.
      */
-    DataAccessObject getDAO();
+    UserEventDAO getUserEventDAO();
 
     /**
      * Get a user's predictions.
@@ -63,7 +64,4 @@ public interface RecommenderInstance extends Closeable {
      */
     @Nullable
     Recommender getRecommender();
-
-    @Override
-    void close();
 }

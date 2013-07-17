@@ -42,8 +42,8 @@ class TrainModelTaskTest extends ConfigTestBase {
             new SimpleRating(3, 2, 1, 3.5),
             new SimpleRating(3, 2, 3, 5.0)
     ]
-    def daoFactory = new EventCollectionDAO.Factory(ratings);
-    def dataSource = new GenericDataSource("test-data", daoFactory);
+    def dao = new EventCollectionDAO(ratings);
+    def dataSource = new GenericDataSource("test-data", dao);
 
     @Test
     void testTrainModel() {

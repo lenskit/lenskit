@@ -21,22 +21,22 @@
 
 package org.grouplens.lenskit.eval.data
 
-import static org.junit.Assert.*
-import static org.hamcrest.Matchers.*
-
-import it.unimi.dsi.fastutil.longs.LongArrayList
 import com.google.common.io.Files
-import org.grouplens.lenskit.eval.script.ConfigTestBase
-import org.junit.Test
-import org.grouplens.lenskit.eval.data.subsample.SubsampleMode
-import org.junit.Before
-import org.junit.After
+import it.unimi.dsi.fastutil.longs.LongSet
 import org.grouplens.lenskit.cursors.Cursors
+import org.grouplens.lenskit.data.dao.*
+import org.grouplens.lenskit.data.event.Rating
+import org.grouplens.lenskit.data.event.SimpleRating
+import org.grouplens.lenskit.data.pref.SimplePreference
+import org.grouplens.lenskit.eval.data.subsample.SubsampleMode
+import org.grouplens.lenskit.eval.script.ConfigTestBase
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.SimpleRating;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.pref.SimplePreference;
+import static org.hamcrest.Matchers.equalTo
+import static org.hamcrest.Matchers.hasSize
+import static org.junit.Assert.assertThat;
 
 /**
  * Test subsample configuration
@@ -71,10 +71,10 @@ class TestSubsampleConfig extends ConfigTestBase {
         new SimpleRating(9, pref[8]),
         new SimpleRating(10, pref[9]),
         ];
+
     @Before
     void prepareDataSource() {
-        DAOFactory factory = new EventCollectionDAO.Factory(ratings);
-        dataSource = new GenericDataSource("sampleSource",factory);
+        dataSource = new GenericDataSource("sampleSource", new EventCollectionDAO(ratings));
     }
    
     @After
@@ -92,15 +92,10 @@ class TestSubsampleConfig extends ConfigTestBase {
             }
         }
         
-        DAOFactory factory = obj.getDAOFactory();
-        DataAccessObject daoSnap = factory.snapshot();
-        try{
-            List<Rating> ratings = Cursors.makeList(daoSnap.getEvents(Rating.class));
-     
-            assertThat(ratings.size(), equalTo(2))
-        } finally{
-            daoSnap.close();
-        }
+        EventDAO dao = obj.getEventDAO();
+        List<Rating> ratings = Cursors.makeList(dao.streamEvents(Rating.class));
+
+        assertThat(ratings.size(), equalTo(2))
     }
     
     @Test
@@ -114,24 +109,18 @@ class TestSubsampleConfig extends ConfigTestBase {
             }
         }
         
-        DAOFactory factory = obj.getDAOFactory();
-        DataAccessObject daoSnap = factory.snapshot();
-        DAOFactory sourceFactory = dataSource.getDAOFactory();
-        DataAccessObject sourceDaoSnap = sourceFactory.snapshot();
-        try{
-            LongArrayList userList = Cursors.makeList(daoSnap.getUsers());
-            
-            assertThat(userList.size(), equalTo(2))
+        UserDAO dao = obj.getUserDAO();
+        UserEventDAO userEvents = obj.getUserEventDAO();
+        UserEventDAO sourceDAO = dataSource.getUserEventDAO();
 
-            for (Long user: userList) {
-                List<Rating> userRating = Cursors.makeList(daoSnap.getUserEvents(user, Rating.class));
-                List<Rating> sourceUserRating = Cursors.makeList(sourceDaoSnap.getUserEvents(user, Rating.class));
-                assertThat(userRating.size(), equalTo(sourceUserRating.size()));
-            }
-            
-        } finally{
-            daoSnap.close();
-            sourceDaoSnap.close();
+        LongSet userList = dao.getUserIds();
+
+        assertThat(userList.size(), equalTo(2))
+
+        for (Long user: userList) {
+            List<Rating> userRating = userEvents.getEventsForUser(user, Rating.class);
+            List<Rating> sourceUserRating = sourceDAO.getEventsForUser(user, Rating.class);
+            assertThat(userRating.size(), equalTo(sourceUserRating.size()));
         }
     }
     
@@ -145,24 +134,19 @@ class TestSubsampleConfig extends ConfigTestBase {
                 output new File(trainTestDir, "subsample.csv")
             }
         }
-        
-        DAOFactory factory = obj.getDAOFactory();
-        DataAccessObject daoSnap = factory.snapshot();
-        DAOFactory sourceFactory = dataSource.getDAOFactory();
-        DataAccessObject sourceDaoSnap = sourceFactory.snapshot();
-        try{
-            LongArrayList itemList = Cursors.makeList(daoSnap.getItems());
-            
-            assertThat(itemList.size(), equalTo(3))
 
-            for (Long item: itemList) {
-                List<Rating> itemRating = Cursors.makeList(daoSnap.getItemEvents(item, Rating.class));
-                List<Rating> sourceItemRating = Cursors.makeList(sourceDaoSnap.getItemEvents(item, Rating.class));
-                assertThat(itemRating.size(), equalTo(sourceItemRating.size()));
-            }
-        } finally{
-            daoSnap.close();
-            sourceDaoSnap.close();
+        ItemDAO dao = obj.getItemDAO();
+        ItemEventDAO itemEvents = obj.getItemEventDAO();
+        ItemEventDAO sourceDAO = dataSource.getItemEventDAO();
+
+        LongSet itemSet = dao.getItemIds();
+
+        assertThat(itemSet, hasSize(3))
+
+        for (Long item: itemSet) {
+            List<Rating> itemRating = itemEvents.getEventsForItem(item, Rating.class);
+            List<Rating> sourceItemRating = sourceDAO.getEventsForItem(item, Rating.class);
+            assertThat(itemRating.size(), equalTo(sourceItemRating.size()));
         }
     }
 }

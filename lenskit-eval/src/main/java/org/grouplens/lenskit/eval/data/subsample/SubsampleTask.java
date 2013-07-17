@@ -21,11 +21,6 @@
 
 package org.grouplens.lenskit.eval.data.subsample;
 
-import java.io.File;
-import java.io.IOException;
-
-import javax.annotation.Nullable;
-
 import com.google.common.io.Closer;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
@@ -36,6 +31,10 @@ import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
 /**
  * The command to build and run a Subsample on the data source file and output the partition files
  *
@@ -187,15 +186,13 @@ public class SubsampleTask extends AbstractTask<DataSource> {
             logger.info("subsample {} up to date", getName());
             return makeDataSource();
         }
-        DAOFactory factory = source.getDAOFactory();
-        DataAccessObject daoSnap = factory.snapshot();
         try {
             logger.info("sampling {} of {}",
                         subsampleFraction, source.getName());
             Closer closer = Closer.create();
             TableWriter subsampleWriter = closer.register(CSVWriter.open(subsampleFile, null));
             try {
-                mode.doSample(daoSnap, subsampleWriter, subsampleFraction, getProject().getRandom());
+                mode.doSample(source, subsampleWriter, subsampleFraction, getProject().getRandom());
             } catch (Throwable th) {
                 throw closer.rethrow(th);
             } finally {
@@ -203,8 +200,6 @@ public class SubsampleTask extends AbstractTask<DataSource> {
             }
         } catch (IOException e) {
             throw new TaskExecutionException("Error writing output file", e);
-        } finally {
-            daoSnap.close();
         }
         return makeDataSource();
     }

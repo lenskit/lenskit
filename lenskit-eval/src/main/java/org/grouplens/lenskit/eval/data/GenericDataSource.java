@@ -20,23 +20,37 @@
  */
 package org.grouplens.lenskit.eval.data;
 
+import org.grouplens.grapht.util.Providers;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+
+import javax.inject.Provider;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class GenericDataSource implements DataSource {
+public class GenericDataSource extends AbstractDataSource {
     private String name;
-    private DAOFactory daoFactory;
+    private Provider<EventDAO> daoProvider;
     private PreferenceDomain domain;
 
-    public GenericDataSource(String name, DAOFactory factory) {
-        this(name, factory, null);
+    public GenericDataSource(String name, EventDAO dao) {
+        this(name, dao, null);
     }
 
-    public GenericDataSource(String name, DAOFactory factory, PreferenceDomain dom) {
+    public GenericDataSource(String name, EventDAO dao, PreferenceDomain dom) {
         this.name = name;
-        daoFactory = factory;
+        daoProvider = Providers.of(dao);
+        domain = dom;
+    }
+
+    public GenericDataSource(String name, Provider<EventDAO> dao) {
+        this(name, dao, null);
+    }
+
+    public GenericDataSource(String name, Provider<EventDAO> dao, PreferenceDomain dom) {
+        this.name = name;
+        daoProvider = dao;
         domain = dom;
     }
 
@@ -51,8 +65,8 @@ public class GenericDataSource implements DataSource {
     }
 
     @Override
-    public DAOFactory getDAOFactory() {
-        return daoFactory;
+    public Provider<EventDAO> getEventDAOProvider() {
+        return daoProvider;
     }
 
     @Override

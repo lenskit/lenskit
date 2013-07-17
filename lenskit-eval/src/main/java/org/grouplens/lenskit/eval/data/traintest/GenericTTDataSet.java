@@ -21,12 +21,15 @@
 package org.grouplens.lenskit.eval.data.traintest;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.GenericDataSource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.inject.Provider;
 import java.util.Collections;
 import java.util.Map;
 
@@ -37,29 +40,32 @@ import java.util.Map;
  * @since 0.8
  */
 public class GenericTTDataSet implements TTDataSet {
-    private final
     @Nonnull
-    String name;
-    private final
+    private final String name;
     @Nonnull
-    DataSource trainData;
-    private final
+    private final DataSource trainData;
     @Nonnull
-    DataSource testData;
-    private final
+    private final DataSource testData;
     @Nullable
-    PreferenceDomain preferenceDomain;
+    private final PreferenceDomain preferenceDomain;
     private final Map<String, Object> attributes;
 
-    public GenericTTDataSet(@Nonnull String name, @Nonnull DataSource train, @Nonnull DataSource test,
-                            @Nullable PreferenceDomain dom, Map<String, Object> attrs) {
+    public GenericTTDataSet(@Nonnull String name,
+                            @Nonnull DataSource train,
+                            @Nonnull DataSource test,
+                            @Nullable PreferenceDomain dom,
+                            Map<String, Object> attrs) {
         Preconditions.checkNotNull(train, "no training data");
         Preconditions.checkNotNull(test, "no test data");
         this.name = name;
         trainData = train;
         testData = test;
         preferenceDomain = dom;
-        attributes = attrs;
+        if (attrs == null) {
+            attributes = Collections.emptyMap();
+        } else {
+            attributes = Maps.newHashMap(attrs);
+        }
     }
 
     /**
@@ -70,7 +76,9 @@ public class GenericTTDataSet implements TTDataSet {
      * @param test   The test DAO factory.
      * @param domain The preference domain.
      */
-    public GenericTTDataSet(@Nonnull String name, @Nonnull DAOFactory train, @Nonnull DAOFactory test,
+    public GenericTTDataSet(@Nonnull String name,
+                            @Nonnull Provider<EventDAO> train,
+                            @Nonnull Provider<EventDAO> test,
                             @Nullable PreferenceDomain domain) {
         Preconditions.checkNotNull(name);
         Preconditions.checkNotNull(train);
@@ -79,7 +87,7 @@ public class GenericTTDataSet implements TTDataSet {
         trainData = new GenericDataSource(name + ".train", train, domain);
         testData = new GenericDataSource(name + ".test", test, domain);
         preferenceDomain = domain;
-        attributes = Collections.singletonMap("DataSource", (Object) name);
+        attributes = Collections.singletonMap("DataSet", (Object) name);
     }
 
     @Override
@@ -111,22 +119,24 @@ public class GenericTTDataSet implements TTDataSet {
     }
 
     @Override
-    public DAOFactory getTrainFactory() {
-        return trainData.getDAOFactory();
+    public EventDAO getTrainingDAO() {
+        return trainData.getEventDAO();
     }
 
     @Override
-    public DAOFactory getTestFactory() {
-        return testData.getDAOFactory();
+    public EventDAO getTestDAO() {
+        return testData.getEventDAO();
     }
 
+    @Override
     @Nonnull
     public DataSource getTestData() {
         return testData;
     }
 
+    @Override
     @Nonnull
-    public DataSource getTrainData() {
+    public DataSource getTrainingData() {
         return trainData;
     }
 

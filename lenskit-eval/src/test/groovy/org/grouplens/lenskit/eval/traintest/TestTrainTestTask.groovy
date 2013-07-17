@@ -171,9 +171,9 @@ class TestTrainTestTask {
         assertThat(data.size(), equalTo(1))
         assertThat(data.get(0), instanceOf(GenericTTDataSet))
         GenericTTDataSet ds = data.get(0) as GenericTTDataSet
-        assertThat(ds.trainData, instanceOf(CSVDataSource))
-        assertThat(ds.trainData.sourceFile, equalTo(new File("train.csv")))
-        assertThat(ds.trainData.delimiter, equalTo(","))
+        assertThat(ds.trainingData, instanceOf(CSVDataSource))
+        assertThat(ds.trainingData.sourceFile, equalTo(new File("train.csv")))
+        assertThat(ds.trainingData.delimiter, equalTo(","))
         assertThat(ds.testData, instanceOf(CSVDataSource))
         assertThat(ds.testData.sourceFile, equalTo(new File("test.csv")))
     }
@@ -193,8 +193,8 @@ class TestTrainTestTask {
         assertThat(data.size(), equalTo(1))
         assertThat(data.get(0), instanceOf(GenericTTDataSet))
         GenericTTDataSet ds = data.get(0) as GenericTTDataSet
-        assertThat(ds.trainData, instanceOf(CSVDataSource))
-        assertThat(ds.trainData.sourceFile, equalTo(new File("train.csv")))
+        assertThat(ds.trainingData, instanceOf(CSVDataSource))
+        assertThat(ds.trainingData.sourceFile, equalTo(new File("train.csv")))
         assertThat(ds.testData, instanceOf(CSVDataSource))
         assertThat(ds.testData.sourceFile, equalTo(new File("test.csv")))
     }

@@ -29,6 +29,7 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
@@ -52,6 +53,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.inject.Provider;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -336,7 +338,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
     private List<TrainTestEvalJob> makeJobs(TTDataSet data) {
         List<TrainTestEvalJob> jobs = Lists.newArrayListWithCapacity(algorithms.size());
-        final Supplier<SharedPreferenceSnapshot> snap = SharedPreferenceSnapshot.supplier(data);
+        final Provider<PreferenceSnapshot> snap = SharedPreferenceSnapshot.provider(data);
 
         for (AlgorithmInstance algo: algorithms) {
             Function<TableWriter, TableWriter> prefix = prefixFunction(algo, data);

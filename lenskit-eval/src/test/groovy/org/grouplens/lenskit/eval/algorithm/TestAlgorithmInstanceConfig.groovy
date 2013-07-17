@@ -25,6 +25,7 @@ import org.grouplens.lenskit.baseline.BaselineItemScorer
 import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
+import org.grouplens.lenskit.eval.data.GenericDataSource
 import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
 import org.grouplens.lenskit.iterative.MinimumIterations
@@ -77,21 +78,18 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
             }
         }
         def algo = obj as LenskitAlgorithmInstance
-        def rec = algo.buildRecommender(new EventCollectionDAO([]), null, null, null, true);
-        try {
-            def stop = rec.get(ThresholdStoppingCondition)
-            assertThat(stop.threshold,
-                       closeTo(0.001d, 1.0e-6d))
-            assertThat(stop.minimumIterations, equalTo(42))
-            def thresh = rec.get(RealThreshold)
-            assertThat(thresh.value,
-                       closeTo(0.1d, 1.0e-6d))
-            def athresh = rec.get(AbsoluteThreshold)
-            assertThat(athresh.value,
-                       closeTo(0.5d, 1.0e-6d))
-        } finally {
-            rec.close()
-        }
+        def rec = algo.buildRecommender(new GenericDataSource("data", new EventCollectionDAO([])),
+                                        null, null);
+        def stop = rec.get(ThresholdStoppingCondition)
+        assertThat(stop.threshold,
+                   closeTo(0.001d, 1.0e-6d))
+        assertThat(stop.minimumIterations, equalTo(42))
+        def thresh = rec.get(RealThreshold)
+        assertThat(thresh.value,
+                   closeTo(0.1d, 1.0e-6d))
+        def athresh = rec.get(AbsoluteThreshold)
+        assertThat(athresh.value,
+                   closeTo(0.5d, 1.0e-6d))
     }
 
     @Test
@@ -114,21 +112,18 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
             }
         }
         def algo = obj as LenskitAlgorithmInstance
-        def rec = algo.buildRecommender(new EventCollectionDAO([]), null, null, null, true);
-        try {
-            def stop = rec.get(ThresholdStoppingCondition)
-            assertThat(stop.threshold,
-                       closeTo(0.001d, 1.0e-5d))
-            assertThat(stop.minimumIterations, equalTo(42))
-            def thresh = rec.get(RealThreshold)
-            assertThat(thresh.value,
-                       closeTo(0.1d, 1.0e-5d))
-            def athresh = rec.get(AbsoluteThreshold)
-            assertThat(athresh.value,
-                       closeTo(0.5d, 1.0e-5d))
-        } finally {
-            rec.close()
-        }
+        def rec = algo.buildRecommender(new GenericDataSource("data", new EventCollectionDAO([])),
+                                        null, null);
+        def stop = rec.get(ThresholdStoppingCondition)
+        assertThat(stop.threshold,
+                   closeTo(0.001d, 1.0e-5d))
+        assertThat(stop.minimumIterations, equalTo(42))
+        def thresh = rec.get(RealThreshold)
+        assertThat(thresh.value,
+                   closeTo(0.1d, 1.0e-5d))
+        def athresh = rec.get(AbsoluteThreshold)
+        assertThat(athresh.value,
+                   closeTo(0.5d, 1.0e-5d))
     }
 
     @Test
