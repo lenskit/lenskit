@@ -64,7 +64,7 @@ public class TestUserUserRecommenderBuild {
     @SuppressWarnings("deprecation")
     @Test
     public void testUserUserRecommenderEngineCreate() {
-        Recommender rec = engine.open();
+        Recommender rec = engine.createRecommender();
 
         try {
             assertThat(rec.getItemScorer(),

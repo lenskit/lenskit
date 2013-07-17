@@ -83,9 +83,6 @@ public class LenskitRecommender implements Recommender {
     }
 
     @Override
-    public void close() {}
-
-    @Override
     public ItemRecommender getItemRecommender() {
         return get(ItemRecommender.class);
     }

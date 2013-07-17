@@ -74,7 +74,7 @@ public class TestFunkSVDBuildSerialize extends ML100KTestSuite {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         LenskitRecommenderEngine loaded = LenskitRecommenderEngine.load(daoFactory, in);
         assertThat(loaded, notNullValue());
-        LenskitRecommender rec = loaded.open();
+        LenskitRecommender rec = loaded.createRecommender();
         try {
             assertThat(rec.getItemScorer(),
                        instanceOf(FunkSVDItemScorer.class));

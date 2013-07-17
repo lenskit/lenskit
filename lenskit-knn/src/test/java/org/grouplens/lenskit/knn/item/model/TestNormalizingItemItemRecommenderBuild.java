@@ -71,7 +71,7 @@ public class TestNormalizingItemItemRecommenderBuild {
     @SuppressWarnings("deprecation")
     @Test
     public void testItemItemRecommenderEngineCreate() {
-        Recommender rec = engine.open();
+        Recommender rec = engine.createRecommender();
 
         assertThat(rec.getItemScorer(),
                 instanceOf(ItemItemScorer.class));
@@ -90,8 +90,8 @@ public class TestNormalizingItemItemRecommenderBuild {
         LenskitRecommender rec1 = null;
         LenskitRecommender rec2 = null;
         try {
-            rec1 = engine.open();
-            rec2 = engine.open();
+            rec1 = engine.createRecommender();
+            rec2 = engine.createRecommender();
 
             assertThat(rec1.getItemScorer(),
                     not(sameInstance(rec2.getItemScorer())));

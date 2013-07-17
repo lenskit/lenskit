@@ -84,7 +84,7 @@ public class TestItemItemRecommender {
         config.bind(VectorNormalizer.class)
               .to(IdentityVectorNormalizer.class);
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(manager, config);
-        session = engine.open();
+        session = engine.createRecommender();
         recommender = session.getItemRecommender();
     }
 

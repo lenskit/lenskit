@@ -81,7 +81,7 @@ public class TestUserUserRecommender {
                              VectorNormalizer.class,
                              IdentityVectorNormalizer.class);*/
         RecommenderEngine engine = LenskitRecommenderEngine.build(manager, config);
-        rec = engine.open();
+        rec = engine.createRecommender();
         dao = manager.create();
     }
 

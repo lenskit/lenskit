@@ -139,7 +139,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     }
 
     @Override
-    public LenskitRecommender open() {
+    public LenskitRecommender createRecommender() {
         // Set up a session graph with the DAO node
         Injector inj = new StaticInjector(spi, dependencies, rootNode);
         return new LenskitRecommender(inj);

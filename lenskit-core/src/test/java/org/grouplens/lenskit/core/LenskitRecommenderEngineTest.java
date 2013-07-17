@@ -83,22 +83,18 @@ public class LenskitRecommenderEngineTest {
         return config;
     }
 
-    private void verifyBasicRecommender(LenskitRecommenderEngine engine) {LenskitRecommender rec = engine.open();
-        try {
-            assertThat(rec.getItemRecommender(),
-                       instanceOf(TopNItemRecommender.class));
-            assertThat(rec.getItemScorer(),
-                       instanceOf(BaselineItemScorer.class));
-            assertThat(rec.getRatingPredictor(),
-                       instanceOf(SimpleRatingPredictor.class));
-            assertThat(rec.get(BaselinePredictor.class),
-                       instanceOf(ConstantPredictor.class));
-            // Since we have an item scorer, we should have a recommender too
-            assertThat(rec.getItemRecommender(),
-                       instanceOf(TopNItemRecommender.class));
-        } finally {
-            rec.close();
-        }
+    private void verifyBasicRecommender(LenskitRecommenderEngine engine) {LenskitRecommender rec = engine.createRecommender();
+        assertThat(rec.getItemRecommender(),
+                   instanceOf(TopNItemRecommender.class));
+        assertThat(rec.getItemScorer(),
+                   instanceOf(BaselineItemScorer.class));
+        assertThat(rec.getRatingPredictor(),
+                   instanceOf(SimpleRatingPredictor.class));
+        assertThat(rec.get(BaselinePredictor.class),
+                   instanceOf(ConstantPredictor.class));
+        // Since we have an item scorer, we should have a recommender too
+        assertThat(rec.getItemRecommender(),
+                   instanceOf(TopNItemRecommender.class));
     }
 
     @Test
@@ -109,13 +105,9 @@ public class LenskitRecommenderEngineTest {
         config.addRoot(BaselinePredictor.class);
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
-        LenskitRecommender rec = engine.open();
-        try {
-            assertThat(rec.get(BaselinePredictor.class),
-                       instanceOf(ConstantPredictor.class));
-        } finally {
-            rec.close();
-        }
+        LenskitRecommender rec = engine.createRecommender();
+        assertThat(rec.get(BaselinePredictor.class),
+                   instanceOf(ConstantPredictor.class));
     }
 
     @Test
@@ -128,29 +120,24 @@ public class LenskitRecommenderEngineTest {
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
 
-        LenskitRecommender rec1 = engine.open();
-        LenskitRecommender rec2 = engine.open();
-        try {
-            assertThat(rec1.getItemScorer(),
-                       instanceOf(BaselineItemScorer.class));
-            assertThat(rec2.getItemScorer(),
-                       instanceOf(BaselineItemScorer.class));
+        LenskitRecommender rec1 = engine.createRecommender();
+        LenskitRecommender rec2 = engine.createRecommender();
+        assertThat(rec1.getItemScorer(),
+                   instanceOf(BaselineItemScorer.class));
+        assertThat(rec2.getItemScorer(),
+                   instanceOf(BaselineItemScorer.class));
 
-            // verify that recommenders have different scorers
-            assertThat(rec1.getItemScorer(),
-                       not(sameInstance(rec2.getItemScorer())));
+        // verify that recommenders have different scorers
+        assertThat(rec1.getItemScorer(),
+                   not(sameInstance(rec2.getItemScorer())));
 
-            // verify that recommenders have different rating predictors
-            assertThat(rec1.getRatingPredictor(),
-                       not(sameInstance(rec2.getRatingPredictor())));
+        // verify that recommenders have different rating predictors
+        assertThat(rec1.getRatingPredictor(),
+                   not(sameInstance(rec2.getRatingPredictor())));
 
-            // verify that recommenders have same baseline
-            assertThat(rec1.get(BaselinePredictor.class),
-                       sameInstance(rec2.get(BaselinePredictor.class)));
-        } finally {
-            rec1.close();
-            rec2.close();
-        }
+        // verify that recommenders have same baseline
+        assertThat(rec1.get(BaselinePredictor.class),
+                   sameInstance(rec2.get(BaselinePredictor.class)));
     }
 
     @SuppressWarnings("unchecked")
@@ -160,7 +147,7 @@ public class LenskitRecommenderEngineTest {
         config.set(StoppingThreshold.class).to(0.042);
         config.addRoot(ThresholdStoppingCondition.class);
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
-        LenskitRecommender rec = engine.open();
+        LenskitRecommender rec = engine.createRecommender();
         ThresholdStoppingCondition stop = rec.get(ThresholdStoppingCondition.class);
         assertThat(stop, notNullValue());
         assertThat(stop.getThreshold(),
@@ -225,14 +212,10 @@ public class LenskitRecommenderEngineTest {
         LenskitConfiguration config = new LenskitConfiguration();
         config.addRoot(SubclassedDAODepComponent.class);
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
-        LenskitRecommender rec = engine.open();
-        try {
-            SubclassedDAODepComponent dep = rec.get(SubclassedDAODepComponent.class);
-            assertThat(dep, notNullValue());
-            assertThat(dep.dao, notNullValue());
-        } finally {
-            rec.close();
-        }
+        LenskitRecommender rec = engine.createRecommender();
+        SubclassedDAODepComponent dep = rec.get(SubclassedDAODepComponent.class);
+        assertThat(dep, notNullValue());
+        assertThat(dep.dao, notNullValue());
     }
 
     public static class SubclassedDAODepComponent {

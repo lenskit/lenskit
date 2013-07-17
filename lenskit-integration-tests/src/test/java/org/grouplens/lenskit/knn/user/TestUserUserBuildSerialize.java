@@ -77,7 +77,7 @@ public class TestUserUserBuildSerialize extends ML100KTestSuite {
         LenskitRecommenderEngine loaded = LenskitRecommenderEngine.load(daoFactory, in);
         assertThat(loaded, notNullValue());
 
-        LenskitRecommender rec = loaded.open();
+        LenskitRecommender rec = loaded.createRecommender();
         try {
             assertThat(rec.getItemScorer(),
                        instanceOf(UserUserItemScorer.class));

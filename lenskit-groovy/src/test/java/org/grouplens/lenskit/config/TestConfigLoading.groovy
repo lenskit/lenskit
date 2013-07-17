@@ -50,7 +50,7 @@ class TestConfigLoading {
             set ConstantPredictor.Value to Math.PI
         }
         def engine = LenskitRecommenderEngine.build(factory, config)
-        def rec = engine.open()
+        def rec = engine.createRecommender()
         try {
             assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer))
             assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
@@ -70,7 +70,7 @@ class TestConfigLoading {
             bind VectorSimilarity to PearsonCorrelation
         }
         def engine = LenskitRecommenderEngine.build(factory, config)
-        def rec = engine.open()
+        def rec = engine.createRecommender()
         try {
             assertThat(rec.getItemScorer(), nullValue());
             assertThat(rec.getItemRecommender(), nullValue())
@@ -92,7 +92,7 @@ class TestConfigLoading {
             }
         }
         def engine = LenskitRecommenderEngine.build(factory, config)
-        def rec = engine.open()
+        def rec = engine.createRecommender()
         try {
             assertThat(rec.getItemScorer(), nullValue());
             assertThat(rec.getItemRecommender(), nullValue())
@@ -114,7 +114,7 @@ bind BaselinePredictor to ConstantPredictor
 bind ItemScorer to BaselineItemScorer
 set ConstantPredictor.Value to Math.PI""");
         def engine = LenskitRecommenderEngine.build(factory, config)
-        def rec = engine.open()
+        def rec = engine.createRecommender()
         try {
             assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer))
             assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
@@ -131,7 +131,7 @@ set ConstantPredictor.Value to Math.PI""");
     void testLoadBasicURL() {
         LenskitConfiguration config = ConfigHelpers.load(getClass().getResource("test-config.groovy"))
         def engine = LenskitRecommenderEngine.build(factory, config)
-        def rec = engine.open()
+        def rec = engine.createRecommender()
         try {
             assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer))
             assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
@@ -152,7 +152,7 @@ set ConstantPredictor.Value to Math.PI""");
             domain minimum: 1, maximum: 5, precision: 0.5
         }
         def engine = LenskitRecommenderEngine.build(factory, config)
-        def rec = engine.open()
+        def rec = engine.createRecommender()
         try {
             assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer));
             assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))

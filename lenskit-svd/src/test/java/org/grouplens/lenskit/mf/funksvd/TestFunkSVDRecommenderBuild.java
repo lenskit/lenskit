@@ -84,7 +84,7 @@ public class TestFunkSVDRecommenderBuild {
     @Test
     public void testFunkSVDRecommenderEngineCreate() throws RecommenderBuildException {
         LenskitRecommenderEngine engine = makeEngine();
-        Recommender rec = engine.open();
+        Recommender rec = engine.createRecommender();
 
         try {
             assertThat(rec.getItemScorer(),
@@ -105,7 +105,7 @@ public class TestFunkSVDRecommenderBuild {
     @Test
     public void testFeatureInfo() throws RecommenderBuildException {
         LenskitRecommenderEngine engine = makeEngine();
-        LenskitRecommender rec = engine.open();
+        LenskitRecommender rec = engine.createRecommender();
 
         try {
             FunkSVDModel model = rec.get(FunkSVDModel.class);
@@ -128,8 +128,8 @@ public class TestFunkSVDRecommenderBuild {
         LenskitRecommender rec1 = null;
         LenskitRecommender rec2 = null;
         try {
-            rec1 = engine.open();
-            rec2 = engine.open();
+            rec1 = engine.createRecommender();
+            rec2 = engine.createRecommender();
 
             assertThat(rec1.getItemScorer(),
                        not(sameInstance(rec2.getItemScorer())));
@@ -163,7 +163,7 @@ public class TestFunkSVDRecommenderBuild {
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
 
-        LenskitRecommender rec = engine.open();
+        LenskitRecommender rec = engine.createRecommender();
         try {
             ItemScorer scorer = rec.getItemScorer();
             assertThat(scorer, instanceOf(FunkSVDItemScorer.class));

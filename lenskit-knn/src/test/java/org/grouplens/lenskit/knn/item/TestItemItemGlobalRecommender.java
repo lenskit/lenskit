@@ -95,7 +95,7 @@ public class TestItemItemGlobalRecommender {
         config.bind(VectorNormalizer.class)
               .to(IdentityVectorNormalizer.class);
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(dao, config);
-        session = engine.open();
+        session = engine.createRecommender();
         gRecommender = session.getGlobalItemRecommender();
     }
 

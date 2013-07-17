@@ -134,7 +134,7 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
 
             LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(dao, cfg);
 
-            return engine.open(dao, shouldClose);
+            return engine.createRecommender(dao, shouldClose);
         } catch (RuntimeException e) {
             if (shouldClose) {
                 dao.close();

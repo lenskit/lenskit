@@ -77,7 +77,7 @@ public class TestFunkSVDRecommender {
         config.bind(Integer.class).withQualifier(FeatureCount.class).to(100);
         // FIXME: Don't use 100 features.
         RecommenderEngine engine = LenskitRecommenderEngine.build(daoF, config);
-        svdRecommender = engine.open();
+        svdRecommender = engine.createRecommender();
         recommender = svdRecommender.getItemRecommender();
         dao = daoF.create();
     }

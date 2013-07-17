@@ -67,7 +67,7 @@ public class TestSlopeOneItemRecommender {
     @SuppressWarnings("deprecation")
     @Test
     public void testSlopeOneRecommenderEngineCreate() {
-        Recommender rec = engine.open();
+        Recommender rec = engine.createRecommender();
 
         try {
             assertThat(rec.getItemScorer(),
@@ -88,8 +88,8 @@ public class TestSlopeOneItemRecommender {
         LenskitRecommender rec1 = null;
         LenskitRecommender rec2 = null;
         try {
-            rec1 = engine.open();
-            rec2 = engine.open();
+            rec1 = engine.createRecommender();
+            rec2 = engine.createRecommender();
 
             assertThat(rec1.getItemScorer(),
                        not(sameInstance(rec2.getItemScorer())));
