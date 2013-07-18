@@ -182,7 +182,10 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
 
         LongIterator items = itemSet.iterator();
         while (items.hasNext()) {
-            users.addAll(itemDAO.getUsersForItem(items.nextLong()));
+            LongSet iusers = itemDAO.getUsersForItem(items.nextLong());
+            if (iusers != null) {
+                users.addAll(iusers);
+            }
         }
         users.remove(user);
 
