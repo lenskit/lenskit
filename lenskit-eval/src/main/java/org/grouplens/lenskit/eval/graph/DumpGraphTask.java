@@ -120,7 +120,7 @@ public class DumpGraphTask extends AbstractTask<File> {
         }
         LenskitConfiguration config = algorithm.getConfig().copy();
         // FIXME This is an ugly DAO-type kludge
-        config.bind(EventDAO.class).toProvider(Providers.<EventDAO>of(null));
+        config.bind(EventDAO.class).toProvider(Providers.<EventDAO>of(null, EventDAO.class));
         if (domain != null) {
             config.bind(PreferenceDomain.class).to(domain);
         }
