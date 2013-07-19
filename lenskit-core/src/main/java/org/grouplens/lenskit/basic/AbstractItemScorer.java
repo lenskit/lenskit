@@ -23,6 +23,7 @@ package org.grouplens.lenskit.basic;
 import it.unimi.dsi.fastutil.longs.LongLists;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import javax.annotation.Nonnull;
 
@@ -30,6 +31,7 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -63,8 +65,13 @@ public abstract class AbstractItemScorer implements ItemScorer {
      * @param user The user whose history is required.
      * @return The event history for this user.
      */
-    protected UserHistory<? extends Event> getUserHistory(long user) {
-        return dao.getEventsForUser(user);
+    protected UserHistory<Event> getUserHistory(long user) {
+        UserHistory<Event> events = dao.getEventsForUser(user);
+        if (events == null) {
+            return History.forUser(user, Collections.<Event>emptyList());
+        } else {
+            return events;
+        }
     }
 
     /**
