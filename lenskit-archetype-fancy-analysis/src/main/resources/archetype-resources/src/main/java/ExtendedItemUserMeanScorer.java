@@ -1,24 +1,22 @@
 /* This file may be freely modified, used, and redistributed without restriction. */
 package ${package};
 
-import java.util.Collection;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-
-import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.baseline.MeanDamping;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.baseline.MeanDamping;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import java.util.Collection;
 
 /**
  * Scorer that returns the user's mean offset from item mean rating for all
@@ -44,12 +42,12 @@ public class ExtendedItemUserMeanScorer extends AbstractItemScorer {
     /**
      * Create a new scorer, this assumes ownership of the given map.
      *
-     * @param itemMeans  The map of item means.
-     * @param globalMean The global mean rating.
-     * @param damping    The damping term.
+     * @param dao The user-event DAO.
+     * @param inModel The model.
+     * @param inUserDamping The damping term.
      */
     @Inject
-    public ExtendedItemUserMeanScorer(DataAccessObject dao, ItemMeanModel inModel,
+    public ExtendedItemUserMeanScorer(UserEventDAO dao, ItemMeanModel inModel,
                                       @MeanDamping double inUserDamping) {
         super(dao);
         model = inModel;

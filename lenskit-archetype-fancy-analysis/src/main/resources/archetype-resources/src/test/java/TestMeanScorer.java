@@ -1,23 +1,24 @@
 /* This file may be freely modified, used, and redistributed without restriction. */
 package ${package};
 
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.closeTo;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.data.dao.StreamingUserEventDAO;
+import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.SimpleRating;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.SimpleRating;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.hamcrest.Matchers.closeTo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 
 /**
  * Test baseline Scorers that compute means from data.
@@ -25,7 +26,8 @@ import org.junit.Test;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestMeanScorer {
-    private DataAccessObject dao;
+    private EventDAO dao;
+    private StreamingUserEventDAO ueDAO;
 
     @Before
     public void createRatingSource() {
@@ -34,7 +36,7 @@ public class TestMeanScorer {
         rs.add(new SimpleRating(2, 1, 7, 4));
         rs.add(new SimpleRating(3, 8, 4, 5));
         rs.add(new SimpleRating(4, 8, 5, 4));
-        
+
         // Global Mean: 16 / 4 = 4
 
         // Item  Means  Offsets
@@ -57,12 +59,8 @@ public class TestMeanScorer {
         // u2 on i4 -> 5.0
         // u2 on i7 -> 4.0
         // u2 on i5 -> 3.5
-        dao = new EventCollectionDAO.Factory(rs).create();
-    }
-
-    @After
-    public void closeRatingSession() {
-        dao.close();
+        dao = new EventCollectionDAO(rs);
+        ueDAO = new StreamingUserEventDAO(dao);
     }
 
     LongSortedSet itemSet(long item) {
@@ -71,7 +69,7 @@ public class TestMeanScorer {
 
     @Test
     public void testUserItemMeanScorer() {
-        ItemScorer scorer = new ExtendedItemUserMeanScorer(dao, new ItemMeanModel.Provider(dao, 0).get(), 0);
+        ItemScorer scorer = new ExtendedItemUserMeanScorer(ueDAO, new ItemMeanModel.Provider(dao, 0).get(), 0);
 
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
@@ -92,18 +90,18 @@ public class TestMeanScorer {
         assertThat(scores8.get(5), closeTo(3.75, 1.0e-5));
         assertThat(scores8.get(7), closeTo(4.25, 1.0e-5));
         assertThat(scores8.get(4), closeTo(5.25, 1.0e-5));
-        
+
         // User 2, not in the set of users in the DAO
         MutableSparseVector scores2 = MutableSparseVector.wrap(items, ratings); // ratings ignored
         scorer.score(2L, scores2);
         assertThat(scores2.get(5), closeTo(3.5, 1.0e-5));
         assertFalse(scores1.containsKey(4));
         assertThat(scores2.get(7), closeTo(4, 1.0e-5));
-     }
-    
+    }
+
     @Test
     public void testUserItemMeanMissing() {
-        ItemScorer scorer = new ExtendedItemUserMeanScorer(dao, new ItemMeanModel.Provider(dao, 0).get(), 0);
+        ItemScorer scorer = new ExtendedItemUserMeanScorer(ueDAO, new ItemMeanModel.Provider(dao, 0).get(), 0);
 
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
@@ -116,5 +114,5 @@ public class TestMeanScorer {
         assertThat(scores1.get(7), closeTo(3.75, 1.0e-5));
         assertThat(scores1.get(10), closeTo(3.75, 1.0e-5));  // user overall average
         assertFalse(scores1.containsKey(4));
-     }
+    }
 }
