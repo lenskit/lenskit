@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -100,9 +102,30 @@ public class EvalCLIOptions {
             fmt.printHelp("lenskit-eval [OPTIONS] CONFIGS...", options);
             System.exit(1);
             return null;
+        } else if (line.hasOption("v")) {
+            System.out.format("lenskit-eval version %s\n", lenskitVersion());
+            System.exit(0);
+            return null;
         } else {
             return new EvalCLIOptions(line);
         }
+    }
+
+    public static String lenskitVersion() {
+        Properties props = new Properties();
+        InputStream stream = EvalCLIOptions.class.getResourceAsStream("/META-INF/lenskit-eval/version.properties");
+        try {
+            props.load(stream);
+        } catch (IOException e) {
+            throw new RuntimeException("properties error", e);
+        } finally {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return props.getProperty("lenskit.version");
     }
 
     @SuppressWarnings({"static-access", "AccessStaticViaInstance"})
@@ -111,6 +134,9 @@ public class EvalCLIOptions {
         opts.addOption(OptionBuilder.withDescription("print this help")
                                     .withLongOpt("help")
                                     .create("h"));
+        opts.addOption(OptionBuilder.withDescription("print the LensKit version and exit")
+                                    .withLongOpt("version")
+                                    .create("v"));
         opts.addOption(OptionBuilder.withDescription("force eval tasks to run")
                                     .withLongOpt("force")
                                     .create("F"));
