@@ -15,6 +15,7 @@
 
   <properties>
     <jar.directory>${project.build.directory}/jars</jar.directory>
+    <package.directory>${project.build.directory}/dist/lenskit</package.directory>
   </properties>
 
   <dependencies>
@@ -81,6 +82,23 @@
       </plugin>
 
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <id>set-third-party</id>
+            <goals><goal>add-third-party</goal></goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <outputDirectory>${package.directory}</outputDirectory>
+              <acceptPomPackaging>true</acceptPomPackaging>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
@@ -90,14 +108,14 @@
             <phase>prepare-package</phase>
             <configuration>
               <target>
-                <property name="packageDir" value="${project.build.directory}/dist/lenskit"/>
-                <copy todir="${project.build.directory}/dist/lenskit">
+                <property name="packageDir" value="${package.directory}"/>
+                <copy todir="${package.directory}">
                   <fileset dir="${basedir}/src/package/text">
                     <include name="*.txt"/>
                   </fileset>
                 </copy>
                 <chmod perm="a+x">
-                  <fileset dir="${project.build.directory}/dist/lenskit">
+                  <fileset dir="${package.directory}">
                     <include name="bin/*" />
                   </fileset>
                 </chmod>
@@ -135,10 +153,10 @@
                 <configuration>
                   <target>
                     <tar destfile="${project.build.directory}/lenskit-${project.version}.tar.gz" compression="gzip">
-                      <tarfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
+                      <tarfileset dir="${package.directory}" prefix="lenskit-${project.version}/" />
                     </tar>
                     <zip destfile="${project.build.directory}/lenskit-${project.version}.zip">
-                      <zipfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
+                      <zipfileset dir="${package.directory}" prefix="lenskit-${project.version}/" />
                     </zip>
                   </target>
                 </configuration>
