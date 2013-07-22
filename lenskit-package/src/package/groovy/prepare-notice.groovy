@@ -18,29 +18,31 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.event;
+import java.util.zip.ZipFile
 
-import javax.annotation.Nullable;
+/* Prepare the NOTICE.txt file for the package. */
 
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.pref.Preference;
+def pkgDir = new File(project.properties["packageDir"])
+def libDir = new File(pkgDir, "lib")
+def noticeFile = new File(pkgDir, "NOTICE.txt")
 
-/**
- * A rating is an expression of preference for an item by a user.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @compat Public
- */
-public interface Rating extends Event {
-    /**
-     * Get the expressed preference. If this is an "unrate" event, the
-     * preference will be {@code null}.
-     *
-     * @return The expressed preference.
-     */
-    @Nullable
-    Preference getPreference();
-
-    @Override @Deprecated
-    Rating copy();
+noticeFile.withPrintWriter { out ->
+    out.println("This file contains the notices required by the libraries used by LensKit.")
+    out.println()
+    libDir.eachFileMatch ~/.*\.jar$/, { File jar ->
+        def zip = new ZipFile(jar)
+        try {
+            def noticeEntry = zip.getEntry("META-INF/NOTICE.txt")
+            if (noticeEntry != null) {
+                def notice = zip.getInputStream(noticeEntry).text
+                out.println("${jar.name}:")
+                notice.eachLine { line ->
+                    out.println("    ${line}")
+                }
+                out.println()
+            }
+        } finally {
+            zip.close()
+        }
+    }
 }
