@@ -23,13 +23,11 @@ package org.grouplens.lenskit.data.history;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
-import org.omg.CORBA.LongSeqHelper;
 
 import java.util.List;
 

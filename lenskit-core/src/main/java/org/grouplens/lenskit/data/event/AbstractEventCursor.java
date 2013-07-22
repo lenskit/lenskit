@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.data.event;
 
 import org.grouplens.lenskit.cursors.AbstractPollingCursor;
-import org.grouplens.lenskit.data.Event;
 
 /**
  * Helper for making event cursors.

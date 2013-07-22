@@ -21,8 +21,8 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.vectors.SparseVector;
 

@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data;
+package org.grouplens.lenskit.data.history;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 
@@ -29,6 +29,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import org.grouplens.lenskit.data.event.Event;
 
 /**
  * Represents a user profile, associating an immutable list of events with a user. The
@@ -85,7 +86,7 @@ public interface UserHistory<E extends Event> extends List<E> {
      * This method is not guaranteed to be synchronized. It is safe to memoize
      * distinct functions in parallel, but potentially-parallel use of the same
      * function must be synchronized by client code or the function may be called
-     * twice. The implementation in {@link AbstractUserHistory} uses a
+     * twice. The implementation in {@link org.grouplens.lenskit.data.history.AbstractUserHistory} uses a
      * {@link ConcurrentHashMap}.  Multiple calls are therefore safe, but may
      * result in extra work.  All implementations must maintain this safety
      * guarantee, although they may do so by synchronizing this method.

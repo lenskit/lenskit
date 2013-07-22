@@ -28,7 +28,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.util.TypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

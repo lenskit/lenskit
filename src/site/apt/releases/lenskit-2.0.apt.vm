@@ -17,6 +17,9 @@
     methods have been removed.  The user event DAO should be fast & caching, so individual components
     can request the data they need directly.
 
+  * Event and history interfaces have been moved out of <<<lenskit-api>>> into <<<lenskit-core>>>,
+    in their corresponding packages.
+
   []
 
 * Data Structures

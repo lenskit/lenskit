@@ -22,8 +22,7 @@ package org.grouplens.lenskit.data.history;
 
 import com.google.common.base.Function;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.vectors.SparseVector;

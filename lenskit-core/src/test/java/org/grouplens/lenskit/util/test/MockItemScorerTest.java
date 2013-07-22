@@ -21,12 +21,8 @@
 package org.grouplens.lenskit.util.test;
 
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.history.BasicUserHistory;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Test;
-
-import java.util.Collections;
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.hamcrest.Matchers.closeTo;

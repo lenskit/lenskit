@@ -22,9 +22,6 @@ package org.grouplens.lenskit.basic;
 
 import it.unimi.dsi.fastutil.longs.LongLists;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 

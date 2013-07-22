@@ -20,8 +20,6 @@
  */
 package org.grouplens.lenskit.data.event;
 
-import org.grouplens.lenskit.data.Event;
-
 import com.google.common.primitives.Longs;
 
 /**

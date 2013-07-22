@@ -22,14 +22,13 @@ package org.grouplens.lenskit.data.dao;
 
 import com.google.common.collect.Lists;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.AbstractEvent;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 

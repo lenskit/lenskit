@@ -24,7 +24,7 @@
 package org.grouplens.lenskit.data.dao;
 
 
-import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Events;
 
 import javax.annotation.Nullable;

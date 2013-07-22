@@ -35,7 +35,7 @@ import org.grouplens.lenskit.baseline.ConstantPredictor;
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.basic.TopNItemRecommender;
-import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.iterative.StoppingThreshold;

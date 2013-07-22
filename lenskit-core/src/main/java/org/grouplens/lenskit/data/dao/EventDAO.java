@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.data.dao;
 
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.event.Event;
 
 /**
  * Basic interface for accessing events.

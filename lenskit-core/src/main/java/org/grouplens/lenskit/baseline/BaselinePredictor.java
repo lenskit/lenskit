@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.baseline;
 
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 

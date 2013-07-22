@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.dao;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.event.Event;
 
 import java.util.List;
 

@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.test;
 
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;

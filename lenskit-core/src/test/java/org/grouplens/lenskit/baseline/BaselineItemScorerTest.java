@@ -21,14 +21,10 @@
 package org.grouplens.lenskit.baseline;
 
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.history.BasicUserHistory;
 import org.grouplens.lenskit.util.test.MockItemScorer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.junit.Test;
-
-import java.util.Collections;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;

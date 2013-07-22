@@ -23,9 +23,7 @@ package org.grouplens.lenskit.data.history;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import org.grouplens.lenskit.data.AbstractUserHistory;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.event.Event;
 
 import java.util.ArrayList;
 import java.util.Iterator;

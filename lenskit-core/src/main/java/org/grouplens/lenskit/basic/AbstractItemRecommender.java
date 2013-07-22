@@ -29,9 +29,6 @@ import javax.annotation.Nullable;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.UserEventDAO;
 
 
 /**

@@ -22,8 +22,8 @@ package org.grouplens.lenskit.knn.user;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.dao.ItemEventDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
