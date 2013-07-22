@@ -3,7 +3,7 @@
   <parent>
     <artifactId>lenskit</artifactId>
     <groupId>org.grouplens.lenskit</groupId>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.3</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>lenskit-package</artifactId>
@@ -108,10 +108,10 @@
             <phase>prepare-package</phase>
             <configuration>
               <target>
-                <property name="packageDir" value="${package.directory}"/>
+                <property name="packageDir" value="${package.directory}" />
                 <copy todir="${package.directory}">
                   <fileset dir="${basedir}/src/package/text">
-                    <include name="*.txt"/>
+                    <include name="*.txt" />
                   </fileset>
                 </copy>
                 <chmod perm="a+x">
@@ -119,7 +119,7 @@
                     <include name="bin/*" />
                   </fileset>
                 </chmod>
-                <script language="groovy" src="${basedir}/src/package/groovy/prepare-notice.groovy"/>
+                <script language="groovy" src="${basedir}/src/package/groovy/prepare-notice.groovy" />
               </target>
             </configuration>
           </execution>
