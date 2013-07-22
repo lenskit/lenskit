@@ -151,7 +151,9 @@ public final class Ratings {
      * Make a fresh rating object with no timestamp.
      *
      * @see #make(long, long, double, long)
+     * @deprecated Use {@link #newBuilder()}.
      */
+    @Deprecated
     public static Rating make(long uid, long iid, double value) {
         return make(uid, iid, value, -1);
     }
@@ -159,9 +161,41 @@ public final class Ratings {
     /**
      * Make a fresh rating event. Event IDs are generated sequentially. This is
      * mostly useful in test cases.
+     * @deprecated Use {@link #newBuilder()}.
      */
+    @Deprecated
     public static Rating make(long uid, long iid, double value, long ts) {
         return new SimpleRating(nextEventId.incrementAndGet(),
                                 uid, iid, value, ts);
+    }
+
+    /**
+     * Construct a new {@link RatingBuilder}.
+     * @return A new rating builder.
+     * @since 1.3
+     */
+    public static RatingBuilder newBuilder() {
+        return new RatingBuilder();
+    }
+
+    /**
+     * Construct a rating builder initialized with the values of a rating.
+     * @param r The rating.
+     * @return A rating builder that will initially build a copy of {@var r}.
+     * @since 1.e
+     */
+    public static RatingBuilder copyBuilder(Rating r) {
+        RatingBuilder rb = newBuilder();
+        rb.setId(r.getId())
+          .setUserId(r.getUserId())
+          .setItemId(r.getItemId())
+          .setTimestamp(r.getTimestamp());
+        Preference pref = r.getPreference();
+        if (pref == null) {
+            rb.clearRating();
+        } else {
+            rb.setRating(pref.getValue());
+        }
+        return rb;
     }
 }
