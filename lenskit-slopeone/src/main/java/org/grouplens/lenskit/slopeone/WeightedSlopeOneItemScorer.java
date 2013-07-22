@@ -67,7 +67,7 @@ public class WeightedSlopeOneItemScorer extends SlopeOneItemScorer {
                 }
                 if (nusers == 0) {
                     nUnpred += 1;
-                    scores.clear(e);
+                    scores.unset(e);
                 } else {
                     double predValue = total / nusers;
                     if (domain != null) {

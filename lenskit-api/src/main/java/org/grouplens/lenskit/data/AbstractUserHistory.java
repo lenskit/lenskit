@@ -20,15 +20,14 @@
  */
 package org.grouplens.lenskit.data;
 
+import com.google.common.base.Function;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
+import javax.annotation.Nullable;
 import java.util.AbstractList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-
-import com.google.common.base.Function;
 
 /**
  * An abstract implementation of {@link UserHistory} to provide default
@@ -40,23 +39,46 @@ import com.google.common.base.Function;
  */
 public abstract class AbstractUserHistory<E extends Event> extends AbstractList<E> implements UserHistory<E> {
     @SuppressWarnings("rawtypes")
-    private final Map<Function, Object> memTable = new ConcurrentHashMap<Function, Object>();
+    private transient volatile Map<Function, Object> memTable;
 
     @Override
     public LongSet itemSet() {
-        LongSet items = new LongOpenHashSet();
-        for (Event e : this) {
-            items.add(e.getItemId());
-        }
-        return items;
+        return memoize(ItemSetFunction.INSTANCE);
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public <T> T memoize(Function<? super UserHistory<E>, ? extends T> func) {
-        if (!memTable.containsKey(func)) {
-            memTable.put(func, func.apply(this));
+        if (memTable == null) {
+            synchronized (this) {
+                if (memTable == null) {
+                    memTable = new ConcurrentHashMap<Function, Object>();
+                }
+            }
         }
-        return (T) memTable.get(func);
+
+        Map<Function,Object> table = memTable;
+        if (!table.containsKey(func)) {
+            // worst case scenario: we compute the function twice. This is permissible.
+            table.put(func, func.apply(this));
+        }
+        return (T) table.get(func);
+    }
+
+    private static enum ItemSetFunction implements Function<UserHistory<? extends Event>, LongSet> {
+        INSTANCE;
+
+        @Nullable @Override
+        public LongSet apply(@Nullable UserHistory<? extends Event> input) {
+            if (input == null) {
+                return null;
+            } else {
+                LongSet items = new LongOpenHashSet();
+                for (Event e : input) {
+                    items.add(e.getItemId());
+                }
+                return items;
+            }
+        }
     }
 }

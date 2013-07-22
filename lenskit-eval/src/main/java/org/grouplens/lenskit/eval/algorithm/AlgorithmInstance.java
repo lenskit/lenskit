@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval.algorithm;
 import com.google.common.base.Supplier;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.eval.ExecutionInfo;
-import org.grouplens.lenskit.eval.SharedPreferenceSnapshot;
+import org.grouplens.lenskit.eval.traintest.SharedPreferenceSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 
 import javax.annotation.Nonnull;

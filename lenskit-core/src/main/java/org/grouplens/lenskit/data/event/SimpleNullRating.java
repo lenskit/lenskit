@@ -44,7 +44,9 @@ public final class SimpleNullRating implements Rating {
      * @param id  The event ID.
      * @param uid The user ID.
      * @param iid The item ID.
+     * @deprecated Use {@link RatingBuilder}.
      */
+    @Deprecated
     public SimpleNullRating(long id, long uid, long iid) {
         this(id, uid, iid, -1);
     }
@@ -56,7 +58,9 @@ public final class SimpleNullRating implements Rating {
      * @param uid The user ID.
      * @param iid The item ID.
      * @param ts  The event timestamp.
+     * @deprecated Use {@link RatingBuilder}.
      */
+    @Deprecated
     public SimpleNullRating(long id, long uid, long iid, long ts) {
         this.id = id;
         userId = uid;
@@ -89,7 +93,7 @@ public final class SimpleNullRating implements Rating {
         return null;
     }
 
-    @Override
+    @Override @Deprecated
     public Rating copy() {
         /* this object is immutable. Just return it. */
         return this;

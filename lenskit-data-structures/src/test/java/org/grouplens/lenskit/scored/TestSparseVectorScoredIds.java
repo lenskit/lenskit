@@ -24,12 +24,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.scored.ScoredIdBuilder;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.Vectors;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -37,6 +36,7 @@ public class TestSparseVectorScoredIds {
     private final Symbol fooSym = Symbol.of("foo");
     private final Symbol barSym = Symbol.of("bar");
     private final Symbol bazSym = Symbol.of("baz");
+    private final TypedSymbol<String> tsym = TypedSymbol.of(String.class, "test.wombat");
     
     @Test
     public void testSparseVectorScoredIds() {
@@ -54,12 +54,17 @@ public class TestSparseVectorScoredIds {
         
         MutableSparseVector baz = sv.addChannel(bazSym);
         baz.set(2, 100.0);
+
+        Long2ObjectMap<String> wombat = sv.addChannel(tsym);
+        wombat.put(1, "hello");
+        wombat.put(4, "goodbye");
         
         // check that the hasChannel function is correct.
         for(Iterator<ScoredId> it = ScoredIds.collectionFromVector(sv).fastIterator(); it.hasNext();) {
             ScoredId sid = it.next();
             assertTrue(sid.hasChannel(fooSym));
             assertFalse(sid.hasChannel(bazSym));
+            assertTrue(sid.hasChannel(tsym));
         }
         
         ScoredIdBuilder builder = new ScoredIdBuilder();
@@ -68,11 +73,13 @@ public class TestSparseVectorScoredIds {
                             .setScore(1.0)
                             .addChannel(fooSym, 2.0)
                             .addChannel(barSym, 3.0)
+                            .addChannel(tsym, "hello")
                             .build());
         expected.add(builder.clearChannels()
                             .setId(4)
                             .setScore(16.0)
                             .addChannel(fooSym, 5.0)
+                            .addChannel(tsym, "goodbye")
                             .build());
         
         // get the scored ids and put them in a hashset (for comparison).

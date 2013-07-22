@@ -50,7 +50,9 @@ public final class SimpleRating extends AbstractEvent implements Rating {
      *
      * @param eid  The event ID.
      * @param pref The preference.
+     * @deprecated Use {@link RatingBuilder}.
      */
+    @Deprecated
     public SimpleRating(long eid, @Nonnull Preference pref) {
         this(eid, -1L, pref);
     }
@@ -61,7 +63,9 @@ public final class SimpleRating extends AbstractEvent implements Rating {
      * @param eid  The event ID.
      * @param ts   The event timestamp.
      * @param pref The preference.
+     * @deprecated Use {@link RatingBuilder}.
      */
+    @Deprecated
     public SimpleRating(long eid, long ts, @Nonnull Preference pref) {
         Preconditions.checkNotNull(pref);
         eventId = eid;
@@ -76,7 +80,9 @@ public final class SimpleRating extends AbstractEvent implements Rating {
      * @param uid The user ID.
      * @param iid The item ID.
      * @param v   The rating value.
+     * @deprecated Use {@link RatingBuilder}.
      */
+    @Deprecated
     public SimpleRating(long eid, long uid, long iid, double v) {
         this(eid, uid, iid, v, -1L);
     }
@@ -89,7 +95,9 @@ public final class SimpleRating extends AbstractEvent implements Rating {
      * @param iid The item ID.
      * @param v   The rating value.
      * @param ts  The event timestamp.
+     * @deprecated Use {@link RatingBuilder}.
      */
+    @Deprecated
     public SimpleRating(long eid, long uid, long iid, double v, long ts) {
         eventId = eid;
         timestamp = ts;
@@ -122,7 +130,7 @@ public final class SimpleRating extends AbstractEvent implements Rating {
         return timestamp;
     }
 
-    @Override
+    @Override @Deprecated
     public Rating copy() {
         return this;
     }

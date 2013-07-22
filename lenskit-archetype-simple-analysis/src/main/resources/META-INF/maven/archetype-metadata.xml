@@ -25,7 +25,6 @@
       <includes>
 	<include>chart.R</include>
 	<include>eval-simple.groovy</include>
-	<include>get-data.xml</include>
       </includes>
     </fileSet>
   </fileSets>

@@ -22,7 +22,7 @@ package org.grouplens.lenskit.eval.metrics;
 
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand;
+import org.grouplens.lenskit.eval.traintest.TrainTestEvalTask;
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-public interface TestUserMetric extends Metric<TrainTestEvalCommand> {
+public interface TestUserMetric extends Metric<TrainTestEvalTask> {
     /**
      * Create a result accumulator for a single row for this evaluation. The accumulator
      * will be passed the predictions for each user in turn, then asked for the results

@@ -20,16 +20,15 @@
  */
 package org.grouplens.lenskit.data.history;
 
+import com.google.common.base.Function;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.Event;
 import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.event.Rating;
-
-import com.google.common.base.Function;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.vectors.SparseVector;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Singleton;
 import java.io.Serializable;
@@ -42,10 +41,10 @@ import java.io.Serializable;
 @Shareable
 @ThreadSafe
 @Singleton
-public final class RatingVectorUserHistorySummarizer implements UserHistorySummarizer, Function<UserHistory<? extends Event>, SparseVector>, Serializable {
+public final class RatingVectorUserHistorySummarizer implements UserHistorySummarizer, Serializable {
     private static final RatingVectorUserHistorySummarizer INSTANCE = new RatingVectorUserHistorySummarizer();
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     @Override
     public Class<? extends Event> eventTypeWanted() {
@@ -54,15 +53,7 @@ public final class RatingVectorUserHistorySummarizer implements UserHistorySumma
 
     @Override
     public SparseVector summarize(UserHistory<? extends Event> history) {
-        return history.memoize(this);
-    }
-
-    @Override @Nonnull
-    public SparseVector apply(UserHistory<? extends Event> history) {
-        if (history == null) {
-            throw new IllegalArgumentException("history is null");
-        }
-        return Ratings.userRatingVector(history.filter(Rating.class));
+        return history.memoize(SummaryFunction.INSTANCE);
     }
 
     public static SparseVector makeRatingVector(UserHistory<? extends Event> history) {
@@ -88,6 +79,19 @@ public final class RatingVectorUserHistorySummarizer implements UserHistorySumma
             return false;
         } else {
             return getClass().equals(o.getClass());
+        }
+    }
+
+    static enum SummaryFunction implements Function<UserHistory<? extends Event>, SparseVector> {
+        INSTANCE;
+
+        @Nullable
+        @Override
+        public SparseVector apply(@Nullable UserHistory<? extends Event> history) {
+            if (history == null) {
+                throw new NullPointerException("history is null");
+            }
+            return Ratings.userRatingVector(history.filter(Rating.class));
         }
     }
 }

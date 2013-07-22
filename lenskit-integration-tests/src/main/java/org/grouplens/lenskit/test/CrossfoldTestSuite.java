@@ -20,15 +20,15 @@
  */
 package org.grouplens.lenskit.test;
 
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
-import org.grouplens.lenskit.eval.CommandException;
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceCommand;
-import org.grouplens.lenskit.eval.config.EvalConfig;
+import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.eval.EvalConfig;
+import org.grouplens.lenskit.eval.TaskExecutionException;
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceBuilder;
 import org.grouplens.lenskit.eval.data.GenericDataSource;
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric;
-import org.grouplens.lenskit.eval.traintest.SimpleEvalCommand;
+import org.grouplens.lenskit.eval.traintest.SimpleEvaluator;
 import org.grouplens.lenskit.util.table.Table;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,18 +47,17 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
     @Rule
     public TemporaryFolder workDir = new TemporaryFolder();
 
-    protected abstract void configureAlgorithm(LenskitRecommenderEngineFactory factory);
+    protected abstract void configureAlgorithm(LenskitConfiguration config);
 
     protected abstract void checkResults(Table table);
 
     @Test
-    public void testAlgorithmAccuracy() throws CommandException, IOException {
-        SimpleEvalCommand evalCommand = new SimpleEvalCommand("train-test");
-        Properties props =  new Properties(System.getProperties());
+    public void testAlgorithmAccuracy() throws TaskExecutionException, IOException {
+        Properties props =  new Properties();
         props.setProperty(EvalConfig.DATA_DIR_PROPERTY, workDir.newFolder("data").getAbsolutePath());
-        evalCommand.setConfig(new EvalConfig(props));
-        LenskitAlgorithmInstanceCommand algo = new LenskitAlgorithmInstanceCommand();
-        configureAlgorithm(algo.getFactory());
+        SimpleEvaluator evalCommand = new SimpleEvaluator(props);
+        LenskitAlgorithmInstanceBuilder algo = new LenskitAlgorithmInstanceBuilder();
+        configureAlgorithm(algo.getConfig());
         evalCommand.addAlgorithm(algo);
 
         evalCommand.addDataset(new GenericDataSource("ml-100k", daoFactory), 5, 0.2);

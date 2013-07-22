@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.util;
 
 import com.google.common.base.Supplier;
-import com.google.common.base.Throwables;
 
 import javax.annotation.Nonnull;
 import java.lang.ref.Reference;
@@ -36,7 +35,7 @@ import java.util.concurrent.Callable;
  */
 public class SoftLazyValue<T> implements Supplier<T> {
     private volatile Reference<T> value;
-    private Callable<T> provider;
+    private Supplier<T> supplier;
 
     /**
      * Create a lazy value whose value will be provided by a callable.
@@ -45,8 +44,8 @@ public class SoftLazyValue<T> implements Supplier<T> {
      *          callable's {@link Callable#call()} method cannot return
      *          {@code null}.
      */
-    public SoftLazyValue(@Nonnull Callable<T> f) {
-        provider = f;
+    public SoftLazyValue(@Nonnull Supplier<T> f) {
+        supplier = f;
     }
 
     /**
@@ -58,12 +57,8 @@ public class SoftLazyValue<T> implements Supplier<T> {
     public synchronized T get() {
         T val = (value == null) ? null : value.get();
         if (val == null) {
-            try {
-                val = provider.call();
-                value = new SoftReference<T>(val);
-            } catch (Exception e) {
-                throw Throwables.propagate(e);
-            }
+            val = supplier.get();
+            value = new SoftReference<T>(val);
         }
 
         return val;

@@ -24,23 +24,14 @@ package org.grouplens.lenskit.eval.data
 import static org.junit.Assert.*
 import static org.hamcrest.Matchers.*
 
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-
-import java.util.List;
-
+import it.unimi.dsi.fastutil.longs.LongArrayList
 import com.google.common.io.Files
-import org.grouplens.lenskit.eval.config.ConfigTestBase
+import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.junit.Test
-import org.grouplens.lenskit.eval.data.CSVDataSource
-import org.grouplens.lenskit.eval.data.GenericDataSource;
-import org.junit.Ignore
-import org.grouplens.lenskit.eval.data.subsample.SubsampleCommand
 import org.grouplens.lenskit.eval.data.subsample.SubsampleMode
 import org.junit.Before
 import org.junit.After
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.cursors.LongCursor;
+import org.grouplens.lenskit.cursors.Cursors
 import org.grouplens.lenskit.data.dao.DAOFactory
 import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.event.Rating;

@@ -54,7 +54,7 @@ public class FunctionModelMetric implements ModelMetric {
     }
 
     @Override
-    public void startEvaluation(TrainTestEvalCommand eval) {}
+    public void startEvaluation(TrainTestEvalTask eval) {}
 
     @Override
     public void finishEvaluation() {}

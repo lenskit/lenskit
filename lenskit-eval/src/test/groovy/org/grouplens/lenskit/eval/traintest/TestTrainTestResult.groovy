@@ -22,21 +22,20 @@ package org.grouplens.lenskit.eval.traintest
 
 import com.google.common.io.Files
 import org.grouplens.lenskit.ItemScorer
-import org.junit.Before
-import org.junit.After
-import org.junit.Test
-import org.grouplens.lenskit.eval.config.ConfigTestBase
-import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
-import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
-import org.grouplens.lenskit.RatingPredictor
 import org.grouplens.lenskit.baseline.BaselineItemScorer
 import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
-
-import static org.junit.Assert.assertThat
+import org.grouplens.lenskit.eval.script.ConfigTestBase
+import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
+import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
+import org.grouplens.lenskit.util.table.TableImpl
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 
 import static org.hamcrest.Matchers.instanceOf
-import org.grouplens.lenskit.util.table.TableImpl
+import static org.hamcrest.Matchers.nullValue
+import static org.junit.Assert.assertThat
 
 /**
  * Test the result returned by the trainTest
@@ -70,7 +69,7 @@ class TestTrainTestResult extends ConfigTestBase {
     }
 
     @Test
-    void TestResult() {
+    void testResult() {
         def dat = eval {
             crossfold("tempRatings") {
                 source file
@@ -83,6 +82,7 @@ class TestTrainTestResult extends ConfigTestBase {
             trainTest {
                 dataset dat
                 output null
+                assertThat(output, nullValue())
                 metric MAEPredictMetric
                 metric RMSEPredictMetric
 

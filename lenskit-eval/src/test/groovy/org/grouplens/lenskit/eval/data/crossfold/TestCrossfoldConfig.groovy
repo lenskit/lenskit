@@ -27,7 +27,7 @@ import org.grouplens.lenskit.cursors.Cursors
 import org.grouplens.lenskit.data.dao.DAOFactory
 import org.grouplens.lenskit.data.dao.DataAccessObject
 import org.grouplens.lenskit.data.event.Rating
-import org.grouplens.lenskit.eval.config.ConfigTestBase
+import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet
 import org.junit.After
 import org.junit.Before

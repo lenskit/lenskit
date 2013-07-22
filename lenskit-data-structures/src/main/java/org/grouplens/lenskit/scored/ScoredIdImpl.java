@@ -20,50 +20,54 @@
  */
 package org.grouplens.lenskit.scored;
 
+import com.google.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
-import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
+import it.unimi.dsi.fastutil.objects.*;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
-/**
- * Basic implementation of {@link ScoredId}.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- */
 class ScoredIdImpl extends AbstractScoredId implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final long id;
     private final double score;
     @SuppressFBWarnings("SE_BAD_FIELD")
-    private final Reference2DoubleMap<Symbol> channelMap;
+    @Nonnull
+    private final Reference2DoubleMap<Symbol> channels;
+    @SuppressFBWarnings("SE_BAD_FIELD")
+    @Nonnull
+    private final Map<TypedSymbol<?>, ?> typedChannels;
 
-    /**
-     * Construct a scored ID with no channels.
-     * @param id The ID.
-     * @param score The score.
-     */
     public ScoredIdImpl(long id, double score) {
-        this(id, score, null);
+        this(id, score, null, null);
     }
 
     /**
-     * Construct a scored ID.
+     * Construct a new {@link ScoredId}.
      * @param id The ID.
      * @param score The score.
-     * @param channelMap The side channels for this ID.
+     * @param chans The side channel map.
+     * @param tChans The typed side channel map.
      */
-    public ScoredIdImpl(long id, double score, Reference2DoubleMap<Symbol> channelMap) {
+    public ScoredIdImpl(long id, double score, Reference2DoubleMap<Symbol> chans,
+            Reference2ObjectMap<TypedSymbol<?>, ?> tChans) {
         this.id = id;
         this.score = score;
-        if (channelMap != null) {
-            this.channelMap = new Reference2DoubleArrayMap<Symbol>(channelMap);
+        if (chans != null) {
+            this.channels = new Reference2DoubleArrayMap<Symbol>(chans);
         } else {
-            this.channelMap = null;
+            this.channels = Reference2DoubleMaps.EMPTY_MAP;
+        }
+        if (tChans != null) {
+            this.typedChannels = ImmutableMap.copyOf(tChans);
+        } else {
+            this.typedChannels = Collections.emptyMap();
         }
     }
 
@@ -79,23 +83,38 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
 
     @Override
     public boolean hasChannel(Symbol s) {
-        return channelMap != null && channelMap.containsKey(s);
+        return channels.containsKey(s);
+    }
+
+    @Override
+    public boolean hasChannel(TypedSymbol<?> s) {
+        return typedChannels.containsKey(s);
     }
 
     @Override
     public double channel(Symbol s) {
         if (hasChannel(s)) {
-            return channelMap.get(s);
+            return channels.get(s);
         }
         throw new IllegalArgumentException("No existing channel under name " + s.getName());
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public <K> K channel(TypedSymbol<K> s) {
+        if (hasChannel(s)) {
+            return (K) typedChannels.get(s);
+        }
+        throw new IllegalArgumentException("No existing typed channel under name " + s.getName());
+    }
+
     @Override
     public Set<Symbol> getChannels() {
-        if (channelMap != null) {
-            return Collections.unmodifiableSet(channelMap.keySet());
-        } else {
-            return Collections.emptySet();
-        }
+        return Collections.unmodifiableSet(channels.keySet());
+    }
+
+    @Override
+    public Set<TypedSymbol<?>> getTypedChannels() {
+        return typedChannels.keySet();
     }
 }

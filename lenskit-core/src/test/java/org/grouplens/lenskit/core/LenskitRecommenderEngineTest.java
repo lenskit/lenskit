@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.core;
 
+import com.sun.org.apache.bcel.internal.generic.LREM;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
@@ -55,30 +56,30 @@ import static org.junit.Assert.assertThat;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class LenskitRecommenderEngineTest {
-    private LenskitRecommenderEngineFactory factory;
     private DAOFactory daoFactory;
 
     @Before
     public void setup() {
         daoFactory = new EventCollectionDAO.Factory(Collections.<Event>emptyList());
-        factory = new LenskitRecommenderEngineFactory(daoFactory);
     }
 
     @Test
     public void testBasicRec() throws RecommenderBuildException {
-        configureBasicRecommender();
+        LenskitConfiguration config = configureBasicRecommender();
 
-        LenskitRecommenderEngine engine = factory.create();
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
         verifyBasicRecommender(engine);
     }
 
-    private void configureBasicRecommender() {
-        factory.bind(ItemScorer.class)
-               .to(BaselineItemScorer.class);
-        factory.bind(ItemRecommender.class)
-               .to(TopNItemRecommender.class);
-        factory.bind(BaselinePredictor.class)
-               .to(ConstantPredictor.class);
+    private LenskitConfiguration configureBasicRecommender() {
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(ItemScorer.class)
+              .to(BaselineItemScorer.class);
+        config.bind(ItemRecommender.class)
+              .to(TopNItemRecommender.class);
+        config.bind(BaselinePredictor.class)
+              .to(ConstantPredictor.class);
+        return config;
     }
 
     private void verifyBasicRecommender(LenskitRecommenderEngine engine) {LenskitRecommender rec = engine.open();
@@ -101,11 +102,12 @@ public class LenskitRecommenderEngineTest {
 
     @Test
     public void testArbitraryRoot() throws RecommenderBuildException {
-        factory.bind(BaselinePredictor.class)
-               .to(ConstantPredictor.class);
-        factory.addRoot(BaselinePredictor.class);
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(BaselinePredictor.class)
+              .to(ConstantPredictor.class);
+        config.addRoot(BaselinePredictor.class);
 
-        LenskitRecommenderEngine engine = factory.create();
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
         LenskitRecommender rec = engine.open();
         try {
             assertThat(rec.get(BaselinePredictor.class),
@@ -117,12 +119,13 @@ public class LenskitRecommenderEngineTest {
 
     @Test
     public void testSeparatePredictor() throws RecommenderBuildException {
-        factory.bind(BaselinePredictor.class)
-               .to(GlobalMeanPredictor.class);
-        factory.bind(ItemScorer.class)
-               .to(BaselineItemScorer.class);
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(BaselinePredictor.class)
+              .to(GlobalMeanPredictor.class);
+        config.bind(ItemScorer.class)
+              .to(BaselineItemScorer.class);
 
-        LenskitRecommenderEngine engine = factory.create();
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
 
         LenskitRecommender rec1 = engine.open();
         LenskitRecommender rec2 = engine.open();
@@ -152,9 +155,10 @@ public class LenskitRecommenderEngineTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testParameter() throws RecommenderBuildException {
-        factory.set(StoppingThreshold.class).to(0.042);
-        factory.addRoot(ThresholdStoppingCondition.class);
-        LenskitRecommenderEngine engine = factory.create();
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.set(StoppingThreshold.class).to(0.042);
+        config.addRoot(ThresholdStoppingCondition.class);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
         LenskitRecommender rec = engine.open();
         ThresholdStoppingCondition stop = rec.get(ThresholdStoppingCondition.class);
         assertThat(stop, notNullValue());
@@ -180,9 +184,9 @@ public class LenskitRecommenderEngineTest {
      */
     @Test
     public void testBasicNoInstance() throws RecommenderBuildException, IOException, ClassNotFoundException {
-        configureBasicRecommender();
+        LenskitConfiguration config = configureBasicRecommender();
 
-        LenskitRecommenderEngine engine = factory.create();
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
 
         Graph g = engine.getDependencies();
         // make sure we have no record of an instance dao
@@ -199,9 +203,9 @@ public class LenskitRecommenderEngineTest {
 
     @Test
     public void testSerialize() throws RecommenderBuildException, IOException, ClassNotFoundException {
-        configureBasicRecommender();
+        LenskitConfiguration config = configureBasicRecommender();
 
-        LenskitRecommenderEngine engine = factory.create();
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
         File tfile = File.createTempFile("lenskit", "engine");
         try {
             engine.write(tfile);
@@ -217,8 +221,9 @@ public class LenskitRecommenderEngineTest {
      */
     @Test
     public void testSubclassedDAO() throws RecommenderBuildException {
-        factory.addRoot(SubclassedDAODepComponent.class);
-        LenskitRecommenderEngine engine = factory.create();
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.addRoot(SubclassedDAODepComponent.class);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
         LenskitRecommender rec = engine.open();
         try {
             SubclassedDAODepComponent dep = rec.get(SubclassedDAODepComponent.class);

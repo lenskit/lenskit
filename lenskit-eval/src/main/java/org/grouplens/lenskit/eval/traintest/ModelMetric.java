@@ -24,7 +24,6 @@ import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
-import org.grouplens.lenskit.eval.traintest.TrainTestEvalCommand;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -35,7 +34,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
  */
-public interface ModelMetric extends Metric<TrainTestEvalCommand> {
+public interface ModelMetric extends Metric<TrainTestEvalTask> {
     /**
      * Get the headers of the columns returned by this metric.
      * @return The column headers.

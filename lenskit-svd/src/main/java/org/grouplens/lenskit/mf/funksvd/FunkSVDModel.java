@@ -37,58 +37,25 @@ import java.util.List;
  */
 @DefaultProvider(FunkSVDModelBuilder.class)
 @Shareable
-public class FunkSVDModel implements Serializable {
+public final class FunkSVDModel implements Serializable {
     private static final long serialVersionUID = 2L;
 
-    /**
-     * Number of features in the vector.
-     */
-    public final int featureCount;
-    /**
-     * The number of users.
-     */
-    public final int numUser;
-    /**
-     * The number of items.
-     */
-    public final int numItem;
+    private final int featureCount;
 
-    /**
-     * The item-feature matrix (features, then items).  Do not modify this array.
-     */
-    public final double[][] itemFeatures;
-    /**
-     * The user-feature matrix (features, then users).  Do not modify this array.
-     */
-    public final double[][] userFeatures;
+    private final int numUser;
+    private final int numItem;
 
-    /**
-     * The clamping function used to build this model.
-     */
-    public final ClampingFunction clampingFunction;
+    private final double[][] itemFeatures;
+    private final double[][] userFeatures;
 
-    /**
-     * The feature info for each feature.
-     */
-    public final List<FeatureInfo> featureInfo;
+    private final ClampingFunction clampingFunction;
 
-    /**
-     * The final RMSE of
-     */
+    private final List<FeatureInfo> featureInfo;
 
-    /**
-     * The item index.
-     */
-    public final Index itemIndex;
-    /**
-     * The user index.
-     */
-    public final Index userIndex;
+    private final Index itemIndex;
+    private final Index userIndex;
 
-    /**
-     * The baseline predictor used to build this model.
-     */
-    public final BaselinePredictor baseline;
+    private final BaselinePredictor baseline;
 
     public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
                         ClampingFunction clamp, Index iidx, Index uidx,
@@ -133,5 +100,93 @@ public class FunkSVDModel implements Serializable {
      */
     public List<FeatureInfo> getFeatureInfo() {
         return featureInfo;
+    }
+
+    /**
+     * The number of users.
+     */
+    public int getUserCount() {
+        return numUser;
+    }
+
+    /**
+     * The number of items.
+     */
+    public int getItemCount() {
+        return numItem;
+    }
+
+    /**
+     * The item-feature matrix (features, then items).  Do not modify this array.
+     */
+    @Deprecated
+    public double[][] getItemFeatures() {
+        return itemFeatures;
+    }
+
+    /**
+     * The user-feature matrix (features, then users).  Do not modify this array.
+     */
+    @Deprecated
+    public double[][] getUserFeatures() {
+        return userFeatures;
+    }
+
+    /**
+     * The clamping function used to build this model.
+     */
+    public ClampingFunction getClampingFunction() {
+        return clampingFunction;
+    }
+
+    /**
+     * The item index.
+     */
+    public Index getItemIndex() {
+        return itemIndex;
+    }
+
+    /**
+     * The user index.
+     */
+    public Index getUserIndex() {
+        return userIndex;
+    }
+
+    /**
+     * The baseline predictor used to build this model.
+     */
+    public BaselinePredictor getBaseline() {
+        return baseline;
+    }
+
+    /**
+     * Get a particular feature value for an item.
+     * @param iid The item ID.
+     * @param feature The feature.
+     * @return The item-feature value, or 0 if the item was not in the training set.
+     */
+    public double getItemFeature(long iid, int feature) {
+        int iidx = itemIndex.getIndex(iid);
+        if (iidx < 0) {
+            return 0;
+        } else {
+            return itemFeatures[feature][iidx];
+        }
+    }
+
+    /**
+     * Get a particular feature value for an user.
+     * @param uid The item ID.
+     * @param feature The feature.
+     * @return The user-feature value, or 0 if the user was not in the training set.
+     */
+    public double getUserFeature(long uid, int feature) {
+        int uidx = userIndex.getIndex(uid);
+        if (uidx < 0) {
+            return 0;
+        } else {
+            return userFeatures[feature][uidx];
+        }
     }
 }

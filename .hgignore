@@ -7,7 +7,6 @@
 (^|/)\.idea/
 \.iml$
 ~$
-\.[ct]sv$
 \.i(ml|pr|ws)$
 ^src/site/scss/\.sass-cache/
 ^src/site/scss/.*\.css

@@ -25,6 +25,7 @@ import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
 import org.grouplens.lenskit.baseline.UserMeanPredictor;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
@@ -60,25 +61,25 @@ public class TestFunkSVDRecommenderBuild {
         daoFactory = new EventCollectionDAO.Factory(rs);
     }
 
-    @SuppressWarnings({"deprecation", "unchecked"})
+    @SuppressWarnings({"unchecked", "deprecation"})
     private LenskitRecommenderEngine makeEngine() throws RecommenderBuildException {
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
-        factory.bind(PreferenceSnapshot.class)
-               .to(PackedPreferenceSnapshot.class);
-        factory.bind(ItemScorer.class)
-               .to(FunkSVDItemScorer.class);
-        factory.bind(BaselinePredictor.class)
-               .to(UserMeanPredictor.class);
-        factory.bind(ItemRecommender.class)
-               .to(FunkSVDRecommender.class);
-        factory.bind(StoppingCondition.class)
-               .to(IterationCountStoppingCondition.class);
-        factory.set(IterationCount.class)
-               .to(10);
-        factory.set(FeatureCount.class)
-               .to(20);
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(PreferenceSnapshot.class)
+              .to(PackedPreferenceSnapshot.class);
+        config.bind(ItemScorer.class)
+              .to(FunkSVDItemScorer.class);
+        config.bind(BaselinePredictor.class)
+              .to(UserMeanPredictor.class);
+        config.bind(ItemRecommender.class)
+              .to(FunkSVDRecommender.class);
+        config.bind(StoppingCondition.class)
+              .to(IterationCountStoppingCondition.class);
+        config.set(IterationCount.class)
+              .to(10);
+        config.set(FeatureCount.class)
+              .to(20);
 
-        return factory.create();
+        return LenskitRecommenderEngine.build(daoFactory, config);
     }
 
     @SuppressWarnings("deprecation")
@@ -152,17 +153,17 @@ public class TestFunkSVDRecommenderBuild {
     @SuppressWarnings("unchecked")
     @Test
     public void testPredictUpdates() throws RecommenderBuildException {
-        LenskitRecommenderEngineFactory factory = new LenskitRecommenderEngineFactory(daoFactory);
-        factory.bind(ItemScorer.class)
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(ItemScorer.class)
                .to(FunkSVDItemScorer.class);
-        factory.bind(BaselinePredictor.class)
+        config.bind(BaselinePredictor.class)
                .to(ItemUserMeanPredictor.class);
-        factory.set(IterationCount.class)
+        config.set(IterationCount.class)
                .to(10);
-        factory.bind(RuntimeUpdate.class, FunkSVDUpdateRule.class)
+        config.bind(RuntimeUpdate.class, FunkSVDUpdateRule.class)
                .to(FunkSVDUpdateRule.class);
 
-        LenskitRecommenderEngine engine = factory.create();
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(daoFactory, config);
 
         LenskitRecommender rec = engine.open();
         try {

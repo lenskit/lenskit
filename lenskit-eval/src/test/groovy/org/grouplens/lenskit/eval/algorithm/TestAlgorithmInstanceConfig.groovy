@@ -25,7 +25,7 @@ import org.grouplens.lenskit.baseline.BaselineItemScorer
 import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
-import org.grouplens.lenskit.eval.config.ConfigTestBase
+import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
 import org.grouplens.lenskit.iterative.MinimumIterations
 import org.grouplens.lenskit.iterative.StoppingThreshold
@@ -77,10 +77,7 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
             }
         }
         def algo = obj as LenskitAlgorithmInstance
-        def fact = algo.getFactory()
-        fact.setDAOFactory(new EventCollectionDAO.Factory([]))
-        def engine = fact.create()
-        def rec = engine.open()
+        def rec = algo.buildRecommender(new EventCollectionDAO([]), null, null, null, true);
         try {
             def stop = rec.get(ThresholdStoppingCondition)
             assertThat(stop.threshold,
@@ -117,10 +114,7 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
             }
         }
         def algo = obj as LenskitAlgorithmInstance
-        def fact = algo.getFactory()
-        fact.setDAOFactory(new EventCollectionDAO.Factory([]))
-        def engine = fact.create()
-        def rec = engine.open()
+        def rec = algo.buildRecommender(new EventCollectionDAO([]), null, null, null, true);
         try {
             def stop = rec.get(ThresholdStoppingCondition)
             assertThat(stop.threshold,
