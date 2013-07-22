@@ -13,6 +13,10 @@
     <<<DataAccessObject>>>, but several modular DAO instances.  Documentation on this is
     forthcoming.
 
+  * Scorer, predictor, and recommender components now only take a user ID; the <<<UserHistory>>>-based
+    methods have been removed.  The user event DAO should be fast & caching, so individual components
+    can request the data they need directly.
+
   []
 
 * Data Structures
