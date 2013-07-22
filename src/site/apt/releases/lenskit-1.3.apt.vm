@@ -1,6 +1,9 @@
 #parse("relnotes.vm")
 #stdHeader("1.3")
 
+  * <<<PreferenceDomain>>> now uses a precision of 0 to represent a continuous scale.  The
+    precision was previously undefined.
+
   * Added <<<RatingBuilder>>> to build ratings.
 
   * Deprecated <<<Event.copy>>>; specific event builders should be used to copy events.
