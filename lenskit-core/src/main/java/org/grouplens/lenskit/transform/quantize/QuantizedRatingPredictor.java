@@ -22,9 +22,6 @@ package org.grouplens.lenskit.transform.quantize;
 
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.basic.AbstractRatingPredictor;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
@@ -41,13 +38,11 @@ public class QuantizedRatingPredictor extends AbstractRatingPredictor implements
 
     /**
      * Construct a new quantized predictor.
-     * @param dao The DAO.
      * @param base The base predictor.
      * @param q The quantizer.
      */
     @Inject
-    public QuantizedRatingPredictor(UserEventDAO dao, RatingPredictor base, Quantizer q) {
-        super(dao);
+    public QuantizedRatingPredictor(RatingPredictor base, Quantizer q) {
         basePredictor = base;
         quantizer = q;
     }
@@ -61,12 +56,6 @@ public class QuantizedRatingPredictor extends AbstractRatingPredictor implements
     @Override
     public void predict(long user, @Nonnull MutableSparseVector scores) {
         basePredictor.predict(user, scores);
-        quantize(scores);
-    }
-
-    @Override
-    public void predict(@Nonnull UserHistory<? extends Event> profile, @Nonnull MutableSparseVector scores) {
-        basePredictor.predict(profile, scores);
         quantize(scores);
     }
 }

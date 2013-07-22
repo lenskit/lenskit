@@ -23,8 +23,6 @@ package org.grouplens.lenskit.basic;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -32,8 +30,6 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-
-import static org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer.makeRatingVector;
 
 /**
  * Basic {@link org.grouplens.lenskit.RatingPredictor} backed by an
@@ -57,11 +53,10 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
     private final PreferenceDomain preferenceDomain;
 
     @Inject
-    public SimpleRatingPredictor(UserEventDAO dao, ItemScorer scorer,
+    public SimpleRatingPredictor(ItemScorer scorer,
                                  @Nullable BaselinePredictor baseline,
                                  @Nullable PreferenceDomain domain) {
         // TODO Make abstract rating predictors & item scorers not need the DAO
-        super(dao);
         this.scorer = scorer;
         baselinePredictor = baseline;
         preferenceDomain = domain;
@@ -106,24 +101,12 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
         }
     }
 
-    @Override
-    public void predict(@Nonnull UserHistory<? extends Event> profile, @Nonnull MutableSparseVector predictions) {
-        scorer.score(profile, predictions);
-        if (baselinePredictor != null) {
-            baselinePredictor.predict(profile.getUserId(), makeRatingVector(profile), predictions, false);
-        }
-        if (preferenceDomain != null) {
-            preferenceDomain.clampVector(predictions);
-        }
-    }
-
     /**
      * An intelligent provider for simple rating predictors. It provides a simple rating predictor
      * if there are an {@link ItemScorer} and {@link UserEventDAO} available, and returns
      * {@code null} otherwise.  This is the default provider for {@link RatingPredictor}.
      */
     public static class Provider implements javax.inject.Provider<RatingPredictor> {
-        private final UserEventDAO dao;
         private final ItemScorer scorer;
         private final BaselinePredictor baseline;
         private final PreferenceDomain domain;
@@ -131,17 +114,14 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
         /**
          * Construct an automatic provider.
          *
-         * @param dao The user-event DAO.  If {@code null}, no rating predictor will be supplied.
          * @param s The item scorer.  If {@code null}, no rating predictor will be supplied.
          * @param bp The baseline predictor, if configured.
          * @param dom The preference domain, if known.
          */
         @Inject
-        public Provider(@Nullable UserEventDAO dao,
-                        @Nullable ItemScorer s,
+        public Provider(@Nullable ItemScorer s,
                         @Nullable BaselinePredictor bp,
                         @Nullable PreferenceDomain dom) {
-            this.dao = dao;
             scorer = s;
             baseline = bp;
             domain = dom;
@@ -149,10 +129,10 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
 
         @Override
         public RatingPredictor get() {
-            if (scorer == null || dao == null) {
+            if (scorer == null) {
                 return null;
             } else {
-                return new SimpleRatingPredictor(dao, scorer, baseline, domain);
+                return new SimpleRatingPredictor(scorer, baseline, domain);
             }
         }
     }

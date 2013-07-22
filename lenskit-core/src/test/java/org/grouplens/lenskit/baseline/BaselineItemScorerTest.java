@@ -37,7 +37,7 @@ import static org.junit.Assert.assertThat;
 public class BaselineItemScorerTest {
     @Test
     public void testBaseline() {
-        BaselineItemScorer scorer = new BaselineItemScorer(null, new ConstantPredictor(5), null);
+        BaselineItemScorer scorer = new BaselineItemScorer(new ConstantPredictor(5), null);
         assertThat(scorer.getBaseline(),
                    instanceOf(ConstantPredictor.class));
         MutableSparseVector v = MutableSparseVector.create(3, 5, 7);
@@ -55,37 +55,9 @@ public class BaselineItemScorerTest {
         ItemScorer primary = MockItemScorer.newBuilder()
                                            .addScore(2, 3, 4)
                                            .build();
-        ItemScorer scorer = new BaselineItemScorer(null, new ConstantPredictor(5), primary);
+        ItemScorer scorer = new BaselineItemScorer(new ConstantPredictor(5), primary);
         MutableSparseVector v = MutableSparseVector.create(3, 5, 7);
         scorer.score(2, v);
-        assertThat(v.get(3), equalTo(4.0));
-        assertThat(v.get(5), equalTo(5.0));
-        assertThat(v.get(7), equalTo(5.0));
-    }
-
-    @Test
-    public void testBaselineWithProfile() {
-        BaselineItemScorer scorer = new BaselineItemScorer(null, new ConstantPredictor(5), null);
-        assertThat(scorer.getBaseline(),
-                   instanceOf(ConstantPredictor.class));
-        MutableSparseVector v = MutableSparseVector.create(3, 5, 7);
-        scorer.score(new BasicUserHistory<Event>(42, Collections.EMPTY_LIST), v);
-        int entriesSeen = 0;
-        for (VectorEntry e: v) {
-            assertThat(e.getValue(), equalTo(5.0));
-            entriesSeen += 1;
-        }
-        assertThat(entriesSeen, equalTo(3));
-    }
-
-    @Test
-    public void testSupplyMissingWithProfile() {
-        ItemScorer primary = MockItemScorer.newBuilder()
-                                           .addScore(2, 3, 4)
-                                           .build();
-        ItemScorer scorer = new BaselineItemScorer(null, new ConstantPredictor(5), primary);
-        MutableSparseVector v = MutableSparseVector.create(3, 5, 7);
-        scorer.score(new BasicUserHistory<Event>(2, Collections.EMPTY_LIST), v);
         assertThat(v.get(3), equalTo(4.0));
         assertThat(v.get(5), equalTo(5.0));
         assertThat(v.get(7), equalTo(5.0));

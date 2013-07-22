@@ -23,8 +23,6 @@ package org.grouplens.lenskit.basic;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -38,15 +36,7 @@ import static org.junit.Assert.assertThat;
 
 public class SimpleRatingPredictorTest {
     private class Scorer extends AbstractItemScorer {
-        public Scorer() {
-            super(null);
-        }
-
-        @Override
-        public void score(@Nonnull UserHistory<? extends Event> profile,
-                          @Nonnull MutableSparseVector scores) {
-            score(profile.getUserId(), scores);
-        }
+        public Scorer() {}
 
         @Override
         public void score(long user, @Nonnull MutableSparseVector scores) {
@@ -76,8 +66,8 @@ public class SimpleRatingPredictorTest {
     @Before
     public void setUp() throws Exception {
         PreferenceDomain domain = new PreferenceDomain(1, 5, 1);
-        pred = new SimpleRatingPredictor(null, new Scorer(), null, domain);
-        unclamped = new SimpleRatingPredictor(null, new Scorer(), null, null);
+        pred = new SimpleRatingPredictor(new Scorer(), null, domain);
+        unclamped = new SimpleRatingPredictor(new Scorer(), null, null);
     }
 
     @Test

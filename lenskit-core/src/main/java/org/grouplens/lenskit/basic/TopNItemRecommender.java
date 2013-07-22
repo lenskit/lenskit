@@ -53,12 +53,13 @@ import javax.inject.Inject;
  * @since 1.1
  */
 public class TopNItemRecommender extends AbstractItemRecommender {
+    protected final UserEventDAO userEventDAO;
     protected final ItemDAO itemDAO;
     protected final ItemScorer scorer;
 
     @Inject
     public TopNItemRecommender(UserEventDAO uedao, ItemDAO idao, ItemScorer scorer) {
-        super(uedao);
+        userEventDAO = uedao;
         itemDAO = idao;
         this.scorer = scorer;
     }
@@ -75,27 +76,6 @@ public class TopNItemRecommender extends AbstractItemRecommender {
     protected ScoredLongList recommend(long user, int n, LongSet candidates, LongSet exclude) {
         if (candidates == null) {
             candidates = getPredictableItems(user);
-        }
-        if (exclude == null) {
-            exclude = getDefaultExcludes(user);
-        }
-        if (!exclude.isEmpty()) {
-            candidates = LongSortedArraySet.setDifference(candidates, exclude);
-        }
-
-        SparseVector scores = scorer.score(user, candidates);
-        return recommend(n, scores);
-    }
-
-    /**
-     * Implement profile-based recommendation in terms of the scorer. This
-     * method uses {@link #getDefaultExcludes(long)} to supply a missing exclude
-     * set.
-     */
-    @Override
-    protected ScoredLongList recommend(UserHistory<? extends Event> user, int n, LongSet candidates, LongSet exclude) {
-        if (candidates == null) {
-            candidates = itemDAO.getItemIds();
         }
         if (exclude == null) {
             exclude = getDefaultExcludes(user);
@@ -142,7 +122,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      * @return The set of items to exclude.
      */
     protected LongSet getDefaultExcludes(long user) {
-        return getDefaultExcludes(dao.getEventsForUser(user));
+        return getDefaultExcludes(userEventDAO.getEventsForUser(user));
     }
 
     /**

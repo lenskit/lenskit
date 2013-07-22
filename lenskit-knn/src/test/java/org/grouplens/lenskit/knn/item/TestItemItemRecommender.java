@@ -29,10 +29,8 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
@@ -97,11 +95,10 @@ public class TestItemItemRecommender {
      */
     @Test
     public void testItemScorerNoRating() {
-        UserHistory<Rating> history = getRatings(5);
         long[] items = {7, 8};
         ItemItemScorer scorer = session.get(ItemItemScorer.class);
         assertThat(scorer, notNullValue());
-        SparseVector scores = scorer.score(history, LongArrayList.wrap(items));
+        SparseVector scores = scorer.score(5, LongArrayList.wrap(items));
         assertThat(scores, notNullValue());
         assertThat(scores.size(), equalTo(1));
         assertThat(scores.get(7), not(notANumber()));
@@ -115,11 +112,10 @@ public class TestItemItemRecommender {
      */
     @Test
     public void testItemScorerChannels() {
-        UserHistory<Rating> history = getRatings(5);
         long[] items = {7, 8};
         ItemItemScorer scorer = session.get(ItemItemScorer.class);
         assertThat(scorer, notNullValue());
-        SparseVector scores = scorer.score(history, LongArrayList.wrap(items));
+        SparseVector scores = scorer.score(5, LongArrayList.wrap(items));
         assertThat(scores, notNullValue());
         assertThat(scores.size(), equalTo(1));
         assertThat(scores.get(7), not(notANumber()));
@@ -127,11 +123,10 @@ public class TestItemItemRecommender {
                 get(7), closeTo(1.0, 1.0e-5));
         assertThat(scores.containsKey(8), equalTo(false));
 
-        history = getRatings(2);  // has rated 7, and 8
         long[] items2 = {7, 8, 9};
         scorer = session.get(ItemItemScorer.class);
         assertThat(scorer, notNullValue());
-        scores = scorer.score(history, LongArrayList.wrap(items2));
+        scores = scorer.score(2, LongArrayList.wrap(items2));
         assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
                 get(9), closeTo(3.0, 1.0e-5));  // 1, 7, 8
     }
@@ -141,29 +136,29 @@ public class TestItemItemRecommender {
      */
     @Test
     public void testItemItemRecommender1() {
-        LongList recs = recommender.recommend(getRatings(1));
+        LongList recs = recommender.recommend(1);
         assertTrue(recs.isEmpty());
 
-        recs = recommender.recommend(getRatings(2));
+        recs = recommender.recommend(2);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
-        recs = recommender.recommend(getRatings(3));
+        recs = recommender.recommend(3);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(6));
 
-        recs = recommender.recommend(getRatings(4));
+        recs = recommender.recommend(4);
         assertEquals(2, recs.size());
         assertTrue(recs.contains(6));
         assertTrue(recs.contains(9));
 
-        recs = recommender.recommend(getRatings(5));
+        recs = recommender.recommend(5);
         assertEquals(3, recs.size());
         assertTrue(recs.contains(6));
         assertTrue(recs.contains(7));
         assertTrue(recs.contains(9));
 
-        recs = recommender.recommend(getRatings(6));
+        recs = recommender.recommend(6);
         assertEquals(3, recs.size());
         assertTrue(recs.contains(6));
         assertTrue(recs.contains(7));
@@ -175,17 +170,17 @@ public class TestItemItemRecommender {
      */
     @Test
     public void testItemItemRecommender2() {
-        LongList recs = recommender.recommend(getRatings(2), 1);
+        LongList recs = recommender.recommend(2, 1);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
-        recs = recommender.recommend(getRatings(2), 0);
+        recs = recommender.recommend(2, 0);
         assertTrue(recs.isEmpty());
 
-        recs = recommender.recommend(getRatings(3), 1);
+        recs = recommender.recommend(3, 1);
         assertTrue(recs.contains(6) || recs.contains(9));
 
-        recs = recommender.recommend(getRatings(4), 0);
+        recs = recommender.recommend(4, 0);
         assertTrue(recs.isEmpty());
     }
 
@@ -194,7 +189,7 @@ public class TestItemItemRecommender {
      */
     @Test
     public void testItemItemRecommender3() {
-        LongList recs = recommender.recommend(getRatings(1), null);
+        LongList recs = recommender.recommend(1, null);
         assertTrue(recs.isEmpty());
 
 
@@ -203,10 +198,10 @@ public class TestItemItemRecommender {
         candidates.add(7);
         candidates.add(8);
         candidates.add(9);
-        recs = recommender.recommend(getRatings(1), candidates);
+        recs = recommender.recommend(1, candidates);
         assertTrue(recs.isEmpty());
 
-        recs = recommender.recommend(getRatings(2), null);
+        recs = recommender.recommend(2, null);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
@@ -214,16 +209,16 @@ public class TestItemItemRecommender {
         candidates.add(7);
         candidates.add(8);
         candidates.add(9);
-        recs = recommender.recommend(getRatings(2), candidates);
+        recs = recommender.recommend(2, candidates);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
         candidates.add(6);
         candidates.remove(9);
-        recs = recommender.recommend(getRatings(2), candidates);
+        recs = recommender.recommend(2, candidates);
         assertTrue(recs.isEmpty());
 
-        recs = recommender.recommend(getRatings(5), null);
+        recs = recommender.recommend(5, null);
         assertEquals(3, recs.size());
         assertTrue(recs.contains(6));
         assertTrue(recs.contains(7));
@@ -232,7 +227,7 @@ public class TestItemItemRecommender {
         candidates.clear();
         candidates.add(6);
         candidates.add(7);
-        recs = recommender.recommend(getRatings(5), candidates);
+        recs = recommender.recommend(5, candidates);
         assertEquals(2, recs.size());
         assertTrue(recs.contains(6));
         assertTrue(recs.contains(7));
@@ -240,7 +235,7 @@ public class TestItemItemRecommender {
         candidates.clear();
         candidates.add(6);
         candidates.add(9);
-        recs = recommender.recommend(getRatings(5), candidates);
+        recs = recommender.recommend(5, candidates);
         assertEquals(2, recs.size());
         assertTrue(recs.contains(6));
         assertTrue(recs.contains(9));
@@ -251,7 +246,7 @@ public class TestItemItemRecommender {
      */
     @Test
     public void testItemItemRecommender4() {
-        LongList recs = recommender.recommend(getRatings(5), -1, null, null);
+        LongList recs = recommender.recommend(5, -1, null, null);
         assertEquals(3, recs.size());
         assertTrue(recs.contains(6));
         assertTrue(recs.contains(7));
@@ -262,46 +257,46 @@ public class TestItemItemRecommender {
         candidates.add(7);
         candidates.add(8);
         candidates.add(9);
-        recs = recommender.recommend(getRatings(5), -1, candidates, null);
+        recs = recommender.recommend(5, -1, candidates, null);
         assertEquals(3, recs.size());
         assertTrue(recs.contains(6));
         assertTrue(recs.contains(7));
         assertTrue(recs.contains(9));
 
         candidates.remove(6);
-        recs = recommender.recommend(getRatings(5), -1, candidates, null);
+        recs = recommender.recommend(5, -1, candidates, null);
         assertEquals(2, recs.size());
         assertTrue(recs.contains(7));
         assertTrue(recs.contains(9));
 
         candidates.remove(7);
-        recs = recommender.recommend(getRatings(5), -1, candidates, null);
+        recs = recommender.recommend(5, -1, candidates, null);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
         candidates.remove(9);
-        recs = recommender.recommend(getRatings(5), -1, candidates, null);
+        recs = recommender.recommend(5, -1, candidates, null);
         assertTrue(recs.isEmpty());
 
         candidates.add(9);
         candidates.add(7);
-        recs = recommender.recommend(getRatings(5), 1, candidates, null);
+        recs = recommender.recommend(5, 1, candidates, null);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9) || recs.contains(7));
 
         LongOpenHashSet exclude = new LongOpenHashSet();
         exclude.add(7);
-        recs = recommender.recommend(getRatings(5), 2, candidates, exclude);
+        recs = recommender.recommend(5, 2, candidates, exclude);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
-        recs = recommender.recommend(getRatings(5), 0, candidates, null);
+        recs = recommender.recommend(5, 0, candidates, null);
         assertTrue(recs.isEmpty());
 
         candidates.clear();
         candidates.add(7);
         candidates.add(9);
-        recs = recommender.recommend(getRatings(5), -1, candidates, null);
+        recs = recommender.recommend(5, -1, candidates, null);
         assertEquals(2, recs.size());
         assertTrue(recs.contains(7));
         assertTrue(recs.contains(9));
@@ -309,24 +304,18 @@ public class TestItemItemRecommender {
         candidates.add(6);
         exclude.clear();
         exclude.add(9);
-        recs = recommender.recommend(getRatings(5), -1, candidates, exclude);
+        recs = recommender.recommend(5, -1, candidates, exclude);
         assertEquals(2, recs.size());
         assertTrue(recs.contains(6));
         assertTrue(recs.contains(7));
 
         exclude.add(7);
-        recs = recommender.recommend(getRatings(5), -1, candidates, exclude);
+        recs = recommender.recommend(5, -1, candidates, exclude);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(6));
 
         exclude.add(6);
-        recs = recommender.recommend(getRatings(5), -1, candidates, exclude);
+        recs = recommender.recommend(5, -1, candidates, exclude);
         assertTrue(recs.isEmpty());
-    }
-
-    //Helper method to retrieve user's user and create SparseVector
-    private UserHistory<Rating> getRatings(long user) {
-        UserEventDAO dao = session.get(UserEventDAO.class);
-        return dao.getEventsForUser(user, Rating.class);
     }
 }

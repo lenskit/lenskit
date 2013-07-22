@@ -48,13 +48,15 @@ import static java.lang.Math.abs;
 public class UserUserItemScorer extends AbstractItemScorer {
     private static final double MINIMUM_SIMILARITY = 0.001;
     private static final Logger logger = LoggerFactory.getLogger(UserUserItemScorer.class);
+
+    private final UserEventDAO dao;
     protected final NeighborhoodFinder neighborhoodFinder;
     protected final UserVectorNormalizer normalizer;
 
     @Inject
     public UserUserItemScorer(UserEventDAO dao, NeighborhoodFinder nbrf,
                               UserVectorNormalizer norm) {
-        super(dao);
+        this.dao = dao;
         neighborhoodFinder = nbrf;
         normalizer = norm;
     }
@@ -79,17 +81,16 @@ public class UserUserItemScorer extends AbstractItemScorer {
     }
 
     @Override
-    public void score(@Nonnull UserHistory<? extends Event> history,
-                      @Nonnull MutableSparseVector scores) {
+    public void score(long user, @Nonnull MutableSparseVector scores) {
+        UserHistory<Event> history = dao.getEventsForUser(user);
         logger.trace("Predicting for user {} with {} events",
-                     history.getUserId(), history.size());
+                     user, history.size());
 
         Long2ObjectMap<? extends Collection<Neighbor>> neighborhoods =
                 neighborhoodFinder.findNeighbors(history, scores.keyDomain());
         Long2ObjectMap<SparseVector> normedUsers =
                 normalizeNeighborRatings(neighborhoods.values());
 
-        int nmissing = 0;
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
             double sum = 0;
@@ -106,7 +107,6 @@ public class UserUserItemScorer extends AbstractItemScorer {
                 logger.trace("Total neighbor weight for item {} is {}", item, weight);
                 scores.set(e, sum / weight);
             } else {
-                nmissing = 0;
                 scores.unset(e);
             }
         }

@@ -60,7 +60,7 @@ public interface BaselinePredictor extends Serializable {
      *
      * @param user    The user ID.
      * @param output  The output vector. All items in the key domain are scored.
-     * @see RatingPredictor#score(UserHistory, MutableSparseVector)
+     * @see org.grouplens.lenskit.ItemScorer#score(long, MutableSparseVector)
      */
     void predict(long user, MutableSparseVector output);
 
@@ -71,7 +71,7 @@ public interface BaselinePredictor extends Serializable {
      * @param output     The output vector. All items in the key domain are scored
      * @param predictSet If {@code true}, predict all items; otherwise, only predict
      *                   items that are not set..
-     * @see RatingPredictor#score(UserHistory, MutableSparseVector)
+     * @see org.grouplens.lenskit.ItemScorer#score(long, MutableSparseVector)
      */
     void predict(long user, MutableSparseVector output, boolean predictSet);
 

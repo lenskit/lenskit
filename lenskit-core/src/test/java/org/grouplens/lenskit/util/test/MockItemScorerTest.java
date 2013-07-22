@@ -39,15 +39,6 @@ public class MockItemScorerTest {
         ItemScorer scorer = MockItemScorer.newBuilder().build();
         assertThat(scorer.score(42, 1),
                    notANumber());
-        assertThat(scorer.canUseHistory(), equalTo(false));
-    }
-
-    @Test
-    public void testFakeHistory() {
-        ItemScorer scorer = MockItemScorer.newBuilder()
-                                          .fakeUsingHistory(true)
-                                          .build();
-        assertThat(scorer.canUseHistory(), equalTo(true));
     }
 
     @Test
@@ -105,20 +96,6 @@ public class MockItemScorerTest {
                                           .build();
         MutableSparseVector output = MutableSparseVector.create(2, 3, 4, 5);
         scorer.score(3, output);
-        assertThat(output, equalTo(uv));
-    }
-
-    @Test
-    public void testScoreWithProfile() {
-        MutableSparseVector uv = MutableSparseVector.create(2, 3, 5);
-        uv.set(2, 3);
-        uv.set(3, 4);
-        uv.set(5, 2);
-        ItemScorer scorer = MockItemScorer.newBuilder()
-                                          .addUser(3, uv)
-                                          .build();
-        MutableSparseVector output = MutableSparseVector.create(2, 3, 4, 5);
-        scorer.score(new BasicUserHistory<Event>(3, Collections.EMPTY_LIST), output);
         assertThat(output, equalTo(uv));
     }
 }

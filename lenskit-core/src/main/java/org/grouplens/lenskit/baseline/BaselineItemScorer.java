@@ -49,15 +49,12 @@ public class BaselineItemScorer extends AbstractItemScorer {
      * Construct a new baseline rating predictor.
      *
      * @param baseline The baseline predictor to use.
-     * @param dao      The DAO.
      * @param scorer   The primary scorer to use. If not {@code null}, this scorer is consulted and
      *                 the baseline is only used to supply predictions that it declines to.
      */
     @Inject
-    public BaselineItemScorer(UserEventDAO dao,
-                              BaselinePredictor baseline,
+    public BaselineItemScorer(BaselinePredictor baseline,
                               @Nullable @PrimaryScorer ItemScorer scorer) {
-        super(dao);
         predictor = baseline;
         primary = scorer;
     }
@@ -80,19 +77,5 @@ public class BaselineItemScorer extends AbstractItemScorer {
             primary.score(user, scores);
         }
         predictor.predict(user, scores, primary == null);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>Delegates to {@link BaselinePredictor#predict(long, SparseVector, MutableSparseVector)}.
-     */
-    @Override
-    public void score(@Nonnull UserHistory<? extends Event> profile,
-                      @Nonnull MutableSparseVector scores) {
-        if (primary != null) {
-            primary.score(profile, scores);
-        }
-        SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(profile);
-        predictor.predict(profile.getUserId(), ratings, scores, primary == null);
     }
 }

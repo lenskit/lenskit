@@ -23,8 +23,6 @@ package org.grouplens.lenskit.mf.funksvd;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
@@ -70,7 +68,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
     @Inject
     public FunkSVDItemScorer(UserEventDAO dao, FunkSVDModel model,
                              @Nullable @RuntimeUpdate FunkSVDUpdateRule rule) {
-        super(dao);
+        // FIXME Unify requirement on update rule and DAO
         this.dao = dao;
         this.model = model;
         this.rule = rule;
@@ -82,11 +80,6 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
     @Nullable
     public FunkSVDUpdateRule getUpdateRule() {
         return rule;
-    }
-
-    @Override
-    public boolean canUseHistory() {
-        return rule != null;
     }
 
     /**
@@ -133,9 +126,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
     }
 
     @Override
-    public void score(@Nonnull UserHistory<? extends Event> userHistory,
-                      @Nonnull MutableSparseVector scores) {
-        long user = userHistory.getUserId();
+    public void score(long user, @Nonnull MutableSparseVector scores) {
         int uidx = model.getUserIndex().getIndex(user);
         SparseVector ratings = Ratings.userRatingVector(dao.getEventsForUser(user, Rating.class));
 

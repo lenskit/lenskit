@@ -50,6 +50,7 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemScorer {
             Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodSize");
     protected final ItemItemModel model;
 
+    private final UserEventDAO dao;
     @Nonnull
     protected final UserVectorNormalizer normalizer;
     protected final UserHistorySummarizer summarizer;
@@ -73,7 +74,7 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemScorer {
                           NeighborhoodScorer scorer,
                           ItemScoreAlgorithm algo,
                           UserVectorNormalizer norm) {
-        super(dao);
+        this.dao = dao;
         model = m;
         summarizer = sum;
         this.scorer = scorer;
@@ -93,12 +94,10 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemScorer {
      * @see ItemScoreAlgorithm#scoreItems(ItemItemModel, SparseVector, MutableSparseVector, NeighborhoodScorer)
      */
     @Override
-    public void score(@Nonnull UserHistory<? extends Event> history,
-                      @Nonnull MutableSparseVector scores) {
-        final long uid = history.getUserId();
-
+    public void score(long user, @Nonnull MutableSparseVector scores) {
+        UserHistory<? extends Event> history = dao.getEventsForUser(user, summarizer.eventTypeWanted());
         SparseVector summary = summarizer.summarize(history);
-        VectorTransformation transform = normalizer.makeTransformation(uid, summary);
+        VectorTransformation transform = normalizer.makeTransformation(user, summary);
         MutableSparseVector normed = summary.mutableCopy();
         transform.apply(normed);
 

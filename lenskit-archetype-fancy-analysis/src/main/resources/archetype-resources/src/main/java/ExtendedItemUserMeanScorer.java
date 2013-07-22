@@ -3,9 +3,10 @@ package ${package};
 
 import org.grouplens.lenskit.baseline.MeanDamping;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
-import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Scorer that returns the user's mean offset from item mean rating for all
@@ -31,11 +33,12 @@ import java.util.Collection;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@Shareable
 public class ExtendedItemUserMeanScorer extends AbstractItemScorer {
     @SuppressWarnings("unused")
     private static final long serialVersionUID = 22L;
     private static final Logger logger = LoggerFactory.getLogger(ExtendedItemUserMeanScorer.class);
+
+    private final UserEventDAO dao;
     private final double userDamping;  // damping for computing the user averages; more damping biases toward global.
     private final ItemMeanModel model;
 
@@ -49,7 +52,7 @@ public class ExtendedItemUserMeanScorer extends AbstractItemScorer {
     @Inject
     public ExtendedItemUserMeanScorer(UserEventDAO dao, ItemMeanModel inModel,
                                       @MeanDamping double inUserDamping) {
-        super(dao);
+        this.dao = dao;
         model = inModel;
         userDamping = inUserDamping;
     }
@@ -77,9 +80,12 @@ public class ExtendedItemUserMeanScorer extends AbstractItemScorer {
     }
 
     @Override
-    public void score(@Nonnull UserHistory<? extends Event> profile,
-                      @Nonnull MutableSparseVector scores) {
+    public void score(long user, @Nonnull MutableSparseVector scores) {
         logger.debug("score called to attempt to score %d elements", scores.size());
+        UserHistory<Rating> profile = dao.getEventsForUser(user, Rating.class);
+        if (profile == null) {
+            profile = History.forUser(user, Collections.<Rating>emptyList());
+        }
         double meanOffset = computeUserOffset(RatingVectorUserHistorySummarizer.makeRatingVector(profile));
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             scores.set(e, meanOffset + getItemMean(e.getKey()));

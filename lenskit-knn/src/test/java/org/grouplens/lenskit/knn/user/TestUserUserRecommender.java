@@ -29,10 +29,8 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.vectors.similarity.PearsonCorrelation;
@@ -93,26 +91,26 @@ public class TestUserUserRecommender {
     @Test
     public void testUserUserRecommender1() {
         ItemRecommender recommender = rec.getItemRecommender();
-        LongList recs = recommender.recommend(getUserRatings(1));
+        LongList recs = recommender.recommend(1);
         assertTrue(recs.isEmpty());
 
-        recs = recommender.recommend(getUserRatings(2));
+        recs = recommender.recommend(2);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
-        recs = recommender.recommend(getUserRatings(3));
+        recs = recommender.recommend(3);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(6));
 
-        recs = recommender.recommend(getUserRatings(4));
+        recs = recommender.recommend(4);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
-        recs = recommender.recommend(getUserRatings(5));
+        recs = recommender.recommend(5);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(7));
 
-        recs = recommender.recommend(getUserRatings(6));
+        recs = recommender.recommend(6);
         assertEquals(2, recs.size());
         assertTrue(recs.contains(6));
         assertTrue(recs.contains(7));
@@ -124,49 +122,49 @@ public class TestUserUserRecommender {
     @Test
     public void testUserUserRecommender2() {
         ItemRecommender recommender = rec.getItemRecommender();
-        LongList recs = recommender.recommend(getUserRatings(1), -1);
+        LongList recs = recommender.recommend(1, -1);
         assertTrue(recs.isEmpty());
 
-        recs = recommender.recommend(getUserRatings(2), 2);
+        recs = recommender.recommend(2, 2);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
-        recs = recommender.recommend(getUserRatings(2), -1);
+        recs = recommender.recommend(2, -1);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
-        recs = recommender.recommend(getUserRatings(2), 1);
+        recs = recommender.recommend(2, 1);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
-        recs = recommender.recommend(getUserRatings(2), 0);
+        recs = recommender.recommend(2, 0);
         assertTrue(recs.isEmpty());
 
-        recs = recommender.recommend(getUserRatings(3), 1);
+        recs = recommender.recommend(3, 1);
         assertEquals(1, recs.size());
         assertEquals(6, recs.getLong(0));
 
-        recs = recommender.recommend(getUserRatings(3), 0);
+        recs = recommender.recommend(3, 0);
         assertTrue(recs.isEmpty());
 
-        recs = recommender.recommend(getUserRatings(4), 1);
+        recs = recommender.recommend(4, 1);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
-        recs = recommender.recommend(getUserRatings(5), -1);
+        recs = recommender.recommend(5, -1);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(7));
 
-        recs = recommender.recommend(getUserRatings(6), 2);
+        recs = recommender.recommend(6, 2);
         assertEquals(2, recs.size());
         assertTrue(recs.contains(6));
         assertTrue(recs.contains(7));
 
-        recs = recommender.recommend(getUserRatings(6), 1);
+        recs = recommender.recommend(6, 1);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(6) || recs.contains(7));
 
-        recs = recommender.recommend(getUserRatings(6), 0);
+        recs = recommender.recommend(6, 0);
         assertTrue(recs.isEmpty());
     }
 
@@ -183,12 +181,12 @@ public class TestUserUserRecommender {
         candidates.add(8);
         candidates.add(9);
 
-        LongList recs = recommender.recommend(getUserRatings(1), candidates);
+        LongList recs = recommender.recommend(1, candidates);
         assertTrue(recs.isEmpty());
 
         candidates.clear();
         candidates.add(9);
-        recs = recommender.recommend(getUserRatings(2), candidates);
+        recs = recommender.recommend(2, candidates);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
@@ -196,51 +194,51 @@ public class TestUserUserRecommender {
         candidates.add(6);
         candidates.add(7);
         candidates.add(8);
-        recs = recommender.recommend(getUserRatings(2), candidates);
+        recs = recommender.recommend(2, candidates);
         assertTrue(recs.isEmpty());
 
         candidates.add(9);
-        recs = recommender.recommend(getUserRatings(3), candidates);
+        recs = recommender.recommend(3, candidates);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(6));
 
-        recs = recommender.recommend(getUserRatings(4), candidates);
+        recs = recommender.recommend(4, candidates);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
-        recs = recommender.recommend(getUserRatings(5), candidates);
+        recs = recommender.recommend(5, candidates);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(7));
 
         candidates.remove(7);
-        recs = recommender.recommend(getUserRatings(5), candidates);
+        recs = recommender.recommend(5, candidates);
         assertTrue(recs.isEmpty());
 
         candidates.add(7);
-        recs = recommender.recommend(getUserRatings(6), candidates);
+        recs = recommender.recommend(6, candidates);
         assertEquals(2, recs.size());
         assertTrue(recs.contains(6));
         assertTrue(recs.contains(7));
 
         candidates.remove(9);
-        recs = recommender.recommend(getUserRatings(6), candidates);
+        recs = recommender.recommend(6, candidates);
         assertEquals(2, recs.size());
         assertTrue(recs.contains(6));
         assertTrue(recs.contains(7));
 
         candidates.remove(8);
-        recs = recommender.recommend(getUserRatings(6), candidates);
+        recs = recommender.recommend(6, candidates);
         assertEquals(2, recs.size());
         assertTrue(recs.contains(6));
         assertTrue(recs.contains(7));
 
         candidates.remove(7);
-        recs = recommender.recommend(getUserRatings(6), candidates);
+        recs = recommender.recommend(6, candidates);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(6));
 
         candidates.remove(6);
-        recs = recommender.recommend(getUserRatings(6), candidates);
+        recs = recommender.recommend(6, candidates);
         assertTrue(recs.isEmpty());
     }
 
@@ -253,100 +251,94 @@ public class TestUserUserRecommender {
 
         LongOpenHashSet candidates = new LongOpenHashSet();
         candidates.add(9);
-        LongList recs = recommender.recommend(getUserRatings(2), -1, candidates, null);
+        LongList recs = recommender.recommend(2, -1, candidates, null);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
-        recs = recommender.recommend(getUserRatings(2), 1, candidates, null);
+        recs = recommender.recommend(2, 1, candidates, null);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(9));
 
-        recs = recommender.recommend(getUserRatings(2), 0, candidates, null);
+        recs = recommender.recommend(2, 0, candidates, null);
         assertTrue(recs.isEmpty());
 
         LongOpenHashSet exclude = new LongOpenHashSet();
         exclude.add(9);
-        recs = recommender.recommend(getUserRatings(2), -1, candidates, exclude);
+        recs = recommender.recommend(2, -1, candidates, exclude);
         assertTrue(recs.isEmpty());
 
         // FIXME Add tests for default exclude set
-        recs = recommender.recommend(getUserRatings(5), -1, null, LongSets.EMPTY_SET);
+        recs = recommender.recommend(5, -1, null, LongSets.EMPTY_SET);
         assertEquals(4, recs.size());
         assertEquals(9, recs.getLong(0));
         assertEquals(7, recs.getLong(1));
         assertEquals(6, recs.getLong(2));
         assertEquals(8, recs.getLong(3));
 
-        recs = recommender.recommend(getUserRatings(5), 5, null, LongSets.EMPTY_SET);
+        recs = recommender.recommend(5, 5, null, LongSets.EMPTY_SET);
         assertEquals(4, recs.size());
         assertEquals(9, recs.getLong(0));
         assertEquals(7, recs.getLong(1));
         assertEquals(6, recs.getLong(2));
         assertEquals(8, recs.getLong(3));
 
-        recs = recommender.recommend(getUserRatings(5), 4, null, LongSets.EMPTY_SET);
+        recs = recommender.recommend(5, 4, null, LongSets.EMPTY_SET);
         assertEquals(4, recs.size());
         assertEquals(9, recs.getLong(0));
         assertEquals(7, recs.getLong(1));
         assertEquals(6, recs.getLong(2));
         assertEquals(8, recs.getLong(3));
 
-        recs = recommender.recommend(getUserRatings(5), 3, null, LongSets.EMPTY_SET);
+        recs = recommender.recommend(5, 3, null, LongSets.EMPTY_SET);
         assertEquals(3, recs.size());
         assertEquals(9, recs.getLong(0));
         assertEquals(7, recs.getLong(1));
         assertEquals(6, recs.getLong(2));
 
-        recs = recommender.recommend(getUserRatings(5), 2, null, LongSets.EMPTY_SET);
+        recs = recommender.recommend(5, 2, null, LongSets.EMPTY_SET);
         assertEquals(2, recs.size());
         assertEquals(9, recs.getLong(0));
         assertEquals(7, recs.getLong(1));
 
-        recs = recommender.recommend(getUserRatings(5), 1, null, LongSets.EMPTY_SET);
+        recs = recommender.recommend(5, 1, null, LongSets.EMPTY_SET);
         assertEquals(1, recs.size());
         assertEquals(9, recs.getLong(0));
 
-        recs = recommender.recommend(getUserRatings(5), 0, null, LongSets.EMPTY_SET);
+        recs = recommender.recommend(5, 0, null, LongSets.EMPTY_SET);
         assertTrue(recs.isEmpty());
 
         candidates.clear();
         candidates.add(6);
         candidates.add(7);
-        recs = recommender.recommend(getUserRatings(6), -1, candidates, LongSets.EMPTY_SET);
+        recs = recommender.recommend(6, -1, candidates, LongSets.EMPTY_SET);
         assertEquals(2, recs.size());
         assertTrue(recs.contains(6));
         assertTrue(recs.contains(7));
 
         candidates.remove(6);
-        recs = recommender.recommend(getUserRatings(6), -1, candidates, LongSets.EMPTY_SET);
+        recs = recommender.recommend(6, -1, candidates, LongSets.EMPTY_SET);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(7));
 
         candidates.remove(7);
-        recs = recommender.recommend(getUserRatings(6), -1, candidates, LongSets.EMPTY_SET);
+        recs = recommender.recommend(6, -1, candidates, LongSets.EMPTY_SET);
         assertTrue(recs.isEmpty());
 
         candidates.add(6);
         candidates.add(7);
         exclude.add(6);
-        recs = recommender.recommend(getUserRatings(6), -1, candidates, exclude);
+        recs = recommender.recommend(6, -1, candidates, exclude);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(7));
 
         exclude.add(7);
-        recs = recommender.recommend(getUserRatings(6), -1, candidates, exclude);
+        recs = recommender.recommend(6, -1, candidates, exclude);
         assertTrue(recs.isEmpty());
 
         exclude.remove(6);
-        recs = recommender.recommend(getUserRatings(6), -1, candidates, exclude);
+        recs = recommender.recommend(6, -1, candidates, exclude);
         assertEquals(1, recs.size());
         assertTrue(recs.contains(6));
 
-    }
-
-    //Helper method to retrieve user's user and create SparseVector
-    private UserHistory<Rating> getUserRatings(long user) {
-        UserEventDAO dao = rec.get(UserEventDAO.class);
-        return dao.getEventsForUser(user, Rating.class);
     }
 }
