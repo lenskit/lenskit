@@ -127,12 +127,8 @@ public class MutableRating implements Rating {
         timestamp = ts;
     }
 
-    @Override
+    @Override @Deprecated
     public Rating copy() {
-        if (Double.isNaN(value)) {
-            return new SimpleNullRating(eid, uid, iid, timestamp);
-        } else {
-            return new SimpleRating(eid, uid, iid, value, timestamp);
-        }
+        return Ratings.copyBuilder(this).build();
     }
 }

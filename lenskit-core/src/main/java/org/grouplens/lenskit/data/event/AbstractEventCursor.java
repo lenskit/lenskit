@@ -50,10 +50,11 @@ public abstract class AbstractEventCursor<E extends Event> extends AbstractPolli
     /**
      * Copy an event using {@link Event#copy()}.
      *
+     * @deprecated This implementation will be removed in LensKit 2.0.
      * @param event The event to copy.
      * @return A copy of {@code event}.
      */
-    @Override
+    @Deprecated @Override
     @SuppressWarnings("unchecked")
     protected E copy(E event) {
         return (E) event.copy();

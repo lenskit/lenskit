@@ -93,7 +93,7 @@ public final class SimpleNullRating implements Rating {
         return null;
     }
 
-    @Override
+    @Override @Deprecated
     public Rating copy() {
         /* this object is immutable. Just return it. */
         return this;

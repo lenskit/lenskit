@@ -130,7 +130,7 @@ public final class SimpleRating extends AbstractEvent implements Rating {
         return timestamp;
     }
 
-    @Override
+    @Override @Deprecated
     public Rating copy() {
         return this;
     }

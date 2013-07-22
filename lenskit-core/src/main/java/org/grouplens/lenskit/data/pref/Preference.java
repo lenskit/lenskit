@@ -24,14 +24,12 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
- * A real-valued preference a user has for an item. Preferences can be
- * articulated by the user in the form of ratings, or they may be predicted or
- * otherwise computed. The distinction will generally be apparent from context.
+ * A real-valued preference a user has for an item. Preferences can be articulated by the user in
+ * the form of ratings, or they may be predicted or otherwise computed. The distinction will
+ * generally be apparent from context.
  *
- * <p>
- * Instances of this class should generally be immutable (or at least treated as
- * such). All exceptions must be clearly documented, and should only be in
- * contexts such as fast iteration.
+ * <p> Instances of this class are immutable. All exceptions to this rule must be clearly
+ * documented, and only arise in limited contexts such as fast iteration.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
@@ -81,9 +79,6 @@ public abstract class Preference {
         }
     }
 
-    /**
-     * Hash a preference.
-     */
     @Override
     public final int hashCode() {
         return new HashCodeBuilder()
@@ -106,7 +101,9 @@ public abstract class Preference {
      * to large objects.
      *
      * @return The copied preference.
+     * @deprecated Use {@link PreferenceBuilder#copy(Preference)}.
      */
+    @Deprecated
     public Preference copy() {
         return PreferenceBuilder.copy(this).build();
     }
