@@ -26,6 +26,8 @@
     property that makes the script accessible by name.
 
   * Renamed <<<Command.getConfig())>>> to <<<Command.getEvalConfig()>>>. Also renamed the setter.
+
+  * The simple evaluator is now called <<<SimpleEvaluator>>>, not <<<SimpleEvalCommand>>>. It no
     longer takes a name.
 
   []
