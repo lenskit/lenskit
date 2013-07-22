@@ -1,6 +1,18 @@
 #parse("relnotes.vm")
 #stdHeader("1.3")
 
+  * Added <<<RatingBuilder>>> to build ratings.
+
+  * Deprecated <<<Event.copy>>>; specific event builders should be used to copy events.
+
+  * Added type-safe side channels of arbitrary data to vectors.
+
+  * Replaced many public fields with methods in <<<FunkSVDModel>>>.
+
+  []
+
+* Evaluator
+
   The evaluator has seen heavy refactoring and rewrite in 1.2.  Eval scripts are mostly compatible;
   these notes focus on user-visible differences.  Code that directly used the eval classes will
   likely need updates that are not described here.
