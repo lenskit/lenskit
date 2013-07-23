@@ -31,7 +31,7 @@ import org.grouplens.lenskit.data.history.UserHistory;
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultImplementation(StreamingUserEventDAO.class)
+@DefaultImplementation(PrefetchingUserEventDAO.class)
 public interface UserEventDAO {
     /**
      * Stream events grouped by user.

@@ -29,7 +29,7 @@ import org.grouplens.grapht.annotation.DefaultImplementation;
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultImplementation(StreamingUserDAO.class)
+@DefaultImplementation(PrefetchingUserDAO.class)
 public interface UserDAO {
     /**
      * Get all known user IDs.

@@ -34,7 +34,7 @@ import static org.junit.Assert.assertThat;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class StreamingUserDAOTest {
+public class PrefetchingUserDAOTest {
     @Test
     public void testStreamUsers() {
         List<Rating> ratings = Lists.newArrayList(
@@ -43,7 +43,7 @@ public class StreamingUserDAOTest {
                 Ratings.make(2, 4, 3)
         );
         EventDAO dao = new EventCollectionDAO(ratings);
-        UserDAO udao = new StreamingUserDAO(dao);
+        UserDAO udao = new PrefetchingUserDAO(dao);
         assertThat(udao.getUserIds(), hasSize(2));
         assertThat(udao.getUserIds(), containsInAnyOrder(1L, 2L));
     }

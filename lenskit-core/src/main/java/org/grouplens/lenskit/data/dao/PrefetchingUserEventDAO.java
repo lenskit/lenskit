@@ -21,39 +21,38 @@
 package org.grouplens.lenskit.data.dao;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.data.history.History;
 
 import javax.inject.Inject;
-import java.util.List;
 
 /**
- * Item event DAO that pre-loads all events from an event DAO.
+ * User event DAO that pre-loads all events from an event DAO.
  *
  * @since 2.0
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class StreamingItemEventDAO implements ItemEventDAO {
+public final class PrefetchingUserEventDAO implements UserEventDAO {
     private final EventDAO eventDAO;
-    private transient volatile Long2ObjectMap<List<Event>> itemEvents;
+    private transient volatile Long2ObjectMap<UserHistory<Event>> userEvents;
 
     @Inject
-    public StreamingItemEventDAO(EventDAO dao) {
+    public PrefetchingUserEventDAO(EventDAO dao) {
         eventDAO = dao;
     }
 
     private void loadEvents() {
-        if (itemEvents != null) {
+        if (userEvents != null) {
             return;
         }
 
         synchronized (this) {
-            if (itemEvents != null) {
+            if (userEvents != null) {
                 return;
             }
             Long2ObjectMap<ImmutableList.Builder<Event>> table =
@@ -61,7 +60,7 @@ public final class StreamingItemEventDAO implements ItemEventDAO {
             Cursor<Event> events = eventDAO.streamEvents();
             try {
                 for (Event evt: events) {
-                    final long iid = evt.getItemId();
+                    final long iid = evt.getUserId();
                     ImmutableList.Builder<Event> list = table.get(iid);
                     if (list == null) {
                         list = new ImmutableList.Builder<Event>();
@@ -72,42 +71,35 @@ public final class StreamingItemEventDAO implements ItemEventDAO {
             } finally {
                 events.close();
             }
-            Long2ObjectMap<List<Event>> result = new Long2ObjectOpenHashMap<List<Event>>(table.size());
+            Long2ObjectMap<UserHistory<Event>> result = new Long2ObjectOpenHashMap<UserHistory<Event>>(table.size());
             for (Long2ObjectMap.Entry<ImmutableList.Builder<Event>> evt: table.long2ObjectEntrySet()) {
-                result.put(evt.getLongKey(), evt.getValue().build());
+                long user = evt.getLongKey();
+                result.put(user, History.forUser(user, evt.getValue().build()));
                 evt.setValue(null);
             }
-            itemEvents = result;
+            userEvents = result;
         }
     }
 
     @Override
-    public List<Event> getEventsForItem(long item) {
+    public Cursor<UserHistory<Event>> streamEventsByUser() {
         loadEvents();
-        return itemEvents.get(item);
+        return Cursors.wrap(userEvents.values());
     }
 
     @Override
-    public <E extends Event> List<E> getEventsForItem(long item, Class<E> type) {
-        List<Event> events = getEventsForItem(item);
+    public UserHistory<Event> getEventsForUser(long user) {
+        loadEvents();
+        return userEvents.get(user);
+    }
+
+    @Override
+    public <E extends Event> UserHistory<E> getEventsForUser(long user, Class<E> type) {
+        UserHistory<Event> events = getEventsForUser(user);
         if (events == null) {
             return null;
         } else {
-            return ImmutableList.copyOf(Iterables.filter(events, type));
+            return events.filter(type);
         }
-    }
-
-    @Override
-    public LongSet getUsersForItem(long item) {
-        List<Event> events = getEventsForItem(item);
-        if (events == null) {
-            return null;
-        }
-
-        LongSet users = new LongOpenHashSet();
-        for (Event evt: events) {
-            users.add(evt.getUserId());
-        }
-        return users;
     }
 }

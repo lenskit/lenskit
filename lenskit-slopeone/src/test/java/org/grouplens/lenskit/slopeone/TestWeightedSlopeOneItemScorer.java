@@ -22,7 +22,6 @@ package org.grouplens.lenskit.slopeone;
 
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitConfigContext;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.dao.*;
@@ -46,8 +45,8 @@ public class TestWeightedSlopeOneItemScorer {
     private static final double EPSILON = 1.0e-6;
 
     private SlopeOneModel getModel(EventDAO dao) {
-        UserEventDAO uedao = new StreamingUserEventDAO(dao);
-        ItemDAO idao = new StreamingItemDAO(dao);
+        UserEventDAO uedao = new PrefetchingUserEventDAO(dao);
+        ItemDAO idao = new PrefetchingItemDAO(dao);
         UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
         ItemItemBuildContextFactory contextFactory = new ItemItemBuildContextFactory(
                 uedao, idao, new DefaultUserVectorNormalizer(), summarizer);

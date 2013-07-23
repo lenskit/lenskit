@@ -28,40 +28,40 @@ import org.grouplens.lenskit.data.event.Event;
 import javax.inject.Inject;
 
 /**
- * User DAO that streams the events to get user information.  The user set is fetched and memorized
+ * Item DAO that streams the events to get item information.  The item set is fetched and memorized
  * once for each instance of this class.
  *
  * @since 2.0
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class StreamingUserDAO implements UserDAO {
+public final class PrefetchingItemDAO implements ItemDAO {
     private final EventDAO eventDAO;
-    private transient volatile LongSet users;
+    private transient volatile LongSet items;
 
     @Inject
-    public StreamingUserDAO(EventDAO events) {
+    public PrefetchingItemDAO(EventDAO events) {
         eventDAO = events;
     }
 
     @Override
-    public LongSet getUserIds() {
-        if (users == null) {
+    public LongSet getItemIds() {
+        if (items == null) {
             synchronized (this) {
-                if (users == null) {
+                if (items == null) {
                     LongSet us = new LongOpenHashSet();
                     Cursor<Event> events = eventDAO.streamEvents();
                     try {
                         for (Event e: events) {
-                            us.add(e.getUserId());
+                            us.add(e.getItemId());
                         }
                     } finally {
                         events.close();
                     }
-                    users = us;
+                    items = us;
                 }
             }
         }
 
-        return users;
+        return items;
     }
 }

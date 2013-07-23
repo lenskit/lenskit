@@ -40,7 +40,7 @@ public abstract class AbstractDataSource implements DataSource {
 
     /**
      * Default user-event DAO implementation.  If the {@linkplain #getEventDAO() event DAO}
-     * implements {@link UserEventDAO}, it is returned directly; otherwise, a new {@link StreamingUserEventDAO}
+     * implements {@link UserEventDAO}, it is returned directly; otherwise, a new {@link org.grouplens.lenskit.data.dao.PrefetchingUserEventDAO}
      * is created.
      *
      * @return The user-event DAO.
@@ -51,13 +51,13 @@ public abstract class AbstractDataSource implements DataSource {
         if (dao instanceof UserEventDAO) {
             return (UserEventDAO) dao;
         } else {
-            return new StreamingUserEventDAO(dao);
+            return new PrefetchingUserEventDAO(dao);
         }
     }
 
     /**
      * Default item-event DAO implementation.  If the {@linkplain #getEventDAO() event DAO}
-     * implements {@link ItemEventDAO}, it is returned directly; otherwise, a new {@link StreamingItemEventDAO}
+     * implements {@link ItemEventDAO}, it is returned directly; otherwise, a new {@link org.grouplens.lenskit.data.dao.PrefetchingItemEventDAO}
      * is created.
      *
      * @return The item-event DAO.
@@ -68,13 +68,13 @@ public abstract class AbstractDataSource implements DataSource {
         if (dao instanceof ItemEventDAO) {
             return (ItemEventDAO) dao;
         } else {
-            return new StreamingItemEventDAO(dao);
+            return new PrefetchingItemEventDAO(dao);
         }
     }
 
     /**
      * Default item DAO implementation.  If the {@linkplain #getEventDAO() event DAO}
-     * implements {@link ItemDAO}, it is returned directly; otherwise, a new {@link StreamingItemDAO}
+     * implements {@link ItemDAO}, it is returned directly; otherwise, a new {@link org.grouplens.lenskit.data.dao.PrefetchingItemDAO}
      * is created.
      *
      * @return The user-event DAO.
@@ -85,13 +85,13 @@ public abstract class AbstractDataSource implements DataSource {
         if (dao instanceof ItemDAO) {
             return (ItemDAO) dao;
         } else {
-            return new StreamingItemDAO(dao);
+            return new PrefetchingItemDAO(dao);
         }
     }
 
     /**
      * Default user DAO implementation.  If the {@linkplain #getEventDAO() event DAO}
-     * implements {@link UserDAO}, it is returned directly; otherwise, a new {@link StreamingUserDAO}
+     * implements {@link UserDAO}, it is returned directly; otherwise, a new {@link org.grouplens.lenskit.data.dao.PrefetchingUserDAO}
      * is created.
      *
      * @return The user-event DAO.
@@ -102,7 +102,7 @@ public abstract class AbstractDataSource implements DataSource {
         if (dao instanceof UserDAO) {
             return (UserDAO) dao;
         } else {
-            return new StreamingUserDAO(dao);
+            return new PrefetchingUserDAO(dao);
         }
     }
 }

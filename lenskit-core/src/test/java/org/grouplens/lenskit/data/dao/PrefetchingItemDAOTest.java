@@ -27,22 +27,25 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-public class StreamingUserEventDAOTest {
+/**
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
+public class PrefetchingItemDAOTest {
     @Test
-    public void testGetEvents() {
+    public void testGetItems() {
         List<Rating> ratings = Lists.newArrayList(
                 Ratings.make(1, 2, 3.5),
                 Ratings.make(1, 3, 4),
-                Ratings.make(2, 2, 3)
+                Ratings.make(2, 4, 3),
+                Ratings.make(2, 3, 2)
         );
         EventDAO dao = new EventCollectionDAO(ratings);
-        StreamingUserEventDAO iedao = new StreamingUserEventDAO(dao);
-        assertThat(iedao.getEventsForUser(2), hasSize(1));
-        assertThat(iedao.getEventsForUser(1), hasSize(2));
-        assertThat(iedao.getEventsForUser(4), nullValue());
+        ItemDAO idao = new PrefetchingItemDAO(dao);
+        assertThat(idao.getItemIds(), hasSize(3));
+        assertThat(idao.getItemIds(), containsInAnyOrder(2L, 3L, 4L));
     }
 }

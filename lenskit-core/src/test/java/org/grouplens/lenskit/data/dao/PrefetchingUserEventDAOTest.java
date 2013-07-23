@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-public class StreamingItemEventDAOTest {
+public class PrefetchingUserEventDAOTest {
     @Test
     public void testGetEvents() {
         List<Rating> ratings = Lists.newArrayList(
@@ -40,23 +40,9 @@ public class StreamingItemEventDAOTest {
                 Ratings.make(2, 2, 3)
         );
         EventDAO dao = new EventCollectionDAO(ratings);
-        StreamingItemEventDAO iedao = new StreamingItemEventDAO(dao);
-        assertThat(iedao.getEventsForItem(2), hasSize(2));
-        assertThat(iedao.getEventsForItem(3), hasSize(1));
-        assertThat(iedao.getEventsForItem(4), nullValue());
-    }
-
-    @Test
-    public void testGetUsers() {
-        List<Rating> ratings = Lists.newArrayList(
-                Ratings.make(1, 2, 3.5),
-                Ratings.make(1, 3, 4),
-                Ratings.make(2, 2, 3)
-        );
-        EventDAO dao = new EventCollectionDAO(ratings);
-        StreamingItemEventDAO iedao = new StreamingItemEventDAO(dao);
-        assertThat(iedao.getUsersForItem(2), hasSize(2));
-        assertThat(iedao.getUsersForItem(3), hasSize(1));
-        assertThat(iedao.getUsersForItem(4), nullValue());
+        PrefetchingUserEventDAO iedao = new PrefetchingUserEventDAO(dao);
+        assertThat(iedao.getEventsForUser(2), hasSize(1));
+        assertThat(iedao.getEventsForUser(1), hasSize(2));
+        assertThat(iedao.getEventsForUser(4), nullValue());
     }
 }

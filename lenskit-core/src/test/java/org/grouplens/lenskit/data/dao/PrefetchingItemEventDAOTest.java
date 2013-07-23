@@ -27,25 +27,36 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-/**
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- */
-public class StreamingItemDAOTest {
+public class PrefetchingItemEventDAOTest {
     @Test
-    public void testGetItems() {
+    public void testGetEvents() {
         List<Rating> ratings = Lists.newArrayList(
                 Ratings.make(1, 2, 3.5),
                 Ratings.make(1, 3, 4),
-                Ratings.make(2, 4, 3),
-                Ratings.make(2, 3, 2)
+                Ratings.make(2, 2, 3)
         );
         EventDAO dao = new EventCollectionDAO(ratings);
-        ItemDAO idao = new StreamingItemDAO(dao);
-        assertThat(idao.getItemIds(), hasSize(3));
-        assertThat(idao.getItemIds(), containsInAnyOrder(2L, 3L, 4L));
+        PrefetchingItemEventDAO iedao = new PrefetchingItemEventDAO(dao);
+        assertThat(iedao.getEventsForItem(2), hasSize(2));
+        assertThat(iedao.getEventsForItem(3), hasSize(1));
+        assertThat(iedao.getEventsForItem(4), nullValue());
+    }
+
+    @Test
+    public void testGetUsers() {
+        List<Rating> ratings = Lists.newArrayList(
+                Ratings.make(1, 2, 3.5),
+                Ratings.make(1, 3, 4),
+                Ratings.make(2, 2, 3)
+        );
+        EventDAO dao = new EventCollectionDAO(ratings);
+        PrefetchingItemEventDAO iedao = new PrefetchingItemEventDAO(dao);
+        assertThat(iedao.getUsersForItem(2), hasSize(2));
+        assertThat(iedao.getUsersForItem(3), hasSize(1));
+        assertThat(iedao.getUsersForItem(4), nullValue());
     }
 }

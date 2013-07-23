@@ -32,7 +32,7 @@ import java.util.List;
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultImplementation(StreamingItemEventDAO.class)
+@DefaultImplementation(PrefetchingItemEventDAO.class)
 public interface ItemEventDAO {
     /**
      * Get the events for a specific item.

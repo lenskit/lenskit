@@ -40,8 +40,8 @@ public class TestSlopeOneModelBuilder {
 
     private SlopeOneModel getModel(List<Rating> ratings) {
         EventDAO dao = new EventCollectionDAO(ratings);
-        UserEventDAO udao = new StreamingUserEventDAO(dao);
-        ItemDAO idao = new StreamingItemDAO(dao);
+        UserEventDAO udao = new PrefetchingUserEventDAO(dao);
+        ItemDAO idao = new PrefetchingItemDAO(dao);
         UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
         ItemItemBuildContextFactory contextFactory = new ItemItemBuildContextFactory(
                 udao, idao, new DefaultUserVectorNormalizer(), summarizer);
