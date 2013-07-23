@@ -6,7 +6,8 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.dao.StreamingUserEventDAO;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.grouplens.lenskit.data.dao.PrefetchingUserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -27,7 +28,7 @@ import static org.junit.Assert.assertThat;
  */
 public class TestMeanScorer {
     private EventDAO dao;
-    private StreamingUserEventDAO ueDAO;
+    private UserEventDAO ueDAO;
 
     @Before
     public void createRatingSource() {
@@ -60,7 +61,7 @@ public class TestMeanScorer {
         // u2 on i7 -> 4.0
         // u2 on i5 -> 3.5
         dao = new EventCollectionDAO(rs);
-        ueDAO = new StreamingUserEventDAO(dao);
+        ueDAO = new PrefetchingUserEventDAO(dao);
     }
 
     LongSortedSet itemSet(long item) {
