@@ -38,24 +38,13 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
 
     @Override
     public Iterator<ScoredId> fastIterator() {
-        return iterator();
+        return new FastIter();
     }
 
     @Override
     public ScoredId get(int i) {
         Preconditions.checkElementIndex(i, size());
-        ScoredIdBuilder bld = new ScoredIdBuilder(ids[i], scores[i]);
-        for (PackedChannel chan: channels.values()) {
-            if (chan.hasValue(i)) {
-                bld.addChannel(chan.symbol, chan.get(i));
-            }
-        }
-        for (PackedTypedChannel chan: typedChannels.values()) {
-            if (chan.hasValue(i)) {
-                bld.addChannel(chan.symbol, chan.get(i));
-            }
-        }
-        return bld.build();
+        return new IndirectId(i);
     }
 
     private class IndirectId extends AbstractScoredId implements Serializable {
@@ -148,6 +137,34 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
         }
     }
 
+    private class FastIter implements Iterator<ScoredId> {
+        int next = 0;
+        IndirectId id = new IndirectId(0);
+
+        @Override
+        public boolean hasNext() {
+            return next < ids.length;
+        }
+
+        @Override
+        public ScoredId next() {
+            if (next < ids.length) {
+                id.setIndex(next);
+                next++;
+                return id;
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("packed scored ID lists are immutable");
+        }
+    }
+
+    //region Channel storage
+
     abstract static class PackedChannel {
         private final Symbol symbol;
 
@@ -212,4 +229,5 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
             return values[idx];
         }
     }
+    //endregion
 }

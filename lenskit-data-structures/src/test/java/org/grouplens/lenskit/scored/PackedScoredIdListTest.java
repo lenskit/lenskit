@@ -3,6 +3,7 @@ package org.grouplens.lenskit.scored;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.junit.Before;
@@ -194,6 +195,30 @@ public class PackedScoredIdListTest {
         }
         // check equality for good measure
         assertThat(list, equalTo(ids));
+    }
+
+    @Test
+    public void testIterateMany() {
+        Symbol sym = Symbol.of("VALUE");
+        TypedSymbol<String> str = TypedSymbol.of(String.class, "STRING");
+        Random rng = new Random();
+        List<ScoredId> ids = Lists.newArrayListWithCapacity(25);
+        for (int i = 0; i < 25; i++) {
+            double v = rng.nextGaussian() + Math.PI;
+            ScoredId id = new ScoredIdBuilder(i, v)
+                    .addChannel(sym, Math.log(v))
+                    .addChannel(str, Double.toString(v))
+                    .build();
+            ids.add(id);
+            builder.add(id);
+        }
+        PackedScoredIdList list = builder.build();
+        assertThat(list, hasSize(25));
+        int i = 0;
+        for (ScoredId id: CollectionUtils.fast(list)) {
+            assertThat(id, equalTo(ids.get(i)));
+            i++;
+        }
     }
 
     @Test
