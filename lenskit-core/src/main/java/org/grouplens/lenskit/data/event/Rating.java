@@ -27,6 +27,7 @@ import org.grouplens.lenskit.data.pref.Preference;
 /**
  * A rating is an expression of preference for an item by a user.
  *
+ * @see Ratings
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
