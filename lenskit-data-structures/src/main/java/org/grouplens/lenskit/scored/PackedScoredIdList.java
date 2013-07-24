@@ -1,14 +1,13 @@
 package org.grouplens.lenskit.scored;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
-import java.util.AbstractList;
-import java.util.BitSet;
-import java.util.Iterator;
-import java.util.Map;
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * A space-efficient, unboxed list of scored IDs.  These lists are immutable; create them using a
@@ -57,6 +56,96 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
             }
         }
         return bld.build();
+    }
+
+    private class IndirectId extends AbstractScoredId implements Serializable {
+        private int index;
+        private volatile Set<Symbol> cCache;
+        private volatile Set<TypedSymbol<?>> tcCache;
+
+        public IndirectId(int idx) {
+            index = idx;
+        }
+
+        public Object writeReplace() {
+            return ScoredIds.copyBuilder(this).build();
+        }
+
+        public void setIndex(int idx) {
+            index = idx;
+            cCache = null;
+            tcCache = null;
+        }
+
+        @Override
+        public long getId() {
+            return ids[index];
+        }
+
+        @Override
+        public double getScore() {
+            return scores[index];
+        }
+
+        @Override
+        public Set<Symbol> getChannels() {
+            if (cCache == null) {
+                ImmutableSet.Builder<Symbol> bld = ImmutableSet.builder();
+                for (PackedChannel ch: channels.values()) {
+                    if (ch.hasValue(index)) {
+                        bld.add(ch.symbol);
+                    }
+                }
+                cCache = bld.build();
+            }
+            return cCache;
+        }
+
+        @Override
+        public Set<TypedSymbol<?>> getTypedChannels() {
+            if (tcCache == null) {
+                ImmutableSet.Builder<TypedSymbol<?>> bld = ImmutableSet.builder();
+                for (PackedTypedChannel ch: typedChannels.values()) {
+                    if (ch.hasValue(index)) {
+                        bld.add(ch.symbol);
+                    }
+                }
+                tcCache = bld.build();
+            }
+            return tcCache;
+        }
+
+        @Override
+        public double channel(Symbol s) {
+            PackedChannel chan = channels.get(s);
+            if (chan != null && chan.hasValue(index)) {
+                return chan.get(index);
+            } else {
+                throw new IllegalArgumentException("unknown symbol " + s);
+            }
+        }
+
+        @Override
+        public <K> K channel(TypedSymbol<K> s) {
+            PackedTypedChannel chan = typedChannels.get(s);
+            if (chan != null && chan.hasValue(index)) {
+                return s.getType().cast(chan.get(index));
+            } else {
+                throw new IllegalArgumentException("unknown symbol " + s);
+            }
+        }
+
+        @Override
+        public boolean hasChannel(Symbol s) {
+            PackedChannel chan = channels.get(s);
+            return chan != null && chan.hasValue(index);
+        }
+
+        @Override
+        public boolean hasChannel(TypedSymbol<?> s) {
+            PackedTypedChannel chan = typedChannels.get(s);
+            return chan != null && chan.hasValue(index);
+        }
     }
 
     abstract static class PackedChannel {
