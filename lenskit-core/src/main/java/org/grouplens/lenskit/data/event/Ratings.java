@@ -153,9 +153,7 @@ public final class Ratings {
      * Make a fresh rating object with no timestamp.
      *
      * @see #make(long, long, double, long)
-     * @deprecated Use {@link #newBuilder()}.
      */
-    @Deprecated
     public static Rating make(long uid, long iid, double value) {
         return new RatingBuilder().setUserId(uid)
                                   .setItemId(iid)
@@ -166,9 +164,7 @@ public final class Ratings {
     /**
      * Make a fresh rating event. Event IDs are generated sequentially. This is
      * mostly useful in test cases.
-     * @deprecated Use {@link #newBuilder()}.
      */
-    @Deprecated
     public static Rating make(long uid, long iid, double value, long ts) {
         return new RatingBuilder().setUserId(uid)
                                   .setItemId(iid)
