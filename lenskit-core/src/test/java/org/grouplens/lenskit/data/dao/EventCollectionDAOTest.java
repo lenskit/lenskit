@@ -130,10 +130,5 @@ public class EventCollectionDAOTest {
         public long getTimestamp() {
             return -1;
         }
-
-        @Override
-        public Purchase copy() {
-            return this;
-        }
     }
 }

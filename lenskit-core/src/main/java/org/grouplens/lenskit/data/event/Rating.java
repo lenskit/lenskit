@@ -39,7 +39,4 @@ public interface Rating extends Event {
      */
     @Nullable
     Preference getPreference();
-
-    @Override @Deprecated
-    Rating copy();
 }

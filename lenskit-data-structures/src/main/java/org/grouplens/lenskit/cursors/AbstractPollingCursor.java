@@ -87,7 +87,9 @@ public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
      * Return the next element in this Cursor, or null if there are no more
      * elements. This must be safe to call multiple times at the end of its
      * collection. The same element object is allowed to be reused (fast
-     * iteration), so long as {@link #copy(Object)} copies objects.
+     * iteration), so long as {@link #copy(Object)} copies objects.  If this
+     * method returns a fresh object every time, then {@link #copy(Object)}
+     * should be a no-op.
      *
      * @return The next element, or null
      */

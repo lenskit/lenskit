@@ -92,10 +92,4 @@ public final class SimpleNullRating implements Rating {
     public Preference getPreference() {
         return null;
     }
-
-    @Override @Deprecated
-    public Rating copy() {
-        /* this object is immutable. Just return it. */
-        return this;
-    }
 }

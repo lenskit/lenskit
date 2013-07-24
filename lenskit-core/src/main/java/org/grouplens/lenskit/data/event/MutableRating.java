@@ -126,9 +126,4 @@ public class MutableRating implements Rating {
     public void setTimestamp(long ts) {
         timestamp = ts;
     }
-
-    @Override @Deprecated
-    public Rating copy() {
-        return Ratings.copyBuilder(this).build();
-    }
 }

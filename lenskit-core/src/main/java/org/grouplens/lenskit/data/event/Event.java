@@ -70,22 +70,4 @@ public interface Event {
      * @return The event timestamp, or -1 if there is no timestamp.
      */
     long getTimestamp();
-
-    /**
-     * Copy this event.
-     *
-     * <p> Copied events should generally be independent of any backing store (e.g. an event backed
-     * by an index into an array of data should, when copied, create a new event that stores the
-     * data directly). As a result, the object returned by this method may be of a different
-     * concrete type. They should also always be immutable. If the event is already immutable, it
-     * should return itself.
-     *
-     * @return A copy of the event.
-     * @deprecated Copy the event directly using an appropriate builder. This method was an
-     *             overly-leaky abstraction.  Events are immutable; if you have a mutable event, it
-     *             is from a fast collection, and the client code or iterator implementation is
-     *             responsible to know what to do.
-     */
-    @Deprecated
-    Event copy();
 }

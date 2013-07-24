@@ -20,9 +20,10 @@
  */
 package org.grouplens.lenskit.data.sql;
 
-import org.grouplens.lenskit.data.event.AbstractEventCursor;
+import org.grouplens.lenskit.cursors.AbstractPollingCursor;
 import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.Ratings;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,7 +35,7 @@ import java.sql.SQLException;
  * @since 2.0
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class ResultSetRatingCursor extends AbstractEventCursor<Rating> {
+class ResultSetRatingCursor extends AbstractPollingCursor<Rating> {
     private ResultSet resultSet;
     private boolean hasTimestampColumn;
     private MutableRating rating;
@@ -94,6 +95,11 @@ class ResultSetRatingCursor extends AbstractEventCursor<Rating> {
         }
 
         return rating;
+    }
+
+    @Override
+    public Rating copy(Rating r) {
+        return Ratings.copyBuilder(r).build();
     }
 
     @Override
