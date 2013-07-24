@@ -33,7 +33,6 @@ import org.grouplens.lenskit.data.pref.Preference;
  */
 @Immutable
 final class SimpleNullRating implements Rating {
-    private final long id;
     private final long userId;
     private final long itemId;
     private final long timestamp;
@@ -41,23 +40,14 @@ final class SimpleNullRating implements Rating {
     /**
      * Construct a new null rating.
      *
-     * @param id  The event ID.
      * @param uid The user ID.
      * @param iid The item ID.
      * @param ts  The event timestamp.
-     * @deprecated Use {@link RatingBuilder}.
      */
-    @Deprecated
-    SimpleNullRating(long id, long uid, long iid, long ts) {
-        this.id = id;
+    SimpleNullRating(long uid, long iid, long ts) {
         userId = uid;
         itemId = iid;
         timestamp = ts;
-    }
-
-    @Override
-    public long getId() {
-        return id;
     }
 
     @Override

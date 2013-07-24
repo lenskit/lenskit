@@ -157,8 +157,7 @@ public final class Ratings {
      */
     @Deprecated
     public static Rating make(long uid, long iid, double value) {
-        return new RatingBuilder().newId()
-                                  .setUserId(uid)
+        return new RatingBuilder().setUserId(uid)
                                   .setItemId(iid)
                                   .setRating(value)
                                   .build();
@@ -171,8 +170,7 @@ public final class Ratings {
      */
     @Deprecated
     public static Rating make(long uid, long iid, double value, long ts) {
-        return new RatingBuilder().newId()
-                                  .setUserId(uid)
+        return new RatingBuilder().setUserId(uid)
                                   .setItemId(iid)
                                   .setRating(value)
                                   .setTimestamp(ts)
@@ -197,8 +195,7 @@ public final class Ratings {
     public static RatingBuilder copyBuilder(@Nonnull Rating r) {
         Preconditions.checkNotNull(r, "rating");
         RatingBuilder rb = newBuilder();
-        rb.setId(r.getId())
-          .setUserId(r.getUserId())
+        rb.setUserId(r.getUserId())
           .setItemId(r.getItemId())
           .setTimestamp(r.getTimestamp());
         Preference pref = r.getPreference();

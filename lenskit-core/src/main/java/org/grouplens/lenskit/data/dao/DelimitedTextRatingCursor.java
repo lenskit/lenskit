@@ -78,7 +78,6 @@ public class DelimitedTextRatingCursor extends AbstractPollingCursor<Rating> {
                 continue;
             }
 
-            rating.setId(rowCursor.getLineNumber());
             rating.setUserId(Long.parseLong(fields[0]));
             rating.setItemId(Long.parseLong(fields[1]));
             rating.setRating(Double.parseDouble(fields[2]));

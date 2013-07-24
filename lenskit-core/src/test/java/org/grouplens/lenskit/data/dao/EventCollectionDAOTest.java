@@ -23,7 +23,6 @@ package org.grouplens.lenskit.data.dao;
 import com.google.common.collect.Lists;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.AbstractEvent;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.hamcrest.Matcher;
@@ -32,9 +31,7 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 
-import static org.hamcrest.Matchers.emptyIterable;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 public class EventCollectionDAOTest {
@@ -85,7 +82,7 @@ public class EventCollectionDAOTest {
     public void testFilterMixed() {
         List<Event> ratings = Lists.newArrayList(
                 Ratings.make(1, 2, 3.5),
-                new Purchase(-1, 1, 4),
+                new Purchase(1, 4),
                 Ratings.make(1, 3, 4),
                 Ratings.make(2, 4, 3)
         );
@@ -100,20 +97,13 @@ public class EventCollectionDAOTest {
                    hasSize(3));
     }
 
-    static class Purchase extends AbstractEvent {
-        private final long id;
+    static class Purchase implements Event {
         private final long user;
         private final long item;
 
-        Purchase(long id, long user, long item) {
-            this.id = id;
+        Purchase(long user, long item) {
             this.user = user;
             this.item = item;
-        }
-
-        @Override
-        public long getId() {
-            return id;
         }
 
         @Override

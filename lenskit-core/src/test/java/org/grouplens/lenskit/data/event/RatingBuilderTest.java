@@ -41,29 +41,6 @@ public class RatingBuilderTest {
     }
 
     @Test
-    public void testInitialId() {
-        RatingBuilder rb = new RatingBuilder(394);
-        assertThat(rb.getId(), equalTo(394L));
-    }
-
-    @Test
-    public void testSetId() {
-        RatingBuilder rb = new RatingBuilder();
-        rb.setId(10);
-        assertThat(rb.getId(), equalTo(10L));
-    }
-
-    @Test
-    public void testNewId() throws Exception {
-        RatingBuilder rb = new RatingBuilder();
-        rb.newId();
-        long id = rb.getId();
-        assertThat(id, greaterThan(0L));
-        rb.newId();
-        assertThat(rb.getId(), greaterThan(id));
-    }
-
-    @Test
     public void testSetUserId() {
         RatingBuilder rb = new RatingBuilder();
         rb.setUserId(42);
@@ -103,14 +80,12 @@ public class RatingBuilderTest {
     @Test
     public void testBuildRating() {
         Rating r = new RatingBuilder()
-                .setId(39)
                 .setUserId(692)
                 .setItemId(483)
                 .setRating(3.5)
                 .setTimestamp(349702)
                 .build();
         assertThat(r, notNullValue());
-        assertThat(r.getId(), equalTo(39L));
         assertThat(r.getUserId(), equalTo(692L));
         assertThat(r.getItemId(), equalTo(483L));
         Preference pref = r.getPreference();
@@ -125,13 +100,11 @@ public class RatingBuilderTest {
     @Test
     public void testBuildUnrate() {
         Rating r = new RatingBuilder()
-                .setId(39)
                 .setUserId(692)
                 .setItemId(483)
                 .setTimestamp(349702)
                 .build();
         assertThat(r, notNullValue());
-        assertThat(r.getId(), equalTo(39L));
         assertThat(r.getUserId(), equalTo(692L));
         assertThat(r.getItemId(), equalTo(483L));
         Preference pref = r.getPreference();

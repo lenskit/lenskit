@@ -39,8 +39,6 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     @Nonnull
     private String tableName = "ratings";
     @Nonnull
-    private String idColumn = "id";
-    @Nonnull
     private String userColumn = "user";
     @Nonnull
     private String itemColumn = "item";
@@ -65,24 +63,6 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
      */
     public void setTableName(@Nonnull String name) {
         tableName = name;
-    }
-
-    /**
-     * Get the column of the event ID in the rating table.
-     *
-     * @return The name of the event ID column.
-     */
-    public String getIdColumn() {
-        return idColumn;
-    }
-
-    /**
-     * Set the name of the event ID column in the rating table.
-     *
-     * @param col The name of the event ID column.
-     */
-    public void setIdColumn(@Nonnull String col) {
-        idColumn = col;
     }
 
     /**
@@ -186,8 +166,6 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
      */
     protected void rqAddSelectFrom(StringBuilder query) {
         query.append("SELECT ");
-        query.append(idColumn);
-        query.append(", ");
         query.append(userColumn);
         query.append(", ");
         query.append(itemColumn);

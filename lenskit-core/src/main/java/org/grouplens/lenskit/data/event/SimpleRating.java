@@ -37,8 +37,7 @@ import javax.annotation.concurrent.Immutable;
  * @compat Public
  */
 @Immutable
-final class SimpleRating extends AbstractEvent implements Rating, Preference {
-    final long eventId;
+final class SimpleRating implements Rating, Preference {
     final long timestamp;
     final long user;
     final long item;
@@ -47,23 +46,16 @@ final class SimpleRating extends AbstractEvent implements Rating, Preference {
     /**
      * Construct a rating with a timestamp and value.
      *
-     * @param eid The event ID.
      * @param uid The user ID.
      * @param iid The item ID.
      * @param v   The rating value.
      * @param ts  The event timestamp.
      */
-    SimpleRating(long eid, long uid, long iid, double v, long ts) {
-        eventId = eid;
+    SimpleRating(long uid, long iid, double v, long ts) {
         timestamp = ts;
         user = uid;
         item = iid;
         value = v;
-    }
-
-    @Override
-    public long getId() {
-        return eventId;
     }
 
     @Override

@@ -41,14 +41,6 @@ package org.grouplens.lenskit.data.event;
  */
 public interface Event {
     /**
-     * Get the event's ID. Each event must have a globally-unique ID, and events
-     * are considered equal if their IDs are equal.
-     *
-     * @return The event ID.
-     */
-    long getId();
-
-    /**
      * Get the ID of the user responsible for the event.
      *
      * @return The event's user ID.

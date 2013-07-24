@@ -66,10 +66,6 @@ class ResultSetRatingCursor extends AbstractPollingCursor<Rating> {
         }
 
         try {
-            rating.setId(resultSet.getLong(JDBCRatingDAO.COL_EVENT_ID));
-            if (resultSet.wasNull()) {
-                throw new DatabaseAccessException("Unexpected null event ID");
-            }
             rating.setUserId(resultSet.getLong(JDBCRatingDAO.COL_USER_ID));
             if (resultSet.wasNull()) {
                 throw new DatabaseAccessException("Unexpected null user ID");

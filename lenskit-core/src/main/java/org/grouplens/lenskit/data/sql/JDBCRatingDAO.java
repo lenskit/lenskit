@@ -51,25 +51,21 @@ import javax.inject.Inject;
  */
 public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, UserDAO, ItemDAO {
     /**
-     * Event ID column number.
-     */
-    public static final int COL_EVENT_ID = 1;
-    /**
      * User ID column number.
      */
-    public static final int COL_USER_ID = 2;
+    public static final int COL_USER_ID = 1;
     /**
      * Item ID column number.
      */
-    public static final int COL_ITEM_ID = 3;
+    public static final int COL_ITEM_ID = 2;
     /**
      * Rating column number.
      */
-    public static final int COL_RATING = 4;
+    public static final int COL_RATING = 3;
     /**
      * Timestamp column number.
      */
-    public static final int COL_TIMESTAMP = 5;
+    public static final int COL_TIMESTAMP = 4;
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 

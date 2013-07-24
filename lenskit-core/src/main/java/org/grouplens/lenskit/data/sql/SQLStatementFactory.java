@@ -75,9 +75,9 @@ public interface SQLStatementFactory {
     /**
      * Prepare a statement to satisfy
      * {@link org.grouplens.lenskit.data.dao.EventDAO#streamEvents(Class, SortOrder)}. Each row should contain
-     * four or five columns: the event ID, the user ID, the item ID, the rating,
+     * three or four columns: the user ID, the item ID, the rating,
      * and (optionally) the timestamp. The timestamp column is allowed to
-     * contain NULL values or to be omitted entirely. ID, user, item, and rating
+     * contain NULL values or to be omitted entirely. User, item, and rating
      * columns must be non-null.
      *
      * @param order The sort order

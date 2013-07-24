@@ -45,9 +45,9 @@ public class TestRatings {
     @Test
     public void testURVRatingsInOrder() {
         List<Rating> ratings = new ArrayList<Rating>();
-        ratings.add(new SimpleRating(1, 1, 2, 3.0, 3));
-        ratings.add(new SimpleRating(2, 1, 3, 4.5, 7));
-        ratings.add(new SimpleRating(3, 1, 5, 2.3, 10));
+        ratings.add(new SimpleRating(1, 2, 3.0, 3));
+        ratings.add(new SimpleRating(1, 3, 4.5, 7));
+        ratings.add(new SimpleRating(1, 5, 2.3, 10));
         MutableSparseVector urv = Ratings.userRatingVector(ratings);
         assertThat(urv.isEmpty(), equalTo(false));
         assertThat(urv.size(), equalTo(3));
@@ -60,9 +60,9 @@ public class TestRatings {
     @Test
     public void testURVRatingsOutOfOrder() {
         List<Rating> ratings = new ArrayList<Rating>();
-        ratings.add(new SimpleRating(1, 1, 2, 3.0, 3));
-        ratings.add(new SimpleRating(3, 1, 5, 2.3, 7));
-        ratings.add(new SimpleRating(2, 1, 3, 4.5, 10));
+        ratings.add(new SimpleRating(1, 2, 3.0, 3));
+        ratings.add(new SimpleRating(1, 5, 2.3, 7));
+        ratings.add(new SimpleRating(1, 3, 4.5, 10));
         MutableSparseVector urv = Ratings.userRatingVector(ratings);
         assertThat(urv.isEmpty(), equalTo(false));
         assertThat(urv.size(), equalTo(3));
@@ -75,10 +75,10 @@ public class TestRatings {
     @Test
     public void testURVRatingsDup() {
         List<Rating> ratings = new ArrayList<Rating>();
-        ratings.add(new SimpleRating(1, 1, 2, 3.0, 3));
-        ratings.add(new SimpleRating(3, 1, 5, 2.3, 4));
-        ratings.add(new SimpleRating(2, 1, 3, 4.5, 5));
-        ratings.add(new SimpleRating(4, 1, 5, 3.7, 6));
+        ratings.add(new SimpleRating(1, 2, 3.0, 3));
+        ratings.add(new SimpleRating(1, 5, 2.3, 4));
+        ratings.add(new SimpleRating(1, 3, 4.5, 5));
+        ratings.add(new SimpleRating(1, 5, 3.7, 6));
         MutableSparseVector urv = Ratings.userRatingVector(ratings);
         assertThat(urv.isEmpty(), equalTo(false));
         assertThat(urv.size(), equalTo(3));
@@ -91,10 +91,10 @@ public class TestRatings {
     @Test
     public void testURVRatingsRmv() {
         List<Rating> ratings = new ArrayList<Rating>();
-        ratings.add(new SimpleRating(1, 1, 2, 3.0, 3));
-        ratings.add(new SimpleRating(3, 1, 5, 2.3, 5));
-        ratings.add(new SimpleNullRating(5, 1, 2, 7));
-        ratings.add(new SimpleRating(2, 1, 3, 4.5, 8));
+        ratings.add(new SimpleRating(1, 2, 3.0, 3));
+        ratings.add(new SimpleRating(1, 5, 2.3, 5));
+        ratings.add(new SimpleNullRating(1, 2, 7));
+        ratings.add(new SimpleRating(1, 3, 4.5, 8));
         MutableSparseVector urv = Ratings.userRatingVector(ratings);
         assertThat(urv.isEmpty(), equalTo(false));
         assertThat(urv.size(), equalTo(2));
@@ -107,10 +107,10 @@ public class TestRatings {
     @Test
     public void testURVRatingsDupOutOfOrder() {
         List<Rating> ratings = new ArrayList<Rating>();
-        ratings.add(new SimpleRating(1, 1, 2, 3.0, 3));
-        ratings.add(new SimpleRating(3, 1, 5, 2.3, 7));
-        ratings.add(new SimpleRating(2, 1, 3, 4.5, 5));
-        ratings.add(new SimpleRating(4, 1, 5, 3.7, 6));
+        ratings.add(new SimpleRating(1, 2, 3.0, 3));
+        ratings.add(new SimpleRating(1, 5, 2.3, 7));
+        ratings.add(new SimpleRating(1, 3, 4.5, 5));
+        ratings.add(new SimpleRating(1, 5, 3.7, 6));
         MutableSparseVector urv = Ratings.userRatingVector(ratings);
         assertThat(urv.isEmpty(), equalTo(false));
         assertThat(urv.size(), equalTo(3));
@@ -131,10 +131,10 @@ public class TestRatings {
     @Test
     public void testIRVRatings() {
         List<Rating> ratings = new ArrayList<Rating>();
-        ratings.add(new SimpleRating(1, 1, 2, 3.0, 1));
-        ratings.add(new SimpleRating(2, 3, 2, 4.5, 2));
-        ratings.add(new SimpleRating(3, 2, 2, 2.3, 3));
-        ratings.add(new SimpleRating(4, 3, 2, 4.5, 10));
+        ratings.add(new SimpleRating(1, 2, 3.0, 1));
+        ratings.add(new SimpleRating(3, 2, 4.5, 2));
+        ratings.add(new SimpleRating(2, 2, 2.3, 3));
+        ratings.add(new SimpleRating(3, 2, 4.5, 10));
         MutableSparseVector urv = Ratings.itemRatingVector(ratings);
         assertThat(urv.isEmpty(), equalTo(false));
         assertThat(urv.size(), equalTo(3));
