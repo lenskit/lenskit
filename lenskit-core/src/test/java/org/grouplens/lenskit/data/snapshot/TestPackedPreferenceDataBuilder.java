@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.snapshot;
 
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.data.pref.SimplePreference;
+import org.grouplens.lenskit.data.pref.Preferences;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,7 +54,7 @@ public class TestPackedPreferenceDataBuilder {
 
     @Test
     public void testAddPreference() {
-        Preference pref = new SimplePreference(10, 39, 3.5);
+        Preference pref = Preferences.make(10, 39, 3.5);
         int idx = bld.add(pref);
         assertThat(idx, equalTo(0));
         assertThat(bld.size(), equalTo(1));
@@ -79,7 +79,7 @@ public class TestPackedPreferenceDataBuilder {
         }
         Preference[] prefs = new Preference[10000];
         for (int i = 0; i < 10000; i++) {
-            prefs[i] = new SimplePreference(
+            prefs[i] = Preferences.make(
                     users[rnd.nextInt(500)],
                     items[rnd.nextInt(1000)],
                     rnd.nextGaussian());
@@ -102,62 +102,62 @@ public class TestPackedPreferenceDataBuilder {
 
     @Test
     public void testRemove() {
-        bld.add(new SimplePreference(1, 3, 20));
-        bld.add(new SimplePreference(4, 2, -3));
-        bld.add(new SimplePreference(2, 3, Math.PI));
+        bld.add(Preferences.make(1, 3, 20));
+        bld.add(Preferences.make(4, 2, -3));
+        bld.add(Preferences.make(2, 3, Math.PI));
         assertThat(bld.size(), equalTo(3));
         bld.release(1);
         assertThat(bld.size(), equalTo(2));
         PackedPreferenceData data = bld.build();
         assertThat(data.size(), equalTo(2));
         assertThat(data.preference(0),
-                   equalTo((Preference) new SimplePreference(1, 3, 20)));
+                   equalTo(Preferences.make(1, 3, 20)));
         assertThat(data.preference(1),
-                   equalTo((Preference) new SimplePreference(2, 3, Math.PI)));
+                   equalTo(Preferences.make(2, 3, Math.PI)));
     }
 
     @Test
     public void testRemoveLast() {
-        bld.add(new SimplePreference(1, 3, 20));
-        bld.add(new SimplePreference(4, 2, -3));
-        bld.add(new SimplePreference(2, 3, Math.PI));
+        bld.add(Preferences.make(1, 3, 20));
+        bld.add(Preferences.make(4, 2, -3));
+        bld.add(Preferences.make(2, 3, Math.PI));
         assertThat(bld.size(), equalTo(3));
         bld.release(2);
         assertThat(bld.size(), equalTo(2));
         PackedPreferenceData data = bld.build();
         assertThat(data.size(), equalTo(2));
         assertThat(data.preference(0),
-                   equalTo((Preference) new SimplePreference(1, 3, 20)));
+                   equalTo(Preferences.make(1, 3, 20)));
         assertThat(data.preference(1),
-                   equalTo((Preference) new SimplePreference(4, 2, -3)));
+                   equalTo(Preferences.make(4, 2, -3)));
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void testRemoveBad() {
-        bld.add(new SimplePreference(1, 3, 20));
-        bld.add(new SimplePreference(4, 2, -3));
-        bld.add(new SimplePreference(2, 3, Math.PI));
+        bld.add(Preferences.make(1, 3, 20));
+        bld.add(Preferences.make(4, 2, -3));
+        bld.add(Preferences.make(2, 3, Math.PI));
         bld.release(7);
     }
 
     @Test
     public void testReuse() {
-        bld.add(new SimplePreference(1, 3, 20));
-        bld.add(new SimplePreference(4, 2, -3));
-        bld.add(new SimplePreference(2, 3, Math.PI));
+        bld.add(Preferences.make(1, 3, 20));
+        bld.add(Preferences.make(4, 2, -3));
+        bld.add(Preferences.make(2, 3, Math.PI));
         assertThat(bld.size(), equalTo(3));
         bld.release(1);
         assertThat(bld.size(), equalTo(2));
-        int idx = bld.add(new SimplePreference(7, 2, Math.E));
+        int idx = bld.add(Preferences.make(7, 2, Math.E));
         assertThat(bld.size(), equalTo(3));
         assertThat(idx, equalTo(1));
         PackedPreferenceData data = bld.build();
         assertThat(data.size(), equalTo(3));
         assertThat(data.preference(0),
-                   equalTo((Preference) new SimplePreference(1, 3, 20)));
+                   equalTo(Preferences.make(1, 3, 20)));
         assertThat(data.preference(1),
-                   equalTo((Preference) new SimplePreference(7, 2, Math.E)));
+                   equalTo(Preferences.make(7, 2, Math.E)));
         assertThat(data.preference(2),
-                   equalTo((Preference) new SimplePreference(2, 3, Math.PI)));
+                   equalTo(Preferences.make(2, 3, Math.PI)));
     }
 }

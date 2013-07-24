@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.snapshot;
 
+import org.grouplens.lenskit.data.pref.AbstractPreference;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.util.Index;
 
@@ -109,12 +110,8 @@ final class PackedPreferenceData {
         return itemIndex;
     }
 
-    final class IndirectPreference extends IndexedPreference {
+    final class IndirectPreference extends AbstractPreference implements IndexedPreference {
         private int index;
-
-        IndirectPreference() {
-            this(-1);
-        }
 
         IndirectPreference(int idx) {
             index = idx;

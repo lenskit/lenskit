@@ -27,7 +27,7 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.data.pref.SimplePreference;
+import org.grouplens.lenskit.data.pref.Preferences;
 import org.grouplens.lenskit.util.Index;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
@@ -49,7 +49,7 @@ public class TestPackedPreferenceSnapshot {
     }
 
     private static Preference preference(long uid, long iid, double value) {
-        return new SimplePreference(uid, iid, value);
+        return Preferences.make(uid, iid, value);
     }
 
     @Before

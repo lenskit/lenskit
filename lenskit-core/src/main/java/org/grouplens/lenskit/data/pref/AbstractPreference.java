@@ -20,44 +20,41 @@
  */
 package org.grouplens.lenskit.data.pref;
 
-import javax.annotation.concurrent.Immutable;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
- * Basic preference implementation that stores data in fields.
+ * Helper class providing equality over preferences.
  *
+ * @since 2.0
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@Immutable
-class SimplePreference extends AbstractPreference {
-    private final long userId;
-    private final long itemId;
-    private final double value;
-
-    /**
-     * Construct a new preference object.
-     *
-     * @param uid The user ID.
-     * @param iid The item ID.
-     * @param v   The preference value.
-     */
-    SimplePreference(long uid, long iid, double v) {
-        userId = uid;
-        itemId = iid;
-        value = v;
+public abstract class AbstractPreference implements Preference {
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Preference) {
+            Preference op = (Preference) o;
+            return new EqualsBuilder()
+                    .append(getUserId(), op.getUserId())
+                    .append(getItemId(), op.getItemId())
+                    .append(getValue(), op.getValue())
+                    .isEquals();
+        } else {
+            return false;
+        }
     }
 
     @Override
-    public long getUserId() {
-        return userId;
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(getUserId())
+                .append(getItemId())
+                .append(getValue())
+                .toHashCode();
     }
 
     @Override
-    public long getItemId() {
-        return itemId;
-    }
-
-    @Override
-    public double getValue() {
-        return value;
+    public String toString() {
+        return String.format("Preference(u=%d, i=%d, v=%.2f)", getUserId(), getItemId(), getValue());
     }
 }

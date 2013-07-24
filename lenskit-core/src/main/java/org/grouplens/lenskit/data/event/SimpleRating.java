@@ -20,12 +20,10 @@
  */
 package org.grouplens.lenskit.data.event;
 
+import org.grouplens.lenskit.data.pref.Preference;
+
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
-
-import com.google.common.base.Preconditions;
-import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.data.pref.SimplePreference;
 
 /**
  * A simple rating immutable rating implementation, storing ratings in fields.
@@ -39,11 +37,12 @@ import org.grouplens.lenskit.data.pref.SimplePreference;
  * @compat Public
  */
 @Immutable
-final class SimpleRating extends AbstractEvent implements Rating {
+final class SimpleRating extends AbstractEvent implements Rating, Preference {
     final long eventId;
     final long timestamp;
-    @Nonnull
-    final Preference preference;
+    final long user;
+    final long item;
+    final double value;
 
     /**
      * Construct a rating with a timestamp and value.
@@ -57,7 +56,9 @@ final class SimpleRating extends AbstractEvent implements Rating {
     SimpleRating(long eid, long uid, long iid, double v, long ts) {
         eventId = eid;
         timestamp = ts;
-        preference = new SimplePreference(uid, iid, v);
+        user = uid;
+        item = iid;
+        value = v;
     }
 
     @Override
@@ -67,22 +68,27 @@ final class SimpleRating extends AbstractEvent implements Rating {
 
     @Override
     public final long getUserId() {
-        return preference.getUserId();
+        return user;
     }
 
     @Override
     public final long getItemId() {
-        return preference.getItemId();
+        return item;
     }
 
     @Override
     @Nonnull
     public final Preference getPreference() {
-        return preference;
+        return this;
     }
 
     @Override
     public final long getTimestamp() {
         return timestamp;
+    }
+
+    @Override
+    public final double getValue() {
+        return value;
     }
 }
