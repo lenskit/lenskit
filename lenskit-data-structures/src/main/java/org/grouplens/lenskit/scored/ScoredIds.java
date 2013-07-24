@@ -20,6 +20,9 @@
  */
 package org.grouplens.lenskit.scored;
 
+import com.google.common.collect.Ordering;
+import com.google.common.primitives.Doubles;
+import it.unimi.dsi.fastutil.doubles.DoubleComparators;
 import org.grouplens.lenskit.collections.CopyingFastCollection;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -27,6 +30,7 @@ import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 
 /**
@@ -38,6 +42,49 @@ import java.util.Iterator;
  */
 public final class ScoredIds {
     private ScoredIds() {}
+
+    /**
+     * Create a new builder initialized to copy the specified scored ID.
+     * @param id The scored ID to copy.
+     * @return A new builder that will copy the ID.
+     */
+    public static ScoredIdBuilder copyBuilder(ScoredId id) {
+        ScoredIdBuilder bld = new ScoredIdBuilder(id.getId(), id.getScore());
+        for (Symbol chan: id.getChannels()) {
+            bld.addChannel(chan, id.channel(chan));
+        }
+        for (@SuppressWarnings("rawtypes") TypedSymbol sym: id.getTypedChannels()) {
+            bld.addChannel(sym, id.channel(sym));
+        }
+        return bld;
+    }
+
+    /**
+     * Create a new builder.
+     * @return A new scored ID builder.
+     */
+    public static ScoredIdBuilder newBuilder() {
+        return new ScoredIdBuilder();
+    }
+
+    //region Ordering
+    /**
+     * An ordering (comparator) that compares IDs by score.
+     * @return An ordering over {@link ScoredId}s by score.
+     */
+    public static Ordering<ScoredId> scoreOrder() {
+        return SCORE_ORDER;
+    }
+
+    private static final Ordering<ScoredId> SCORE_ORDER = new ScoreOrder();
+
+    private static final class ScoreOrder extends Ordering<ScoredId> {
+        @Override
+        public int compare(@Nullable ScoredId left, @Nullable ScoredId right) {
+            return Doubles.compare(left.getScore(), right.getScore());
+        }
+    }
+    //endregion
 
     //region Vector conversion
     /**

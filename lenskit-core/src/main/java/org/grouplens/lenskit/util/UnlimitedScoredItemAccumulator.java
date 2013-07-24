@@ -21,17 +21,15 @@
 package org.grouplens.lenskit.util;
 
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.doubles.DoubleComparators;
 import org.grouplens.lenskit.collections.ScoredLongArrayList;
 import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdBuilder;
+import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -78,12 +76,7 @@ public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulat
             ids.add(builder.setId(item).setScore(score).build());
         }
 
-        Collections.sort(ids, new Comparator<ScoredId>() {
-            @Override
-            public int compare(ScoredId o1, ScoredId o2) {
-                return DoubleComparators.OPPOSITE_COMPARATOR.compare(o1.getScore(), o2.getScore());
-            }
-        });
+        Collections.sort(ids, ScoredIds.scoreOrder().reverse());
 
         scores = null;
         return ids;
