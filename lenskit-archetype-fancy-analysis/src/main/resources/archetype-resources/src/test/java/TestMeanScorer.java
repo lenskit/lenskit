@@ -33,10 +33,10 @@ public class TestMeanScorer {
     @Before
     public void createRatingSource() {
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(Ratings.make(1, 1, 5, 3));
-        rs.add(Ratings.make(2, 1, 7, 4));
-        rs.add(Ratings.make(3, 8, 4, 5));
-        rs.add(Ratings.make(4, 8, 5, 4));
+        rs.add(Ratings.make(1, 5, 3));
+        rs.add(Ratings.make(1, 7, 4));
+        rs.add(Ratings.make(8, 4, 5));
+        rs.add(Ratings.make(8, 5, 4));
 
         // Global Mean: 16 / 4 = 4
 
