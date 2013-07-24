@@ -22,6 +22,8 @@ package org.grouplens.lenskit.data.event;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.data.pref.Preference;
 
 /**
@@ -68,5 +70,26 @@ final class SimpleNullRating implements Rating {
     @Override
     public Preference getPreference() {
         return null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Rating) {
+            Rating or = (Rating) o;
+            if (or.getPreference() == null) {
+                return new EqualsBuilder().append(userId, or.getUserId())
+                                          .append(itemId, or.getItemId())
+                                          .append(timestamp, or.getTimestamp())
+                                          .isEquals();
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(userId)
+                                    .append(itemId)
+                                    .toHashCode();
     }
 }

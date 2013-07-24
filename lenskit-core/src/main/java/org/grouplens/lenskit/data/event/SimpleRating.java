@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.data.event;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.data.pref.Preference;
 
 import javax.annotation.Nonnull;
@@ -82,5 +84,38 @@ final class SimpleRating implements Rating, Preference {
     @Override
     public final double getValue() {
         return value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Rating) {
+            Rating ro = (Rating) o;
+            Preference op = ro.getPreference();
+            if (op != null) {
+                return new EqualsBuilder().append(user, ro.getUserId())
+                                          .append(item, ro.getItemId())
+                                          .append(value, op.getValue())
+                                          .append(timestamp,  ro.getTimestamp())
+                                          .isEquals();
+            } else {
+                return false;
+            }
+        } else if (o instanceof Preference) {
+            Preference op = (Preference) o;
+            return new EqualsBuilder().append(user, op.getUserId())
+                                      .append(item, op.getItemId())
+                                      .append(value, op.getValue())
+                                      .isEquals();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(user)
+                                    .append(item)
+                                    .append(value)
+                                    .toHashCode();
     }
 }

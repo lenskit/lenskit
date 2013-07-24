@@ -32,10 +32,6 @@ package org.grouplens.lenskit.data.event;
  * Events are immutable. Deviations must be clearly documented and only
  * used in very limited cases (e.g. to implement fast iterators).
  *
- * <p>
- * Implementations must also have well-defined {@link #equals(Object)} and
- * {@link #hashCode()} methods.
- *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
