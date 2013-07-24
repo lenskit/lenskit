@@ -9,7 +9,7 @@ import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.dao.PrefetchingUserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.SimpleRating;
+import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,10 +33,10 @@ public class TestMeanScorer {
     @Before
     public void createRatingSource() {
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(new SimpleRating(1, 1, 5, 3));
-        rs.add(new SimpleRating(2, 1, 7, 4));
-        rs.add(new SimpleRating(3, 8, 4, 5));
-        rs.add(new SimpleRating(4, 8, 5, 4));
+        rs.add(Ratings.make(1, 1, 5, 3));
+        rs.add(Ratings.make(2, 1, 7, 4));
+        rs.add(Ratings.make(3, 8, 4, 5));
+        rs.add(Ratings.make(4, 8, 5, 4));
 
         // Global Mean: 16 / 4 = 4
 
