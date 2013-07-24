@@ -20,17 +20,16 @@
  */
 package org.grouplens.lenskit.data.history;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.ArrayList;
-import java.util.Collection;
-
+import com.google.common.collect.Lists;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
-import org.grouplens.lenskit.data.event.SimpleRating;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
+
+import java.util.Collection;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -43,10 +42,11 @@ public class TestUserVector {
      */
     @Test
     public void testUserRatingVector() {
-        Collection<Rating> ratings = new ArrayList<Rating>();
-        ratings.add(new SimpleRating(1, 5, 7, 3.5));
-        ratings.add(new SimpleRating(2, 5, 3, 1.5));
-        ratings.add(new SimpleRating(3, 5, 8, 2));
+        Collection<Rating> ratings = Lists.newArrayList(
+                Ratings.make(5, 7, 3.5),
+                Ratings.make(5, 3, 1.5),
+                Ratings.make(5, 8, 2)
+        );
         SparseVector v = Ratings.userRatingVector(ratings);
         assertEquals(3, v.size());
         assertEquals(7, v.sum(), EPSILON);

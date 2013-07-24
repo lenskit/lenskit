@@ -20,23 +20,23 @@
  */
 package org.grouplens.lenskit.data.history;
 
-import static org.junit.Assert.assertEquals;
+import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.RatingBuilder;
+import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
-import org.grouplens.lenskit.data.event.SimpleRating;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestItemVector {
-    private final static double EPSILON = 1.0e-6;
+    private static final double EPSILON = 1.0e-6;
 
     /**
      * Test method for {@link org.grouplens.lenskit.data.event.Ratings#itemRatingVector(java.util.Collection)}.
@@ -44,9 +44,10 @@ public class TestItemVector {
     @Test
     public void testItemRatingVector() {
         Collection<Rating> ratings = new ArrayList<Rating>();
-        ratings.add(new SimpleRating(1, 7, 5, 3.5));
-        ratings.add(new SimpleRating(2, 3, 5, 1.5));
-        ratings.add(new SimpleRating(3, 8, 5, 2));
+        RatingBuilder rb = new RatingBuilder();
+        ratings.add(Ratings.make(7, 5, 3.5));
+        ratings.add(Ratings.make(3, 5, 1.5));
+        ratings.add(Ratings.make(8, 5, 2));
         SparseVector v = Ratings.itemRatingVector(ratings);
         assertEquals(3, v.size());
         assertEquals(7, v.sum(), EPSILON);

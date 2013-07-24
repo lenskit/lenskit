@@ -157,7 +157,11 @@ public final class Ratings {
      */
     @Deprecated
     public static Rating make(long uid, long iid, double value) {
-        return make(uid, iid, value, -1);
+        return new RatingBuilder().newId()
+                                  .setUserId(uid)
+                                  .setItemId(iid)
+                                  .setRating(value)
+                                  .build();
     }
 
     /**
@@ -167,8 +171,12 @@ public final class Ratings {
      */
     @Deprecated
     public static Rating make(long uid, long iid, double value, long ts) {
-        return new SimpleRating(nextEventId.incrementAndGet(),
-                                uid, iid, value, ts);
+        return new RatingBuilder().newId()
+                                  .setUserId(uid)
+                                  .setItemId(iid)
+                                  .setRating(value)
+                                  .setTimestamp(ts)
+                                  .build();
     }
 
     /**

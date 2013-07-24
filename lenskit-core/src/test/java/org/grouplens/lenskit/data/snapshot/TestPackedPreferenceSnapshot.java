@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.SimpleRating;
+import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.pref.SimplePreference;
@@ -44,10 +44,8 @@ public class TestPackedPreferenceSnapshot {
     private PackedPreferenceSnapshot snap;
     private static final double EPSILON = 1.0e-6;
 
-    private static int eid;
-
     private static Rating rating(long uid, long iid, double value, long ts) {
-        return new SimpleRating(eid++, uid, iid, value, ts);
+        return Ratings.make(uid, iid, value, ts);
     }
 
     private static Preference preference(long uid, long iid, double value) {

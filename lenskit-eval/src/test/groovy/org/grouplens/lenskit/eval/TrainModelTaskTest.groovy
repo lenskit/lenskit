@@ -26,6 +26,7 @@ import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.GlobalMeanPredictor
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
+import org.grouplens.lenskit.data.event.Ratings
 import org.grouplens.lenskit.data.event.SimpleRating
 import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.grouplens.lenskit.eval.data.GenericDataSource
@@ -37,10 +38,10 @@ import static org.junit.Assert.assertThat
 
 class TrainModelTaskTest extends ConfigTestBase {
     def ratings = [
-            new SimpleRating(1, 1, 1, 3.5),
-            new SimpleRating(2, 1, 2, 4.0),
-            new SimpleRating(3, 2, 1, 3.5),
-            new SimpleRating(3, 2, 3, 5.0)
+            Ratings.make(1, 1, 3.5),
+            Ratings.make(1, 2, 4.0),
+            Ratings.make(2, 1, 3.5),
+            Ratings.make(2, 3, 5.0)
     ]
     def dao = new EventCollectionDAO(ratings);
     def dataSource = new GenericDataSource("test-data", dao);

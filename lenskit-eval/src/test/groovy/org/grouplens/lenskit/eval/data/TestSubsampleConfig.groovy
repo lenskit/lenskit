@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.longs.LongSet
 import org.grouplens.lenskit.cursors.Cursors
 import org.grouplens.lenskit.data.dao.*
 import org.grouplens.lenskit.data.event.Rating
+import org.grouplens.lenskit.data.event.Ratings
 import org.grouplens.lenskit.data.event.SimpleRating
 import org.grouplens.lenskit.data.pref.SimplePreference
 import org.grouplens.lenskit.eval.data.subsample.SubsampleMode
@@ -46,37 +47,24 @@ class TestSubsampleConfig extends ConfigTestBase {
 
     def GenericDataSource dataSource = null;
     def trainTestDir = Files.createTempDir();
-    def pref = [
-        new SimplePreference(1, 1, 3),
-        new SimplePreference(1, 2, 2),
-        new SimplePreference(1, 3, 5),
-        new SimplePreference(2, 2, 6),
-        new SimplePreference(2, 4, 8),
-        new SimplePreference(3, 1, 1),
-        new SimplePreference(3, 3, 4),
-        new SimplePreference(3, 4, 0),
-        new SimplePreference(4, 2, 7),
-        new SimplePreference(4, 4, 9),
-        ];
-    
     def ratings = [
-        new SimpleRating(1, pref[0]),
-        new SimpleRating(2, pref[1]),
-        new SimpleRating(3, pref[2]),
-        new SimpleRating(4, pref[3]),
-        new SimpleRating(5, pref[4]),
-        new SimpleRating(6, pref[5]),
-        new SimpleRating(7, pref[6]),
-        new SimpleRating(8, pref[7]),
-        new SimpleRating(9, pref[8]),
-        new SimpleRating(10, pref[9]),
-        ];
+            Ratings.make(1, 1, 3),
+            Ratings.make(1, 2, 2),
+            Ratings.make(1, 3, 5),
+            Ratings.make(2, 2, 6),
+            Ratings.make(2, 4, 8),
+            Ratings.make(3, 1, 1),
+            Ratings.make(3, 3, 4),
+            Ratings.make(3, 4, 0),
+            Ratings.make(4, 2, 7),
+            Ratings.make(4, 4, 9),
+    ];
 
     @Before
     void prepareDataSource() {
         dataSource = new GenericDataSource("sampleSource", new EventCollectionDAO(ratings));
     }
-   
+
     @After
     void cleanUpFiles() {
         trainTestDir.deleteDir()
@@ -91,13 +79,13 @@ class TestSubsampleConfig extends ConfigTestBase {
                 output new File(trainTestDir, "subsample.csv")
             }
         }
-        
+
         EventDAO dao = obj.getEventDAO();
         List<Rating> ratings = Cursors.makeList(dao.streamEvents(Rating.class));
 
         assertThat(ratings.size(), equalTo(2))
     }
-    
+
     @Test
     void testSubsampleUser() {
         def obj = eval {
@@ -108,7 +96,7 @@ class TestSubsampleConfig extends ConfigTestBase {
                 output new File(trainTestDir, "subsample.csv")
             }
         }
-        
+
         UserDAO dao = obj.getUserDAO();
         UserEventDAO userEvents = obj.getUserEventDAO();
         UserEventDAO sourceDAO = dataSource.getUserEventDAO();
@@ -123,7 +111,7 @@ class TestSubsampleConfig extends ConfigTestBase {
             assertThat(userRating.size(), equalTo(sourceUserRating.size()));
         }
     }
-    
+
     @Test
     void testSubsampleItem() {
         def obj = eval {

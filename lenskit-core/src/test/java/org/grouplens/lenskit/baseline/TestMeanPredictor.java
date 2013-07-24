@@ -24,26 +24,24 @@
 package org.grouplens.lenskit.baseline;
 
 
-import static org.junit.Assert.assertEquals;
-
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.SimpleRating;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test baseline predictors that compute means from data.
@@ -57,10 +55,10 @@ public class TestMeanPredictor {
     @Before
     public void createRatingSource() {
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(new SimpleRating(1, 1, 5, 2));
-        rs.add(new SimpleRating(2, 1, 7, 4));
-        rs.add(new SimpleRating(3, 8, 4, 5));
-        rs.add(new SimpleRating(4, 8, 5, 4));
+        rs.add(Ratings.make(1, 5, 2));
+        rs.add(Ratings.make(1, 7, 4));
+        rs.add(Ratings.make(8, 4, 5));
+        rs.add(Ratings.make(8, 5, 4));
 
         dao = new EventCollectionDAO(rs);
     }

@@ -39,53 +39,11 @@ import org.grouplens.lenskit.data.pref.SimplePreference;
  * @compat Public
  */
 @Immutable
-public final class SimpleRating extends AbstractEvent implements Rating {
+final class SimpleRating extends AbstractEvent implements Rating {
     final long eventId;
     final long timestamp;
     @Nonnull
     final Preference preference;
-
-    /**
-     * Construct a rating without a timestamp.
-     *
-     * @param eid  The event ID.
-     * @param pref The preference.
-     * @deprecated Use {@link RatingBuilder}.
-     */
-    @Deprecated
-    public SimpleRating(long eid, @Nonnull Preference pref) {
-        this(eid, -1L, pref);
-    }
-
-    /**
-     * Construct a rating with a timestamp.
-     *
-     * @param eid  The event ID.
-     * @param ts   The event timestamp.
-     * @param pref The preference.
-     * @deprecated Use {@link RatingBuilder}.
-     */
-    @Deprecated
-    public SimpleRating(long eid, long ts, @Nonnull Preference pref) {
-        Preconditions.checkNotNull(pref);
-        eventId = eid;
-        timestamp = ts;
-        preference = pref;
-    }
-
-    /**
-     * Construct a rating with a value directly.
-     *
-     * @param eid The event ID.
-     * @param uid The user ID.
-     * @param iid The item ID.
-     * @param v   The rating value.
-     * @deprecated Use {@link RatingBuilder}.
-     */
-    @Deprecated
-    public SimpleRating(long eid, long uid, long iid, double v) {
-        this(eid, uid, iid, v, -1L);
-    }
 
     /**
      * Construct a rating with a timestamp and value.
@@ -95,10 +53,8 @@ public final class SimpleRating extends AbstractEvent implements Rating {
      * @param iid The item ID.
      * @param v   The rating value.
      * @param ts  The event timestamp.
-     * @deprecated Use {@link RatingBuilder}.
      */
-    @Deprecated
-    public SimpleRating(long eid, long uid, long iid, double v, long ts) {
+    SimpleRating(long eid, long uid, long iid, double v, long ts) {
         eventId = eid;
         timestamp = ts;
         preference = new SimplePreference(uid, iid, v);
