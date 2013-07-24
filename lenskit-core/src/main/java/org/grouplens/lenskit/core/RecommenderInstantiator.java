@@ -137,7 +137,7 @@ public final class RecommenderInstantiator {
      * and replaces their nodes with nodes wrapping instance satisfactions.
      *
      * @param replace   A replacement function. For each shareable node, this function will
-     *                  be called; if it returnes a node different from its input node, the
+     *                  be called; if it returns a node different from its input node, the
      *                  new node will be used as a replacement for the old.
      */
     private Graph replaceShareableNodes(Function<Node,Node> replace) {
