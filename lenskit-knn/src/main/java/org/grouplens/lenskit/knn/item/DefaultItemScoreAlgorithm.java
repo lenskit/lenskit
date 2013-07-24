@@ -67,7 +67,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
         }
 
         // Create a channel for recording the neighborhoodsize
-        scores.alwaysAddChannel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL);
+        scores.getOrAddChannel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL);
         // for each item, compute its prediction
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             final long item = e.getKey();

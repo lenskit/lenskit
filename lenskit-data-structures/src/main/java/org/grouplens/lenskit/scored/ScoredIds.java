@@ -67,6 +67,23 @@ public final class ScoredIds {
         return new ScoredIdBuilder();
     }
 
+    /**
+     * Create a new list builder.
+     * @return A new scored ID list builder.
+     */
+    public static ScoredIdListBuilder newListBuilder() {
+        return new ScoredIdListBuilder();
+    }
+
+    /**
+     * Create a new list builder.
+     * @param cap The initial capacity to reserve.
+     * @return A new scored ID list builder.
+     */
+    public static ScoredIdListBuilder newListBuilder(int cap) {
+        return new ScoredIdListBuilder(cap);
+    }
+
     //region Ordering
     /**
      * An ordering (comparator) that compares IDs by score.

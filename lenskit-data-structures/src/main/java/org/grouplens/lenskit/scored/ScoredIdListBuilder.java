@@ -110,6 +110,10 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         return ids.length;
     }
 
+    public int size() {
+        return size;
+    }
+
     private void requireCapacity(int sz) {
         if (sz > capacity()) {
             int newCap = Math.max(sz, capacity() * 2);
