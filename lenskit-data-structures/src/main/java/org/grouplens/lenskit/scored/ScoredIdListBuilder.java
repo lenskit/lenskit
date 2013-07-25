@@ -27,6 +27,7 @@ import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.scored.PackedScoredIdList.FullPackedChannel;
 import org.grouplens.lenskit.scored.PackedScoredIdList.FullPackedTypedChannel;
 import org.grouplens.lenskit.scored.PackedScoredIdList.PackedChannel;
@@ -165,7 +166,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     }
 
     /**
-     * Add a scored ID.
+     * Add a scored ID.  The ID is copied into the builder, not referenced.
      * @param id The ID.
      * @return The builder (for chaining).
      */
@@ -177,6 +178,22 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         }
         for (TypedSymbol<?> sym: id.getTypedChannels()) {
             putChannel(idx, sym, id.channel(sym));
+        }
+        return this;
+    }
+
+    /**
+     * Add a collection of IDs. The IDs are copied into the builder, not referenced.
+     * @param ids The IDs to add.
+     * @return The builder (for chaining)
+     */
+    public ScoredIdListBuilder addAll(Iterable<ScoredId> ids) {
+        if (ids instanceof Collection) {
+            requireCapacity(size + ((Collection<ScoredId>) ids).size());
+        }
+        // fast iteration is safe since add() doesn't retain the id object
+        for (ScoredId id: CollectionUtils.fast(ids)) {
+            add(id);
         }
         return this;
     }
