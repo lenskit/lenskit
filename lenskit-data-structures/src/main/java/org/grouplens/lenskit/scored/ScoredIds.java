@@ -22,6 +22,7 @@ package org.grouplens.lenskit.scored;
 
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
+import com.google.common.primitives.Longs;
 import org.grouplens.lenskit.collections.CopyingFastCollection;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -85,6 +86,23 @@ public final class ScoredIds {
     }
 
     //region Ordering
+    /**
+     * An ordering (comparator) that compares IDs by score.
+     * @return An ordering over {@link ScoredId}s by score.
+     */
+    public static Ordering<ScoredId> idOrder() {
+        return ID_ORDER;
+    }
+
+    private static final Ordering<ScoredId> ID_ORDER = new IdOrder();
+
+    private static final class IdOrder extends Ordering<ScoredId> {
+        @Override
+        public int compare(@Nullable ScoredId left, @Nullable ScoredId right) {
+            return Longs.compare(left.getId(), right.getId());
+        }
+    }
+
     /**
      * An ordering (comparator) that compares IDs by score.
      * @return An ordering over {@link ScoredId}s by score.

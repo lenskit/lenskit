@@ -27,14 +27,16 @@ import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.scored.PackedScoredIdList.*;
+import org.grouplens.lenskit.scored.PackedScoredIdList.FullPackedChannel;
+import org.grouplens.lenskit.scored.PackedScoredIdList.FullPackedTypedChannel;
+import org.grouplens.lenskit.scored.PackedScoredIdList.PackedChannel;
+import org.grouplens.lenskit.scored.PackedScoredIdList.PackedTypedChannel;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import java.util.*;
 
 import static it.unimi.dsi.fastutil.Arrays.quickSort;
-import static org.grouplens.lenskit.scored.PackedScoredIdList.*;
 
 /**
  * Builder for packed lists of scored ids.

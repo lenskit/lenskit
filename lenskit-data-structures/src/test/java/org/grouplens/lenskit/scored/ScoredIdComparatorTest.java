@@ -36,6 +36,16 @@ import static org.junit.Assert.assertThat;
  */
 public class ScoredIdComparatorTest {
     @Test
+    public void testIdComparator() {
+        ScoredId low = new ScoredIdBuilder(1, 3.5).build();
+        ScoredId high = new ScoredIdBuilder(2, 3.5).build();
+        Ordering<ScoredId> comp = ScoredIds.idOrder();
+        assertThat(comp.compare(low, low), equalTo(0));
+        assertThat(comp.compare(low, high), lessThan(0));
+        assertThat(comp.compare(high, low), greaterThan(0));
+    }
+
+    @Test
     public void testScoreComparator() {
         ScoredId low = new ScoredIdBuilder(1, 2.5).build();
         ScoredId high = new ScoredIdBuilder(2, 3.5).build();

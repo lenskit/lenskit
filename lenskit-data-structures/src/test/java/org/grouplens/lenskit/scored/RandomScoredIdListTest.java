@@ -115,6 +115,18 @@ public class RandomScoredIdListTest {
         assertThat(list, equalTo(sorted));
     }
 
+    @Test
+    public void testIdSort() {
+        PackedScoredIdList list = builder.sort(ScoredIds.idOrder().reverse()).build();
+        List<ScoredId> sorted = ScoredIds.idOrder().reverse().sortedCopy(idList);
+        assertThat(list, hasSize(size));
+        for (int i = 0; i < size; i++) {
+            assertThat(list.get(i), equalTo(sorted.get(i)));
+        }
+        // check equality for good measure
+        assertThat(list, equalTo(sorted));
+    }
+
     /**
      * Test sorting by channel, to make sure the plumbing to make channels available in IDs at
      * sort time works properly.
