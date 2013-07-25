@@ -23,6 +23,7 @@ package org.grouplens.lenskit.scored;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
+import org.apache.commons.lang3.SerializationUtils;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
@@ -218,7 +219,7 @@ public class PackedScoredIdListTest {
     }
 
     @Test
-    public void testIterateMany() {
+    public void testIterateFast() {
         Symbol sym = Symbol.of("VALUE");
         TypedSymbol<String> str = TypedSymbol.of(String.class, "STRING");
         Random rng = new Random();
@@ -290,13 +291,38 @@ public class PackedScoredIdListTest {
             ids.add(id);
             builder.add(id);
         }
-        PackedScoredIdList list = builder.sort(ScoredIds.scoreOrder().reverse()).finish();
-        Collections.sort(ids, ScoredIds.scoreOrder().reverse());
+        PackedScoredIdList list = builder.finish();
         assertThat(list, hasSize(25));
         for (int i = 0; i < 25; i++) {
             assertThat(list.get(i), equalTo(ids.get(i)));
         }
         // check equality for good measure
         assertThat(list, equalTo(ids));
+    }
+
+    @Test
+    public void testSerialize() {
+        builder = new ScoredIdListBuilder(25);
+        Symbol sym = Symbol.of("VALUE");
+        TypedSymbol<String> str = TypedSymbol.of(String.class, "STRING");
+        Random rng = new Random();
+        List<ScoredId> ids = Lists.newArrayListWithCapacity(25);
+        for (int i = 0; i < 25; i++) {
+            double v = rng.nextGaussian() + Math.PI;
+            ScoredIdBuilder bld = new ScoredIdBuilder(i, v);
+            if (rng.nextBoolean()) {
+                bld.addChannel(sym, Math.log(v));
+            }
+            if (rng.nextBoolean()) {
+                bld.addChannel(str, Double.toString(v));
+            }
+            ScoredId id = bld.build();
+            ids.add(id);
+            builder.add(id);
+        }
+        PackedScoredIdList list = builder.finish();
+        PackedScoredIdList l2 = SerializationUtils.clone(list);
+        assertThat(l2, not(sameInstance(list)));
+        assertThat(l2, equalTo(list));
     }
 }

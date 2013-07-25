@@ -26,7 +26,10 @@ import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.io.StreamCorruptedException;
 import java.util.*;
 
 /**
@@ -36,7 +39,8 @@ import java.util.*;
  * @since 1.4
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class PackedScoredIdList extends AbstractList<ScoredId> implements FastCollection<ScoredId> {
+public final class PackedScoredIdList extends AbstractList<ScoredId> implements FastCollection<ScoredId>, Serializable {
+    private static final long serialVersionUID = 1L;
     private final long[] ids;
     private final double[] scores;
     private final Map<Symbol,PackedChannel> channels;
@@ -49,6 +53,17 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
         this.scores = scores;
         channels = chans;
         typedChannels = tchans;
+    }
+
+    /**
+     * Do some light validation of the scored ID list.
+     * @param in The input stream
+     */
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        if (ids.length != scores.length) {
+            throw new StreamCorruptedException("ID and score arrays don't match");
+        }
     }
 
     @Override
@@ -193,7 +208,8 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
 
     //region Channel storage
 
-    abstract static class PackedChannel {
+    abstract static class PackedChannel implements Serializable {
+        private static final long serialVersionUID = 1L;
         private final Symbol symbol;
 
         PackedChannel(Symbol sym) {
@@ -204,7 +220,9 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
         abstract double get(int idx);
     }
 
-    static class FullPackedChannel extends PackedChannel {
+    static class FullPackedChannel extends PackedChannel implements Serializable {
+        private static final long serialVersionUID = 1L;
+
         private final double[] values;
         private final BitSet used;
 
@@ -225,7 +243,8 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
         }
     }
 
-    abstract static class PackedTypedChannel {
+    abstract static class PackedTypedChannel implements Serializable {
+        private static final long serialVersionUID = 1L;
         @SuppressWarnings("rawtypes")
         private final TypedSymbol symbol;
 
@@ -237,7 +256,9 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
         protected abstract Object get(int idx);
     }
 
-    static class FullPackedTypedChannel extends PackedTypedChannel {
+    static class FullPackedTypedChannel extends PackedTypedChannel implements Serializable {
+        private static final long serialVersionUID = 1L;
+
         private final Object[] values;
         private final BitSet used;
 
