@@ -22,7 +22,6 @@ package org.grouplens.lenskit.scored;
 
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
-import it.unimi.dsi.fastutil.doubles.DoubleComparators;
 import org.grouplens.lenskit.collections.CopyingFastCollection;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -31,6 +30,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.Iterator;
 
 /**
@@ -100,6 +100,69 @@ public final class ScoredIds {
         public int compare(@Nullable ScoredId left, @Nullable ScoredId right) {
             return Doubles.compare(left.getScore(), right.getScore());
         }
+    }
+
+    /**
+     * An ordering (comparator) that compares IDs by channel.  Missing channels are less than
+     * present channels.
+     * @param chan The channel to sort by.
+     * @return An ordering over scored IDs by channel.
+     */
+    public static Ordering<ScoredId> channelOrder(final Symbol chan) {
+        return new Ordering<ScoredId>() {
+            @Override
+            public int compare(@Nullable ScoredId left, @Nullable ScoredId right) {
+                if (left.hasChannel(chan)) {
+                    if (right.hasChannel(chan)) {
+                        return Doubles.compare(left.channel(chan), right.channel(chan));
+                    } else {
+                        return 1;
+                    }
+                } else if (right.hasChannel(chan)) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+        };
+    }
+
+    /**
+     * An ordering (comparator) that compares IDs by typed channel.  Null values are sorted first.
+     * This method calls {@link #channelOrder(TypedSymbol, Comparator)} with a comparator of
+     * <code>{@linkplain Ordering#natural()}.{@linkplain Ordering#nullsFirst() nullsFirst()}</code>.
+     * @param chan The channel to sort by.
+     * @return A comparator over scored IDs.
+     * @see #channelOrder(TypedSymbol, Comparator)
+     */
+    public static <T extends Comparable<? super T>> Ordering<ScoredId> channelOrder(final TypedSymbol<T> chan) {
+        return channelOrder(chan, Ordering.natural().nullsFirst());
+    }
+
+    /**
+     * An ordering (comparator) that compares IDs by typed channel.  Missing channels and null Ids
+     * are both treated as having {@code null} channel values, so their ordering is controlled by
+     * the order's null treatment.
+     *
+     * @param chan  The channel to sort by.
+     * @param order The ordering to use.
+     * @return A comparator over scored IDs.
+     */
+    public static <T> Ordering<ScoredId> channelOrder(final TypedSymbol<T> chan, final Comparator<? super T> order) {
+        return new Ordering<ScoredId>() {
+            @Override
+            public int compare(@Nullable ScoredId left, @Nullable ScoredId right) {
+                T v1 = null;
+                T v2 = null;
+                if (left != null && left.hasChannel(chan)) {
+                    v1 = left.channel(chan);
+                }
+                if (right != null && right.hasChannel(chan)) {
+                    v2 = right.channel(chan);
+                }
+                return order.compare(v1, v2);
+            }
+        };
     }
     //endregion
 
