@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.scored;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -80,6 +81,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     }
 
     private PackedScoredIdList finish(boolean reuse) {
+        Preconditions.checkState(ids != null, "builder has been finished");
         ImmutableMap.Builder<Symbol, PackedChannel> cbld = ImmutableMap.builder();
         ImmutableMap.Builder<TypedSymbol<?>, PackedTypedChannel> tcbld = ImmutableMap.builder();
         if (size > 0) {
@@ -151,6 +153,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
      * @return The builder (for chaining).
      */
     public ScoredIdListBuilder add(long id, double score) {
+        Preconditions.checkState(ids != null, "builder has been finished");
         int idx = size;
         requireCapacity(idx + 1);
         ids[idx] = id;
@@ -200,6 +203,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
      * @return The buidler (for chaining).
      */
     public ScoredIdListBuilder sort(Comparator<ScoredId> order) {
+        Preconditions.checkState(ids != null, "builder has been finished");
         quickSort(0, size, new SortComp(order), new SortSwap());
         return this;
     }
