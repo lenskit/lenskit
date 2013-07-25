@@ -26,6 +26,9 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.scored.ScoredIdListBuilder;
+import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.truncate.VectorTruncator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
@@ -37,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.List;
 
 /**
  * Build an item-item CF model from rating data.
@@ -71,8 +75,8 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
         MutableSparseVector currentRow = new MutableSparseVector(context.getItems());
 
         LongSortedSet itemUniverse = context.getItems();
-        Long2ObjectMap<ImmutableSparseVector> matrix =
-                new Long2ObjectOpenHashMap<ImmutableSparseVector>(itemUniverse.size());
+        Long2ObjectMap<List<ScoredId>> matrix =
+                new Long2ObjectOpenHashMap<List<ScoredId>>(itemUniverse.size());
 
         LongIterator outer = context.getItems().iterator();
         while (outer.hasNext()) {
@@ -85,7 +89,10 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
             }
             MutableSparseVector normalized = rowNormalizer.normalize(rowItem, currentRow, null);
             truncator.truncate(normalized);
-            matrix.put(rowItem, normalized.immutable());
+            matrix.put(rowItem, new ScoredIdListBuilder(normalized.size())
+                    .addAll(ScoredIds.collectionFromVector(normalized))
+                    .sort(ScoredIds.scoreOrder().reverse())
+                    .finish());
         }
 
         return new SimilarityMatrixModel(itemUniverse, matrix);

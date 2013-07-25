@@ -20,16 +20,17 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
+import com.google.common.collect.FluentIterable;
 import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.transform.threshold.RealThreshold;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -59,14 +60,17 @@ public class TestItemItemModelAccumulator {
         accum.put(1, 2, Math.PI);
         accum.put(7, 3, Math.E);
         ItemItemModel model = accum.build();
-        ImmutableSparseVector nbrs = model.getNeighbors(1);
+        List<ScoredId> nbrs = model.getNeighbors(1);
         assertThat(nbrs.size(), equalTo(1));
-        assertTrue(nbrs.containsKey(2));
-        assertThat(nbrs.get(2), closeTo(Math.PI, 1.0e-6));
+        ScoredId id = FluentIterable.from(nbrs).first().get();
+        assertThat(id.getId(), equalTo(2L));
+        assertThat(id.getScore(), closeTo(Math.PI, 1.0e-6));
+
         nbrs = model.getNeighbors(7);
         assertThat(nbrs.size(), equalTo(1));
-        assertThat(nbrs.keySet(), contains(3L));
-        assertThat(nbrs.get(3), closeTo(Math.E, 1.0e-6));
+        id = FluentIterable.from(nbrs).first().get();
+        assertThat(id.getId(), equalTo(3L));
+        assertThat(id.getScore(), closeTo(Math.E, 1.0e-6));
     }
 
     @Test
@@ -78,13 +82,13 @@ public class TestItemItemModelAccumulator {
             }
         }
         ItemItemModel model = accum.build();
-        ImmutableSparseVector nbrs = model.getNeighbors(1);
+        List<ScoredId> nbrs = model.getNeighbors(1);
         assertThat(nbrs.size(), equalTo(5));
         nbrs = model.getNeighbors(4);
         assertThat(nbrs.size(), equalTo(5));
-        for (VectorEntry e : nbrs.fast()) {
-            long j = e.getKey();
-            double s = e.getValue();
+        for (ScoredId id: nbrs) {
+            long j = id.getId();
+            double s = id.getScore();
             assertThat(s, closeTo(Math.pow(Math.E, -4) * Math.pow(Math.PI, -j), 1.0e-6));
         }
     }
