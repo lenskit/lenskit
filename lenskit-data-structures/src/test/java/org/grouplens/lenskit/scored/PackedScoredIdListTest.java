@@ -224,6 +224,30 @@ public class PackedScoredIdListTest {
     }
 
     @Test
+    public void testAddAll() {
+        Symbol sym = Symbol.of("VALUE");
+        TypedSymbol<String> str = TypedSymbol.of(String.class, "STRING");
+        Random rng = new Random();
+        List<ScoredId> ids = Lists.newArrayListWithCapacity(25);
+        for (int i = 0; i < 25; i++) {
+            double v = rng.nextGaussian() + Math.PI;
+            ScoredId id = new ScoredIdBuilder(i, v)
+                    .addChannel(sym, Math.log(v))
+                    .addChannel(str, Double.toString(v))
+                    .build();
+            ids.add(id);
+        }
+        builder.addAll(ids);
+        PackedScoredIdList list = builder.build();
+        assertThat(list, hasSize(25));
+        for (int i = 0; i < 25; i++) {
+            assertThat(list.get(i), equalTo(ids.get(i)));
+        }
+        // check equality for good measure
+        assertThat(list, equalTo(ids));
+    }
+
+    @Test
     public void testIterateFast() {
         Symbol sym = Symbol.of("VALUE");
         TypedSymbol<String> str = TypedSymbol.of(String.class, "STRING");
