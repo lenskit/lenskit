@@ -20,8 +20,11 @@
  */
 package org.grouplens.lenskit.scored;
 
+import com.google.common.base.Functions;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 import org.apache.commons.lang3.SerializationUtils;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -31,6 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
@@ -159,6 +163,45 @@ public class RandomScoredIdListTest {
                                          .nullsFirst()
                                          .compound(ScoredIds.scoreOrder())
                                          .sortedCopy(idList);
+        assertThat(list, hasSize(size));
+        for (int i = 0; i < size; i++) {
+            assertThat(list.get(i), equalTo(sorted.get(i)));
+        }
+        // check equality for good measure
+        assertThat(list, equalTo(sorted));
+    }
+
+    /**
+     * A crazy sort that uses channel names and the ID to sort items.  Used to test the
+     * channel-getting methods for the indirect scored ID used for sorting.
+     *
+     * This test is not a thorough accuracy test; it mostly tests that things work semi-sanely
+     * without crashing, and that the indirect ID behavior matches that of a normal scored ID.
+     */
+    @Test
+    public void testCrazySort() {
+        Ordering<ScoredId> comp = new Ordering<ScoredId>() {
+            @Override
+            public int compare(@Nullable ScoredId left, @Nullable ScoredId right) {
+                return Ordering.<String>natural()
+                               .lexicographical()
+                               .compare(sequence(left), sequence(right));
+            }
+            private List<String> sequence(ScoredId id) {
+                ImmutableList.Builder<String> bld = ImmutableList.builder();
+                bld.addAll(FluentIterable.from(id.getChannels())
+                                         .transform(Functions.toStringFunction())
+                                         .toSortedList(Ordering.natural()));
+                bld.addAll(FluentIterable.from(id.getTypedChannels())
+                                         .transform(Functions.toStringFunction())
+                                         .toSortedList(Ordering.natural()));
+                bld.add(Long.toString(id.getId()));
+                return bld.build();
+            }
+        };
+
+        PackedScoredIdList list = builder.sort(comp).build();
+        List<ScoredId> sorted = comp.sortedCopy(idList);
         assertThat(list, hasSize(size));
         for (int i = 0; i < size; i++) {
             assertThat(list.get(i), equalTo(sorted.get(i)));
