@@ -54,6 +54,7 @@ public class PackedScoredIdListTest {
 
     @Test
     public void testEmptyList() {
+        assertThat(builder.size(), equalTo(0));
         PackedScoredIdList list = builder.build();
         assertThat(list.size(), equalTo(0));
         assertThat(list.isEmpty(), equalTo(true));
@@ -70,6 +71,7 @@ public class PackedScoredIdListTest {
     @Test
     public void testAddScoredId() {
         builder.add(new ScoredIdBuilder(42, 3.5).build());
+        assertThat(builder.size(), equalTo(1));
         PackedScoredIdList list = builder.build();
         assertThat(list.size(), equalTo(1));
         assertThat(list.isEmpty(), equalTo(false));
@@ -88,6 +90,7 @@ public class PackedScoredIdListTest {
     @Test
     public void testAddRaw() {
         builder.add(42, 3.5);
+        assertThat(builder.size(), equalTo(1));
         PackedScoredIdList list = builder.build();
         assertThat(list.size(), equalTo(1));
         assertThat(list.isEmpty(), equalTo(false));
@@ -129,6 +132,7 @@ public class PackedScoredIdListTest {
         Symbol sym = Symbol.of("HACKEM MUCHE");
         ScoredId id1 = new ScoredIdBuilder(42, 3.5).addChannel(sym, Math.PI).build();
         ScoredId id2 = new ScoredIdBuilder(38, 2.6).addChannel(sym, Math.E).build();
+        assertThat(builder.size(), equalTo(2));
         builder.add(id1);
         builder.add(id2);
         PackedScoredIdList list = builder.build();
@@ -186,6 +190,7 @@ public class PackedScoredIdListTest {
             builder.add(i, v);
             vals.add(v);
         }
+        assertThat(builder.size(), equalTo(25));
         PackedScoredIdList list = builder.build();
         assertThat(list, hasSize(25));
         for (int i = 0; i < 25; i++) {
