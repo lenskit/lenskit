@@ -98,6 +98,10 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
 
         @Override
         public Set<Symbol> getChannels() {
+            if (channels.isEmpty()) {
+                return Collections.emptySet();
+            }
+
             if (cCache == null) {
                 ImmutableSet.Builder<Symbol> bld = ImmutableSet.builder();
                 for (PackedChannel ch: channels.values()) {
@@ -112,6 +116,10 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
 
         @Override
         public Set<TypedSymbol<?>> getTypedChannels() {
+            if (typedChannels.isEmpty()) {
+                return Collections.emptySet();
+            }
+
             if (tcCache == null) {
                 ImmutableSet.Builder<TypedSymbol<?>> bld = ImmutableSet.builder();
                 for (PackedTypedChannel ch: typedChannels.values()) {
