@@ -132,9 +132,9 @@ public class PackedScoredIdListTest {
         Symbol sym = Symbol.of("HACKEM MUCHE");
         ScoredId id1 = new ScoredIdBuilder(42, 3.5).addChannel(sym, Math.PI).build();
         ScoredId id2 = new ScoredIdBuilder(38, 2.6).addChannel(sym, Math.E).build();
-        assertThat(builder.size(), equalTo(2));
         builder.add(id1);
         builder.add(id2);
+        assertThat(builder.size(), equalTo(2));
         PackedScoredIdList list = builder.build();
         assertThat(list.get(0), equalTo(id1));
         assertThat(list.get(1), equalTo(id2));
