@@ -20,10 +20,9 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
-import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -39,11 +38,11 @@ import java.util.Iterator;
  * @see ItemItemModelBuilder
  */
 public class ItemItemBuildContext {
-    private
     @Nonnull
+    private
     LongSortedSet items;
-    private
     @Nonnull
+    private
     Long2ObjectMap<SparseVector> itemVectors;
 
     /**
@@ -52,8 +51,8 @@ public class ItemItemBuildContext {
      * @param universe The set of items for the model.
      * @param vectors  Map of item IDs to item rating vectors.
      */
-    public ItemItemBuildContext(@Nonnull LongSortedSet universe,
-                                @Nonnull Long2ObjectMap<SparseVector> vectors) {
+    ItemItemBuildContext(@Nonnull LongSortedSet universe,
+                         @Nonnull Long2ObjectMap<SparseVector> vectors) {
         items = universe;
         itemVectors = vectors;
     }
@@ -78,9 +77,12 @@ public class ItemItemBuildContext {
      */
     @Nonnull
     public SparseVector itemVector(long item) {
-        Preconditions.checkArgument(items.contains(item), "unknown item");
-        assert itemVectors.containsKey(item);
-        return itemVectors.get(item);
+        SparseVector v = itemVectors.get(item);
+        if (v == null) {
+            throw new IllegalArgumentException("unknown item");
+        } else {
+            return v;
+        }
     }
 
     /**
@@ -123,7 +125,7 @@ public class ItemItemBuildContext {
             itemVecPair = new ItemVecPair();
             iter1 = list1.iterator();
             if (iter1.hasNext()) {
-            	itemVecPair.setItem1(iter1.nextLong());
+                itemVecPair.setItem1(iter1.nextLong());
             }
             this.list2 = list2;
             iter2 = list2.iterator();
