@@ -894,6 +894,15 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
+     * Deprecated alias for {@link #getOrAddChannel(Symbol)}.
+     * @deprecated Use {@link #getOrAddChannel(Symbol)} instead.
+     */
+    @Deprecated
+    public MutableSparseVector alwaysAddChannel(Symbol channelSymbol) {
+        return getOrAddChannel(channelSymbol);
+    }
+
+    /**
      * Add a typed channel to the vector, even if there is already a
      * channel with the same symbol.  The new channel will be empty,
      * and will have the same key domain as this vector.
@@ -908,6 +917,15 @@ public final class MutableSparseVector extends SparseVector implements Serializa
             addChannel(channelSymbol);
         }
         return (TypedSideChannel<K>) typedChannelMap.get(channelSymbol);
+    }
+
+    /**
+     * Deprecated alias for {@link #getOrAddChannel(TypedSymbol)}.
+     * @deprecated Use {@link #getOrAddChannel(TypedSymbol)} instead.
+     */
+    @Deprecated
+    public <K> TypedSideChannel<K> alwaysAddChannel(TypedSymbol<K> channelSymbol) {
+        return getOrAddChannel(channelSymbol);
     }
 
     /**
