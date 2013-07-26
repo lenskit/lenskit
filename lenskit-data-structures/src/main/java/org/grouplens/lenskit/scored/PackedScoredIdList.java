@@ -21,15 +21,14 @@
 package org.grouplens.lenskit.scored;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import java.io.IOException;
+import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.io.StreamCorruptedException;
 import java.util.*;
 
 /**
@@ -43,12 +42,13 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
     private static final long serialVersionUID = 1L;
     private final long[] ids;
     private final double[] scores;
-    private final Map<Symbol,PackedChannel> channels;
-    private final Map<TypedSymbol<?>,PackedTypedChannel> typedChannels;
+    private final Map<Symbol,double[]> channels;
+    private final Map<TypedSymbol<?>,Object[]> typedChannels;
 
     PackedScoredIdList(long[] ids, double[] scores,
-                       Map<Symbol, PackedChannel> chans,
-                       Map<TypedSymbol<?>, PackedTypedChannel> tchans) {
+                       Map<Symbol, double[]> chans,
+                       Map<TypedSymbol<?>, Object[]> tchans) {
+        assert ids.length == scores.length;
         this.ids = ids;
         this.scores = scores;
         channels = chans;
@@ -62,7 +62,20 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         if (ids.length != scores.length) {
-            throw new StreamCorruptedException("ID and score arrays don't match");
+            throw new InvalidObjectException("score array has incorrect size");
+        }
+        for (double[] chan: channels.values()) {
+            if (chan.length != ids.length) {
+                throw new InvalidObjectException("channel array has incorrect size");
+            }
+        }
+        for (Map.Entry<TypedSymbol<?>,Object[]> tc: typedChannels.entrySet()) {
+            if (tc.getValue().length != ids.length) {
+                throw new InvalidObjectException("channel array has incorrect size");
+            }
+            if (!tc.getKey().getType().isAssignableFrom(tc.getValue().getClass().getComponentType())) {
+                throw new InvalidObjectException("channel array has incorrect type");
+            }
         }
     }
 
@@ -79,15 +92,27 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
     @Override
     public ScoredId get(int i) {
         Preconditions.checkElementIndex(i, size());
-        return new IndirectId(i);
+        return getFlyweight(i);
     }
 
-    private class IndirectId extends AbstractScoredId implements Serializable {
-        private int index;
-        private volatile Set<Symbol> cCache;
-        private volatile Set<TypedSymbol<?>> tcCache;
+    /**
+     * Get a flyweight id from the list, at the specified index.
+     * @param i The index.  No validation is performed of the index; the scored id will fail if the
+     *          index is out-of-bounds.  This is to allow other classes in the package (such as the
+     *          builder) to have unlimited access to scored ids.
+     * @return A flyweight at the specified position.
+     */
+    IndirectScoredId getFlyweight(int i) {
+        return new IndirectScoredId(i);
+    }
 
-        public IndirectId(int idx) {
+    /**
+     * Flyweight implementation of {@link ScoredId} backed by the list's storage.
+     */
+    class IndirectScoredId extends AbstractScoredId implements Serializable {
+        private int index;
+
+        public IndirectScoredId(int idx) {
             index = idx;
         }
 
@@ -97,8 +122,6 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
 
         public void setIndex(int idx) {
             index = idx;
-            cCache = null;
-            tcCache = null;
         }
 
         @Override
@@ -113,55 +136,32 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
 
         @Override
         public Set<Symbol> getChannels() {
-            if (channels.isEmpty()) {
-                return Collections.emptySet();
-            }
-
-            if (cCache == null) {
-                ImmutableSet.Builder<Symbol> bld = ImmutableSet.builder();
-                for (PackedChannel ch: channels.values()) {
-                    if (ch.hasValue(index)) {
-                        bld.add(ch.symbol);
-                    }
-                }
-                cCache = bld.build();
-            }
-            return cCache;
+            return channels.keySet();
         }
 
         @Override
         public Set<TypedSymbol<?>> getTypedChannels() {
-            if (typedChannels.isEmpty()) {
-                return Collections.emptySet();
-            }
-
-            if (tcCache == null) {
-                ImmutableSet.Builder<TypedSymbol<?>> bld = ImmutableSet.builder();
-                for (PackedTypedChannel ch: typedChannels.values()) {
-                    if (ch.hasValue(index)) {
-                        bld.add(ch.symbol);
-                    }
-                }
-                tcCache = bld.build();
-            }
-            return tcCache;
+            return typedChannels.keySet();
         }
 
         @Override
         public double channel(Symbol s) {
-            PackedChannel chan = channels.get(s);
-            if (chan != null && chan.hasValue(index)) {
-                return chan.get(index);
+            double[] chan = channels.get(s);
+            if (chan != null) {
+                return chan[index];
             } else {
                 throw new IllegalArgumentException("unknown symbol " + s);
             }
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public <K> K channel(TypedSymbol<K> s) {
-            PackedTypedChannel chan = typedChannels.get(s);
-            if (chan != null && chan.hasValue(index)) {
-                return s.getType().cast(chan.get(index));
+            Object[] chan = typedChannels.get(s);
+            if (chan != null) {
+                Object obj = chan[index];
+                assert obj == null || s.getType().isInstance(obj);
+                return (K) obj;
             } else {
                 throw new IllegalArgumentException("unknown symbol " + s);
             }
@@ -169,20 +169,21 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
 
         @Override
         public boolean hasChannel(Symbol s) {
-            PackedChannel chan = channels.get(s);
-            return chan != null && chan.hasValue(index);
+            return channels.containsKey(s);
         }
 
         @Override
         public boolean hasChannel(TypedSymbol<?> s) {
-            PackedTypedChannel chan = typedChannels.get(s);
-            return chan != null && chan.hasValue(index);
+            return typedChannels.containsKey(s);
         }
     }
 
+    /**
+     * Fast iterator implementation using a mutable flyweight.
+     */
     private class FastIter implements Iterator<ScoredId> {
         int next = 0;
-        IndirectId id = new IndirectId(0);
+        IndirectScoredId id = new IndirectScoredId(0);
 
         @Override
         public boolean hasNext() {
@@ -205,78 +206,4 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
             throw new UnsupportedOperationException("packed scored ID lists are immutable");
         }
     }
-
-    //region Channel storage
-
-    abstract static class PackedChannel implements Serializable {
-        private static final long serialVersionUID = 1L;
-        private final Symbol symbol;
-
-        PackedChannel(Symbol sym) {
-            symbol = sym;
-        }
-
-        abstract boolean hasValue(int idx);
-        abstract double get(int idx);
-    }
-
-    static class FullPackedChannel extends PackedChannel implements Serializable {
-        private static final long serialVersionUID = 1L;
-
-        private final double[] values;
-        private final BitSet used;
-
-        FullPackedChannel(Symbol sym, double[] data, BitSet mask) {
-            super(sym);
-            used = mask;
-            values = data;
-        }
-
-        @Override
-        boolean hasValue(int idx) {
-            return used == null || used.get(idx);
-        }
-
-        @Override
-        double get(int idx) {
-            return values[idx];
-        }
-    }
-
-    abstract static class PackedTypedChannel implements Serializable {
-        private static final long serialVersionUID = 1L;
-        @SuppressWarnings("rawtypes")
-        private final TypedSymbol symbol;
-
-        private PackedTypedChannel(TypedSymbol<?> sym) {
-            symbol = sym;
-        }
-
-        protected abstract boolean hasValue(int idx);
-        protected abstract Object get(int idx);
-    }
-
-    static class FullPackedTypedChannel extends PackedTypedChannel implements Serializable {
-        private static final long serialVersionUID = 1L;
-
-        private final Object[] values;
-        private final BitSet used;
-
-        FullPackedTypedChannel(TypedSymbol<?> sym, Object[] data, BitSet mask) {
-            super(sym);
-            used = mask;
-            values = data;
-        }
-
-        @Override
-        protected boolean hasValue(int idx) {
-            return used == null || used.get(idx);
-        }
-
-        @Override
-        protected Object get(int idx) {
-            return values[idx];
-        }
-    }
-    //endregion
 }

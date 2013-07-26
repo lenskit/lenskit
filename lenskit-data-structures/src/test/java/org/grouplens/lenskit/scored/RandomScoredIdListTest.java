@@ -20,11 +20,8 @@
  */
 package org.grouplens.lenskit.scored;
 
-import com.google.common.base.Functions;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Ordering;
 import org.apache.commons.lang3.SerializationUtils;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -34,7 +31,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
@@ -51,6 +47,7 @@ public class RandomScoredIdListTest {
     private static Symbol VAL_SYM = Symbol.of("VALUE");
     private static TypedSymbol<String> STR_SYM = TypedSymbol.of(String.class, "STRING");
 
+    // generate 10 random lists of ids to test with
     private static final int TEST_COUNT = 10;
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
@@ -77,12 +74,26 @@ public class RandomScoredIdListTest {
     }
 
     private final List<ScoredId> idList;
+    private final List<ScoredId> idsWithDefaults;
     private final int size;
     private ScoredIdListBuilder builder;
 
     public RandomScoredIdListTest(List<ScoredId> ids) {
         idList = ids;
         size = idList.size();
+        // prepare a list of IDs with defaults
+        ImmutableList.Builder<ScoredId> bld = ImmutableList.builder();
+        for (ScoredId id: ids) {
+            ScoredIdBuilder idBld = ScoredIds.copyBuilder(id);
+            if (!id.hasChannel(VAL_SYM)) {
+                idBld.addChannel(VAL_SYM, 0);
+            }
+            if (!id.hasChannel(STR_SYM)) {
+                idBld.addChannel(STR_SYM, null);
+            }
+            bld.add(idBld.build());
+        }
+        idsWithDefaults = bld.build();
     }
 
     /**
@@ -91,6 +102,8 @@ public class RandomScoredIdListTest {
     @Before
     public void initializeBuilder() {
         builder = ScoredIds.newListBuilder();
+        builder.addChannel(VAL_SYM)
+               .addChannel(STR_SYM);
         for (ScoredId id: idList) {
             builder.add(id);
         }
@@ -102,7 +115,7 @@ public class RandomScoredIdListTest {
         assertThat(list, hasSize(size));
         int i = 0;
         for (ScoredId id: CollectionUtils.fast(list)) {
-            assertThat(id, equalTo(idList.get(i)));
+            assertThat(id, equalTo(idsWithDefaults.get(i)));
             i++;
         }
     }
@@ -110,7 +123,7 @@ public class RandomScoredIdListTest {
     @Test
     public void testSort() {
         PackedScoredIdList list = builder.sort(ScoredIds.scoreOrder().reverse()).build();
-        List<ScoredId> sorted = ScoredIds.scoreOrder().reverse().sortedCopy(idList);
+        List<ScoredId> sorted = ScoredIds.scoreOrder().reverse().sortedCopy(idsWithDefaults);
         assertThat(list, hasSize(size));
         for (int i = 0; i < size; i++) {
             assertThat(list.get(i), equalTo(sorted.get(i)));
@@ -122,7 +135,7 @@ public class RandomScoredIdListTest {
     @Test
     public void testIdSort() {
         PackedScoredIdList list = builder.sort(ScoredIds.idOrder().reverse()).build();
-        List<ScoredId> sorted = ScoredIds.idOrder().reverse().sortedCopy(idList);
+        List<ScoredId> sorted = ScoredIds.idOrder().reverse().sortedCopy(idsWithDefaults);
         assertThat(list, hasSize(size));
         for (int i = 0; i < size; i++) {
             assertThat(list.get(i), equalTo(sorted.get(i)));
@@ -141,7 +154,7 @@ public class RandomScoredIdListTest {
                                                         .compound(ScoredIds.scoreOrder())).build();
         List<ScoredId> sorted = ScoredIds.channelOrder(VAL_SYM)
                                          .compound(ScoredIds.scoreOrder())
-                                         .sortedCopy(idList);
+                                         .sortedCopy(idsWithDefaults);
         assertThat(list, hasSize(size));
         for (int i = 0; i < size; i++) {
             assertThat(list.get(i), equalTo(sorted.get(i)));
@@ -162,46 +175,7 @@ public class RandomScoredIdListTest {
         List<ScoredId> sorted = ScoredIds.channelOrder(STR_SYM)
                                          .nullsFirst()
                                          .compound(ScoredIds.scoreOrder())
-                                         .sortedCopy(idList);
-        assertThat(list, hasSize(size));
-        for (int i = 0; i < size; i++) {
-            assertThat(list.get(i), equalTo(sorted.get(i)));
-        }
-        // check equality for good measure
-        assertThat(list, equalTo(sorted));
-    }
-
-    /**
-     * A crazy sort that uses channel names and the ID to sort items.  Used to test the
-     * channel-getting methods for the indirect scored ID used for sorting.
-     *
-     * This test is not a thorough accuracy test; it mostly tests that things work semi-sanely
-     * without crashing, and that the indirect ID behavior matches that of a normal scored ID.
-     */
-    @Test
-    public void testCrazySort() {
-        Ordering<ScoredId> comp = new Ordering<ScoredId>() {
-            @Override
-            public int compare(@Nullable ScoredId left, @Nullable ScoredId right) {
-                return Ordering.<String>natural()
-                               .lexicographical()
-                               .compare(sequence(left), sequence(right));
-            }
-            private List<String> sequence(ScoredId id) {
-                ImmutableList.Builder<String> bld = ImmutableList.builder();
-                bld.addAll(FluentIterable.from(id.getChannels())
-                                         .transform(Functions.toStringFunction())
-                                         .toSortedList(Ordering.natural()));
-                bld.addAll(FluentIterable.from(id.getTypedChannels())
-                                         .transform(Functions.toStringFunction())
-                                         .toSortedList(Ordering.natural()));
-                bld.add(Long.toString(id.getId()));
-                return bld.build();
-            }
-        };
-
-        PackedScoredIdList list = builder.sort(comp).build();
-        List<ScoredId> sorted = comp.sortedCopy(idList);
+                                         .sortedCopy(idsWithDefaults);
         assertThat(list, hasSize(size));
         for (int i = 0; i < size; i++) {
             assertThat(list.get(i), equalTo(sorted.get(i)));
@@ -215,10 +189,10 @@ public class RandomScoredIdListTest {
         PackedScoredIdList list = builder.finish();
         assertThat(list, hasSize(size));
         for (int i = 0; i < size; i++) {
-            assertThat(list.get(i), equalTo(idList.get(i)));
+            assertThat(list.get(i), equalTo(idsWithDefaults.get(i)));
         }
         // check equality for good measure
-        assertThat(list, equalTo(idList));
+        assertThat(list, equalTo(idsWithDefaults));
     }
 
     @Test

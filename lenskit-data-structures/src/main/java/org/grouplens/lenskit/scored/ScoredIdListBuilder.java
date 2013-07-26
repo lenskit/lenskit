@@ -22,25 +22,24 @@ package org.grouplens.lenskit.scored;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.Swapper;
+import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
+import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.scored.PackedScoredIdList.FullPackedChannel;
-import org.grouplens.lenskit.scored.PackedScoredIdList.FullPackedTypedChannel;
-import org.grouplens.lenskit.scored.PackedScoredIdList.PackedChannel;
-import org.grouplens.lenskit.scored.PackedScoredIdList.PackedTypedChannel;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 import static it.unimi.dsi.fastutil.Arrays.quickSort;
 
 /**
- * Builder for packed lists of scored ids.
+ * Builder for packed lists of scored ids.  All ids in the resulting list will have the same set
+ * of side channels.
  *
  * @since 1.4
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -49,8 +48,8 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     private long[] ids;
     private double[] scores;
     private int size;
-    private Map<Symbol,PackedChanBuilder> channels;
-    private Map<TypedSymbol<?>,PackedTChanBuilder> typedChannels;
+    private Map<Symbol,ChannelStorage> channels;
+    private Map<TypedSymbol<?>,TypedChannelStorage<?>> typedChannels;
 
     public ScoredIdListBuilder() {
         this(10);
@@ -83,81 +82,94 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         return finish(true);
     }
 
-    private PackedScoredIdList finish(boolean reuse) {
+    /**
+     * Implementation of {@link #build()} and {@link #finish()}.
+     * @param tryReuse Whether we should try to reuse the builder's storage for the packed list.
+     *                 If {@code true}, the builder will be invalid after finishing and the packed
+     *                 list will use the same arrays as the builder if they are full.
+     * @return The packed ID list.
+     */
+    private PackedScoredIdList finish(boolean tryReuse) {
         Preconditions.checkState(ids != null, "builder has been finished");
-        ImmutableMap.Builder<Symbol, PackedChannel> cbld = ImmutableMap.builder();
-        ImmutableMap.Builder<TypedSymbol<?>, PackedTypedChannel> tcbld = ImmutableMap.builder();
+        // check if reuse is actually possible
+        final boolean reuse = tryReuse && size == capacity();
+        Map<Symbol, double[]> chans;
+        Map<TypedSymbol<?>, Object[]> typedChans;
         if (size > 0) {
-            for (PackedChanBuilder pcb: channels.values()) {
-                double[] vs;
-                vs = reuse && size == pcb.values.length ? pcb.values : Arrays.copyOf(pcb.values, size);
-                BitSet mask = finishMask(pcb.used, reuse);
-                PackedChannel chan = new FullPackedChannel(pcb.symbol, vs, mask);
-                cbld.put(pcb.symbol, chan);
+            ImmutableMap.Builder<Symbol, double[]> cbld = ImmutableMap.builder();
+            for (ChannelStorage chan: channels.values()) {
+                double[] built = reuse ? chan.values : Arrays.copyOf(chan.values, size);
+                cbld.put(chan.symbol, built);
             }
-            for (PackedTChanBuilder pcb: typedChannels.values()) {
-                Object[] vs;
-                vs = reuse && size == pcb.values.length ? pcb.values : Arrays.copyOf(pcb.values, size);
-                BitSet mask = finishMask(pcb.used, reuse);
-                PackedTypedChannel chan = new FullPackedTypedChannel(pcb.symbol, vs, mask);
-                tcbld.put(pcb.symbol, chan);
+            chans = cbld.build();
+            ImmutableMap.Builder<TypedSymbol<?>, Object[]> tcbld = ImmutableMap.builder();
+            for (TypedChannelStorage<?> chan: typedChannels.values()) {
+                Object[] built = reuse ? chan.values : Arrays.copyOf(chan.values, size);
+                assert chan.symbol.getType().isAssignableFrom(built.getClass().getComponentType());
+                tcbld.put(chan.symbol, built);
             }
+            typedChans = tcbld.build();
+        } else {
+            chans = Collections.emptyMap();
+            typedChans = Collections.emptyMap();
         }
-        long[] builtIds = (reuse && size == capacity()) ? ids : Arrays.copyOf(ids, size);
-        double[] builtScores = (reuse && size == capacity()) ? scores : Arrays.copyOf(scores, size);
-        if (reuse) {
+        long[] builtIds = reuse ? ids : Arrays.copyOf(ids, size);
+        double[] builtScores = reuse ? scores : Arrays.copyOf(scores, size);
+        if (tryReuse) {
+            // invalidate the builder
             ids = null;
             scores = null;
             channels = null;
             typedChannels = null;
         }
-        return new PackedScoredIdList(builtIds, builtScores,
-                                      cbld.build(), tcbld.build());
+        return new PackedScoredIdList(builtIds, builtScores, chans, typedChans);
     }
 
     /**
-     * Copy a bit mask, re-using if appropriate.
-     * @param mask The mask.
-     * @param reuse Whether we should try to reuse the mask.
-     * @return The final bit set, or {@code} if the mask is full.
+     * Get the current capacity of the builder.
+     *
+     * @return The number of items the builder can hold without resizing.
      */
-    private BitSet finishMask(BitSet mask, boolean reuse) {
-        if (mask.cardinality() == size) {
-            return null;
-        } else if (reuse) {
-            return mask;
-        } else {
-            return (BitSet) mask.clone();
-        }
-    }
-
     private int capacity() {
         return ids.length;
     }
 
+    /**
+     * Get the number of items currently in the builder.
+     * @return The number of items in the builder.
+     */
     public int size() {
         return size;
     }
 
+    /**
+     * Require the builder have a particular minimum capacity, resizing if necessary.
+     * @param sz The required capacity.
+     */
     private void requireCapacity(int sz) {
         if (sz > capacity()) {
             int newCap = Math.max(sz, capacity() * 2);
             ids = Arrays.copyOf(ids, newCap);
             scores = Arrays.copyOf(scores, newCap);
-            // channel capacities will be lazily increased
+            for (ChannelStorage chan: channels.values()) {
+                chan.resize(newCap);
+            }
+            for (TypedChannelStorage<?> chan: typedChannels.values()) {
+                chan.resize(newCap);
+            }
             assert capacity() == newCap;
         }
     }
 
     /**
-     * Add a scored ID without boxing.
-     * @param id The ID.
-     * @param score The score.
+     * Add a scored ID without boxing.  The default value will be used for each channel.
+     * @param id The ID to add.
+     * @param score The score for the ID.
      * @return The builder (for chaining).
      */
     public ScoredIdListBuilder add(long id, double score) {
         Preconditions.checkState(ids != null, "builder has been finished");
-        int idx = size;
+        final int idx = size;
         requireCapacity(idx + 1);
         ids[idx] = id;
         scores[idx] = score;
@@ -166,18 +178,37 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     }
 
     /**
-     * Add a scored ID.  The ID is copied into the builder, not referenced.
+     * Add a scored ID.  The ID is copied into the builder, not referenced.  All side channels on
+     * the ID must have already been added with one of the {@code addChannel} methods.
      * @param id The ID.
      * @return The builder (for chaining).
      */
     public ScoredIdListBuilder add(ScoredId id) {
-        int idx = size;
+        Preconditions.checkState(ids != null, "builder has been finished");
+        // check whether all symbols are valid
+        Set<Symbol> syms = id.getChannels();
+        for (Symbol sym: syms) {
+            if (!channels.containsKey(sym)) {
+                throw new IllegalArgumentException("channel " + sym + " not known");
+            }
+        }
+        Set<TypedSymbol<?>> typedSyms = id.getTypedChannels();
+        for (TypedSymbol<?> sym: typedSyms) {
+            if (!typedChannels.containsKey(sym)) {
+                throw new IllegalArgumentException("channel " + sym + " not known");
+            }
+        }
+
+        // now we're ready to add
+        final int idx = size;
         add(id.getId(), id.getScore());
         for (Symbol sym: id.getChannels()) {
-            putChannel(idx, sym, id.channel(sym));
+            ChannelStorage chan = channels.get(sym);
+            chan.values[idx] = id.channel(sym);
         }
         for (TypedSymbol<?> sym: id.getTypedChannels()) {
-            putChannel(idx, sym, id.channel(sym));
+            TypedChannelStorage<?> chan = typedChannels.get(sym);
+            chan.values[idx] = id.channel(sym);
         }
         return this;
     }
@@ -189,6 +220,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
      */
     public ScoredIdListBuilder addAll(Iterable<ScoredId> ids) {
         if (ids instanceof Collection) {
+            // we know how big to expect it to be, avoid excess resizes.
             requireCapacity(size + ((Collection<ScoredId>) ids).size());
         }
         // fast iteration is safe since add() doesn't retain the id object
@@ -198,22 +230,65 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         return this;
     }
 
-    private void putChannel(int idx, Symbol sym, double channel) {
-        PackedChanBuilder pack = channels.get(sym);
-        if (pack == null) {
-            pack = new PackedChanBuilder(sym);
-            channels.put(sym, pack);
-        }
-        pack.set(idx, channel);
+    /**
+     * Add a side channel to the list builder with a default value of 0.  It is an error
+     * to add the same symbol multiple times.  All side channels that will be used must be added
+     * prior to calling {@link #add(ScoredId)}.
+     *
+     * @param sym The symbol to add.
+     * @return The builder (for chaining).
+     * @see #addChannel(Symbol, double)
+     */
+    public ScoredIdListBuilder addChannel(Symbol sym) {
+        return addChannel(sym, 0);
     }
 
-    private void putChannel(int idx, TypedSymbol<?> sym, Object channel) {
-        PackedTChanBuilder pack = typedChannels.get(sym);
-        if (pack == null) {
-            pack = new PackedTChanBuilder(sym);
-            typedChannels.put(sym, pack);
+    /**
+     * Add a side channel to the list builder.  It is an error to add the same symbol multiple times.
+     * All side channels that will be used must be added prior to calling {@link #add(ScoredId)}.
+     *
+     * @param sym The symbol to add.
+     * @param dft The default value when adding IDs that lack this channel.
+     * @return The builder (for chaining).
+     */
+    public ScoredIdListBuilder addChannel(Symbol sym, double dft) {
+        if (channels.containsKey(sym)) {
+            throw new IllegalArgumentException(sym + " already in the builder");
+        } else {
+            channels.put(sym, new ChannelStorage(sym, dft));
         }
-        pack.set(idx, channel);
+        return this;
+    }
+
+    /**
+     * Add a side channel to the list builder with a default value of {@code null}.  It is an error
+     * to add the same symbol multiple times.  All side channels that will be used must be added
+     * prior to calling {@link #add(ScoredId)}.
+     *
+     * @param sym The symbol to add.
+     * @return The builder (for chaining).
+     * @see #addChannel(TypedSymbol, Object)
+     */
+    public ScoredIdListBuilder addChannel(TypedSymbol<?> sym) {
+        return addChannel(sym, null);
+    }
+
+    /**
+     * Add a typed side channel to the list builder.  It is an error to add the same symbol multiple
+     * times. All side channels that will be used must be added prior to calling {@link
+     * #add(ScoredId)}.
+     *
+     * @param sym The symbol to add.
+     * @param dft The default value when adding IDs that lack this channel.
+     * @return The builder (for chaining).
+     */
+    public <T> ScoredIdListBuilder addChannel(TypedSymbol<T> sym, T dft) {
+        if (typedChannels.containsKey(sym)) {
+            throw new IllegalArgumentException(sym + " already in the builder");
+        } else {
+            typedChannels.put(sym, new TypedChannelStorage<T>(sym, dft));
+        }
+        return this;
     }
 
     /**
@@ -227,14 +302,32 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         return this;
     }
 
+    /**
+     * Comparator for sorting the list.  This comparator internally uses a packed list over the
+     * entire capacity of the builder to provide ids for the real comparator to use.
+     */
     private class SortComp extends AbstractIntComparator {
         private final Comparator<ScoredId> order;
-        private IndirectId id1, id2;
+
+        private PackedScoredIdList.IndirectScoredId id1;
+        private PackedScoredIdList.IndirectScoredId id2;
 
         public SortComp(Comparator<ScoredId> o) {
             order = o;
-            id1 = new IndirectId();
-            id2 = new IndirectId();
+
+            // make an internal list
+            Map<Symbol,double[]> chanMap = Maps.newHashMap();
+            for (ChannelStorage chan: channels.values()) {
+                chanMap.put(chan.symbol, chan.values);
+            }
+            Map<TypedSymbol<?>,Object[]> typedMap = Maps.newHashMap();
+            for (TypedChannelStorage<?> chan: typedChannels.values()) {
+                typedMap.put(chan.symbol, chan.values);
+            }
+            PackedScoredIdList list = new PackedScoredIdList(ids, scores, chanMap, typedMap);
+
+            id1 = list.getFlyweight(0);
+            id2 = list.getFlyweight(0);
         }
 
         @Override
@@ -245,187 +338,90 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         }
     }
 
+    /**
+     * Swapper for sorting the list.
+     */
     private class SortSwap implements Swapper {
         @Override
         public void swap(int i, int j) {
             doSwap(ids, i, j);
             doSwap(scores, i, j);
-            for (PackedChanBuilder chan: channels.values()) {
-                chan.swap(i, j);
+            for (ChannelStorage chan: channels.values()) {
+                doSwap(chan.values, i, j);
             }
-            for (PackedTChanBuilder chan: typedChannels.values()) {
-                chan.swap(i, j);
+            for (TypedChannelStorage<?> chan: typedChannels.values()) {
+                doSwap(chan.values, i, j);
             }
         }
     }
 
     private static void doSwap(long[] longs, int i, int j) {
-        long tmp = longs[i];
+        final long tmp = longs[i];
         longs[i] = longs[j];
         longs[j] = tmp;
     }
     private static void doSwap(double[] doubles, int i, int j) {
-        double tmp = doubles[i];
+        final double tmp = doubles[i];
         doubles[i] = doubles[j];
         doubles[j] = tmp;
     }
-    private static void doSwap(Object[] objs, int i, int j) {
-        Object tmp = objs[i];
+    private static <T> void doSwap(T[] objs, int i, int j) {
+        final T tmp = objs[i];
         objs[i] = objs[j];
         objs[j] = tmp;
     }
 
-    private class IndirectId extends AbstractScoredId {
-        private int index;
-        private Set<Symbol> cCache;
-        private Set<TypedSymbol<?>> tcCache;
-
-        public void setIndex(int idx) {
-            index = idx;
-            cCache = null;
-            tcCache = null;
-        }
-
-        @Override
-        public long getId() {
-            return ids[index];
-        }
-
-        @Override
-        public double getScore() {
-            return scores[index];
-        }
-
-        @Override
-        public Set<Symbol> getChannels() {
-            if (cCache == null) {
-                ImmutableSet.Builder<Symbol> bld = ImmutableSet.builder();
-                for (PackedChanBuilder ch: channels.values()) {
-                    if (ch.used.get(index)) {
-                        bld.add(ch.symbol);
-                    }
-                }
-                cCache = bld.build();
-            }
-            return cCache;
-        }
-
-        @Override
-        public Set<TypedSymbol<?>> getTypedChannels() {
-            if (tcCache == null) {
-                ImmutableSet.Builder<TypedSymbol<?>> bld = ImmutableSet.builder();
-                for (PackedTChanBuilder ch: typedChannels.values()) {
-                    if (ch.used.get(index)) {
-                        bld.add(ch.symbol);
-                    }
-                }
-                tcCache = bld.build();
-            }
-            return tcCache;
-        }
-
-        @Override
-        public double channel(Symbol s) {
-            PackedChanBuilder chan = channels.get(s);
-            if (chan != null && chan.used.get(index)) {
-                return chan.values[index];
-            } else {
-                throw new IllegalArgumentException("unknown symbol " + s);
-            }
-        }
-
-        @Override
-        public <K> K channel(TypedSymbol<K> s) {
-            PackedTChanBuilder chan = typedChannels.get(s);
-            if (chan != null && chan.used.get(index)) {
-                return s.getType().cast(chan.values[index]);
-            } else {
-                throw new IllegalArgumentException("unknown symbol " + s);
-            }
-        }
-
-        @Override
-        public boolean hasChannel(Symbol s) {
-            PackedChanBuilder chan = channels.get(s);
-            return chan != null && chan.used.get(index);
-        }
-
-        @Override
-        public boolean hasChannel(TypedSymbol<?> s) {
-            PackedTChanBuilder chan = typedChannels.get(s);
-            return chan != null && chan.used.get(index);
-        }
-    }
-
-    private class PackedChanBuilder {
+    /**
+     * Storage for a side channel.
+     */
+    private class ChannelStorage {
         private final Symbol symbol;
-        private BitSet used;
+        private final double defaultValue;
         private double[] values;
 
-        public PackedChanBuilder(Symbol sym) {
+        public ChannelStorage(Symbol sym, double dft) {
             symbol = sym;
-            used = new BitSet();
+            defaultValue = dft;
             values = new double[capacity()];
-        }
-
-        private void set(int idx, double v) {
-            assert idx >= 0 && idx < capacity();
-            if (idx >= values.length) {
-                values = Arrays.copyOf(values, capacity());
+            if (defaultValue != 0) {
+                DoubleArrays.fill(values, defaultValue);
             }
-            values[idx] = v;
-            used.set(idx);
         }
 
-        private void swap(int i, int j) {
-            // anything that's set obviously has a value
-            if (used.get(i)) {
-                if (used.get(j)) {
-                    doSwap(values, i, j);
-                } else {
-                    set(j, values[i]);
-                    used.clear(i);
-                }
-            } else if (used.get(j)) {
-                set(i, values[j]);
-                used.clear(j);
+        void resize(int size) {
+            Preconditions.checkArgument(size > values.length);
+            int oldSize = values.length;
+            values = Arrays.copyOf(values, size);
+            if (defaultValue != 0) {
+                DoubleArrays.fill(values, oldSize, size, defaultValue);
             }
         }
     }
 
-    private class PackedTChanBuilder {
-        @SuppressWarnings("rawtypes")
-        private final TypedSymbol symbol;
-        private BitSet used;
-        private Object[] values;
+    /**
+     * Storage for a typed side channel.
+     */
+    private class TypedChannelStorage<T> {
+        private final TypedSymbol<T> symbol;
+        private final T defaultValue;
+        private T[] values;
 
-        private PackedTChanBuilder(TypedSymbol<?> sym) {
+        @SuppressWarnings("unchecked")
+        private TypedChannelStorage(TypedSymbol<T> sym, T dft) {
             symbol = sym;
-            used = new BitSet();
-            values = new Object[capacity()];
-        }
-
-        private void set(int idx, Object v) {
-            assert idx >= 0 && idx < capacity();
-            if (idx >= values.length) {
-                values = Arrays.copyOf(values, capacity());
+            defaultValue = dft;
+            values = (T[]) Array.newInstance(sym.getType(), capacity());
+            if (defaultValue != null) {
+                ObjectArrays.fill(values, defaultValue);
             }
-            values[idx] = v;
-            used.set(idx);
         }
 
-        private void swap(int i, int j) {
-            // anything that's set obviously has a value
-            if (used.get(i)) {
-                if (used.get(j)) {
-                    doSwap(values, i, j);
-                } else {
-                    set(j, values[i]);
-                    used.clear(i);
-                }
-            } else if (used.get(j)) {
-                set(i, values[j]);
-                used.clear(j);
+        void resize(int size) {
+            Preconditions.checkArgument(size > values.length);
+            int oldSize = values.length;
+            values = Arrays.copyOf(values, size);
+            if (defaultValue != null) {
+                ObjectArrays.fill(values, oldSize, size, defaultValue);
             }
         }
     }
