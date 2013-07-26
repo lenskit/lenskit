@@ -869,4 +869,15 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
             /* expected */
         }
     }
+
+    @Test
+    public void testVectorEntryIsSet() {
+        MutableSparseVector msv = simpleVector();
+        VectorEntry entry = msv.iterator().next();
+        assertThat(msv.isSet(entry), equalTo(true));
+        msv.unset(3);
+        entry = msv.fastIterator(VectorEntry.State.EITHER).next();
+        assertThat(entry.getKey(), equalTo(3L));
+        assertThat(msv.isSet(entry), equalTo(false));
+    }
 }

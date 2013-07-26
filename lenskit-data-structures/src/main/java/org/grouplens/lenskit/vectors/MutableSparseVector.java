@@ -848,7 +848,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
             throw new IllegalArgumentException("Channel " + channelSymbol.getName()
                                                + " already exists");
         }
-        MutableSparseVector theChannel = new MutableSparseVector(keyDomain());
+        MutableSparseVector theChannel =
+                new MutableSparseVector(keys, new double[domainSize],
+                                        domainSize, new BitSet(domainSize));
         channelMap.put(channelSymbol, theChannel);
         return theChannel;
     }
@@ -870,7 +872,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
                                                + " with type " + channelSymbol.getType().getSimpleName() 
                                                + " already exists");
         }
-        TypedSideChannel<K> theChannel = new TypedSideChannel<K>(keyDomain().toLongArray());
+        TypedSideChannel<K> theChannel =
+                new TypedSideChannel<K>(keys, domainSize);
         typedChannelMap.put(channelSymbol, theChannel);
         return theChannel;
     }
