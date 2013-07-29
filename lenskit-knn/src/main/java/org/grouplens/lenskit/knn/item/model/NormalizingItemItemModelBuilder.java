@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
+import org.grouplens.lenskit.scored.PackedScoredIdList;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdListBuilder;
 import org.grouplens.lenskit.scored.ScoredIds;
@@ -89,10 +90,14 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
             }
             MutableSparseVector normalized = rowNormalizer.normalize(rowItem, currentRow, null);
             truncator.truncate(normalized);
-            matrix.put(rowItem, new ScoredIdListBuilder(normalized.size())
-                    .addAll(ScoredIds.collectionFromVector(normalized))
-                    .sort(ScoredIds.scoreOrder().reverse())
-                    .finish());
+            ScoredIdListBuilder bld = new ScoredIdListBuilder(normalized.size());
+            // TODO Allow the symbols in use to be customized
+            List<ScoredId> row = bld.addChannels(normalized.getChannels())
+                                    .addTypedChannels(normalized.getTypedChannels())
+                                    .addAll(ScoredIds.collectionFromVector(normalized))
+                                    .sort(ScoredIds.scoreOrder().reverse())
+                                    .finish();
+            matrix.put(rowItem, row);
         }
 
         return new SimilarityMatrixModel(itemUniverse, matrix);

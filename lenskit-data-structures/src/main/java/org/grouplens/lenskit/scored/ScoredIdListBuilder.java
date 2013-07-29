@@ -265,6 +265,18 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     }
 
     /**
+     * Add multiple channels with a default value of 0.
+     * @param channels The channels to add.
+     * @return The builder (for chaining).
+     */
+    public ScoredIdListBuilder addChannels(Iterable<Symbol> channels) {
+        for (Symbol sym: channels) {
+            addChannel(sym);
+        }
+        return this;
+    }
+
+    /**
      * Add a side channel to the list builder with a default value of {@code null}.  It is an error
      * to add the same symbol multiple times.  All side channels that will be used must be added
      * prior to calling {@link #add(ScoredId)}.
@@ -292,6 +304,18 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
             throw new IllegalArgumentException(sym + " already in the builder");
         } else {
             typedChannels.put(sym, new TypedChannelStorage<T>(sym, dft));
+        }
+        return this;
+    }
+
+    /**
+     * Add multiple channels with a default value of {@code null}.
+     * @param channels The channels to add.
+     * @return The builder (for chaining).
+     */
+    public ScoredIdListBuilder addTypedChannels(Iterable<? extends TypedSymbol<?>> channels) {
+        for (TypedSymbol<?> sym: channels) {
+            addChannel(sym);
         }
         return this;
     }
