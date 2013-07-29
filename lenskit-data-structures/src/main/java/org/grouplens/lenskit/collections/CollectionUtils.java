@@ -99,7 +99,13 @@ public final class CollectionUtils {
                             @Override
                             public Optional<Method> load(Class<?> key) {
                                 try {
-                                    return Optional.of(key.getMethod("fastIterator"));
+                                    Method method = key.getMethod("fastIterator");
+                                    try {
+                                        method.setAccessible(true);
+                                    } catch (SecurityException e) {
+                                        /* we can't disable security checks, ok. */
+                                    }
+                                    return Optional.of(method);
                                 } catch (NoSuchMethodException e) {
                                     return Optional.absent();
                                 }
