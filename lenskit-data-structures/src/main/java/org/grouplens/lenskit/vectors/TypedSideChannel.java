@@ -88,7 +88,7 @@ public class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      * It is assumed that the key array is sorted, duplicate free The key array will become the 
      * key domain. 
      * 
-     * @param ks The array of keys backing this vector. They must be sorted.
+     * @param keys The array of keys backing this vector. They must be sorted.
      * @param length Number of items to actually use.
      */
     @SuppressWarnings("unchecked")
@@ -173,7 +173,7 @@ public class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      * @return The value, or {@link #defaultReturnValue()} if the channel is unset for the entry.
      * @throws IllegalArgumentException if the entry comes from an unrelated vector.
      */
-    public V get (VectorEntry entry) {
+    public V get(VectorEntry entry) {
         final SparseVector evec = entry.getVector();
         final int eind = entry.getIndex();
 
