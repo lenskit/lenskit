@@ -45,6 +45,8 @@ import static it.unimi.dsi.fastutil.Arrays.quickSort;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
+    // INVARIANT: all arrays (including channel arrays) have same size, which is capacity
+    // INVARIANT: all arrays are non-null unless finish() has been called
     private long[] ids;
     private double[] scores;
     private int size;
@@ -219,6 +221,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
      * @return The builder (for chaining)
      */
     public ScoredIdListBuilder addAll(Iterable<ScoredId> ids) {
+        Preconditions.checkState(ids != null, "builder has been finished");
         if (ids instanceof Collection) {
             // we know how big to expect it to be, avoid excess resizes.
             requireCapacity(size + ((Collection<ScoredId>) ids).size());
@@ -252,6 +255,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
      * @return The builder (for chaining).
      */
     public ScoredIdListBuilder addChannel(Symbol sym, double dft) {
+        Preconditions.checkState(ids != null, "builder has been finished");
         if (channels.containsKey(sym)) {
             throw new IllegalArgumentException(sym + " already in the builder");
         } else {
@@ -283,6 +287,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
      * @return The builder (for chaining).
      */
     public <T> ScoredIdListBuilder addChannel(TypedSymbol<T> sym, T dft) {
+        Preconditions.checkState(ids != null, "builder has been finished");
         if (typedChannels.containsKey(sym)) {
             throw new IllegalArgumentException(sym + " already in the builder");
         } else {
