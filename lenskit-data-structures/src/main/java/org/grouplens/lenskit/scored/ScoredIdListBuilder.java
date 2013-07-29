@@ -49,6 +49,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     // INVARIANT: all arrays are non-null unless finish() has been called
     private long[] ids;
     private double[] scores;
+    private boolean ignoreUnknown = false;
     private int size;
     private Map<Symbol,ChannelStorage> channels;
     private Map<TypedSymbol<?>,TypedChannelStorage<?>> typedChannels;
@@ -189,28 +190,35 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         Preconditions.checkState(ids != null, "builder has been finished");
         // check whether all symbols are valid
         Set<Symbol> syms = id.getChannels();
-        for (Symbol sym: syms) {
-            if (!channels.containsKey(sym)) {
-                throw new IllegalArgumentException("channel " + sym + " not known");
-            }
-        }
         Set<TypedSymbol<?>> typedSyms = id.getTypedChannels();
-        for (TypedSymbol<?> sym: typedSyms) {
-            if (!typedChannels.containsKey(sym)) {
-                throw new IllegalArgumentException("channel " + sym + " not known");
+        if (!ignoreUnknown) {
+            for (Symbol sym: syms) {
+                if (!channels.containsKey(sym)) {
+                    throw new IllegalArgumentException("channel " + sym + " not known");
+                }
+            }
+
+            for (TypedSymbol<?> sym: typedSyms) {
+                if (!typedChannels.containsKey(sym)) {
+                    throw new IllegalArgumentException("channel " + sym + " not known");
+                }
             }
         }
 
         // now we're ready to add
         final int idx = size;
         add(id.getId(), id.getScore());
-        for (Symbol sym: id.getChannels()) {
+        for (Symbol sym: syms) {
             ChannelStorage chan = channels.get(sym);
-            chan.values[idx] = id.channel(sym);
+            if (chan != null) {
+                chan.values[idx] = id.channel(sym);
+            }
         }
-        for (TypedSymbol<?> sym: id.getTypedChannels()) {
+        for (TypedSymbol<?> sym: typedSyms) {
             TypedChannelStorage<?> chan = typedChannels.get(sym);
-            chan.values[idx] = id.channel(sym);
+            if (chan != null) {
+                chan.values[idx] = id.channel(sym);
+            }
         }
         return this;
     }
@@ -317,6 +325,25 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         for (TypedSymbol<?> sym: channels) {
             addChannel(sym);
         }
+        return this;
+    }
+
+    /**
+     * Set the builder to ignore unknown channels on IDs passed to {@link #add(ScoredId)}.
+     * @return The builder (for chaining).
+     */
+    public ScoredIdListBuilder ignoreUnknownChannels() {
+        ignoreUnknown = true;
+        return this;
+    }
+
+    /**
+     * Set the builder to fail on unknown channels.  This is the default response to unknown
+     * channels.
+     * @return The builder (for chaining).
+     */
+    public ScoredIdListBuilder failOnUnknownChannels() {
+        ignoreUnknown = false;
         return this;
     }
 
