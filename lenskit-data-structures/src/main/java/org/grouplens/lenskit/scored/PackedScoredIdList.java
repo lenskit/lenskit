@@ -33,7 +33,7 @@ import java.util.*;
 
 /**
  * A space-efficient, unboxed list of scored IDs.  These lists are immutable; create them using a
- * {@link ScoredIdListBuilder}.
+ * {@link ScoredIdListBuilder} (see {@link ScoredIds#newListBuilder()}.
  *
  * @since 1.4
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
