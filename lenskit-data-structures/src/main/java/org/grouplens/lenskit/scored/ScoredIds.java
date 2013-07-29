@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.scored;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
@@ -84,6 +85,40 @@ public final class ScoredIds {
     public static ScoredIdListBuilder newListBuilder(int cap) {
         return new ScoredIdListBuilder(cap);
     }
+
+    /**
+     * Create a scored id with no channels.
+     * @param id The ID.
+     * @param score The score.
+     * @return An ID.
+     */
+    public static ScoredId create(long id, double score) {
+        return new ScoredIdImpl(id, score);
+    }
+
+    //region Functions
+    /**
+     * A {@link Function} that extracts the ID from a scored ID.
+     * @return A function returning the ID from any scored ID.
+     */
+    public static Function<ScoredId,Long> idFunction() {
+        return IdFunction.INSTANCE;
+    }
+
+    private static enum IdFunction implements Function<ScoredId,Long> {
+        INSTANCE {
+            @Nullable
+            @Override
+            public Long apply(@Nullable ScoredId input) {
+                if (input == null) {
+                    return null;
+                } else {
+                    return input.getId();
+                }
+            }
+        }
+    }
+    //endregion
 
     //region Ordering
     /**

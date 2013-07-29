@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
@@ -33,6 +32,7 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -88,7 +88,7 @@ public class TestFunkSVDRecommender {
     @Test
     public void testRecommend1() {
 
-        LongList recs = recommender.recommend(1);
+        List<ScoredId> recs = recommender.recommend(1);
         assertTrue(recs.isEmpty());
 
         recs = recommender.recommend(2);
@@ -101,20 +101,20 @@ public class TestFunkSVDRecommender {
 
         recs = recommender.recommend(4);
         assertEquals(2, recs.size());
-        assertEquals(6, recs.getLong(0));
-        assertEquals(9, recs.getLong(1));
+        assertEquals(6, recs.get(0).getId());
+        assertEquals(9, recs.get(1).getId());
 
         recs = recommender.recommend(5);
         assertEquals(3, recs.size());
-        assertEquals(6, recs.getLong(0));
-        assertEquals(7, recs.getLong(1));
-        assertEquals(9, recs.getLong(2));
+        assertEquals(6, recs.get(0).getId());
+        assertEquals(7, recs.get(1).getId());
+        assertEquals(9, recs.get(2).getId());
 
         recs = recommender.recommend(6);
         assertEquals(3, recs.size());
-        assertEquals(6, recs.getLong(0));
-        assertEquals(7, recs.getLong(1));
-        assertEquals(9, recs.getLong(2));
+        assertEquals(6, recs.get(0).getId());
+        assertEquals(7, recs.get(1).getId());
+        assertEquals(9, recs.get(2).getId());
     }
 
     /**
@@ -123,22 +123,22 @@ public class TestFunkSVDRecommender {
     @Test
     public void testRecommend2() {
 
-        LongList recs = recommender.recommend(6, 4);
+        List<ScoredId> recs = recommender.recommend(6, 4);
         assertEquals(3, recs.size());
-        assertEquals(6, recs.getLong(0));
-        assertEquals(7, recs.getLong(1));
-        assertEquals(9, recs.getLong(2));
+        assertEquals(6, recs.get(0).getId());
+        assertEquals(7, recs.get(1).getId());
+        assertEquals(9, recs.get(2).getId());
 
         recs = recommender.recommend(6, 3);
         assertEquals(3, recs.size());
-        assertEquals(6, recs.getLong(0));
-        assertEquals(7, recs.getLong(1));
-        assertEquals(9, recs.getLong(2));
+        assertEquals(6, recs.get(0).getId());
+        assertEquals(7, recs.get(1).getId());
+        assertEquals(9, recs.get(2).getId());
 
         recs = recommender.recommend(6, 2);
         assertEquals(2, recs.size());
-        assertEquals(6, recs.getLong(0));
-        assertEquals(7, recs.getLong(1));
+        assertEquals(6, recs.get(0).getId());
+        assertEquals(7, recs.get(1).getId());
 
         recs = recommender.recommend(6, 1);
         assertEquals(1, recs.size());
@@ -149,9 +149,9 @@ public class TestFunkSVDRecommender {
 
         recs = recommender.recommend(6, -1);
         assertEquals(3, recs.size());
-        assertEquals(6, recs.getLong(0));
-        assertEquals(7, recs.getLong(1));
-        assertEquals(9, recs.getLong(2));
+        assertEquals(6, recs.get(0).getId());
+        assertEquals(7, recs.get(1).getId());
+        assertEquals(9, recs.get(2).getId());
     }
 
     /**
@@ -160,11 +160,11 @@ public class TestFunkSVDRecommender {
     @Test
     public void testRecommend3() {
 
-        LongList recs = recommender.recommend(5, null);
+        List<ScoredId> recs = recommender.recommend(5, null);
         assertEquals(3, recs.size());
-        assertEquals(6, recs.getLong(0));
-        assertEquals(7, recs.getLong(1));
-        assertEquals(9, recs.getLong(2));
+        assertEquals(6, recs.get(0).getId());
+        assertEquals(7, recs.get(1).getId());
+        assertEquals(9, recs.get(2).getId());
 
         LongOpenHashSet candidates = new LongOpenHashSet();
         candidates.add(6);
@@ -173,27 +173,27 @@ public class TestFunkSVDRecommender {
         candidates.add(9);
         recs = recommender.recommend(5, candidates);
         assertEquals(3, recs.size());
-        assertEquals(6, recs.getLong(0));
-        assertEquals(7, recs.getLong(1));
-        assertEquals(9, recs.getLong(2));
+        assertEquals(6, recs.get(0).getId());
+        assertEquals(7, recs.get(1).getId());
+        assertEquals(9, recs.get(2).getId());
 
         candidates.remove(8);
         recs = recommender.recommend(5, candidates);
         assertEquals(3, recs.size());
-        assertEquals(6, recs.getLong(0));
-        assertEquals(7, recs.getLong(1));
-        assertEquals(9, recs.getLong(2));
+        assertEquals(6, recs.get(0).getId());
+        assertEquals(7, recs.get(1).getId());
+        assertEquals(9, recs.get(2).getId());
 
         candidates.remove(7);
         recs = recommender.recommend(5, candidates);
         assertEquals(2, recs.size());
-        assertEquals(6, recs.getLong(0));
-        assertEquals(9, recs.getLong(1));
+        assertEquals(6, recs.get(0).getId());
+        assertEquals(9, recs.get(1).getId());
 
         candidates.remove(6);
         recs = recommender.recommend(5, candidates);
         assertEquals(1, recs.size());
-        assertEquals(9, recs.getLong(0));
+        assertEquals(9, recs.get(0).getId());
 
         candidates.remove(9);
         recs = recommender.recommend(5, candidates);
@@ -209,26 +209,26 @@ public class TestFunkSVDRecommender {
      */
     @Test
     public void testRecommend4() {
-        LongList recs = recommender.recommend(6, -1, null, null);
+        List<ScoredId> recs = recommender.recommend(6, -1, null, null);
         assertEquals(4, recs.size());
-        assertEquals(6, recs.getLong(0));
-        assertEquals(7, recs.getLong(1));
-        assertEquals(9, recs.getLong(2));
-        assertEquals(8, recs.getLong(3));
+        assertEquals(6, recs.get(0).getId());
+        assertEquals(7, recs.get(1).getId());
+        assertEquals(9, recs.get(2).getId());
+        assertEquals(8, recs.get(3).getId());
 
         LongOpenHashSet exclude = new LongOpenHashSet();
         exclude.add(9);
         recs = recommender.recommend(6, -1, null, exclude);
         assertEquals(3, recs.size());
-        assertEquals(6, recs.getLong(0));
-        assertEquals(7, recs.getLong(1));
-        assertEquals(8, recs.getLong(2));
+        assertEquals(6, recs.get(0).getId());
+        assertEquals(7, recs.get(1).getId());
+        assertEquals(8, recs.get(2).getId());
 
         exclude.add(6);
         recs = recommender.recommend(6, -1, null, exclude);
         assertEquals(2, recs.size());
-        assertEquals(7, recs.getLong(0));
-        assertEquals(8, recs.getLong(1));
+        assertEquals(7, recs.get(0).getId());
+        assertEquals(8, recs.get(1).getId());
 
         exclude.add(8);
         recs = recommender.recommend(6, -1, null, exclude);

@@ -24,9 +24,8 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.collections.ScoredLongArrayList;
-import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.data.dao.ItemDAO;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -34,6 +33,8 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A global item recommender that recommends the top N items from a scorer.
@@ -55,7 +56,7 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
      * uses {@link #getDefaultExcludes(LongSet)} to supply a missing exclude set.
      */
     @Override
-    protected ScoredLongList globalRecommend(LongSet items, int n, LongSet candidates, LongSet exclude) {
+    protected List<ScoredId> globalRecommend(LongSet items, int n, LongSet candidates, LongSet exclude) {
         if (candidates == null) {
             candidates = itemDAO.getItemIds();
         }
@@ -89,9 +90,9 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
      * @return The top {@var n} items from {@var scores}, in descending
      *         order of score.
      */
-    protected ScoredLongList recommend(int n, SparseVector scores) {
+    protected List<ScoredId> recommend(int n, SparseVector scores) {
         if (scores.isEmpty()) {
-            return new ScoredLongArrayList();
+            return Collections.emptyList();
         }
 
         if (n < 0) {
@@ -104,7 +105,7 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
             accum.put(pred.getKey(), v);
         }
 
-        return new ScoredLongArrayList(accum.finish());
+        return accum.finish();
     }
 
     /**

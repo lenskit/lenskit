@@ -27,13 +27,12 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.collections.ScoredLongArrayList;
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -41,6 +40,8 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Recommender that recommends the top N items by a scorer.
@@ -73,7 +74,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      * uses {@link #getDefaultExcludes(long)} to supply a missing exclude set.
      */
     @Override
-    protected ScoredLongList recommend(long user, int n, LongSet candidates, LongSet exclude) {
+    protected List<ScoredId> recommend(long user, int n, LongSet candidates, LongSet exclude) {
         if (candidates == null) {
             candidates = getPredictableItems(user);
         }
@@ -96,9 +97,9 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      * @return The top {@var n} items from {@var scores}, in descending
      *         order of score.
      */
-    protected ScoredLongList recommend(int n, SparseVector scores) {
+    protected List<ScoredId> recommend(int n, SparseVector scores) {
         if (scores.isEmpty()) {
-            return new ScoredLongArrayList();
+            Collections.emptyList();
         }
 
         if (n < 0) {
@@ -111,7 +112,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
             accum.put(pred.getKey(), v);
         }
 
-        return new ScoredLongArrayList(accum.finish());
+        return accum.finish();
     }
 
     /**

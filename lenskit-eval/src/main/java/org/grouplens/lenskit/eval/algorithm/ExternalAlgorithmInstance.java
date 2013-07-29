@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
@@ -40,6 +39,7 @@ import org.grouplens.lenskit.eval.script.BuiltBy;
 import org.grouplens.lenskit.eval.data.CSVDataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.util.DelimitedTextCursor;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
@@ -279,7 +279,7 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
         }
 
         @Override
-        public ScoredLongList getRecommendations(long uid, LongSet testItems, int n) {
+        public List<ScoredId> getRecommendations(long uid, LongSet testItems, int n) {
             return null;
         }
 

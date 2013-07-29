@@ -38,8 +38,8 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.GlobalItemScorer;
@@ -51,6 +51,8 @@ import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.IdentityVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
@@ -68,7 +70,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class TestItemItemGlobalRecommender {
     private LenskitRecommender session;
@@ -125,7 +126,7 @@ public class TestItemItemGlobalRecommender {
     // FIXME Give the test methods for global item-item meaningful names
     @Test
     public void testGlobalItemItemRecommender1() {
-        LongList recs = gRecommender.globalRecommend(LongSets.singleton(1));
+        List<ScoredId> recs = gRecommender.globalRecommend(LongSets.singleton(1));
         assertThat(recs.size(), notNullValue());
         recs = gRecommender.globalRecommend(LongSets.singleton(2));
         assertThat(recs, empty());
@@ -143,7 +144,7 @@ public class TestItemItemGlobalRecommender {
      */
     @Test
     public void testGlobalItemItemRecommender2() {
-        LongList recs = gRecommender.globalRecommend(LongSets.singleton(1), 2);
+        List<ScoredId> recs = gRecommender.globalRecommend(LongSets.singleton(1), 2);
         assertThat(recs, hasSize(2));
         recs = gRecommender.globalRecommend(LongSets.singleton(2), 1);
         assertThat(recs, empty());
@@ -157,13 +158,13 @@ public class TestItemItemGlobalRecommender {
     @Test
     public void testGlobalItemItemRecommender3() {
         HashSet<Long> candidates = new HashSet<Long>();
-        LongList recs = gRecommender.globalRecommend(LongSets.singleton(1), candidates);
+        List<ScoredId> recs = gRecommender.globalRecommend(LongSets.singleton(1), candidates);
         assertThat(recs, hasSize(0));
         candidates.add(1L);
         candidates.add(5L);
         recs = gRecommender.globalRecommend(LongSets.singleton(1), candidates);
-        assertThat(recs, hasSize(1));
-        assertTrue(recs.contains(5));
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   contains(5L));
 
     }
 
@@ -174,7 +175,7 @@ public class TestItemItemGlobalRecommender {
     public void testGlobalItemItemRecommender4() {
         HashSet<Long> candidates = new HashSet<Long>();
         HashSet<Long> excludes = new HashSet<Long>();
-        LongList recs = gRecommender.globalRecommend(LongSets.singleton(1), 1, candidates, excludes);
+        List<ScoredId> recs = gRecommender.globalRecommend(LongSets.singleton(1), 1, candidates, excludes);
         assertThat(recs, hasSize(0));
         candidates.add(7L);
         candidates.add(5L);
@@ -194,12 +195,11 @@ public class TestItemItemGlobalRecommender {
         HashSet<Long> basket = new HashSet<Long>();
         basket.add(1L);
         basket.add(7L);
-        LongList recs = gRecommender.globalRecommend(basket, -1);
+        List<ScoredId> recs = gRecommender.globalRecommend(basket, -1);
         assertThat(recs, hasSize(2));
         recs = gRecommender.globalRecommend(basket, 1);
-        assertThat(recs, hasSize(1));
-        assertTrue(recs.contains(5));
-
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   contains(5L));
     }
 
     /**
@@ -212,10 +212,9 @@ public class TestItemItemGlobalRecommender {
         HashSet<Long> candidates = new HashSet<Long>();
         candidates.add(5L);
         candidates.add(10L);
-        LongList recs = gRecommender.globalRecommend(basket, candidates);
-        assertThat(recs, hasSize(2));
-        assertTrue(recs.contains(5));
-        assertTrue(recs.contains(10));
+        List<ScoredId> recs = gRecommender.globalRecommend(basket, candidates);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   contains(5L, 10L));
         candidates.add(7L);
         recs = gRecommender.globalRecommend(basket, candidates);
         assertThat(recs, hasSize(3));
@@ -234,17 +233,16 @@ public class TestItemItemGlobalRecommender {
         candidates.add(1L);
         candidates.add(7L);
         HashSet<Long> excludes = new HashSet<Long>();
-        LongList recs = gRecommender.globalRecommend(basket, 1, candidates, excludes);
+        List<ScoredId> recs = gRecommender.globalRecommend(basket, 1, candidates, excludes);
         assertThat(recs, hasSize(1));
         excludes.add(5L);
         recs = gRecommender.globalRecommend(basket, 2, candidates, excludes);
-        assertThat(recs, hasSize(2));
-        assertTrue(recs.contains(1));
-        assertTrue(recs.contains(7));
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   contains(1L, 7L));
         excludes.add(1L);
         recs = gRecommender.globalRecommend(basket, 2, candidates, excludes);
-        assertThat(recs, hasSize(1));
-        assertTrue(recs.contains(7));
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   contains(7L));
 
     }
 }

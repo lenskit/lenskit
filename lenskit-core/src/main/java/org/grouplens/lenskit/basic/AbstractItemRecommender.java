@@ -21,14 +21,13 @@
 package org.grouplens.lenskit.basic;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.scored.ScoredId;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -42,7 +41,7 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
      * <p>Delegates to {@link #recommend(long, int, LongSet, LongSet)}.
      */
     @Override
-    public ScoredLongList recommend(long user) {
+    public List<ScoredId> recommend(long user) {
         return recommend(user, -1, null, null);
     }
 
@@ -51,7 +50,7 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
      * <p>Delegates to {@link #recommend(long, int, LongSet, LongSet)}.
      */
     @Override
-    public ScoredLongList recommend(long user, int n) {
+    public List<ScoredId> recommend(long user, int n) {
         return recommend(user, n, null, null);
     }
 
@@ -60,7 +59,7 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
      * <p>Delegates to {@link #recommend(long, int, LongSet, LongSet)}.
      */
     @Override
-    public ScoredLongList recommend(long user, Set<Long> candidates) {
+    public List<ScoredId> recommend(long user, Set<Long> candidates) {
         return recommend(user, -1, candidates, null);
     }
 
@@ -69,7 +68,7 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
      * <p>Delegates to {@link #recommend(long, int, LongSet, LongSet)}.
      */
     @Override
-    public ScoredLongList recommend(long user, int n,
+    public List<ScoredId> recommend(long user, int n,
                                     @Nullable Set<Long> candidates,
                                     @Nullable Set<Long> exclude) {
         LongSet cs = CollectionUtils.fastSet(candidates);
@@ -88,7 +87,7 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
      * @return A scored list of item IDs.
      * @see ItemRecommender#recommend(long, int, Set, Set)
      */
-    protected abstract ScoredLongList recommend(long user, int n,
+    protected abstract List<ScoredId> recommend(long user, int n,
                                                 @Nullable LongSet candidates,
                                                 @Nullable LongSet exclude);
 }

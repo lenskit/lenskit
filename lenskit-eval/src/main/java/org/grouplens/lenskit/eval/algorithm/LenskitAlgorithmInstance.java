@@ -25,7 +25,6 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
@@ -37,6 +36,7 @@ import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.script.BuiltBy;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +45,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -161,7 +162,7 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
         }
 
         @Override
-        public ScoredLongList getRecommendations(long uid, LongSet testItems, int n) {
+        public List<ScoredId> getRecommendations(long uid, LongSet testItems, int n) {
             ItemRecommender irec = recommender.getItemRecommender();
             if (irec == null) {
                 return null;

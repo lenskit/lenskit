@@ -28,12 +28,11 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
@@ -41,6 +40,7 @@ import org.grouplens.lenskit.eval.algorithm.RecommenderInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -184,7 +184,7 @@ class TrainTestEvalJob implements Runnable {
 
                 Supplier<SparseVector> preds =
                         new PredictionSupplier(rec, uid, testItems);
-                Supplier<ScoredLongList> recs =
+                Supplier<List<ScoredId>> recs =
                         new RecommendationSupplier(rec, uid, testItems);
                 Supplier<UserHistory<Event>> hist = new HistorySupplier(rec.getUserEventDAO(), uid);
                 Supplier<UserHistory<Event>> testHist = Suppliers.ofInstance(p);
@@ -310,7 +310,7 @@ class TrainTestEvalJob implements Runnable {
         }
     }
 
-    private class RecommendationSupplier implements Supplier<ScoredLongList> {
+    private class RecommendationSupplier implements Supplier<List<ScoredId>> {
         private final RecommenderInstance recommender;
         private final long user;
         private final LongSet items;
@@ -322,11 +322,11 @@ class TrainTestEvalJob implements Runnable {
         }
 
         @Override
-        public ScoredLongList get() {
+        public List<ScoredId> get() {
             if (recommender == null) {
                 throw new IllegalArgumentException("cannot compute recommendations without a recommender");
             }
-            ScoredLongList recs = recommender.getRecommendations(user, items, numRecs);
+            List<ScoredId> recs = recommender.getRecommendations(user, items, numRecs);
             if (recs == null) {
                 throw new IllegalArgumentException("no recommendations");
             }

@@ -23,9 +23,10 @@ package org.grouplens.lenskit.basic;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.ScoredLongList;
+import org.grouplens.lenskit.scored.ScoredId;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Set;
 
 
@@ -42,7 +43,7 @@ public abstract class AbstractGlobalItemRecommender implements GlobalItemRecomme
      * <p>Delegates to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
      */
     @Override
-    public ScoredLongList globalRecommend(Set<Long> items) {
+    public List<ScoredId> globalRecommend(Set<Long> items) {
         return globalRecommend(items, -1, null, null);
     }
 
@@ -51,7 +52,7 @@ public abstract class AbstractGlobalItemRecommender implements GlobalItemRecomme
      * <p>Delegates to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
      */
     @Override
-    public ScoredLongList globalRecommend(Set<Long> items, int n) {
+    public List<ScoredId> globalRecommend(Set<Long> items, int n) {
         return globalRecommend(items, n, null, null);
     }
 
@@ -60,7 +61,7 @@ public abstract class AbstractGlobalItemRecommender implements GlobalItemRecomme
      * <p>Delegates to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
      */
     @Override
-    public ScoredLongList globalRecommend(Set<Long> items, @Nullable Set<Long> candidates) {
+    public List<ScoredId> globalRecommend(Set<Long> items, @Nullable Set<Long> candidates) {
         return globalRecommend(items, -1, candidates, null);
     }
 
@@ -69,7 +70,7 @@ public abstract class AbstractGlobalItemRecommender implements GlobalItemRecomme
      * <p>Delegates to {@link #globalRecommend(LongSet, int, LongSet, LongSet)}.
      */
     @Override
-    public ScoredLongList globalRecommend(Set<Long> items, int n, @Nullable Set<Long> candidates,
+    public List<ScoredId> globalRecommend(Set<Long> items, int n, @Nullable Set<Long> candidates,
                                           @Nullable Set<Long> exclude) {
         LongSet it = CollectionUtils.fastSet(items);
         LongSet cs = CollectionUtils.fastSet(candidates);
@@ -90,7 +91,7 @@ public abstract class AbstractGlobalItemRecommender implements GlobalItemRecomme
      * @return A scored list of item IDs.
      * @see GlobalItemRecommender#globalRecommend(Set, int, Set, Set)
      */
-    protected abstract ScoredLongList globalRecommend(LongSet items, int n,
+    protected abstract List<ScoredId> globalRecommend(LongSet items, int n,
                                                       @Nullable LongSet candidates,
                                                       @Nullable LongSet exclude);
 
