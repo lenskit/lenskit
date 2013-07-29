@@ -22,14 +22,20 @@ package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.Pointer;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
@@ -44,6 +50,28 @@ public final class Vectors {
      * via its static methods, not instantiated.
      */
     private Vectors() {}
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static MutableSparseVector fromScoredIds(List<ScoredId> scores) {
+        LongSet ids = new LongOpenHashSet();
+        for (ScoredId sid: CollectionUtils.fast(scores)) {
+            ids.add(sid.getId());
+        }
+        MutableSparseVector vec = new MutableSparseVector(ids);
+        for (ScoredId sid: CollectionUtils.fast(scores)) {
+            long id = sid.getId();
+            if (!vec.containsKey(id)) {
+                vec.set(id, sid.getScore());
+                for (Symbol chan: sid.getChannels()) {
+                    vec.getOrAddChannel(chan).set(id, sid.channel(chan));
+                }
+                for (TypedSymbol chan: sid.getTypedChannels()) {
+                    vec.getOrAddChannel(chan).put(id, sid.channel(chan));
+                }
+            }
+        }
+        return vec;
+    }
 
     //region Paired iteration
     private static final Function<Pair<VectorEntry,VectorEntry>, ImmutablePair<VectorEntry,VectorEntry>>

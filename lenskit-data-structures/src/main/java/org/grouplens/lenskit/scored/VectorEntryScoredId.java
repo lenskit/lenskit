@@ -21,12 +21,14 @@
 package org.grouplens.lenskit.scored;
 
 import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.objects.ReferenceArraySet;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Sets;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
+import javax.annotation.Nullable;
 import java.util.Set;
 
 /**
@@ -60,26 +62,38 @@ class VectorEntryScoredId extends AbstractScoredId {
 
     @Override
     public Set<Symbol> getChannels() {
-        ReferenceArraySet<Symbol> res = new ReferenceArraySet<Symbol>();
-        for (Symbol s: vector.getChannels()) {
-            // FIXME Make this O(1)
-            if (vector.channel(s).containsKey(ent.getKey())) {
-                res.add(s);
+        Set<Symbol> channels = vector.getChannels();
+        for (Symbol sym: channels) {
+            if (!vector.channel(sym).isSet(ent)) {
+                // missing channel, take the slow path
+                return Sets.filter(vector.getChannels(), new Predicate<Symbol>() {
+                    @Override
+                    public boolean apply(@Nullable Symbol input) {
+                        return input != null && vector.channel(input).isSet(ent);
+                    }
+                });
             }
         }
-        return res;
+        // all channels present, return them
+        return channels;
     }
 
     @Override
     public Set<TypedSymbol<?>> getTypedChannels() {
-        ReferenceArraySet<TypedSymbol<?>> res = new ReferenceArraySet<TypedSymbol<?>>();
-        for (TypedSymbol<?> s: vector.getTypedChannels()) {
-            // FIXME Make this O(1)
-            if (vector.channel(s).containsKey(ent.getKey())) {
-                res.add(s);
+        Set<TypedSymbol<?>> channels = vector.getTypedChannels();
+        for (TypedSymbol<?> sym: channels) {
+            if (!vector.channel(sym).isSet(ent)) {
+                // missing channel, take the slow path
+                Sets.filter(vector.getTypedChannels(), new Predicate<TypedSymbol<?>>() {
+                    @Override
+                    public boolean apply(@Nullable TypedSymbol<?> input) {
+                        return input != null && vector.channel(input).isSet(ent);
+                    }
+                });
             }
         }
-        return res;
+        // all channels present, return them
+        return channels;
     }
 
     @Override
@@ -89,17 +103,17 @@ class VectorEntryScoredId extends AbstractScoredId {
 
     @Override
     public <T> T channel(TypedSymbol<T> s) {
-        return vector.channel(s).get(ent.getKey());
+        return vector.channel(s).get(ent);
     }
 
     @Override
     public boolean hasChannel(Symbol s) {
-        return vector.hasChannel(s) && vector.channel(s).containsKey(ent.getKey());
+        return vector.hasChannel(s) && vector.channel(s).isSet(ent);
     }
 
     @Override
-    public boolean hasChannel(TypedSymbol s) {
-        return vector.hasChannel(s) && vector.channel(s).containsKey(ent.getKey());
+    public boolean hasChannel(TypedSymbol<?> s) {
+        return vector.hasChannel(s) && vector.channel(s).isSet(ent);
     }
 
     /**

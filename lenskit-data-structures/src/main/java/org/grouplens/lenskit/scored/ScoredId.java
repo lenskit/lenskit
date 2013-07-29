@@ -27,8 +27,8 @@ import java.util.Set;
 
 /**
  * A numerical ID associated with a score and optional side channels.
- * A {@code ScoredId} object is intended to be immutable. The {@code ScoredId.Builder}
- * class may be used instantiate to a new {@code ScoredId} object.
+ * A {@code ScoredId} object is intended to be immutable.  Scored IDs can be created by using the
+ * {@linkplain ScoredIds#newBuilder() builder} or accumulated in a {@link PackedScoredIdList}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1

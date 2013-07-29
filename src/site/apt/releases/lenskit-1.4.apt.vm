@@ -1,0 +1,10 @@
+#parse("relnotes.vm")
+#stdHeader("1.4")
+
+  * Add <<<PackedScoredIdList>>>, to store scored IDs without boxing penalties.
+
+  * Use scored ID lists for neighborhoods in item-item CF.
+
+  * Return packed lists from Top-N accumulators.
+
+  []

@@ -20,9 +20,11 @@
  */
 package org.grouplens.lenskit.scored;
 
-import com.google.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import it.unimi.dsi.fastutil.objects.*;
+import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
+import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
+import it.unimi.dsi.fastutil.objects.Reference2DoubleMaps;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
@@ -56,7 +58,7 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
      * @param tChans The typed side channel map.
      */
     public ScoredIdImpl(long id, double score, Reference2DoubleMap<Symbol> chans,
-            Reference2ObjectMap<TypedSymbol<?>, ?> tChans) {
+                        Map<TypedSymbol<?>, ?> tChans) {
         this.id = id;
         this.score = score;
         if (chans != null) {
@@ -65,7 +67,7 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
             this.channels = Reference2DoubleMaps.EMPTY_MAP;
         }
         if (tChans != null) {
-            this.typedChannels = ImmutableMap.copyOf(tChans);
+            this.typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>(tChans);
         } else {
             this.typedChannels = Collections.emptyMap();
         }

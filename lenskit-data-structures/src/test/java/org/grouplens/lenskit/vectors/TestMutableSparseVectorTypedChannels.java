@@ -46,7 +46,7 @@ public class TestMutableSparseVectorTypedChannels {
         assertEquals(Collections.singleton(fooStrSym),sv.getTypedChannels());
         
         assertEquals (fooStrChan, sv.channel(fooStrSym));
-        assertEquals (fooStrChan, sv.alwaysAddChannel(fooStrSym));
+        assertEquals (fooStrChan, sv.getOrAddChannel(fooStrSym));
         try {
             sv.addChannel(fooStrSym);
             fail("re-adding should be illegal.");

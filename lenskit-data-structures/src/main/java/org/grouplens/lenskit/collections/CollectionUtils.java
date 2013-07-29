@@ -23,6 +23,10 @@
  */
 package org.grouplens.lenskit.collections;
 
+import com.google.common.base.Optional;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -65,14 +69,14 @@ public final class CollectionUtils {
                 }
             };
         } else {
-            final Class<?> cls = iter.getClass();
-            try {
-                final Method fastMethod = cls.getMethod("fastIterator");
+            Optional<Method> fastMethod = fastIteratorMethods.getUnchecked(iter.getClass());
+            if (fastMethod.isPresent()) {
+                final Method method = fastMethod.get();
                 return new Iterable<E>() {
                     @Override
                     public Iterator<E> iterator() {
                         try {
-                            return (Iterator<E>) fastMethod.invoke(iter);
+                            return (Iterator<E>) method.invoke(iter);
                         } catch (IllegalAccessException e) {
                             return iter.iterator();
                         } catch (InvocationTargetException e) {
@@ -80,11 +84,27 @@ public final class CollectionUtils {
                         }
                     }
                 };
-            } catch (NoSuchMethodException e) {
+            } else {
                 return iter;
             }
         }
     }
+
+    /**
+     * Cache of fast iterator methods for various classes.
+     */
+    private static final LoadingCache<Class<?>,Optional<Method>> fastIteratorMethods =
+            CacheBuilder.newBuilder()
+                        .build(new CacheLoader<Class<?>,Optional<Method>>() {
+                            @Override
+                            public Optional<Method> load(Class<?> key) {
+                                try {
+                                    return Optional.of(key.getMethod("fastIterator"));
+                                } catch (NoSuchMethodException e) {
+                                    return Optional.absent();
+                                }
+                            }
+                        });
 
     /**
      * Get a Fastutil {@link LongCollection} from a {@link Collection} of longs.

@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.scored;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
@@ -112,4 +114,17 @@ public class ScoredIdBuilderTest {
         assertEquals(new ScoredIdImpl(1, 2, channels, typedChannels), sid);
     }
 
+    @Test
+    public void testCopy() {
+        ScoredIdBuilder sib = new ScoredIdBuilder(1, 2);
+        sib.addChannel(fooSym, 1.0);
+        sib.addChannel(fooIntSym, 1);
+        ScoredId id = sib.build();
+        ScoredId id2 = ScoredIds.copyBuilder(id).build();
+        assertThat(id2, equalTo(id));
+
+        id2 = ScoredIds.copyBuilder(id).setScore(2.5).build();
+        assertThat(id2, not(equalTo(id)));
+        assertThat(id2.getScore(), equalTo(2.5));
+    }
 }

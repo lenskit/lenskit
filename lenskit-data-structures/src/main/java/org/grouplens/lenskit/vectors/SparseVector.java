@@ -259,7 +259,6 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         } else if (evec.keys != this.keys) {
             throw new IllegalArgumentException("entry does not have safe key domain");
         } else if (entry.getKey() != keys[eind]) {
-            // REVIEW Should this be an assertion?
             throw new IllegalArgumentException("entry does not have the correct key for its index");
         }
         if (usedKeys.get(eind)) {
@@ -872,7 +871,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @throws IllegalArgumentException if there is no channel under
      *                                  that typed symbol
      */
-    public abstract <K> Long2ObjectMap<K> channel(TypedSymbol<K> channelSymbol);
+    public abstract <K> TypedSideChannel<K> channel(TypedSymbol<K> channelSymbol);
 
     /**
      * Retrieve all symbols that map to side channels for this vector.

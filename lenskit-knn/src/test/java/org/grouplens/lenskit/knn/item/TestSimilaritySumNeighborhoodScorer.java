@@ -20,12 +20,19 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import com.google.common.collect.Lists;
+import org.grouplens.lenskit.scored.PackedScoredIdList;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Collections;
+import java.util.List;
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.junit.Assert.assertThat;
@@ -44,33 +51,35 @@ public class TestSimilaritySumNeighborhoodScorer {
 
     @Test
     public void testEmpty() {
-        SparseVector nbrs = new MutableSparseVector();
+        List<ScoredId> nbrs = Collections.emptyList();
         SparseVector scores = new MutableSparseVector();
         assertThat(scorer.score(nbrs, scores), notANumber());
     }
 
     @Test
     public void testEmptyNbrs() {
-        SparseVector nbrs = new MutableSparseVector();
+        List<ScoredId> nbrs = Collections.emptyList();
         SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
         assertThat(scorer.score(nbrs, scores), notANumber());
     }
 
     @Test
     public void testOneNbr() {
-        long[] keys = {5};
-        double[] values = {1.0};
-        SparseVector nbrs = MutableSparseVector.wrap(keys, values).freeze();
+        List<ScoredId> nbrs = Lists.newArrayList(ScoredIds.newBuilder()
+                                                          .setId(5)
+                                                          .setScore(1.0)
+                                                          .build());
         SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
         assertThat(scorer.score(nbrs, scores), closeTo(1.0));
     }
 
     @Test
     public void testMultipleNeighbors() {
-        long[] neighborKeys = {2, 5, 7};
-        double[] neighborValues = {0.5, 1.0, 0.92};
-        SparseVector nbrs = MutableSparseVector.wrap(neighborKeys, neighborValues).freeze();
-
+        List<ScoredId> nbrs = ScoredIds.newListBuilder()
+                                       .add(2, 0.5)
+                                       .add(5, 1.0)
+                                       .add(7, 0.92)
+                                       .build();
         long[] scoreKeys = {2, 3, 5, 7};
         double[] scoreValues = {3.7, 4.2, 1.2, 7.8};
         SparseVector scores = MutableSparseVector.wrap(scoreKeys, scoreValues).freeze();

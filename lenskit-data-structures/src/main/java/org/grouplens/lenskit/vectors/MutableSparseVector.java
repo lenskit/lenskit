@@ -847,7 +847,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
             throw new IllegalArgumentException("Channel " + channelSymbol.getName()
                                                + " already exists");
         }
-        MutableSparseVector theChannel = new MutableSparseVector(keyDomain());
+        MutableSparseVector theChannel =
+                new MutableSparseVector(keys, new double[domainSize],
+                                        domainSize, new BitSet(domainSize));
         channelMap.put(channelSymbol, theChannel);
         return theChannel;
     }
@@ -869,7 +871,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
                                                + " with type " + channelSymbol.getType().getSimpleName() 
                                                + " already exists");
         }
-        TypedSideChannel<K> theChannel = new TypedSideChannel<K>(keyDomain().toLongArray());
+        TypedSideChannel<K> theChannel =
+                new TypedSideChannel<K>(keys, domainSize);
         typedChannelMap.put(channelSymbol, theChannel);
         return theChannel;
     }
@@ -884,12 +887,21 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *                      should be created.
      * @return the newly created channel
      */
-    public MutableSparseVector alwaysAddChannel(Symbol channelSymbol) {
+    public MutableSparseVector getOrAddChannel(Symbol channelSymbol) {
         MutableSparseVector chan = channelMap.get(channelSymbol);
         if (chan == null) {
             chan = addChannel(channelSymbol);
         }
         return chan;
+    }
+
+    /**
+     * Deprecated alias for {@link #getOrAddChannel(Symbol)}.
+     * @deprecated Use {@link #getOrAddChannel(Symbol)} instead.
+     */
+    @Deprecated
+    public MutableSparseVector alwaysAddChannel(Symbol channelSymbol) {
+        return getOrAddChannel(channelSymbol);
     }
 
     /**
@@ -902,11 +914,20 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return the newly created channel
      */
     @SuppressWarnings("unchecked")
-    public <K> TypedSideChannel<K> alwaysAddChannel(TypedSymbol<K> channelSymbol) {
+    public <K> TypedSideChannel<K> getOrAddChannel(TypedSymbol<K> channelSymbol) {
         if (!hasChannel(channelSymbol)) {
             addChannel(channelSymbol);
         }
         return (TypedSideChannel<K>) typedChannelMap.get(channelSymbol);
+    }
+
+    /**
+     * Deprecated alias for {@link #getOrAddChannel(TypedSymbol)}.
+     * @deprecated Use {@link #getOrAddChannel(TypedSymbol)} instead.
+     */
+    @Deprecated
+    public <K> TypedSideChannel<K> alwaysAddChannel(TypedSymbol<K> channelSymbol) {
+        return getOrAddChannel(channelSymbol);
     }
 
     /**
