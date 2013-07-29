@@ -36,6 +36,7 @@ import java.util.*;
  * {@link ScoredIdListBuilder} (see {@link ScoredIds#newListBuilder()}.
  *
  * @since 1.4
+ * @compat Public
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class PackedScoredIdList extends AbstractList<ScoredId> implements FastCollection<ScoredId>, Serializable {

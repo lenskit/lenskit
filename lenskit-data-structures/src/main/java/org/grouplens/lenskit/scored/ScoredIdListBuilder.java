@@ -42,6 +42,7 @@ import static it.unimi.dsi.fastutil.Arrays.quickSort;
  * of side channels.
  *
  * @since 1.4
+ * @compat Public
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {

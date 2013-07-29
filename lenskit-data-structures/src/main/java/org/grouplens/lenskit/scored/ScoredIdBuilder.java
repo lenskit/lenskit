@@ -33,7 +33,7 @@ import org.grouplens.lenskit.symbols.TypedSymbol;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
- * @compat Experimental — this interface may change in future versions of LensKit.
+ * @compat Public
  */
 public class ScoredIdBuilder implements Builder<ScoredId> {
 

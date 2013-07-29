@@ -32,6 +32,7 @@ import org.grouplens.lenskit.symbols.TypedSymbol;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
+ * @comput Public
  */
 public abstract class AbstractScoredId implements ScoredId {
 

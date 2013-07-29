@@ -39,7 +39,7 @@ import java.util.Iterator;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
- * @compat Experimental
+ * @compat Public
  */
 public final class ScoredIds {
     private ScoredIds() {}
