@@ -24,6 +24,7 @@
 package org.grouplens.lenskit.collections;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -81,7 +82,7 @@ public final class CollectionUtils {
                         } catch (IllegalAccessException e) {
                             return iter.iterator();
                         } catch (InvocationTargetException e) {
-                            return iter.iterator();
+                            throw Throwables.propagate(e.getCause());
                         }
                     }
                 };
