@@ -23,7 +23,7 @@ package org.grouplens.lenskit.vectors;
 import com.google.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
@@ -171,7 +171,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
 
     @SuppressWarnings("unchecked")
     @Override
-    public <K> ImmutableTypedSideChannel<K> channel(TypedSymbol<K> channelSymbol) {
+    public <K> Long2ObjectMap<K> channel(TypedSymbol<K> channelSymbol) {
         if (hasChannel(channelSymbol)) {
             return (ImmutableTypedSideChannel<K>) typedChannelMap.get(channelSymbol);
         }

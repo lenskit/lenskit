@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.symbols.TypedSymbol;
@@ -41,7 +42,7 @@ public class TestMutableSparseVectorTypedChannels {
         assertFalse(sv.hasChannel(fooStrSym));
         assertTrue(sv.getTypedChannels().isEmpty());
         
-        TypedSideChannel<String> fooStrChan = sv.addChannel(fooStrSym);
+        Long2ObjectMap<String> fooStrChan = sv.addChannel(fooStrSym);
         assertTrue(sv.hasChannel(fooStrSym));
         assertEquals(Collections.singleton(fooStrSym),sv.getTypedChannels());
         
@@ -56,10 +57,10 @@ public class TestMutableSparseVectorTypedChannels {
     @Test
     public void testMultipleChannels() {
         MutableSparseVector sv = new MutableSparseVector();
-        TypedSideChannel<String> fs = sv.addChannel(fooStrSym);
-        TypedSideChannel<Integer> fi = sv.addChannel(fooIntSym);
-        TypedSideChannel<String> bs = sv.addChannel(barStrSym);
-        TypedSideChannel<Integer> bi = sv.addChannel(barIntSym);
+        Long2ObjectMap<String> fs = sv.addChannel(fooStrSym);
+        Long2ObjectMap<Integer> fi = sv.addChannel(fooIntSym);
+        Long2ObjectMap<String> bs = sv.addChannel(barStrSym);
+        Long2ObjectMap<Integer> bi = sv.addChannel(barIntSym);
         
         assertNotSame(fs, fi);
         assertNotSame(fs, bs);
@@ -80,7 +81,7 @@ public class TestMutableSparseVectorTypedChannels {
     @Test
     public void testDomainMatches() {
         MutableSparseVector sv = new MutableSparseVector();
-        TypedSideChannel<String> fs = sv.addChannel(fooStrSym);
+        Long2ObjectMap<String> fs = sv.addChannel(fooStrSym);
         try {
             fs.put(1, "hi");
             fail("exception expected");
@@ -105,7 +106,7 @@ public class TestMutableSparseVectorTypedChannels {
         MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
         ts.put(1,"a");
         
-        TypedSideChannel<String> ts2 = sv.addChannel(fooStrSym, ts);
+        Long2ObjectMap<String> ts2 = sv.addChannel(fooStrSym, ts);
         assertNotSame(ts,ts2);
         assertSame(ts2, sv.channel(fooStrSym));
         assertEquals("a",ts2.get(1));
@@ -120,7 +121,7 @@ public class TestMutableSparseVectorTypedChannels {
     @Test
     public void testRemove() {
         MutableSparseVector sv = new MutableSparseVector();
-        TypedSideChannel<String> fs = sv.addChannel(fooStrSym);
+        Long2ObjectMap<String> fs = sv.addChannel(fooStrSym);
         sv.addChannel(barStrSym);
 
         assertEquals(new ObjectArraySet<TypedSymbol<?>>(new TypedSymbol<?>[]{fooStrSym,barStrSym}),
@@ -128,7 +129,7 @@ public class TestMutableSparseVectorTypedChannels {
         assertEquals(fs, sv.removeChannel(fooStrSym));
         assertEquals(Collections.singleton(barStrSym), sv.getTypedChannels());
         
-        TypedSideChannel<String> fs2 = sv.addChannel(fooStrSym);
+        Long2ObjectMap<String> fs2 = sv.addChannel(fooStrSym);
         assertNotSame(fs,fs2);
         
         assertEquals(new ObjectArraySet<TypedSymbol<?>>(new TypedSymbol<?>[]{fooStrSym,barStrSym}),
@@ -141,12 +142,12 @@ public class TestMutableSparseVectorTypedChannels {
     public void testMutableCopy() {
         long[] domain = {1,2,4};
         MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
-        TypedSideChannel<String> ts = sv.addChannel(fooStrSym);
+        Long2ObjectMap<String> ts = sv.addChannel(fooStrSym);
         ts.put(1,"a");
         
         MutableSparseVector sv2 = sv.mutableCopy();
         assertTrue(sv2.hasChannel(fooStrSym));
-        TypedSideChannel<String> ts2 = sv2.channel(fooStrSym);
+        Long2ObjectMap<String> ts2 = sv2.channel(fooStrSym);
         assertEquals("a", ts2.get(1));
         ts.put(2,"b");
         assertNull(ts2.get(2));
@@ -160,15 +161,15 @@ public class TestMutableSparseVectorTypedChannels {
         MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
         sv.set(1, 1); // required to ensure 1 and 2 in domain after immutable copy.
         sv.set(2, 2);
-        TypedSideChannel<String> ts = sv.addChannel(fooStrSym);
+        Long2ObjectMap<String> ts = sv.addChannel(fooStrSym);
         ts.put(1,"a");
         
         ImmutableSparseVector sv2 = sv.immutable();
         assertTrue(sv2.hasChannel(fooStrSym));
-        ImmutableTypedSideChannel<String> ts2 = sv2.channel(fooStrSym);
-        assertEquals("a", ts2.get(1));
+        Long2ObjectMap<String> ts2 = sv2.channel(fooStrSym);
+        assertEquals("a", ts2.get(1L));
         ts.put(2,"b");
-        assertNull(ts2.get(2));
+        assertNull(ts2.get(2L));
     }
     
     @Test
@@ -177,12 +178,12 @@ public class TestMutableSparseVectorTypedChannels {
         MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
         sv.set(1, 1); // required to ensure 1 and 2 in domain after freeze.
         sv.set(2, 2);
-        TypedSideChannel<String> ts = sv.addChannel(fooStrSym);
+        Long2ObjectMap<String> ts = sv.addChannel(fooStrSym);
         ts.put(1,"a");
         
         ImmutableSparseVector sv2 = sv.freeze();
         assertTrue(sv2.hasChannel(fooStrSym));
-        ImmutableTypedSideChannel<String> ts2 = sv2.channel(fooStrSym);
+        Long2ObjectMap<String> ts2 = sv2.channel(fooStrSym);
         assertEquals("a", ts2.get(1));
         try {
             ts.put(2,"b");
@@ -194,12 +195,12 @@ public class TestMutableSparseVectorTypedChannels {
     public void testWithDomain() {
         long[] domain = {1,2,4};
         MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
-        TypedSideChannel<String> ts = sv.addChannel(fooStrSym);
+        Long2ObjectMap<String> ts = sv.addChannel(fooStrSym);
         ts.put(1,"a");
         ts.put(2, "b");
         
         MutableSparseVector sv2 = sv.withDomain(new LongSortedArraySet(new long[]{1,4}));
-        TypedSideChannel<String> ts2 = sv2.channel(fooStrSym);
+        Long2ObjectMap<String> ts2 = sv2.channel(fooStrSym);
         assertNotSame(ts,ts2);
         assertEquals("a", ts2.get(1));
         assertNull(ts2.get(2));

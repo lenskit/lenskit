@@ -22,16 +22,11 @@ package org.grouplens.lenskit.vectors;
 
 import it.unimi.dsi.fastutil.longs.LongArraySet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-
-import java.util.BitSet;
-import java.util.Iterator;
-
 import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
+import java.util.BitSet;
+
 import static org.junit.Assert.*;
 
 public class TestTypedSideChannel {
@@ -281,34 +276,5 @@ public class TestTypedSideChannel {
             subset.put(4, c);
             fail("4 should no longer be in domain");
         } catch (IllegalArgumentException e) { /*expected*/ }
-    }
-
-    @Test
-    public void testEntryIsSet() {
-        TypedSymbol<String> sym = TypedSymbol.of(String.class, "foo");
-        MutableSparseVector msv = MutableSparseVector.create(3, 4, 6);
-        TypedSideChannel<String> chan = msv.addChannel(sym);
-        chan.put(3, "hello");
-        Iterator<VectorEntry> iter = msv.fastIterator(VectorEntry.State.EITHER);
-        VectorEntry entry = iter.next();
-        assertThat(chan.isSet(entry), equalTo(true));
-        entry = iter.next();
-        assertThat(chan.isSet(entry), equalTo(false));
-    }
-
-    @Test
-    public void testGetEntry() {
-        TypedSymbol<String> sym = TypedSymbol.of(String.class, "foo");
-        MutableSparseVector msv = MutableSparseVector.create(3, 4, 6);
-        TypedSideChannel<String> chan = msv.getOrAddChannel(sym);
-        chan.put(3, "hello");
-        chan.put(6, "goodbye");
-        Iterator<VectorEntry> iter = msv.fastIterator(VectorEntry.State.EITHER);
-        VectorEntry entry = iter.next();
-        assertThat(chan.get(entry), equalTo("hello"));
-        entry = iter.next();
-        assertThat(chan.get(entry), nullValue());
-        entry = iter.next();
-        assertThat(chan.get(entry), equalTo("goodbye"));
     }
 }
