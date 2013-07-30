@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import java.io.InputStream;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.*;
 
@@ -82,5 +83,13 @@ public class TestTypedSymbols {
         TypedSymbol<InputStream> sbar = TypedSymbol.of(InputStream.class, "ratings");
         TypedSymbol<InputStream> cloned = SerializationUtils.clone(sbar);
         assertThat(cloned, sameInstance(sbar));
+    }
+
+    @Test
+    public void testPrimitive() {
+        TypedSymbol<Double> boxed = TypedSymbol.of(Double.class, "symbol");
+        TypedSymbol<Double> unboxed = TypedSymbol.of(double.class, "symbol");
+        assertThat(unboxed, equalTo(boxed));
+        assertThat(unboxed, sameInstance(boxed));
     }
 }
