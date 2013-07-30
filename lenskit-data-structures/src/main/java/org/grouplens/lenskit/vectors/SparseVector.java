@@ -871,7 +871,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @throws IllegalArgumentException if there is no channel under
      *                                  that typed symbol
      */
-    public abstract <K> TypedSideChannel<K> channel(TypedSymbol<K> channelSymbol);
+    public abstract <K> Long2ObjectMap<K> channel(TypedSymbol<K> channelSymbol);
 
     /**
      * Retrieve all symbols that map to side channels for this vector.

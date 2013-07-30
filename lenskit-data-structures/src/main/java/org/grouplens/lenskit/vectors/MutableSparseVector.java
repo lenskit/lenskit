@@ -809,7 +809,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *                                  such a channel at this time.
      */
     @SuppressWarnings("unchecked")
-    public <K> TypedSideChannel<K> removeChannel(TypedSymbol<K> channelSymbol) {
+    public <K> Long2ObjectMap<K> removeChannel(TypedSymbol<K> channelSymbol) {
         checkFrozen();
         TypedSideChannel<K> retval;
         if (hasChannel(channelSymbol)) {
@@ -864,7 +864,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @throws IllegalArgumentException if there is already a channel
      *                                  with that symbol
      */
-    public <K> TypedSideChannel<K> addChannel(TypedSymbol<K> channelSymbol) {
+    public <K> Long2ObjectMap<K> addChannel(TypedSymbol<K> channelSymbol) {
         checkFrozen();
         if (hasChannel(channelSymbol)) {
             throw new IllegalArgumentException("Channel " + channelSymbol.getName()
@@ -914,7 +914,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return the newly created channel
      */
     @SuppressWarnings("unchecked")
-    public <K> TypedSideChannel<K> getOrAddChannel(TypedSymbol<K> channelSymbol) {
+    public <K> Long2ObjectMap<K> getOrAddChannel(TypedSymbol<K> channelSymbol) {
         if (!hasChannel(channelSymbol)) {
             addChannel(channelSymbol);
         }
@@ -926,7 +926,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @deprecated Use {@link #getOrAddChannel(TypedSymbol)} instead.
      */
     @Deprecated
-    public <K> TypedSideChannel<K> alwaysAddChannel(TypedSymbol<K> channelSymbol) {
+    public <K> Long2ObjectMap<K> alwaysAddChannel(TypedSymbol<K> channelSymbol) {
         return getOrAddChannel(channelSymbol);
     }
 
@@ -970,7 +970,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @throws IllegalArgumentException if there is already a channel
      *                                  with that symbol
      */
-    public <K> TypedSideChannel<K> addChannel(TypedSymbol<K> channelSymbol, TypedSideChannel<K>theChannel) {
+    public <K> Long2ObjectMap<K> addChannel(TypedSymbol<K> channelSymbol, TypedSideChannel<K>theChannel) {
         checkFrozen();
         if (hasChannel(channelSymbol)) {
             throw new IllegalArgumentException("Channel " + channelSymbol.getName()
@@ -1010,7 +1010,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
     @SuppressWarnings("unchecked")
     @Override
-    public <K> TypedSideChannel<K> channel(TypedSymbol<K> channelSymbol) {
+    public <K> Long2ObjectMap<K> channel(TypedSymbol<K> channelSymbol) {
         checkFrozen();
         if (hasChannel(channelSymbol)) {
             return (TypedSideChannel<K>) typedChannelMap.get(channelSymbol);

@@ -82,12 +82,13 @@ class VectorEntryScoredId extends AbstractScoredId {
     public Set<TypedSymbol<?>> getTypedChannels() {
         Set<TypedSymbol<?>> channels = vector.getTypedChannels();
         for (TypedSymbol<?> sym: channels) {
-            if (!vector.channel(sym).isSet(ent)) {
+            // FIXME Make this fast
+            if (!vector.channel(sym).containsKey(ent.getKey())) {
                 // missing channel, take the slow path
                 Sets.filter(vector.getTypedChannels(), new Predicate<TypedSymbol<?>>() {
                     @Override
                     public boolean apply(@Nullable TypedSymbol<?> input) {
-                        return input != null && vector.channel(input).isSet(ent);
+                        return input != null && vector.channel(input).containsKey(ent.getKey());
                     }
                 });
             }
@@ -103,7 +104,7 @@ class VectorEntryScoredId extends AbstractScoredId {
 
     @Override
     public <T> T channel(TypedSymbol<T> s) {
-        return vector.channel(s).get(ent);
+        return vector.channel(s).get(ent.getKey());
     }
 
     @Override
@@ -113,7 +114,7 @@ class VectorEntryScoredId extends AbstractScoredId {
 
     @Override
     public boolean hasChannel(TypedSymbol<?> s) {
-        return vector.hasChannel(s) && vector.channel(s).isSet(ent);
+        return vector.hasChannel(s) && vector.channel(s).containsKey(ent.getKey());
     }
 
     /**

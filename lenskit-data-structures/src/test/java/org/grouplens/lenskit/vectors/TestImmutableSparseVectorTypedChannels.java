@@ -20,18 +20,13 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class TestImmutableSparseVectorTypedChannels {
     private static final TypedSymbol<String> fooStrSym = TypedSymbol.of(String.class, "foo");
@@ -52,11 +47,11 @@ public class TestImmutableSparseVectorTypedChannels {
         long[] domain = {1,2};
         MutableSparseVector msv = new MutableSparseVector(new LongSortedArraySet(domain));
         msv.set(1,1);
-        TypedSideChannel<String> msc = msv.addChannel(fooStrSym);
+        Long2ObjectMap<String> msc = msv.addChannel(fooStrSym);
         msc.put(1,"a");
         ImmutableSparseVector isv = msv.immutable();
-        ImmutableTypedSideChannel<String> isc = isv.channel(fooStrSym);
-        assertEquals("a", isc.get(1));
+        Long2ObjectMap<String> isc = isv.channel(fooStrSym);
+        assertEquals("a", isc.get(1L));
     }
     
     @Test
@@ -80,11 +75,11 @@ public class TestImmutableSparseVectorTypedChannels {
         MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
         sv.set(1,1); //required to ensure 1 and 2 in domain after immutable.
         sv.set(2,2);
-        TypedSideChannel<String> ts = sv.addChannel(fooStrSym);
+        Long2ObjectMap<String> ts = sv.addChannel(fooStrSym);
         ts.put(1,"a");
         
         ImmutableSparseVector isv = sv.immutable();
-        TypedSideChannel<String> isc = isv.channel(fooStrSym);
+        Long2ObjectMap<String> isc = isv.channel(fooStrSym);
         assertEquals("a", isc.get(1));
         
         sv = isv.mutableCopy();
