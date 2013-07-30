@@ -32,6 +32,7 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -98,17 +99,7 @@ public final class CollectionUtils {
                         .build(new CacheLoader<Class<?>,Optional<Method>>() {
                             @Override
                             public Optional<Method> load(Class<?> key) {
-                                try {
-                                    Method method = key.getMethod("fastIterator");
-                                    try {
-                                        method.setAccessible(true);
-                                    } catch (SecurityException e) {
-                                        /* we can't disable security checks, ok. */
-                                    }
-                                    return Optional.of(method);
-                                } catch (NoSuchMethodException e) {
-                                    return Optional.absent();
-                                }
+                                return Optional.fromNullable(MethodUtils.getAccessibleMethod(key, "fastIterator"));
                             }
                         });
 
