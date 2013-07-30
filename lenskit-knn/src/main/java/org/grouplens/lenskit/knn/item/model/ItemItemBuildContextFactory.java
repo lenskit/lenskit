@@ -21,13 +21,11 @@
 package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.dao.ItemDAO;
-import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
@@ -48,16 +46,14 @@ public class ItemItemBuildContextFactory {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemBuildContextFactory.class);
 
     private final UserEventDAO userEventDAO;
-    private final ItemDAO itemDAO;
     private final UserVectorNormalizer normalizer;
     private final UserHistorySummarizer userSummarizer;
 
     @Inject
-    public ItemItemBuildContextFactory(UserEventDAO edao, ItemDAO idao,
+    public ItemItemBuildContextFactory(UserEventDAO edao,
                                        UserVectorNormalizer normalizer,
                                        UserHistorySummarizer userSummarizer) {
         userEventDAO = edao;
-        itemDAO = idao;
         this.normalizer = normalizer;
         this.userSummarizer = userSummarizer;
     }
@@ -72,20 +68,20 @@ public class ItemItemBuildContextFactory {
         logger.debug("using normalizer {}", normalizer);
         logger.debug("using summarizer {}", userSummarizer);
 
-
-        LongCollection ilist = itemDAO.getItemIds();
-        LongSortedSet items = new LongSortedArraySet(ilist);
-
         logger.debug("Building item data");
-        Long2ObjectMap<Long2DoubleMap> itemData = buildItemRatings(items);
+        Long2ObjectMap<Long2DoubleMap> itemData = buildItemRatings();
+        LongSortedSet items = new LongSortedArraySet(itemData.keySet());
         // finalize the item data into vectors
         Long2ObjectMap<SparseVector> itemRatings = new Long2ObjectOpenHashMap<SparseVector>(itemData.size());
-        for (Long2ObjectMap.Entry<Long2DoubleMap> entry : CollectionUtils.fast(itemData.long2ObjectEntrySet())) {
-            Long2DoubleMap ratings = entry.getValue();
+        LongIterator iter = items.iterator();
+        while (iter.hasNext()) {
+            final long item = iter.nextLong();
+            Long2DoubleMap ratings = itemData.get(item);
             SparseVector v = new ImmutableSparseVector(ratings);
             assert v.size() == ratings.size();
-            itemRatings.put(entry.getLongKey(), v);
-            entry.setValue(null);          // clear the array so GC can free
+            itemRatings.put(item, v);
+            // clear the array so GC can free
+            itemData.put(item, null);
         }
         assert itemRatings.size() == itemData.size();
 
@@ -96,21 +92,13 @@ public class ItemItemBuildContextFactory {
      * Transpose the user matrix so we have a matrix of item ids
      * to ratings.
      *
-     * @param items A SortedSet of item ids to be mapped to ratings.
      * @return a Long2ObjectMap<Long2DoubleMap> encoding a matrix
      *         of item ids to (userId: rating) pairs.
      */
-    private Long2ObjectMap<Long2DoubleMap> buildItemRatings(LongSortedSet items) {
-        final int nitems = items.size();
-
+    private Long2ObjectMap<Long2DoubleMap> buildItemRatings() {
         // Create and initialize the transposed array to collect item vector data
         Long2ObjectMap<Long2DoubleMap> workMatrix =
-                new Long2ObjectOpenHashMap<Long2DoubleMap>(nitems);
-        LongIterator iter = items.iterator();
-        while (iter.hasNext()) {
-            long iid = iter.nextLong();
-            workMatrix.put(iid, new Long2DoubleOpenHashMap(20));
-        }
+                new Long2ObjectOpenHashMap<Long2DoubleMap>(1000);
 
         Cursor<UserHistory<Event>> users = userEventDAO.streamEventsByUser();
         try {
@@ -124,6 +112,10 @@ public class ItemItemBuildContextFactory {
                     final long item = rating.getKey();
                     // get the item's rating vector
                     Long2DoubleMap ivect = workMatrix.get(item);
+                    if (ivect == null) {
+                        ivect = new Long2DoubleOpenHashMap();
+                        workMatrix.put(item, ivect);
+                    }
                     ivect.put(uid, rating.getValue());
                 }
             }
