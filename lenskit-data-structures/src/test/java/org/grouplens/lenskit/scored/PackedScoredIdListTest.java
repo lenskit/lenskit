@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.scored;
 
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
@@ -309,4 +310,25 @@ public class PackedScoredIdListTest {
         }
     }
 
+    @Test
+    public void testIgnoreInvalidChannel() {
+        Symbol sym = Symbol.of("symbol");
+        ScoredId id = new ScoredIdBuilder(72, 8.5).addChannel(sym, 3.5).build();
+        PackedScoredIdList list = builder.ignoreUnknownChannels()
+                                         .add(id)
+                                         .build();
+        assertThat(FluentIterable.from(list).first().get().hasChannel(sym),
+                   equalTo(false));
+    }
+
+    @Test
+    public void testIgnoreInvalidTypedChannel() {
+        TypedSymbol<String> sym = TypedSymbol.of(String.class, "symbol");
+        ScoredId id = new ScoredIdBuilder(72, 8.5).addChannel(sym, "foo").build();
+        PackedScoredIdList list = builder.ignoreUnknownChannels()
+                                         .add(id)
+                                         .build();
+        assertThat(FluentIterable.from(list).first().get().hasChannel(sym),
+                   equalTo(false));
+    }
 }
