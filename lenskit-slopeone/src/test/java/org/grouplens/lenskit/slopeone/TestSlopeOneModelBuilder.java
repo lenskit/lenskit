@@ -44,7 +44,7 @@ public class TestSlopeOneModelBuilder {
         ItemDAO idao = new PrefetchingItemDAO(dao);
         UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
         ItemItemBuildContextFactory contextFactory = new ItemItemBuildContextFactory(
-                udao, idao, new DefaultUserVectorNormalizer(), summarizer);
+                udao, new DefaultUserVectorNormalizer(), summarizer);
         SlopeOneModelBuilder provider = new SlopeOneModelBuilder(idao, contextFactory, 0);
         return provider.get();
     }

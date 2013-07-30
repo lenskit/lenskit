@@ -49,7 +49,7 @@ public class TestWeightedSlopeOneItemScorer {
         ItemDAO idao = new PrefetchingItemDAO(dao);
         UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
         ItemItemBuildContextFactory contextFactory = new ItemItemBuildContextFactory(
-                uedao, idao, new DefaultUserVectorNormalizer(), summarizer);
+                uedao, new DefaultUserVectorNormalizer(), summarizer);
         SlopeOneModelBuilder provider = new SlopeOneModelBuilder(idao, contextFactory, 0);
         return provider.get();
     }
