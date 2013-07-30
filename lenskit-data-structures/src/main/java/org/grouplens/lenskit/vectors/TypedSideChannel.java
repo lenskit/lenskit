@@ -34,7 +34,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
-public class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
+class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
     private static final long serialVersionUID = 1L;
     
     protected final long[] keys;
