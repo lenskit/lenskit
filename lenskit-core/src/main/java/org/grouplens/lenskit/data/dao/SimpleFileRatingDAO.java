@@ -54,9 +54,9 @@ public class SimpleFileRatingDAO implements EventDAO {
     private CompressionMode compression;
 
     /**
-     * Create a URL reading from the specified file/URL and delimiter.
+     * Create a DAO reading from the specified file/URL and delimiter.
      *
-     * @param file      The file (if {@code null}, the URL is used).
+     * @param file      The file.
      * @param delim The delimiter to look for in the file.
      * @param comp      Whether the input is compressed.
      */
@@ -64,6 +64,16 @@ public class SimpleFileRatingDAO implements EventDAO {
         sourceFile = file;
         delimiter = delim;
         compression = comp;
+    }
+
+    /**
+     * Create a DAO reading from the specified file and delimiter.
+     *
+     * @param file      The file.
+     * @param delim The delimiter to look for in the file.
+     */
+    public SimpleFileRatingDAO(File file, String delim) {
+        this(file, delim, CompressionMode.AUTO);
     }
 
     public File getSourceFile() {
