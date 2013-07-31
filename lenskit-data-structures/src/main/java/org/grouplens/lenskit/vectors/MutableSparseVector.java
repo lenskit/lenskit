@@ -31,6 +31,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import org.grouplens.lenskit.collections.BitSetIterator;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.collections.MoreArrays;
+import org.grouplens.lenskit.collections.Pointer;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
@@ -507,13 +508,50 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @param s The scalar to rescale the vector by.
      */
-    public void scale(double s) {
+    public void multiply(double s) {
         checkFrozen();
         BitSetIterator iter = new BitSetIterator(usedKeys, 0, domainSize);
         while (iter.hasNext()) {
             int i = iter.nextInt();
             values[i] *= s;
         }
+    }
+
+    /**
+     * Multiply each element in the vector by the corresponding element in another vector.  Elements
+     * not in the other vector are left unchanged.
+     *
+     * @param v The vector to pairwise-multiply with this one.
+     */
+    public void multiply(SparseVector v) {
+        checkFrozen();
+        Pointer<VectorEntry> p1 = fastPointer();
+        Pointer<VectorEntry> p2 = v.fastPointer();
+        while (!p1.isAtEnd() && !p2.isAtEnd()) {
+            VectorEntry e1 = p1.get();
+            VectorEntry e2 = p2.get();
+            long k1 = e1.getKey();
+            long k2 = e2.getKey();
+            if (k1 < k2) {
+                p1.advance();
+            } else if (k2 < k1) {
+                p2.advance();
+            } else {
+                set(e1, e1.getValue() * e2.getValue());
+                p1.advance();
+                p2.advance();
+            }
+        }
+    }
+
+    /**
+     * Deprecated alias for {@link #multiply(double)}.
+     * @param s The scalar.
+     * @deprecated Use {@link #multiply(double)}.
+     */
+    @Deprecated
+    public void scale(double s) {
+        multiply(s);
     }
 
     /**

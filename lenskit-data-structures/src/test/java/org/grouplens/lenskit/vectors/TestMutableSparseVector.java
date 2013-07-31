@@ -20,34 +20,25 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.longs.Long2DoubleArrayMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.Pointer;
+import org.junit.Test;
 
 import java.util.BitSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-
-import org.grouplens.lenskit.collections.Pointer;
-import org.junit.Test;
-
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Sets;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.hasItem;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -423,28 +414,28 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     @Test
     public void testScale() {
         MutableSparseVector v = emptyVector();
-        v.scale(1);
+        v.multiply(1);
         assertTrue(v.isEmpty());
 
         v = simpleVector2();
-        v.scale(1);
+        v.multiply(1);
         assertThat(v.get(3), closeTo(2));
         assertThat(v.get(5), closeTo(2.3));
         assertThat(v.get(8), closeTo(1.7));
 
         v = simpleVector2();
-        v.scale(2);
+        v.multiply(2);
         assertThat(v.get(3), closeTo(4));
         assertThat(v.get(5), closeTo(4.6));
         assertThat(v.get(8), closeTo(3.4));
 
         v = singleton();
         assertThat(v.sum(), closeTo(Math.PI));
-        v.scale(3);
+        v.multiply(3);
         assertThat(v.sum(), closeTo(Math.PI * 3));
 
         v = simpleVector();
-        v.scale(0.5);
+        v.multiply(0.5);
         assertThat(v.get(3), closeTo(1.5 / 2));
         assertThat(v.get(7), closeTo(3.5 / 2));
         assertThat(v.get(8), closeTo(2 / 2));
@@ -749,6 +740,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     
     // We already have tests that keysByValue works as long as the values are unique.
     // Here we extend those tests to make sure non-unique values sort as expected. (By key, that is.)
+    @Override
     @Test
     public void testSortedKeys() {
         long[] keys = { 3, 5, 8 };
@@ -887,5 +879,17 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         entry = msv.fastIterator(VectorEntry.State.EITHER).next();
         assertThat(entry.getKey(), equalTo(3L));
         assertThat(msv.isSet(entry), equalTo(false));
+    }
+
+    @Test
+    public void testPairwiseMultiply() {
+        MutableSparseVector v1 = simpleVector();
+        MutableSparseVector v2 = MutableSparseVector.create(3, 5, 8, 9);
+        v2.fill(2);
+        v2.set(8, 3);
+        v1.multiply(v2);
+        assertThat(v1.get(3), closeTo(3));
+        assertThat(v1.get(7), closeTo(3.5));
+        assertThat(v1.get(8), closeTo(6));
     }
 }
