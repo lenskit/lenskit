@@ -24,6 +24,7 @@ package org.grouplens.lenskit.basic;
 import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
@@ -133,7 +134,10 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      * @param user The user history.
      * @return The set of items to exclude.
      */
-    protected LongSet getDefaultExcludes(UserHistory<? extends Event> user) {
+    protected LongSet getDefaultExcludes(@Nullable UserHistory<? extends Event> user) {
+        if (user == null) {
+            return LongSets.EMPTY_SET;
+        }
         LongSet excludes = new LongOpenHashSet();
         for (Rating r : Iterables.filter(user, Rating.class)) {
             excludes.add(r.getItemId());
