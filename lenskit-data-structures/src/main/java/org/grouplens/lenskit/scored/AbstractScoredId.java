@@ -47,7 +47,7 @@ public abstract class AbstractScoredId implements ScoredId {
                .append(getId())
                .append(") = ")
                .append(getScore());
-            int nchans = getChannels().size() + getTypedChannels().size();
+            int nchans = getChannels().size();
             if (nchans > 0) {
                 bld.append(" [with ").append(nchans).append(" channels]");
             }

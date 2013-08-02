@@ -74,8 +74,8 @@ public class TestTypedSymbols {
     public void testToString() {
         TypedSymbol<String> sbar = TypedSymbol.of(String.class, "bar");
         TypedSymbol<Integer> sfoo = TypedSymbol.of(Integer.class, "foo");
-        assertEquals("TypedSymbol.of(bar,String)", sbar.toString());
-        assertEquals("TypedSymbol.of(foo,Integer)", sfoo.toString());
+        assertEquals("TypedSymbol.of(String,bar)", sbar.toString());
+        assertEquals("TypedSymbol.of(Integer,foo)", sfoo.toString());
     }
 
     @Test
