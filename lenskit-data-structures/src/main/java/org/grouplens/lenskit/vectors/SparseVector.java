@@ -74,6 +74,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     double[] values;
     final int domainSize; // How much of the key space is actually used by this vector.
 
+    //region Constructors
     /**
      * Construct a new vector from existing arrays.  It is assumed that the keys
      * are sorted and duplicate-free, and that the values array is the same length. The
@@ -178,7 +179,9 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         values = new double[domainSize];
         usedKeys = new BitSet(domainSize);
     }
+    //endregion
 
+    //region Utilities
     /**
      * Find the index of a particular key.
      *
@@ -197,7 +200,9 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     boolean isFullySet() {
         return false;
     }
+    //endregion
 
+    //region Queries
     /**
      * Query whether the vector contains an entry for the key in question.
      *
@@ -289,6 +294,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         }
         return usedKeys.get(eind);
     }
+    //endregion
 
     //region Iterators
     /**
@@ -371,7 +377,6 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     public Iterator<VectorEntry> iterator() {
         return new IterImpl();
     }
-
 
     private class IterImpl implements Iterator<VectorEntry> {
         private BitSetIterator iter = new BitSetIterator(usedKeys);
@@ -809,6 +814,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     }
     //endregion
 
+    //region Copying
     /**
      * Return an immutable snapshot of this sparse vector. The new vector's key
      * domain will be equal to the {@link #keySet()} of this vector.
@@ -827,22 +833,31 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      *         this vector.
      */
     public abstract MutableSparseVector mutableCopy();
+    //endregion
 
+    //region Channels
     /**
-     * Return whether this sparse vector has a channel stored under a
-     * particular symbol.  (Symbols are sort of like names, but more
-     * efficient.)
+     * Return whether this sparse vector has a channel vector stored under a
+     * particular symbol.
      *
      * @param channelSymbol the symbol under which the channel was
      *                      stored in the vector.
      * @return whether this vector has such a channel right now.
      */
-    public abstract boolean hasChannel(Symbol channelSymbol);
+    public abstract boolean hasChannelVector(Symbol channelSymbol);
+
+    /**
+     * Deprecated alias for {@link #hasChannelVector(Symbol)}.
+     * @deprecated Use {@link #hasChannelVector(Symbol)} instead.
+     */
+    @Deprecated
+    public boolean hasChannel(Symbol sym) {
+        return hasChannelVector(sym);
+    }
     
     /**
-     * Return whether this sparse vector has a typed channel stored under a
-     * particular typed symbol.  (Symbols are sort of like names, but more
-     * efficient.)
+     * Return whether this sparse vector has a channel stored under a
+     * particular typed symbol.
      *
      * @param channelSymbol the typed symbol under which the channel was
      *                      stored in the vector.
@@ -851,18 +866,42 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     public abstract boolean hasChannel(TypedSymbol<?> channelSymbol);
 
     /**
-     * Fetch the channel stored under a particular symbol.
+     * Get the vector associated with a particular unboxed channel.
+     *
+     * @param channelSymbol the symbol under which the channel was/is
+     *                      stored in the vector.
+     * @return The vector corresponding to the specified unboxed channel, or {@code null} if
+     * there is no such channel.
+     */
+    public abstract SparseVector getChannelVector(Symbol channelSymbol);
+
+    /**
+     * Fetch the channel stored under a particular typed symbol.
+     *
+     * @param channelSymbol the typed symbol under which the channel was/is
+     *                      stored in the vector.
+     * @return the channel, which is itself a map from the key domain to objects of
+     *                      the channel's type, or {@code null} if there is no such channel.
+     * @throws IllegalArgumentException if there is no channel under
+     *                                  that typed symbol
+     */
+    public abstract <K> Long2ObjectMap<K> getChannel(TypedSymbol<K> channelSymbol);
+
+    /**
+     * Deprecated version of {@link #getChannelVector(Symbol)}.
      *
      * @param channelSymbol the symbol under which the channel was/is
      *                      stored in the vector.
      * @return the channel, which is itself a sparse vector.
      * @throws IllegalArgumentException if there is no channel under
      *                                  that symbol
+     * @deprecated Use {@link #getChannelVector(Symbol)}.
      */
+    @Deprecated
     public abstract SparseVector channel(Symbol channelSymbol);
-    
+
     /**
-     * Fetch the channel stored under a particular typed symbol.
+     * Deprecated version of {@link #getChannel(TypedSymbol)}.
      *
      * @param channelSymbol the typed symbol under which the channel was/is
      *                      stored in the vector.
@@ -870,20 +909,30 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      *                      the channel's type
      * @throws IllegalArgumentException if there is no channel under
      *                                  that typed symbol
+     * @deprecated Use {@link #getChannel(TypedSymbol)}.
      */
-    public abstract <K> Long2ObjectMap<K> channel(TypedSymbol<K> channelSymbol);
+    @Nonnull @Deprecated
+    public <K> Long2ObjectMap<K> channel(TypedSymbol<K> channelSymbol) {
+        Long2ObjectMap<K> chan = getChannel(channelSymbol);
+        if (chan == null) {
+            throw new IllegalArgumentException("no such channel " + channelSymbol);
+        } else {
+            return chan;
+        }
+    }
 
     /**
      * Retrieve all symbols that map to side channels for this vector.
      * @return A set of symbols, each of which identifies a side channel
      *         of the vector.
      */
-    public abstract Set<Symbol> getChannels();
+    public abstract Set<Symbol> getChannelVectorSymbols();
 
     /**
      * Retrieve all symbols that map to typed side channels for this vector.
      * @return A set of symbols, each of which identifies a side channel
      *         of the vector.
      */
-    public abstract Set<TypedSymbol<?>> getTypedChannels();
+    public abstract Set<TypedSymbol<?>> getChannelSymbols();
+    //endregion
 }

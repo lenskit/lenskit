@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import com.google.common.base.Preconditions;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.fastutil.Swapper;
@@ -211,13 +212,14 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public MutableSparseVector withDomain(LongSet keyDomain) {
         MutableSparseVector msvNew = new MutableSparseVector(keyDomain);
+        LongSet chanDomain = msvNew.keyDomain();
         msvNew.set(this); // copy appropriate elements from "this"
         for (Map.Entry<Symbol, MutableSparseVector> entry : channelMap.entrySet()) {
-            msvNew.addChannel(entry.getKey(), entry.getValue().withDomain(keyDomain));
+            msvNew.addVectorChannel(entry.getKey(), entry.getValue().withDomain(chanDomain));
         }
         for (Entry<TypedSymbol<?>, TypedSideChannel<?>> entry : typedChannelMap.entrySet()) {
             TypedSymbol key = entry.getKey();
-            msvNew.addChannel(key, entry.getValue().withDomain(keyDomain));
+            msvNew.addChannel(key, entry.getValue().withDomain(chanDomain));
         }
         return msvNew;
     }
@@ -233,11 +235,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return the new vector with a contracted domain.
      */
     public MutableSparseVector shrinkDomain() {
-        LongSet newDomain = new LongArraySet();
-        for (VectorEntry entry : this) {
-            newDomain.add(entry.getKey());
-        }
-        return this.withDomain(newDomain);
+        return withDomain(keySet());
     }
 
     /**
@@ -826,10 +824,10 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @throws IllegalArgumentException if this vector does not have
      *                                  such a channel at this time.
      */
-    public SparseVector removeChannel(Symbol channelSymbol) {
+    public SparseVector removeChannelVector(Symbol channelSymbol) {
         checkFrozen();
         SparseVector retval;
-        if (hasChannel(channelSymbol)) {
+        if (hasChannelVector(channelSymbol)) {
             retval = channelMap.remove(channelSymbol);
             return retval;
         }
@@ -879,9 +877,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @throws IllegalArgumentException if there is already a channel
      *                                  with that symbol
      */
-    public MutableSparseVector addChannel(Symbol channelSymbol) {
+    public MutableSparseVector addChannelVector(Symbol channelSymbol) {
         checkFrozen();
-        if (hasChannel(channelSymbol)) {
+        if (hasChannelVector(channelSymbol)) {
             throw new IllegalArgumentException("Channel " + channelSymbol.getName()
                                                + " already exists");
         }
@@ -890,6 +888,15 @@ public final class MutableSparseVector extends SparseVector implements Serializa
                                         domainSize, new BitSet(domainSize));
         channelMap.put(channelSymbol, theChannel);
         return theChannel;
+    }
+
+    /**
+     * Deprecated alias for {@link #addChannelVector(Symbol)}.
+     * @deprecated Use {@link #addChannelVector(Symbol)}.
+     */
+    @Deprecated
+    public MutableSparseVector addChannel(Symbol channelSymbol) {
+        return addChannelVector(channelSymbol);
     }
 
     /**
@@ -925,21 +932,21 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *                      should be created.
      * @return the newly created channel
      */
-    public MutableSparseVector getOrAddChannel(Symbol channelSymbol) {
+    public MutableSparseVector getOrAddChannelVector(Symbol channelSymbol) {
         MutableSparseVector chan = channelMap.get(channelSymbol);
         if (chan == null) {
-            chan = addChannel(channelSymbol);
+            chan = addChannelVector(channelSymbol);
         }
         return chan;
     }
 
     /**
-     * Deprecated alias for {@link #getOrAddChannel(Symbol)}.
-     * @deprecated Use {@link #getOrAddChannel(Symbol)} instead.
+     * Deprecated alias for {@link #getOrAddChannelVector(Symbol)}.
+     * @deprecated Use {@link #getOrAddChannelVector(Symbol)} instead.
      */
     @Deprecated
     public MutableSparseVector alwaysAddChannel(Symbol channelSymbol) {
-        return getOrAddChannel(channelSymbol);
+        return getOrAddChannelVector(channelSymbol);
     }
 
     /**
@@ -968,68 +975,21 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         return getOrAddChannel(channelSymbol);
     }
 
-    /**
-     * Add a channel to this vector, and set it equal to a given
-     * value.  The input channel must have a compatible key domain to
-     * this channel.  The input channel is copied to avoid aliasing issues.
-     *
-     * @param channelSymbol the symbol under which this new channel
-     *                      should be created.
-     * @param theChannel    The channel to add.
-     * @return the newly created channel
-     * @throws IllegalArgumentException if there is already a channel
-     *                                  with that symbol
-     */
-    public MutableSparseVector addChannel(Symbol channelSymbol, SparseVector theChannel) {
-        checkFrozen();
-        if (hasChannel(channelSymbol)) {
-            throw new IllegalArgumentException("Channel " + channelSymbol.getName()
-                                               + " already exists");
-        }
-        if (!this.keyDomain().containsAll(theChannel.keyDomain())) {
-            throw new IllegalArgumentException("The channel you are trying to add to this vector "
-                                                       + "has an incompatible key domain.");
-        }
-        MutableSparseVector theChannelCopy = theChannel.mutableCopy();
-        channelMap.put(channelSymbol, theChannelCopy);
-        return theChannelCopy;
-    }
-    
-
-    /**
-     * Add a typed channel to this vector, and set it equal to a given
-     * value.  The input channel must have a compatible key domain to
-     * this channel.  The input channel is copied to avoid aliasing issues.
-     *
-     * @param channelSymbol the symbol under which this new channel
-     *                      should be created.
-     * @param theChannel    The channel to add.
-     * @return the newly created channel
-     * @throws IllegalArgumentException if there is already a channel
-     *                                  with that symbol
-     */
-    public <K> Long2ObjectMap<K> addChannel(TypedSymbol<K> channelSymbol, TypedSideChannel<K>theChannel) {
-        checkFrozen();
-        if (hasChannel(channelSymbol)) {
-            throw new IllegalArgumentException("Channel " + channelSymbol.getName()
-                                               + " with the type " + channelSymbol.getType().getSimpleName()
-                                               + " already exists");
-        }
-        if (!this.keyDomain().containsAll(theChannel.keyDomain())) {
-            throw new IllegalArgumentException("The channel you are trying to add to this vector "
-                                                       + "has an incompatible key domain.");
-        }
-        TypedSideChannel<K> theChannelCopy = theChannel.mutableCopy();
-        typedChannelMap.put(channelSymbol, theChannelCopy);
-        return theChannelCopy;
+    void addVectorChannel(Symbol key, MutableSparseVector vectorEntries) {
+        Preconditions.checkArgument(vectorEntries.keys == keys,
+                                    "vector has incompatible key domain");
+        channelMap.put(key, vectorEntries);
     }
 
+    <T> void addChannel(TypedSymbol<T> sym, TypedSideChannel<T> chan) {
+        Preconditions.checkArgument(chan.keys == keys, "vector has incompatible key domain");
+        typedChannelMap.put(sym, chan);
+    }
 
     @Override
-    public boolean hasChannel(Symbol channelSymbol) {
+    public boolean hasChannelVector(Symbol channelSymbol) {
         return channelMap.containsKey(channelSymbol);
     }
-
 
     @Override
     public boolean hasChannel(TypedSymbol<?> channelSymbol) {
@@ -1037,35 +997,35 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     @Override
-    public MutableSparseVector channel(Symbol channelSymbol) {
+    public MutableSparseVector getChannelVector(Symbol channelSymbol) {
         checkFrozen();
-        if (hasChannel(channelSymbol)) {
-            return channelMap.get(channelSymbol);
+        return channelMap.get(channelSymbol);
+    }
+
+    @Override
+    public SparseVector channel(Symbol channelSymbol) {
+        MutableSparseVector v = getChannelVector(channelSymbol);
+        if (v != null) {
+            return v;
+        } else {
+            throw new IllegalArgumentException("no such channel " + channelSymbol);
         }
-        throw new IllegalArgumentException("No existing channel under name " +
-                                                   channelSymbol.getName());
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <K> Long2ObjectMap<K> channel(TypedSymbol<K> channelSymbol) {
+    public <K> Long2ObjectMap<K> getChannel(TypedSymbol<K> channelSymbol) {
         checkFrozen();
-        if (hasChannel(channelSymbol)) {
-            return (TypedSideChannel<K>) typedChannelMap.get(channelSymbol);
-        }
-        throw new IllegalArgumentException("No existing channel under name "
-                                           + channelSymbol.getName()
-                                           + "with the type "
-                                           + channelSymbol.getType().getSimpleName());
+        return (TypedSideChannel<K>) typedChannelMap.get(channelSymbol);
     }
 
     @Override
-    public Set<Symbol> getChannels() {
+    public Set<Symbol> getChannelVectorSymbols() {
         return Collections.unmodifiableSet(channelMap.keySet());
     }
 
     @Override
-    public Set<TypedSymbol<?>> getTypedChannels() {
+    public Set<TypedSymbol<?>> getChannelSymbols() {
         return Collections.unmodifiableSet(typedChannelMap.keySet());
     }
 

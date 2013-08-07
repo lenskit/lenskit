@@ -29,7 +29,9 @@ import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import java.lang.reflect.Array;
@@ -126,7 +128,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
             channels = null;
             typedChannels = null;
         }
-        return new PackedScoredIdList(builtIds, builtScores, chans, typedChans);
+        return new PackedScoredIdList(builtIds, builtScores, typedChans, chans);
     }
 
     /**
@@ -190,17 +192,14 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     public ScoredIdListBuilder add(ScoredId id) {
         Preconditions.checkState(ids != null, "builder has been finished");
         // check whether all symbols are valid
-        Set<Symbol> syms = id.getChannels();
-        Set<TypedSymbol<?>> typedSyms = id.getTypedChannels();
+        Collection<SymbolValue<?>> chans = id.getChannels();
         if (!ignoreUnknown) {
-            for (Symbol sym: syms) {
-                if (!channels.containsKey(sym)) {
-                    throw new IllegalArgumentException("channel " + sym + " not known");
-                }
-            }
-
-            for (TypedSymbol<?> sym: typedSyms) {
-                if (!typedChannels.containsKey(sym)) {
+            for (SymbolValue<?> chan: chans) {
+                TypedSymbol<?> sym = chan.getSymbol();
+                boolean good = sym.getType().equals(Double.class)
+                        ? channels.containsKey(sym.getRawSymbol())
+                        : typedChannels.containsKey(sym);
+                if (!good) {
                     throw new IllegalArgumentException("channel " + sym + " not known");
                 }
             }
@@ -209,16 +208,17 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         // now we're ready to add
         final int idx = size;
         add(id.getId(), id.getScore());
-        for (Symbol sym: syms) {
-            ChannelStorage chan = channels.get(sym);
-            if (chan != null) {
-                chan.values[idx] = id.channel(sym);
-            }
-        }
-        for (TypedSymbol<?> sym: typedSyms) {
-            TypedChannelStorage<?> chan = typedChannels.get(sym);
-            if (chan != null) {
-                chan.values[idx] = id.channel(sym);
+        for (SymbolValue<?> sv: chans) {
+            if (sv instanceof DoubleSymbolValue) {
+                ChannelStorage chan = channels.get(sv.getRawSymbol());
+                if (chan != null) {
+                    chan.values[idx] = ((DoubleSymbolValue) sv).getDoubleValue();
+                }
+            } else {
+                TypedChannelStorage<?> chan = typedChannels.get(sv.getSymbol());
+                if (chan != null) {
+                    chan.values[idx] = sv.getValue();
+                }
             }
         }
         return this;
@@ -286,7 +286,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     }
 
     /**
-     * Add a side channel to the list builder with a default value of {@code null}.  It is an error
+     * Add a side channel to the list builder.  It is an error
      * to add the same symbol multiple times.  All side channels that will be used must be added
      * prior to calling {@link #add(ScoredId)}.
      *
@@ -304,7 +304,8 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
      * #add(ScoredId)}.
      *
      * @param sym The symbol to add.
-     * @param dft The default value when adding IDs that lack this channel.
+     * @param dft The default value when adding IDs that lack this channel.  If {@code null},
+     *            it will be omitted from such channels.
      * @return The builder (for chaining).
      */
     public <T> ScoredIdListBuilder addChannel(TypedSymbol<T> sym, T dft) {
@@ -381,7 +382,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
             for (TypedChannelStorage<?> chan: typedChannels.values()) {
                 typedMap.put(chan.symbol, chan.values);
             }
-            PackedScoredIdList list = new PackedScoredIdList(ids, scores, chanMap, typedMap);
+            PackedScoredIdList list = new PackedScoredIdList(ids, scores, typedMap, chanMap);
 
             id1 = list.getFlyweight(0);
             id2 = list.getFlyweight(0);

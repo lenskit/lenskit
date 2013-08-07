@@ -78,7 +78,7 @@ public class PackedScoredIdListTest {
         assertThat(id, notNullValue());
         assertThat(id.getId(), equalTo(42L));
         assertThat(id.getScore(), equalTo(3.5));
-        assertThat(id.getChannels(), hasSize(0));
+        assertThat(id.getUnboxedChannelSymbols(), hasSize(0));
 
         Iterator<ScoredId> iter = list.iterator();
         assertThat(Lists.newArrayList(iter),
@@ -97,7 +97,7 @@ public class PackedScoredIdListTest {
         assertThat(id, notNullValue());
         assertThat(id.getId(), equalTo(42L));
         assertThat(id.getScore(), equalTo(3.5));
-        assertThat(id.getChannels(), hasSize(0));
+        assertThat(id.getUnboxedChannelSymbols(), hasSize(0));
 
         Iterator<ScoredId> iter = list.iterator();
         assertThat(Lists.newArrayList(iter),
@@ -118,7 +118,7 @@ public class PackedScoredIdListTest {
         assertThat(id.getId(), equalTo(42L));
         assertThat(id.getScore(), equalTo(3.5));
 
-        assertThat(id.getChannels(), contains(sym));
+        assertThat(id.getUnboxedChannelSymbols(), contains(sym));
         assertThat(id.channel(sym), equalTo(Math.PI));
 
         Iterator<ScoredId> iter = list.iterator();
@@ -183,7 +183,7 @@ public class PackedScoredIdListTest {
     public void testAddWithDefaultDefaultTypedChannel() {
         TypedSymbol<String> sym = TypedSymbol.of(String.class, "HACKEM MUCHE");
         ScoredId id = new ScoredIdBuilder(42, 3.5).build();
-        ScoredId withDefault = new ScoredIdBuilder(42, 3.5).addChannel(sym, null).build();
+        ScoredId withDefault = new ScoredIdBuilder(42, 3.5).build();
         PackedScoredIdList list = builder.addChannel(sym)
                                          .add(id)
                                          .build();
@@ -317,7 +317,7 @@ public class PackedScoredIdListTest {
         PackedScoredIdList list = builder.ignoreUnknownChannels()
                                          .add(id)
                                          .build();
-        assertThat(FluentIterable.from(list).first().get().hasChannel(sym),
+        assertThat(FluentIterable.from(list).first().get().hasUnboxedChannel(sym),
                    equalTo(false));
     }
 

@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.vectors;
 
 import static org.grouplens.lenskit.vectors.SparseVectorTestCommon.closeTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -63,54 +64,50 @@ public class TestImmutableSparseVectorChannels {
     @Test
     public void testImmutable() {
         MutableSparseVector simple = simpleVector();
-        simple.addChannel(fooSymbol).set(3, 77);
-        assertThat(simple.channel(fooSymbol).get(3), closeTo(77));
+        simple.addChannelVector(fooSymbol).set(3, 77);
+        assertThat(simple.getChannelVector(fooSymbol).get(3), closeTo(77));
 
         ImmutableSparseVector simpleImm = simple.immutable();
-        assertThat(simpleImm.channel(fooSymbol).get(3), closeTo(77));
+        assertThat(simpleImm.getChannelVector(fooSymbol).get(3), closeTo(77));
     }
     
     @Test
     public void testMissingChannel() {
         ImmutableSparseVector simpleImm = simpleVector().immutable();
-        try {
-            simpleImm.channel(fooSymbol);
-            fail("a sparse vector should throw an exception if no such channel exists.");
-        } catch(IllegalArgumentException iae) {
-            // Expected
-        }
+        assertThat(simpleImm.getChannelVector(fooSymbol),
+                   nullValue());
     }
 
     @Test
     public void testCopy() {
         MutableSparseVector simple = simpleVector();
-        simple.addChannel(fooSymbol).set(3, 77);
-        assertThat(simple.channel(fooSymbol).get(3), closeTo(77));
+        simple.addChannelVector(fooSymbol).set(3, 77);
+        assertThat(simple.getChannelVector(fooSymbol).get(3), closeTo(77));
 
         ImmutableSparseVector simpleImm = simple.immutable();
         MutableSparseVector reSimple = simpleImm.mutableCopy();
-        assertThat(reSimple.channel(fooSymbol).get(3), closeTo(77));
-        reSimple.channel(fooSymbol).set(7, 55);
-        assertThat(reSimple.channel(fooSymbol).get(7), closeTo(55));
+        assertThat(reSimple.getChannelVector(fooSymbol).get(3), closeTo(77));
+        reSimple.getChannelVector(fooSymbol).set(7, 55);
+        assertThat(reSimple.getChannelVector(fooSymbol).get(7), closeTo(55));
 
         ImmutableSparseVector reSimpleImm = reSimple.immutable();
-        assertThat(reSimpleImm.channel(fooSymbol).get(3), closeTo(77));
-        assertThat(reSimpleImm.channel(fooSymbol).get(7), closeTo(55));
+        assertThat(reSimpleImm.getChannelVector(fooSymbol).get(3), closeTo(77));
+        assertThat(reSimpleImm.getChannelVector(fooSymbol).get(7), closeTo(55));
 
         // Now we check that the original immutable copy is unchanged
-        assertThat(simpleImm.channel(fooSymbol).get(3), closeTo(77));
-        assertThat(simpleImm.channel(fooSymbol).get(7, -1), closeTo(-1));
+        assertThat(simpleImm.getChannelVector(fooSymbol).get(3), closeTo(77));
+        assertThat(simpleImm.getChannelVector(fooSymbol).get(7, -1), closeTo(-1));
     }
     
     @Test
     public void testGetChannels() {
         MutableSparseVector simple = simpleVector();
-        simple.addChannel(fooSymbol).set(7, 77);
-        simple.addChannel(barSymbol).set(3, 33);
-        simple.addChannel(foobarSymbol).set(8, 88);
+        simple.addChannelVector(fooSymbol).set(7, 77);
+        simple.addChannelVector(barSymbol).set(3, 33);
+        simple.addChannelVector(foobarSymbol).set(8, 88);
         
         ImmutableSparseVector simpleImm = simple.immutable();
-        Set<Symbol> channelSet = simpleImm.getChannels();
+        Set<Symbol> channelSet = simpleImm.getChannelVectorSymbols();
         assertThat(channelSet.size(), equalTo(3));
         assert(channelSet.contains(fooSymbol));
         assert(channelSet.contains(barSymbol));

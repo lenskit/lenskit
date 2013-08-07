@@ -20,25 +20,23 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import java.util.Arrays;
-import java.util.BitSet;
-
-import org.grouplens.lenskit.collections.BitSetIterator;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-
-import it.unimi.dsi.fastutil.ints.IntIterator;
+import com.google.common.base.Predicates;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.longs.AbstractLong2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.*;
+import org.grouplens.lenskit.collections.LongSortedArraySet;
+
+import java.util.Arrays;
+import java.util.NoSuchElementException;
 
 class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
     private static final long serialVersionUID = 1L;
     
     protected final long[] keys;
-    protected final BitSet usedKeys;
     protected V[] values;
     protected final int domainSize; // How much of the key space is actually used by this vector.
     protected boolean frozen = false;
@@ -77,9 +75,9 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      * @param length Number of items to actually use.
      */
     TypedSideChannel(long[] ks, V[] vs, int length) {
-        this(ks, vs, new BitSet(length), length);
-        usedKeys.set(0, length);
-
+        keys = ks;
+        values = vs;
+        domainSize = length;
     }
     
     /**
@@ -93,39 +91,119 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      */
     @SuppressWarnings("unchecked")
     TypedSideChannel(long[] keys, int length) {
-        this(keys, (V[])new Object[length], new BitSet(length), length);
+        this(keys, (V[])new Object[length], length);
     }
-    
-    /**
-     * Build a new TypedSideChannel from the given keys, values, and bitSit.
-     * It is assumed that the keys and values array are the same length as the bitSet, 
-     * that the keys are sorted and duplicate free.
-     * The keys array will become the key set.
-     */
-    TypedSideChannel(long[] ks, V[] vs, BitSet bs) {
-        this(ks, vs, bs, bs.length());
-    }
-    
-    /**
-     * Build a new TypedSideChannel from the given keys, values, and bitSet and length.
-     */
-    TypedSideChannel(long[] ks, V[] vs, BitSet bs, int length) {
-        keys = ks;
-        values = vs;
-        usedKeys = bs;
-        domainSize = length;
-    }
-    
     
     @Override
     public ObjectSet<Long2ObjectMap.Entry<V>> long2ObjectEntrySet() {
-        ObjectSet<Long2ObjectMap.Entry<V>> os = new ObjectArraySet<Long2ObjectMap.Entry<V>>(size());
-        
-        for(IntIterator it = new BitSetIterator(usedKeys); it.hasNext(); ) {
-            int idx = it.nextInt();
-            os.add(new AbstractLong2ObjectMap.BasicEntry<V>(keys[idx], values[idx]));
+        return new EntrySetImpl();
+    }
+
+    private class EntrySetImpl extends AbstractObjectSet<Entry<V>> implements FastEntrySet<V> {
+        @Override
+        public ObjectIterator<Entry<V>> iterator() {
+            return new AbstractObjectIterator<Entry<V>>() {
+                int next;
+                {
+                    next = 0;
+                    while (next < domainSize && values[next] == null) {
+                        next++;
+                    }
+                }
+
+                @Override
+                public boolean hasNext() {
+                    return next < domainSize;
+                }
+
+                @Override
+                public Entry<V> next() {
+                    if (next >= domainSize) {
+                        throw new NoSuchElementException();
+                    }
+                    Entry<V> e = new EntryImpl(next);
+                    next++;
+                    while (next < domainSize && values[next] == null) {
+                        next++;
+                    }
+                    return e;
+                }
+            };
         }
-        return os;
+
+        @Override
+        public int size() {
+            return Iterators.size(iterator());
+        }
+
+        @Override
+        public ObjectIterator<Entry<V>> fastIterator() {
+            return new AbstractObjectIterator<Entry<V>>() {
+                EntryImpl entry = new EntryImpl();
+                int next;
+                {
+                    next = 0;
+                    while (next < domainSize && values[next] == null) {
+                        next++;
+                    }
+                }
+
+                @Override
+                public boolean hasNext() {
+                    return next < domainSize;
+                }
+
+                @Override
+                public Entry<V> next() {
+                    if (next >= domainSize) {
+                        throw new NoSuchElementException();
+                    }
+                    entry.setIndex(next);
+                    next++;
+                    while (next < domainSize && values[next] == null) {
+                        next++;
+                    }
+                    return entry;
+                }
+            };
+        }
+    }
+
+    private class EntryImpl implements Entry<V> {
+        private int index;
+
+        private EntryImpl() {
+            index = 0;
+        }
+        private EntryImpl(int idx) {
+            index = idx;
+        }
+
+        private void setIndex(int idx) {
+            index = idx;
+        }
+
+        @Override
+        public long getLongKey() {
+            return keys[index];
+        }
+
+        @Override
+        public Long getKey() {
+            return getLongKey();
+        }
+
+        @Override
+        public V getValue() {
+            return values[index];
+        }
+
+        @Override
+        public V setValue(V value) {
+            V old = values[index];
+            values[index] = value;
+            return old;
+        }
     }
 
     /**
@@ -141,26 +219,18 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
     @Override
     public boolean containsKey(long key) {
         final int idx = findIndex(key);
-        return idx >= 0 && usedKeys.get(idx);
+        return idx >= 0 && values[idx] != null;
     }
     
     @Override
     public boolean containsValue(Object v) {
-        for(IntIterator it = new BitSetIterator(usedKeys); it.hasNext(); ) {
-            V val = values[it.next()];
-            if(v==null && val==null) {
-                return true;
-            } else if (v != null && v.equals(val)) {
-                return true;
-            }
-        }
-        return false;
+        return ObjectArrayList.wrap(values, domainSize).contains(v);
     }
     
     @Override
     public V get(long key) {
         final int idx = findIndex(key);
-        if (idx >= 0 && usedKeys.get(idx)) {
+        if (idx >= 0 && values[idx] != null) {
             return values[idx];
         } else {
             return defaultReturnValue();
@@ -184,8 +254,9 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
         } else if (entry.getKey() != keys[eind]) {
             throw new IllegalArgumentException("entry does not have the correct key for its index");
         }
-        if (usedKeys.get(eind)) {
-            return values[eind];
+        V obj = values[eind];
+        if (obj != null) {
+            return obj;
         } else {
             return defaultReturnValue();
         }
@@ -207,18 +278,20 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
         } else if (entry.getKey() != keys[eind]) {
             throw new IllegalArgumentException("entry does not have the correct key for its index");
         }
-        return usedKeys.get(eind);
+        return values[eind] != null;
     }
 
     @Override
     public int size() {
-        return usedKeys.cardinality();
+        return FluentIterable.from(ObjectArrayList.wrap(values, domainSize))
+                             .filter(Predicates.notNull())
+                             .size();
     }
     
     @Override
     public void clear() {
         checkMutable();
-        usedKeys.clear();
+        ObjectArrays.fill(values, null);
     }
     
     @Override
@@ -226,11 +299,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
         checkMutable();
         final int idx = findIndex(key);
         if(idx >= 0) {
-            V retval = null;
-            if(usedKeys.get(idx)) {
-                retval = values[idx];
-            }
-            usedKeys.set(idx);
+            V retval = values[idx];
             values[idx] = value;
             return retval;
         } else {
@@ -245,7 +314,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
         final int idx = findIndex(key);
         V retval = get(key);
         if(idx >= 0) {
-            usedKeys.clear(idx);
+            values[idx] = null;
         }
         return retval;
     }
@@ -262,8 +331,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      * this side channel.
      */
     public TypedSideChannel<V> mutableCopy() {
-        return new TypedSideChannel<V>(keys, Arrays.copyOf(values, domainSize), 
-                                       (BitSet)usedKeys.clone(), domainSize);
+        return new TypedSideChannel<V>(keys, Arrays.copyOf(values, domainSize), domainSize);
     }
     
     /**
@@ -273,7 +341,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      */
     public ImmutableTypedSideChannel<V> immutableCopy() {
         return new ImmutableTypedSideChannel<V>(keys, Arrays.copyOf(values, domainSize), 
-                                                (BitSet)usedKeys.clone(), domainSize);
+                                                domainSize);
     }
     
     /**
@@ -283,7 +351,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      */
     public ImmutableTypedSideChannel<V> freeze() {
         frozen=true;
-        return new ImmutableTypedSideChannel<V>(keys, values, usedKeys, domainSize);
+        return new ImmutableTypedSideChannel<V>(keys, values, domainSize);
     }
     
     /**
@@ -315,14 +383,12 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
         }
         long[] ks = set.unsafeArray();
         V vals[] = (V[]) new Object[keys.length];
-        BitSet bs = new BitSet(keys.length);
-        
+
         int i = 0;
         int j = 0;
         while(i<domain.size() && j<domainSize) {
             if (ks[i] == keys[j]) {
                 vals[i] = values[j];
-                bs.set(i,usedKeys.get(j));
                 i = i + 1;
                 j = j + 1;
             } else if (ks[i] < keys[j]) {
@@ -332,7 +398,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
             }
         }
         
-        TypedSideChannel<V> retval = new TypedSideChannel<V>(ks, vals, bs, domain.size());
+        TypedSideChannel<V> retval = new TypedSideChannel<V>(ks, vals, domain.size());
         return retval;
     }
     

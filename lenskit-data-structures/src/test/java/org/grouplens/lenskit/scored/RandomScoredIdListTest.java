@@ -85,11 +85,8 @@ public class RandomScoredIdListTest {
         ImmutableList.Builder<ScoredId> bld = ImmutableList.builder();
         for (ScoredId id: ids) {
             ScoredIdBuilder idBld = ScoredIds.copyBuilder(id);
-            if (!id.hasChannel(VAL_SYM)) {
+            if (!id.hasUnboxedChannel(VAL_SYM)) {
                 idBld.addChannel(VAL_SYM, 0);
-            }
-            if (!id.hasChannel(STR_SYM)) {
-                idBld.addChannel(STR_SYM, null);
             }
             bld.add(idBld.build());
         }

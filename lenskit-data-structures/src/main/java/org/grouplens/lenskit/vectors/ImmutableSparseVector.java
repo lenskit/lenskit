@@ -140,7 +140,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
         MutableSparseVector result = new MutableSparseVector(keys, Arrays.copyOf(values, domainSize),
                                                              domainSize, (BitSet) usedKeys.clone());
         for (Map.Entry<Symbol, ImmutableSparseVector> entry : channelMap.entrySet()) {
-            result.addChannel(entry.getKey(), entry.getValue().mutableCopy());
+            result.addVectorChannel(entry.getKey(), entry.getValue().mutableCopy());
         }
         for (Entry<TypedSymbol<?>, ImmutableTypedSideChannel<?>> entry : typedChannelMap.entrySet()) {
             TypedSymbol ts = entry.getKey();
@@ -152,7 +152,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     }
 
     @Override
-    public boolean hasChannel(Symbol channelSymbol) {
+    public boolean hasChannelVector(Symbol channelSymbol) {
         return channelMap.containsKey(channelSymbol);
     }
     @Override
@@ -161,34 +161,34 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     }
 
     @Override
-    public ImmutableSparseVector channel(Symbol channelSymbol) {
-        if (hasChannel(channelSymbol)) {
-            return channelMap.get(channelSymbol);
-        }
-        throw new IllegalArgumentException("No existing channel under name " +
-                                                   channelSymbol.getName());
+    public ImmutableSparseVector getChannelVector(Symbol channelSymbol) {
+        return channelMap.get(channelSymbol);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <K> Long2ObjectMap<K> channel(TypedSymbol<K> channelSymbol) {
-        if (hasChannel(channelSymbol)) {
-            return (ImmutableTypedSideChannel<K>) typedChannelMap.get(channelSymbol);
+    public <K> Long2ObjectMap<K> getChannel(TypedSymbol<K> channelSymbol) {
+        return (Long2ObjectMap<K>) typedChannelMap.get(channelSymbol);
+    }
+
+    @Override @Deprecated
+    public ImmutableSparseVector channel(Symbol channelSymbol) {
+        ImmutableSparseVector v = getChannelVector(channelSymbol);
+        if (v == null) {
+            throw new IllegalArgumentException("unknown symbol " + channelSymbol);
+        } else {
+            return v;
         }
-        throw new IllegalArgumentException("No existing channel under name " +
-                                                   channelSymbol.getName() +
-                                                   " of type " + 
-                                                   channelSymbol.getType().getSimpleName());
     }
 
     @Override
-    public Set<Symbol> getChannels() {
+    public Set<Symbol> getChannelVectorSymbols() {
         return channelMap.keySet();
     }
     
     @SuppressWarnings("rawtypes")
     @Override
-    public Set<TypedSymbol<?>> getTypedChannels() {
+    public Set<TypedSymbol<?>> getChannelSymbols() {
         return typedChannelMap.keySet();
     }
 

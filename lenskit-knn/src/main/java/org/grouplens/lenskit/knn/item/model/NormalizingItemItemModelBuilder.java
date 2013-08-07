@@ -26,13 +26,11 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
-import org.grouplens.lenskit.scored.PackedScoredIdList;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdListBuilder;
 import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.truncate.VectorTruncator;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -92,8 +90,8 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
             truncator.truncate(normalized);
             ScoredIdListBuilder bld = new ScoredIdListBuilder(normalized.size());
             // TODO Allow the symbols in use to be customized
-            List<ScoredId> row = bld.addChannels(normalized.getChannels())
-                                    .addTypedChannels(normalized.getTypedChannels())
+            List<ScoredId> row = bld.addChannels(normalized.getChannelVectorSymbols())
+                                    .addTypedChannels(normalized.getChannelSymbols())
                                     .addAll(ScoredIds.collectionFromVector(normalized))
                                     .sort(ScoredIds.scoreOrder().reverse())
                                     .finish();

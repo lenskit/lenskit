@@ -20,34 +20,31 @@
  */
 package org.grouplens.lenskit.scored;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
-import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
-import it.unimi.dsi.fastutil.objects.Reference2DoubleMaps;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
-class ScoredIdImpl extends AbstractScoredId implements Serializable {
-    private static final long serialVersionUID = 1L;
+final class ScoredIdImpl extends AbstractScoredId implements Serializable {
+    private static final long serialVersionUID = 2L;
 
     private final long id;
     private final double score;
-    @SuppressFBWarnings("SE_BAD_FIELD")
     @Nonnull
-    private final Reference2DoubleMap<Symbol> channels;
-    @SuppressFBWarnings("SE_BAD_FIELD")
-    @Nonnull
-    private final Map<TypedSymbol<?>, ?> typedChannels;
+    private final List<SymbolValue<?>> channels;
+    private transient volatile List<DoubleSymbolValue> unboxedChannels;
 
     public ScoredIdImpl(long id, double score) {
-        this(id, score, null, null);
+        this(id, score, Collections.<SymbolValue<?>>emptyList());
     }
 
     /**
@@ -55,22 +52,11 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
      * @param id The ID.
      * @param score The score.
      * @param chans The side channel map.
-     * @param tChans The typed side channel map.
      */
-    public ScoredIdImpl(long id, double score, Reference2DoubleMap<Symbol> chans,
-                        Map<TypedSymbol<?>, ?> tChans) {
+    public ScoredIdImpl(long id, double score, @Nonnull Collection<? extends SymbolValue<?>> chans) {
         this.id = id;
         this.score = score;
-        if (chans != null) {
-            this.channels = new Reference2DoubleArrayMap<Symbol>(chans);
-        } else {
-            this.channels = Reference2DoubleMaps.EMPTY_MAP;
-        }
-        if (tChans != null) {
-            this.typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>(tChans);
-        } else {
-            this.typedChannels = Collections.emptyMap();
-        }
+        channels = ImmutableList.copyOf(chans);
     }
 
     @Override
@@ -83,40 +69,44 @@ class ScoredIdImpl extends AbstractScoredId implements Serializable {
         return score;
     }
 
+    @Nonnull
     @Override
-    public boolean hasChannel(Symbol s) {
-        return channels.containsKey(s);
+    public Collection<SymbolValue<?>> getChannels() {
+        return channels;
     }
 
+    @Nonnull
     @Override
-    public boolean hasChannel(TypedSymbol<?> s) {
-        return typedChannels.containsKey(s);
-    }
-
-    @Override
-    public double channel(Symbol s) {
-        if (hasChannel(s)) {
-            return channels.get(s);
+    public Collection<DoubleSymbolValue> getUnboxedChannels() {
+        if (unboxedChannels == null) {
+            unboxedChannels = FluentIterable.from(channels)
+                                            .filter(DoubleSymbolValue.class)
+                                            .toList();
         }
-        throw new IllegalArgumentException("No existing channel under name " + s.getName());
+        return unboxedChannels;
     }
 
     @SuppressWarnings("unchecked")
+    @Nullable
     @Override
-    public <K> K channel(TypedSymbol<K> s) {
-        if (hasChannel(s)) {
-            return (K) typedChannels.get(s);
+    public <T> T getChannelValue(@Nonnull TypedSymbol<T> sym) {
+        for (SymbolValue<?> channel: channels) {
+            if (sym == channel.getSymbol()) {
+                assert sym.getType().isInstance(channel.getValue());
+                return (T) channel.getValue();
+            }
         }
-        throw new IllegalArgumentException("No existing typed channel under name " + s.getName());
+        return null;
     }
 
     @Override
-    public Set<Symbol> getChannels() {
-        return Collections.unmodifiableSet(channels.keySet());
-    }
+    public double getUnboxedChannelValue(Symbol sym) {
+        for (DoubleSymbolValue channel: getUnboxedChannels()) {
+            if (sym == channel.getSymbol().getRawSymbol()) {
+                return channel.getDoubleValue();
+            }
+        }
 
-    @Override
-    public Set<TypedSymbol<?>> getTypedChannels() {
-        return typedChannels.keySet();
+        throw new NullPointerException("no such symbol " + sym);
     }
 }

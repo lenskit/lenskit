@@ -20,16 +20,20 @@
  */
 package org.grouplens.lenskit.scored;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Sets;
+import com.google.common.base.Predicates;
+import com.google.common.collect.FluentIterable;
+import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * Scored ID implementation backed by a sparse vector.
@@ -60,61 +64,52 @@ class VectorEntryScoredId extends AbstractScoredId {
         return ent.getValue();
     }
 
+    @Nonnull
     @Override
-    public Set<Symbol> getChannels() {
-        Set<Symbol> channels = vector.getChannels();
-        for (Symbol sym: channels) {
-            if (!vector.channel(sym).isSet(ent)) {
-                // missing channel, take the slow path
-                return Sets.filter(vector.getChannels(), new Predicate<Symbol>() {
-                    @Override
-                    public boolean apply(@Nullable Symbol input) {
-                        return input != null && vector.channel(input).isSet(ent);
-                    }
-                });
-            }
-        }
-        // all channels present, return them
-        return channels;
+    public Collection<SymbolValue<?>> getChannels() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public Collection<DoubleSymbolValue> getUnboxedChannels() {
+        // FIXME Make this fast
+        return FluentIterable.from(vector.getChannelVectorSymbols())
+                             .transform(new Function<Symbol, DoubleSymbolValue>() {
+                                 @Nullable
+                                 @Override
+                                 public DoubleSymbolValue apply(@Nullable Symbol input) {
+                                     assert input != null;
+                                     if (vector.getChannelVector(input).isSet(ent)) {
+                                         return SymbolValue.of(input, vector.getChannelVector(input).get(ent));
+                                     } else {
+                                         return null;
+                                     }
+                                 }
+                             }).filter(Predicates.notNull()).toList();
+    }
+
+    @Nullable
+    @Override
+    public <T> T getChannelValue(@Nonnull TypedSymbol<T> sym) {
+        // FIXME Make this return null properly
+        return vector.getChannel(sym).get(ent.getKey());
     }
 
     @Override
-    public Set<TypedSymbol<?>> getTypedChannels() {
-        Set<TypedSymbol<?>> channels = vector.getTypedChannels();
-        for (TypedSymbol<?> sym: channels) {
-            // FIXME Make this fast
-            if (!vector.channel(sym).containsKey(ent.getKey())) {
-                // missing channel, take the slow path
-                Sets.filter(vector.getTypedChannels(), new Predicate<TypedSymbol<?>>() {
-                    @Override
-                    public boolean apply(@Nullable TypedSymbol<?> input) {
-                        return input != null && vector.channel(input).containsKey(ent.getKey());
-                    }
-                });
-            }
-        }
-        // all channels present, return them
-        return channels;
+    public double getUnboxedChannelValue(Symbol sym) {
+        // FIXME Make this throw the correct exception
+        return vector.getChannelVector(sym).get(ent);
     }
 
     @Override
-    public double channel(Symbol s) {
-        return vector.channel(s).get(ent);
-    }
-
-    @Override
-    public <T> T channel(TypedSymbol<T> s) {
-        return vector.channel(s).get(ent.getKey());
-    }
-
-    @Override
-    public boolean hasChannel(Symbol s) {
-        return vector.hasChannel(s) && vector.channel(s).isSet(ent);
+    public boolean hasUnboxedChannel(Symbol s) {
+        return vector.hasChannelVector(s) && vector.getChannelVector(s).isSet(ent);
     }
 
     @Override
     public boolean hasChannel(TypedSymbol<?> s) {
-        return vector.hasChannel(s) && vector.channel(s).containsKey(ent.getKey());
+        return vector.hasChannel(s) && vector.getChannel(s).containsKey(ent.getKey());
     }
 
     /**

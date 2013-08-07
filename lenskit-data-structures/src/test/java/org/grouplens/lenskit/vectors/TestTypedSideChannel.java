@@ -25,8 +25,6 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.junit.Test;
 
-import java.util.BitSet;
-
 import static org.junit.Assert.*;
 
 public class TestTypedSideChannel {
@@ -78,17 +76,13 @@ public class TestTypedSideChannel {
         assertEquals(a, channel.get(1));
         assertNull(channel.get(2));
         
-        BitSet bs = new BitSet(2);
-        bs.set(1);
-        channel = new TypedSideChannel<String>(new long[]{1,2},new String[]{a,b}, bs);
+        channel = new TypedSideChannel<String>(new long[]{1,2},new String[]{null,b});
         assertFalse(channel.isEmpty());
         assertEquals(b,channel.get(2));
         assertNull(channel.get(1));
         channel.put(1, a); //check if this is in domain.
-        
-        bs = new BitSet(3);
-        bs.set(1);
-        channel = new TypedSideChannel<String>(new long[]{1,2,3},new String[]{a,b,c}, bs, 2);
+
+        channel = new TypedSideChannel<String>(new long[]{1,2,3},new String[]{null,b,c}, 2);
         assertFalse(channel.isEmpty());
         assertEquals(b,channel.get(2));
         assertNull(channel.get(1));

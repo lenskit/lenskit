@@ -22,8 +22,6 @@ package org.grouplens.lenskit.vectors;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import java.util.BitSet;
-
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
@@ -73,7 +71,7 @@ class ImmutableTypedSideChannel<V> extends TypedSideChannel<V> {
      * It is assumed that the key array is sorted, duplicate free The key array will become the 
      * key domain. 
      * 
-     * @param ks The array of keys backing this vector. They must be sorted.
+     * @param keys The array of keys backing this vector. They must be sorted.
      * @param length Number of items to actually use.
      */
     @SuppressWarnings("unchecked")
@@ -81,26 +79,9 @@ class ImmutableTypedSideChannel<V> extends TypedSideChannel<V> {
         super(keys, length);
     }
     
-    /**
-     * Build a new TypedSideChannel from the given keys, values, and bitSit.
-     * It is assumed that the keys and values array are the same length as the bitSet, 
-     * that the keys are sorted and duplicate free.
-     * The keys array will become the key set.
-     */
-    ImmutableTypedSideChannel(long[] ks, V[] vs, BitSet bs) {
-        super(ks, vs, bs);
-    }
-    
-    /**
-     * Build a new TypedSideChannel from the given keys, values, and bitSet and length.
-     */
-    ImmutableTypedSideChannel(long[] ks, V[] vs, BitSet bs, int length) {
-        super(ks, vs, bs, length);
-    }
-    
     @Override
     protected void checkMutable() {
-        throw new UnsupportedOperationException("ImmutableTypedSideChannels cannot be mutated");
+        throw new UnsupportedOperationException("Vector is immutable");
     }
     
     /**

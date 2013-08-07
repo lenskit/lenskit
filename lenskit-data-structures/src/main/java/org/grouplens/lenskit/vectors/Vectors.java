@@ -62,10 +62,10 @@ public final class Vectors {
             long id = sid.getId();
             if (!vec.containsKey(id)) {
                 vec.set(id, sid.getScore());
-                for (Symbol chan: sid.getChannels()) {
-                    vec.getOrAddChannel(chan).set(id, sid.channel(chan));
+                for (Symbol chan: sid.getUnboxedChannelSymbols()) {
+                    vec.getOrAddChannelVector(chan).set(id, sid.channel(chan));
                 }
-                for (TypedSymbol chan: sid.getTypedChannels()) {
+                for (TypedSymbol chan: sid.getChannelSymbols()) {
                     vec.getOrAddChannel(chan).put(id, sid.channel(chan));
                 }
             }

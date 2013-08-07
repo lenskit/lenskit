@@ -20,11 +20,19 @@
  */
 package org.grouplens.lenskit.scored;
 
-import com.google.common.primitives.Doubles;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Ordering;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
+
+import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * A base class for {@code ScoredId} implementations providing
@@ -65,16 +73,8 @@ public abstract class AbstractScoredId implements ScoredId {
                     .append(getScore());
 
             double sum = 0;
-            for (Symbol s : getChannels()) {
-                sum += s.hashCode();
-                sum += Doubles.hashCode(channel(s));
-            }
-            builder.append(sum);
-            
-            sum = 0;
-            for (TypedSymbol s : getTypedChannels()) {
-                sum += s.hashCode();
-                sum += channel(s).hashCode();
+            for (SymbolValue<?> sym: getChannels()) {
+                sum += sym.hashCode();
             }
             builder.append(sum);
             
@@ -90,26 +90,95 @@ public abstract class AbstractScoredId implements ScoredId {
             return true;
         } else if (o instanceof ScoredId) {
             ScoredId oid = (ScoredId) o;
-            EqualsBuilder builder = new EqualsBuilder()
+            Ordering<SymbolValue<?>> ord = Ordering.arbitrary()
+                                                   .onResultOf(SymbolValue.extractSymbol());
+            return new EqualsBuilder()
                     .append(getId(), oid.getId())
                     .append(getScore(), oid.getScore())
-                    .append(getChannels(), oid.getChannels())
-                    .append(getTypedChannels(), oid.getTypedChannels());
-
-            // Try to avoid iterating through side channels if possible
-            if (!builder.isEquals()) {
-                return false;
-            }
-
-            for (Symbol s : getChannels()) {
-                builder.append(channel(s), oid.channel(s));
-            }
-            
-            for (TypedSymbol s : getTypedChannels()) {
-                builder.append(channel(s), oid.channel(s));
-            }
-            return builder.isEquals();
+                    .append(ord.sortedCopy(getChannels()),
+                            ord.sortedCopy(oid.getChannels()))
+                    .isEquals();
         }
         return false;
+    }
+
+    @Nonnull
+    @Override
+    public Collection<DoubleSymbolValue> getUnboxedChannels() {
+        return FluentIterable.from(getChannels())
+                             .filter(DoubleSymbolValue.class)
+                             .toList();
+    }
+
+    @Override
+    public Set<TypedSymbol<?>> getChannelSymbols() {
+        ImmutableSet.Builder<TypedSymbol<?>> builder = ImmutableSet.builder();
+        for (SymbolValue<?> sv: getChannels()) {
+            builder.add(sv.getSymbol());
+        }
+        return builder.build();
+    }
+
+    @Override
+    public Set<Symbol> getUnboxedChannelSymbols() {
+        ImmutableSet.Builder<Symbol> builder = ImmutableSet.builder();
+        for (SymbolValue<?> sv: getUnboxedChannels()) {
+            builder.add(sv.getRawSymbol());
+        }
+        return builder.build();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation scans the result of {@link #getChannels()} for a matching channel.
+     */
+    @Override
+    public boolean hasChannel(TypedSymbol<?> sym) {
+        for (SymbolValue<?> val: getChannels()) {
+            if (sym == val.getSymbol()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     * This implementation delgates to {@link #hasChannel(TypedSymbol)}.
+     * @param sym
+     * @return
+     */
+    @Override
+    public boolean hasUnboxedChannel(Symbol sym) {
+        return hasChannel(sym.withType(Double.class));
+    }
+
+    /**
+     * {@inheritDoc}
+     * This implementation delegates to {@link #hasUnboxedChannel(Symbol)}.
+     */
+    @Override @Deprecated
+    public boolean hasChannel(Symbol sym) {
+        return hasUnboxedChannel(sym);
+    }
+
+    @Override @Deprecated
+    public double channel(Symbol sym) {
+        try {
+            return getUnboxedChannelValue(sym);
+        } catch (NullPointerException e) {
+            throw new IllegalArgumentException("unknown symbol " + sym, e);
+        }
+    }
+
+    @Override @Deprecated
+    public <T> T channel(TypedSymbol<T> sym) {
+        T obj = getChannelValue(sym);
+        if (obj == null) {
+            throw new IllegalArgumentException("unknown symbol " + sym);
+        } else {
+            return obj;
+        }
     }
 }

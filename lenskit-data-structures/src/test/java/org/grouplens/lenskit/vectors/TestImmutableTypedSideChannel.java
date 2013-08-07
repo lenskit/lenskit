@@ -20,18 +20,12 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import it.unimi.dsi.fastutil.longs.LongArraySet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-
-import java.util.BitSet;
-
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class TestImmutableTypedSideChannel {
 
@@ -74,16 +68,12 @@ public class TestImmutableTypedSideChannel {
         assertEquals(a, channel.get(1));
         assertNull(channel.get(2));
         
-        BitSet bs = new BitSet(2);
-        bs.set(1);
-        channel = new ImmutableTypedSideChannel<String>(new long[]{1,2},new String[]{a,b}, bs);
+        channel = new ImmutableTypedSideChannel<String>(new long[]{1,2},new String[]{null,b});
         assertFalse(channel.isEmpty());
         assertEquals(b,channel.get(2));
         assertNull(channel.get(1));
         
-        bs = new BitSet(3);
-        bs.set(1);
-        channel = new ImmutableTypedSideChannel<String>(new long[]{1,2,3},new String[]{a,b,c}, bs, 2);
+        channel = new ImmutableTypedSideChannel<String>(new long[]{1,2,3},new String[]{null,b,c}, 2);
         assertFalse(channel.isEmpty());
         assertEquals(b,channel.get(2));
         assertNull(channel.get(1));
