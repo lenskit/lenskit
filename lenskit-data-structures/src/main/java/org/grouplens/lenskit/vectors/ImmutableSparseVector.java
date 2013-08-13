@@ -45,8 +45,8 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     private static final long serialVersionUID = -2L;
 
     @SuppressFBWarnings("SE_BAD_FIELD")
-    private final Map<Symbol, ImmutableSparseVector> channelMap;
-    private final Map<TypedSymbol<?>,TypedSideChannel<?>> typedChannelMap;
+    private final Map<Symbol, ImmutableSparseVector> channelVectors;
+    private final Map<TypedSymbol<?>,TypedSideChannel<?>> channels;
 
     private transient volatile Double norm = null;
     private transient volatile Double sum = null;
@@ -59,8 +59,8 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     @Deprecated
     public ImmutableSparseVector() {
         super(LongKeySet.empty());
-        channelMap = Collections.emptyMap();
-        typedChannelMap = Collections.emptyMap();
+        channelVectors = Collections.emptyMap();
+        channels = Collections.emptyMap();
     }
 
     /**
@@ -71,26 +71,26 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      */
     public ImmutableSparseVector(Long2DoubleMap ratings) {
         super(ratings);
-        channelMap = Collections.emptyMap();
-        typedChannelMap = Collections.emptyMap();
+        channelVectors = Collections.emptyMap();
+        channels = Collections.emptyMap();
     }
 
     /**
-     * Construct a new sparse vector from a key set and a pre-existing array.  This array will
-     * copy the channels passed into it, but will <emph>not</emph> copy the key set or value array.
+     * Construct a new sparse vector from a key set and a pre-existing array.  This array will copy
+     * the channels passed into it, but will <emph>not</emph> copy the key set or value array.
      *
-     * @param ks            The key set.  Its active keys are the key set, and all keys form the
-     *                      domain.  Not copied.
-     * @param vs            The value array.  Not copied.
-     * @param channels      The side channel values.
-     * @param typedChannels The typed side channel values.
+     * @param ks          The key set.  Its active keys are the key set, and all keys form the
+     *                    domain.  Not copied.
+     * @param vs          The value array.  Not copied.
+     * @param chanVectors The channel vectors (unboxed side channels).
+     * @param chans       The full map of channels.
      */
     ImmutableSparseVector(LongKeySet ks, double[] vs,
-                          Map<Symbol, ImmutableSparseVector> channels,
-                          Map<TypedSymbol<?>,TypedSideChannel<?>> typedChannels) {
+                          Map<Symbol, ImmutableSparseVector> chanVectors,
+                          Map<TypedSymbol<?>, TypedSideChannel<?>> chans) {
         super(ks, vs);
-        channelMap = ImmutableMap.copyOf(channels);
-        typedChannelMap = ImmutableMap.copyOf(typedChannels);
+        channelVectors = ImmutableMap.copyOf(chanVectors);
+        channels = ImmutableMap.copyOf(chans);
     }
 
     @Override
@@ -104,10 +104,10 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
         LongKeySet mks = keys.clone();
         double[] mvs = Arrays.copyOf(values, keys.getEndIndex());
         MutableSparseVector result = new MutableSparseVector(mks, mvs);
-        for (Map.Entry<Symbol, ImmutableSparseVector> entry : channelMap.entrySet()) {
+        for (Map.Entry<Symbol, ImmutableSparseVector> entry : channelVectors.entrySet()) {
             result.addVectorChannel(entry.getKey(), entry.getValue().mutableCopy());
         }
-        for (Entry<TypedSymbol<?>, TypedSideChannel<?>> entry : typedChannelMap.entrySet()) {
+        for (Entry<TypedSymbol<?>, TypedSideChannel<?>> entry : channels.entrySet()) {
             TypedSymbol ts = entry.getKey();
             TypedSideChannel val = entry.getValue();
             result.addChannel(ts,val.mutableCopy());
@@ -118,22 +118,22 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
 
     @Override
     public boolean hasChannelVector(Symbol channelSymbol) {
-        return channelMap.containsKey(channelSymbol);
+        return channelVectors.containsKey(channelSymbol);
     }
     @Override
     public boolean hasChannel(TypedSymbol<?> channelSymbol) {
-        return typedChannelMap.containsKey(channelSymbol);
+        return channels.containsKey(channelSymbol);
     }
 
     @Override
     public ImmutableSparseVector getChannelVector(Symbol channelSymbol) {
-        return channelMap.get(channelSymbol);
+        return channelVectors.get(channelSymbol);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <K> Long2ObjectMap<K> getChannel(TypedSymbol<K> channelSymbol) {
-        return (Long2ObjectMap<K>) typedChannelMap.get(channelSymbol);
+        return (Long2ObjectMap<K>) channels.get(channelSymbol);
     }
 
     @Override @Deprecated
@@ -148,13 +148,13 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
 
     @Override
     public Set<Symbol> getChannelVectorSymbols() {
-        return channelMap.keySet();
+        return channelVectors.keySet();
     }
     
     @SuppressWarnings("rawtypes")
     @Override
     public Set<TypedSymbol<?>> getChannelSymbols() {
-        return typedChannelMap.keySet();
+        return channels.keySet();
     }
 
     // We override these three functions in the case that this vector is Immutable,

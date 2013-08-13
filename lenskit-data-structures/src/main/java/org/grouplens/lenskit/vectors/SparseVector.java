@@ -31,13 +31,15 @@ import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.collections.*;
+import org.grouplens.lenskit.collections.IntPointer;
+import org.grouplens.lenskit.collections.LongKeySet;
+import org.grouplens.lenskit.collections.Pointer;
+import org.grouplens.lenskit.collections.Pointers;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
