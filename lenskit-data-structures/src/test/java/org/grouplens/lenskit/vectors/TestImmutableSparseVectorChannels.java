@@ -80,21 +80,28 @@ public class TestImmutableSparseVectorChannels {
 
     @Test
     public void testCopy() {
+        // Initialize a vector and add a channel.
         MutableSparseVector simple = simpleVector();
         simple.addChannelVector(fooSymbol).set(3, 77);
         assertThat(simple.getChannelVector(fooSymbol).get(3), closeTo(77));
 
+        // Make an immutable version
         ImmutableSparseVector simpleImm = simple.immutable();
+
+        // Make a mutable copy of the immutable vector
         MutableSparseVector reSimple = simpleImm.mutableCopy();
         assertThat(reSimple.getChannelVector(fooSymbol).get(3), closeTo(77));
+
+        // Change the entry for 7
         reSimple.getChannelVector(fooSymbol).set(7, 55);
         assertThat(reSimple.getChannelVector(fooSymbol).get(7), closeTo(55));
 
+        // Convert it back to an immutable vector
         ImmutableSparseVector reSimpleImm = reSimple.immutable();
         assertThat(reSimpleImm.getChannelVector(fooSymbol).get(3), closeTo(77));
         assertThat(reSimpleImm.getChannelVector(fooSymbol).get(7), closeTo(55));
 
-        // Now we check that the original immutable copy is unchanged
+        // Now we check that the original immutable version is unchanged
         assertThat(simpleImm.getChannelVector(fooSymbol).get(3), closeTo(77));
         assertThat(simpleImm.getChannelVector(fooSymbol).get(7, -1), closeTo(-1));
     }

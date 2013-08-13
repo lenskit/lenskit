@@ -210,7 +210,8 @@ public class TestMutableSparseVectorChannels {
         simple.getChannelVector(fooSymbol).set(3, 4.5);
         simple.getOrAddChannelVector(fooSymbol);
         simple.getOrAddChannelVector(barSymbol);
-        assert(simple.getChannelVector(barSymbol).isEmpty());
+        assertThat(simple.getChannelVector(barSymbol).isEmpty(),
+                   equalTo(true));
         simple.getChannelVector(barSymbol).set(3, 33);
         assertThat(simple.getChannelVector(fooSymbol).get(3), closeTo(4.5));
         assertThat(simple.getChannelVector(barSymbol).get(3, -1.0), closeTo(33));

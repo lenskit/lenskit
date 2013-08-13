@@ -21,12 +21,58 @@
 package org.grouplens.lenskit.collections;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+
+import java.util.NoSuchElementException;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class Pointers {
     private Pointers() {}
+
+    /**
+     * Create a pointer over a range of integers.
+     * @param start The first integer (inclusive).
+     * @param end The last integer (exclusive).
+     * @return An int pointer over the range.
+     */
+    public static IntPointer fromTo(int start, int end) {
+        Preconditions.checkArgument(end >= start, "end is less than start");
+        return new IntervalPointer(start, end);
+    }
+
+    private static final class IntervalPointer extends AbstractIntPointer {
+        private final int start;
+        private final int end;
+        private int current;
+
+        public IntervalPointer(int s, int e) {
+            start = s;
+            end = e;
+            current = start;
+        }
+
+        public boolean advance(){
+            if (current < end) {
+                current += 1;
+            }
+            return current < end;
+        }
+
+        @Override
+        public int getInt() {
+            if (isAtEnd()) {
+                throw new NoSuchElementException("range pointer exhausted");
+            }
+            return current;
+        }
+
+        @Override
+        public boolean isAtEnd() {
+            return current >= end;
+        }
+    }
 
     /**
      * Transform a pointer.

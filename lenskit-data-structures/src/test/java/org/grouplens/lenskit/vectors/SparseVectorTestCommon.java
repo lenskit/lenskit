@@ -164,6 +164,30 @@ public abstract class SparseVectorTestCommon {
     }
 
     @Test
+    public void testSimpleEmptyPointer() {
+        Pointer<VectorEntry> p = emptyVector().fastPointer();
+        assertThat(p.isAtEnd(), equalTo(true));
+    }
+
+    @Test
+    public void testSimpleSimplePointer() {
+        Pointer<VectorEntry> p = simpleVector().fastPointer();
+        assertThat(p.isAtEnd(), equalTo(false));
+        VectorEntry ve = p.get();
+        assertThat(ve.getKey(), equalTo(3L));
+        assertThat(p.advance(), equalTo(true));
+        assertThat(p.isAtEnd(), equalTo(false));
+        ve = p.get();
+        assertThat(ve.getKey(), equalTo(7L));
+        assertThat(p.advance(), equalTo(true));
+        assertThat(p.isAtEnd(), equalTo(false));
+        ve = p.get();
+        assertThat(ve.getKey(), equalTo(8L));
+        assertThat(p.advance(), equalTo(false));
+        assertThat(p.isAtEnd(), equalTo(true));
+    }
+
+    @Test
     public void testDot() {
         assertThat(emptyVector().dot(emptyVector()), closeTo(0));
         assertThat(emptyVector().dot(simpleVector()), closeTo(0));
@@ -530,18 +554,6 @@ public abstract class SparseVectorTestCommon {
         } catch (IllegalArgumentException iae) { /* skip */
         }
         
-        VectorEntry veBogusKey = new VectorEntry(simple, 0, 22, 33, true);
-        try {
-            simple.get(veBogusKey);
-            fail("Should throw an IllegalArgumentException because the vector entry has a bogus key");
-        } catch (IllegalArgumentException iae) { /* skip */
-        }
-        try {
-            simple.isSet(veBogusKey);
-            fail("Should throw an IllegalArgumentException because the vector entry has a bogus key");
-        } catch (IllegalArgumentException iae) { /* skip */
-        }
-
         VectorEntry veBogusKeyDomain = new VectorEntry(simpleVector2(), 0, 3, 1.5, true);
         try {
             simple.get(veBogusKeyDomain);

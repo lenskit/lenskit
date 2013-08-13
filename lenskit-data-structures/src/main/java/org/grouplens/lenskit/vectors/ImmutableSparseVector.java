@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import org.grouplens.lenskit.collections.LongKeySet;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
@@ -45,18 +46,21 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
 
     @SuppressFBWarnings("SE_BAD_FIELD")
     private final Map<Symbol, ImmutableSparseVector> channelMap;
-    private final Map<TypedSymbol<?>,ImmutableTypedSideChannel<?>> typedChannelMap;
+    private final Map<TypedSymbol<?>,TypedSideChannel<?>> typedChannelMap;
 
     private transient volatile Double norm = null;
     private transient volatile Double sum = null;
     private transient volatile Double mean = null;
-    private transient volatile Boolean fullySet = null;
-    
+
     /**
      * Create a new, empty immutable sparse vector.
+     * @deprecated Use {@link #empty()} instead.
      */
+    @Deprecated
     public ImmutableSparseVector() {
-        this(new long[0], new double[0]);
+        super(LongKeySet.empty());
+        channelMap = Collections.emptyMap();
+        typedChannelMap = Collections.emptyMap();
     }
 
     /**
@@ -72,61 +76,21 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     }
 
     /**
-     * Construct a new vector from existing arrays.  It is assumed that the keys
-     * are sorted and duplicate-free, and that the values is the same length. The
-     * key array is the key domain, and all keys are considered used.
-     * No new keys can be added to this vector.  Clients should call
-     * the wrap() method rather than directly calling this constructor.
+     * Construct a new sparse vector from a key set and a pre-existing array.  This array will
+     * copy the channels passed into it, but will <emph>not</emph> copy the key set or value array.
      *
-     * @param ks The array of keys backing this vector. They must be sorted.
-     * @param vs The array of values backing this vector.
-     */
-    protected ImmutableSparseVector(long[] ks, double[] vs) {
-        this(ks, vs, ks.length);
-    }
-
-    /**
-     * Construct a new sparse vector from pre-existing arrays. These arrays must
-     * be sorted in key order and cannot contain duplicate keys; this condition
-     * is not checked.
-     *
-     * @param ks The key array (will be the key domain).
-     * @param vs The value array.
-     * @param sz The length to actually use.
-     */
-    protected ImmutableSparseVector(long[] ks, double[] vs, int sz) {
-        super(ks, vs, sz);
-        channelMap = Collections.emptyMap();
-        typedChannelMap = Collections.emptyMap();
-    }
-
-    /**
-     * Construct a new sparse vector from pre-existing arrays. These arrays must
-     * be sorted in key order and cannot contain duplicate keys; this condition
-     * is not checked.  The new vector will have a copy of the
-     * channels that are passed into it.
-     *
-     * @param ks            the key array (will be the key domain).
-     * @param vs            the value array.
-     * @param sz            the length to actually use.
-     * @param used          the keys that actually have values currently.
+     * @param ks            The key set.  Its active keys are the key set, and all keys form the
+     *                      domain.  Not copied.
+     * @param vs            The value array.  Not copied.
      * @param channels      The side channel values.
      * @param typedChannels The typed side channel values.
      */
-    ImmutableSparseVector(long[] ks, double[] vs, int sz, BitSet used,
+    ImmutableSparseVector(LongKeySet ks, double[] vs,
                           Map<Symbol, ImmutableSparseVector> channels,
-                          Map<TypedSymbol<?>,ImmutableTypedSideChannel<?>> typedChannels) {
-        super(ks, vs, sz, used);
+                          Map<TypedSymbol<?>,TypedSideChannel<?>> typedChannels) {
+        super(ks, vs);
         channelMap = ImmutableMap.copyOf(channels);
         typedChannelMap = ImmutableMap.copyOf(typedChannels);
-    }
-
-    @Override
-    boolean isFullySet() {
-        if (fullySet == null) {
-            fullySet = usedKeys.cardinality() == domainSize;
-        }
-        return fullySet;
     }
 
     @Override
@@ -137,14 +101,15 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public MutableSparseVector mutableCopy() {
-        MutableSparseVector result = new MutableSparseVector(keys, Arrays.copyOf(values, domainSize),
-                                                             domainSize, (BitSet) usedKeys.clone());
+        LongKeySet mks = keys.clone();
+        double[] mvs = Arrays.copyOf(values, keys.getEndIndex());
+        MutableSparseVector result = new MutableSparseVector(mks, mvs);
         for (Map.Entry<Symbol, ImmutableSparseVector> entry : channelMap.entrySet()) {
             result.addVectorChannel(entry.getKey(), entry.getValue().mutableCopy());
         }
-        for (Entry<TypedSymbol<?>, ImmutableTypedSideChannel<?>> entry : typedChannelMap.entrySet()) {
+        for (Entry<TypedSymbol<?>, TypedSideChannel<?>> entry : typedChannelMap.entrySet()) {
             TypedSymbol ts = entry.getKey();
-            ImmutableTypedSideChannel val = entry.getValue();
+            TypedSideChannel val = entry.getValue();
             result.addChannel(ts,val.mutableCopy());
         }
         
@@ -217,5 +182,4 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
         }
         return mean;
     }
-
 }

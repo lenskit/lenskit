@@ -22,6 +22,7 @@ package org.grouplens.lenskit.vectors;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import org.grouplens.lenskit.collections.LongKeySet;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.junit.Test;
@@ -87,7 +88,8 @@ public class TestMutableSparseVectorTypedChannels {
             fail("exception expected");
         } catch (IllegalArgumentException e) {/* expected */ }
         
-        sv = new MutableSparseVector(new long[]{1,2,3}, new double[]{2,3,4});
+        sv = new MutableSparseVector(LongKeySet.create(1, 2, 3),
+                                     new double[]{2,3,4});
         
         fs = sv.addChannel(fooStrSym);
         fs.put(1, "a");
@@ -101,9 +103,9 @@ public class TestMutableSparseVectorTypedChannels {
     
     @Test
     public void testAddTypedSideChannel() {
-        long[] domain = {1,2,4};
-        TypedSideChannel<String> ts = new TypedSideChannel<String>(domain);
-        MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
+        LongKeySet domain = LongKeySet.create(1,2,4);
+        MutableTypedSideChannel<String> ts = new MutableTypedSideChannel<String>(domain);
+        MutableSparseVector sv = new MutableSparseVector(domain);
         ts.put(1,"a");
         
         sv.addChannel(fooStrSym, ts);

@@ -336,7 +336,6 @@ public final class CollectionUtils {
     }
 
     private static class EmptyFastCollection<E> extends AbstractCollection<E> implements FastCollection<E> {
-
         @Override
         public Iterator<E> fastIterator() {
             return Iterators.emptyIterator();
@@ -351,6 +350,5 @@ public final class CollectionUtils {
         public int size() {
             return 0;
         }
-
     }
 }
