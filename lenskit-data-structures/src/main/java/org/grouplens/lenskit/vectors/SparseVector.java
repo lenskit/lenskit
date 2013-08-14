@@ -253,7 +253,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         default: // should be impossible
             throw new IllegalArgumentException("invalid entry state");
         }
-        return new FastIterImpl(iter);
+        return new FastIterImpl(iter, state);
     }
 
     /**
@@ -321,11 +321,13 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     // reuse the VectorEntry returned at one step for a later step, so
     // the client should not keep around old VectorEntrys.
     private class FastIterImpl implements Iterator<VectorEntry> {
+        private final VectorEntry.State state;
         private VectorEntry entry = new VectorEntry(SparseVector.this, -1, 0, 0, false);
         private IntIterator iter;
 
-        public FastIterImpl(IntIterator positions) {
+        public FastIterImpl(IntIterator positions, VectorEntry.State st) {
             iter = positions;
+            state = st;
         }
 
         @Override
@@ -337,7 +339,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         @Nonnull
         public VectorEntry next() {
             int pos = iter.nextInt();
-            boolean isSet = keys.indexIsActive(pos);
+            boolean isSet = state == VectorEntry.State.SET || keys.indexIsActive(pos);
             double v = isSet ? values[pos] : Double.NaN;
             entry.set(pos, keys.getKey(pos), v, isSet);
             return entry;
@@ -405,15 +407,17 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         default:
             throw new AssertionError("invalid entry state");
         }
-        return new FastEntryPointer(base);
+        return new FastEntryPointer(base, state);
     }
 
     private class FastEntryPointer implements Pointer<VectorEntry> {
+        private VectorEntry.State state;
         private IntPointer indexPointer;
         private final VectorEntry entry = new VectorEntry(SparseVector.this, -1, 0, 0, false);
 
-        FastEntryPointer(IntPointer ip) {
+        FastEntryPointer(IntPointer ip, VectorEntry.State st) {
             indexPointer = ip;
+            state = st;
         }
 
         @Override
@@ -425,7 +429,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         public VectorEntry get() {
             int pos = indexPointer.getInt();
             entry.set(pos, keys.getKey(pos), values[pos],
-                      keys.indexIsActive(pos));
+                      state == VectorEntry.State.SET || keys.indexIsActive(pos));
             return entry;
         }
 
@@ -593,22 +597,42 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public double dot(SparseVector o) {
         double dot = 0;
-        Pointer<VectorEntry> p1 = fastPointer();
-        Pointer<VectorEntry> p2 = o.fastPointer();
 
-        while (!p1.isAtEnd() && !p2.isAtEnd()) {
-            VectorEntry e1 = p1.get();
-            VectorEntry e2 = p2.get();
+//        Pointer<VectorEntry> p1 = fastPointer();
+//        Pointer<VectorEntry> p2 = o.fastPointer();
+//
+//        while (!p1.isAtEnd() && !p2.isAtEnd()) {
+//            VectorEntry e1 = p1.get();
+//            VectorEntry e2 = p2.get();
+//            final long k1 = e1.getKey();
+//            final long k2 = e2.getKey();
+//            if (k1 < k2) {
+//                p1.advance();
+//            } else if (k2 < k1) {
+//                p2.advance();
+//            } else {
+//                dot += e1.getValue() * e2.getValue();
+//                p1.advance();
+//                p2.advance();
+//            }
+//        }
+        Iterator<VectorEntry> i1 = fastIterator();
+        Iterator<VectorEntry> i2 = o.fastIterator();
+
+        VectorEntry e1 = i1.hasNext() ? i1.next() : null;
+        VectorEntry e2 = i2.hasNext() ? i2.next() : null;
+
+        while (e1 != null && e2 != null) {
             final long k1 = e1.getKey();
             final long k2 = e2.getKey();
             if (k1 < k2) {
-                p1.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
             } else if (k2 < k1) {
-                p2.advance();
+                e2 = i2.hasNext() ? i2.next() : null;
             } else {
                 dot += e1.getValue() * e2.getValue();
-                p1.advance();
-                p2.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
+                e2 = i2.hasNext() ? i2.next() : null;
             }
         }
         return dot;
