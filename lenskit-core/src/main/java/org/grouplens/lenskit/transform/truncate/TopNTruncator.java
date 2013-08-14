@@ -29,6 +29,7 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 import org.grouplens.lenskit.vectors.Vectors;
 
 import java.io.Serializable;
+import java.util.Iterator;
 
 /**
  * A {@code VectorTruncator} that will retain the top n entries.
@@ -66,10 +67,27 @@ public class TopNTruncator implements VectorTruncator, Serializable {
         }
         MutableSparseVector truncated = accumulator.finishVector();
 
-        // Unset all elements in 'v' that are not in 'truncated'
-        for (Pair<VectorEntry,VectorEntry> p : Vectors.fastUnion(v, truncated)) {
-            if (p.getRight() == null) {
-                v.unset(p.getLeft());
+        // now: walk through the input vector and see what's in the truncated one
+        // we need an interator for the truncated vector
+        Iterator<VectorEntry> titer = truncated.fastIterator();
+        VectorEntry te = titer.hasNext() ? titer.next() : null;
+
+        for (VectorEntry e: v.fast()) {
+            // advance te until it's at least our entry
+            while (te != null && te.getKey() < e.getKey()) {
+                te = titer.hasNext() ? titer.next() : null;
+            }
+            // now, there are 3 cases
+            assert te == null || te.getKey() >= e.getKey();
+            if (te == null) {
+                // we have gone past the end of truncated, this entry gets unset
+                v.unset(e);
+            } else if (te.getKey() > e.getKey()) {
+                // truncated has gone past the current entry, this entry gets unset
+                v.unset(e);
+            } else {
+                // they're equal!
+                assert te.getKey() == e.getKey();
             }
         }
     }

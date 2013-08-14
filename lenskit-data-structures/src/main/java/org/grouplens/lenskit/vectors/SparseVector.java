@@ -30,7 +30,6 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.collections.LongKeySet;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
@@ -587,11 +586,8 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
                 if (!this.keySet().equals(vo.keySet())) {
                     return false;        // same keys
                 }
-                for (Pair<VectorEntry, VectorEntry> pair : Vectors.fastUnion(this, vo)) { // same values
-                    if (Double.doubleToLongBits(pair.getLeft().getValue()) != 
-                            Double.doubleToLongBits(pair.getRight().getValue())) { return false; }
-                }
-                return true;
+                // we know that sparse vector values are always in key order. so just compare them.
+                return this.values().equals(vo.values());
             }
         } else {
             return false;
