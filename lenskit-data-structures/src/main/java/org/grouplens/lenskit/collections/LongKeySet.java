@@ -305,7 +305,7 @@ public final class LongKeySet implements Serializable {
      * @return {@code true} if the key at the index is active.
      */
     public boolean indexIsActive(int idx) {
-        checkIndex(idx);
+        assert idx >= startIndex && idx < endIndex;
         return mask.get(idx);
     }
 
@@ -333,7 +333,7 @@ public final class LongKeySet implements Serializable {
      * @return The key at the specified index.
      */
     public long getKey(int idx) {
-        checkIndex(idx);
+        assert idx >= startIndex && idx < endIndex;
         return keys[idx];
     }
 
