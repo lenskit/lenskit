@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.symbols.DoubleSymbolValue;
@@ -69,8 +70,8 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         ids = new long[cap];
         scores = new double[cap];
         size = 0;
-        channels = Maps.newHashMap();
-        typedChannels = Maps.newHashMap();
+        channels = new Reference2ObjectArrayMap<Symbol, ChannelStorage>();
+        typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, TypedChannelStorage<?>>();
     }
 
     @Override

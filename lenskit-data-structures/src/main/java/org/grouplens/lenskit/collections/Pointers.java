@@ -43,16 +43,15 @@ public final class Pointers {
     }
 
     private static final class IntervalPointer extends AbstractIntPointer {
-        private final int start;
         private final int end;
         private int current;
 
         public IntervalPointer(int s, int e) {
-            start = s;
+            current = s;
             end = e;
-            current = start;
         }
 
+        @Override
         public boolean advance(){
             if (current < end) {
                 current += 1;
@@ -62,10 +61,11 @@ public final class Pointers {
 
         @Override
         public int getInt() {
-            if (isAtEnd()) {
+            if (current < end) {
+                return current;
+            } else {
                 throw new NoSuchElementException("range pointer exhausted");
             }
-            return current;
         }
 
         @Override
