@@ -598,24 +598,6 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     public double dot(SparseVector o) {
         double dot = 0;
 
-//        Pointer<VectorEntry> p1 = fastPointer();
-//        Pointer<VectorEntry> p2 = o.fastPointer();
-//
-//        while (!p1.isAtEnd() && !p2.isAtEnd()) {
-//            VectorEntry e1 = p1.get();
-//            VectorEntry e2 = p2.get();
-//            final long k1 = e1.getKey();
-//            final long k2 = e2.getKey();
-//            if (k1 < k2) {
-//                p1.advance();
-//            } else if (k2 < k1) {
-//                p2.advance();
-//            } else {
-//                dot += e1.getValue() * e2.getValue();
-//                p1.advance();
-//                p2.advance();
-//            }
-//        }
         Iterator<VectorEntry> i1 = fastIterator();
         Iterator<VectorEntry> i2 = o.fastIterator();
 
@@ -646,22 +628,23 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public int countCommonKeys(SparseVector o) {
         int count = 0;
-        Pointer<VectorEntry> p1 = fastPointer();
-        Pointer<VectorEntry> p2 = o.fastPointer();
+        Iterator<VectorEntry> i1 = fastIterator();
+        Iterator<VectorEntry> i2 = o.fastIterator();
 
-        while (!p1.isAtEnd() && !p2.isAtEnd()) {
-            VectorEntry e1 = p1.get();
-            VectorEntry e2 = p2.get();
+        VectorEntry e1 = i1.hasNext() ? i1.next() : null;
+        VectorEntry e2 = i2.hasNext() ? i2.next() : null;
+
+        while (e1 != null && e2 != null) {
             final long k1 = e1.getKey();
             final long k2 = e2.getKey();
             if (k1 < k2) {
-                p1.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
             } else if (k2 < k1) {
-                p2.advance();
+                e2 = i2.hasNext() ? i2.next() : null;
             } else {
                 count += 1;
-                p1.advance();
-                p2.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
+                e2 = i2.hasNext() ? i2.next() : null;
             }
         }
         return count;

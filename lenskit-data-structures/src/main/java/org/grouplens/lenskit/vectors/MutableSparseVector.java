@@ -31,17 +31,13 @@ import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import org.grouplens.lenskit.collections.LongKeySet;
 import org.grouplens.lenskit.collections.MoreArrays;
-import org.grouplens.lenskit.collections.Pointer;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * Mutable version of sparse vector.
@@ -417,21 +413,23 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void subtract(final SparseVector other) {
         checkFrozen();
-        Pointer<VectorEntry> p1 = fastPointer();
-        Pointer<VectorEntry> p2 = other.fastPointer();
-        while (!p1.isAtEnd() && !p2.isAtEnd()) {
-            VectorEntry e1 = p1.get();
-            VectorEntry e2 = p2.get();
-            long k1 = e1.getKey();
-            long k2 = e2.getKey();
+        Iterator<VectorEntry> i1 = fastIterator();
+        Iterator<VectorEntry> i2 = other.fastIterator();
+
+        VectorEntry e1 = i1.hasNext() ? i1.next() : null;
+        VectorEntry e2 = i2.hasNext() ? i2.next() : null;
+
+        while (e1 != null && e2 != null) {
+            final long k1 = e1.getKey();
+            final long k2 = e2.getKey();
             if (k1 < k2) {
-                p1.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
             } else if (k2 < k1) {
-                p2.advance();
+                e2 = i2.hasNext() ? i2.next() : null;
             } else {
                 set(e1, e1.getValue() - e2.getValue());
-                p1.advance();
-                p2.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
+                e2 = i2.hasNext() ? i2.next() : null;
             }
         }
     }
@@ -447,21 +445,23 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void add(final SparseVector other) {
         checkFrozen();
-        Pointer<VectorEntry> p1 = fastPointer();
-        Pointer<VectorEntry> p2 = other.fastPointer();
-        while (!p1.isAtEnd() && !p2.isAtEnd()) {
-            VectorEntry e1 = p1.get();
-            VectorEntry e2 = p2.get();
-            long k1 = e1.getKey();
-            long k2 = e2.getKey();
+        Iterator<VectorEntry> i1 = fastIterator();
+        Iterator<VectorEntry> i2 = other.fastIterator();
+
+        VectorEntry e1 = i1.hasNext() ? i1.next() : null;
+        VectorEntry e2 = i2.hasNext() ? i2.next() : null;
+
+        while (e1 != null && e2 != null) {
+            final long k1 = e1.getKey();
+            final long k2 = e2.getKey();
             if (k1 < k2) {
-                p1.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
             } else if (k2 < k1) {
-                p2.advance();
+                e2 = i2.hasNext() ? i2.next() : null;
             } else {
                 set(e1, e1.getValue() + e2.getValue());
-                p1.advance();
-                p2.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
+                e2 = i2.hasNext() ? i2.next() : null;
             }
         }
     }
@@ -480,21 +480,23 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void set(final SparseVector other) {
         checkFrozen();
-        Pointer<VectorEntry> p1 = fastPointer(VectorEntry.State.EITHER);
-        Pointer<VectorEntry> p2 = other.fastPointer();
-        while (!p1.isAtEnd() && !p2.isAtEnd()) {
-            VectorEntry e1 = p1.get();
-            VectorEntry e2 = p2.get();
-            long k1 = e1.getKey();
-            long k2 = e2.getKey();
+        Iterator<VectorEntry> i1 = fastIterator(VectorEntry.State.EITHER);
+        Iterator<VectorEntry> i2 = other.fastIterator();
+
+        VectorEntry e1 = i1.hasNext() ? i1.next() : null;
+        VectorEntry e2 = i2.hasNext() ? i2.next() : null;
+
+        while (e1 != null && e2 != null) {
+            final long k1 = e1.getKey();
+            final long k2 = e2.getKey();
             if (k1 < k2) {
-                p1.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
             } else if (k2 < k1) {
-                p2.advance();
+                e2 = i2.hasNext() ? i2.next() : null;
             } else {
                 setAt(e1.getIndex(), e2.getValue());
-                p1.advance();
-                p2.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
+                e2 = i2.hasNext() ? i2.next() : null;
             }
         }
     }
@@ -517,25 +519,27 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * Multiply each element in the vector by the corresponding element in another vector.  Elements
      * not in the other vector are left unchanged.
      *
-     * @param v The vector to pairwise-multiply with this one.
+     * @param other The vector to pairwise-multiply with this one.
      */
-    public void multiply(SparseVector v) {
+    public void multiply(SparseVector other) {
         checkFrozen();
-        Pointer<VectorEntry> p1 = fastPointer();
-        Pointer<VectorEntry> p2 = v.fastPointer();
-        while (!p1.isAtEnd() && !p2.isAtEnd()) {
-            VectorEntry e1 = p1.get();
-            VectorEntry e2 = p2.get();
-            long k1 = e1.getKey();
-            long k2 = e2.getKey();
+        Iterator<VectorEntry> i1 = fastIterator();
+        Iterator<VectorEntry> i2 = other.fastIterator();
+
+        VectorEntry e1 = i1.hasNext() ? i1.next() : null;
+        VectorEntry e2 = i2.hasNext() ? i2.next() : null;
+
+        while (e1 != null && e2 != null) {
+            final long k1 = e1.getKey();
+            final long k2 = e2.getKey();
             if (k1 < k2) {
-                p1.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
             } else if (k2 < k1) {
-                p2.advance();
+                e2 = i2.hasNext() ? i2.next() : null;
             } else {
                 set(e1, e1.getValue() * e2.getValue());
-                p1.advance();
-                p2.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
+                e2 = i2.hasNext() ? i2.next() : null;
             }
         }
     }
