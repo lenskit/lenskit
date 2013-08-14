@@ -92,4 +92,13 @@ public class TestTypedSymbols {
         assertThat(unboxed, equalTo(boxed));
         assertThat(unboxed, sameInstance(boxed));
     }
+
+    @Test
+    public void testWithType() {
+        Symbol foo = Symbol.of("foo");
+        TypedSymbol<String> s1 = foo.withType(String.class);
+        TypedSymbol<String> s2 = foo.withType(String.class);
+        assertThat(s2, equalTo(s1));
+        assertThat(s2, sameInstance(s1));
+    }
 }

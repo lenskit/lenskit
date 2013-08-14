@@ -33,6 +33,7 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -117,6 +118,20 @@ public final class CollectionUtils {
             return (LongCollection) longs;
         } else {
             return new LongCollectionWrapper(longs);
+        }
+    }
+
+    /**
+     * Wrap a {@link Collection} in an {@link ObjectCollection}.
+     * @param objects The collection of objects.
+     * @param <E> The type of objects.
+     * @return The collection as an {@link ObjectCollection}.
+     */
+    public static <E> ObjectCollection<E> objectCollection(Collection<E> objects) {
+        if (objects instanceof ObjectCollection) {
+            return (ObjectCollection<E>) objects;
+        } else {
+            return new ObjectCollectionWrapper<E>(objects);
         }
     }
 

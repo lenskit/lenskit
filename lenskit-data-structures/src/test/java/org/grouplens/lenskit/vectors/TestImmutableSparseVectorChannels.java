@@ -21,7 +21,10 @@
 package org.grouplens.lenskit.vectors;
 
 import static org.grouplens.lenskit.vectors.SparseVectorTestCommon.closeTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -31,6 +34,7 @@ import java.util.Set;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.junit.Test;
 
 /**
@@ -119,6 +123,20 @@ public class TestImmutableSparseVectorChannels {
         assert(channelSet.contains(fooSymbol));
         assert(channelSet.contains(barSymbol));
         assert(channelSet.contains(foobarSymbol));
+    }
+
+    @Test
+    public void testChannelVectorsHaveWrappers() {
+        MutableSparseVector simple = simpleVector();
+        simple.addChannelVector(fooSymbol).set(7, 42);
+        ImmutableSparseVector imm = simple.immutable();
+        TypedSymbol<Double> sym = fooSymbol.withType(Double.class);
+        assertThat(imm.hasChannel(sym), equalTo(true));
+        assertThat(imm.getChannelSymbols(), contains((TypedSymbol) sym));
+        assertThat(imm.getChannel(sym),
+                   hasEntry(7L, 42.0));
+        assertThat(imm.getChannelVector(fooSymbol).get(7),
+                   equalTo(42.0));
     }
 
 }

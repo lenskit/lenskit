@@ -76,7 +76,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     @SuppressFBWarnings(value="SE_BAD_FIELD", justification="stored value is always serializable")
     private final Map<Symbol, MutableSparseVector> channelVectors;
     @SuppressFBWarnings(value="SE_BAD_FIELD", justification="stored value is always serializable")
-    private final Map<TypedSymbol<?>, MutableTypedSideChannel<?>> channels;
+    private final Map<TypedSymbol<?>, Long2ObjectMap<?>> channels;
 
     /**
      * Construct a new empty vector. Since it also has an empty key domain, this
@@ -93,7 +93,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     MutableSparseVector(LongKeySet domain) {
         super(domain);
         channelVectors = new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
-        channels = new Reference2ObjectArrayMap<TypedSymbol<?>, MutableTypedSideChannel<?>>();
+        channels = new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>();
     }
 
     /**
@@ -105,7 +105,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     public MutableSparseVector(Long2DoubleMap keyValueMap) {
         super(keyValueMap);
         channelVectors = new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
-        channels = new Reference2ObjectArrayMap<TypedSymbol<?>, MutableTypedSideChannel<?>>();
+        channels = new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>();
     }
 
     /**
@@ -134,7 +134,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     @SuppressWarnings({"rawtypes", "unchecked"})
     MutableSparseVector(LongKeySet ks, double[] vs) {
         this(ks, vs, new Reference2ObjectArrayMap<Symbol, MutableSparseVector>(),
-             new Reference2ObjectArrayMap<TypedSymbol<?>, MutableTypedSideChannel<?>>());
+             new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>());
     }
 
     /**
@@ -152,7 +152,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     MutableSparseVector(LongKeySet ks, double[] vs,
                         Map<Symbol, MutableSparseVector> cvs,
-                        Map<TypedSymbol<?>, MutableTypedSideChannel<?>> chs) {
+                        Map<TypedSymbol<?>, Long2ObjectMap<?>> chs) {
         super(ks, vs);
         channelVectors = cvs;
         channels = chs;
@@ -189,9 +189,16 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         for (Map.Entry<Symbol, MutableSparseVector> entry : channelVectors.entrySet()) {
             msvNew.addVectorChannel(entry.getKey(), entry.getValue().withDomain(domain.clone()));
         }
-        for (Entry<TypedSymbol<?>, MutableTypedSideChannel<?>> entry : channels.entrySet()) {
-            TypedSymbol key = entry.getKey();
-            msvNew.addChannel(key, entry.getValue().withDomain(domain.clone()));
+        for (Entry<TypedSymbol<?>, Long2ObjectMap<?>> entry : channels.entrySet()) {
+            TypedSymbol<?> key = entry.getKey();
+            if (!key.getType().equals(Double.class)) {
+                Long2ObjectMap<?> chan = entry.getValue();
+                assert chan instanceof MutableTypedSideChannel;
+                msvNew.addChannel(key, ((MutableTypedSideChannel) chan).withDomain(domain.clone()));
+            } else {
+                assert msvNew.hasChannel(key);
+                assert entry.getValue() instanceof MutableSparseVectorMap;
+            }
         }
         return msvNew;
     }
@@ -552,31 +559,38 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         return mutableCopy();
     }
 
-    private Map<Symbol, MutableSparseVector> copyOfChannelMap() {
-        Map<Symbol, MutableSparseVector> copyOfChannels =
-                new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
-        for (Map.Entry<Symbol, MutableSparseVector> entry : channelVectors.entrySet()) {
-            copyOfChannels.put(entry.getKey(), entry.getValue().copy());
-        }
-        return copyOfChannels;
-    }
-    
-    private Map<TypedSymbol<?>, MutableTypedSideChannel<?>> copyOfTypedChannelMap() {
-        Map<TypedSymbol<?>, MutableTypedSideChannel<?>> copyOfChannels=
-                new Reference2ObjectArrayMap<TypedSymbol<?>, MutableTypedSideChannel<?>>();
-        for (Entry<TypedSymbol<?>, MutableTypedSideChannel<?>> entry : channels.entrySet()) {
-            copyOfChannels.put(entry.getKey(), entry.getValue().mutableCopy());
-        }
-        return copyOfChannels;
-    }
-
     @Override
     public MutableSparseVector mutableCopy() {
         checkFrozen();
         LongKeySet mks = keys.clone();
         double[] mvs = java.util.Arrays.copyOf(values, keys.getEndIndex());
 
-        return new MutableSparseVector(mks, mvs, copyOfChannelMap(), copyOfTypedChannelMap());
+        // copy the channel maps
+        Map<Symbol, MutableSparseVector> newChanVectors =
+                new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
+        Map<TypedSymbol<?>, Long2ObjectMap<?>> newChannels =
+                new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>();
+        // copy all unboxed channels into both maps
+        for (Map.Entry<Symbol, MutableSparseVector> entry : channelVectors.entrySet()) {
+            Symbol key = entry.getKey();
+            MutableSparseVector msv = entry.getValue().copy();
+            newChanVectors.put(key, msv);
+            newChannels.put(key.withType(Double.class), new MutableSparseVectorMap(msv));
+        }
+        // copy all remaining channels into the channel map
+        for (Entry<TypedSymbol<?>, Long2ObjectMap<?>> entry : channels.entrySet()) {
+            TypedSymbol<?> key = entry.getKey();
+            if (!key.getType().equals(Double.class)) {
+                Long2ObjectMap<?> chan = entry.getValue();
+                assert chan instanceof MutableTypedSideChannel;
+                newChannels.put(key, ((MutableTypedSideChannel<?>) chan).mutableCopy());
+            } else {
+                assert newChannels.containsKey(key);
+                assert entry.getValue() instanceof MutableSparseVectorMap;
+            }
+        }
+
+        return new MutableSparseVector(mks, mvs, newChanVectors, newChannels);
     }
 
     @Override
@@ -673,23 +687,34 @@ public final class MutableSparseVector extends SparseVector implements Serializa
             }
         }
 
-        Map<Symbol, ImmutableSparseVector> newChannelMap =
+        Map<Symbol, ImmutableSparseVector> newChannelVectors =
                 new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>(channelVectors.size());
+        Map<TypedSymbol<?>, Long2ObjectMap<?>> newChannels =
+                new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>();
         // We recursively generate immutable versions of all channels.  If freeze
         // is true, these versions will be made without copying.
         for (Map.Entry<Symbol, MutableSparseVector> entry : channelVectors.entrySet()) {
-            newChannelMap.put(entry.getKey(), entry.getValue().immutable(freeze, keyDomain.clone()));
+            Symbol key = entry.getKey();
+            ImmutableSparseVector chan = entry.getValue().immutable(freeze, keyDomain.clone());
+            newChannelVectors.put(key, chan);
+            newChannels.put(key.withType(Double.class), new SparseVectorMap(chan));
         }
 
-        Map<TypedSymbol<?>, TypedSideChannel<?>> newTypedChannelMap =
-                new Reference2ObjectArrayMap<TypedSymbol<?>, TypedSideChannel<?>>();
-        for (Entry<TypedSymbol<?>, MutableTypedSideChannel<?>> entry : channels.entrySet()) {
-            newTypedChannelMap.put(entry.getKey(), entry.getValue().immutable(keyDomain, freeze));
+        for (Entry<TypedSymbol<?>, Long2ObjectMap<?>> entry : channels.entrySet()) {
+            TypedSymbol<?> key = entry.getKey();
+            if (!key.getType().equals(Double.class)) {
+                Long2ObjectMap<?> chan = entry.getValue();
+                assert chan instanceof MutableTypedSideChannel;
+                newChannels.put(key, ((MutableTypedSideChannel<?>) chan).immutable(keyDomain.clone(), freeze));
+            } else {
+                assert newChannels.containsKey(key);
+                assert entry.getValue() instanceof MutableSparseVectorMap;
+            }
         }
         
         ImmutableSparseVector isv = new ImmutableSparseVector(keyDomain, nvs,
-                                                              newChannelMap,
-                                                              newTypedChannelMap);
+                                                              newChannelVectors,
+                                                              newChannels);
         if (freeze) {
             values = null;
         }
@@ -808,6 +833,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         SparseVector retval;
         if (hasChannelVector(channelSymbol)) {
             retval = channelVectors.remove(channelSymbol);
+            channels.remove(channelSymbol.withType(Double.class));
             return retval;
         }
         throw new IllegalArgumentException("No such channel " +
@@ -826,9 +852,12 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     @SuppressWarnings("unchecked")
     public <K> Long2ObjectMap<K> removeChannel(TypedSymbol<K> channelSymbol) {
         checkFrozen();
-        MutableTypedSideChannel<K> retval;
+        Long2ObjectMap<K> retval;
         if (hasChannel(channelSymbol)) {
-            retval = (MutableTypedSideChannel<K>) channels.remove(channelSymbol);
+            retval = (Long2ObjectMap<K>) channels.remove(channelSymbol);
+            if (channelSymbol.getType().equals(Double.class)) {
+                channelVectors.remove(channelSymbol.getRawSymbol());
+            }
             return retval;
         }
         throw new IllegalArgumentException("No such channel " +
@@ -864,6 +893,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         }
         MutableSparseVector theChannel = new MutableSparseVector(keys.inactiveCopy());
         channelVectors.put(channelSymbol, theChannel);
+        assert !channels.containsKey(channelSymbol.withType(Double.class));
+        channels.put(channelSymbol.withType(Double.class), new MutableSparseVectorMap(theChannel));
         return theChannel;
     }
 
@@ -886,6 +917,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @throws IllegalArgumentException if there is already a channel
      *                                  with that symbol
      */
+    @SuppressWarnings("unchecked")
     public <K> Long2ObjectMap<K> addChannel(TypedSymbol<K> channelSymbol) {
         checkFrozen();
         if (hasChannel(channelSymbol)) {
@@ -893,9 +925,14 @@ public final class MutableSparseVector extends SparseVector implements Serializa
                                                + " with type " + channelSymbol.getType().getSimpleName() 
                                                + " already exists");
         }
-        MutableTypedSideChannel<K> theChannel = new MutableTypedSideChannel<K>(keys.inactiveCopy());
-        channels.put(channelSymbol, theChannel);
-        return theChannel;
+        if (channelSymbol.getType().equals(Double.class)) {
+            addChannelVector(channelSymbol.getRawSymbol());
+            return (Long2ObjectMap<K>) channels.get(channelSymbol);
+        } else {
+            MutableTypedSideChannel<K> theChannel = new MutableTypedSideChannel<K>(keys.inactiveCopy());
+            channels.put(channelSymbol, theChannel);
+            return theChannel;
+        }
     }
 
     /**
@@ -909,7 +946,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return the newly created channel
      */
     public MutableSparseVector getOrAddChannelVector(Symbol channelSymbol) {
-        MutableSparseVector chan = channelVectors.get(channelSymbol);
+        MutableSparseVector chan = getChannelVector(channelSymbol);
         if (chan == null) {
             chan = addChannelVector(channelSymbol);
         }
@@ -936,10 +973,11 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     @SuppressWarnings("unchecked")
     public <K> Long2ObjectMap<K> getOrAddChannel(TypedSymbol<K> channelSymbol) {
-        if (!hasChannel(channelSymbol)) {
-            addChannel(channelSymbol);
+        Long2ObjectMap<K> chan = getChannel(channelSymbol);
+        if (chan == null) {
+            chan = addChannel(channelSymbol);
         }
-        return (MutableTypedSideChannel<K>) channels.get(channelSymbol);
+        return chan;
     }
 
     /**
@@ -955,11 +993,14 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         Preconditions.checkArgument(keys.isCompatibleWith(vectorEntries.keys),
                                     "vector has incompatible key domain");
         channelVectors.put(key, vectorEntries);
+        channels.put(key.withType(Double.class), new MutableSparseVectorMap(vectorEntries));
     }
 
     <T> void addChannel(TypedSymbol<T> sym, MutableTypedSideChannel<T> chan) {
         Preconditions.checkArgument(keys.isCompatibleWith(chan.keys),
                                     "vector has incompatible key domain");
+        Preconditions.checkArgument(!sym.getType().equals(Double.class),
+                                    "cannot add double channel like this");
         channels.put(sym, chan);
     }
 
@@ -979,7 +1020,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         return channelVectors.get(channelSymbol);
     }
 
-    @Override
+    @Override @Deprecated
     public SparseVector channel(Symbol channelSymbol) {
         MutableSparseVector v = getChannelVector(channelSymbol);
         if (v != null) {
@@ -993,7 +1034,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     @Override
     public <K> Long2ObjectMap<K> getChannel(TypedSymbol<K> channelSymbol) {
         checkFrozen();
-        return (MutableTypedSideChannel<K>) channels.get(channelSymbol);
+        return (Long2ObjectMap<K>) channels.get(channelSymbol);
     }
 
     @Override

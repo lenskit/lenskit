@@ -23,14 +23,14 @@ package org.grouplens.lenskit.vectors;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.junit.Test;
 
 import java.util.Set;
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.grouplens.lenskit.vectors.SparseVectorTestCommon.closeTo;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -320,4 +320,57 @@ public class TestMutableSparseVectorChannels {
         } catch(IllegalStateException iae) { /* skip */ }
     }
 
+    @Test
+    public void testAddChannelCreatesWrapper() {
+        MutableSparseVector v = simpleVector();
+        v.addChannelVector(fooSymbol);
+        assertThat(v.getChannelVector(fooSymbol),
+                   not(nullValue()));
+        assertThat(v.getChannel(fooSymbol.withType(Double.class)),
+                   instanceOf(MutableSparseVectorMap.class));
+        v.getChannelVector(fooSymbol).set(7, Math.PI);
+        assertThat(v.getChannel(fooSymbol.withType(Double.class)),
+                   hasEntry(7L, Math.PI));
+        assertThat(v.hasChannel(fooSymbol.withType(Double.class)),
+                   equalTo(true));
+        assertThat(v.getChannelSymbols(),
+                   contains((TypedSymbol) fooSymbol.withType(Double.class)));
+        assertThat(v.getChannelVectorSymbols(), contains(fooSymbol));
+    }
+
+    @Test
+    public void testAddChannelVectorWithType() {
+        MutableSparseVector v = simpleVector();
+        v.addChannel(fooSymbol.withType(Double.class));
+        assertThat(v.getChannel(fooSymbol.withType(Double.class)),
+                   instanceOf(MutableSparseVectorMap.class));
+        assertThat(v.getChannelVector(fooSymbol),
+                   not(nullValue()));
+        v.getChannelVector(fooSymbol).set(7, Math.PI);
+        assertThat(v.getChannel(fooSymbol.withType(Double.class)),
+                   hasEntry(7L, Math.PI));
+        assertThat(v.getChannelSymbols(),
+                   contains((TypedSymbol) fooSymbol.withType(Double.class)));
+        assertThat(v.getChannelVectorSymbols(), contains(fooSymbol));
+    }
+
+    @Test
+    public void testRemoveChannelDeletesWrapper() {
+        MutableSparseVector v = simpleVector();
+        v.addChannelVector(fooSymbol);
+        v.removeChannelVector(fooSymbol);
+        assertThat(v.getChannel(fooSymbol.withType(Double.class)),
+                   nullValue());
+    }
+
+    @Test
+    public void testRemoveChannelVectorByType() {
+        MutableSparseVector v = simpleVector();
+        v.addChannelVector(fooSymbol);
+        v.removeChannel(fooSymbol.withType(Double.class));
+        assertThat(v.getChannelVector(fooSymbol),
+                   nullValue());
+        assertThat(v.getChannel(fooSymbol.withType(Double.class)),
+                   nullValue());
+    }
 }

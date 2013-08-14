@@ -30,8 +30,11 @@ import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Immutable sparse vectors. These vectors cannot be changed, even by other
@@ -46,7 +49,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
 
     @SuppressFBWarnings("SE_BAD_FIELD")
     private final Map<Symbol, ImmutableSparseVector> channelVectors;
-    private final Map<TypedSymbol<?>,TypedSideChannel<?>> channels;
+    private final Map<TypedSymbol<?>, Long2ObjectMap<?>> channels;
 
     private transient volatile Double norm = null;
     private transient volatile Double sum = null;
@@ -87,7 +90,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      */
     ImmutableSparseVector(LongKeySet ks, double[] vs,
                           Map<Symbol, ImmutableSparseVector> chanVectors,
-                          Map<TypedSymbol<?>, TypedSideChannel<?>> chans) {
+                          Map<TypedSymbol<?>, Long2ObjectMap<?>> chans) {
         super(ks, vs);
         channelVectors = ImmutableMap.copyOf(chanVectors);
         channels = ImmutableMap.copyOf(chans);
@@ -107,10 +110,15 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
         for (Map.Entry<Symbol, ImmutableSparseVector> entry : channelVectors.entrySet()) {
             result.addVectorChannel(entry.getKey(), entry.getValue().mutableCopy());
         }
-        for (Entry<TypedSymbol<?>, TypedSideChannel<?>> entry : channels.entrySet()) {
+        for (Entry<TypedSymbol<?>, Long2ObjectMap<?>> entry : channels.entrySet()) {
             TypedSymbol ts = entry.getKey();
-            TypedSideChannel val = entry.getValue();
-            result.addChannel(ts,val.mutableCopy());
+            if (!ts.getType().equals(Double.class)) {
+                Long2ObjectMap<?> val = entry.getValue();
+                assert val instanceof TypedSideChannel;
+                result.addChannel(ts, ((TypedSideChannel) val).mutableCopy());
+            } else {
+                assert result.hasChannel(ts);
+            }
         }
         
         return result;
