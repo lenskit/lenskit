@@ -15,7 +15,7 @@ public class PointersTest {
         assertThat(ptr.isAtEnd(), equalTo(true));
         assertThat(ptr.advance(), equalTo(false));
         try {
-            ptr.get();
+            ptr.getInt();
             fail("getting from empty pointer should throw exception");
         } catch (NoSuchElementException e) {
             /* expected */
@@ -30,7 +30,7 @@ public class PointersTest {
         assertThat(ptr.advance(), equalTo(false));
         assertThat(ptr.isAtEnd(), equalTo(true));
         try {
-            ptr.get();
+            ptr.getInt();
             fail("getting from consumed pointer should throw exception");
         } catch (NoSuchElementException e) {
             /* expected */

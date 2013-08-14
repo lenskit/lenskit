@@ -423,7 +423,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
 
         @Override
         public VectorEntry get() {
-            int pos = indexPointer.get();
+            int pos = indexPointer.getInt();
             entry.set(pos, keys.getKey(pos), values[pos],
                       keys.indexIsActive(pos));
             return entry;

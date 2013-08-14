@@ -33,4 +33,12 @@ public interface IntPointer extends Pointer<Integer> {
      * @throws java.util.NoSuchElementException if the pointer is out-of-bounds.
      */
     int getInt();
+
+    /**
+     * {@inheritDoc}
+     * @deprecated Deprecated only to make warnings show up when you know you have an
+     * {@code IntPointer} and use the boxed {@code get()}.  Use {@link #getInt()} instead.
+     */
+    @Override @Deprecated
+    Integer get();
 }
