@@ -86,16 +86,21 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     //region Constructors
     /**
      * Construct a new vector from a key set and value array.
-     * @param ks The key set.
+     * @param ks The key set.  Used as-is, and will be modified.  Pass a clone, usually.
      * @param vs The value array.
      */
     @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     SparseVector(LongKeySet ks, double[] vs) {
         assert vs.length >= ks.getEndIndex();
         keys = ks;
+        keys.requireOwned();
         values = vs;
     }
 
+    /**
+     * Construct a new sparse vector with a particular domain.  Allocates the value storage.
+     * @param ks The key set. Used as-is, and will be modified. Pass a clone, usually.
+     */
     SparseVector(LongKeySet ks) {
         this(ks, new double[ks.getEndIndex()]);
         ks.setAllActive(false);

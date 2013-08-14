@@ -34,6 +34,9 @@ import java.util.Collection;
  *
  * <p>No orders are supported other than the natural ordering.
  *
+ * <p>A long sorted array set is a read-only view of its key set.  It does not take ownership of
+ * the key set.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
@@ -48,6 +51,7 @@ public final class LongSortedArraySet extends AbstractLongSortedSet implements S
      */
     LongSortedArraySet(@Nonnull LongKeySet ks) {
         keys = ks;
+        keys.requireOwned();
     }
 
     /**

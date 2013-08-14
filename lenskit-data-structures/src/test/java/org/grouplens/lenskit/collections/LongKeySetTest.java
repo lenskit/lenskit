@@ -373,4 +373,16 @@ public class LongKeySetTest {
         ks2.setActive(1, false);
         assertThat(keys.indexIsActive(1), equalTo(true));
     }
+
+    @Test
+    public void testOwnership() {
+        LongKeySet keys = LongKeySet.create(0, 1, 2, 3);
+        keys.setActive(2, false);
+        LongKeySet ks2 = keys.unowned().clone();
+        assertThat(ks2, sameInstance(keys));
+        LongKeySet ks3 = keys.clone();
+        assertThat(ks3, not(sameInstance(keys)));
+        ks3.setActive(3, false);
+        assertThat(keys.indexIsActive(3), equalTo(true));
+    }
 }

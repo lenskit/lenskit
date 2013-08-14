@@ -78,29 +78,29 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
      * Create a copy with the specified domain.  If {@code freeze} is set, also try to re-use storage
      * and render this vector inoperable.
      *
-     * @param domain The domain to use.  The domain is used as-is, not copied; its mask will be
-     *               reset as appropriate.
+     * @param domain The domain to use.
      * @param freeze If {@code true}, try to re-use this storage. If this option is set, then this
      *               map will be unusable after this method has been called.
      * @return The new, immutable map.
      */
     public TypedSideChannel<V> immutable(LongKeySet domain, boolean freeze) {
+        LongKeySet nks = domain.clone();
         V[] nvs;
-        nvs = adjustStorage(domain, freeze);
+        nvs = adjustStorage(nks, freeze);
         frozen |= freeze;
-        return new TypedSideChannel<V>(domain, nvs);
+        return new TypedSideChannel<V>(nks, nvs);
     }
 
     /**
      * Create a copy with the specified domain.
      *
-     * @param domain The domain to use.  The domain is used as-is, not copied; its mask will be
-     *               reset as appropriate.
+     * @param domain The domain to use.
      * @return The new map.
      */
     public MutableTypedSideChannel<V> withDomain(LongKeySet domain) {
-        V[] nvs = adjustStorage(domain, false);
-        return new MutableTypedSideChannel<V>(domain, nvs);
+        LongKeySet nks = domain.clone();
+        V[] nvs = adjustStorage(nks, false);
+        return new MutableTypedSideChannel<V>(nks, nvs);
     }
 
     private V[] adjustStorage(LongKeySet domain, boolean reuseIfPossible) {

@@ -107,6 +107,7 @@ public final class LongKeySet implements Serializable {
     private final int startIndex;
     private final int endIndex;
     private final BitSet mask;
+    private boolean unowned = false;
 
     private LongKeySet(long[] ks, int start, int end, BitSet m) {
         keys = ks;
@@ -221,7 +222,35 @@ public final class LongKeySet implements Serializable {
      */
     @Override
     public LongKeySet clone() {
-        return new LongKeySet(keys, startIndex, endIndex, (BitSet) mask.clone());
+        if (unowned) {
+            unowned = false;
+            return this;
+        } else {
+            return new LongKeySet(keys, startIndex, endIndex, (BitSet) mask.clone());
+        }
+    }
+
+    /**
+     * Mark this key set as <emph>unowned</emph>.  The next call to {@link #clone()} will mark the
+     * key set as owned and return it rather than making a copy.  This allows code to avoid an
+     * extra copy when creating a key set to pass off to another method or object that will make
+     * a defensive copy.
+     * <p>You almost certainly do not want to call this method.
+     * <p>Any object or method that receives a key set that it intends to take ownership of must
+     * call {@link #clone()} to make sure that it owns the set.
+     * @return This key set (for chaining).
+     */
+    public LongKeySet unowned() {
+        unowned = true;
+        return this;
+    }
+
+    /**
+     * Mark the key set as owned, but don't copy it.  Used by views to make sure that someone owns
+     * the key set.
+     */
+    public void requireOwned() {
+        unowned = false;
     }
 
     /**
