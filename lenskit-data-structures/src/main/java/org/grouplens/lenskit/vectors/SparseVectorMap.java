@@ -44,7 +44,11 @@ class SparseVectorMap extends AbstractLong2ObjectMap<Double> {
 
     @Override
     public Double get(long key) {
-        return vector.get(key, defaultReturnValue());
+        if (vector.containsKey(key)) {
+            return vector.get(key);
+        } else {
+            return defaultReturnValue();
+        }
     }
 
     @Override

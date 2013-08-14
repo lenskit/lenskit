@@ -24,6 +24,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.SymbolValue;
@@ -67,7 +68,21 @@ class VectorEntryScoredId extends AbstractScoredId {
     @Nonnull
     @Override
     public Collection<SymbolValue<?>> getChannels() {
-        throw new UnsupportedOperationException();
+        return FluentIterable.from(vector.getChannelSymbols())
+                             .transform(new Function<TypedSymbol<?>, SymbolValue<?>>() {
+                                 @SuppressWarnings({"unchecked", "rawtypes"})
+                                 @Nullable
+                                 @Override
+                                 public SymbolValue<?> apply(@Nullable TypedSymbol input) {
+                                     assert input != null;
+                                     Object obj = vector.getChannel(input).get(ent.getKey());
+                                     if (obj == null) {
+                                         return null;
+                                     } else {
+                                         return input.withValue(obj);
+                                     }
+                                 }
+                             }).filter(Predicates.notNull()).toList();
     }
 
     @Nonnull
@@ -92,13 +107,16 @@ class VectorEntryScoredId extends AbstractScoredId {
     @Nullable
     @Override
     public <T> T getChannelValue(@Nonnull TypedSymbol<T> sym) {
-        // FIXME Make this return null properly
-        return vector.getChannel(sym).get(ent.getKey());
+        Long2ObjectMap<T> channel = vector.getChannel(sym);
+        if (channel != null) {
+            return channel.get(ent.getKey());
+        } else {
+            return null;
+        }
     }
 
     @Override
     public double getUnboxedChannelValue(Symbol sym) {
-        // FIXME Make this throw the correct exception
         return vector.getChannelVector(sym).get(ent);
     }
 

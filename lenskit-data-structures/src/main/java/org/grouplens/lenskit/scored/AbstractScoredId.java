@@ -73,6 +73,7 @@ public abstract class AbstractScoredId implements ScoredId {
                     .append(getScore());
 
             double sum = 0;
+            // FIXME Don't incur the boxing cost of doing this to double side channels
             for (SymbolValue<?> sym: getChannels()) {
                 sum += sym.hashCode();
             }
@@ -95,6 +96,7 @@ public abstract class AbstractScoredId implements ScoredId {
             return new EqualsBuilder()
                     .append(getId(), oid.getId())
                     .append(getScore(), oid.getScore())
+                            // FIXME Don't incur the boxing cost of doing this to double side channels
                     .append(ord.sortedCopy(getChannels()),
                             ord.sortedCopy(oid.getChannels()))
                     .isEquals();
