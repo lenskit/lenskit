@@ -31,10 +31,7 @@ import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.collections.IntPointer;
 import org.grouplens.lenskit.collections.LongKeySet;
-import org.grouplens.lenskit.collections.Pointer;
-import org.grouplens.lenskit.collections.Pointers;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
@@ -348,94 +345,6 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
-        }
-    }
-    //endregion
-
-    //region Pointers
-    /**
-     * Get a pointer over the set vector entries.
-     *
-     * @return A pointer to the first entry in this vector (or after the end, if the vector is
-     *         empty).
-     */
-    public Pointer<VectorEntry> pointer() {
-        return pointer(VectorEntry.State.SET);
-    }
-
-    /**
-     * Get a pointer over the vector entries.
-     *
-     * @param state The entries to include.
-     * @return A pointer to the first entry in this vector (or after the end, if the vector is
-     *         empty).
-     */
-    public Pointer<VectorEntry> pointer(VectorEntry.State state) {
-        return Pointers.transform(fastPointer(state), VectorEntry.copyFunction());
-    }
-
-    /**
-     * Get a fast pointer over the set vector entries.
-     *
-     * @return A pointer to the first entry in this vector (or after the end, if the vector is
-     *         empty).
-     */
-    public Pointer<VectorEntry> fastPointer() {
-        return fastPointer(VectorEntry.State.SET);
-    }
-
-    /**
-     * Get a fast pointer over the vector entries.  It may modify and return the same object rather
-     * than creating new instances.  When returned, it is pointing at the first entry, if such
-     * exists.
-     *
-     * @param state The entries to include.
-     * @return A (potentially) fast pointer over the vector entries.
-     */
-    public Pointer<VectorEntry> fastPointer(VectorEntry.State state) {
-        IntPointer base;
-        switch (state) {
-        case SET:
-            base = keys.activeIndexPointer();
-            break;
-        case UNSET:
-            base = keys.clone().invert().activeIndexPointer();
-            break;
-        case EITHER:
-            base = Pointers.fromTo(keys.getStartIndex(), keys.getEndIndex());
-            break;
-        default:
-            throw new AssertionError("invalid entry state");
-        }
-        return new FastEntryPointer(base, state);
-    }
-
-    private class FastEntryPointer implements Pointer<VectorEntry> {
-        private VectorEntry.State state;
-        private IntPointer indexPointer;
-        private final VectorEntry entry = new VectorEntry(SparseVector.this, -1, 0, 0, false);
-
-        FastEntryPointer(IntPointer ip, VectorEntry.State st) {
-            indexPointer = ip;
-            state = st;
-        }
-
-        @Override
-        public boolean advance() {
-            return indexPointer.advance();
-        }
-
-        @Override
-        public VectorEntry get() {
-            int pos = indexPointer.getInt();
-            entry.set(pos, keys.getKey(pos), values[pos],
-                      state == VectorEntry.State.SET || keys.indexIsActive(pos));
-            return entry;
-        }
-
-        @Override
-        public boolean isAtEnd() {
-            return indexPointer.isAtEnd();
         }
     }
     //endregion

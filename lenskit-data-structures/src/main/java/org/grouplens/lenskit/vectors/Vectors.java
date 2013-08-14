@@ -28,7 +28,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.Pointer;
+import org.grouplens.lenskit.collections.IntPointer;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
@@ -137,16 +137,17 @@ public final class Vectors {
     }
 
     private static class FastUnionIterImpl implements Iterator<Pair<VectorEntry,VectorEntry>> {
-
-        private Pointer<VectorEntry> p1;
-        private Pointer<VectorEntry> p2;
+        private final SparseVector vec1, vec2;
+        private final IntPointer p1, p2;
         private VectorEntry leftEnt;
         private VectorEntry rightEnt;
         private MutablePair<VectorEntry,VectorEntry> pair;
 
         public FastUnionIterImpl(SparseVector v1, SparseVector v2) {
-            p1 = v1.fastPointer();
-            p2 = v2.fastPointer();
+            vec1 = v1;
+            vec2 = v2;
+            p1 = vec1.keys.activeIndexPointer();
+            p2 = vec2.keys.activeIndexPointer();
             leftEnt = new VectorEntry(v1, -1, 0, 0, false);
             rightEnt = new VectorEntry(v2, -1, 0, 0, false);
             pair = new MutablePair<VectorEntry,VectorEntry>(leftEnt, rightEnt);
@@ -160,12 +161,12 @@ public final class Vectors {
         @Override
         public Pair<VectorEntry, VectorEntry> next() {
             if (!p1.isAtEnd() && !p2.isAtEnd()) {
-                final VectorEntry e1 = p1.get();
-                final VectorEntry e2 = p2.get();
-                final long k1 = e1.getKey();
-                final long k2 = e2.getKey();
+                final int i1 = p1.getInt();
+                final int i2 = p2.getInt();
+                final long k1 = vec1.keys.getKey(i1);
+                final long k2 = vec2.keys.getKey(i2);
                 if (k1 < k2) {
-                    leftEnt.set(e1.getIndex(), k1, e1.getValue(), e1.isSet());
+                    leftEnt.set(i1, k1, vec1.values[i1], true);
                     pair.setLeft(leftEnt);
                     p1.advance();
 
@@ -175,25 +176,25 @@ public final class Vectors {
                 } else if (k2 < k1) {
                     pair.setLeft(null);
 
-                    rightEnt.set(e2.getIndex(), k2, e2.getValue(), e2.isSet());
+                    rightEnt.set(i2, k2, vec2.values[i2], true);
                     pair.setRight(rightEnt);
                     p2.advance();
 
                     return pair;
                 } else {
-                    leftEnt.set(e1.getIndex(), k1, e1.getValue(), e1.isSet());
+                    leftEnt.set(i1, k1, vec1.values[i1], true);
                     pair.setLeft(leftEnt);
                     p1.advance();
 
-                    rightEnt.set(e2.getIndex(), k2, e2.getValue(), e2.isSet());
+                    rightEnt.set(i2, k2, vec2.values[i2], true);
                     pair.setRight(rightEnt);
                     p2.advance();
 
                     return pair;
                 }
             } else if (!p1.isAtEnd()) {
-                VectorEntry e1 = p1.get();
-                leftEnt.set(e1.getIndex(), e1.getKey(), e1.getValue(), e1.isSet());
+                final int i1 = p1.getInt();
+                leftEnt.set(i1, vec1.keys.getKey(i1), vec1.values[i1], true);
                 pair.setLeft(leftEnt);
                 p1.advance();
 
@@ -203,8 +204,8 @@ public final class Vectors {
             } else if (!p2.isAtEnd()) {
                 pair.setLeft(null);
 
-                VectorEntry e2 = p2.get();
-                rightEnt.set(e2.getIndex(), e2.getKey(), e2.getValue(), e2.isSet());
+                final int i2 = p2.getInt();
+                rightEnt.set(i2, vec2.keys.getKey(i2), vec2.values[i2], true);
                 pair.setRight(rightEnt);
                 p2.advance();
 
@@ -253,15 +254,17 @@ public final class Vectors {
 
     private static class FastIntersectIterImpl implements Iterator<Pair<VectorEntry,VectorEntry>> {
         private boolean atNext = false;
-        private Pointer<VectorEntry> p1;
-        private Pointer<VectorEntry> p2;
+        private final SparseVector vec1, vec2;
+        private IntPointer p1, p2;
         private VectorEntry leftEnt;
         private VectorEntry rightEnt;
         private MutablePair<VectorEntry,VectorEntry> pair;
 
         public FastIntersectIterImpl(SparseVector v1, SparseVector v2) {
-            p1 = v1.fastPointer();
-            p2 = v2.fastPointer();
+            vec1 = v1;
+            vec2 = v2;
+            p1 = v1.keys.activeIndexPointer();
+            p2 = v2.keys.activeIndexPointer();
             leftEnt = new VectorEntry(v1, -1, 0, 0, false);
             rightEnt = new VectorEntry(v2, -1, 0, 0, false);
             pair = MutablePair.of(leftEnt, rightEnt);
@@ -271,8 +274,8 @@ public final class Vectors {
         public boolean hasNext() {
             if (!atNext) {
                 while (!p1.isAtEnd() && !p2.isAtEnd()) {
-                    long key1 = p1.get().getKey();
-                    long key2 = p2.get().getKey();
+                    long key1 = vec1.keys.getKey(p1.getInt());
+                    long key2 = vec2.keys.getKey(p2.getInt());
                     if (key1 == key2) {
                         atNext = true;
                         break;
@@ -292,14 +295,14 @@ public final class Vectors {
                 throw new NoSuchElementException();
             }
 
-            final VectorEntry e1 = p1.get();
-            final VectorEntry e2 = p2.get();
-            assert e1.getKey() == e2.getKey();
+            final int i1 = p1.getInt();
+            final int i2 = p2.getInt();
+            assert vec1.keys.getKey(i1) == vec2.keys.getKey(i2);
 
-            leftEnt.set(e1.getIndex(), e1.getKey(), e1.getValue(), e1.isSet());
+            leftEnt.set(i1, vec1.keys.getKey(i1), vec1.values[i1], true);
             p1.advance();
 
-            rightEnt.set(e2.getIndex(), e2.getKey(), e2.getValue(), e2.isSet());
+            rightEnt.set(i2, vec2.keys.getKey(i2), vec2.values[i2], true);
             p2.advance();
 
             atNext = false;
@@ -310,230 +313,6 @@ public final class Vectors {
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
-        }
-    }
-
-    /**
-     * Provides an Iterable over EntryPairs based off of a fast Iterator.
-     *
-     * @param v1 a SparseVector
-     * @param v2 a SparseVector
-     * @return an Iterable<EntryPair> wrapping a fast Iterator.
-     * @deprecated This can be implemented in terms of {@link #fastUnion(SparseVector, SparseVector)}
-     */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public static Iterable<EntryPair> pairedFast(final SparseVector v1, final SparseVector v2) {
-        return new Iterable<EntryPair>() {
-            @Override
-            public Iterator<EntryPair> iterator() {
-                return pairedFastIterator(v1, v2);
-            }
-        };
-    }
-
-    /**
-     * Returns a fast Iterator over the value pairs of the parameter
-     * SparseVectors that share common keys.
-     *
-     * @param v1 a SparseVector
-     * @param v2 a SparseVector
-     * @return a fast Iterator over EntryPairs, representing a shared
-     *         key and the paired values for that key.
-     * @deprecated This can be implemented in terms of {@link #fastUnion(SparseVector, SparseVector)}
-     */
-    @Deprecated
-    public static Iterator<EntryPair> pairedFastIterator(SparseVector v1, SparseVector v2) {
-        return new FastIteratorImpl(v1, v2);
-    }
-
-    /**
-     * Provides an Iterable over EntryPairs.
-     *
-     * @param v1 a SparseVector
-     * @param v2 a SparseVector
-     * @return an Iterable<EntryPair> wrapping a fast Iterator.
-     * @deprecated This can be implemented in terms of {@link #union(SparseVector, SparseVector)}
-     */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public static Iterable<EntryPair> paired(final SparseVector v1, final SparseVector v2) {
-        return new Iterable<EntryPair>() {
-            @Override
-            public Iterator<EntryPair> iterator() {
-                return pairedIterator(v1, v2);
-            }
-        };
-    }
-
-    /**
-     * Returns an Iterator over the value pairs of the parameter
-     * SparseVectors that share common keys.
-     *
-     * @param v1 a SparseVector
-     * @param v2 a SparseVector
-     * @return an Iterator over EntryPairs, representing a shared
-     *         key and the paired values for that key.
-     * @deprecated This can be implemented in terms of {@link #union(SparseVector, SparseVector)}
-     */
-    @Deprecated
-    @SuppressWarnings("deprecation")
-    public static Iterator<EntryPair> pairedIterator(SparseVector v1, SparseVector v2) {
-        return new IteratorImpl(v1, v2);
-    }
-
-    @SuppressWarnings("deprecation")
-    private static final class IteratorImpl implements Iterator<EntryPair> {
-        private boolean atNext = false;
-        private final Pointer<VectorEntry> p1;
-        private final Pointer<VectorEntry> p2;
-
-        IteratorImpl(SparseVector v1, SparseVector v2) {
-            p1 = v1.fastPointer();
-            p2 = v2.fastPointer();
-        }
-
-        @Override
-        public boolean hasNext() {
-            if (!atNext) {
-                while (!p1.isAtEnd() && !p2.isAtEnd()) {
-                    long key1 = p1.get().getKey();
-                    long key2 = p2.get().getKey();
-                    if (key1 == key2) {
-                        atNext = true;
-                        break;
-                    } else if (key1 < key2) {
-                        p1.advance();
-                    } else {
-                        p2.advance();
-                    }
-                }
-            }
-            return atNext;
-        }
-
-        @Override
-        public EntryPair next() {
-            if (!hasNext()) {
-                return null;
-            }
-            EntryPair curPair = new EntryPair(p1.get().getKey(), p1.get().getValue(), p2.get().getValue());
-            p1.advance();
-            p2.advance();
-            atNext = false;
-            return curPair;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    @SuppressWarnings("deprecation")
-    private static final class FastIteratorImpl implements Iterator<EntryPair> {
-        private EntryPair curPair = new EntryPair();
-        private boolean atNext = false;
-        private final Pointer<VectorEntry> p1;
-        private final Pointer<VectorEntry> p2;
-
-        FastIteratorImpl(SparseVector v1, SparseVector v2) {
-            p1 = CollectionUtils.pointer(v1.fastIterator());
-            p2 = CollectionUtils.pointer(v2.fastIterator());
-        }
-
-        @Override
-        public boolean hasNext() {
-            if (!atNext) {
-                while (!p1.isAtEnd() && !p2.isAtEnd()) {
-                    long key1 = p1.get().getKey();
-                    long key2 = p2.get().getKey();
-                    if (key1 == key2) {
-                        atNext = true;
-                        break;
-                    } else if (key1 < key2) {
-                        p1.advance();
-                    } else {
-                        p2.advance();
-                    }
-                }
-            }
-            return atNext;
-        }
-
-        @Override
-        public EntryPair next() {
-            if (!hasNext()) {
-                return null;
-            }
-            curPair.key = p1.get().getKey();
-            curPair.value1 = p1.get().getValue();
-            curPair.value2 = p2.get().getValue();
-            p1.advance();
-            p2.advance();
-            atNext = false;
-            return curPair;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    /**
-     * Wraps a pair of values that share a common key.
-     * @deprecated Use {@link #intersect(SparseVector, SparseVector)}.
-     */
-    @Deprecated
-    public static final class EntryPair {
-        private long key;
-        private double value1;
-        private double value2;
-
-        /**
-         * Construct an entry pair with zero key and values.
-         */
-        EntryPair() {}
-
-        /**
-         * Construct an entry pair with a key & values.
-         *
-         * @param k  The key.
-         * @param v1 The first vector's value for {@var key}.
-         * @param v2 The second vector's value for {@var key}.
-         */
-        public EntryPair(long k, double v1, double v2) {
-            key = k;
-            value1 = v1;
-            value2 = v2;
-        }
-
-        /**
-         * Get the pair's key.
-         *
-         * @return The key.
-         */
-        public Long getKey() {
-            return key;
-        }
-
-        /**
-         * Get the first vector's value.
-         *
-         * @return The first vector's value for the {@link #getKey() key}.
-         */
-        public double getValue1() {
-            return value1;
-        }
-
-        /**
-         * Get the second vector's value.
-         *
-         * @return The second vector's value for the {@link #getKey() key}.
-         */
-        public Double getValue2() {
-            return value2;
         }
     }
     //endregion
