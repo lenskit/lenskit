@@ -608,7 +608,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
-     * Construct an immutable sparse vector from this vector's data,
+     * Construct an immutable sparse vector from this vector's data (if possible),
      * invalidating this vector in the process. Any subsequent use of this
      * vector is invalid; all access must be through the returned immutable
      * vector. The frozen vector's key domain is equal to this vector's key set.
