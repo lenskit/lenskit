@@ -364,7 +364,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @return The set of keys used in this vector.
      */
     public LongSortedSet keySet() {
-        return keys.asSet();
+        return keys.activeSetView();
     }
 
     /**

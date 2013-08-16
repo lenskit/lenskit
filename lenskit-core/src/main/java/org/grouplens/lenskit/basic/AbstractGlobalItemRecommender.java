@@ -22,7 +22,7 @@ package org.grouplens.lenskit.basic;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.GlobalItemRecommender;
-import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.scored.ScoredId;
 
 import javax.annotation.Nullable;
@@ -72,9 +72,9 @@ public abstract class AbstractGlobalItemRecommender implements GlobalItemRecomme
     @Override
     public List<ScoredId> globalRecommend(Set<Long> items, int n, @Nullable Set<Long> candidates,
                                           @Nullable Set<Long> exclude) {
-        LongSet it = CollectionUtils.fastSet(items);
-        LongSet cs = CollectionUtils.fastSet(candidates);
-        LongSet es = CollectionUtils.fastSet(exclude);
+        LongSet it = LongUtils.fastSet(items);
+        LongSet cs = LongUtils.fastSet(candidates);
+        LongSet es = LongUtils.fastSet(exclude);
         return globalRecommend(it, n, cs, es);
     }
 

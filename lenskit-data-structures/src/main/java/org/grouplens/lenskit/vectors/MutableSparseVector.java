@@ -156,7 +156,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
     @Override
     public LongSortedSet keySet() {
-        return keys.asRemovableSet();
+        return keys.modifiableActiveSetView();
     }
 
     /**

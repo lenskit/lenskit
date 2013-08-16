@@ -37,7 +37,7 @@ public class LongKeyDomainTest {
         assertThat(keys.domainSize(), equalTo(1));
         assertThat(keys.size(), equalTo(1));
         assertThat(keys.domain(), hasSize(1));
-        assertThat(keys.asSet(), hasSize(1));
+        assertThat(keys.activeSetView(), hasSize(1));
 
         assertThat(keys.getIndex(42), equalTo(0));
         assertThat(keys.getIndexIfActive(42), equalTo(0));
@@ -56,7 +56,7 @@ public class LongKeyDomainTest {
         assertThat(keys.domainSize(), equalTo(1));
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.domain(), hasSize(1));
-        assertThat(keys.asSet(), hasSize(0));
+        assertThat(keys.activeSetView(), hasSize(0));
 
         assertThat(keys.getIndex(42), equalTo(0));
         assertThat(keys.getIndexIfActive(42), lessThan(0));
@@ -73,7 +73,7 @@ public class LongKeyDomainTest {
         assertThat(keys.domainSize(), equalTo(3));
         assertThat(keys.size(), equalTo(3));
         assertThat(keys.domain(), contains(39L, 42L, 62L));
-        assertThat(keys.asSet(), equalTo(keys.domain()));
+        assertThat(keys.activeSetView(), equalTo(keys.domain()));
 
         assertThat(keys.getIndex(39), equalTo(0));
         assertThat(keys.getIndex(42), equalTo(1));
@@ -98,7 +98,7 @@ public class LongKeyDomainTest {
         assertThat(keys.domainSize(), equalTo(3));
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.domain(), contains(39L, 42L, 62L));
-        assertThat(keys.asSet(), hasSize(0));
+        assertThat(keys.activeSetView(), hasSize(0));
 
         assertThat(keys.getIndex(39), equalTo(0));
         assertThat(keys.getIndex(42), equalTo(1));
@@ -122,11 +122,11 @@ public class LongKeyDomainTest {
         assertThat(keys.domainSize(), equalTo(3));
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.domain(), contains(39L, 42L, 62L));
-        assertThat(keys.asSet(), hasSize(0));
+        assertThat(keys.activeSetView(), hasSize(0));
 
         keys.setAllActive(true);
         assertThat(keys.size(), equalTo(3));
-        assertThat(keys.asSet(), equalTo(keys.domain()));
+        assertThat(keys.activeSetView(), equalTo(keys.domain()));
 
         assertThat(keys.getIndex(39), equalTo(0));
         assertThat(keys.getIndex(42), equalTo(1));
@@ -150,12 +150,12 @@ public class LongKeyDomainTest {
         assertThat(keys.domainSize(), equalTo(3));
         assertThat(keys.domain(), contains(39L, 42L, 62L));
         assertThat(keys.size(), equalTo(3));
-        assertThat(keys.asSet(), equalTo(keys.domain()));
+        assertThat(keys.activeSetView(), equalTo(keys.domain()));
 
 
         keys.setAllActive(false);
         assertThat(keys.size(), equalTo(0));
-        assertThat(keys.asSet(), hasSize(0));
+        assertThat(keys.activeSetView(), hasSize(0));
 
         assertThat(keys.getIndex(39), equalTo(0));
         assertThat(keys.getIndex(42), equalTo(1));
@@ -180,7 +180,7 @@ public class LongKeyDomainTest {
 
         assertThat(keys.domainSize(), equalTo(3));
         assertThat(keys.size(), equalTo(1));
-        assertThat(keys.asSet(), contains(39L));
+        assertThat(keys.activeSetView(), contains(39L));
 
         assertThat(keys.getIndexIfActive(39), equalTo(0));
         assertThat(keys.indexIsActive(0), equalTo(true));
@@ -198,7 +198,7 @@ public class LongKeyDomainTest {
 
         assertThat(keys.domainSize(), equalTo(5));
         assertThat(keys.size(), equalTo(2));
-        assertThat(keys.asSet(), contains(42L, 63L));
+        assertThat(keys.activeSetView(), contains(42L, 63L));
 
         assertThat(keys.getIndexIfActive(39), lessThan(0));
         assertThat(keys.getIndexIfActive(42), equalTo(1));
@@ -222,7 +222,7 @@ public class LongKeyDomainTest {
 
         assertThat(keys.domainSize(), equalTo(5));
         assertThat(keys.size(), equalTo(3));
-        assertThat(keys.asSet(), contains(39L, 62L, 70L));
+        assertThat(keys.activeSetView(), contains(39L, 62L, 70L));
 
         assertThat(keys.getIndexIfActive(39), equalTo(0));
         assertThat(keys.getIndexIfActive(42), lessThan(0));
@@ -359,8 +359,8 @@ public class LongKeyDomainTest {
         LongKeyDomain keys = LongKeyDomain.create(0, 1, 2, 3);
         keys.setActive(2, false);
         LongKeyDomain ks2 = keys.inactiveCopy();
-        assertThat(ks2.asSet(), hasSize(0));
-        assertThat(keys.asSet(), contains(0L, 1L, 3L));
+        assertThat(ks2.activeSetView(), hasSize(0));
+        assertThat(keys.activeSetView(), contains(0L, 1L, 3L));
     }
 
     @Test
@@ -368,7 +368,7 @@ public class LongKeyDomainTest {
         LongKeyDomain keys = LongKeyDomain.create(0, 1, 2, 3);
         keys.setActive(2, false);
         LongKeyDomain ks2 = keys.clone();
-        assertThat(ks2.asSet(), hasSize(3));
+        assertThat(ks2.activeSetView(), hasSize(3));
         ks2.setActive(1, false);
         assertThat(keys.indexIsActive(1), equalTo(true));
     }

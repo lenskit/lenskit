@@ -41,7 +41,10 @@ import java.util.NoSuchElementException;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
+ * @deprecated Public visibility of this class is deprecated, and will be removed in LensKit 2.0.
+ * Use the static methods in {@link LongUtils} to build packed long sets.
  */
+@Deprecated
 public class LongSortedArraySet extends AbstractLongSortedSet implements Serializable {
     private static final long serialVersionUID = 2L;
 
@@ -74,7 +77,9 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
      * Construct a new array set from a collection of items.
      *
      * @param items The set's contents.
+     * @deprecated Use {@link LongUtils#packedSet(java.util.Collection)}.
      */
+    @Deprecated
     public LongSortedArraySet(@Nonnull Collection<Long> items) {
         this(LongKeyDomain.fromCollection(items));
     }
@@ -83,7 +88,9 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
      * Construct a new array set from an array of items.
      * @param items The items to initialize the set with.  The items are copied, the array is
      *              not reused.
+     * @deprecated Use {@link LongUtils#packedSet(long...)}.
      */
+    @Deprecated
     public LongSortedArraySet(long[] items) {
         this(LongKeyDomain.fromCollection(LongArrayList.wrap(items)));
     }
@@ -93,7 +100,7 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
      * sorted array set.  This should only be used in data structure code.
      * @return The key set backing this set.
      */
-    public LongKeyDomain getKeySet() {
+    LongKeyDomain getDomain() {
         return keys;
     }
 

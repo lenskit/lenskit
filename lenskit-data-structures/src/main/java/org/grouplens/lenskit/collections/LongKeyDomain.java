@@ -25,6 +25,7 @@ import java.util.Collection;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Private
  */
+@SuppressWarnings("deprecation")
 public final class LongKeyDomain implements Serializable {
     /**
      * Wrap a key array (with a specified size) into a key set.
@@ -58,7 +59,7 @@ public final class LongKeyDomain implements Serializable {
      */
     public static LongKeyDomain fromCollection(Collection<Long> keys, boolean initiallyActive) {
         if (keys instanceof LongSortedArraySet) {
-            return ((LongSortedArraySet) keys).getKeySet().compactCopy(initiallyActive);
+            return ((LongSortedArraySet) keys).getDomain().compactCopy(initiallyActive);
         }
 
         long[] keyArray;
@@ -371,7 +372,8 @@ public final class LongKeyDomain implements Serializable {
      * Get a vew of this key set as a set.
      * @return A view of the active keys as a set.
      */
-    public LongSortedSet asSet() {
+    @SuppressWarnings("deprecation")
+    public LongSortedSet activeSetView() {
         return new LongSortedArraySet(this);
     }
 
@@ -381,8 +383,9 @@ public final class LongKeyDomain implements Serializable {
      * {@code removeAll(Collection)}, and {@code retainAll(Collection)}), and those removals will
      * be reflected by marking the associated entries as inactive in the key set.
      * @return A view of this key set as a set with limited mutation capabilities.
+     * @see #activeSetView()
      */
-    public LongSortedSet asRemovableSet() {
+    public LongSortedSet modifiableActiveSetView() {
         return new RemovableLongSortedArraySet(this);
     }
 
@@ -390,6 +393,7 @@ public final class LongKeyDomain implements Serializable {
      * Get the key set's domain as a set.
      * @return A view of the key domain as a set.
      */
+    @SuppressWarnings("deprecation")
     public LongSortedSet domain() {
         // TODO Cache the domain
         BitSet bits = new BitSet(domainSize);
