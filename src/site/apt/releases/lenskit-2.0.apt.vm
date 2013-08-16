@@ -27,4 +27,13 @@
   * More <<<SparseVectors>>> methods now throw <<<IllegalArgumentException>>> on invalid keys,
     rather than being no-ops or returning <<<NaN>>>.
 
+  * Sparse vectors and scored ids now have consistent channel behavior, with <<<TypedSymbol>>> being
+    the the most general interface to channels.  Raw symbols reference <unboxed> side channels (raw
+    doubles or vectors); they will be how most code interacts with channels, but are now conceptually
+    a special case of side channels with an optimized implementation.
+
+  * <<<long>>>-related collection utilities have been moved to <<<LongUtils>>>.
+
+  * <<<LongSortedArraySet>>> should not be used directly; instead, use <<<LongUtils.packedSet>>>.
+
   []
