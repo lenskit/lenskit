@@ -56,6 +56,16 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     private transient volatile Double mean = null;
 
     /**
+     * Construct a new immutable sparse vector from a map.
+     *
+     * @param data The data.  It may not contain any {@code null} values.
+     * @return An immutable sparse vector containing the specified data.
+     */
+    public static ImmutableSparseVector create(Map<Long,Double> data) {
+        return MutableSparseVector.create(data).freeze();
+    }
+
+    /**
      * Create a new, empty immutable sparse vector.
      * @deprecated Use {@link #empty()} instead.
      */
@@ -71,7 +81,9 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      *
      * @param ratings The ratings to make a vector from. Its key set is used as
      *                the vector's key domain.
+     * @deprecated Use {@link #create(java.util.Map)} instead.
      */
+    @Deprecated
     public ImmutableSparseVector(Long2DoubleMap ratings) {
         super(ratings);
         channelVectors = Collections.emptyMap();

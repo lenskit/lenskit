@@ -75,9 +75,59 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     private final Map<TypedSymbol<?>, Long2ObjectMap<?>> channels;
 
     /**
+     * Create a new empty mutable sparse vector with the specified key domain.
+     *
+     * @param domain The key domain.  This method is more efficient if you pass some form of {@link
+     *               LongCollection}, particularly a {@link LongSortedSet}.
+     * @return A mutable sparse vector with the specified domain and no active keys.
+     */
+    public static MutableSparseVector create(Collection<Long> domain) {
+        return new MutableSparseVector(LongKeyDomain.fromCollection(domain, false));
+    }
+
+    /**
+     * Create a new mutable sparse vector with the specified key domain and filled with a value.
+     *
+     * @param domain The key domain.  This method is more efficient if you pass some form of {@link
+     *               LongCollection}, particularly a {@link LongSortedSet}.
+     * @param value  The value to fill the vector with.
+     * @return A mutable sparse vector with the specified domain and no active keys.
+     */
+    public static MutableSparseVector create(Collection<Long> domain, double value) {
+        MutableSparseVector msv = create(domain);
+        msv.fill(value);
+        return msv;
+    }
+
+    /**
+     * Create a new mutable sparse vector with the specified content.
+     * @param content The content of the vector.  Pass a {@link Long2DoubleMap} for more efficiency.
+     *                It may not contain any {@code null} values.
+     * @return The content.
+     */
+    public static MutableSparseVector create(Map<Long,Double> content) {
+        MutableSparseVector msv = create(content.keySet());
+        msv.keys.setAllActive(true);
+        final int len = msv.keys.domainSize();
+        if (content instanceof Long2DoubleMap) {
+            Long2DoubleMap fast = (Long2DoubleMap) content;
+            for (int i = 0; i < len; i++) {
+                msv.values[i] = fast.get(msv.keys.getKey(i));
+            }
+        } else {
+            for (int i = 0; i < len; i++) {
+                msv.values[i] = content.get(msv.keys.getKey(i));
+            }
+        }
+        return msv;
+    }
+
+    /**
      * Construct a new empty vector. Since it also has an empty key domain, this
      * vector isn't very useful, because nothing can ever be put into it.
+     * @deprecated Use {@link #create(java.util.Collection)} with {@link LongSortedSets#EMPTY_SET}.
      */
+    @Deprecated
     public MutableSparseVector() {
         this(LongKeyDomain.empty());
     }
@@ -97,7 +147,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * key set of the map.  Therefore, no new keys can be added to this vector.
      *
      * @param keyValueMap A map providing the values for the vector.
+     * @deprecated Use {@link #create(java.util.Collection)}.
      */
+    @Deprecated
     public MutableSparseVector(Long2DoubleMap keyValueMap) {
         super(keyValueMap);
         channelVectors = new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
@@ -108,7 +160,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * Construct a new empty vector with the specified key domain.
      *
      * @param domain The key domain.
+     * @deprecated Use {@link #create(Map)}.
      */
+    @Deprecated
     public MutableSparseVector(Collection<Long> domain) {
         this(LongKeyDomain.fromCollection(domain, false));
     }
@@ -120,7 +174,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @param keySet The keys to include in the vector.
      * @param value  The value to assign for all keys.
+     * @deprecated Use {@link #create(java.util.Collection)}.
      */
+    @Deprecated
     public MutableSparseVector(LongSet keySet, double value) {
         this(keySet);
         keys.setAllActive(true);
