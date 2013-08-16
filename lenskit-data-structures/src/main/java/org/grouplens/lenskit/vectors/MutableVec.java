@@ -25,21 +25,13 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 
 /**
  * Mutable {@link Vec}.  This vector can be modified and is not
- * thread-safe.
+ * thread-safe.  Create one with {@link #create(int)} or {@link #wrap(double[])}.
  *
- * @compat Experimental — this interface may change in future versions of LensKit.
+ * @since 1.3
+ * @compat Public
  */
 public final class MutableVec extends Vec {
     private static final long serialVersionUID = 1L;
-
-    /**
-     * Construct a new mutable vector.  The vector is initialized to all 0's.
-     *
-     * @param dim The dimension of the vector.
-     */
-    public MutableVec(int dim) {
-        this(new double[dim]);
-    }
 
     /**
      * Construct a new vector. The array is <b>not</b> copied.
@@ -47,6 +39,14 @@ public final class MutableVec extends Vec {
      */
     private MutableVec(double[] v) {
         super(v);
+    }
+
+    /**
+     * Create a new mutable vector with the specified size.
+     * @param dim The size of the new vector.
+     */
+    public static MutableVec create(int dim) {
+        return new MutableVec(new double[dim]);
     }
 
     /**

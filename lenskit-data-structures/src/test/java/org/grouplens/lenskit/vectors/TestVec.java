@@ -29,11 +29,11 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 public class TestVec {
-    final Vec empty = ImmutableVec.make(new double[0]);
-    final Vec single = ImmutableVec.make(new double[]{3.5});
-    final Vec v1 = ImmutableVec.make(new double[]{1, 3, 5});
-    final Vec v1c = ImmutableVec.make(new double[]{1, 3, 5});
-    final Vec v2 = ImmutableVec.make(new double[]{2, 3, 4});
+    final Vec empty = ImmutableVec.create(new double[0]);
+    final Vec single = ImmutableVec.create(new double[]{3.5});
+    final Vec v1 = ImmutableVec.create(new double[]{1, 3, 5});
+    final Vec v1c = ImmutableVec.create(new double[]{1, 3, 5});
+    final Vec v2 = ImmutableVec.create(new double[]{2, 3, 4});
 
     @Test
     public void testDim() {
