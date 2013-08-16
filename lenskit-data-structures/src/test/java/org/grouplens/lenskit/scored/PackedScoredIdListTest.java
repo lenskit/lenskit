@@ -331,4 +331,34 @@ public class PackedScoredIdListTest {
         assertThat(FluentIterable.from(list).first().get().hasChannel(sym),
                    equalTo(false));
     }
+
+    @Test
+    public void testOmitsNullChannels() {
+        TypedSymbol<String> sym = TypedSymbol.of(String.class, "foo");
+        PackedScoredIdList list = builder.addChannel(sym)
+                                         .add(42, 3.9)
+                                         .build();
+        ScoredId sid = list.get(0);
+        assertThat(sid.hasChannel(sym), equalTo(false));
+        assertThat(sid.getChannels(), hasSize(0));
+        assertThat(sid.getChannelSymbols(), hasSize(0));
+        assertThat(sid.getChannelValue(sym), nullValue());
+    }
+
+    @Test
+    public void testIncludesUnboxedChannels() {
+        Symbol sym = Symbol.of("foo");
+        TypedSymbol<Double> tsym = sym.withType(Double.class);
+        PackedScoredIdList list = builder.addChannel(sym)
+                                         .add(42, 3.9)
+                                         .build();
+        ScoredId sid = list.get(0);
+        assertThat(sid.hasUnboxedChannel(sym), equalTo(true));
+        assertThat(sid.hasChannel(tsym), equalTo(true));
+        assertThat(sid.getChannels(), hasSize(1));
+        assertThat(sid.getChannelSymbols(), contains((TypedSymbol) tsym));
+        assertThat(sid.getChannelValue(tsym), equalTo(0.0));
+        assertThat(sid.getChannels().iterator().next().getSymbol(),
+                   equalTo((TypedSymbol) tsym));
+    }
 }

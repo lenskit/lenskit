@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.symbols.DoubleSymbolValue;
@@ -151,7 +152,16 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
 
         @Override
         public Set<TypedSymbol<?>> getChannelSymbols() {
-            return channels.keySet();
+            ImmutableSet.Builder<TypedSymbol<?>> bld = ImmutableSet.builder();
+            for (Symbol s: unboxedChannels.keySet()) {
+                bld.add(s.withType(Double.class));
+            }
+            for (Map.Entry<TypedSymbol<?>,Object[]> e: channels.entrySet()) {
+                if (e.getValue()[index] != null) {
+                    bld.add(e.getKey());
+                }
+            }
+            return bld.build();
         }
 
         @Nonnull
@@ -199,11 +209,15 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
         @Nullable
         @Override
         public <T> T getChannelValue(@Nonnull TypedSymbol<T> sym) {
-            Object[] array = channels.get(sym);
-            if (array == null) {
-                return null;
+            if (sym.getType().equals(Double.class) && hasUnboxedChannel(sym.getRawSymbol())) {
+                return sym.getType().cast(getUnboxedChannelValue(sym.getRawSymbol()));
             } else {
-                return sym.getType().cast(array[index]);
+                Object[] array = channels.get(sym);
+                if (array == null) {
+                    return null;
+                } else {
+                    return sym.getType().cast(array[index]);
+                }
             }
         }
 
@@ -224,8 +238,12 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
 
         @Override
         public boolean hasChannel(TypedSymbol<?> s) {
-            Object[] obj = channels.get(s);
-            return obj != null && obj[index] != null;
+            if (s.getType().equals(Double.class) && hasUnboxedChannel(s.getRawSymbol())) {
+                return true;
+            } else {
+                Object[] obj = channels.get(s);
+                return obj != null && obj[index] != null;
+            }
         }
     }
 

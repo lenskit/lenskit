@@ -210,10 +210,14 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         final int idx = size;
         add(id.getId(), id.getScore());
         for (SymbolValue<?> sv: chans) {
-            if (sv instanceof DoubleSymbolValue) {
-                ChannelStorage chan = channels.get(sv.getRawSymbol());
-                if (chan != null) {
+            TypedSymbol<?> sym = sv.getSymbol();
+            if (sym.getType().equals(Double.class) && channels.containsKey(sym.getRawSymbol())) {
+                ChannelStorage chan = channels.get(sym.getRawSymbol());
+                if (sv instanceof DoubleSymbolValue) {
                     chan.values[idx] = ((DoubleSymbolValue) sv).getDoubleValue();
+                } else {
+                    Object v = sv.getValue();
+                    chan.values[idx] = (Double) v;
                 }
             } else {
                 TypedChannelStorage<?> chan = typedChannels.get(sv.getSymbol());
@@ -275,7 +279,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     }
 
     /**
-     * Add multiple channels with a default value of 0.
+     * Add multiple unboxed channels with a default value of 0.
      * @param channels The channels to add.
      * @return The builder (for chaining).
      */
@@ -305,8 +309,8 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
      * #add(ScoredId)}.
      *
      * @param sym The symbol to add.
-     * @param dft The default value when adding IDs that lack this channel.  If {@code null},
-     *            it will be omitted from such channels.
+     * @param dft The default value when adding ids that lack this channel.  If {@code null},
+     *            it will be omitted from such ids.
      * @return The builder (for chaining).
      */
     public <T> ScoredIdListBuilder addChannel(TypedSymbol<T> sym, T dft) {

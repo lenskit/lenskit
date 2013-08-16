@@ -85,8 +85,8 @@ public interface ScoredId {
     Collection<SymbolValue<?>> getChannels();
 
     /**
-     * Get the channels associated with a scored ID.
-     * @return The channels associated with this ID and their values.
+     * Get the unboxed channels associated with a scored ID.
+     * @return The unboxed channels associated with this ID and their values.
      */
     @Nonnull
     Collection<DoubleSymbolValue> getUnboxedChannels();

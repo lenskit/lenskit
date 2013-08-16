@@ -129,7 +129,7 @@ public class ScoredIdBuilder implements Builder<ScoredId> {
      */
     public <K> ScoredIdBuilder addChannel(@Nonnull TypedSymbol<K> symbol, @Nonnull K value) {
         Preconditions.checkNotNull(symbol, "symbol cannot be null");
-        Preconditions.checkNotNull(value, "symbol cannot be null");
+        Preconditions.checkNotNull(value, "value cannot be null");
         Preconditions.checkArgument(symbol.getType().isInstance(value),
                                     "value is not of type " + symbol.getType());
         SymbolValue<K> val = SymbolValue.of(symbol, value);
