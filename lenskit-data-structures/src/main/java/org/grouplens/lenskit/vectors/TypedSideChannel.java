@@ -24,7 +24,6 @@ import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLong2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.AbstractObjectIterator;
 import it.unimi.dsi.fastutil.objects.AbstractObjectSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
@@ -49,6 +48,10 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
         this(ks, (V[]) new Object[ks.domainSize()]);
         ks.setAllActive(false);
     }
+
+    TypedSideChannel(LongKeyDomain ks, V[] vs) {
+        this(ks, vs, null);
+    }
     
     /**
      * Build a new TypedSideChannel from the given keys and values.
@@ -58,11 +61,13 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      * 
      * @param ks The key set backing this vector.
      * @param vs The array of values backing this vector.
+     * @param def The default return value.
      */
-    TypedSideChannel(LongKeyDomain ks, V[] vs) {
+    TypedSideChannel(LongKeyDomain ks, V[] vs, V def) {
         assert vs.length >= ks.domainSize();
         keys = ks;
         values = vs;
+        defRetValue = def;
     }
     
     @Override
@@ -187,13 +192,19 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
         return keys.size();
     }
 
+    @Override
+    public void defaultReturnValue(V obj) {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Creates a mutable copy of this side channel. The returned object can be modified without
      * modifying this side channel. The returned copy is shallow, and will share instances with 
      * this side channel.
      */
     public MutableTypedSideChannel<V> mutableCopy() {
-        return new MutableTypedSideChannel<V>(keys.clone(), Arrays.copyOf(values, keys.domainSize()));
+        return new MutableTypedSideChannel<V>(keys.clone(), Arrays.copyOf(values, keys.domainSize()),
+                                              defaultReturnValue());
     }
     
     /**

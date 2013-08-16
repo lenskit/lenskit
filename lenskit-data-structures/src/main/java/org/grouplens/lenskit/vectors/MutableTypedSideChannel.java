@@ -24,7 +24,6 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 
-import javax.annotation.concurrent.Immutable;
 import java.util.Arrays;
 
 /**
@@ -33,7 +32,6 @@ import java.util.Arrays;
  *
  * @param <V> The type stored in the channel.
  */
-@Immutable
 class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
     private static final long serialVersionUID = 1L;
 
@@ -42,7 +40,12 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
      *
      * @param ks The key set backing this map.
      * @param vs The array of values backing this vector.
+     * @param dft The initial {@link #defaultReturnValue()}.
      */
+    MutableTypedSideChannel(LongKeyDomain ks, V[] vs, V dft) {
+        super(ks, vs, dft);
+    }
+
     MutableTypedSideChannel(LongKeyDomain ks, V[] vs) {
         super(ks, vs);
     }
@@ -71,7 +74,9 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
      */
     @Override
     public TypedSideChannel<V> immutable() {
-         return new TypedSideChannel<V>(keys.clone(), Arrays.copyOf(values, keys.domainSize()));
+         return new TypedSideChannel<V>(keys.clone(),
+                                        Arrays.copyOf(values, keys.domainSize()),
+                                        defaultReturnValue());
     }
 
     /**
@@ -88,7 +93,7 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
         V[] nvs;
         nvs = adjustStorage(nks, freeze);
         frozen |= freeze;
-        return new TypedSideChannel<V>(nks, nvs);
+        return new TypedSideChannel<V>(nks, nvs, defaultReturnValue());
     }
 
     /**
@@ -100,7 +105,9 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
     public MutableTypedSideChannel<V> withDomain(LongKeyDomain domain) {
         LongKeyDomain nks = domain.clone();
         V[] nvs = adjustStorage(nks, false);
-        return new MutableTypedSideChannel<V>(nks, nvs);
+        MutableTypedSideChannel<V> copy = new MutableTypedSideChannel<V>(nks, nvs, defaultReturnValue());
+        copy.defaultReturnValue(defaultReturnValue());
+        return copy;
     }
 
     private V[] adjustStorage(LongKeyDomain domain, boolean reuseIfPossible) {
@@ -142,7 +149,6 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
 
     @Override
     public V put(long key, V value) {
-        // REVIEW Is this what we want, or do we want to make null unset? Or allow null?
         Preconditions.checkNotNull(value, "channel values cannot be null");
         checkMutable();
         final int idx = keys.getIndex(key);
@@ -173,9 +179,8 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
 
     @Override
     public void defaultReturnValue(V rv) {
-        // REVIEW Do we want to do the checkMutable check? This seems like a query option, not content.
         checkMutable();
-        super.defaultReturnValue(rv);
+        defRetValue = rv;
     }
 
     /**
