@@ -162,7 +162,7 @@ public class TestVec {
 
     @Test
     public void testNewMutableVector() {
-        MutableVec v = new MutableVec(5);
+        MutableVec v = MutableVec.create(5);
         assertThat(v.size(), equalTo(5));
         for (int i = 0; i < 5; i++) {
             assertThat(v.get(i), closeTo(0));
