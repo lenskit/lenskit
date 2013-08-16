@@ -70,7 +70,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     private static final long serialVersionUID = 2L;
 
     /**
-     * The set of keys.
+     * The domain of keys.
      */
     final LongKeyDomain keys;
     /**
@@ -666,8 +666,6 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      *                      stored in the vector.
      * @return the channel, which is itself a map from the key domain to objects of
      *                      the channel's type, or {@code null} if there is no such channel.
-     * @throws IllegalArgumentException if there is no channel under
-     *                                  that typed symbol
      */
     public abstract <K> Long2ObjectMap<K> getChannel(TypedSymbol<K> channelSymbol);
 
