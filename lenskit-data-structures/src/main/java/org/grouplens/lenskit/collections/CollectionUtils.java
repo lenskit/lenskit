@@ -24,11 +24,13 @@
 package org.grouplens.lenskit.collections;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterators;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
@@ -190,5 +192,16 @@ public final class CollectionUtils {
     @Deprecated
     public static <E> Pointer<E> pointer(Iterator<E> iter) {
         return Pointers.fromIterator(iter);
+    }
+
+    /**
+     * Create an {@link IntList} that contains all numbers in a specified interval.
+     * @param from The first number (inclusive)
+     * @param to the last number (exclusive).
+     * @return A list containing the integers in the interval {@code [from,to)}.
+     */
+    public static IntList interval(int from, int to) {
+        Preconditions.checkArgument(to >= from, "last integer less than first");
+        return new IntIntervalList(from, to);
     }
 }

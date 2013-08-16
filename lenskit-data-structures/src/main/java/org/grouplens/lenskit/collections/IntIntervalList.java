@@ -42,7 +42,9 @@ public class IntIntervalList extends AbstractIntList implements Serializable {
      * Create the half-open interval [0,size).
      *
      * @param size The size of the interval.
+     * @deprecated Use {@link CollectionUtils#interval(int, int)}.
      */
+    @Deprecated
     public IntIntervalList(int size) {
         this(0, size);
     }
@@ -58,7 +60,9 @@ public class IntIntervalList extends AbstractIntList implements Serializable {
      *
      * @param start The interval start point (inclusive).
      * @param end   The interval end point (exclusive).
+     * @deprecated Use {@link CollectionUtils#interval(int, int)}.
      */
+    @Deprecated
     public IntIntervalList(int start, int end) {
         if (end < start) {
             throw new IllegalArgumentException("end < start");
