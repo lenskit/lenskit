@@ -166,20 +166,6 @@ public final class CollectionUtils {
         return new EmptyFastCollection<E>();
     }
 
-    /**
-     * Wrap an iterator in a pointer.  It is safe for this iterator to be a fast iterator; the resulting pointer
-     * may then return the same object, modified, multiple times.
-     *
-     * @param <E>  The type of value in the iterator.
-     * @param iter The iterator to wrap.
-     * @return A pointer backed by the iterator.
-     * @see Pointer
-     * @since 0.9
-     */
-    public static <E> Pointer<E> pointer(Iterator<E> iter) {
-        return new IteratorPointer<E>(iter);
-    }
-
     private static class EmptyFastCollection<E> extends AbstractCollection<E> implements FastCollection<E> {
         @Override
         public Iterator<E> fastIterator() {
@@ -195,5 +181,14 @@ public final class CollectionUtils {
         public int size() {
             return 0;
         }
+    }
+
+    /**
+     * @see Pointers#fromIterator(java.util.Iterator)
+     * @deprecated Deprecated alias for {@link Pointers#fromIterator(java.util.Iterator)}.
+     */
+    @Deprecated
+    public static <E> Pointer<E> pointer(Iterator<E> iter) {
+        return Pointers.fromIterator(iter);
     }
 }

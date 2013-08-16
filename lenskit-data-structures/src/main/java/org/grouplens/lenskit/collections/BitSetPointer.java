@@ -29,6 +29,7 @@ import java.util.NoSuchElementException;
  * @since 1.2
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@Deprecated
 public final class BitSetPointer extends AbstractIntPointer {
     private final BitSet bitSet;
     // position is the current bit, or < 0 if past the end

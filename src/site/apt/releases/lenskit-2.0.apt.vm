@@ -38,4 +38,7 @@
 
   * Removed <<<LongCursor>>>; it is no longer needed with the new DAOs.
 
+  * Deprecated pointers. They will be removed, or only used internally to the data structure code,
+    by LensKit 2.0.
+
   []

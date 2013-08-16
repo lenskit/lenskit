@@ -25,6 +25,7 @@ package org.grouplens.lenskit.collections;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@Deprecated
 public abstract class AbstractIntPointer implements IntPointer {
     /**
      * {@inheritDoc}

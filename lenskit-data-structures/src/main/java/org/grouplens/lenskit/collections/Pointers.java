@@ -23,11 +23,13 @@ package org.grouplens.lenskit.collections;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@Deprecated
 public final class Pointers {
     private Pointers() {}
 
@@ -109,5 +111,19 @@ public final class Pointers {
         public boolean isAtEnd() {
             return pointer.isAtEnd();
         }
+    }
+
+    /**
+     * Wrap an iterator in a pointer.  It is safe for this iterator to be a fast iterator; the resulting pointer
+     * may then return the same object, modified, multiple times.
+     *
+     * @param <E>  The type of value in the iterator.
+     * @param iter The iterator to wrap.
+     * @return A pointer backed by the iterator.
+     * @see Pointer
+     * @since 0.9
+     */
+    public static <E> Pointer<E> fromIterator(Iterator<E> iter) {
+        return new IteratorPointer<E>(iter);
     }
 }

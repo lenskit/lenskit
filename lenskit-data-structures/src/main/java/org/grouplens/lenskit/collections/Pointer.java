@@ -32,6 +32,7 @@ import java.util.NoSuchElementException;
  * @compat Public
  * @since 0.9
  */
+@Deprecated
 public interface Pointer<E> {
     /**
      * Advance the pointer.

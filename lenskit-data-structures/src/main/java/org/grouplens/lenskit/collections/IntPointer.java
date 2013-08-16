@@ -26,6 +26,7 @@ package org.grouplens.lenskit.collections;
  * @since 1.2
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@Deprecated
 public interface IntPointer extends Pointer<Integer> {
     /**
      * Get the integer at the pointer's current location.
