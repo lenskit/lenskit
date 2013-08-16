@@ -59,7 +59,7 @@ public class RemovableLongSortedArraySetTest {
         List<Long> rm = Longs.asList(20, 25, 62, 30, 98, 1);
         assertThat(ls.retainAll(rm), equalTo(true));
         assertThat(ls, contains(20L, 25L, 30L, 62L));
-        assertThat(Lists.newArrayList(lks.activeIndexIterator()),
+        assertThat(Lists.newArrayList(lks.activeIndexIterator(false)),
                    contains(0, 1, 2, 4));
     }
 }

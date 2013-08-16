@@ -36,7 +36,7 @@ class RemovableLongSortedArraySet extends LongSortedArraySet {
      */
     private boolean removeAll(LongIterator iter) {
         boolean removed = false;
-        IntPointer posPtr = keys.activeIndexPointer();
+        IntPointer posPtr = keys.activeIndexPointer(true);
         while (iter.hasNext() && !posPtr.isAtEnd()) {
             long rmk = iter.nextLong();
             // advance position pointer looking for this item
@@ -81,7 +81,7 @@ class RemovableLongSortedArraySet extends LongSortedArraySet {
      */
     private boolean retainAll(LongIterator iter) {
         boolean removed = false;
-        IntPointer posPtr = keys.activeIndexPointer();
+        IntPointer posPtr = keys.activeIndexPointer(true);
         while (iter.hasNext() && !posPtr.isAtEnd()) {
             long rmk = iter.nextLong();
             // advance position pointer looking for this item

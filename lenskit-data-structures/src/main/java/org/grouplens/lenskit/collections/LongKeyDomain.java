@@ -252,7 +252,7 @@ public final class LongKeyDomain implements Serializable {
             System.arraycopy(keys, 0, compactKeys, 0, size);
         } else {
             // there are unused keys, do a slow copy
-            compactKeys = LongIterators.unwrap(keyIterator(activeIndexIterator()));
+            compactKeys = LongIterators.unwrap(keyIterator(activeIndexIterator(false)));
             assert compactKeys.length == size();
         }
 
@@ -319,12 +319,20 @@ public final class LongKeyDomain implements Serializable {
 
     /**
      * Get an iterator over active indexes.
+     * @param mayBeModified Whether the set's active/inactive flags may be modified during iteration.
+     *                      If {@code false}, this method is slightly more efficient; if {@code true},
+     *                      the iterator will iterate over a snapshot of the current active/inactive
+     *                      state.
      * @return An iterator over active indexes.
      */
-    public IntBidirectionalIterator activeIndexIterator() {
+    public IntBidirectionalIterator activeIndexIterator(boolean mayBeModified) {
         // shortcut - only iterate the bit set if it has clear bits
         if (mask.nextClearBit(0) < domainSize) {
-            return new BitSetIterator(mask, 0, domainSize);
+            BitSet snap = mask;
+            if (mayBeModified) {
+                snap = (BitSet) snap.clone();
+            }
+            return new BitSetIterator(snap, 0, domainSize);
         } else {
             return IntIterators.fromTo(0, domainSize);
         }
@@ -332,12 +340,20 @@ public final class LongKeyDomain implements Serializable {
 
     /**
      * Get a pointer over active indexes.
+     * @param mayBeModified Whether the set's active/inactive flags may be modified during iteration.
+     *                      If {@code false}, this method is slightly more efficient; if {@code true},
+     *                      the iterator will iterate over a snapshot of the current active/inactive
+     *                      state.
      * @return A pointer over the active indexes.
      */
-    public IntPointer activeIndexPointer() {
+    public IntPointer activeIndexPointer(boolean mayBeModified) {
         // shortcut - only iterate the bit set if it has clear bits
         if (mask.nextClearBit(0) < domainSize) {
-            return new BitSetPointer(mask, 0, domainSize);
+            BitSet snap = mask;
+            if (mayBeModified) {
+                snap = (BitSet) snap.clone();
+            }
+            return new BitSetPointer(snap, 0, domainSize);
         } else {
             return Pointers.fromTo(0, domainSize);
         }

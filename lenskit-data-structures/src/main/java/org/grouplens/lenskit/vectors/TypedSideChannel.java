@@ -83,7 +83,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
             return false;
         }
         // and search
-        IntIterator iter = keys.activeIndexIterator();
+        IntIterator iter = keys.activeIndexIterator(false);
         while (iter.hasNext()) {
             if (o.equals(values[iter.nextInt()])) {
                 return true;
@@ -96,7 +96,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
         @Override
         public ObjectIterator<Entry<V>> iterator() {
             return new AbstractObjectIterator<Entry<V>>() {
-                IntIterator iter = keys.activeIndexIterator();
+                IntIterator iter = keys.activeIndexIterator(false);
 
                 @Override
                 public boolean hasNext() {
@@ -119,7 +119,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
         @Override
         public ObjectIterator<Entry<V>> fastIterator() {
             return new AbstractObjectIterator<Entry<V>>() {
-                IntIterator iter = keys.activeIndexIterator();
+                IntIterator iter = keys.activeIndexIterator(false);
                 EntryImpl entry = new EntryImpl(-1);
 
                 @Override

@@ -97,6 +97,11 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     }
 
     @Override
+    boolean isMutable() {
+        return false;
+    }
+
+    @Override
     public ImmutableSparseVector immutable() {
         return this;
     }

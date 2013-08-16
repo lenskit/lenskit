@@ -141,8 +141,8 @@ public final class Vectors {
         public FastIntersectIterImpl(SparseVector v1, SparseVector v2) {
             vec1 = v1;
             vec2 = v2;
-            p1 = v1.keys.activeIndexPointer();
-            p2 = v2.keys.activeIndexPointer();
+            p1 = v1.keys.activeIndexPointer(false);
+            p2 = v2.keys.activeIndexPointer(false);
             leftEnt = new VectorEntry(v1, -1, 0, 0, false);
             rightEnt = new VectorEntry(v2, -1, 0, 0, false);
             pair = MutablePair.of(leftEnt, rightEnt);

@@ -221,6 +221,10 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         return fastIterator(VectorEntry.State.SET);
     }
 
+    boolean isMutable() {
+        return true;
+    }
+
     /**
      * Fast iterator over entries (it can reuse entry objects).
      *
@@ -234,10 +238,10 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         IntIterator iter;
         switch (state) {
         case SET:
-            iter = keys.activeIndexIterator();
+            iter = keys.activeIndexIterator(isMutable());
             break;
         case UNSET: {
-            iter = keys.clone().invert().activeIndexIterator();
+            iter = keys.clone().invert().activeIndexIterator(false);
             break;
         }
         case EITHER: {
@@ -289,7 +293,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     }
 
     private class IterImpl implements Iterator<VectorEntry> {
-        private IntIterator iter = keys.activeIndexIterator();
+        private IntIterator iter = keys.activeIndexIterator(isMutable());
 
         @Override
         public boolean hasNext() {
@@ -384,7 +388,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public DoubleCollection values() {
         DoubleArrayList lst = new DoubleArrayList(size());
-        IntIterator iter = keys.activeIndexIterator();
+        IntIterator iter = keys.activeIndexIterator(false);
         while (iter.hasNext()) {
             int idx = iter.nextInt();
             lst.add(values[idx]);

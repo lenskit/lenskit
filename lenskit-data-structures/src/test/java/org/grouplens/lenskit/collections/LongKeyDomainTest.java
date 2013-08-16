@@ -289,7 +289,7 @@ public class LongKeyDomainTest {
     @Test
     public void testEmptyPointer() {
         LongKeyDomain keys = LongKeyDomain.empty();
-        IntPointer ip = keys.activeIndexPointer();
+        IntPointer ip = keys.activeIndexPointer(false);
         assertThat(ip.isAtEnd(), equalTo(true));
         assertThat(ip.advance(), equalTo(false));
     }
@@ -297,7 +297,7 @@ public class LongKeyDomainTest {
     @Test
     public void testSingletonPointer() {
         LongKeyDomain keys = LongKeyDomain.create(3);
-        IntPointer ip = keys.activeIndexPointer();
+        IntPointer ip = keys.activeIndexPointer(false);
         assertThat(ip.isAtEnd(), equalTo(false));
         assertThat(ip.getInt(), equalTo(0));
         assertThat(ip.advance(), equalTo(false));
@@ -307,7 +307,7 @@ public class LongKeyDomainTest {
     @Test
     public void testMultiPointer() {
         LongKeyDomain keys = LongKeyDomain.create(3, 4, 5);
-        IntPointer ip = keys.activeIndexPointer();
+        IntPointer ip = keys.activeIndexPointer(false);
         assertThat(ip.isAtEnd(), equalTo(false));
         assertThat(ip.getInt(), equalTo(0));
         assertThat(ip.advance(), equalTo(true));
@@ -323,7 +323,7 @@ public class LongKeyDomainTest {
     public void testMaskedPointer() {
         LongKeyDomain keys = LongKeyDomain.create(3, 4, 5);
         keys.setActive(1, false);
-        IntPointer ip = keys.activeIndexPointer();
+        IntPointer ip = keys.activeIndexPointer(false);
         assertThat(ip.isAtEnd(), equalTo(false));
         assertThat(ip.getInt(), equalTo(0));
         assertThat(ip.advance(), equalTo(true));
@@ -336,7 +336,7 @@ public class LongKeyDomainTest {
     public void testMaskFirstPointer() {
         LongKeyDomain keys = LongKeyDomain.create(3, 4, 5);
         keys.setActive(0, false);
-        IntPointer ip = keys.activeIndexPointer();
+        IntPointer ip = keys.activeIndexPointer(false);
         assertThat(ip.isAtEnd(), equalTo(false));
         assertThat(ip.getInt(), equalTo(1));
         assertThat(ip.advance(), equalTo(true));
@@ -349,7 +349,7 @@ public class LongKeyDomainTest {
     public void testMaskAllPointer() {
         LongKeyDomain keys = LongKeyDomain.create(3, 4, 5);
         keys.setAllActive(false);
-        IntPointer ip = keys.activeIndexPointer();
+        IntPointer ip = keys.activeIndexPointer(false);
         assertThat(ip.isAtEnd(), equalTo(true));
         assertThat(ip.advance(), equalTo(false));
     }
