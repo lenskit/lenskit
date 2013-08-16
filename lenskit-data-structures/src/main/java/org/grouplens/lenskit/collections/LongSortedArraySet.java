@@ -43,13 +43,13 @@ import java.util.Collection;
 public class LongSortedArraySet extends AbstractLongSortedSet implements Serializable {
     private static final long serialVersionUID = 2L;
 
-    final LongKeySet keys;
+    final LongKeyDomain keys;
 
     /**
      * Construct a new long sorted array set.
      * @param ks The key set storage.
      */
-    LongSortedArraySet(@Nonnull LongKeySet ks) {
+    LongSortedArraySet(@Nonnull LongKeyDomain ks) {
         keys = ks;
         keys.requireOwned();
     }
@@ -60,7 +60,7 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
      * @param items The set's contents.
      */
     public LongSortedArraySet(@Nonnull Collection<Long> items) {
-        this(LongKeySet.fromCollection(items));
+        this(LongKeyDomain.fromCollection(items));
     }
 
     /**
@@ -69,7 +69,7 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
      *              not reused.
      */
     public LongSortedArraySet(long[] items) {
-        this(LongKeySet.fromCollection(LongArrayList.wrap(items)));
+        this(LongKeyDomain.fromCollection(LongArrayList.wrap(items)));
     }
 
     /**
@@ -77,7 +77,7 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
      * sorted array set.  This should only be used in data structure code.
      * @return The key set backing this set.
      */
-    public LongKeySet getKeySet() {
+    public LongKeyDomain getKeySet() {
         return keys;
     }
 
@@ -169,6 +169,6 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
             data = Arrays.copyOf(data, i);
         }
         //CHECKSTYLE:ON
-        return new LongSortedArraySet(LongKeySet.wrap(data, 0, i, true));
+        return new LongSortedArraySet(LongKeyDomain.wrap(data, 0, i, true));
     }
 }

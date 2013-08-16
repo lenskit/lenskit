@@ -22,7 +22,7 @@ package org.grouplens.lenskit.vectors;
 
 import it.unimi.dsi.fastutil.longs.LongArraySet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.collections.LongKeySet;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.sameInstance;
@@ -35,29 +35,29 @@ public class TestTypedSideChannel {
     private final String c = "c";
     
     protected TypedSideChannel<String> emptyDomainSideChannel() {
-        return new TypedSideChannel<String>(LongKeySet.empty());
+        return new TypedSideChannel<String>(LongKeyDomain.empty());
     }
     
     protected TypedSideChannel<String> emptySideChannel() {
-        LongKeySet keys = LongKeySet.create(1, 2, 4);
+        LongKeyDomain keys = LongKeyDomain.create(1, 2, 4);
         return new TypedSideChannel<String>(keys);
     }
     
     protected TypedSideChannel<String> simpleSideChannel() {
-        LongKeySet keys = LongKeySet.create(1,2,4);
+        LongKeyDomain keys = LongKeyDomain.create(1, 2, 4);
         String[] values = {a,b,a};
         return new TypedSideChannel<String>(keys,values);
     }
     
     protected TypedSideChannel<String> singletonSideChannel() {
-        LongKeySet keys = LongKeySet.create(1);
+        LongKeyDomain keys = LongKeyDomain.create(1);
         String[] values = {a};
         return new TypedSideChannel<String>(keys,values);
     }
     
     @Test 
     public void testConstructors() {
-        LongKeySet keys = LongKeySet.create(1, 2);
+        LongKeyDomain keys = LongKeyDomain.create(1, 2);
         TypedSideChannel<String> channel = new TypedSideChannel<String>(keys.clone());
         assertTrue(channel.isEmpty());
         

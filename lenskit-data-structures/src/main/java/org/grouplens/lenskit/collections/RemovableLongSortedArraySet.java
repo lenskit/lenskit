@@ -14,7 +14,7 @@ import java.util.Collection;
 class RemovableLongSortedArraySet extends LongSortedArraySet {
     private static final long serialVersionUID = 1L;
 
-    RemovableLongSortedArraySet(@Nonnull LongKeySet ks) {
+    RemovableLongSortedArraySet(@Nonnull LongKeyDomain ks) {
         super(ks);
     }
 

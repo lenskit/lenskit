@@ -28,7 +28,7 @@ import java.util.NoSuchElementException;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Private
  */
-public final class LongKeySet implements Serializable {
+public final class LongKeyDomain implements Serializable {
     /**
      * Wrap a key array (with a specified size) into a key set.  The key set is initially empty
      * (the mask is clear).
@@ -39,7 +39,7 @@ public final class LongKeySet implements Serializable {
      *                                 inactive.
      * @return The key set.
      */
-    public static LongKeySet wrap(long[] keys, int fromIndex, int toIndex, boolean initiallyActive) {
+    public static LongKeyDomain wrap(long[] keys, int fromIndex, int toIndex, boolean initiallyActive) {
         Preconditions.checkArgument(fromIndex >= 0, "invalid starting index");
         Preconditions.checkArgument(toIndex >= fromIndex, "toIndex less than fromIndex");
         Preconditions.checkArgument(toIndex <= keys.length, "toIndex past end of array");
@@ -48,7 +48,7 @@ public final class LongKeySet implements Serializable {
         if (initiallyActive) {
             mask.set(fromIndex, toIndex);
         }
-        return new LongKeySet(keys, fromIndex, toIndex, mask);
+        return new LongKeyDomain(keys, fromIndex, toIndex, mask);
     }
 
     /**
@@ -59,7 +59,7 @@ public final class LongKeySet implements Serializable {
      *                        activated; {@code false} to make all keys initially inactive.
      * @return The key set.
      */
-    public static LongKeySet fromCollection(Collection<Long> keys, boolean initiallyActive) {
+    public static LongKeyDomain fromCollection(Collection<Long> keys, boolean initiallyActive) {
         if (keys instanceof LongSortedArraySet) {
             return ((LongSortedArraySet) keys).getKeySet().compactCopy(initiallyActive);
         }
@@ -80,7 +80,7 @@ public final class LongKeySet implements Serializable {
      * @param keys The keys.
      * @return The key set.
      */
-    public static LongKeySet fromCollection(Collection<Long> keys) {
+    public static LongKeyDomain fromCollection(Collection<Long> keys) {
         return fromCollection(keys, true);
     }
 
@@ -89,7 +89,7 @@ public final class LongKeySet implements Serializable {
      * @param keys The keys.
      * @return The key set.
      */
-    public static LongKeySet create(long... keys) {
+    public static LongKeyDomain create(long... keys) {
         return fromCollection(LongArrayList.wrap(keys));
     }
 
@@ -97,7 +97,7 @@ public final class LongKeySet implements Serializable {
      * Create an empty key set.
      * @return An empty key set.
      */
-    public static LongKeySet empty() {
+    public static LongKeyDomain empty() {
         return wrap(new long[0], 0, 0, true);
     }
 
@@ -109,7 +109,7 @@ public final class LongKeySet implements Serializable {
     private final BitSet mask;
     private boolean unowned = false;
 
-    private LongKeySet(long[] ks, int start, int end, BitSet m) {
+    private LongKeyDomain(long[] ks, int start, int end, BitSet m) {
         keys = ks;
         startIndex = start;
         endIndex = end;
@@ -208,11 +208,11 @@ public final class LongKeySet implements Serializable {
      * @param end The end index (exclusive).
      * @return A key set representing a subset of this set.
      */
-    public LongKeySet subset(int start, int end) {
+    public LongKeyDomain subset(int start, int end) {
         Preconditions.checkArgument(start >= startIndex, "invalid start index");
         Preconditions.checkArgument(end <= endIndex, "invalid end index");
         Preconditions.checkArgument(end >= start, "end before start");
-        return new LongKeySet(keys, start, end, mask);
+        return new LongKeyDomain(keys, start, end, mask);
     }
 
     /**
@@ -221,12 +221,12 @@ public final class LongKeySet implements Serializable {
      * @return The copied key set.
      */
     @Override
-    public LongKeySet clone() {
+    public LongKeyDomain clone() {
         if (unowned) {
             unowned = false;
             return this;
         } else {
-            return new LongKeySet(keys, startIndex, endIndex, (BitSet) mask.clone());
+            return new LongKeyDomain(keys, startIndex, endIndex, (BitSet) mask.clone());
         }
     }
 
@@ -240,7 +240,7 @@ public final class LongKeySet implements Serializable {
      * call {@link #clone()} to make sure that it owns the set.
      * @return This key set (for chaining).
      */
-    public LongKeySet unowned() {
+    public LongKeyDomain unowned() {
         unowned = true;
         return this;
     }
@@ -257,8 +257,8 @@ public final class LongKeySet implements Serializable {
      * Return a copy of this key set that is entirely inactive.
      * @return The new key set, with the same keys but all of them deactivated.
      */
-    public LongKeySet inactiveCopy() {
-        return new LongKeySet(keys, startIndex, endIndex, new BitSet());
+    public LongKeyDomain inactiveCopy() {
+        return new LongKeyDomain(keys, startIndex, endIndex, new BitSet());
     }
 
     /**
@@ -266,7 +266,7 @@ public final class LongKeySet implements Serializable {
      * and only the active keys are retained.  All keys are active in the resulting set.
      * @return A compacted copy of this key set.
      */
-    public LongKeySet compactCopy() {
+    public LongKeyDomain compactCopy() {
         return compactCopy(true);
     }
 
@@ -276,7 +276,7 @@ public final class LongKeySet implements Serializable {
      * @param active Whether the keys should be active or inactive in the compacted key set.
      * @return A compacted copy of this key set.
      */
-    public LongKeySet compactCopy(boolean active) {
+    public LongKeyDomain compactCopy(boolean active) {
         long[] compactKeys;
         if (startIndex == 0 && endIndex == keys.length && mask.nextClearBit(0) >= endIndex) {
             // fast path 1: reuse the keys
@@ -296,7 +296,7 @@ public final class LongKeySet implements Serializable {
         if (active) {
             compactMask.set(0, compactKeys.length, true);
         }
-        return new LongKeySet(compactKeys, 0, compactKeys.length, compactMask);
+        return new LongKeyDomain(compactKeys, 0, compactKeys.length, compactMask);
     }
 
     /**
@@ -461,7 +461,7 @@ public final class LongKeySet implements Serializable {
         // TODO Cache the domain
         BitSet bits = new BitSet(endIndex);
         bits.set(startIndex, endIndex);
-        return new LongSortedArraySet(new LongKeySet(keys, startIndex, endIndex, bits));
+        return new LongSortedArraySet(new LongKeyDomain(keys, startIndex, endIndex, bits));
     }
 
     /**
@@ -481,7 +481,7 @@ public final class LongKeySet implements Serializable {
      * @param other The other key set.
      * @return {@code true} if the two key sets are compatible.
      */
-    public boolean isCompatibleWith(@Nonnull LongKeySet other) {
+    public boolean isCompatibleWith(@Nonnull LongKeyDomain other) {
         return keys == other.keys;
     }
 
@@ -491,7 +491,7 @@ public final class LongKeySet implements Serializable {
      * returned for chaining.
      * @return {@code this} (for chaining).
      */
-    public LongKeySet invert() {
+    public LongKeyDomain invert() {
         mask.flip(startIndex, endIndex);
         return this;
     }
@@ -501,7 +501,7 @@ public final class LongKeySet implements Serializable {
      * @param active {@code true} to activate, {@code false} to deactivate.
      * @return The key set (for chaining).
      */
-    public LongKeySet setAllActive(boolean active) {
+    public LongKeyDomain setAllActive(boolean active) {
         mask.set(startIndex, endIndex, active);
         return this;
     }
@@ -512,7 +512,7 @@ public final class LongKeySet implements Serializable {
      * @param active Whether the key is active.
      * @return The key set (for chaining).
      */
-    public LongKeySet setActive(int idx, boolean active) {
+    public LongKeyDomain setActive(int idx, boolean active) {
         checkIndex(idx);
         mask.set(idx, active);
         return this;
@@ -524,7 +524,7 @@ public final class LongKeySet implements Serializable {
      *               it will be queried starting from {@link #getStartIndex()}, not 0).
      * @return The key set (for chaining).
      */
-    public LongKeySet setActive(BitSet active) {
+    public LongKeyDomain setActive(BitSet active) {
         mask.set(startIndex, endIndex);
         mask.and(active);
         return this;

@@ -22,7 +22,7 @@ package org.grouplens.lenskit.vectors;
 
 import it.unimi.dsi.fastutil.longs.LongArraySet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.collections.LongKeySet;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -34,29 +34,29 @@ public class TestMutableTypedSideChannel {
     private final String c = "c";
     
     protected MutableTypedSideChannel<String> emptyDomainSideChannel() {
-        return new MutableTypedSideChannel<String>(LongKeySet.empty());
+        return new MutableTypedSideChannel<String>(LongKeyDomain.empty());
     }
     
     protected MutableTypedSideChannel<String> emptySideChannel() {
-        LongKeySet keys = LongKeySet.create(1, 2, 4);
+        LongKeyDomain keys = LongKeyDomain.create(1, 2, 4);
         return new MutableTypedSideChannel<String>(keys);
     }
     
     protected MutableTypedSideChannel<String> simpleSideChannel() {
-        LongKeySet keys = LongKeySet.create(1,2,4);
+        LongKeyDomain keys = LongKeyDomain.create(1, 2, 4);
         String[] values = {a,b,a};
         return new MutableTypedSideChannel<String>(keys,values);
     }
     
     protected MutableTypedSideChannel<String> singletonSideChannel() {
-        LongKeySet keys = LongKeySet.create(1);
+        LongKeyDomain keys = LongKeyDomain.create(1);
         String[] values = {a};
         return new MutableTypedSideChannel<String>(keys,values);
     }
     
     @Test 
     public void testConstructors() {
-        LongKeySet keys = LongKeySet.create(1,2);
+        LongKeyDomain keys = LongKeyDomain.create(1, 2);
         MutableTypedSideChannel<String> channel = new MutableTypedSideChannel<String>(keys.clone());
         assertTrue(channel.isEmpty());
         
@@ -242,7 +242,7 @@ public class TestMutableTypedSideChannel {
     public void testWithDomain() {
         MutableTypedSideChannel<String> simple = simpleSideChannel();
         simple.remove(1);
-        LongKeySet keys = LongKeySet.create(1, 2, 3);
+        LongKeyDomain keys = LongKeyDomain.create(1, 2, 3);
         MutableTypedSideChannel<String> subset = simple.withDomain(keys);
         
         //simple is unchanged

@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import org.grouplens.lenskit.collections.LongKeySet;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
@@ -61,7 +61,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      */
     @Deprecated
     public ImmutableSparseVector() {
-        super(LongKeySet.empty());
+        super(LongKeyDomain.empty());
         channelVectors = Collections.emptyMap();
         channels = Collections.emptyMap();
     }
@@ -88,7 +88,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      * @param chanVectors The channel vectors (unboxed side channels).
      * @param chans       The full map of channels.
      */
-    ImmutableSparseVector(LongKeySet ks, double[] vs,
+    ImmutableSparseVector(LongKeyDomain ks, double[] vs,
                           Map<Symbol, ImmutableSparseVector> chanVectors,
                           Map<TypedSymbol<?>, Long2ObjectMap<?>> chans) {
         super(ks, vs);
@@ -104,7 +104,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public MutableSparseVector mutableCopy() {
-        LongKeySet mks = keys.clone();
+        LongKeyDomain mks = keys.clone();
         double[] mvs = Arrays.copyOf(values, keys.getEndIndex());
         MutableSparseVector result = new MutableSparseVector(mks, mvs);
         for (Map.Entry<Symbol, ImmutableSparseVector> entry : channelVectors.entrySet()) {

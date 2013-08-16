@@ -29,7 +29,7 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import org.grouplens.lenskit.collections.LongKeySet;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.collections.MoreArrays;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
@@ -79,14 +79,14 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * vector isn't very useful, because nothing can ever be put into it.
      */
     public MutableSparseVector() {
-        this(LongKeySet.empty());
+        this(LongKeyDomain.empty());
     }
 
     /**
      * Construct a new vector with the specified domain.  The domain is used as-is, no clone is
      * taken.
      */
-    MutableSparseVector(LongKeySet domain) {
+    MutableSparseVector(LongKeyDomain domain) {
         super(domain);
         channelVectors = new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
         channels = new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>();
@@ -110,7 +110,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param domain The key domain.
      */
     public MutableSparseVector(Collection<Long> domain) {
-        this(LongKeySet.fromCollection(domain, false));
+        this(LongKeyDomain.fromCollection(domain, false));
     }
 
     /**
@@ -128,7 +128,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    MutableSparseVector(LongKeySet ks, double[] vs) {
+    MutableSparseVector(LongKeyDomain ks, double[] vs) {
         this(ks, vs, new Reference2ObjectArrayMap<Symbol, MutableSparseVector>(),
              new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>());
     }
@@ -146,7 +146,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param cvs    The initial channel vectors.
      * @param chs    The initial channel map (all channels).
      */
-    MutableSparseVector(LongKeySet ks, double[] vs,
+    MutableSparseVector(LongKeyDomain ks, double[] vs,
                         Map<Symbol, MutableSparseVector> cvs,
                         Map<TypedSymbol<?>, Long2ObjectMap<?>> chs) {
         super(ks, vs);
@@ -174,7 +174,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public MutableSparseVector withDomain(LongSet keyDomain) {
-        LongKeySet domain = LongKeySet.fromCollection(keyDomain, false);
+        LongKeyDomain domain = LongKeyDomain.fromCollection(keyDomain, false);
         // pass an unowned domain to avoid the extra copy
         return withDomain(domain.unowned());
     }
@@ -184,7 +184,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param domain The domain (active key mask is ignored and reset).
      * @return The vector.
      */
-    MutableSparseVector withDomain(LongKeySet domain) {
+    MutableSparseVector withDomain(LongKeyDomain domain) {
         MutableSparseVector msvNew = new MutableSparseVector(domain.clone());
         msvNew.set(this); // copy appropriate elements from "this"
         for (Map.Entry<Symbol, MutableSparseVector> entry : channelVectors.entrySet()) {
@@ -571,7 +571,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     @Override
     public MutableSparseVector mutableCopy() {
         checkFrozen();
-        LongKeySet mks = keys.clone();
+        LongKeyDomain mks = keys.clone();
         double[] mvs = java.util.Arrays.copyOf(values, keys.getEndIndex());
 
         // copy the channel maps
@@ -664,10 +664,10 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param keyDomain The key set to use as the domain.
      * @return An immutable vector built from this vector's data.
      */
-    private ImmutableSparseVector immutable(boolean freeze, LongKeySet keyDomain) {
+    private ImmutableSparseVector immutable(boolean freeze, LongKeyDomain keyDomain) {
         assert keyDomain.getStartIndex() == 0;
         double[] nvs;
-        LongKeySet newDomain = keyDomain.clone();
+        LongKeyDomain newDomain = keyDomain.clone();
         if (newDomain.isCompatibleWith(keys)) {
             nvs = freeze ? values : java.util.Arrays.copyOf(values, newDomain.getEndIndex());
             newDomain.setActive(keys.getActiveMask());
@@ -776,7 +776,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         if (!MoreArrays.isSorted(keys, 0, size)) {
             throw new IllegalArgumentException("item array not sorted");
         }
-        LongKeySet keySet = LongKeySet.wrap(keys, 0, size, true);
+        LongKeyDomain keySet = LongKeyDomain.wrap(keys, 0, size, true);
         return new MutableSparseVector(keySet, values);
     }
 

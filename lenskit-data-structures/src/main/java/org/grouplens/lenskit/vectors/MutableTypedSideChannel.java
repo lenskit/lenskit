@@ -22,7 +22,7 @@ package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
-import org.grouplens.lenskit.collections.LongKeySet;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.Arrays;
@@ -43,7 +43,7 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
      * @param ks The key set backing this map.
      * @param vs The array of values backing this vector.
      */
-    MutableTypedSideChannel(LongKeySet ks, V[] vs) {
+    MutableTypedSideChannel(LongKeyDomain ks, V[] vs) {
         super(ks, vs);
     }
     
@@ -53,7 +53,7 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
      * @param ks The keys.
      */
     @SuppressWarnings("unchecked")
-    MutableTypedSideChannel(LongKeySet ks) {
+    MutableTypedSideChannel(LongKeyDomain ks) {
         super(ks);
     }
 
@@ -83,8 +83,8 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
      *               map will be unusable after this method has been called.
      * @return The new, immutable map.
      */
-    public TypedSideChannel<V> immutable(LongKeySet domain, boolean freeze) {
-        LongKeySet nks = domain.clone();
+    public TypedSideChannel<V> immutable(LongKeyDomain domain, boolean freeze) {
+        LongKeyDomain nks = domain.clone();
         V[] nvs;
         nvs = adjustStorage(nks, freeze);
         frozen |= freeze;
@@ -97,13 +97,13 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
      * @param domain The domain to use.
      * @return The new map.
      */
-    public MutableTypedSideChannel<V> withDomain(LongKeySet domain) {
-        LongKeySet nks = domain.clone();
+    public MutableTypedSideChannel<V> withDomain(LongKeyDomain domain) {
+        LongKeyDomain nks = domain.clone();
         V[] nvs = adjustStorage(nks, false);
         return new MutableTypedSideChannel<V>(nks, nvs);
     }
 
-    private V[] adjustStorage(LongKeySet domain, boolean reuseIfPossible) {
+    private V[] adjustStorage(LongKeyDomain domain, boolean reuseIfPossible) {
         V[] nvs;
         if (domain.isCompatibleWith(keys)) {
             nvs = reuseIfPossible ? values : Arrays.copyOf(values, domain.getEndIndex());

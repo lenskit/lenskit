@@ -18,13 +18,13 @@ import static org.junit.Assert.assertThat;
 public class RemovableLongSortedArraySetTest {
     @Test
     public void testEmptySet() {
-        LongSet ls = LongKeySet.empty().asRemovableSet();
+        LongSet ls = LongKeyDomain.empty().asRemovableSet();
         assertThat(ls.remove(42), equalTo(false));
     }
 
     @Test
     public void testRemovePresent() {
-        LongKeySet lks = LongKeySet.create(42);
+        LongKeyDomain lks = LongKeyDomain.create(42);
         LongSet ls = lks.asRemovableSet();
         assertThat(ls.remove(42), equalTo(true));
         assertThat(ls.size(), equalTo(0));
@@ -34,7 +34,7 @@ public class RemovableLongSortedArraySetTest {
 
     @Test
     public void testRemoveNotPResent() {
-        LongKeySet lks = LongKeySet.create(42);
+        LongKeyDomain lks = LongKeyDomain.create(42);
         LongSet ls = lks.asRemovableSet();
         assertThat(ls.remove(39), equalTo(false));
         assertThat(ls.size(), equalTo(1));
@@ -44,7 +44,7 @@ public class RemovableLongSortedArraySetTest {
 
     @Test
     public void testRemoveAll() {
-        LongKeySet lks = LongKeySet.create(20, 25, 30, 42, 62);
+        LongKeyDomain lks = LongKeyDomain.create(20, 25, 30, 42, 62);
         LongSet ls = lks.asRemovableSet();
         List<Long> rm = Longs.asList(20, 25, 62, 30, 98, 1);
         assertThat(ls.removeAll(rm), equalTo(true));
@@ -55,7 +55,7 @@ public class RemovableLongSortedArraySetTest {
 
     @Test
     public void testRetainAll() {
-        LongKeySet lks = LongKeySet.create(20, 25, 30, 42, 62);
+        LongKeyDomain lks = LongKeyDomain.create(20, 25, 30, 42, 62);
         LongSet ls = lks.asRemovableSet();
         List<Long> rm = Longs.asList(20, 25, 62, 30, 98, 1);
         assertThat(ls.retainAll(rm), equalTo(true));

@@ -172,7 +172,7 @@ public class TestLongSortedArraySet {
 
     @Test
     public void testMaskFirst() {
-        LongKeySet keys = LongKeySet.create(2, 7, 8, 42, 639);
+        LongKeyDomain keys = LongKeyDomain.create(2, 7, 8, 42, 639);
         keys.setActive(0, false);
         LongSortedSet set = new LongSortedArraySet(keys);
         assertThat(set, hasSize(4));
@@ -192,7 +192,7 @@ public class TestLongSortedArraySet {
 
     @Test
     public void testMaskMid() {
-        LongKeySet keys = LongKeySet.create(2, 7, 8, 42, 639);
+        LongKeyDomain keys = LongKeyDomain.create(2, 7, 8, 42, 639);
         keys.setActive(2, false);
         LongSortedSet set = new LongSortedArraySet(keys);
         assertThat(set, hasSize(4));
@@ -214,7 +214,7 @@ public class TestLongSortedArraySet {
 
     @Test
     public void testMaskLast() {
-        LongKeySet keys = LongKeySet.create(2, 7, 8, 42, 639);
+        LongKeyDomain keys = LongKeyDomain.create(2, 7, 8, 42, 639);
         keys.setActive(4, false);
         LongSortedSet set = new LongSortedArraySet(keys);
         assertThat(set, hasSize(4));
@@ -236,7 +236,7 @@ public class TestLongSortedArraySet {
 
     @Test
     public void testMaskEmpty() {
-        LongKeySet keys = LongKeySet.create(2, 7, 8, 42, 639);
+        LongKeyDomain keys = LongKeyDomain.create(2, 7, 8, 42, 639);
         keys.setAllActive(false);
         LongSortedSet set = new LongSortedArraySet(keys);
 
@@ -250,7 +250,7 @@ public class TestLongSortedArraySet {
 
     @Test
     public void testMaskedIterator() {
-        LongKeySet keys = LongKeySet.create(2, 7, 8, 42, 639);
+        LongKeyDomain keys = LongKeyDomain.create(2, 7, 8, 42, 639);
         keys.setAllActive(true);
         keys.setActive(0, false);
         keys.setActive(4, false);
@@ -263,7 +263,7 @@ public class TestLongSortedArraySet {
 
     @Test
     public void testMaskedIteratorMid() {
-        LongKeySet keys = LongKeySet.create(2, 7, 8, 42, 639);
+        LongKeyDomain keys = LongKeyDomain.create(2, 7, 8, 42, 639);
         keys.setAllActive(true);
         keys.setActive(0, false);
         keys.setActive(2, false);

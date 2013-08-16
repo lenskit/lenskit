@@ -30,7 +30,7 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
-import org.grouplens.lenskit.collections.LongKeySet;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
@@ -72,10 +72,10 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     /**
      * The set of keys.
      */
-    final LongKeySet keys;
+    final LongKeyDomain keys;
     /**
      * The value array. Indexes in this array correspond to indexes produced by {@link #keys}; the
-     * array is 0-padded up to {@link LongKeySet#getStartIndex()}.
+     * array is 0-padded up to {@link org.grouplens.lenskit.collections.LongKeyDomain#getStartIndex()}.
      */
     double[] values;
 
@@ -86,7 +86,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @param vs The value array.
      */
     @SuppressWarnings("PMD.ArrayIsStoredDirectly")
-    SparseVector(LongKeySet ks, double[] vs) {
+    SparseVector(LongKeyDomain ks, double[] vs) {
         assert vs.length >= ks.getEndIndex();
         keys = ks;
         keys.requireOwned();
@@ -97,7 +97,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * Construct a new sparse vector with a particular domain.  Allocates the value storage.
      * @param ks The key set. Used as-is, and will be modified. Pass a clone, usually.
      */
-    SparseVector(LongKeySet ks) {
+    SparseVector(LongKeyDomain ks) {
         this(ks, new double[ks.getEndIndex()]);
         ks.setAllActive(false);
     }
@@ -109,7 +109,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @param keyValueMap A map providing the values for the vector.
      */
     SparseVector(Long2DoubleMap keyValueMap) {
-        keys = LongKeySet.fromCollection(keyValueMap.keySet(), true);
+        keys = LongKeyDomain.fromCollection(keyValueMap.keySet(), true);
         assert keys.getStartIndex() == 0;
         final int len = keys.domainSize();
         values = new double[len];

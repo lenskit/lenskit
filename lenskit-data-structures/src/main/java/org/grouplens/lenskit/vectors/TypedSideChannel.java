@@ -29,15 +29,14 @@ import it.unimi.dsi.fastutil.objects.AbstractObjectIterator;
 import it.unimi.dsi.fastutil.objects.AbstractObjectSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import org.grouplens.lenskit.collections.LongKeySet;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 
 import java.util.Arrays;
 
 class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
     private static final long serialVersionUID = 1L;
     
-    protected final LongKeySet keys;
+    protected final LongKeyDomain keys;
     protected V[] values;
     protected boolean frozen = false;
     
@@ -46,7 +45,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      * @param ks The key set backing this channel.  The key set will be referenced and modified,
      *           not copied.  Its mask is ignored (all keys will be initially deactivated).
      */
-    TypedSideChannel(LongKeySet ks) {
+    TypedSideChannel(LongKeyDomain ks) {
         this(ks, (V[]) new Object[ks.getEndIndex()]);
         ks.setAllActive(false);
     }
@@ -60,7 +59,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      * @param ks The key set backing this vector.
      * @param vs The array of values backing this vector.
      */
-    TypedSideChannel(LongKeySet ks, V[] vs) {
+    TypedSideChannel(LongKeyDomain ks, V[] vs) {
         assert vs.length >= ks.getEndIndex();
         keys = ks;
         values = vs;
