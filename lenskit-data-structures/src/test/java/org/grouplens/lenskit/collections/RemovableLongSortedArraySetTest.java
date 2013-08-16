@@ -49,8 +49,7 @@ public class RemovableLongSortedArraySetTest {
         List<Long> rm = Longs.asList(20, 25, 62, 30, 98, 1);
         assertThat(ls.removeAll(rm), equalTo(true));
         assertThat(ls, contains(42L));
-        assertThat(lks.firstActiveKey(), equalTo(42L));
-        assertThat(lks.lastActiveKey(), equalTo(42L));
+        assertThat(lks.size(), equalTo(1));
     }
 
     @Test

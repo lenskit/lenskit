@@ -124,7 +124,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     public MutableSparseVector(LongSet keySet, double value) {
         this(keySet);
         keys.setAllActive(true);
-        DoubleArrays.fill(values, keys.getStartIndex(), keys.getEndIndex(), value);
+        DoubleArrays.fill(values, 0, keys.domainSize(), value);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -301,7 +301,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void fill(double value) {
         checkFrozen();
-        DoubleArrays.fill(values, keys.getStartIndex(), keys.getEndIndex(), value);
+        DoubleArrays.fill(values, 0, keys.domainSize(), value);
         keys.setAllActive(true);
     }
 
@@ -401,8 +401,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     public void add(double value) {
         checkFrozen();
         // just update all values. if a value is unset, what we do to it is undefined
-        final int end = keys.getEndIndex();
-        for (int i = keys.getStartIndex(); i < end; i++) {
+        final int end = keys.domainSize();
+        for (int i = 0; i < end; i++) {
             values[i] += value;
         }
     }
@@ -514,8 +514,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void multiply(double s) {
         checkFrozen();
-        final int end = keys.getEndIndex();
-        for (int i = keys.getStartIndex(); i < end; i++) {
+        final int end = keys.domainSize();
+        for (int i = 0; i < end; i++) {
             values[i] *= s;
         }
     }
@@ -572,7 +572,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     public MutableSparseVector mutableCopy() {
         checkFrozen();
         LongKeyDomain mks = keys.clone();
-        double[] mvs = java.util.Arrays.copyOf(values, keys.getEndIndex());
+        double[] mvs = java.util.Arrays.copyOf(values, keys.domainSize());
 
         // copy the channel maps
         Map<Symbol, MutableSparseVector> newChanVectors =
@@ -665,18 +665,17 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return An immutable vector built from this vector's data.
      */
     private ImmutableSparseVector immutable(boolean freeze, LongKeyDomain keyDomain) {
-        assert keyDomain.getStartIndex() == 0;
         double[] nvs;
         LongKeyDomain newDomain = keyDomain.clone();
         if (newDomain.isCompatibleWith(keys)) {
-            nvs = freeze ? values : java.util.Arrays.copyOf(values, newDomain.getEndIndex());
+            nvs = freeze ? values : java.util.Arrays.copyOf(values, newDomain.domainSize());
             newDomain.setActive(keys.getActiveMask());
         } else {
             nvs = new double[newDomain.domainSize()];
 
             int i = 0;
-            int j = keys.getStartIndex();
-            final int end = keys.getEndIndex();
+            int j = 0;
+            final int end = keys.domainSize();
             while (i < nvs.length && j < end) {
                 final long ki = newDomain.getKey(i);
                 final long kj = keys.getKey(j);
@@ -776,7 +775,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         if (!MoreArrays.isSorted(keys, 0, size)) {
             throw new IllegalArgumentException("item array not sorted");
         }
-        LongKeyDomain keySet = LongKeyDomain.wrap(keys, 0, size, true);
+        LongKeyDomain keySet = LongKeyDomain.wrap(keys, size, true);
         return new MutableSparseVector(keySet, values);
     }
 

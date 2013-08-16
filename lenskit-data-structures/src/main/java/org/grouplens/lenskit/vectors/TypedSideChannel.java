@@ -46,7 +46,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      *           not copied.  Its mask is ignored (all keys will be initially deactivated).
      */
     TypedSideChannel(LongKeyDomain ks) {
-        this(ks, (V[]) new Object[ks.getEndIndex()]);
+        this(ks, (V[]) new Object[ks.domainSize()]);
         ks.setAllActive(false);
     }
     
@@ -60,7 +60,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      * @param vs The array of values backing this vector.
      */
     TypedSideChannel(LongKeyDomain ks, V[] vs) {
-        assert vs.length >= ks.getEndIndex();
+        assert vs.length >= ks.domainSize();
         keys = ks;
         values = vs;
     }
@@ -193,7 +193,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      * this side channel.
      */
     public MutableTypedSideChannel<V> mutableCopy() {
-        return new MutableTypedSideChannel<V>(keys.clone(), Arrays.copyOf(values, keys.getEndIndex()));
+        return new MutableTypedSideChannel<V>(keys.clone(), Arrays.copyOf(values, keys.domainSize()));
     }
     
     /**
@@ -201,15 +201,5 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      */
     public TypedSideChannel<V> immutable() {
         return this;
-    }
-
-    /**
-     * Get the key domain for this vector. All keys used are in this
-     * set.  The keys will be in sorted order.
-     *
-     * @return The key domain for this vector.
-     */
-    public LongSortedSet keyDomain() {
-        return keys.domain();
     }
 }

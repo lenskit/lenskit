@@ -74,8 +74,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     final LongKeyDomain keys;
     /**
-     * The value array. Indexes in this array correspond to indexes produced by {@link #keys}; the
-     * array is 0-padded up to {@link org.grouplens.lenskit.collections.LongKeyDomain#getStartIndex()}.
+     * The value array. Indexes in this array correspond to indexes produced by {@link #keys}.
      */
     double[] values;
 
@@ -87,9 +86,9 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     @SuppressWarnings("PMD.ArrayIsStoredDirectly")
     SparseVector(LongKeyDomain ks, double[] vs) {
-        assert vs.length >= ks.getEndIndex();
+        assert vs.length >= ks.domainSize();
         keys = ks;
-        keys.requireOwned();
+        keys.acquire();
         values = vs;
     }
 
@@ -98,7 +97,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @param ks The key set. Used as-is, and will be modified. Pass a clone, usually.
      */
     SparseVector(LongKeyDomain ks) {
-        this(ks, new double[ks.getEndIndex()]);
+        this(ks, new double[ks.domainSize()]);
         ks.setAllActive(false);
     }
 
@@ -110,7 +109,6 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     SparseVector(Long2DoubleMap keyValueMap) {
         keys = LongKeyDomain.fromCollection(keyValueMap.keySet(), true);
-        assert keys.getStartIndex() == 0;
         final int len = keys.domainSize();
         values = new double[len];
         for (int i = 0; i < len; i++) {
@@ -243,7 +241,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
             break;
         }
         case EITHER: {
-            iter = IntIterators.fromTo(keys.getStartIndex(), keys.getEndIndex());
+            iter = IntIterators.fromTo(0, keys.domainSize());
             break;
         }
         default: // should be impossible

@@ -25,7 +25,9 @@ import it.unimi.dsi.fastutil.longs.*;
 import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
+import java.util.NoSuchElementException;
 
 /**
  * A sorted set of longs implemented using a sorted array.  It's much faster
@@ -44,14 +46,28 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
     private static final long serialVersionUID = 2L;
 
     final LongKeyDomain keys;
+    private final int minIndex;
+    private final int maxIndex;
 
     /**
      * Construct a new long sorted array set.
      * @param ks The key set storage.
      */
     LongSortedArraySet(@Nonnull LongKeyDomain ks) {
+        this(ks, 0, ks.domainSize());
+    }
+
+    /**
+     * Construct a new long sorted array set.
+     * @param ks The key set storage.
+     */
+    LongSortedArraySet(@Nonnull LongKeyDomain ks, int min, int max) {
+        assert min >= 0;
+        assert max >= min;
         keys = ks;
-        keys.requireOwned();
+        keys.acquire();
+        minIndex = min;
+        maxIndex = max;
     }
 
     /**
@@ -88,59 +104,73 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
 
     @Override
     public long firstLong() {
-        return keys.firstActiveKey();
+        int idx = keys.getActiveMask().nextSetBit(minIndex);
+        if (idx >= minIndex && idx < maxIndex) {
+            return keys.getKey(idx);
+        } else {
+            throw new NoSuchElementException();
+        }
     }
 
     @Override
     public long lastLong() {
-        return keys.lastActiveKey();
+        int idx = keys.getActiveMask().previousSetBit(maxIndex - 1);
+        if (idx >= minIndex && idx < maxIndex) {
+            return keys.getKey(idx);
+        } else {
+            throw new NoSuchElementException();
+        }
     }
 
     @Override
     public LongBidirectionalIterator iterator(long key) {
-        int index = keys.upperBound(key);
-        return keys.keyIterator(keys.activeIndexIterator(index));
+        int index = Math.max(keys.upperBound(key), minIndex);
+        return keys.keyIterator(keys.activeIndexIterator(minIndex, maxIndex, index));
     }
 
     @Override
     public LongSortedSet subSet(long startKey, long endKey) {
         int start = keys.lowerBound(startKey);
         int end = keys.lowerBound(endKey);
-        return new LongSortedArraySet(keys.subset(start, end));
+        return new LongSortedArraySet(keys, start, end);
     }
 
     @Override
     public LongSortedSet headSet(long key) {
-        int start = keys.getStartIndex();
+        int start = minIndex;
         int end = keys.lowerBound(key);
-        return new LongSortedArraySet(keys.subset(start, end));
+        return new LongSortedArraySet(keys, start, end);
     }
 
     @Override
     public LongSortedSet tailSet(long key) {
         int start = keys.lowerBound(key);
-        int end = keys.getEndIndex();
-        return new LongSortedArraySet(keys.subset(start, end));
+        int end = maxIndex;
+        return new LongSortedArraySet(keys, start, end);
     }
 
     @Override
     public LongBidirectionalIterator iterator() {
-        return keys.keyIterator(keys.activeIndexIterator());
+        // FIXME Don't allow the iterator to go backwards from the min!
+        return keys.keyIterator(keys.activeIndexIterator(minIndex, maxIndex, minIndex));
     }
 
     @Override
     public int size() {
-        return keys.size();
+        if (minIndex == 0 && maxIndex == keys.domainSize()) {
+            return keys.size();
+        } else {
+            BitSet bits = new BitSet(maxIndex);
+            bits.set(minIndex, maxIndex);
+            bits.and(keys.getActiveMask());
+            return bits.cardinality();
+        }
     }
 
     @Override
     public boolean contains(long key) {
-        return keys.getIndexIfActive(key) >= 0;
-    }
-
-    @Override
-    public boolean rem(long k) {
-        throw new UnsupportedOperationException();
+        int idx = keys.getIndexIfActive(key);
+        return idx >= minIndex && idx < maxIndex;
     }
 
     /**
@@ -169,6 +199,6 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
             data = Arrays.copyOf(data, i);
         }
         //CHECKSTYLE:ON
-        return new LongSortedArraySet(LongKeyDomain.wrap(data, 0, i, true));
+        return new LongSortedArraySet(LongKeyDomain.wrap(data, i, true));
     }
 }

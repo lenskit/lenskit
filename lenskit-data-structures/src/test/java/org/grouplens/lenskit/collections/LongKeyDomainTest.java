@@ -14,7 +14,7 @@ public class LongKeyDomainTest {
     @Test
     public void testEmptyArray() {
         long[] rawKeys = {};
-        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 0, 0, true);
+        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 0, true);
         assertThat(keys.domainSize(), equalTo(0));
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.domain(), hasSize(0));
@@ -33,7 +33,7 @@ public class LongKeyDomainTest {
     @Test
     public void testSingleton() {
         long[] rawKeys = {42};
-        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 0, 1, true);
+        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 1, true);
         assertThat(keys.domainSize(), equalTo(1));
         assertThat(keys.size(), equalTo(1));
         assertThat(keys.domain(), hasSize(1));
@@ -52,7 +52,7 @@ public class LongKeyDomainTest {
     @Test
     public void testSingletonUnset() {
         long[] rawKeys = {42};
-        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 0, 1, false);
+        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 1, false);
         assertThat(keys.domainSize(), equalTo(1));
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.domain(), hasSize(1));
@@ -69,7 +69,7 @@ public class LongKeyDomainTest {
     @Test
     public void testMultiple() {
         long[] rawKeys = {39, 42, 62};
-        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 0, 3, true);
+        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 3, true);
         assertThat(keys.domainSize(), equalTo(3));
         assertThat(keys.size(), equalTo(3));
         assertThat(keys.domain(), contains(39L, 42L, 62L));
@@ -94,7 +94,7 @@ public class LongKeyDomainTest {
     @Test
     public void testMultipleUnset() {
         long[] rawKeys = {39, 42, 62};
-        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 0, 3, false);
+        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 3, false);
         assertThat(keys.domainSize(), equalTo(3));
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.domain(), contains(39L, 42L, 62L));
@@ -118,7 +118,7 @@ public class LongKeyDomainTest {
     @Test
     public void testSetAllActive() {
         long[] rawKeys = {39, 42, 62};
-        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 0, 3, false);
+        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 3, false);
         assertThat(keys.domainSize(), equalTo(3));
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.domain(), contains(39L, 42L, 62L));
@@ -146,7 +146,7 @@ public class LongKeyDomainTest {
     @Test
     public void testSetAllInactive() {
         long[] rawKeys = {39, 42, 62};
-        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 0, 3, true);
+        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 3, true);
         assertThat(keys.domainSize(), equalTo(3));
         assertThat(keys.domain(), contains(39L, 42L, 62L));
         assertThat(keys.size(), equalTo(3));
@@ -175,7 +175,7 @@ public class LongKeyDomainTest {
     @Test
     public void testSetFirstActive() {
         long[] rawKeys = {39, 42, 62};
-        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 0, 3, false);
+        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 3, false);
         keys.setActive(keys.getIndex(39), true);
 
         assertThat(keys.domainSize(), equalTo(3));
@@ -192,7 +192,7 @@ public class LongKeyDomainTest {
     @Test
     public void testSetSomeActive() {
         long[] rawKeys = {39, 42, 62, 63, 70};
-        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 0, 5, false);
+        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 5, false);
         keys.setActive(1, true);
         keys.setActive(3, true);
 
@@ -215,7 +215,7 @@ public class LongKeyDomainTest {
     @Test
     public void testInvert() {
         long[] rawKeys = {39, 42, 62, 63, 70};
-        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 0, 5, false);
+        LongKeyDomain keys = LongKeyDomain.wrap(rawKeys, 5, false);
         keys.setActive(1, true);
         keys.setActive(3, true);
         keys.invert();

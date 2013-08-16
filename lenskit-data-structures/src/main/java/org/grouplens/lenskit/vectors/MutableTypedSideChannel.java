@@ -71,7 +71,7 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
      */
     @Override
     public TypedSideChannel<V> immutable() {
-         return new TypedSideChannel<V>(keys.clone(), Arrays.copyOf(values, keys.getEndIndex()));
+         return new TypedSideChannel<V>(keys.clone(), Arrays.copyOf(values, keys.domainSize()));
     }
 
     /**
@@ -106,14 +106,14 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
     private V[] adjustStorage(LongKeyDomain domain, boolean reuseIfPossible) {
         V[] nvs;
         if (domain.isCompatibleWith(keys)) {
-            nvs = reuseIfPossible ? values : Arrays.copyOf(values, domain.getEndIndex());
+            nvs = reuseIfPossible ? values : Arrays.copyOf(values, domain.domainSize());
             domain.setActive(keys.getActiveMask());
         } else {
             nvs = (V[]) new Object[domain.domainSize()];
 
             int i = 0;
-            int j = keys.getStartIndex();
-            final int end = keys.getEndIndex();
+            int j = 0;
+            final int end = keys.domainSize();
             while (i < nvs.length && j < end) {
                 final long ki = domain.getKey(i);
                 final long kj = keys.getKey(j);

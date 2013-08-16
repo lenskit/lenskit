@@ -10,7 +10,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.NoSuchElementException;
 
 /**
  * Implement a domain of long keys, sorted by key.  Keys can be mapped back to indexes and vice
@@ -21,8 +20,6 @@ import java.util.NoSuchElementException;
  * A key set has a <emph>domain</emph>, which is the set of all possible keys that it can contain.
  * These keys are stored in an array.  The <emph>active</emph> keys are those that are actually in
  * the set.  Active/inactive status is tracked with a bitmask.
- * <p>
- * Indexes are not necessarily 0-based; they start from {@link #getStartIndex()}.
  *
  * @since 2.0
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -30,25 +27,25 @@ import java.util.NoSuchElementException;
  */
 public final class LongKeyDomain implements Serializable {
     /**
-     * Wrap a key array (with a specified size) into a key set.  The key set is initially empty
-     * (the mask is clear).
-     * @param keys The key array.
-     * @param fromIndex The index of the first key to use.
-     * @param toIndex The index of the last key to use.
-     * @param initiallyActive {@code true} to activate all keys initially, {@code false} to leave them
-     *                                 inactive.
+     * Wrap a key array (with a specified size) into a key set.
+     * @param keys The key array.  This array must be sorted, and must not contain duplicates.  For
+     *             efficiency, this condition is not checked unless assertions are enabled.  Since
+     *             this method is only intended to be used when implementing test cases or other
+     *             data structures, callers of this method should ensure sortedness and
+     *             throw the appropriate exception.
+     * @param size The length of the array to actually use.
+     * @param initiallyActive {@code true} to activate all keys initially, {@code false} to leave
+     *                        them inactive.
      * @return The key set.
      */
-    public static LongKeyDomain wrap(long[] keys, int fromIndex, int toIndex, boolean initiallyActive) {
-        Preconditions.checkArgument(fromIndex >= 0, "invalid starting index");
-        Preconditions.checkArgument(toIndex >= fromIndex, "toIndex less than fromIndex");
-        Preconditions.checkArgument(toIndex <= keys.length, "toIndex past end of array");
-        assert MoreArrays.isSorted(keys, fromIndex, toIndex);
-        BitSet mask = new BitSet(toIndex);
+    public static LongKeyDomain wrap(long[] keys, int size, boolean initiallyActive) {
+        Preconditions.checkArgument(size <= keys.length, "size too large");
+        assert MoreArrays.isSorted(keys, 0, size);
+        BitSet mask = new BitSet(size);
         if (initiallyActive) {
-            mask.set(fromIndex, toIndex);
+            mask.set(0, size);
         }
-        return new LongKeyDomain(keys, fromIndex, toIndex, mask);
+        return new LongKeyDomain(keys, size, mask);
     }
 
     /**
@@ -72,7 +69,7 @@ public final class LongKeyDomain implements Serializable {
         }
         Arrays.sort(keyArray);
         int size = MoreArrays.deduplicate(keyArray, 0, keyArray.length);
-        return wrap(keyArray, 0, size, initiallyActive);
+        return wrap(keyArray, size, initiallyActive);
     }
 
     /**
@@ -90,53 +87,32 @@ public final class LongKeyDomain implements Serializable {
      * @return The key set.
      */
     public static LongKeyDomain create(long... keys) {
+        // the delegation goes this way to minimize the number of array copies
         return fromCollection(LongArrayList.wrap(keys));
     }
 
     /**
-     * Create an empty key set.
-     * @return An empty key set.
+     * Create an empty key domain.
+     * @return An empty key domain.
      */
     public static LongKeyDomain empty() {
-        return wrap(new long[0], 0, 0, true);
+        // since empty domains are immutable, use a singleton
+        return EMPTY_DOMAIN;
     }
+
+    private static final LongKeyDomain EMPTY_DOMAIN = wrap(new long[0], 0, true);
 
     private static final long serialVersionUID = 1L;
 
     private final long[] keys;
-    private final int startIndex;
-    private final int endIndex;
+    private final int domainSize;
     private final BitSet mask;
     private boolean unowned = false;
 
-    private LongKeyDomain(long[] ks, int start, int end, BitSet m) {
+    private LongKeyDomain(long[] ks, int end, BitSet m) {
         keys = ks;
-        startIndex = start;
-        endIndex = end;
+        domainSize = end;
         mask = m;
-    }
-
-    /**
-     * Get the start index for this set.  This is the lower bound on indexes that can be returned.
-     * @return The start index.
-     */
-    public int getStartIndex() {
-        return startIndex;
-    }
-
-    /**
-     * Get the end index for this set.  This is the upper bound on indexes that can be returned.
-     * @return The end index.
-     */
-    public int getEndIndex() {
-        return endIndex;
-    }
-
-    private void checkIndex(int idx) {
-        if (idx < startIndex || idx >= endIndex) {
-            String msg = String.format("index %d not in range [%d,%d)", idx, startIndex, endIndex);
-            throw new IndexOutOfBoundsException(msg);
-        }
     }
 
     /**
@@ -148,7 +124,7 @@ public final class LongKeyDomain implements Serializable {
      *         {@link Arrays#binarySearch(long[], int, int, long)}.
      */
     public int getIndex(long key) {
-        return Arrays.binarySearch(keys, startIndex, endIndex, key);
+        return Arrays.binarySearch(keys, 0, domainSize, key);
     }
 
     /**
@@ -158,13 +134,10 @@ public final class LongKeyDomain implements Serializable {
      */
     public int getIndexIfActive(long key) {
         int idx = getIndex(key);
-        if (idx >= 0) {
-            if (mask.get(idx)) {
-                return idx;
-            } else {
-                return -idx - 1;
-            }
+        if(idx >= 0 && !mask.get(idx)) {
+            return -idx - 1;
         } else {
+            // index is negative or active
             return idx;
         }
     }
@@ -172,8 +145,8 @@ public final class LongKeyDomain implements Serializable {
     /**
      * Get the upper bound, the first index whose key is greater than the specified key.
      * @param key The key to search for.
-     * @return The first index greater than the specified key, or {@link #size()} if the key is
-     *            the last key in the domain.  The index is not necessarily active.
+     * @return The first index greater than the specified key, or {@link #domainSize()} if the key
+     *         is the last key in the domain.  The index is not necessarily active.
      */
     public int upperBound(long key) {
         int index = getIndex(key);
@@ -188,6 +161,9 @@ public final class LongKeyDomain implements Serializable {
 
     /**
      * Get the lower bound, the first index whose key is greater than or equal to the specified key.
+     * This method is paired with {@link #upperBound(long)}; the interval
+     * {@code [lowerBound(k),upperBound(k))} contains the index of {@code k}, if the key is in the
+     * domain, and is empty if the key is not in the domain.
      * @param key The key to search for.
      * @return The index of the first key greater than or equal to {@code key}.
      */
@@ -203,19 +179,6 @@ public final class LongKeyDomain implements Serializable {
     }
 
     /**
-     * Return a subset of this key set.  The masks of the two sets <strong>are linked</strong>.
-     * @param start The start index (inclusive).
-     * @param end The end index (exclusive).
-     * @return A key set representing a subset of this set.
-     */
-    public LongKeyDomain subset(int start, int end) {
-        Preconditions.checkArgument(start >= startIndex, "invalid start index");
-        Preconditions.checkArgument(end <= endIndex, "invalid end index");
-        Preconditions.checkArgument(end >= start, "end before start");
-        return new LongKeyDomain(keys, start, end, mask);
-    }
-
-    /**
      * Return a copy of this key set.  The resulting key set has an independent mask.  Key storage
      * is shared for efficiency.
      * @return The copied key set.
@@ -226,7 +189,7 @@ public final class LongKeyDomain implements Serializable {
             unowned = false;
             return this;
         } else {
-            return new LongKeyDomain(keys, startIndex, endIndex, (BitSet) mask.clone());
+            return new LongKeyDomain(keys, domainSize, (BitSet) mask.clone());
         }
     }
 
@@ -249,7 +212,7 @@ public final class LongKeyDomain implements Serializable {
      * Mark the key set as owned, but don't copy it.  Used by views to make sure that someone owns
      * the key set.
      */
-    public void requireOwned() {
+    public void acquire() {
         unowned = false;
     }
 
@@ -258,7 +221,7 @@ public final class LongKeyDomain implements Serializable {
      * @return The new key set, with the same keys but all of them deactivated.
      */
     public LongKeyDomain inactiveCopy() {
-        return new LongKeyDomain(keys, startIndex, endIndex, new BitSet());
+        return new LongKeyDomain(keys, domainSize, new BitSet());
     }
 
     /**
@@ -278,14 +241,14 @@ public final class LongKeyDomain implements Serializable {
      */
     public LongKeyDomain compactCopy(boolean active) {
         long[] compactKeys;
-        if (startIndex == 0 && endIndex == keys.length && mask.nextClearBit(0) >= endIndex) {
+        if (domainSize == keys.length && mask.nextClearBit(0) >= domainSize) {
             // fast path 1: reuse the keys
             compactKeys = keys;
-        } else if (mask.nextClearBit(startIndex) >= endIndex) {
+        } else if (mask.nextClearBit(0) >= domainSize) {
             // fast path 2: all keys are active, use fast copy
             int size = domainSize();
             compactKeys = new long[size];
-            System.arraycopy(keys, startIndex, compactKeys, 0, size);
+            System.arraycopy(keys, 0, compactKeys, 0, size);
         } else {
             // there are unused keys, do a slow copy
             compactKeys = LongIterators.unwrap(keyIterator(activeIndexIterator()));
@@ -296,7 +259,7 @@ public final class LongKeyDomain implements Serializable {
         if (active) {
             compactMask.set(0, compactKeys.length, true);
         }
-        return new LongKeyDomain(compactKeys, 0, compactKeys.length, compactMask);
+        return new LongKeyDomain(compactKeys, compactKeys.length, compactMask);
     }
 
     /**
@@ -305,7 +268,7 @@ public final class LongKeyDomain implements Serializable {
      * @return {@code true} if the key at the index is active.
      */
     public boolean indexIsActive(int idx) {
-        assert idx >= startIndex && idx < endIndex;
+        assert idx >= 0 && idx < domainSize;
         return mask.get(idx);
     }
 
@@ -333,34 +296,8 @@ public final class LongKeyDomain implements Serializable {
      * @return The key at the specified index.
      */
     public long getKey(int idx) {
-        assert idx >= startIndex && idx < endIndex;
+        assert idx >= 0 && idx < domainSize;
         return keys[idx];
-    }
-
-    /**
-     * Get the first active key.
-     * @return The first active key.
-     */
-    public long firstActiveKey() {
-        int idx = mask.nextSetBit(startIndex);
-        if (idx < endIndex) {
-            return keys[idx];
-        } else {
-            throw new NoSuchElementException();
-        }
-    }
-
-    /**
-     * Get the first active key.
-     * @return The last active key.
-     */
-    public long lastActiveKey() {
-        int idx = mask.previousSetBit(endIndex - 1);
-        if (idx >= startIndex) {
-            return keys[idx];
-        } else {
-            throw new NoSuchElementException();
-        }
     }
 
     /**
@@ -368,7 +305,7 @@ public final class LongKeyDomain implements Serializable {
      * @return The domain size.
      */
     public int domainSize() {
-        return endIndex - startIndex;
+        return domainSize;
     }
 
     /**
@@ -376,10 +313,7 @@ public final class LongKeyDomain implements Serializable {
      * @return The number of active keys.
      */
     public int size() {
-        BitSet bits = new BitSet(endIndex + 1);
-        bits.set(startIndex, endIndex);
-        bits.and(mask);
-        return bits.cardinality();
+        return mask.cardinality();
     }
 
     /**
@@ -388,10 +322,10 @@ public final class LongKeyDomain implements Serializable {
      */
     public IntBidirectionalIterator activeIndexIterator() {
         // shortcut - only iterate the bit set if it has clear bits
-        if (mask.nextClearBit(startIndex) < endIndex) {
-            return new BitSetIterator(mask, startIndex, endIndex);
+        if (mask.nextClearBit(0) < domainSize) {
+            return new BitSetIterator(mask, 0, domainSize);
         } else {
-            return IntIterators.fromTo(startIndex, endIndex);
+            return IntIterators.fromTo(0, domainSize);
         }
     }
 
@@ -401,28 +335,27 @@ public final class LongKeyDomain implements Serializable {
      */
     public IntPointer activeIndexPointer() {
         // shortcut - only iterate the bit set if it has clear bits
-        if (mask.nextClearBit(startIndex) < endIndex) {
-            return new BitSetPointer(mask, startIndex, endIndex);
+        if (mask.nextClearBit(0) < domainSize) {
+            return new BitSetPointer(mask, 0, domainSize);
         } else {
-            return Pointers.fromTo(startIndex, endIndex);
+            return Pointers.fromTo(0, domainSize);
         }
     }
 
     /**
-     * Get an iterator over active indexes, initialized to the specified index.
+     * Get an iterator over active indexes, initialized to the specified index and limited to a
+     * particular range.
+     * @param min The minimum index for the iterator.
+     * @param max The maximum index for the iterator.
      * @param idx The starting index for the iterator.  The iterator can go backwards from this
-     *            index, if it is greater than 0.
+     *            index, if it is greater than {@code min}.
      * @return An iterator over active indexes.
      */
-    public IntBidirectionalIterator activeIndexIterator(int idx) {
-        // shortcut - only iterate the bit set if it has clear bits
-        if (mask.nextClearBit(startIndex) < endIndex) {
-            return new BitSetIterator(mask, startIndex, endIndex, idx);
-        } else {
-            IntBidirectionalIterator iter = IntIterators.fromTo(startIndex, endIndex);
-            iter.skip(idx - startIndex);
-            return iter;
-        }
+    public IntBidirectionalIterator activeIndexIterator(int min, int max, int idx) {
+        assert min >= 0;
+        assert max <= domainSize;
+        assert idx >= min && idx <= max;
+        return new BitSetIterator(mask, min, max, idx);
     }
 
     /**
@@ -459,9 +392,9 @@ public final class LongKeyDomain implements Serializable {
      */
     public LongSortedSet domain() {
         // TODO Cache the domain
-        BitSet bits = new BitSet(endIndex);
-        bits.set(startIndex, endIndex);
-        return new LongSortedArraySet(new LongKeyDomain(keys, startIndex, endIndex, bits));
+        BitSet bits = new BitSet(domainSize);
+        bits.set(0, domainSize);
+        return new LongSortedArraySet(new LongKeyDomain(keys, domainSize, bits));
     }
 
     /**
@@ -475,8 +408,8 @@ public final class LongKeyDomain implements Serializable {
      * Query whether this key set is compatible with another.  Two key sets are compatible if indexes
      * are compatible (that is, the same index will refer to the same key).  This method is
      * conservative and efficient; it may claim that two sets are incompatible even if indexes may
-     * compatible.  Key sets generated with {@link #subset(int, int)} and {@link #clone()} are
-     * compatible with their parent and each other.
+     * compatible.  Key sets generated with {@link #clone()} are compatible with their parent and
+     * each other.
      *
      * @param other The other key set.
      * @return {@code true} if the two key sets are compatible.
@@ -492,7 +425,7 @@ public final class LongKeyDomain implements Serializable {
      * @return {@code this} (for chaining).
      */
     public LongKeyDomain invert() {
-        mask.flip(startIndex, endIndex);
+        mask.flip(0, domainSize);
         return this;
     }
 
@@ -502,7 +435,7 @@ public final class LongKeyDomain implements Serializable {
      * @return The key set (for chaining).
      */
     public LongKeyDomain setAllActive(boolean active) {
-        mask.set(startIndex, endIndex, active);
+        mask.set(0, domainSize, active);
         return this;
     }
 
@@ -513,19 +446,18 @@ public final class LongKeyDomain implements Serializable {
      * @return The key set (for chaining).
      */
     public LongKeyDomain setActive(int idx, boolean active) {
-        checkIndex(idx);
+        Preconditions.checkElementIndex(idx, domainSize);
         mask.set(idx, active);
         return this;
     }
 
     /**
      * Set the active bits from a bit set.
-     * @param active The bits to set.  The bit set should be in the key set's index-space (that is,
-     *               it will be queried starting from {@link #getStartIndex()}, not 0).
+     * @param active The bits to set.
      * @return The key set (for chaining).
      */
     public LongKeyDomain setActive(BitSet active) {
-        mask.set(startIndex, endIndex);
+        mask.set(0, domainSize);
         mask.and(active);
         return this;
     }

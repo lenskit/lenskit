@@ -105,7 +105,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     @Override
     public MutableSparseVector mutableCopy() {
         LongKeyDomain mks = keys.clone();
-        double[] mvs = Arrays.copyOf(values, keys.getEndIndex());
+        double[] mvs = Arrays.copyOf(values, keys.domainSize());
         MutableSparseVector result = new MutableSparseVector(mks, mvs);
         for (Map.Entry<Symbol, ImmutableSparseVector> entry : channelVectors.entrySet()) {
             result.addVectorChannel(entry.getKey(), entry.getValue().mutableCopy());
