@@ -41,4 +41,8 @@
   * Deprecated pointers. They will be removed, or only used internally to the data structure code,
     by LensKit 2.0.
 
+  * For consistency, all data structures should be created using builders or static factory methods,
+    not their constructors (see Effective Java).  Public data structure constructors have therefore
+    been deprecated, and will be removed in LensKit 2.0.
+
   []
