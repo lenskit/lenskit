@@ -18,27 +18,34 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.collections;
+package org.grouplens.lenskit.symbols;
 
 /**
- * A pointer over integers.
+ * A pairing of a {@link Symbol} with a {@code double} value.
  *
- * @since 1.2
+ * @since 2.0
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public interface IntPointer extends Pointer<Integer> {
-    /**
-     * Get the integer at the pointer's current location.
-     * @return The pointer's current integer.
-     * @throws java.util.NoSuchElementException if the pointer is out-of-bounds.
-     */
-    int getInt();
+public class DoubleSymbolValue extends SymbolValue<Double> {
+    private final TypedSymbol<Double> symbol;
+    private final double value;
 
-    /**
-     * {@inheritDoc}
-     * @deprecated Deprecated only to make warnings show up when you know you have an
-     * {@code IntPointer} and use the boxed {@code get()}.  Use {@link #getInt()} instead.
-     */
-    @Override @Deprecated
-    Integer get();
+    DoubleSymbolValue(TypedSymbol<Double> sym, double val) {
+        symbol = sym;
+        value = val;
+    }
+
+    @Override
+    public TypedSymbol<Double> getSymbol() {
+        return symbol;
+    }
+
+    @Override
+    public Double getValue() {
+        return getDoubleValue();
+    }
+
+    public double getDoubleValue() {
+        return value;
+    }
 }

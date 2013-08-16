@@ -21,23 +21,23 @@
 package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleCollection;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.collections.*;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Read-only interface to sparse vectors.
@@ -67,75 +67,38 @@ import java.util.*;
  * @compat Public
  */
 public abstract class SparseVector implements Iterable<VectorEntry>, Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
-    final long[] keys;
-    final BitSet usedKeys;
+    /**
+     * The domain of keys.
+     */
+    final LongKeyDomain keys;
+    /**
+     * The value array. Indexes in this array correspond to indexes produced by {@link #keys}.
+     */
     double[] values;
-    final int domainSize; // How much of the key space is actually used by this vector.
 
+    //region Constructors
     /**
-     * Construct a new vector from existing arrays.  It is assumed that the keys
-     * are sorted and duplicate-free, and that the values array is the same length. The
-     * key array is the key domain, and all keys are considered used.
-     * No new keys can be added to this vector.  Clients should call
-     * the wrap() method rather than directly calling this constructor.
-     *
-     * @param ks The array of keys backing this vector. They must be sorted.
-     * @param vs The array of values backing this vector.
+     * Construct a new vector from a key set and value array.
+     * @param ks The key set.  Used as-is, and will be modified.  Pass a clone, usually.
+     * @param vs The value array.
      */
-    // hard to test because it's not used externally
     @SuppressWarnings("PMD.ArrayIsStoredDirectly")
-    SparseVector(long[] ks, double[] vs) {
-        this(ks, vs, ks.length);
+    SparseVector(LongKeyDomain ks, double[] vs) {
+        assert vs.length >= ks.domainSize();
+        keys = ks;
+        keys.acquire();
+        values = vs;
     }
 
     /**
-     * Construct a new vector from existing arrays. It is assumed that
-     * the keys are sorted and duplicate-free, and that the keys and
-     * values both have at least {@var length} items.  The key set
-     * and key domain are both set to the keys array.  Clients should
-     * call the wrap() method rather than directly calling this
-     * constructor.
-     *
-     * @param ks     The array of keys backing the vector. It must be sorted.
-     * @param vs     The array of values backing the vector.
-     * @param length Number of items to actually use.
+     * Construct a new sparse vector with a particular domain.  Allocates the value storage.
+     * @param ks The key set. Used as-is, and will be modified. Pass a clone, usually.
      */
-    @SuppressWarnings("PMD.ArrayIsStoredDirectly")
-    SparseVector(long[] ks, double[] vs, int length) {
-        Preconditions.checkArgument(MoreArrays.isSorted(ks, 0, length),
-                                    "The input array of keys must be in sorted order.");
-        keys = ks;
-        values = vs;
-        domainSize = length;
-        usedKeys = new BitSet(length);
-        for (int i = 0; i < length; i++) {
-            usedKeys.set(i);
-        }
-    }
-
-    /**
-     * Construct a new vector from existing arrays. It is assumed that
-     * the keys are sorted and duplicate-free, and that the keys and
-     * values both have at least {@var length} items.  The key set
-     * and key domain are both set to the keys array.  Clients should
-     * call the wrap() method rather than directly calling this
-     * constructor.
-     *
-     * @param ks     The array of keys backing the vector. It must be sorted.
-     * @param vs     The array of values backing the vector.
-     * @param length Number of items to actually use.
-     * @param used   The used entry set.
-     */
-    @SuppressWarnings("PMD.ArrayIsStoredDirectly")
-    SparseVector(long[] ks, double[] vs, int length, BitSet used) {
-        Preconditions.checkArgument(MoreArrays.isSorted(ks, 0, length),
-                                    "The input array of keys must be in sorted order.");
-        keys = ks;
-        values = vs;
-        domainSize = length;
-        usedKeys = used;
+    SparseVector(LongKeyDomain ks) {
+        this(ks, new double[ks.domainSize()]);
+        ks.setAllActive(false);
     }
 
     /**
@@ -145,59 +108,16 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @param keyValueMap A map providing the values for the vector.
      */
     SparseVector(Long2DoubleMap keyValueMap) {
-        keys = keyValueMap.keySet().toLongArray();
-        domainSize = keys.length;
-        Arrays.sort(keys);
-        // untestable assertions, assuming Arrays works.
-        assert keys.length == keyValueMap.size();
-        assert MoreArrays.isSorted(keys, 0, domainSize);
-        values = new double[keys.length];
-        final int len = keys.length;
+        keys = LongKeyDomain.fromCollection(keyValueMap.keySet(), true);
+        final int len = keys.domainSize();
+        values = new double[len];
         for (int i = 0; i < len; i++) {
-            values[i] = keyValueMap.get(keys[i]);
+            values[i] = keyValueMap.get(keys.getKey(i));
         }
-        usedKeys = new BitSet(domainSize);
-        usedKeys.set(0, domainSize);
     }
+    //endregion
 
-    /**
-     * Construct a new empty vector with the specified key domain.
-     *
-     * @param domain The key domain.
-     */
-    SparseVector(Collection<Long> domain) {
-        LongSortedArraySet set;
-        // since LSAS is immutable, we'll use its array if we can!
-        if (domain instanceof LongSortedArraySet) {
-            set = (LongSortedArraySet) domain;
-        } else {
-            set = new LongSortedArraySet(domain);
-        }
-        keys = set.unsafeArray();
-        domainSize = domain.size();
-        values = new double[domainSize];
-        usedKeys = new BitSet(domainSize);
-    }
-
-    /**
-     * Find the index of a particular key.
-     *
-     * @param key The key to search for.
-     * @return The index, or a negative value if the key is not in the key domain.
-     */
-    protected int findIndex(long key) {
-        return Arrays.binarySearch(keys, 0, domainSize, key);
-    }
-
-    /**
-     * Query wehther the vector is "full"; that is, all keys are set.  This can speed up certain
-     * operations.
-     * @return {@code true} if all keys are known to be set.
-     */
-    boolean isFullySet() {
-        return false;
-    }
-
+    //region Queries
     /**
      * Query whether the vector contains an entry for the key in question.
      *
@@ -205,8 +125,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @return {@code true} if the key exists.
      */
     public boolean containsKey(long key) {
-        final int idx = findIndex(key);
-        return idx >= 0 && usedKeys.get(idx);
+        return keys.keyIsActive(key);
     }
 
     /**
@@ -217,8 +136,8 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @throws IllegalArgumentException if {@var key} is not in the key set.
      */
     public double get(long key) {
-        final int idx = findIndex(key);
-        if (idx >= 0 && usedKeys.get(idx)) {
+        final int idx = keys.getIndexIfActive(key);
+        if (idx >= 0) {
             return values[idx];
         } else {
             throw new IllegalArgumentException("Key " + key + " is not in the key set");
@@ -233,8 +152,8 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @return the value (or {@var dft} if the key is not set to a value)
      */
     public double get(long key, double dft) {
-        final int idx = findIndex(key);
-        if (idx >= 0 && usedKeys.get(idx)) {
+        final int idx = keys.getIndexIfActive(key);
+        if (idx >= 0) {
             return values[idx];
         } else {
             return dft;
@@ -256,12 +175,11 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
 
         if (evec == null) {
             throw new IllegalArgumentException("entry is not associated with a vector");
-        } else if (evec.keys != this.keys) {
+        } else if (!evec.keys.isCompatibleWith(keys)) {
             throw new IllegalArgumentException("entry does not have safe key domain");
-        } else if (entry.getKey() != keys[eind]) {
-            throw new IllegalArgumentException("entry does not have the correct key for its index");
         }
-        if (usedKeys.get(eind)) {
+        assert entry.getKey() == keys.getKey(eind);
+        if (keys.indexIsActive(eind)) {
             return values[eind];
         } else {
             throw new IllegalArgumentException("Key " + entry.getKey() + " is not set");
@@ -282,13 +200,13 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
 
         if (evec == null) {
             throw new IllegalArgumentException("entry is not associated with a vector");
-        } else if (evec.keys != this.keys) {
+        } else if (!keys.isCompatibleWith(evec.keys)) {
             throw new IllegalArgumentException("entry does not have safe key domain");
-        } else if (entry.getKey() != keys[eind]) {
-            throw new IllegalArgumentException("entry does not have the correct key for its index");
         }
-        return usedKeys.get(eind);
+        assert entry.getKey() == keys.getKey(eind);
+        return keys.indexIsActive(eind);
     }
+    //endregion
 
     //region Iterators
     /**
@@ -301,6 +219,10 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public Iterator<VectorEntry> fastIterator() {
         return fastIterator(VectorEntry.State.SET);
+    }
+
+    boolean isMutable() {
+        return true;
     }
 
     /**
@@ -316,22 +238,20 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         IntIterator iter;
         switch (state) {
         case SET:
-            iter = new BitSetIterator(usedKeys, 0, domainSize);
+            iter = keys.activeIndexIterator(isMutable());
             break;
         case UNSET: {
-            BitSet unused = (BitSet) usedKeys.clone();
-            unused.flip(0, domainSize);
-            iter = new BitSetIterator(unused, 0, domainSize);
+            iter = keys.clone().invert().activeIndexIterator(false);
             break;
         }
         case EITHER: {
-            iter = new IntIntervalList(0, domainSize).iterator();
+            iter = IntIterators.fromTo(0, keys.domainSize());
             break;
         }
         default: // should be impossible
             throw new IllegalArgumentException("invalid entry state");
         }
-        return new FastIterImpl(iter);
+        return new FastIterImpl(iter, state);
     }
 
     /**
@@ -372,9 +292,8 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         return new IterImpl();
     }
 
-
     private class IterImpl implements Iterator<VectorEntry> {
-        private BitSetIterator iter = new BitSetIterator(usedKeys);
+        private IntIterator iter = keys.activeIndexIterator(isMutable());
 
         @Override
         public boolean hasNext() {
@@ -386,7 +305,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         public VectorEntry next() {
             int pos = iter.nextInt();
             return new VectorEntry(SparseVector.this, pos,
-                                   keys[pos], values[pos], true);
+                                   keys.getKey(pos), values[pos], true);
         }
 
         @Override
@@ -400,11 +319,13 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     // reuse the VectorEntry returned at one step for a later step, so
     // the client should not keep around old VectorEntrys.
     private class FastIterImpl implements Iterator<VectorEntry> {
+        private final VectorEntry.State state;
         private VectorEntry entry = new VectorEntry(SparseVector.this, -1, 0, 0, false);
         private IntIterator iter;
 
-        public FastIterImpl(IntIterator positions) {
+        public FastIterImpl(IntIterator positions, VectorEntry.State st) {
             iter = positions;
+            state = st;
         }
 
         @Override
@@ -416,143 +337,15 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         @Nonnull
         public VectorEntry next() {
             int pos = iter.nextInt();
-            boolean isSet = usedKeys.get(pos);
+            boolean isSet = state == VectorEntry.State.SET || keys.indexIsActive(pos);
             double v = isSet ? values[pos] : Double.NaN;
-            entry.set(pos, keys[pos], v, isSet);
+            entry.set(pos, keys.getKey(pos), v, isSet);
             return entry;
         }
 
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
-        }
-    }
-    //endregion
-
-    //region Pointers
-
-    /**
-     * Get a pointer over the set vector entries.
-     *
-     * @return A pointer to the first entry in this vector (or after the end, if the vector is
-     *         empty).
-     */
-    public Pointer<VectorEntry> pointer() {
-        return pointer(VectorEntry.State.SET);
-    }
-
-    /**
-     * Get a pointer over the vector entries.
-     *
-     * @param state The entries to include.
-     * @return A pointer to the first entry in this vector (or after the end, if the vector is
-     *         empty).
-     */
-    public Pointer<VectorEntry> pointer(VectorEntry.State state) {
-        return Pointers.transform(fastPointer(state), VectorEntry.copyFunction());
-    }
-
-    /**
-     * Get a fast pointer over the set vector entries.
-     *
-     * @return A pointer to the first entry in this vector (or after the end, if the vector is
-     *         empty).
-     */
-    public Pointer<VectorEntry> fastPointer() {
-        return fastPointer(VectorEntry.State.SET);
-    }
-
-    /**
-     * Get a fast pointer over the vector entries.  It may modify and return the same object rather
-     * than creating new instances.  When returned, it is pointing at the first entry, if such
-     * exists.
-     *
-     * @param state The entries to include.
-     * @return A (potentially) fast pointer over the vector entries.
-     */
-    public Pointer<VectorEntry> fastPointer(VectorEntry.State state) {
-        switch (state) {
-        case SET:
-            if (isFullySet()) {
-                return new FastPointer();
-            } else {
-                return new FastMaskedPointer(false);
-            }
-        case UNSET:
-            return new FastMaskedPointer(true);
-        case EITHER:
-            return new FastPointer();
-        default:
-            throw new AssertionError("invalid entry state");
-        }
-    }
-
-    private class FastPointer implements Pointer<VectorEntry> {
-        private int pos = 0;
-        private final VectorEntry entry = new VectorEntry(SparseVector.this, -1, 0, 0, false);
-
-        @Override
-        public boolean advance() {
-            if (pos < domainSize) {
-                ++pos;
-            }
-            return pos < domainSize;
-        }
-
-        @Override
-        public VectorEntry get() {
-            if (isAtEnd()) {
-                throw new NoSuchElementException("pointer out of bounds");
-            }
-            entry.set(pos, keys[pos], values[pos], usedKeys.get(pos));
-            return entry;
-        }
-
-        @Override
-        public boolean isAtEnd() {
-            return pos >= domainSize;
-        }
-    }
-
-    private class FastMaskedPointer implements Pointer<VectorEntry> {
-        private final BitSetPointer bsp;
-        private final boolean isSet;
-        private final VectorEntry entry = new VectorEntry(SparseVector.this, -1, 0, 0, false);
-
-        /**
-         * Construct a fast pointer that respects the usedKeys mask.
-         * @param invert Whether to invert the mask. If {@code true}, then the inverse of usedKeys
-         *               is used (iterating over unset keys).
-         */
-        public FastMaskedPointer(boolean invert) {
-            isSet = !invert;
-            if (invert) {
-                // this is an uncommon operation, so invert the key set
-                BitSet inverse = new BitSet();
-                inverse.or(usedKeys);
-                inverse.flip(0, domainSize);
-                bsp = new BitSetPointer(inverse, 0, domainSize);
-            } else {
-                bsp = new BitSetPointer(usedKeys, 0, domainSize);
-            }
-        }
-
-        @Override
-        public boolean advance() {
-            return bsp.advance();
-        }
-
-        @Override
-        public VectorEntry get() {
-            int idx = bsp.getInt();
-            assert idx >= 0 && idx < domainSize;
-            entry.set(idx, keys[idx], values[idx], isSet);
-            return entry;
-        }
-
-        @Override
-        public boolean isAtEnd() {
-            return bsp.isAtEnd();
         }
     }
     //endregion
@@ -565,7 +358,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @return The key domain for this vector.
      */
     public LongSortedSet keyDomain() {
-        return LongSortedArraySet.wrap(keys, domainSize);
+        return keys.domain();
     }
 
     /**
@@ -575,7 +368,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @return The set of keys used in this vector.
      */
     public LongSortedSet keySet() {
-        return LongSortedArraySet.wrap(keys, domainSize, usedKeys);
+        return keys.activeSetView();
     }
 
     /**
@@ -595,7 +388,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public DoubleCollection values() {
         DoubleArrayList lst = new DoubleArrayList(size());
-        BitSetIterator iter = new BitSetIterator(usedKeys, 0, domainSize);
+        IntIterator iter = keys.activeIndexIterator(false);
         while (iter.hasNext()) {
             int idx = iter.nextInt();
             lst.add(values[idx]);
@@ -607,7 +400,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * Get the keys of this vector sorted by the value of the items
      * stored for each key.
      *
-     * @param decreasing If {@var true}, sort in decreasing order.
+     * @param decreasing If {@code true}, sort in decreasing order.
      * @return The sorted list of keys of this vector.
      */
     public LongArrayList keysByValue(boolean decreasing) {
@@ -653,7 +446,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      *         key domain.
      */
     public int size() {
-        return usedKeys.cardinality();
+        return keys.size();
     }
 
     /**
@@ -714,22 +507,24 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public double dot(SparseVector o) {
         double dot = 0;
-        Pointer<VectorEntry> p1 = fastPointer();
-        Pointer<VectorEntry> p2 = o.fastPointer();
 
-        while (!p1.isAtEnd() && !p2.isAtEnd()) {
-            VectorEntry e1 = p1.get();
-            VectorEntry e2 = p2.get();
+        Iterator<VectorEntry> i1 = fastIterator();
+        Iterator<VectorEntry> i2 = o.fastIterator();
+
+        VectorEntry e1 = i1.hasNext() ? i1.next() : null;
+        VectorEntry e2 = i2.hasNext() ? i2.next() : null;
+
+        while (e1 != null && e2 != null) {
             final long k1 = e1.getKey();
             final long k2 = e2.getKey();
             if (k1 < k2) {
-                p1.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
             } else if (k2 < k1) {
-                p2.advance();
+                e2 = i2.hasNext() ? i2.next() : null;
             } else {
                 dot += e1.getValue() * e2.getValue();
-                p1.advance();
-                p2.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
+                e2 = i2.hasNext() ? i2.next() : null;
             }
         }
         return dot;
@@ -743,22 +538,23 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public int countCommonKeys(SparseVector o) {
         int count = 0;
-        Pointer<VectorEntry> p1 = fastPointer();
-        Pointer<VectorEntry> p2 = o.fastPointer();
+        Iterator<VectorEntry> i1 = fastIterator();
+        Iterator<VectorEntry> i2 = o.fastIterator();
 
-        while (!p1.isAtEnd() && !p2.isAtEnd()) {
-            VectorEntry e1 = p1.get();
-            VectorEntry e2 = p2.get();
+        VectorEntry e1 = i1.hasNext() ? i1.next() : null;
+        VectorEntry e2 = i2.hasNext() ? i2.next() : null;
+
+        while (e1 != null && e2 != null) {
             final long k1 = e1.getKey();
             final long k2 = e2.getKey();
             if (k1 < k2) {
-                p1.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
             } else if (k2 < k1) {
-                p2.advance();
+                e2 = i2.hasNext() ? i2.next() : null;
             } else {
                 count += 1;
-                p1.advance();
-                p2.advance();
+                e1 = i1.hasNext() ? i1.next() : null;
+                e2 = i2.hasNext() ? i2.next() : null;
             }
         }
         return count;
@@ -792,11 +588,8 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
                 if (!this.keySet().equals(vo.keySet())) {
                     return false;        // same keys
                 }
-                for (Pair<VectorEntry, VectorEntry> pair : Vectors.fastUnion(this, vo)) { // same values
-                    if (Double.doubleToLongBits(pair.getLeft().getValue()) != 
-                            Double.doubleToLongBits(pair.getRight().getValue())) { return false; }
-                }
-                return true;
+                // we know that sparse vector values are always in key order. so just compare them.
+                return this.values().equals(vo.values());
             }
         } else {
             return false;
@@ -809,6 +602,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     }
     //endregion
 
+    //region Copying
     /**
      * Return an immutable snapshot of this sparse vector. The new vector's key
      * domain will be equal to the {@link #keySet()} of this vector.
@@ -827,22 +621,31 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      *         this vector.
      */
     public abstract MutableSparseVector mutableCopy();
+    //endregion
 
+    //region Channels
     /**
-     * Return whether this sparse vector has a channel stored under a
-     * particular symbol.  (Symbols are sort of like names, but more
-     * efficient.)
+     * Return whether this sparse vector has a channel vector stored under a
+     * particular symbol.
      *
      * @param channelSymbol the symbol under which the channel was
      *                      stored in the vector.
      * @return whether this vector has such a channel right now.
      */
-    public abstract boolean hasChannel(Symbol channelSymbol);
+    public abstract boolean hasChannelVector(Symbol channelSymbol);
+
+    /**
+     * Deprecated alias for {@link #hasChannelVector(Symbol)}.
+     * @deprecated Use {@link #hasChannelVector(Symbol)} instead.
+     */
+    @Deprecated
+    public boolean hasChannel(Symbol sym) {
+        return hasChannelVector(sym);
+    }
     
     /**
-     * Return whether this sparse vector has a typed channel stored under a
-     * particular typed symbol.  (Symbols are sort of like names, but more
-     * efficient.)
+     * Return whether this sparse vector has a channel stored under a
+     * particular typed symbol.
      *
      * @param channelSymbol the typed symbol under which the channel was
      *                      stored in the vector.
@@ -851,18 +654,40 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     public abstract boolean hasChannel(TypedSymbol<?> channelSymbol);
 
     /**
-     * Fetch the channel stored under a particular symbol.
+     * Get the vector associated with a particular unboxed channel.
+     *
+     * @param channelSymbol the symbol under which the channel was/is
+     *                      stored in the vector.
+     * @return The vector corresponding to the specified unboxed channel, or {@code null} if
+     * there is no such channel.
+     */
+    public abstract SparseVector getChannelVector(Symbol channelSymbol);
+
+    /**
+     * Fetch the channel stored under a particular typed symbol.
+     *
+     * @param channelSymbol the typed symbol under which the channel was/is
+     *                      stored in the vector.
+     * @return the channel, which is itself a map from the key domain to objects of
+     *                      the channel's type, or {@code null} if there is no such channel.
+     */
+    public abstract <K> Long2ObjectMap<K> getChannel(TypedSymbol<K> channelSymbol);
+
+    /**
+     * Deprecated version of {@link #getChannelVector(Symbol)}.
      *
      * @param channelSymbol the symbol under which the channel was/is
      *                      stored in the vector.
      * @return the channel, which is itself a sparse vector.
      * @throws IllegalArgumentException if there is no channel under
      *                                  that symbol
+     * @deprecated Use {@link #getChannelVector(Symbol)}.
      */
+    @Deprecated
     public abstract SparseVector channel(Symbol channelSymbol);
-    
+
     /**
-     * Fetch the channel stored under a particular typed symbol.
+     * Deprecated version of {@link #getChannel(TypedSymbol)}.
      *
      * @param channelSymbol the typed symbol under which the channel was/is
      *                      stored in the vector.
@@ -870,20 +695,43 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      *                      the channel's type
      * @throws IllegalArgumentException if there is no channel under
      *                                  that typed symbol
+     * @deprecated Use {@link #getChannel(TypedSymbol)}.
      */
-    public abstract <K> Long2ObjectMap<K> channel(TypedSymbol<K> channelSymbol);
+    @Nonnull @Deprecated
+    public <K> Long2ObjectMap<K> channel(TypedSymbol<K> channelSymbol) {
+        Long2ObjectMap<K> chan = getChannel(channelSymbol);
+        if (chan == null) {
+            throw new IllegalArgumentException("no such channel " + channelSymbol);
+        } else {
+            return chan;
+        }
+    }
 
     /**
      * Retrieve all symbols that map to side channels for this vector.
      * @return A set of symbols, each of which identifies a side channel
      *         of the vector.
      */
-    public abstract Set<Symbol> getChannels();
+    public abstract Set<Symbol> getChannelVectorSymbols();
 
     /**
      * Retrieve all symbols that map to typed side channels for this vector.
      * @return A set of symbols, each of which identifies a side channel
      *         of the vector.
      */
-    public abstract Set<TypedSymbol<?>> getTypedChannels();
+    public abstract Set<TypedSymbol<?>> getChannelSymbols();
+    //endregion
+
+    //region Static Constructors
+    /**
+     * Get an empty sparse vector.
+     *
+     * @return An empty sparse vector. The vector is immutable, because mutating an empty vector is
+     *         impossible.
+     */
+    @SuppressWarnings("deprecation")
+    public static ImmutableSparseVector empty() {
+        return new ImmutableSparseVector();
+    }
+    //endregion
 }

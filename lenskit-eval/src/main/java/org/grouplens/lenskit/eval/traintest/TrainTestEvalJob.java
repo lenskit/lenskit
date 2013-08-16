@@ -248,8 +248,8 @@ class TrainTestEvalJob implements Runnable {
             int i = 4;
             for (Pair<Symbol,String> pair: channels) {
                 Symbol c = pair.getLeft();
-                if (predictions.hasChannel(c) && predictions.channel(c).containsKey(iid)) {
-                    row[i] = Double.toString(predictions.channel(c).get(iid));
+                if (predictions.hasChannelVector(c) && predictions.getChannelVector(c).containsKey(iid)) {
+                    row[i] = Double.toString(predictions.getChannelVector(c).get(iid));
                 } else {
                     row[i] = null;
                 }

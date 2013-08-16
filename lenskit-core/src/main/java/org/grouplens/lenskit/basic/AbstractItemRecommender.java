@@ -22,7 +22,7 @@ package org.grouplens.lenskit.basic;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.scored.ScoredId;
 
 import javax.annotation.Nullable;
@@ -71,8 +71,8 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
     public List<ScoredId> recommend(long user, int n,
                                     @Nullable Set<Long> candidates,
                                     @Nullable Set<Long> exclude) {
-        LongSet cs = CollectionUtils.fastSet(candidates);
-        LongSet es = CollectionUtils.fastSet(exclude);
+        LongSet cs = LongUtils.asLongSet(candidates);
+        LongSet es = LongUtils.asLongSet(exclude);
         return recommend(user, n, cs, es);
     }
 

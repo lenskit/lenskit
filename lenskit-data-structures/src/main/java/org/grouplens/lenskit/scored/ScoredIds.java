@@ -52,10 +52,10 @@ public final class ScoredIds {
      */
     public static ScoredIdBuilder copyBuilder(ScoredId id) {
         ScoredIdBuilder bld = new ScoredIdBuilder(id.getId(), id.getScore());
-        for (Symbol chan: id.getChannels()) {
+        for (Symbol chan: id.getUnboxedChannelSymbols()) {
             bld.addChannel(chan, id.channel(chan));
         }
-        for (@SuppressWarnings("rawtypes") TypedSymbol sym: id.getTypedChannels()) {
+        for (@SuppressWarnings("rawtypes") TypedSymbol sym: id.getChannelSymbols()) {
             bld.addChannel(sym, id.channel(sym));
         }
         return bld;
@@ -165,13 +165,13 @@ public final class ScoredIds {
         return new Ordering<ScoredId>() {
             @Override
             public int compare(@Nullable ScoredId left, @Nullable ScoredId right) {
-                if (left.hasChannel(chan)) {
-                    if (right.hasChannel(chan)) {
+                if (left.hasUnboxedChannel(chan)) {
+                    if (right.hasUnboxedChannel(chan)) {
                         return Doubles.compare(left.channel(chan), right.channel(chan));
                     } else {
                         return 1;
                     }
-                } else if (right.hasChannel(chan)) {
+                } else if (right.hasUnboxedChannel(chan)) {
                     return -1;
                 } else {
                     return 0;
@@ -244,10 +244,10 @@ public final class ScoredIds {
             ScoredIdBuilder builder = new ScoredIdBuilder();
             builder.setId(elt.getId());
             builder.setScore(elt.getScore());
-            for (Symbol s: elt.getChannels()) {
+            for (Symbol s: elt.getUnboxedChannelSymbols()) {
                 builder.addChannel(s, elt.channel(s));
             }
-            for (TypedSymbol s: elt.getTypedChannels()) {
+            for (TypedSymbol s: elt.getChannelSymbols()) {
                 builder.addChannel(s, elt.channel(s));
             }
             return builder.build();

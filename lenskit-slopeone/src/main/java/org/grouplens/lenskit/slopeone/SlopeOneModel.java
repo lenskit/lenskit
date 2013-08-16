@@ -78,7 +78,7 @@ public class SlopeOneModel implements Serializable {
             if (row == null) {
                 return 0;
             } else {
-                double coratings = row.channel(CORATINGS_SYMBOL).get(item2, 0);
+                double coratings = row.getChannelVector(CORATINGS_SYMBOL).get(item2, 0);
                 return (int) coratings;
             }
         } else {
@@ -86,7 +86,7 @@ public class SlopeOneModel implements Serializable {
             if (row == null) {
                 return 0;
             } else {
-                double coratings = row.channel(CORATINGS_SYMBOL).get(item1, 0);
+                double coratings = row.getChannelVector(CORATINGS_SYMBOL).get(item1, 0);
                 return (int) coratings;
             }
         }

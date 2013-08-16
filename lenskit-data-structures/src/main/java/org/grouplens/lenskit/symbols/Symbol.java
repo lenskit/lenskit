@@ -91,4 +91,14 @@ public final class Symbol implements Serializable {
     public String toString() {
         return String.format("Symbol.of(%s)", this.getName());
     }
+
+    /**
+     * Make a typed symbol from this symbol.
+     * @param type The type.
+     * @param <T> The type.
+     * @return A typed symbol with the specified type and this symbol.
+     */
+    public <T> TypedSymbol<T> withType(Class<T> type) {
+        return TypedSymbol.of(type, this);
+    }
 }

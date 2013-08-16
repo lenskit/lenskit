@@ -21,12 +21,22 @@
 package org.grouplens.lenskit.scored;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 
 import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
+
+import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Use a {@code ScoredId.Builder} to instantiate new {@code ScoredId} objects.
@@ -36,11 +46,9 @@ import org.grouplens.lenskit.symbols.TypedSymbol;
  * @compat Public
  */
 public class ScoredIdBuilder implements Builder<ScoredId> {
-
     private long id;
     private double score;
-    private Reference2DoubleArrayMap<Symbol> channelMap;
-    private Reference2ObjectArrayMap<TypedSymbol<?>, Object> typedChannelMap;
+    private List<SymbolValue<?>> channels;
 
     /**
      * Create a {@code ScoredIdBuilder}. Any {@code ScoredId} objects
@@ -74,8 +82,7 @@ public class ScoredIdBuilder implements Builder<ScoredId> {
     public ScoredIdBuilder(long id, double score) {
         this.id = id;
         this.score = score;
-        channelMap = new Reference2DoubleArrayMap<Symbol>();
-        typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>,Object>();
+        channels = Lists.newLinkedList();
     }
 
     /**
@@ -99,28 +106,36 @@ public class ScoredIdBuilder implements Builder<ScoredId> {
     }
 
     /**
-     * Add a new side channel to the {@code ScoredId} under construction.
-     * @param s The symbol for the side channel.
+     * Add a new unboxed side channel to the {@code ScoredId} under construction.
+     * @param symbol The symbol for the side channel.
      * @param value The numerical value for the side channel.
      * @return This builder (for chaining)
+     * @see #addChannel(TypedSymbol, Object)
      */
-    public ScoredIdBuilder addChannel(Symbol s, double value) {
-        Preconditions.checkNotNull(s, "symbol cannot be null");
-        channelMap.put(s, value);
+    public ScoredIdBuilder addChannel(Symbol symbol, double value) {
+        Preconditions.checkNotNull(symbol, "symbol cannot be null");
+        DoubleSymbolValue sv = SymbolValue.of(symbol, value);
+        Iterators.removeIf(channels.iterator(),
+                           SymbolValue.hasSymbol(sv.getSymbol()));
+        channels.add(sv);
         return this;
     }
 
     /**
-     * Add a new typed side channel to the {@code ScoredId} under construction.
-     * @param s The symbol for the side channel.
+     * Add a new side channel to the {@code ScoredId} under construction.
+     * @param symbol The symbol for the side channel.
      * @param value The value for the side channel.
      * @return This builder (for chaining)
      */
-    public <K> ScoredIdBuilder addChannel(TypedSymbol<K> s, K value) {
-        Preconditions.checkNotNull(s, "symbol cannot be null");
-        Preconditions.checkArgument(value == null || s.getType().isInstance(value),
-                                    "value is not of type " + s.getType());
-        typedChannelMap.put(s, value);
+    public <K> ScoredIdBuilder addChannel(@Nonnull TypedSymbol<K> symbol, @Nonnull K value) {
+        Preconditions.checkNotNull(symbol, "symbol cannot be null");
+        Preconditions.checkNotNull(value, "value cannot be null");
+        Preconditions.checkArgument(symbol.getType().isInstance(value),
+                                    "value is not of type " + symbol.getType());
+        SymbolValue<K> val = SymbolValue.of(symbol, value);
+        Iterators.removeIf(channels.iterator(),
+                           SymbolValue.hasSymbol(symbol));
+        channels.add(val);
         return this;
     }
 
@@ -129,8 +144,7 @@ public class ScoredIdBuilder implements Builder<ScoredId> {
      * @return This builder (for chaining)
      */
     public ScoredIdBuilder clearChannels() {
-        channelMap.clear();
-        typedChannelMap.clear();
+        channels.clear();
         return this;
     }
 
@@ -140,14 +154,6 @@ public class ScoredIdBuilder implements Builder<ScoredId> {
      */
     @Override
     public ScoredId build() {
-        Reference2DoubleArrayMap<Symbol> cm = null;
-        if (!channelMap.isEmpty()) {
-            cm = channelMap; 
-        }
-        Reference2ObjectArrayMap<TypedSymbol<?>, Object> tcm = null;
-        if (!typedChannelMap.isEmpty()) {
-            tcm = typedChannelMap; 
-        }
-        return new ScoredIdImpl(id, score, cm, tcm);
+        return new ScoredIdImpl(id, score, channels);
     }
 }

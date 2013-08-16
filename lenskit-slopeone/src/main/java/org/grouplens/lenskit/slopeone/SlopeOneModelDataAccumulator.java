@@ -51,7 +51,7 @@ public class SlopeOneModelDataAccumulator {
         while (iter.hasNext()) {
             long item = iter.nextLong();
             workMatrix.put(item, new MutableSparseVector(items));
-            workMatrix.get(item).addChannel(SlopeOneModel.CORATINGS_SYMBOL);
+            workMatrix.get(item).addChannelVector(SlopeOneModel.CORATINGS_SYMBOL);
         }
     }
 
@@ -79,7 +79,7 @@ public class SlopeOneModelDataAccumulator {
             deviation = (coratings == 0) ? Double.NaN : deviation;
 
             workMatrix.get(id1).set(id2, deviation);
-            workMatrix.get(id1).channel(SlopeOneModel.CORATINGS_SYMBOL).set(id2, coratings);
+            workMatrix.get(id1).getChannelVector(SlopeOneModel.CORATINGS_SYMBOL).set(id2, coratings);
         }
     }
 
@@ -98,7 +98,7 @@ public class SlopeOneModelDataAccumulator {
         for (MutableSparseVector vec : workMatrix.values()) {
             for (VectorEntry e : vec.fast()) {
                 double deviation = e.getValue();
-                int coratings = (int)vec.channel(SlopeOneModel.CORATINGS_SYMBOL).get(e);
+                int coratings = (int)vec.getChannelVector(SlopeOneModel.CORATINGS_SYMBOL).get(e);
                 vec.set(e, deviation/(coratings + damping));
             }
         }

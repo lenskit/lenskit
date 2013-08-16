@@ -50,13 +50,13 @@ public class TestImmutableSparseVectorTypedChannels {
         Long2ObjectMap<String> msc = msv.addChannel(fooStrSym);
         msc.put(1,"a");
         ImmutableSparseVector isv = msv.immutable();
-        Long2ObjectMap<String> isc = isv.channel(fooStrSym);
+        Long2ObjectMap<String> isc = isv.getChannel(fooStrSym);
         assertEquals("a", isc.get(1L));
     }
     
     @Test
     public void testMultipleChannels() {
-        assertTrue(new ImmutableSparseVector().getTypedChannels().isEmpty());
+        assertTrue(new ImmutableSparseVector().getChannelSymbols().isEmpty());
         
         MutableSparseVector msv = new MutableSparseVector();
         msv.addChannel(fooStrSym);
@@ -65,7 +65,7 @@ public class TestImmutableSparseVectorTypedChannels {
         msv.addChannel(barIntSym);
         
         assertEquals(new ObjectArraySet<TypedSymbol<?>>(new TypedSymbol<?>[]{fooStrSym,fooIntSym,barStrSym,barIntSym}),
-                     msv.immutable().getTypedChannels());
+                     msv.immutable().getChannelSymbols());
        
     }
     
@@ -79,11 +79,11 @@ public class TestImmutableSparseVectorTypedChannels {
         ts.put(1,"a");
         
         ImmutableSparseVector isv = sv.immutable();
-        Long2ObjectMap<String> isc = isv.channel(fooStrSym);
+        Long2ObjectMap<String> isc = isv.getChannel(fooStrSym);
         assertEquals("a", isc.get(1));
         
         sv = isv.mutableCopy();
-        ts = sv.channel(fooStrSym);
+        ts = sv.getChannel(fooStrSym);
         assertNotSame(isc,ts);
         assertEquals("a", ts.get(1));
         ts.put(1, "b");

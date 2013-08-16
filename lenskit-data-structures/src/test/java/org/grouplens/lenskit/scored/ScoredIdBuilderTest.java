@@ -20,16 +20,14 @@
  */
 package org.grouplens.lenskit.scored;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.*;
-import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
-import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.junit.Test;
+
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class ScoredIdBuilderTest {
 
@@ -72,18 +70,24 @@ public class ScoredIdBuilderTest {
     public void testAddChannel() {
         ScoredIdBuilder sib = new ScoredIdBuilder(1, 2);
         assertEquals(sib, sib.addChannel(fooSym, 1.0));
-        Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
-        channels.put(fooSym,1.0);
-        assertEquals(new ScoredIdImpl(1, 2, channels, null), sib.build());
+        ScoredId id = sib.build();
+        assertThat(id.getId(), equalTo(1L));
+        assertThat(id.getScore(), equalTo(2.0));
+        assertThat(id.hasChannel(fooSym.withType(Double.class)), equalTo(true));
+        assertThat(id.getUnboxedChannelValue(fooSym), equalTo(1.0));
     }
 
     @Test
     public void testAddTypedChannel() {
         ScoredIdBuilder sib = new ScoredIdBuilder(1, 2);
         assertEquals(sib, sib.addChannel(fooIntSym, 1));
-        Reference2ObjectArrayMap<TypedSymbol<?>, Object> typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>();
-        typedChannels.put(fooIntSym, 1);
-        assertEquals(new ScoredIdImpl(1, 2, null, typedChannels), sib.build());
+        ScoredId id = sib.build();
+        assertThat(id.getId(), equalTo(1L));
+        assertThat(id.getScore(), equalTo(2.0));
+        assertThat(id.hasChannel(fooIntSym), equalTo(true));
+        assertThat(id.getChannelValue(fooIntSym), equalTo(1));
+        assertThat(id.getChannels(),
+                   contains((SymbolValue) SymbolValue.of(fooIntSym, 1)));
     }
 
     @Test
@@ -92,7 +96,10 @@ public class ScoredIdBuilderTest {
         assertEquals(sib, sib.addChannel(fooSym, 1.0));
         assertEquals(sib, sib.addChannel(fooIntSym, 1));
         assertEquals(sib, sib.clearChannels());
-        assertEquals(new ScoredIdImpl(1, 2, null, null), sib.build());
+        ScoredId id = sib.build();
+        assertThat(id.getChannels(), hasSize(0));
+        assertThat(id.hasChannel(fooIntSym), equalTo(false));
+        assertThat(id.hasUnboxedChannel(fooSym), equalTo(false));
     }
 
     @Test
@@ -100,18 +107,14 @@ public class ScoredIdBuilderTest {
         ScoredIdBuilder sib = new ScoredIdBuilder(1, 2);
         assertEquals(sib, sib.addChannel(fooSym, 1.0));
         assertEquals(sib, sib.addChannel(fooIntSym, 1));
-        Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
-        channels.put(fooSym,1.0);
-        Reference2ObjectArrayMap<TypedSymbol<?>, Object> typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>();
-        typedChannels.put(fooIntSym, 1);
         ScoredId sid = sib.build();
         sib.setId(3);
         sib.setScore(4);
         sib.addChannel(fooSym, 2.0);
         sib.addChannel(fooIntSym, 2);
-        assertEquals(new ScoredIdImpl(1, 2, channels, typedChannels), sid);
+        assertThat(sid.getChannels(), hasSize(2));
         sib.clearChannels();
-        assertEquals(new ScoredIdImpl(1, 2, channels, typedChannels), sid);
+        assertThat(sid.getChannels(), hasSize(2));
     }
 
     @Test

@@ -108,12 +108,31 @@ public final class TypedSymbol<K> implements Serializable {
      * Get the symbol.
      * @return The symbol associated with the type.
      */
+    public Symbol getRawSymbol() {
+        return symbol;
+    }
+
+    /**
+     * Deprecated alias for {@link #getRawSymbol()}.
+     * @return The raw symbol.
+     * @deprecated Use {@link #getRawSymbol()}.
+     */
+    @Deprecated
     public Symbol getSymbol() {
         return symbol;
     }
 
+    /**
+     * Create a value paired with this symbol.
+     * @param val The value.
+     * @return A pair of this symbol and the value.
+     */
+    public SymbolValue<K> withValue(K val) {
+        return SymbolValue.of(this, val);
+    }
+
     @Override
     public String toString() {
-        return String.format("TypedSymbol.of(%s,%s)", this.getName(), this.getType().getSimpleName());
+        return String.format("TypedSymbol.of(%s,%s)", getType().getSimpleName(), getName());
     }
 }

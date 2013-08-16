@@ -34,7 +34,7 @@ import static org.junit.Assert.assertThat;
 public class UnitVectorNormalizerTest {
     UnitVectorNormalizer norm = new UnitVectorNormalizer();
     long[] keys = {1, 3, 4, 6};
-    LongSortedSet keySet = LongSortedArraySet.wrap(keys);
+    LongSortedSet keySet = new LongSortedArraySet(keys);
 
     @Test
     public void testScale() {

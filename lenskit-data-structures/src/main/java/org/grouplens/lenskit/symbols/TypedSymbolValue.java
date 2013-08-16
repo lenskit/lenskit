@@ -18,25 +18,28 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.vectors;
-
-import org.grouplens.lenskit.vectors.MutableSparseVector;
+package org.grouplens.lenskit.symbols;
 
 /**
- * Re-run sparse vector tests with a longer version of the vector.
- *
+ * Implementation class for {@link SymbolValue}.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TestSparseVectorSized extends TestMutableSparseVector {
-    /**
-     * Construct a simple rating vector with three ratings.
-     *
-     * @return A rating vector mapping {3, 7, 8} to {1.5, 3.5, 2}.
-     */
+class TypedSymbolValue<T> extends SymbolValue<T> {
+    private final TypedSymbol<T> symbol;
+    private final T value;
+
+    TypedSymbolValue(TypedSymbol<T> sym, T val) {
+        symbol = sym;
+        value = val;
+    }
+
     @Override
-    protected MutableSparseVector simpleVector() {
-        long[] keys = {3, 7, 8, 2};
-        double[] values = {1.5, 3.5, 2, 5};
-        return new MutableSparseVector(keys, values, 3);
+    public TypedSymbol<T> getSymbol() {
+        return symbol;
+    }
+
+    @Override
+    public T getValue() {
+        return value;
     }
 }

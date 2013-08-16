@@ -22,6 +22,7 @@ package org.grouplens.lenskit.vectors;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.collections.LongSortedArraySet;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.junit.Test;
@@ -40,13 +41,13 @@ public class TestMutableSparseVectorTypedChannels {
     public void testAddChanel(){
         MutableSparseVector sv = new MutableSparseVector();
         assertFalse(sv.hasChannel(fooStrSym));
-        assertTrue(sv.getTypedChannels().isEmpty());
+        assertTrue(sv.getChannelSymbols().isEmpty());
         
         Long2ObjectMap<String> fooStrChan = sv.addChannel(fooStrSym);
         assertTrue(sv.hasChannel(fooStrSym));
-        assertEquals(Collections.singleton(fooStrSym),sv.getTypedChannels());
+        assertEquals(Collections.singleton(fooStrSym),sv.getChannelSymbols());
         
-        assertEquals (fooStrChan, sv.channel(fooStrSym));
+        assertEquals (fooStrChan, sv.getChannel(fooStrSym));
         assertEquals (fooStrChan, sv.getOrAddChannel(fooStrSym));
         try {
             sv.addChannel(fooStrSym);
@@ -69,13 +70,13 @@ public class TestMutableSparseVectorTypedChannels {
         assertNotSame(fi, bi);
         assertNotSame(bs, bi);
         
-        assertEquals(fs,sv.channel(fooStrSym));
-        assertEquals(fi,sv.channel(fooIntSym));
-        assertEquals(bs,sv.channel(barStrSym));
-        assertEquals(bi,sv.channel(barIntSym));
+        assertEquals(fs,sv.getChannel(fooStrSym));
+        assertEquals(fi,sv.getChannel(fooIntSym));
+        assertEquals(bs,sv.getChannel(barStrSym));
+        assertEquals(bi,sv.getChannel(barIntSym));
         
         assertEquals(new ObjectArraySet<TypedSymbol<?>>(new TypedSymbol<?>[]{fooStrSym,fooIntSym,barStrSym,barIntSym}),
-                     sv.getTypedChannels());
+                     sv.getChannelSymbols());
     }
     
     @Test
@@ -87,7 +88,8 @@ public class TestMutableSparseVectorTypedChannels {
             fail("exception expected");
         } catch (IllegalArgumentException e) {/* expected */ }
         
-        sv = new MutableSparseVector(new long[]{1,2,3}, new double[]{2,3,4});
+        sv = new MutableSparseVector(LongKeyDomain.create(1, 2, 3),
+                                     new double[]{2,3,4});
         
         fs = sv.addChannel(fooStrSym);
         fs.put(1, "a");
@@ -101,21 +103,13 @@ public class TestMutableSparseVectorTypedChannels {
     
     @Test
     public void testAddTypedSideChannel() {
-        long[] domain = {1,2,4};
-        TypedSideChannel<String> ts = new TypedSideChannel<String>(domain);
-        MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
-        ts.put(1,"a");
+        LongKeyDomain domain = LongKeyDomain.create(1, 2, 4);
+        MutableTypedSideChannel<String> ts = new MutableTypedSideChannel<String>(domain);
+        MutableSparseVector sv = new MutableSparseVector(domain);
+        ts.put(1, "a");
         
-        Long2ObjectMap<String> ts2 = sv.addChannel(fooStrSym, ts);
-        assertNotSame(ts,ts2);
-        assertSame(ts2, sv.channel(fooStrSym));
-        assertEquals("a",ts2.get(1));
-        
-        ts.put(2, "b");
-        assertFalse(ts2.containsKey(2));
-        
-        ts.put(1, "b");
-        assertEquals("a", ts2.get(1));
+        sv.addChannel(fooStrSym, ts);
+        assertEquals("a",sv.getChannel(fooStrSym).get(1));
     }
 
     @Test
@@ -125,17 +119,17 @@ public class TestMutableSparseVectorTypedChannels {
         sv.addChannel(barStrSym);
 
         assertEquals(new ObjectArraySet<TypedSymbol<?>>(new TypedSymbol<?>[]{fooStrSym,barStrSym}),
-                     sv.getTypedChannels());
+                     sv.getChannelSymbols());
         assertEquals(fs, sv.removeChannel(fooStrSym));
-        assertEquals(Collections.singleton(barStrSym), sv.getTypedChannels());
+        assertEquals(Collections.singleton(barStrSym), sv.getChannelSymbols());
         
         Long2ObjectMap<String> fs2 = sv.addChannel(fooStrSym);
         assertNotSame(fs,fs2);
         
         assertEquals(new ObjectArraySet<TypedSymbol<?>>(new TypedSymbol<?>[]{fooStrSym,barStrSym}),
-                     sv.getTypedChannels());
+                     sv.getChannelSymbols());
         sv.removeAllChannels();
-        assertTrue(sv.getTypedChannels().isEmpty());
+        assertTrue(sv.getChannelSymbols().isEmpty());
     }
     
     @Test
@@ -147,7 +141,7 @@ public class TestMutableSparseVectorTypedChannels {
         
         MutableSparseVector sv2 = sv.mutableCopy();
         assertTrue(sv2.hasChannel(fooStrSym));
-        Long2ObjectMap<String> ts2 = sv2.channel(fooStrSym);
+        Long2ObjectMap<String> ts2 = sv2.getChannel(fooStrSym);
         assertEquals("a", ts2.get(1));
         ts.put(2,"b");
         assertNull(ts2.get(2));
@@ -166,7 +160,7 @@ public class TestMutableSparseVectorTypedChannels {
         
         ImmutableSparseVector sv2 = sv.immutable();
         assertTrue(sv2.hasChannel(fooStrSym));
-        Long2ObjectMap<String> ts2 = sv2.channel(fooStrSym);
+        Long2ObjectMap<String> ts2 = sv2.getChannel(fooStrSym);
         assertEquals("a", ts2.get(1L));
         ts.put(2,"b");
         assertNull(ts2.get(2L));
@@ -183,7 +177,7 @@ public class TestMutableSparseVectorTypedChannels {
         
         ImmutableSparseVector sv2 = sv.freeze();
         assertTrue(sv2.hasChannel(fooStrSym));
-        Long2ObjectMap<String> ts2 = sv2.channel(fooStrSym);
+        Long2ObjectMap<String> ts2 = sv2.getChannel(fooStrSym);
         assertEquals("a", ts2.get(1));
         try {
             ts.put(2,"b");
@@ -200,7 +194,7 @@ public class TestMutableSparseVectorTypedChannels {
         ts.put(2, "b");
         
         MutableSparseVector sv2 = sv.withDomain(new LongSortedArraySet(new long[]{1,4}));
-        Long2ObjectMap<String> ts2 = sv2.channel(fooStrSym);
+        Long2ObjectMap<String> ts2 = sv2.getChannel(fooStrSym);
         assertNotSame(ts,ts2);
         assertEquals("a", ts2.get(1));
         assertNull(ts2.get(2));
