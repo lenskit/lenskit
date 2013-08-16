@@ -31,7 +31,9 @@ import it.unimi.dsi.fastutil.longs.LongIterable;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
+ * @deprecated With the new DAO API, long cursers aren't near as important.
  */
+@Deprecated
 public interface LongCursor extends Cursor<Long>, LongIterable {
     /**
      * Get the next value as a primitive long.

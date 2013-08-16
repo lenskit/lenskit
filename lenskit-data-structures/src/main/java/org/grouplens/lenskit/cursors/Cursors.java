@@ -36,6 +36,7 @@ import java.util.*;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
+@SuppressWarnings("deprecation")
 public final class Cursors {
     private static final int DEFAULT_LIST_SIZE = 20;
 
@@ -168,7 +169,9 @@ public final class Cursors {
      * @return A new list containing the elements of the cursor. The list has been
      *         allocated with a capacity of {@link Cursor#getRowCount()} if possible,
      *         but has not been trimmed.
+     * @deprecated Long cursors are not as widely used with the new DAOs.
      */
+    @Deprecated
     public static LongArrayList makeList(@WillClose LongCursor cursor) {
         LongArrayList list = null;
         try {
@@ -192,7 +195,9 @@ public final class Cursors {
      *
      * @param cursor The LongCursor to be read into a set.
      * @return A LongSet containing the elements of the cursor.
+     * @deprecated Long cursors are not as widely used with the new DAOs.
      */
+    @Deprecated
     public static LongSet makeSet(@WillClose LongCursor cursor) {
         LongOpenHashSet set = null;
         try {
@@ -216,7 +221,9 @@ public final class Cursors {
      *
      * @param iter An iterator.
      * @return A cursor backed by {@code iter}. Closing the cursor is a no-op.
+     * @deprecated Long cursors are not as widely used with the new DAOs.
      */
+    @Deprecated
     public static LongCursor wrap(LongIterator iter) {
         return new LongIteratorCursor(iter);
     }
@@ -226,7 +233,9 @@ public final class Cursors {
      *
      * @param collection A collection.
      * @return A cursor over the collection. Closing the cursor is a no-op.
+     * @deprecated Long cursors are not as widely used with the new DAOs.
      */
+    @Deprecated
     public static LongCursor wrap(LongCollection collection) {
         return new LongIteratorCursor(collection.iterator(), collection.size());
     }
@@ -236,7 +245,10 @@ public final class Cursors {
      *
      * @param cursor A cursor.
      * @return A {@link LongCursor}. If {@code cursor} is a LongCursor, it is returned.
+     * @deprecated Long cursors are not as widely used with the new DAOs.
      */
+    @SuppressWarnings("UnusedDeclaration")
+    @Deprecated
     public static LongCursor makeLongCursor(@WillCloseWhenClosed final Cursor<Long> cursor) {
         if (cursor instanceof LongCursor) {
             return (LongCursor) cursor;

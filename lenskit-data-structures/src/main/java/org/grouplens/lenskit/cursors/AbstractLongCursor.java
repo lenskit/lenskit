@@ -33,7 +33,10 @@ import javax.annotation.Nonnull;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
+ * @deprecated See {@link LongCursor}.
  */
+@Deprecated
+@SuppressWarnings("deprecation")
 public abstract class AbstractLongCursor
         extends AbstractCursor<Long>
         implements LongCursor {

@@ -36,4 +36,6 @@
 
   * <<<LongSortedArraySet>>> should not be used directly; instead, use <<<LongUtils.packedSet>>>.
 
+  * Removed <<<LongCursor>>>; it is no longer needed with the new DAOs.
+
   []
