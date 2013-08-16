@@ -227,5 +227,14 @@ public final class LongUtils {
             return super.rem(k);
         }
 
+        @Override
+        public boolean equals(Object obj) {
+            return base.equals(obj);
+        }
+
+        @Override
+        public int hashCode() {
+            return base.hashCode();
+        }
     }
 }
