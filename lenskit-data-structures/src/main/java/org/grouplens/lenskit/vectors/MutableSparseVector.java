@@ -154,6 +154,11 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         channels = chs;
     }
 
+    @Override
+    public LongSortedSet keySet() {
+        return keys.asRemovableSet();
+    }
+
     /**
      * Create a new version of this MutableSparseVector that has a
      * different domain from the current version of the vector.  All

@@ -40,10 +40,10 @@ import java.util.Collection;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
-public final class LongSortedArraySet extends AbstractLongSortedSet implements Serializable {
+public class LongSortedArraySet extends AbstractLongSortedSet implements Serializable {
     private static final long serialVersionUID = 2L;
 
-    private final LongKeySet keys;
+    final LongKeySet keys;
 
     /**
      * Construct a new long sorted array set.

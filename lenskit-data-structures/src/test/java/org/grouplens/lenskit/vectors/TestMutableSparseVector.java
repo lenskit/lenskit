@@ -22,6 +22,7 @@ package org.grouplens.lenskit.vectors;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
+import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.longs.Long2DoubleArrayMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
@@ -33,7 +34,7 @@ import org.junit.Test;
 import java.util.Set;
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 /**
@@ -737,5 +738,25 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(v1.get(3), closeTo(3));
         assertThat(v1.get(7), closeTo(3.5));
         assertThat(v1.get(8), closeTo(6));
+    }
+
+    @Test
+    public void testRemoveKeys() {
+        MutableSparseVector v1 = simpleVector();
+        assertThat(v1.keySet().remove(7),
+                   equalTo(true));
+        assertThat(v1.keySet(), contains(3L, 8L));
+        assertThat(v1.size(), equalTo(2));
+        assertThat(v1.containsKey(7L), equalTo(false));
+    }
+
+    @Test
+    public void testRetainKeys() {
+        MutableSparseVector v1 = simpleVector();
+        assertThat(v1.keySet().retainAll(Longs.asList(3, 4, 8)),
+                   equalTo(true));
+        assertThat(v1.keySet(), contains(3L, 8L));
+        assertThat(v1.size(), equalTo(2));
+        assertThat(v1.containsKey(7L), equalTo(false));
     }
 }

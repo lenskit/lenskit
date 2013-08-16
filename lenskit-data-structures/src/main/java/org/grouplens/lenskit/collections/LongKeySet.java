@@ -443,6 +443,17 @@ public final class LongKeySet implements Serializable {
     }
 
     /**
+     * Get a view of this key set as a set that supports limited mutation.  The set can have items
+     * removed (using methods such as {@code remove(Object)}, {@code rem(long)},
+     * {@code removeAll(Collection)}, and {@code retainAll(Collection)}), and those removals will
+     * be reflected by marking the associated entries as inactive in the key set.
+     * @return A view of this key set as a set with limited mutation capabilities.
+     */
+    public LongSortedSet asRemovableSet() {
+        return new RemovableLongSortedArraySet(this);
+    }
+
+    /**
      * Get the key set's domain as a set.
      * @return A view of the key domain as a set.
      */
