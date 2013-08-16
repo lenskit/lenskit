@@ -40,6 +40,9 @@ import java.util.Set;
  * Immutable sparse vectors. These vectors cannot be changed, even by other
  * code, and are therefore safe to store and are thread-safe.
  *
+ * <p>Use {@link #create(java.util.Map)}, {@link #empty()}, {@link #immutable()}, or
+ * {@link MutableSparseVector#freeze()} to create immutable sparse vectors.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */

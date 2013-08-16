@@ -63,6 +63,10 @@ import java.util.Map.Entry;
  * normalized.subtract(normFactor);
  * </pre>
  *
+ * <p>Create mutable sparse vectors using the various {@code create} static methods provided
+ * ({@link #create(java.util.Collection)}, {@link #create(java.util.Collection, double)},
+ * {@link #create(long...)}, {@link #create(java.util.Map)}).
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
