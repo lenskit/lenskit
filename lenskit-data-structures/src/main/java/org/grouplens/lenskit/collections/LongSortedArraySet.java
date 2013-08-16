@@ -92,7 +92,7 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
      */
     @Deprecated
     public LongSortedArraySet(long[] items) {
-        this(LongKeyDomain.fromCollection(LongArrayList.wrap(items)));
+        this(LongKeyDomain.create(items));
     }
 
     /**
