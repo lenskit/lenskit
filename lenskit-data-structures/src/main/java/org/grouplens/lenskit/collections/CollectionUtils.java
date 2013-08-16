@@ -110,11 +110,11 @@ public final class CollectionUtils {
      *
      * @param longs A collection of longs.
      * @return The collection as a {@link it.unimi.dsi.fastutil.longs.LongCollection}.
-     * @deprecated Use {@link LongUtils#fastCollection(Collection)} instead.
+     * @deprecated Use {@link LongUtils#asLongCollection(Collection)} instead.
      */
     @Deprecated
     public static LongCollection fastCollection(final Collection<Long> longs) {
-        return LongUtils.fastCollection(longs);
+        return LongUtils.asLongCollection(longs);
     }
 
     /**
@@ -123,11 +123,11 @@ public final class CollectionUtils {
      * @param longs The set of longs.
      * @return {@code longs} as a fastutil {@link it.unimi.dsi.fastutil.longs.LongSet}. If {@code longs} is already
      *         a LongSet, it is cast.
-     * @deprecated Use {@link LongUtils#fastSet(Set)} instead.
+     * @deprecated Use {@link LongUtils#asLongSet(Set)} instead.
      */
     @Deprecated
     public static LongSet fastSet(final Set<Long> longs) {
-        return LongUtils.fastSet(longs);
+        return LongUtils.asLongSet(longs);
     }
 
     /**

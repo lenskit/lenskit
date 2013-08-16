@@ -42,7 +42,7 @@ public final class LongUtils {
      * @param longs A collection of longs.
      * @return The collection as a {@link it.unimi.dsi.fastutil.longs.LongCollection}.
      */
-    public static LongCollection fastCollection(final Collection<Long> longs) {
+    public static LongCollection asLongCollection(final Collection<Long> longs) {
         if (longs instanceof LongCollection) {
             return (LongCollection) longs;
         } else {
@@ -57,7 +57,7 @@ public final class LongUtils {
      * @return {@code longs} as a fastutil {@link it.unimi.dsi.fastutil.longs.LongSet}. If {@code longs} is already
      *         a LongSet, it is cast.
      */
-    public static LongSet fastSet(final Set<Long> longs) {
+    public static LongSet asLongSet(final Set<Long> longs) {
         if (longs == null) {
             return null;
         } else if (longs instanceof LongSet) {

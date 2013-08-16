@@ -71,8 +71,8 @@ public abstract class AbstractItemRecommender implements ItemRecommender {
     public List<ScoredId> recommend(long user, int n,
                                     @Nullable Set<Long> candidates,
                                     @Nullable Set<Long> exclude) {
-        LongSet cs = LongUtils.fastSet(candidates);
-        LongSet es = LongUtils.fastSet(exclude);
+        LongSet cs = LongUtils.asLongSet(candidates);
+        LongSet es = LongUtils.asLongSet(exclude);
         return recommend(user, n, cs, es);
     }
 

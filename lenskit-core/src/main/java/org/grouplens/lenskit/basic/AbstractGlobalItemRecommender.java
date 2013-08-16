@@ -72,9 +72,9 @@ public abstract class AbstractGlobalItemRecommender implements GlobalItemRecomme
     @Override
     public List<ScoredId> globalRecommend(Set<Long> items, int n, @Nullable Set<Long> candidates,
                                           @Nullable Set<Long> exclude) {
-        LongSet it = LongUtils.fastSet(items);
-        LongSet cs = LongUtils.fastSet(candidates);
-        LongSet es = LongUtils.fastSet(exclude);
+        LongSet it = LongUtils.asLongSet(items);
+        LongSet cs = LongUtils.asLongSet(candidates);
+        LongSet es = LongUtils.asLongSet(exclude);
         return globalRecommend(it, n, cs, es);
     }
 
