@@ -11,6 +11,7 @@ import java.util.Set;
 
 /**
  * An object collection wrapper for a collection.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class ObjectCollectionWrapper<E> implements ObjectCollection<E>, Serializable {
@@ -95,20 +96,6 @@ class ObjectCollectionWrapper<E> implements ObjectCollection<E>, Serializable {
     @Override
     public void clear() {
         delegate.clear();
-    }
-
-    @Override
-    public int hashCode() {
-        return delegate.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof List || obj instanceof Set) {
-            return false;
-        } else {
-            return delegate.equals(obj);
-        }
     }
 
     @Override
