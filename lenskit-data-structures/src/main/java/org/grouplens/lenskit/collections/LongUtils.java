@@ -168,6 +168,17 @@ public final class LongUtils {
      * @return The elements of {@var items} that are not in {@var exclude}.
      */
     public static LongSortedSet setUnion(LongSortedSet a, LongSortedSet b) {
+        if (a instanceof LongSortedArraySet && b instanceof LongSortedArraySet) {
+            LongKeyDomain da = ((LongSortedArraySet) a).getDomain();
+            LongKeyDomain db = ((LongSortedArraySet) b).getDomain();
+            if (da.isCompatibleWith(db)) {
+                LongKeyDomain result = da.clone();
+                // we're in-package, go ahead and modify. our job to know it's safe.
+                result.getActiveMask().or(db.getActiveMask());
+                return result.activeSetView();
+            }
+        }
+
         long[] data = new long[unionSize(a, b)];
 
         LongIterator ait = a.iterator();
