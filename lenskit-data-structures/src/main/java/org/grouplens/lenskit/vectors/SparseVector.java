@@ -372,6 +372,14 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     }
 
     /**
+     * Get the set of unset keys.  This is \(D \\ S\), where \(D\) is the key domain and \(S\) the
+     * key set.
+     */
+    public LongSortedSet unsetKeySet() {
+        return keys.clone().invert().activeSetView();
+    }
+
+    /**
      * Return the keys of this vector sorted by value.
      *
      * @return A list of keys in nondecreasing order of value.

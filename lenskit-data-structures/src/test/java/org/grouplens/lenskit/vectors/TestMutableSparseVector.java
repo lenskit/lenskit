@@ -759,4 +759,11 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(v1.size(), equalTo(2));
         assertThat(v1.containsKey(7L), equalTo(false));
     }
+
+    @Test
+    public void testUnsetKeySet() {
+        MutableSparseVector v1 = simpleVector();
+        v1.unset(7);
+        assertThat(v1.unsetKeySet(), contains(7L));
+    }
 }
