@@ -7,7 +7,7 @@
     <relativePath>..</relativePath>
   </parent>
   <artifactId>lenskit-package</artifactId>
-  <name>LensKit Jar Packaging</name>
+  <name>LensKit Packaging</name>
   <packaging>pom</packaging>
   <description>
     Project to package all LensKit modules and dependencies as JAR fies.
