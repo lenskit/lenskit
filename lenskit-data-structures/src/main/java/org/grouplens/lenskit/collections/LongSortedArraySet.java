@@ -24,7 +24,6 @@ import it.unimi.dsi.fastutil.longs.*;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.NoSuchElementException;
@@ -178,34 +177,5 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
     public boolean contains(long key) {
         int idx = keys.getIndexIfActive(key);
         return idx >= minIndex && idx < maxIndex;
-    }
-
-    /**
-     * Compute the set difference of two sets.
-     *
-     * @param items   The initial set
-     * @param exclude The items to remove
-     * @return The elements of {@var items} that are not in {@var exclude}.
-     */
-    public static LongSortedSet setDifference(LongSet items, LongSet exclude) {
-        long[] data = new long[items.size()];
-        final LongIterator iter = items.iterator();
-        int i = 0;
-        while (iter.hasNext()) {
-            final long x = iter.nextLong();
-            if (!exclude.contains(x)) {
-                data[i++] = x;
-            }
-        }
-        if (!(items instanceof LongSortedSet)) {
-            Arrays.sort(data, 0, i);
-        }
-        // trim the array
-        //CHECKSTYLE:OFF MagicNumber
-        if (data.length * 2 > i * 3) {
-            data = Arrays.copyOf(data, i);
-        }
-        //CHECKSTYLE:ON
-        return new LongSortedArraySet(LongKeyDomain.wrap(data, i, true));
     }
 }

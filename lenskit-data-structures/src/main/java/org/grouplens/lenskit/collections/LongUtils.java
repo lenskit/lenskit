@@ -23,6 +23,7 @@ package org.grouplens.lenskit.collections;
 import it.unimi.dsi.fastutil.longs.*;
 
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Set;
 
@@ -85,6 +86,121 @@ public final class LongUtils {
         } else {
             return new LongSetWrapper(longs);
         }
+    }
+
+    /**
+     * Compute the set difference of two sets.
+     *
+     * @param items   The initial set
+     * @param exclude The items to remove
+     * @return The elements of {@var items} that are not in {@var exclude}.
+     */
+    public static LongSortedSet setDifference(LongSet items, LongSet exclude) {
+        long[] data = new long[items.size()];
+        final LongIterator iter = items.iterator();
+        int i = 0;
+        while (iter.hasNext()) {
+            final long x = iter.nextLong();
+            if (!exclude.contains(x)) {
+                data[i++] = x;
+            }
+        }
+        if (!(items instanceof LongSortedSet)) {
+            Arrays.sort(data, 0, i);
+        }
+        // trim the array
+        //CHECKSTYLE:OFF MagicNumber
+        if (data.length * 2 > i * 3) {
+            data = Arrays.copyOf(data, i);
+        }
+        //CHECKSTYLE:ON
+        return new LongSortedArraySet(LongKeyDomain.wrap(data, i, true));
+    }
+
+    /**
+     * Compute the size of the union of two sets.
+     * @param a The first set.
+     * @param b The second set.
+     * @return The size of the union of the two sets.
+     */
+    public static int unionSize(LongSortedSet a, LongSortedSet b) {
+        if (a instanceof LongSortedArraySet && b instanceof LongSortedArraySet) {
+            LongKeyDomain da = ((LongSortedArraySet) a).getDomain();
+            LongKeyDomain db = ((LongSortedArraySet) b).getDomain();
+            if (da.isCompatibleWith(db)) {
+                BitSet bits = (BitSet) da.getActiveMask().clone();
+                bits.or(db.getActiveMask());
+                return bits.cardinality();
+            }
+        }
+
+        // we can't do fast bit operations, scan both sets instead
+        LongIterator ait = a.iterator();
+        LongIterator bit = b.iterator();
+        boolean hasA = ait.hasNext();
+        boolean hasB = bit.hasNext();
+        long nextA = hasA ? ait.nextLong() : Long.MAX_VALUE;
+        long nextB = hasB ? bit.nextLong() : Long.MAX_VALUE;
+        int nshared = 0;
+        while (hasA && hasB) {
+            if (nextA < nextB) {
+                hasA = ait.hasNext();
+                nextA = hasA ? ait.nextLong() : Long.MAX_VALUE;
+            } else if (nextB < nextA) {
+                hasB = bit.hasNext();
+                nextB = hasB ? bit.nextLong() : Long.MAX_VALUE;
+            } else {
+                nshared += 1;
+                hasA = ait.hasNext();
+                nextA = hasA ? ait.nextLong() : Long.MAX_VALUE;
+                hasB = bit.hasNext();
+                nextB = hasB ? bit.nextLong() : Long.MAX_VALUE;
+            }
+        }
+        return a.size() + b.size() - nshared;
+    }
+
+    /**
+     * Compute the union of two sets.
+     *
+     * @param a The first set.
+     * @param b The second set.
+     * @return The elements of {@var items} that are not in {@var exclude}.
+     */
+    public static LongSortedSet setUnion(LongSortedSet a, LongSortedSet b) {
+        long[] data = new long[unionSize(a, b)];
+
+        LongIterator ait = a.iterator();
+        LongIterator bit = b.iterator();
+        boolean hasA = ait.hasNext();
+        boolean hasB = bit.hasNext();
+        long nextA = hasA ? ait.nextLong() : Long.MAX_VALUE;
+        long nextB = hasB ? bit.nextLong() : Long.MAX_VALUE;
+        int i = 0;
+        while (hasA || hasB) {
+            if (!hasB || nextA < nextB) {
+                // use A
+                data[i++] = nextA;
+                hasA = ait.hasNext();
+                nextA = hasA ? ait.nextLong() : Long.MAX_VALUE;
+            } else if (!hasA || nextB < nextA) {
+                // use B
+                data[i++] = nextB;
+                hasB = bit.hasNext();
+                nextB = hasB ? bit.nextLong() : Long.MAX_VALUE;
+            } else {
+                // they're both present and equal, use A but advance both
+                assert hasA && hasB && nextA == nextB;
+                data[i++] = nextA;
+                hasA = ait.hasNext();
+                nextA = hasA ? ait.nextLong() : Long.MAX_VALUE;
+                hasB = bit.hasNext();
+                nextB = hasB ? bit.nextLong() : Long.MAX_VALUE;
+            }
+        }
+        assert i == data.length;
+
+        return new LongSortedArraySet(LongKeyDomain.wrap(data, data.length, true));
     }
 
     /**

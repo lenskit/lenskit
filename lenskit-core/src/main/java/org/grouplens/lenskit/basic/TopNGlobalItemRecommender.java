@@ -23,7 +23,7 @@ package org.grouplens.lenskit.basic;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.GlobalItemScorer;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
@@ -64,7 +64,7 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
             exclude = getDefaultExcludes(items);
         }
         if (!exclude.isEmpty()) {
-            candidates = LongSortedArraySet.setDifference(candidates, exclude);
+            candidates = LongUtils.setDifference(candidates, exclude);
         }
 
         SparseVector scores = scorer.globalScore(items, candidates);

@@ -27,7 +27,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Event;
@@ -83,7 +83,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
             exclude = getDefaultExcludes(user);
         }
         if (!exclude.isEmpty()) {
-            candidates = LongSortedArraySet.setDifference(candidates, exclude);
+            candidates = LongUtils.setDifference(candidates, exclude);
         }
 
         SparseVector scores = scorer.score(user, candidates);
