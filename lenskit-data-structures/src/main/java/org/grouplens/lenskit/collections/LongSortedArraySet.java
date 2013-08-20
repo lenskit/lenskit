@@ -121,12 +121,12 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
 
     @Override
     public long lastLong() {
-        int idx = keys.getActiveMask().previousSetBit(maxIndex - 1);
-        if (idx >= minIndex && idx < maxIndex) {
-            return keys.getKey(idx);
-        } else {
-            throw new NoSuchElementException();
+        for (int idx = maxIndex - 1; idx >= minIndex; --idx) {
+            if (keys.indexIsActive(idx)) {
+                return keys.getKey(idx);
+            }
         }
+        throw new NoSuchElementException();
     }
 
     @Override
