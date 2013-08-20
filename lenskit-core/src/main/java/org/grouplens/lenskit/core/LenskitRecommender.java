@@ -28,6 +28,8 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 
+import java.lang.annotation.Annotation;
+
 /**
  * Recommender implementation built on LensKit containers.  Recommenders built
  * with {@link LenskitRecommenderEngine} will produce this type of
@@ -42,14 +44,14 @@ import org.grouplens.lenskit.Recommender;
  * @compat Public
  */
 public class LenskitRecommender implements Recommender {
-    private final Injector injector;
+    private final StaticInjector injector;
 
     /**
      * Create a new LensKit recommender.
      *
      * @param injector The injector housing this recommender's configuration.
      */
-    public LenskitRecommender(Injector injector) {
+    public LenskitRecommender(StaticInjector injector) {
         this.injector = injector;
     }
 
@@ -65,6 +67,21 @@ public class LenskitRecommender implements Recommender {
      */
     public <T> T get(Class<T> cls) {
         return injector.getInstance(cls);
+    }
+
+    /**
+     * Get a particular qualified component from the recommender session.  Generally you
+     * want to use one of the type-specific getters; this method only exists for
+     * specialized applications which need deep access to the recommender
+     * components.
+     *
+     * @param <T> The type of component to get.
+     * @param qual The qualifying annotation of the component class.
+     * @param cls The component class to get.
+     * @return The instance of the specified component.
+     */
+    public <T> T get(Class<? extends Annotation> qual, Class<T> cls) {
+        return injector.getInstance(qual, cls);
     }
 
     @Override

@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.baseline;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
+import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Shareable;
@@ -44,38 +45,37 @@ import java.io.Serializable;
 
 
 /**
- * Generate baseline predictions with regularization.
+ * Baseline scorer using least-squares estimates of preferences, trained by gradient descent.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultProvider(LeastSquaresPredictor.Builder.class)
+@DefaultProvider(LeastSquaresItemScorer.Builder.class)
 @Shareable
-public class LeastSquaresPredictor extends AbstractBaselinePredictor implements Serializable {
+public class LeastSquaresItemScorer extends AbstractItemScorer implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final ImmutableSparseVector userOffsets;
     private final ImmutableSparseVector itemOffsets;
     private final double mean;
 
-    private static final Logger logger = LoggerFactory.getLogger(LeastSquaresPredictor.class);
+    private static final Logger logger = LoggerFactory.getLogger(LeastSquaresItemScorer.class);
 
     /**
-     * Construct a new LeastSquaresPredictor.
+     * Construct a new least-squares scorer.
      *
      * @param uoff the user offsets
      * @param ioff the item offsets
      * @param mean the global mean rating
      */
-    public LeastSquaresPredictor(ImmutableSparseVector uoff, ImmutableSparseVector ioff, double mean) {
+    public LeastSquaresItemScorer(ImmutableSparseVector uoff, ImmutableSparseVector ioff, double mean) {
         this.userOffsets = uoff;
         this.itemOffsets = ioff;
         this.mean = mean;
     }
 
     @Override
-    public void predict(long user, MutableSparseVector output, boolean predictSet) {
-        State state = predictSet ? State.EITHER : State.UNSET;
-        for (VectorEntry e : output.fast(state)) {
+    public void score(long user, MutableSparseVector output) {
+        for (VectorEntry e : output.fast(State.EITHER)) {
             double score = mean + userOffsets.get(user, 0) + itemOffsets.get(e.getKey(), 0);
             output.set(e, score);
         }
@@ -84,7 +84,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
     /**
      * The builder for the least squares predictor.
      */
-    public static class Builder implements Provider<LeastSquaresPredictor> {
+    public static class Builder implements Provider<LeastSquaresItemScorer> {
         private final double learningRate;
         private final double regularizationFactor;
         private PreferenceSnapshot snapshot;
@@ -109,7 +109,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
         }
 
         @Override
-        public LeastSquaresPredictor get() {
+        public LeastSquaresItemScorer get() {
             double rmse = 0.0;
             double uoff[] = new double[snapshot.getUserIds().size()];
             double ioff[] = new double[snapshot.getItemIds().size()];
@@ -149,7 +149,7 @@ public class LeastSquaresPredictor extends AbstractBaselinePredictor implements 
             MutableSparseVector svuoff = snapshot.userIndex().convertArrayToVector(uoff);
             // Convert the ioff array to a SparseVector
             MutableSparseVector svioff = snapshot.itemIndex().convertArrayToVector(ioff);
-            return new LeastSquaresPredictor(svuoff.freeze(), svioff.freeze(), mean);
+            return new LeastSquaresItemScorer(svuoff.freeze(), svioff.freeze(), mean);
         }
     }
 }

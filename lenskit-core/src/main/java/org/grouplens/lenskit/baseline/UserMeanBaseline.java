@@ -18,28 +18,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-/**
- *
- */
 package org.grouplens.lenskit.baseline;
 
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.junit.Test;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 
-import static org.junit.Assert.assertEquals;
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
+ * Baseline scores for user mean ratings.
+ *
+ * @see UserMeanItemScorer
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TestConstantPredictor {
-
-    @Test
-    public void testConstantPredict() {
-        BaselinePredictor pred = new ConstantPredictor(5);
-        SparseVector map = new ImmutableSparseVector();
-        SparseVector pv = pred.predict(10l, map, new LongArrayList(new long[]{2l}));
-        assertEquals(5, pv.get(2l), 0.00001);
-    }
+@Documented
+@Qualifier
+@DefaultImplementation(GlobalMeanRatingItemScorer.class)
+@Target({ElementType.METHOD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface UserMeanBaseline {
 }

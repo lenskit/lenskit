@@ -37,11 +37,11 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestLeastSquarePredictor {
+public class TestLeastSquareItemScorer {
 
     private static final double EPSILON = 1.0e-2;
     private PackedPreferenceSnapshot snapshot;
-    private LeastSquaresPredictor predictor;
+    private LeastSquaresItemScorer predictor;
 
     @Before
     public void createPredictor() {
@@ -71,23 +71,17 @@ public class TestLeastSquarePredictor {
 
         final double regFactor = 0.001;
         final double lrate = 0.003;
-        final Provider<LeastSquaresPredictor> builder =
-                new LeastSquaresPredictor.Builder(regFactor, lrate, snapshot, stop);
+        final Provider<LeastSquaresItemScorer> builder =
+                new LeastSquaresItemScorer.Builder(regFactor, lrate, snapshot, stop);
         predictor = builder.get();
     }
 
     @Test
     public void testKnownUserItem() {
         final long user = 1;
-        SparseVector ratings = snapshot.userRatingVector(user);
+        MutableSparseVector output = MutableSparseVector.create(1, 2, 3);
 
-        ArrayList<Long> key = new ArrayList<Long>();
-        key.add(1L);
-        key.add(2L);
-        key.add(3L);
-        MutableSparseVector output = new MutableSparseVector(key);
-
-        predictor.predict(user, ratings, output, true);
+        predictor.score(user, output);
 
         assertEquals(3.18, output.get(1), EPSILON);
         assertEquals(3.04, output.get(2), EPSILON);
@@ -97,15 +91,9 @@ public class TestLeastSquarePredictor {
     @Test
     public void testUnknownItem() {
         final long user = 2;
-        SparseVector ratings = snapshot.userRatingVector(user);
+        MutableSparseVector output = MutableSparseVector.create(14, 15, 16);
 
-        ArrayList<Long> key = new ArrayList<Long>();
-        key.add(14L);
-        key.add(15L);
-        key.add(16L);
-        MutableSparseVector output = new MutableSparseVector(key);
-
-        predictor.predict(user, ratings, output, true);
+        predictor.score(user, output);
 
         assertEquals(3.07, output.get(14), EPSILON);
         assertEquals(3.07, output.get(15), EPSILON);
@@ -115,15 +103,9 @@ public class TestLeastSquarePredictor {
     @Test
     public void testUnknownUser() {
         final long user = 11;
-        SparseVector ratings = snapshot.userRatingVector(user);
+        MutableSparseVector output = MutableSparseVector.create(4, 5, 6);
 
-        ArrayList<Long> key = new ArrayList<Long>();
-        key.add(4L);
-        key.add(5L);
-        key.add(6L);
-        MutableSparseVector output = new MutableSparseVector(key);
-
-        predictor.predict(user, ratings, output, true);
+        predictor.score(user, output);
 
         assertEquals(3.05, output.get(4), EPSILON);
         assertEquals(3.20, output.get(5), EPSILON);

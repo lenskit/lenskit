@@ -29,18 +29,20 @@ import org.grouplens.grapht.spi.reflect.InstanceSatisfaction;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.baseline.BaselineItemScorer;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.baseline.ConstantPredictor;
-import org.grouplens.lenskit.baseline.GlobalMeanPredictor;
+import org.grouplens.lenskit.baseline.ConstantItemScorer;
+import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer;
+import org.grouplens.lenskit.baseline.UserMeanBaseline;
+import org.grouplens.lenskit.baseline.UserMeanItemScorer;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.basic.TopNItemRecommender;
-import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.iterative.StoppingThreshold;
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition;
 import org.grouplens.lenskit.symbols.TypedSymbol;
+import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer;
+import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -79,11 +81,9 @@ public class LenskitRecommenderEngineTest {
     private LenskitConfiguration configureBasicRecommender() {
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(ItemScorer.class)
-              .to(BaselineItemScorer.class);
+              .to(ConstantItemScorer.class);
         config.bind(ItemRecommender.class)
               .to(TopNItemRecommender.class);
-        config.bind(BaselinePredictor.class)
-              .to(ConstantPredictor.class);
         config.bind(EventDAO.class)
               .toSymbol(daoSym);
         return config;
@@ -93,11 +93,9 @@ public class LenskitRecommenderEngineTest {
         assertThat(rec.getItemRecommender(),
                    instanceOf(TopNItemRecommender.class));
         assertThat(rec.getItemScorer(),
-                   instanceOf(BaselineItemScorer.class));
+                   instanceOf(ConstantItemScorer.class));
         assertThat(rec.getRatingPredictor(),
                    instanceOf(SimpleRatingPredictor.class));
-        assertThat(rec.get(BaselinePredictor.class),
-                   instanceOf(ConstantPredictor.class));
         // Since we have an item scorer, we should have a recommender too
         assertThat(rec.getItemRecommender(),
                    instanceOf(TopNItemRecommender.class));
@@ -107,33 +105,33 @@ public class LenskitRecommenderEngineTest {
     public void testArbitraryRoot() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).to(dao);
-        config.bind(BaselinePredictor.class)
-              .to(ConstantPredictor.class);
-        config.addRoot(BaselinePredictor.class);
+        config.bind(VectorNormalizer.class)
+              .to(MeanVarianceNormalizer.class);
+        config.addRoot(VectorNormalizer.class);
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         LenskitRecommender rec = engine.createRecommender();
-        assertThat(rec.get(BaselinePredictor.class),
-                   instanceOf(ConstantPredictor.class));
+        assertThat(rec.get(VectorNormalizer.class),
+                   instanceOf(MeanVarianceNormalizer.class));
     }
 
     @Test
     public void testSeparatePredictor() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).to(dao);
-        config.bind(BaselinePredictor.class)
-              .to(GlobalMeanPredictor.class);
+        config.bind(UserMeanBaseline.class, ItemScorer.class)
+              .to(GlobalMeanRatingItemScorer.class);
         config.bind(ItemScorer.class)
-              .to(BaselineItemScorer.class);
+              .to(UserMeanItemScorer.class);
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
 
         LenskitRecommender rec1 = engine.createRecommender();
         LenskitRecommender rec2 = engine.createRecommender();
         assertThat(rec1.getItemScorer(),
-                   instanceOf(BaselineItemScorer.class));
+                   instanceOf(UserMeanItemScorer.class));
         assertThat(rec2.getItemScorer(),
-                   instanceOf(BaselineItemScorer.class));
+                   instanceOf(UserMeanItemScorer.class));
 
         // verify that recommenders have different scorers
         assertThat(rec1.getItemScorer(),
@@ -144,8 +142,8 @@ public class LenskitRecommenderEngineTest {
                    not(sameInstance(rec2.getRatingPredictor())));
 
         // verify that recommenders have same baseline
-        assertThat(rec1.get(BaselinePredictor.class),
-                   sameInstance(rec2.get(BaselinePredictor.class)));
+        assertThat(rec1.get(UserMeanBaseline.class, ItemScorer.class),
+                   sameInstance(rec2.get(UserMeanBaseline.class, ItemScorer.class)));
     }
 
     @SuppressWarnings("unchecked")

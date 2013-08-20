@@ -23,7 +23,7 @@ package org.grouplens.lenskit.config
 import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.BaselineItemScorer
 import org.grouplens.lenskit.baseline.BaselinePredictor
-import org.grouplens.lenskit.baseline.ConstantPredictor
+import org.grouplens.lenskit.baseline.ConstantItemScorer
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
 import org.grouplens.lenskit.basic.SimpleRatingPredictor
 import org.grouplens.lenskit.basic.TopNItemRecommender
@@ -46,9 +46,9 @@ class TestConfigLoading {
     @Test
     void testLoadBasicConfig() {
         LenskitConfiguration config = ConfigHelpers.load {
-            bind BaselinePredictor to ConstantPredictor
+            bind BaselinePredictor to ConstantItemScorer
             bind ItemScorer to BaselineItemScorer
-            set ConstantPredictor.Value to Math.PI
+            set ConstantItemScorer.Value to Math.PI
         }
         config.bind(EventDAO).to(dao)
         def engine = LenskitRecommenderEngine.build(config)
@@ -57,7 +57,7 @@ class TestConfigLoading {
         assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
         assertThat(rec.getGlobalItemRecommender(), nullValue());
         def bl = rec.get(BaselinePredictor)
-        assertThat(bl, instanceOf(ConstantPredictor))
+        assertThat(bl, instanceOf(ConstantItemScorer))
         assertThat(bl.value, equalTo(Math.PI))
     }
 
@@ -102,9 +102,9 @@ class TestConfigLoading {
     void testLoadBasicText() {
         LenskitConfiguration config = ConfigHelpers.load(
                 """import org.grouplens.lenskit.baseline.*
-bind BaselinePredictor to ConstantPredictor
+bind BaselinePredictor to ConstantItemScorer
 bind ItemScorer to BaselineItemScorer
-set ConstantPredictor.Value to Math.PI""");
+set ConstantItemScorer.Value to Math.PI""");
         config.bind(EventDAO).to(dao)
         def engine = LenskitRecommenderEngine.build(config)
         def rec = engine.createRecommender()
@@ -112,7 +112,7 @@ set ConstantPredictor.Value to Math.PI""");
         assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
         assertThat(rec.getGlobalItemRecommender(), nullValue());
         def bl = rec.get(BaselinePredictor)
-        assertThat(bl, instanceOf(ConstantPredictor))
+        assertThat(bl, instanceOf(ConstantItemScorer))
         assertThat(bl.value, equalTo(Math.PI))
     }
 
@@ -126,7 +126,7 @@ set ConstantPredictor.Value to Math.PI""");
         assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
         assertThat(rec.getGlobalItemRecommender(), nullValue());
         def bl = rec.get(BaselinePredictor)
-        assertThat(bl, instanceOf(ConstantPredictor))
+        assertThat(bl, instanceOf(ConstantItemScorer))
         assertThat(bl.value, equalTo(Math.PI))
     }
 

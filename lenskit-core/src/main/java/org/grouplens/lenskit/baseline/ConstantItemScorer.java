@@ -24,17 +24,19 @@
 package org.grouplens.lenskit.baseline;
 
 import org.grouplens.grapht.annotation.DefaultDouble;
+import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.core.Parameter;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
+import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Qualifier;
 import javax.inject.Singleton;
+import java.io.Serializable;
 import java.lang.annotation.*;
-
-import static org.grouplens.lenskit.vectors.VectorEntry.State;
+import java.util.Collection;
 
 /**
  * Rating scorer that predicts a constant rating for all items.
@@ -43,7 +45,7 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
  */
 @Shareable
 @Singleton
-public class ConstantPredictor extends AbstractBaselinePredictor {
+public class ConstantItemScorer implements ItemScorer, Serializable {
     /**
      * Parameter: the value used by the constant scorer.
      */
@@ -67,19 +69,24 @@ public class ConstantPredictor extends AbstractBaselinePredictor {
      * @param val The value to use.
      */
     @Inject
-    public ConstantPredictor(@Value double val) {
-        this.value = val;
+    public ConstantItemScorer(@Value double val) {
+        value = val;
     }
 
     @Override
-    public void predict(long user, MutableSparseVector output, boolean predictSet) {
-        if (predictSet) {
-            output.fill(value);
-        } else {
-            for (VectorEntry e : output.fast(State.UNSET)) {
-                output.set(e, value);
-            }
-        }
+    public double score(long user, long item) {
+        return value;
+    }
+
+    @Nonnull
+    @Override
+    public SparseVector score(long user, @Nonnull Collection<Long> items) {
+        return MutableSparseVector.create(items, value);
+    }
+
+    @Override
+    public void score(long user, @Nonnull MutableSparseVector output) {
+        output.fill(value);
     }
 
     @Override

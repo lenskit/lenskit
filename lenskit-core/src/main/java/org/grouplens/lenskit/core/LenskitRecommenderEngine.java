@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.core;
 
 import com.google.common.base.Preconditions;
-import org.grouplens.grapht.Injector;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.InjectSPI;
@@ -176,7 +175,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @return The recommender.
      */
     public LenskitRecommender createRecommender(SymbolMapping map) {
-        Injector inj = new StaticInjector(spi, dependencies, rootNode, map);
+        StaticInjector inj = new StaticInjector(spi, dependencies, rootNode, map);
         return new LenskitRecommender(inj);
     }
 

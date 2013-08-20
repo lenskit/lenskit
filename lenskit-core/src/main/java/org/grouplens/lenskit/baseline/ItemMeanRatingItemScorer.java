@@ -24,6 +24,7 @@
 package org.grouplens.lenskit.baseline;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
+import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -33,14 +34,13 @@ import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.util.IdMeanAccumulator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Provider;
-
-import static org.grouplens.lenskit.vectors.VectorEntry.State;
+import java.io.Serializable;
 
 /**
  * Rating scorer that returns the item's mean rating for all predictions.
@@ -53,15 +53,15 @@ import static org.grouplens.lenskit.vectors.VectorEntry.State;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultProvider(ItemMeanPredictor.Builder.class)
+@DefaultProvider(ItemMeanRatingItemScorer.Builder.class)
 @Shareable
-public class ItemMeanPredictor extends AbstractBaselinePredictor {
+public class ItemMeanRatingItemScorer extends AbstractItemScorer implements Serializable {
     /**
      * A builder to create ItemMeanPredictors.
      *
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Builder implements Provider<ItemMeanPredictor> {
+    public static class Builder implements Provider<ItemMeanRatingItemScorer> {
         private double damping = 0;
         private EventDAO dao;
 
@@ -80,7 +80,7 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
         }
 
         @Override
-        public ItemMeanPredictor get() {
+        public ItemMeanRatingItemScorer get() {
             final ImmutableSparseVector itemMeans;
             final double globalMean;
 
@@ -99,12 +99,12 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
                 ratings.close();
             }
 
-            return new ItemMeanPredictor(itemMeans, globalMean, damping);
+            return new ItemMeanRatingItemScorer(itemMeans, globalMean, damping);
         }
     }
 
     private static final long serialVersionUID = 3L;
-    private static final Logger logger = LoggerFactory.getLogger(ItemMeanPredictor.class);
+    private static final Logger logger = LoggerFactory.getLogger(ItemMeanRatingItemScorer.class);
 
     private final ImmutableSparseVector itemMeans;  // offsets from the global mean
     private final double globalMean;
@@ -117,19 +117,16 @@ public class ItemMeanPredictor extends AbstractBaselinePredictor {
      * @param globalMean The mean rating value for all items.
      * @param damping    The damping factor.
      */
-    public ItemMeanPredictor(ImmutableSparseVector itemMeans, double globalMean, double damping) {
+    public ItemMeanRatingItemScorer(ImmutableSparseVector itemMeans, double globalMean, double damping) {
         this.itemMeans = itemMeans;
         this.globalMean = globalMean;
         this.damping = damping;
     }
 
     @Override
-    public void predict(long user, MutableSparseVector items, boolean predictSet) {
-        State state = predictSet ? State.EITHER : State.UNSET;
-        for (VectorEntry e: items.fast(state)) {
-            final long iid = e.getKey();
-            items.set(e, globalMean + itemMeans.get(iid, 0));
-        }
+    public void score(long user, @Nonnull MutableSparseVector items) {
+        items.fill(globalMean);
+        items.add(itemMeans);
     }
 
     @Override

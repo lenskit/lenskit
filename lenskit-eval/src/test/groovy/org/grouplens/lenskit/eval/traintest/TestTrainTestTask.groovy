@@ -24,8 +24,8 @@ import org.apache.commons.lang3.tuple.Pair
 import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.BaselineItemScorer
 import org.grouplens.lenskit.baseline.BaselinePredictor
-import org.grouplens.lenskit.baseline.ItemMeanPredictor
-import org.grouplens.lenskit.baseline.UserMeanPredictor
+import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
+import org.grouplens.lenskit.baseline.UserMeanItemScorer
 import org.grouplens.lenskit.data.dao.DataAccessException
 import org.grouplens.lenskit.eval.EvalConfig
 import org.grouplens.lenskit.eval.TaskExecutionException
@@ -246,7 +246,7 @@ class TestTrainTestTask {
             }
             algorithm {
                 bind ItemScorer to BaselineItemScorer
-                bind BaselinePredictor to ItemMeanPredictor
+                bind BaselinePredictor to ItemMeanRatingItemScorer
             }
             output null
         }
@@ -273,11 +273,11 @@ class TestTrainTestTask {
             }
             algorithm {
                 bind ItemScorer to BaselineItemScorer
-                bind BaselinePredictor to ItemMeanPredictor
+                bind BaselinePredictor to ItemMeanRatingItemScorer
             }
             algorithm {
                 bind ItemScorer to BaselineItemScorer
-                bind BaselinePredictor to UserMeanPredictor
+                bind BaselinePredictor to UserMeanItemScorer
             }
             output null
         }

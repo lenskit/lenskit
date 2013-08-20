@@ -26,7 +26,7 @@ import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
-import org.grouplens.lenskit.baseline.UserMeanPredictor;
+import org.grouplens.lenskit.baseline.UserMeanItemScorer;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
@@ -73,7 +73,7 @@ public class TestFunkSVDRecommenderBuild {
         config.bind(ItemScorer.class)
               .to(FunkSVDItemScorer.class);
         config.bind(BaselinePredictor.class)
-              .to(UserMeanPredictor.class);
+              .to(UserMeanItemScorer.class);
         config.bind(StoppingCondition.class)
               .to(IterationCountStoppingCondition.class);
         config.set(IterationCount.class)

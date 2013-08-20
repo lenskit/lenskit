@@ -24,7 +24,8 @@ import org.grouplens.lenskit.GlobalItemScorer
 import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
-import org.grouplens.lenskit.baseline.UserMeanPredictor
+import org.grouplens.lenskit.baseline.UserMeanItemScorer
+import org.grouplens.lenskit.baseline.UserMeanItemScorer
 import org.grouplens.lenskit.knn.NeighborhoodSize
 import org.grouplens.lenskit.knn.item.ItemItemGlobalScorer
 import org.grouplens.lenskit.knn.item.ItemItemScorer
@@ -50,7 +51,7 @@ dumpGraph {
         bind BaselinePredictor to ItemUserMeanPredictor
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
         within(UserVectorNormalizer) {
-            bind BaselinePredictor to UserMeanPredictor
+            bind BaselinePredictor to UserMeanItemScorer
         }
     }
 }

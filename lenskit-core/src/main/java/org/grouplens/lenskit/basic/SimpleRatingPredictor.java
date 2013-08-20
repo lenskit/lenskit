@@ -22,7 +22,7 @@ package org.grouplens.lenskit.basic;
 
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.baseline.BaselineScorer;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -48,17 +48,17 @@ import javax.inject.Inject;
 public final class SimpleRatingPredictor extends AbstractRatingPredictor {
     private final ItemScorer scorer;
     @Nullable
-    private final BaselinePredictor baselinePredictor;
+    private final ItemScorer baselineScorer;
     @Nullable
     private final PreferenceDomain preferenceDomain;
 
     @Inject
     public SimpleRatingPredictor(ItemScorer scorer,
-                                 @Nullable BaselinePredictor baseline,
+                                 @Nullable @BaselineScorer ItemScorer baseline,
                                  @Nullable PreferenceDomain domain) {
         // TODO Make abstract rating predictors & item scorers not need the DAO
         this.scorer = scorer;
-        baselinePredictor = baseline;
+        baselineScorer = baseline;
         preferenceDomain = domain;
     }
 
@@ -86,15 +86,17 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
      * @return The baseline predictor, or {@code null} if no baseline is configured.
      */
     @Nullable
-    public BaselinePredictor getBaselinePredictor() {
-        return baselinePredictor;
+    public ItemScorer getBaselineScorer() {
+        return baselineScorer;
     }
 
     @Override
     public void predict(long user, @Nonnull MutableSparseVector scores) {
         scorer.score(user, scores);
-        if (baselinePredictor != null) {
-            baselinePredictor.predict(user, scores, false);
+        if (baselineScorer != null) {
+            MutableSparseVector unpred = MutableSparseVector.create(scores.unsetKeySet());
+            baselineScorer.score(user, unpred);
+            scores.set(unpred);
         }
         if (preferenceDomain != null) {
             preferenceDomain.clampVector(scores);
@@ -108,7 +110,7 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
      */
     public static class Provider implements javax.inject.Provider<RatingPredictor> {
         private final ItemScorer scorer;
-        private final BaselinePredictor baseline;
+        private final ItemScorer baseline;
         private final PreferenceDomain domain;
 
         /**
@@ -120,7 +122,7 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
          */
         @Inject
         public Provider(@Nullable ItemScorer s,
-                        @Nullable BaselinePredictor bp,
+                        @Nullable @BaselineScorer ItemScorer bp,
                         @Nullable PreferenceDomain dom) {
             scorer = s;
             baseline = bp;

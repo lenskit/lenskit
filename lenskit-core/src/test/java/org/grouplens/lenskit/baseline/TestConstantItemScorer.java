@@ -18,44 +18,47 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+/**
+ *
+ */
 package org.grouplens.lenskit.baseline;
 
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.util.test.MockItemScorer;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.everyItem;
 import static org.junit.Assert.assertThat;
 
-public class BaselineItemScorerTest {
+/**
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
+public class TestConstantItemScorer {
+
     @Test
-    public void testBaseline() {
-        BaselineItemScorer scorer = new BaselineItemScorer(new ConstantPredictor(5), null);
-        assertThat(scorer.getBaseline(),
-                   instanceOf(ConstantPredictor.class));
-        MutableSparseVector v = MutableSparseVector.create(3, 5, 7);
-        scorer.score(42, v);
-        int entriesSeen = 0;
-        for (VectorEntry e: v) {
-            assertThat(e.getValue(), equalTo(5.0));
-            entriesSeen += 1;
-        }
-        assertThat(entriesSeen, equalTo(3));
+    public void testSingleScore() {
+        ItemScorer pred = new ConstantItemScorer(5);
+        assertThat(pred.score(5, 10), equalTo(5.0));
     }
 
     @Test
-    public void testSupplyMissing() {
-        ItemScorer primary = MockItemScorer.newBuilder()
-                                           .addScore(2, 3, 4)
-                                           .build();
-        ItemScorer scorer = new BaselineItemScorer(new ConstantPredictor(5), primary);
-        MutableSparseVector v = MutableSparseVector.create(3, 5, 7);
-        scorer.score(2, v);
-        assertThat(v.get(3), equalTo(4.0));
-        assertThat(v.get(5), equalTo(5.0));
-        assertThat(v.get(7), equalTo(5.0));
+    public void testScoreSet() {
+        ItemScorer pred = new ConstantItemScorer(5);
+        SparseVector v = pred.score(42, LongUtils.packedSet(1, 2, 3, 5, 7));
+        assertThat(v.keySet(), contains(1L, 2L, 3L, 5L, 7L));
+        assertThat(v.values(), everyItem(equalTo(5.0)));
+    }
+
+    @Test
+    public void testScoreVector() {
+        ItemScorer pred = new ConstantItemScorer(5);
+        MutableSparseVector v = MutableSparseVector.create(1, 2, 3, 5, 7);
+        pred.score(42, v);
+        assertThat(v.keySet(), contains(1L, 2L, 3L, 5L, 7L));
+        assertThat(v.values(), everyItem(equalTo(5.0)));
     }
 }

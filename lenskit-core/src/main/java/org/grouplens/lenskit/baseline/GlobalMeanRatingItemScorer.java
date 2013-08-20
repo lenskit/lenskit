@@ -36,15 +36,15 @@ import org.grouplens.lenskit.data.pref.Preference;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultProvider(GlobalMeanPredictor.Builder.class)
+@DefaultProvider(GlobalMeanRatingItemScorer.Builder.class)
 @Shareable
-public class GlobalMeanPredictor extends ConstantPredictor {
+public class GlobalMeanRatingItemScorer extends ConstantItemScorer {
     /**
      * A default builder used to create GlobalMeanPredictors.
      *
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Builder implements Provider<GlobalMeanPredictor> {
+    public static class Builder implements Provider<GlobalMeanRatingItemScorer> {
         private EventDAO dao;
 
         /**
@@ -58,9 +58,9 @@ public class GlobalMeanPredictor extends ConstantPredictor {
         }
 
         @Override
-        public GlobalMeanPredictor get() {
+        public GlobalMeanRatingItemScorer get() {
             double avg = computeMeanRating(dao);
-            return new GlobalMeanPredictor(avg);
+            return new GlobalMeanRatingItemScorer(avg);
         }
     }
 
@@ -72,7 +72,7 @@ public class GlobalMeanPredictor extends ConstantPredictor {
      *
      * @param mean The global mean.
      */
-    public GlobalMeanPredictor(double mean) {
+    public GlobalMeanRatingItemScorer(double mean) {
         super(mean);
     }
 

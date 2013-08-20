@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval.algorithm
 import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.BaselineItemScorer
 import org.grouplens.lenskit.baseline.BaselinePredictor
-import org.grouplens.lenskit.baseline.GlobalMeanPredictor
+import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.eval.data.GenericDataSource
 import org.grouplens.lenskit.eval.script.ConfigTestBase
@@ -47,7 +47,7 @@ class TestAlgorithmInstanceConfig extends ConfigTestBase {
         def obj = eval {
             algorithm("GlobalMean") {
                 bind ItemScorer to BaselineItemScorer
-                bind BaselinePredictor to GlobalMeanPredictor
+                bind BaselinePredictor to GlobalMeanRatingItemScorer
 
                 attributes["wombat"] = "global"
             }

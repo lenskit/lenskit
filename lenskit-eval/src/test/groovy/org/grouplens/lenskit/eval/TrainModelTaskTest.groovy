@@ -23,11 +23,10 @@ package org.grouplens.lenskit.eval
 import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.BaselineItemScorer
 import org.grouplens.lenskit.baseline.BaselinePredictor
-import org.grouplens.lenskit.baseline.GlobalMeanPredictor
+import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer
 import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.event.Ratings
-import org.grouplens.lenskit.data.event.SimpleRating
 import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.grouplens.lenskit.eval.data.GenericDataSource
 import org.grouplens.lenskit.vectors.MutableSparseVector
@@ -52,7 +51,7 @@ class TrainModelTaskTest extends ConfigTestBase {
             trainModel {
                 algorithm {
                     bind ItemScorer to BaselineItemScorer
-                    bind BaselinePredictor to GlobalMeanPredictor
+                    bind BaselinePredictor to GlobalMeanRatingItemScorer
                 }
                 input dataSource
                 action {
@@ -63,7 +62,7 @@ class TrainModelTaskTest extends ConfigTestBase {
                 }
             }
         }
-        assertThat(obj, instanceOf(GlobalMeanPredictor))
+        assertThat(obj, instanceOf(GlobalMeanRatingItemScorer))
         def v = obj.predict(42, new MutableSparseVector(), [1l,2l,4l])
         assertThat(v.get(1), closeTo(4.0d, 1.0e-5d))
         assertThat(v.get(2), closeTo(4.0d, 1.0e-5d))
