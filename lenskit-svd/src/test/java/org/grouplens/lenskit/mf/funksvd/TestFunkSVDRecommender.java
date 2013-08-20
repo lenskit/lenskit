@@ -22,7 +22,7 @@ package org.grouplens.lenskit.mf.funksvd;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.grouplens.lenskit.*;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.baseline.BaselineScorer;
 import org.grouplens.lenskit.baseline.UserMeanItemScorer;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
@@ -73,7 +73,8 @@ public class TestFunkSVDRecommender {
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(PreferenceSnapshot.class).to(PackedPreferenceSnapshot.class);
         config.bind(ItemScorer.class).to(FunkSVDItemScorer.class);
-        config.bind(BaselinePredictor.class).to(UserMeanItemScorer.class);
+        config.bind(BaselineScorer.class, ItemScorer.class)
+              .to(UserMeanItemScorer.class);
         config.bind(Integer.class).withQualifier(FeatureCount.class).to(100);
         // FIXME: Don't use 100 features.
         RecommenderEngine engine = LenskitRecommenderEngine.build(config);

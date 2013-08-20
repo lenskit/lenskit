@@ -22,8 +22,6 @@ package org.grouplens.lenskit.eval.traintest
 
 import org.apache.commons.lang3.tuple.Pair
 import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.BaselineItemScorer
-import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.baseline.UserMeanItemScorer
 import org.grouplens.lenskit.data.dao.DataAccessException
@@ -245,8 +243,7 @@ class TestTrainTestTask {
                 test "${folder.root.absolutePath}/ratings.test.%d.csv"
             }
             algorithm {
-                bind ItemScorer to BaselineItemScorer
-                bind BaselinePredictor to ItemMeanRatingItemScorer
+                bind ItemScorer to ItemMeanRatingItemScorer
             }
             output null
         }
@@ -272,12 +269,10 @@ class TestTrainTestTask {
                 test "${folder.root.absolutePath}/noRatings.test.csv"
             }
             algorithm {
-                bind ItemScorer to BaselineItemScorer
-                bind BaselinePredictor to ItemMeanRatingItemScorer
+                bind ItemScorer to ItemMeanRatingItemScorer
             }
             algorithm {
-                bind ItemScorer to BaselineItemScorer
-                bind BaselinePredictor to UserMeanItemScorer
+                bind ItemScorer to UserMeanItemScorer
             }
             output null
         }

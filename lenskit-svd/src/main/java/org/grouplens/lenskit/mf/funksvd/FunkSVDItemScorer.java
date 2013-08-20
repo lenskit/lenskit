@@ -20,9 +20,12 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.baseline.BaselineScorer;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
@@ -50,6 +53,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
 
     protected final FunkSVDModel model;
     private UserEventDAO dao;
+    private final ItemScorer baselineScorer;
     private final int featureCount;
     private final ClampingFunction clamp;
 
@@ -59,18 +63,23 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
     /**
      * Construct the item scorer.
      *
-     * @param dao   The DAO.
-     * @param model The model.
-     * @param rule  The update rule, or {@code null} (the default) to only use the user features
-     *              from the model. If provided, this update rule is used to update a user's feature
-     *              values based on their profile when scores are requested.
+     * @param dao      The DAO.
+     * @param model    The model.
+     * @param baseline The baseline scorer.  Be very careful when configuring a different baseline
+     *                 at runtime than at model-build time; such a configuration is unlikely to
+     *                 perform well.
+     * @param rule     The update rule, or {@code null} (the default) to only use the user features
+     *                 from the model. If provided, this update rule is used to update a user's
+     *                 feature values based on their profile when scores are requested.
      */
     @Inject
     public FunkSVDItemScorer(UserEventDAO dao, FunkSVDModel model,
+                             @BaselineScorer ItemScorer baseline,
                              @Nullable @RuntimeUpdate FunkSVDUpdateRule rule) {
         // FIXME Unify requirement on update rule and DAO
         this.dao = dao;
         this.model = model;
+        baselineScorer = baseline;
         this.rule = rule;
 
         featureCount = model.getFeatureCount();
@@ -117,11 +126,10 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
      * @return Baseline predictions for all items either in the target set or the set of
      *         rated items.
      */
-    private MutableSparseVector initialEstimates(long user, SparseVector ratings, LongSet items) {
-        LongSet allItems = new LongOpenHashSet(items);
-        allItems.addAll(ratings.keySet());
-        MutableSparseVector estimates = new MutableSparseVector(allItems);
-        model.getBaseline().predict(user, ratings, estimates);
+    private MutableSparseVector initialEstimates(long user, SparseVector ratings, LongSortedSet items) {
+        LongSet allItems = LongUtils.setUnion(items, ratings.keySet());
+        MutableSparseVector estimates = MutableSparseVector.create(allItems);
+        baselineScorer.score(user, estimates);
         return estimates;
     }
 

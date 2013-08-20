@@ -22,7 +22,6 @@ package org.grouplens.lenskit.mf.funksvd;
 
 import com.google.common.collect.ImmutableList;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.util.Index;
@@ -55,14 +54,11 @@ public final class FunkSVDModel implements Serializable {
     private final Index itemIndex;
     private final Index userIndex;
 
-    private final BaselinePredictor baseline;
-
     public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
                         ClampingFunction clamp, Index iidx, Index uidx,
-                        BaselinePredictor baseline, List<FeatureInfo> features) {
+                        List<FeatureInfo> features) {
         featureCount = nfeatures;
         clampingFunction = clamp;
-        this.baseline = baseline;
 
         itemFeatures = ifeats;
         userFeatures = ufeats;
@@ -151,13 +147,6 @@ public final class FunkSVDModel implements Serializable {
      */
     public Index getUserIndex() {
         return userIndex;
-    }
-
-    /**
-     * The baseline predictor used to build this model.
-     */
-    public BaselinePredictor getBaseline() {
-        return baseline;
     }
 
     /**

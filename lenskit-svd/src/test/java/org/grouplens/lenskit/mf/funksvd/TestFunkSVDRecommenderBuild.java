@@ -24,8 +24,9 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
+import org.grouplens.lenskit.baseline.BaselineScorer;
+import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer;
+import org.grouplens.lenskit.baseline.UserMeanBaseline;
 import org.grouplens.lenskit.baseline.UserMeanItemScorer;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.basic.TopNItemRecommender;
@@ -72,8 +73,10 @@ public class TestFunkSVDRecommenderBuild {
               .to(PackedPreferenceSnapshot.class);
         config.bind(ItemScorer.class)
               .to(FunkSVDItemScorer.class);
-        config.bind(BaselinePredictor.class)
+        config.bind(BaselineScorer.class, ItemScorer.class)
               .to(UserMeanItemScorer.class);
+        config.bind(UserMeanBaseline.class, ItemScorer.class)
+              .to(ItemMeanRatingItemScorer.class);
         config.bind(StoppingCondition.class)
               .to(IterationCountStoppingCondition.class);
         config.set(IterationCount.class)
@@ -142,8 +145,10 @@ public class TestFunkSVDRecommenderBuild {
         config.bind(EventDAO.class).to(dao);
         config.bind(ItemScorer.class)
               .to(FunkSVDItemScorer.class);
-        config.bind(BaselinePredictor.class)
-              .to(ItemUserMeanPredictor.class);
+        config.bind(BaselineScorer.class, ItemScorer.class)
+              .to(UserMeanItemScorer.class);
+        config.bind(UserMeanBaseline.class, ItemScorer.class)
+              .to(ItemMeanRatingItemScorer.class);
         config.set(IterationCount.class)
               .to(10);
         config.bind(RuntimeUpdate.class, FunkSVDUpdateRule.class)

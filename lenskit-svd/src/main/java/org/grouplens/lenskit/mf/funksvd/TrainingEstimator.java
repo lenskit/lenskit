@@ -22,7 +22,7 @@ package org.grouplens.lenskit.mf.funksvd;
 
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
@@ -50,7 +50,7 @@ public final class TrainingEstimator {
      * @param baseline The baseline predictor.
      * @param cf       The clamping function.
      */
-    TrainingEstimator(PreferenceSnapshot snap, BaselinePredictor baseline, ClampingFunction cf) {
+    TrainingEstimator(PreferenceSnapshot snap, ItemScorer baseline, ClampingFunction cf) {
         ratings = snap.getRatings();
         clamp = cf;
         estimates = new double[ratings.size()];
@@ -60,8 +60,8 @@ public final class TrainingEstimator {
         while (userIter.hasNext()) {
             long uid = userIter.nextLong();
             SparseVector rvector = snap.userRatingVector(uid);
-            MutableSparseVector blpreds = new MutableSparseVector(rvector.keySet());
-            baseline.predict(uid, rvector, blpreds);
+            MutableSparseVector blpreds = MutableSparseVector.create(rvector.keySet());
+            baseline.score(uid, blpreds);
 
             for (IndexedPreference r : CollectionUtils.fast(snap.getUserRatings(uid))) {
                 estimates[r.getIndex()] = blpreds.get(r.getItemId());

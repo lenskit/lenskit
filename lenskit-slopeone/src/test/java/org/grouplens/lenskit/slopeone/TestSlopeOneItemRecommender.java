@@ -24,8 +24,10 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
+import org.grouplens.lenskit.baseline.BaselineScorer;
+import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer;
+import org.grouplens.lenskit.baseline.UserMeanBaseline;
+import org.grouplens.lenskit.baseline.UserMeanItemScorer;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
@@ -64,7 +66,10 @@ public class TestSlopeOneItemRecommender {
         config.bind(ItemScorer.class).to(SlopeOneItemScorer.class);
         config.bind(PreferenceDomain.class).to(new PreferenceDomain(1, 5));
         // factory.setComponent(UserVectorNormalizer.class, IdentityVectorNormalizer.class);
-        config.bind(BaselinePredictor.class).to(ItemUserMeanPredictor.class);
+        config.bind(BaselineScorer.class, ItemScorer.class)
+              .to(UserMeanItemScorer.class);
+        config.bind(UserMeanBaseline.class, ItemScorer.class)
+              .to(ItemMeanRatingItemScorer.class);
         engine = LenskitRecommenderEngine.build(config);
     }
 

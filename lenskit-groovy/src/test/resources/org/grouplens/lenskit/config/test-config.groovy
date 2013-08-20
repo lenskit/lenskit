@@ -22,6 +22,5 @@ package org.grouplens.lenskit.config
 
 import org.grouplens.lenskit.baseline.*
 
-bind BaselinePredictor to ConstantItemScorer
-bind ItemScorer to BaselineItemScorer
+bind ItemScorer to ConstantItemScorer
 set ConstantItemScorer.Value to Math.PI

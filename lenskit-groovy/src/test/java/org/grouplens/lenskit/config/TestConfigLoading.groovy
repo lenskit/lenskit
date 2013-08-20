@@ -21,10 +21,8 @@
 package org.grouplens.lenskit.config
 
 import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.BaselineItemScorer
-import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.ConstantItemScorer
-import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
+import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.basic.SimpleRatingPredictor
 import org.grouplens.lenskit.basic.TopNItemRecommender
 import org.grouplens.lenskit.core.LenskitConfiguration
@@ -46,18 +44,16 @@ class TestConfigLoading {
     @Test
     void testLoadBasicConfig() {
         LenskitConfiguration config = ConfigHelpers.load {
-            bind BaselinePredictor to ConstantItemScorer
-            bind ItemScorer to BaselineItemScorer
+            bind ItemScorer to ConstantItemScorer
             set ConstantItemScorer.Value to Math.PI
         }
         config.bind(EventDAO).to(dao)
         def engine = LenskitRecommenderEngine.build(config)
         def rec = engine.createRecommender()
-        assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer))
+        assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
         assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
         assertThat(rec.getGlobalItemRecommender(), nullValue());
-        def bl = rec.get(BaselinePredictor)
-        assertThat(bl, instanceOf(ConstantItemScorer))
+        def bl = rec.itemScorer as ConstantItemScorer
         assertThat(bl.value, equalTo(Math.PI))
     }
 
@@ -102,18 +98,15 @@ class TestConfigLoading {
     void testLoadBasicText() {
         LenskitConfiguration config = ConfigHelpers.load(
                 """import org.grouplens.lenskit.baseline.*
-bind BaselinePredictor to ConstantItemScorer
-bind ItemScorer to BaselineItemScorer
+bind ItemScorer to ConstantItemScorer
 set ConstantItemScorer.Value to Math.PI""");
         config.bind(EventDAO).to(dao)
         def engine = LenskitRecommenderEngine.build(config)
         def rec = engine.createRecommender()
-        assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer))
+        assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
         assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
         assertThat(rec.getGlobalItemRecommender(), nullValue());
-        def bl = rec.get(BaselinePredictor)
-        assertThat(bl, instanceOf(ConstantItemScorer))
-        assertThat(bl.value, equalTo(Math.PI))
+        assertThat(rec.itemScorer.value, equalTo(Math.PI))
     }
 
     @Test
@@ -122,25 +115,22 @@ set ConstantItemScorer.Value to Math.PI""");
         config.bind(EventDAO).to(dao)
         def engine = LenskitRecommenderEngine.build(config)
         def rec = engine.createRecommender()
-        assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer))
+        assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
         assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
         assertThat(rec.getGlobalItemRecommender(), nullValue());
-        def bl = rec.get(BaselinePredictor)
-        assertThat(bl, instanceOf(ConstantItemScorer))
-        assertThat(bl.value, equalTo(Math.PI))
+        assertThat(rec.itemScorer.value, equalTo(Math.PI))
     }
 
     @Test
     void testPreferenceDomain() {
         LenskitConfiguration config = ConfigHelpers.load {
-            bind BaselinePredictor to ItemUserMeanPredictor
-            bind ItemScorer to BaselineItemScorer
+            bind ItemScorer to ItemMeanRatingItemScorer
             domain minimum: 1, maximum: 5, precision: 0.5
         }
         config.bind(EventDAO).to(dao)
         def engine = LenskitRecommenderEngine.build(config)
         def rec = engine.createRecommender()
-        assertThat(rec.getItemScorer(), instanceOf(BaselineItemScorer));
+        assertThat(rec.getItemScorer(), instanceOf(ItemMeanRatingItemScorer));
         assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
         def rp = rec.getRatingPredictor()
         assertThat(rp, instanceOf(SimpleRatingPredictor))

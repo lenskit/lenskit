@@ -23,9 +23,7 @@ package org.grouplens.lenskit.mf.funksvd;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.baseline.ItemUserMeanPredictor;
-import org.grouplens.lenskit.baseline.MeanDamping;
+import org.grouplens.lenskit.baseline.*;
 import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
@@ -62,11 +60,13 @@ public class TestFunkSVDBuildSerialize extends ML100KTestSuite {
               .to(TopNItemRecommender.class);
         config.bind(ItemScorer.class)
               .to(FunkSVDItemScorer.class);
-        config.bind(BaselinePredictor.class)
-              .to(ItemUserMeanPredictor.class);
+        config.bind(BaselineScorer.class, ItemScorer.class)
+              .to(UserMeanItemScorer.class);
+        config.bind(UserMeanBaseline.class, ItemScorer.class)
+              .to(ItemMeanRatingItemScorer.class);
         config.set(FeatureCount.class).to(10);
         config.set(IterationCount.class).to(10);
-        config.within(ItemUserMeanPredictor.class)
+        config.within(BaselineScorer.class, ItemScorer.class)
               .set(MeanDamping.class)
               .to(25);
 

@@ -22,12 +22,12 @@ package org.grouplens.lenskit.eval.traintest
 
 import com.google.common.io.Files
 import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.BaselineItemScorer
-import org.grouplens.lenskit.baseline.BaselinePredictor
-import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
-import org.grouplens.lenskit.eval.script.ConfigTestBase
+import org.grouplens.lenskit.baseline.BaselineScorer
+import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
+import org.grouplens.lenskit.baseline.UserMeanItemScorer
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
+import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.grouplens.lenskit.util.table.TableImpl
 import org.junit.After
 import org.junit.Before
@@ -87,8 +87,8 @@ class TestTrainTestResult extends ConfigTestBase {
                 metric RMSEPredictMetric
 
                 algorithm("ItemUserMean") {
-                    bind ItemScorer to BaselineItemScorer
-                    bind BaselinePredictor to ItemUserMeanPredictor
+                    bind ItemScorer to UserMeanItemScorer
+                    bind (BaselineScorer, ItemScorer) to ItemMeanRatingItemScorer
                 }
             }
         }
