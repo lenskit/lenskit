@@ -1,6 +1,4 @@
 import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.BaselineItemScorer
-import org.grouplens.lenskit.baseline.BaselinePredictor
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 
 /*
@@ -36,8 +34,7 @@ target("test-target") {
     trainTest {
         dataset data
         algorithm {
-            bind ItemScorer to BaselineItemScorer
-            bind BaselinePredictor to ItemMeanRatingItemScorer
+            bind ItemScorer to ItemMeanRatingItemScorer
         }
         output "${config.analysisDir}/output.csv"
     }
