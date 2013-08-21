@@ -22,6 +22,29 @@
 
   []
 
+* Baseline Algorithms
+
+  Baseline predictors have been restructured to implement <<<ItemScorer>>>; the old
+  <<<BaselinePredictor>>> interface is gone.  Baseline scorers are qualified with
+  <<<BaselineScorer>>>.
+
+  * To configure a baseline, bind <<<ItemScorer>>> with the qualifier <<<BaselineScorer>>>.
+
+  * To fall back to a baseline for missing scores, use either <<<SimpleRatingPredictor>>> (which
+    includes fallback) or <<<FallbackItemScorer>>>, which takes two item scorers annotated with
+    <<<PrimaryScorer>>> and <<<BaselineScorer>>>.  The primary scorer is consulted first, and the
+    baseline used to fill in any scores the primary could not.
+
+  * <<<ItemUserMeanPredictor>>> is gone.  Instead, the <<<UserMeanItemScorer>>> can use an arbitrary
+    scorer as the base from which user offsets should be computed.  It qualifies this scorer
+    dependency with <<<UserMeanBaseline>>>, which defaults to the global mean rating item scorer.
+    Configure this to use <<<ItemMeanRatingItemScorer>>> to get a user-item personalized mean.
+
+  * <<<PrimaryScorer>>> now allows unqualified matches, so dependencies qualified with it will be
+    satisfied by an unqualified <<<ItemScorer>>> binding, if there is no qualified binding.
+
+  []
+
 * Data Structures
 
   * More <<<SparseVectors>>> methods now throw <<<IllegalArgumentException>>> on invalid keys,
