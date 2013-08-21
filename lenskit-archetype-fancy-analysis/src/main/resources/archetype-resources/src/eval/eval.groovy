@@ -3,6 +3,7 @@ import org.grouplens.lenskit.eval.data.crossfold.RandomOrder
 import org.grouplens.lenskit.knn.NeighborhoodSize
 import org.grouplens.lenskit.knn.item.*
 import org.grouplens.lenskit.knn.user.*
+import org.grouplens.lenskit.baseline.*
 import org.grouplens.lenskit.transform.normalize.*
 
 import org.apache.commons.lang3.BooleanUtils
@@ -65,7 +66,8 @@ def ml100k = target('crossfold') {
 def itemitem = algorithm("ItemItem") {
     // use the item-item rating predictor with a baseline and normalizer
     bind ItemScorer to ItemItemScorer
-    bind BaselinePredictor to ItemUserMeanPredictor
+    bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
+    bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
     bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
 
     // retain 500 neighbors in the model, use 30 for prediction
@@ -73,7 +75,7 @@ def itemitem = algorithm("ItemItem") {
     set NeighborhoodSize to 30
 
     // apply some Bayesian smoothing to the mean values
-    within(ItemUserMeanPredictor) {
+    within(BaselineScorer, ItemScorer) {
         set MeanDamping to 25.0d
     }
 }
@@ -81,7 +83,8 @@ def itemitem = algorithm("ItemItem") {
 def useruser = algorithm("UserUser") {
     // use the user-user rating predictor
     bind ItemScorer to UserUserItemScorer
-    bind BaselinePredictor to ItemUserMeanPredictor
+    bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
+    bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
     bind VectorNormalizer to MeanVarianceNormalizer
 
     // use 30 neighbors for predictions
@@ -93,11 +96,11 @@ def useruser = algorithm("UserUser") {
     within(NeighborhoodFinder) {
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
         // override baseline to use user mean
-        bind BaselinePredictor to UserMeanPredictor
+        bind (UserMeanBaseline, ItemScorer) to GlobalMeanRatingItemScorer
     }
 
     // and apply some Bayesian damping to the baseline
-    within(ItemUserMeanPredictor) {
+    within(BaselineScorer, ItemScorer) {
         set MeanDamping to 25.0d
     }
 }
