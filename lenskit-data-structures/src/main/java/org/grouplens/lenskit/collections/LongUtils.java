@@ -201,7 +201,8 @@ public final class LongUtils {
                 nextB = hasB ? bit.nextLong() : Long.MAX_VALUE;
             } else {
                 // they're both present and equal, use A but advance both
-                assert hasA && hasB && nextA == nextB;
+                // edge case: if one is missing but other is MAX_VALUE, it will go here
+                // but that is fine, no harm will be done, as they're both MAX_VALUE
                 data[i++] = nextA;
                 hasA = ait.hasNext();
                 nextA = hasA ? ait.nextLong() : Long.MAX_VALUE;

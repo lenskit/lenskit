@@ -177,10 +177,18 @@ public class TestLongUtils {
                    contains(1L, 2L, 3L, 4L, 5L));
     }
 
-    @Test
+    @Test(timeout=500)
     public void testSetUnionIncludeMaxLong() {
         LongSortedSet s1 = packedSet(1, 2, 3, Long.MAX_VALUE);
         LongSortedSet s2 = packedSet(4, 5, 6);
+        assertThat(setUnion(s1, s2),
+                   contains(1L, 2L, 3L, 4L, 5L, 6L, Long.MAX_VALUE));
+    }
+
+    @Test(timeout=500)
+    public void testSetUnionIncludeMaxLongSetB() {
+        LongSortedSet s1 = packedSet(1, 2, 3);
+        LongSortedSet s2 = packedSet(4, 5, 6, Long.MAX_VALUE);
         assertThat(setUnion(s1, s2),
                    contains(1L, 2L, 3L, 4L, 5L, 6L, Long.MAX_VALUE));
     }
