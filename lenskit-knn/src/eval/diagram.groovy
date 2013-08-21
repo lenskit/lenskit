@@ -22,9 +22,10 @@
 
 import org.grouplens.lenskit.GlobalItemScorer
 import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.BaselinePredictor
-import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
-import org.grouplens.lenskit.baseline.UserMeanItemScorer
+import org.grouplens.lenskit.baseline.BaselineScorer
+import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer
+import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
+import org.grouplens.lenskit.baseline.UserMeanBaseline
 import org.grouplens.lenskit.baseline.UserMeanItemScorer
 import org.grouplens.lenskit.knn.NeighborhoodSize
 import org.grouplens.lenskit.knn.item.ItemItemGlobalScorer
@@ -38,7 +39,8 @@ dumpGraph {
     algorithm {
         bind ItemScorer to ItemItemScorer
         bind GlobalItemScorer to ItemItemGlobalScorer
-        bind BaselinePredictor to ItemUserMeanPredictor
+        bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
+        bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
     }
 }
@@ -48,10 +50,11 @@ dumpGraph {
     algorithm {
         bind ItemScorer to UserUserItemScorer
         set NeighborhoodSize to 30
-        bind BaselinePredictor to ItemUserMeanPredictor
+        bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
+        bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
         within(UserVectorNormalizer) {
-            bind BaselinePredictor to UserMeanItemScorer
+            bind (UserMeanBaseline, ItemScorer) to GlobalMeanRatingItemScorer
         }
     }
 }
