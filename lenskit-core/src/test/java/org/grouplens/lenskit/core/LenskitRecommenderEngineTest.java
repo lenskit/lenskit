@@ -29,10 +29,7 @@ import org.grouplens.grapht.spi.reflect.InstanceSatisfaction;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.baseline.ConstantItemScorer;
-import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer;
-import org.grouplens.lenskit.baseline.UserMeanBaseline;
-import org.grouplens.lenskit.baseline.UserMeanItemScorer;
+import org.grouplens.lenskit.baseline.*;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
@@ -43,6 +40,7 @@ import org.grouplens.lenskit.iterative.ThresholdStoppingCondition;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
+import org.grouplens.lenskit.util.test.MockItemScorer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,6 +50,7 @@ import java.io.IOException;
 import java.util.Collections;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -212,6 +211,41 @@ public class LenskitRecommenderEngineTest {
         } finally {
             tfile.delete();
         }
+    }
+
+    @Test
+    public void testContextDep() throws RecommenderBuildException {
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class)
+              .to(dao);
+        config.bind(ItemScorer.class)
+              .to(FallbackItemScorer.class);
+        config.bind(PrimaryScorer.class, ItemScorer.class)
+                .to(MockItemScorer.newBuilder()
+                                  .addScore(42, 15, 3.5)
+                                  .build());
+        config.bind(BaselineScorer.class, ItemScorer.class)
+              .to(FallbackItemScorer.class);
+        config.within(BaselineScorer.class, FallbackItemScorer.class)
+              .bind(PrimaryScorer.class, ItemScorer.class)
+              .to(MockItemScorer.newBuilder()
+                                .addScore(38, 10, 4.0)
+                                .build());
+        config.within(BaselineScorer.class, FallbackItemScorer.class)
+              .bind(BaselineScorer.class, ItemScorer.class)
+              .to(new ConstantItemScorer(3.0));
+
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
+        LenskitRecommender rec = engine.createRecommender();
+        ItemScorer scorer = rec.getItemScorer();
+        assertThat(scorer, notNullValue());
+        assert scorer != null;
+        // first scorer
+        assertThat(scorer.score(42, 15), equalTo(3.5));
+        // first fallback
+        assertThat(scorer.score(38, 10), equalTo(4.0));
+        // second fallback
+        assertThat(scorer.score(42, 10), equalTo(3.0));
     }
 
     /**
