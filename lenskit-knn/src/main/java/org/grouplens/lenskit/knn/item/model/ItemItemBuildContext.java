@@ -22,11 +22,14 @@ package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongRBTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Iterator;
 
 /**
@@ -45,16 +48,22 @@ public class ItemItemBuildContext {
     private
     Long2ObjectMap<SparseVector> itemVectors;
 
+    @Nullable
+    private Long2ObjectMap<LongSortedSet> itemCandidates;
+
     /**
      * Set up a new item build context.
      *
      * @param universe The set of items for the model.
      * @param vectors  Map of item IDs to item rating vectors.
+     * @param candidates Map of user IDs to candidate items
      */
     ItemItemBuildContext(@Nonnull LongSortedSet universe,
-                         @Nonnull Long2ObjectMap<SparseVector> vectors) {
+                         @Nonnull Long2ObjectMap<SparseVector> vectors,
+                         @Nullable Long2ObjectMap<LongSortedSet> candidates) {
         items = universe;
         itemVectors = vectors;
+        itemCandidates = candidates;
     }
 
     /**
@@ -82,6 +91,28 @@ public class ItemItemBuildContext {
             throw new IllegalArgumentException("unknown item");
         } else {
             return v;
+        }
+    }
+
+    /**
+     * Get the candidate item set for the particular item. The returned set
+     * will be subset of (or equal to) the item universe. The returned set
+     * holds the item IDs of every item that might have a non-zero similarity
+     * to {@code item}.
+     *
+     * @param item The user ratings of the item
+     * @return The item candidates for {@code item}.
+     */
+    @Nonnull
+    public LongSortedSet candidates(SparseVector item) {
+        if (itemCandidates == null) {
+            return items;
+        } else {
+            LongSortedSet union = new LongRBTreeSet();
+            for (VectorEntry u: item.fast()) {
+                union.addAll(itemCandidates.get(u.getKey()));
+            }
+            return union;
         }
     }
 
@@ -174,5 +205,4 @@ public class ItemItemBuildContext {
             vec2 = itemVector(itemId2);
         }
     }
-
 }

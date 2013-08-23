@@ -58,7 +58,7 @@ public class TestItemItemBuildContext {
         ratingMap.put(2, v2);
         ratingMap.put(3, v3);
         ratingMap.put(4, v4);
-        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap);
+        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap, null);
 
         testRatingIntegrity(ratingMap, context);
     }
@@ -85,7 +85,7 @@ public class TestItemItemBuildContext {
         ratingMap.put(2, new MutableSparseVector());
         ratingMap.put(3, new MutableSparseVector());
         ratingMap.put(4, v4);
-        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap);
+        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap, null);
 
         testRatingIntegrity(ratingMap, context);
     }
@@ -105,7 +105,7 @@ public class TestItemItemBuildContext {
         for (long item : items) {
             ratingMap.put(item, new MutableSparseVector());
         }
-        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap);
+        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap, null);
 
         testRatingIntegrity(ratingMap, context);
     }
@@ -117,7 +117,7 @@ public class TestItemItemBuildContext {
     public void testEmpty() {
         LongLinkedOpenHashSet items = new LongLinkedOpenHashSet();
         Long2ObjectOpenHashMap<SparseVector> ratingMap = new Long2ObjectOpenHashMap<SparseVector>();
-        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap);
+        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap, null);
 
         testRatingIntegrity(ratingMap, context);
     }
