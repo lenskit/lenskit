@@ -38,8 +38,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 
 /**
- * Factory wrapping initialization logic necessary for
- * instantiating an {@link ItemItemBuildContext}.
+ * Factory wrapping initialization logic necessary for instantiating an {@link ItemItemBuildContext}.
  */
 public class ItemItemBuildContextFactory {
 
@@ -50,8 +49,7 @@ public class ItemItemBuildContextFactory {
     private final UserHistorySummarizer userSummarizer;
 
     @Inject
-    public ItemItemBuildContextFactory(UserEventDAO edao,
-                                       UserVectorNormalizer normalizer,
+    public ItemItemBuildContextFactory(UserEventDAO edao, UserVectorNormalizer normalizer,
                                        UserHistorySummarizer userSummarizer) {
         userEventDAO = edao;
         this.normalizer = normalizer;
@@ -69,7 +67,10 @@ public class ItemItemBuildContextFactory {
         logger.debug("using summarizer {}", userSummarizer);
 
         logger.debug("Building item data");
-        Long2ObjectMap<Long2DoubleMap> itemData = buildItemRatings();
+        Long2ObjectMap<Long2DoubleMap> itemData = new Long2ObjectOpenHashMap<Long2DoubleMap>(1000);
+        Long2ObjectMap<LongSortedSet> candidateData = new Long2ObjectOpenHashMap<LongSortedSet>(1000);
+        buildItemRatings(itemData, candidateData);
+
         LongSortedSet items = new LongSortedArraySet(itemData.keySet());
         // finalize the item data into vectors
         Long2ObjectMap<SparseVector> itemRatings = new Long2ObjectOpenHashMap<SparseVector>(itemData.size());
@@ -85,24 +86,24 @@ public class ItemItemBuildContextFactory {
         }
         assert itemRatings.size() == itemData.size();
 
-        return new ItemItemBuildContext(items, itemRatings);
+        logger.debug("item data completed");
+        return new ItemItemBuildContext(items, itemRatings, candidateData);
     }
 
     /**
-     * Transpose the user matrix so we have a matrix of item ids
-     * to ratings.
+     * Transpose the user matrix so we have a matrix of item ids to ratings. Accumulate user item vectors into
+     * the candidate sets for each item
      *
-     * @return a Long2ObjectMap<Long2DoubleMap> encoding a matrix
-     *         of item ids to (userId: rating) pairs.
+     * @param ratings    a Long2ObjectMap<Long2DoubleMap> encoding a matrix of item ids to (userId: rating)
+     *                   pairs (to be filled)
+     * @param candidates a Long2ObjectMap<LongSortedSet> holding item candidate sets (to be filled)
      */
-    private Long2ObjectMap<Long2DoubleMap> buildItemRatings() {
-        // Create and initialize the transposed array to collect item vector data
-        Long2ObjectMap<Long2DoubleMap> workMatrix =
-                new Long2ObjectOpenHashMap<Long2DoubleMap>(1000);
-
+    private void buildItemRatings(Long2ObjectMap<Long2DoubleMap> ratings,
+                                  Long2ObjectMap<LongSortedSet> candidates) {
+        // initialize the transposed array to collect item vector data
         Cursor<UserHistory<Event>> users = userEventDAO.streamEventsByUser();
         try {
-            for (UserHistory<Event> user: users) {
+            for (UserHistory<Event> user : users) {
                 long uid = user.getUserId();
                 SparseVector summary = userSummarizer.summarize(user);
                 MutableSparseVector normed = summary.mutableCopy();
@@ -111,19 +112,21 @@ public class ItemItemBuildContextFactory {
                 for (VectorEntry rating : normed.fast()) {
                     final long item = rating.getKey();
                     // get the item's rating vector
-                    Long2DoubleMap ivect = workMatrix.get(item);
+                    Long2DoubleMap ivect = ratings.get(item);
                     if (ivect == null) {
                         ivect = new Long2DoubleOpenHashMap();
-                        workMatrix.put(item, ivect);
+                        ratings.put(item, ivect);
                     }
                     ivect.put(uid, rating.getValue());
+                }
+
+                // get the item's candidate set
+                if (candidates != null) {
+                    candidates.put(uid, normed.keySet());
                 }
             }
         } finally {
             users.close();
         }
-
-        return workMatrix;
     }
-
 }
