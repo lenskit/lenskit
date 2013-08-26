@@ -20,10 +20,7 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongRBTreeSet;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -48,22 +45,22 @@ public class ItemItemBuildContext {
     private
     Long2ObjectMap<SparseVector> itemVectors;
 
-    @Nullable
-    private Long2ObjectMap<LongSortedSet> itemCandidates;
+    @Nonnull
+    private Long2ObjectMap<LongSortedSet> userItems;
 
     /**
      * Set up a new item build context.
      *
      * @param universe The set of items for the model.
      * @param vectors  Map of item IDs to item rating vectors.
-     * @param candidates Map of user IDs to candidate items
+     * @param userItems Map of user IDs to candidate items
      */
     ItemItemBuildContext(@Nonnull LongSortedSet universe,
                          @Nonnull Long2ObjectMap<SparseVector> vectors,
-                         @Nullable Long2ObjectMap<LongSortedSet> candidates) {
+                         @Nonnull Long2ObjectMap<LongSortedSet> userItems) {
+        this.userItems = userItems;
         items = universe;
         itemVectors = vectors;
-        itemCandidates = candidates;
     }
 
     /**
@@ -95,25 +92,19 @@ public class ItemItemBuildContext {
     }
 
     /**
-     * Get the candidate item set for the particular item. The returned set
-     * will be subset of (or equal to) the item universe. The returned set
-     * holds the item IDs of every item that might have a non-zero similarity
-     * to {@code item}.
+     * Get the union of all items rated by the provided set of users.
      *
-     * @param item The user ratings of the item
+     * @param users The users to accumulate
      * @return The item candidates for {@code item}.
      */
     @Nonnull
-    public LongSortedSet candidates(SparseVector item) {
-        if (itemCandidates == null) {
-            return items;
-        } else {
-            LongSortedSet union = new LongRBTreeSet();
-            for (VectorEntry u: item.fast()) {
-                union.addAll(itemCandidates.get(u.getKey()));
-            }
-            return union;
+    public LongSortedSet getUserItems(LongSet users) {
+        LongSortedSet union = new LongRBTreeSet();
+        LongIterator it = users.iterator();
+        while (it.hasNext()) {
+            union.addAll(userItems.get(it.nextLong()));
         }
+        return union;
     }
 
     /**

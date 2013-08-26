@@ -80,11 +80,20 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
             SparseVector vec1 = buildContext.itemVector(itemId1);
 
             LongIterator itemIter;
-            if (itemSimilarity.isSymmetric()) {
-                itemIter = buildContext.candidates(vec1).iterator(itemId1);
+            if (itemSimilarity.isSparse()) {
+                if (itemSimilarity.isSymmetric()) {
+                    itemIter = buildContext.getUserItems(vec1.keySet()).iterator(itemId1);
+                } else {
+                    itemIter = buildContext.getUserItems(vec1.keySet()).iterator();
+                }
             } else {
-                itemIter = buildContext.candidates(vec1).iterator();
+                if (itemSimilarity.isSymmetric()) {
+                    itemIter = buildContext.getItems().iterator(itemId1);
+                } else {
+                    itemIter = buildContext.getItems().iterator();
+                }
             }
+
             while (itemIter.hasNext()) {
                 long itemId2 = itemIter.nextLong();
                 if (itemId1 != itemId2) {
