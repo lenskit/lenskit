@@ -20,6 +20,14 @@
   * Event and history interfaces have been moved out of <<<lenskit-api>>> into <<<lenskit-core>>>,
     in their corresponding packages.
 
+  []
+
+* Configuration
+
+  * Since DAOs are rewritten, the configuration no longer has special-case support for them.  Right
+    now it is not possible to build a configuration with one DAO implementation, serialize it, and
+    replace the DAO implementation; that capability will come back in LensKit 2.1 (#issue(335)).
+
   * Provider <<<get()>>> methods can now be annotated with <<<@Shareable>>> to indicate that the
     provider returns a shareable component.
 

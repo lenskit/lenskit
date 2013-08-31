@@ -118,9 +118,4 @@ class LenskitBindingImpl<T> implements LenskitBinding<T> {
     public void toNull(Class<? extends T> type) {
         binding.toNull(type);
     }
-
-    @Override
-    public void toSymbol(TypedSymbol<? extends T> sym) {
-        binding.toProvider(SymbolProvider.of(sym));
-    }
 }

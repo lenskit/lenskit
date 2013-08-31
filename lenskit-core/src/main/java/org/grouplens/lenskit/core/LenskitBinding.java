@@ -47,12 +47,4 @@ public interface LenskitBinding<T> extends Binding<T> {
     LenskitBinding<T> shared();
     @Override
     LenskitBinding<T> unshared();
-
-    /**
-     * Bind the component to a symbol, to be resolved later (and possibly replaced after building
-     * the recommender model).
-     *
-     * @param sym The symbol to which the component should be bound.
-     */
-    void toSymbol(TypedSymbol<? extends T> sym);
 }

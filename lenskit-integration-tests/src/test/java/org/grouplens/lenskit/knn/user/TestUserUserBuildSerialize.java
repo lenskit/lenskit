@@ -33,7 +33,6 @@ import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.core.SymbolMapping;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.test.ML100KTestSuite;
@@ -41,6 +40,7 @@ import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNo
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.similarity.CosineVectorSimilarity;
 import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -56,12 +56,11 @@ import static org.junit.Assert.assertThat;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TestUserUserBuildSerialize extends ML100KTestSuite {
+    @Ignore("broken until 2.1 brings back serialization")
     @Test
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
-        TypedSymbol<EventDAO> sym = TypedSymbol.of(EventDAO.class, "DAO");
-        SymbolMapping mapping = SymbolMapping.newBuilder().put(sym, dao).build();
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).toSymbol(sym);
+        config.bind(EventDAO.class).to(dao);
         config.bind(ItemRecommender.class)
               .to(TopNItemRecommender.class);
         config.bind(ItemScorer.class)
@@ -76,9 +75,9 @@ public class TestUserUserBuildSerialize extends ML100KTestSuite {
         config.bind(UserMeanBaseline.class, ItemScorer.class)
               .to(ItemMeanRatingItemScorer.class);
 
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config, mapping);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         assertThat(engine, notNullValue());
-        engine.setSymbolMapping(null);
+        // engine.setSymbolMapping(null);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         engine.write(out);
@@ -87,7 +86,7 @@ public class TestUserUserBuildSerialize extends ML100KTestSuite {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         LenskitRecommenderEngine loaded = LenskitRecommenderEngine.load(in);
         assertThat(loaded, notNullValue());
-        loaded.setSymbolMapping(mapping);
+        // loaded.setSymbolMapping(mapping);
 
         LenskitRecommender rec = loaded.createRecommender();
         assertThat(rec.getItemScorer(),
