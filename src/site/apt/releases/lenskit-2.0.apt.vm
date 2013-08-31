@@ -31,6 +31,9 @@
   * Provider <<<get()>>> methods can now be annotated with <<<@Shareable>>> to indicate that the
     provider returns a shareable component.
 
+  * If you just want a recommender for evaluation or testing, <<<LenskitRecommender.build>>> lets
+    you build one from a configuration without going through a recommender engine.
+
   []
 
 * Baseline Algorithms
