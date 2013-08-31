@@ -21,12 +21,7 @@
 package org.grouplens.lenskit.core;
 
 import org.grouplens.grapht.Injector;
-import org.grouplens.lenskit.GlobalItemRecommender;
-import org.grouplens.lenskit.GlobalItemScorer;
-import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.*;
 
 import java.lang.annotation.Annotation;
 
@@ -107,5 +102,20 @@ public class LenskitRecommender implements Recommender {
     @Override
     public GlobalItemRecommender getGlobalItemRecommender() {
         return get(GlobalItemRecommender.class);
+    }
+
+    /**
+     * Build a recommender from a configuration.  The recommender is immediately usable.  This is
+     * mostly useful for evaluations and test programs; more sophisticated applications that need
+     * to build multiple recommenders from the same model should use a {@linkplain LenskitRecommenderEngine
+     * recommender engine}.
+     *
+     * @param config The configuration.
+     * @return The recommender.
+     * @throws RecommenderBuildException If there is an error building the recommender.
+     * @since 2.0
+     */
+    public static LenskitRecommender build(LenskitConfiguration config) throws RecommenderBuildException {
+        return LenskitRecommenderEngine.build(config).createRecommender();
     }
 }

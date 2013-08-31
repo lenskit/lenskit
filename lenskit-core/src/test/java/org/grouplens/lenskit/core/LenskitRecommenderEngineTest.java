@@ -72,7 +72,15 @@ public class LenskitRecommenderEngineTest {
         LenskitConfiguration config = configureBasicRecommender();
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
-        verifyBasicRecommender(engine);
+        verifyBasicRecommender(engine.createRecommender());
+    }
+
+    @Test
+    public void testBasicNoEngine() throws RecommenderBuildException {
+        LenskitConfiguration config = configureBasicRecommender();
+
+        LenskitRecommender rec = LenskitRecommender.build(config);
+        verifyBasicRecommender(rec);
     }
 
     private LenskitConfiguration configureBasicRecommender() {
@@ -86,7 +94,7 @@ public class LenskitRecommenderEngineTest {
         return config;
     }
 
-    private void verifyBasicRecommender(LenskitRecommenderEngine engine) {LenskitRecommender rec = engine.createRecommender();
+    private void verifyBasicRecommender(LenskitRecommender rec) {
         assertThat(rec.getItemRecommender(),
                    instanceOf(TopNItemRecommender.class));
         assertThat(rec.getItemScorer(),
@@ -207,7 +215,7 @@ public class LenskitRecommenderEngineTest {
             engine.write(tfile);
             LenskitRecommenderEngine e2 = LenskitRecommenderEngine.load(tfile);
             // e2.setSymbolMapping(mapping);
-            verifyBasicRecommender(e2);
+            verifyBasicRecommender(e2.createRecommender());
         } finally {
             tfile.delete();
         }

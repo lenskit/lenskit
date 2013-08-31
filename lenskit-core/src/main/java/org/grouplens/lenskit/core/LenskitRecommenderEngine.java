@@ -33,7 +33,10 @@ import java.io.*;
 
 /**
  * LensKit implementation of a recommender engine.  It uses containers set up by
- * the {@link LenskitConfiguration} to set up recommender sessions.
+ * the {@link LenskitConfiguration} to set up actual recommenders, and can build
+ * multiple recommenders from the same model.
+ * <p>If you just want to quick create a recommender for evaluation or testing,
+ * consider using {@link LenskitRecommender#build(LenskitConfiguration)}.</p>
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public

@@ -40,7 +40,8 @@ import static org.grouplens.lenskit.core.ContextWrapper.coerce;
 /**
  * A LensKit algorithm configuration.  Once you have a configuration, you can pass it to
  * {@link LenskitRecommenderEngine#build(LenskitConfiguration)}
- * to build a recommender engine.
+ * to build a recommender engine, or {@link LenskitRecommender#build(LenskitConfiguration)}
+ * to skip the engine and just build a recommender.
  *
  * @since 1.2
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
