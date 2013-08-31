@@ -23,6 +23,7 @@ package org.grouplens.lenskit.knn.item.model;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.knn.item.model.ItemItemBuildContext.ItemVecPair;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -58,7 +59,8 @@ public class TestItemItemBuildContext {
         ratingMap.put(2, v2);
         ratingMap.put(3, v3);
         ratingMap.put(4, v4);
-        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap);
+        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap,
+                                                                new Long2ObjectOpenHashMap<LongSortedSet>());
 
         testRatingIntegrity(ratingMap, context);
     }
@@ -85,7 +87,8 @@ public class TestItemItemBuildContext {
         ratingMap.put(2, new MutableSparseVector());
         ratingMap.put(3, new MutableSparseVector());
         ratingMap.put(4, v4);
-        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap);
+        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap,
+                                                                new Long2ObjectOpenHashMap<LongSortedSet>());
 
         testRatingIntegrity(ratingMap, context);
     }
@@ -105,7 +108,8 @@ public class TestItemItemBuildContext {
         for (long item : items) {
             ratingMap.put(item, new MutableSparseVector());
         }
-        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap);
+        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap,
+                                                                new Long2ObjectOpenHashMap<LongSortedSet>());
 
         testRatingIntegrity(ratingMap, context);
     }
@@ -117,7 +121,8 @@ public class TestItemItemBuildContext {
     public void testEmpty() {
         LongLinkedOpenHashSet items = new LongLinkedOpenHashSet();
         Long2ObjectOpenHashMap<SparseVector> ratingMap = new Long2ObjectOpenHashMap<SparseVector>();
-        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap);
+        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap,
+                                                                new Long2ObjectOpenHashMap<LongSortedSet>());
 
         testRatingIntegrity(ratingMap, context);
     }

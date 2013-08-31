@@ -20,13 +20,13 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Iterator;
 
 /**
@@ -45,14 +45,20 @@ public class ItemItemBuildContext {
     private
     Long2ObjectMap<SparseVector> itemVectors;
 
+    @Nonnull
+    private Long2ObjectMap<LongSortedSet> userItems;
+
     /**
      * Set up a new item build context.
      *
      * @param universe The set of items for the model.
      * @param vectors  Map of item IDs to item rating vectors.
+     * @param userItems Map of user IDs to candidate items
      */
     ItemItemBuildContext(@Nonnull LongSortedSet universe,
-                         @Nonnull Long2ObjectMap<SparseVector> vectors) {
+                         @Nonnull Long2ObjectMap<SparseVector> vectors,
+                         @Nonnull Long2ObjectMap<LongSortedSet> userItems) {
+        this.userItems = userItems;
         items = universe;
         itemVectors = vectors;
     }
@@ -83,6 +89,22 @@ public class ItemItemBuildContext {
         } else {
             return v;
         }
+    }
+
+    /**
+     * Get the union of all items rated by the provided set of users.
+     *
+     * @param users The users to accumulate
+     * @return The item candidates for {@code item}.
+     */
+    @Nonnull
+    public LongSortedSet getUserItems(LongSet users) {
+        LongSortedSet union = new LongRBTreeSet();
+        LongIterator it = users.iterator();
+        while (it.hasNext()) {
+            union.addAll(userItems.get(it.nextLong()));
+        }
+        return union;
     }
 
     /**
@@ -174,5 +196,4 @@ public class ItemItemBuildContext {
             vec2 = itemVector(itemId2);
         }
     }
-
 }
