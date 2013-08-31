@@ -20,6 +20,9 @@
   * Event and history interfaces have been moved out of <<<lenskit-api>>> into <<<lenskit-core>>>,
     in their corresponding packages.
 
+  * Provider <<<get()>>> methods can now be annotated with <<<@Shareable>>> to indicate that the
+    provider returns a shareable component.
+
   []
 
 * Baseline Algorithms

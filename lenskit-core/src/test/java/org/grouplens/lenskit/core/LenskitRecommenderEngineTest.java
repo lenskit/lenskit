@@ -45,12 +45,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -271,4 +274,62 @@ public class LenskitRecommenderEngineTest {
             this.dao = dao;
         }
     }
+
+    //region Test shareable providers
+    @Test
+    public void testShareableProvider() throws RecommenderBuildException {
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class)
+              .to(dao);
+        config.addRoot(RootComp.class);
+        config.bind(ByteBuffer.class)
+              .toProvider(BufferProvider.class);
+        config.bind(InputStream.class)
+              .toProvider(StreamProvider.class);
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
+
+        LenskitRecommender rec1 = engine.createRecommender();
+        LenskitRecommender rec2 = engine.createRecommender();
+        assertThat(rec2, not(sameInstance(rec1)));
+
+        RootComp r1 = rec1.get(RootComp.class);
+        RootComp r2 = rec2.get(RootComp.class);
+        // byte buffers are shared
+        assertThat(r2.getBuffer(), sameInstance(r1.getBuffer()));
+        // streams are not
+        assertThat(r2.getStream(), not(sameInstance(r1.getStream())));
+    }
+
+    public static class RootComp {
+        private final ByteBuffer buf;
+        private final InputStream stream;
+
+        @Inject
+        public RootComp(ByteBuffer b, InputStream s) {
+            buf = b;
+            stream = s;
+        }
+
+        public ByteBuffer getBuffer() {
+            return buf;
+        }
+
+        public InputStream getStream() {
+            return stream;
+        }
+    }
+
+    public static class BufferProvider implements Provider<ByteBuffer> {
+        @Shareable
+        public ByteBuffer get() {
+            return ByteBuffer.allocate(32);
+        }
+    }
+
+    public static class StreamProvider implements Provider<InputStream> {
+        public InputStream get() {
+            return new ByteArrayInputStream(new byte[] {0, 3, 2});
+        }
+    }
+    //endregion
 }

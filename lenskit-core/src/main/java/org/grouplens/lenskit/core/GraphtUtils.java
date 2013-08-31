@@ -31,7 +31,9 @@ import org.grouplens.grapht.spi.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.inject.Provider;
 import javax.inject.Singleton;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -99,7 +101,34 @@ public final class GraphtUtils {
             return true;
         }
 
-        return false;
+        // finally examine the satisfaction in more detail
+        return label.getSatisfaction().visit(new AbstractSatisfactionVisitor<Boolean>() {
+            @Override
+            public Boolean visitDefault() {
+                return false;
+            }
+
+            @Override
+            public Boolean visitProviderClass(Class<? extends Provider<?>> pclass) {
+                Method m = null;
+                try {
+                    m = pclass.getMethod("get");
+                } catch (NoSuchMethodException e) {
+                /* fine, leave it null */
+                }
+                if (m != null && m.getAnnotation(Shareable.class) != null) {
+                    return true;
+                }
+                return false;
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public Boolean visitProviderInstance(Provider<?> provider) {
+                // cast to raw type to work around inference issue
+                return visitProviderClass((Class) provider.getClass());
+            }
+        });
     }
 
     /**
