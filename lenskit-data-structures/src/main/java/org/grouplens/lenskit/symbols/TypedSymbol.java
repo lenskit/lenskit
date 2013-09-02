@@ -113,16 +113,6 @@ public final class TypedSymbol<K> implements Serializable {
     }
 
     /**
-     * Deprecated alias for {@link #getRawSymbol()}.
-     * @return The raw symbol.
-     * @deprecated Use {@link #getRawSymbol()}.
-     */
-    @Deprecated
-    public Symbol getSymbol() {
-        return symbol;
-    }
-
-    /**
      * Create a value paired with this symbol.
      * @param val The value.
      * @return A pair of this symbol and the value.
