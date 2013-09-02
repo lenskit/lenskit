@@ -34,6 +34,7 @@ import java.util.List;
  * aspects of the profile are implemented as a read-only delegation to an
  * underlying list.
  *
+ * @see History#forUser(long, List)
  * @param <E> The type of event in this history.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -49,10 +50,8 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
      *           be for the user.  The list is defensively copied to preserve
      *           immutability (using {@link ImmutableList#copyOf(java.util.Collection)},
      *           so immutable lists are used as-is).
-     * @deprecated Use {@link History#forUser(long, java.util.List)} instead.
      */
-    @Deprecated
-    public BasicUserHistory(long u, List<? extends E> es) {
+    BasicUserHistory(long u, List<? extends E> es) {
         user = u;
         events = ImmutableList.copyOf(es);
     }
