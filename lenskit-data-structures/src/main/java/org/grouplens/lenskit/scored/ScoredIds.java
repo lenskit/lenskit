@@ -21,10 +21,10 @@
 package org.grouplens.lenskit.scored;
 
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.grouplens.lenskit.collections.CopyingFastCollection;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -134,6 +134,7 @@ public final class ScoredIds {
 
     private static final class IdOrder extends Ordering<ScoredId> {
         @Override
+        @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
         public int compare(ScoredId left, ScoredId right) {
             return Longs.compare(left.getId(), right.getId());
         }
@@ -151,6 +152,7 @@ public final class ScoredIds {
 
     private static final class ScoreOrder extends Ordering<ScoredId> {
         @Override
+        @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
         public int compare(ScoredId left, ScoredId right) {
             return Doubles.compare(left.getScore(), right.getScore());
         }
@@ -165,7 +167,8 @@ public final class ScoredIds {
     public static Ordering<ScoredId> channelOrder(final Symbol chan) {
         return new Ordering<ScoredId>() {
             @Override
-            public int compare(@Nullable ScoredId left, @Nullable ScoredId right) {
+            @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
+            public int compare(ScoredId left, ScoredId right) {
                 if (left.hasUnboxedChannel(chan)) {
                     if (right.hasUnboxedChannel(chan)) {
                         return Doubles.compare(left.channel(chan), right.channel(chan));

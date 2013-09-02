@@ -21,13 +21,13 @@
 package org.grouplens.lenskit.data.history;
 
 import com.google.common.base.Function;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.vectors.SparseVector;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Singleton;
 import java.io.Serializable;
@@ -84,9 +84,9 @@ public final class RatingVectorUserHistorySummarizer implements UserHistorySumma
     static enum SummaryFunction implements Function<UserHistory<? extends Event>, SparseVector> {
         INSTANCE;
 
-        @Nullable
         @Override
-        public SparseVector apply(@Nullable UserHistory<? extends Event> history) {
+        @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
+        public SparseVector apply(UserHistory<? extends Event> history) {
             if (history == null) {
                 throw new NullPointerException("history is null");
             }
