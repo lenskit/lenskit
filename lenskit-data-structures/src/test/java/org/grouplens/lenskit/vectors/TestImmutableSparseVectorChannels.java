@@ -46,7 +46,7 @@ public class TestImmutableSparseVectorChannels {
     Symbol foobarSymbol = Symbol.of("foobar");
 
     protected MutableSparseVector emptyVector() {
-        return new MutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
+        return MutableSparseVector.create(Long2DoubleMaps.EMPTY_MAP);
     }
 
     protected MutableSparseVector simpleVector() {

@@ -38,7 +38,7 @@ public class UnitVectorNormalizerTest {
 
     @Test
     public void testScale() {
-        MutableSparseVector v = new MutableSparseVector(keySet);
+        MutableSparseVector v = MutableSparseVector.create(keySet);
         v.set(1, 1);
         v.set(4, 1);
         assertThat(norm.normalize(v.immutable(), v), sameInstance(v));
@@ -50,10 +50,10 @@ public class UnitVectorNormalizerTest {
 
     @Test
     public void testScaleOther() {
-        MutableSparseVector v = new MutableSparseVector(keySet);
+        MutableSparseVector v = MutableSparseVector.create(keySet);
         v.set(1, 1);
         v.set(4, 1);
-        MutableSparseVector ref = new MutableSparseVector(keySet);
+        MutableSparseVector ref = MutableSparseVector.create(keySet);
         ref.set(1, 1);
         ref.set(6, 1);
         ref.set(3, 2);

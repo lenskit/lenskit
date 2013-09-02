@@ -42,7 +42,7 @@ public abstract class AbstractRatingPredictor implements RatingPredictor {
     @Nonnull
     @Override
     public SparseVector predict(long user, @Nonnull Collection<Long> items) {
-        MutableSparseVector scores = new MutableSparseVector(items);
+        MutableSparseVector scores = MutableSparseVector.create(items);
         predict(user, scores);
         // FIXME Create a more efficient way of "releasing" mutable sparse vectors
         return scores.freeze();

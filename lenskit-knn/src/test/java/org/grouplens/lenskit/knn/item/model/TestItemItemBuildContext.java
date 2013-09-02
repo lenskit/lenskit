@@ -84,8 +84,8 @@ public class TestItemItemBuildContext {
 
         Long2ObjectOpenHashMap<SparseVector> ratingMap = new Long2ObjectOpenHashMap<SparseVector>();
         ratingMap.put(1, v1);
-        ratingMap.put(2, new MutableSparseVector());
-        ratingMap.put(3, new MutableSparseVector());
+        ratingMap.put(2, MutableSparseVector.create());
+        ratingMap.put(3, MutableSparseVector.create());
         ratingMap.put(4, v4);
         ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap,
                                                                 new Long2ObjectOpenHashMap<LongSortedSet>());
@@ -106,7 +106,7 @@ public class TestItemItemBuildContext {
 
         Long2ObjectOpenHashMap<SparseVector> ratingMap = new Long2ObjectOpenHashMap<SparseVector>();
         for (long item : items) {
-            ratingMap.put(item, new MutableSparseVector());
+            ratingMap.put(item, MutableSparseVector.create());
         }
         ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap,
                                                                 new Long2ObjectOpenHashMap<LongSortedSet>());

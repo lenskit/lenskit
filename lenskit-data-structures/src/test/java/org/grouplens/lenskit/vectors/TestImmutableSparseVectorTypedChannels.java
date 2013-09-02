@@ -45,7 +45,7 @@ public class TestImmutableSparseVectorTypedChannels {
     @Test
     public void testChannel() {
         long[] domain = {1,2};
-        MutableSparseVector msv = new MutableSparseVector(new LongSortedArraySet(domain));
+        MutableSparseVector msv = MutableSparseVector.create(new LongSortedArraySet(domain));
         msv.set(1,1);
         Long2ObjectMap<String> msc = msv.addChannel(fooStrSym);
         msc.put(1,"a");

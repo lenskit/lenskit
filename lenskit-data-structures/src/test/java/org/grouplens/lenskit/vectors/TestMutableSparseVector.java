@@ -267,7 +267,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(v.keySet(),
                    equalTo((Set<Long>) Sets.newHashSet(2l)));
 
-        v.clear(2);
+        v.unset(2);
         assertThat(v.isEmpty(), equalTo(true));
         assertThat(v.size(), equalTo(0));
         assertThat(v.containsKey(2), equalTo(false));

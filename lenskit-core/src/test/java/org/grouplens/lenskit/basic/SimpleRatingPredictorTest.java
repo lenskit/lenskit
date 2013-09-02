@@ -113,7 +113,7 @@ public class SimpleRatingPredictorTest {
         keys.add(2);
         keys.add(3);
         keys.add(4);
-        MutableSparseVector v = new MutableSparseVector(keys);
+        MutableSparseVector v = MutableSparseVector.create(keys);
         pred.predict(42, v);
         assertThat(v.get(1),
                    closeTo(4.0, EPSILON));

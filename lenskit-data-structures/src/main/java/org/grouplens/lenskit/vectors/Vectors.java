@@ -57,7 +57,7 @@ public final class Vectors {
         for (ScoredId sid: CollectionUtils.fast(scores)) {
             ids.add(sid.getId());
         }
-        MutableSparseVector vec = new MutableSparseVector(ids);
+        MutableSparseVector vec = MutableSparseVector.create(ids);
         for (ScoredId sid: CollectionUtils.fast(scores)) {
             long id = sid.getId();
             if (!vec.containsKey(id)) {

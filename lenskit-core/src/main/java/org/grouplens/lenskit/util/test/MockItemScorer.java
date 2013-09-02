@@ -93,12 +93,12 @@ public class MockItemScorer extends AbstractItemScorer {
                 LongSet domain = new LongOpenHashSet();
                 if (msv == null) {
                     domain.add(item);
-                    msv = new MutableSparseVector(domain);
+                    msv = MutableSparseVector.create(domain);
                 } else {
                     domain.addAll(msv.keyDomain());
                     domain.add(item);
                     SparseVector save = msv;
-                    msv = new MutableSparseVector(domain);
+                    msv = MutableSparseVector.create(domain);
                     msv.set(save);
                 }
                 userData.put(user, msv);

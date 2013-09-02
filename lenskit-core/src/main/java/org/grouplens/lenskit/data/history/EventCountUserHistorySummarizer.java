@@ -74,7 +74,7 @@ public final class EventCountUserHistorySummarizer implements UserHistorySummari
             final long iid = e.getItemId();
             map.put(iid, map.get(iid) + 1);
         }
-        return new ImmutableSparseVector(map);
+        return ImmutableSparseVector.create(map);
     }
 
     @Override

@@ -42,7 +42,7 @@ public abstract class AbstractItemScorer implements ItemScorer {
     @Nonnull
     @Override
     public SparseVector score(long user, @Nonnull Collection<Long> items) {
-        MutableSparseVector scores = new MutableSparseVector(items);
+        MutableSparseVector scores = MutableSparseVector.create(items);
         score(user, scores);
         // FIXME Create a more efficient way of "releasing" mutable sparse vectors
         return scores.freeze();

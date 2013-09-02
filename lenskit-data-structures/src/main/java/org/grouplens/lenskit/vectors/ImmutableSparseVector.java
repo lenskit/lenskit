@@ -70,10 +70,8 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
 
     /**
      * Create a new, empty immutable sparse vector.
-     * @deprecated Use {@link #empty()} instead.
      */
-    @Deprecated
-    public ImmutableSparseVector() {
+    ImmutableSparseVector() {
         super(LongKeyDomain.empty());
         channelVectors = Collections.emptyMap();
         channels = Collections.emptyMap();
@@ -84,10 +82,8 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
      *
      * @param ratings The ratings to make a vector from. Its key set is used as
      *                the vector's key domain.
-     * @deprecated Use {@link #create(java.util.Map)} instead.
      */
-    @Deprecated
-    public ImmutableSparseVector(Long2DoubleMap ratings) {
+    ImmutableSparseVector(Long2DoubleMap ratings) {
         super(ratings);
         channelVectors = Collections.emptyMap();
         channels = Collections.emptyMap();
@@ -162,16 +158,6 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     @Override
     public <K> Long2ObjectMap<K> getChannel(TypedSymbol<K> channelSymbol) {
         return (Long2ObjectMap<K>) channels.get(channelSymbol);
-    }
-
-    @Override @Deprecated
-    public ImmutableSparseVector channel(Symbol channelSymbol) {
-        ImmutableSparseVector v = getChannelVector(channelSymbol);
-        if (v == null) {
-            throw new IllegalArgumentException("unknown symbol " + channelSymbol);
-        } else {
-            return v;
-        }
     }
 
     @Override

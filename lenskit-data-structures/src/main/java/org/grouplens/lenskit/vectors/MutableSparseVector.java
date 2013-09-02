@@ -129,16 +129,14 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     /**
      * Construct a new empty vector. Since it also has an empty key domain, this
      * vector isn't very useful, because nothing can ever be put into it.
-     * @deprecated Use {@link #create(java.util.Collection)} with {@link LongSortedSets#EMPTY_SET}.
      */
-    @Deprecated
-    public MutableSparseVector() {
+    MutableSparseVector() {
         this(LongKeyDomain.empty());
     }
 
     /**
      * Construct a new vector with the specified domain.  The domain is used as-is, no clone is
-     * taken.
+     * taken.  The domain is cleared.
      */
     MutableSparseVector(LongKeyDomain domain) {
         super(domain);
@@ -151,10 +149,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * key set of the map.  Therefore, no new keys can be added to this vector.
      *
      * @param keyValueMap A map providing the values for the vector.
-     * @deprecated Use {@link #create(java.util.Collection)}.
      */
-    @Deprecated
-    public MutableSparseVector(Long2DoubleMap keyValueMap) {
+    MutableSparseVector(Long2DoubleMap keyValueMap) {
         super(keyValueMap);
         channelVectors = new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
         channels = new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>();
@@ -164,10 +160,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * Construct a new empty vector with the specified key domain.
      *
      * @param domain The key domain.
-     * @deprecated Use {@link #create(Map)}.
      */
-    @Deprecated
-    public MutableSparseVector(Collection<Long> domain) {
+    MutableSparseVector(Collection<Long> domain) {
         this(LongKeyDomain.fromCollection(domain, false));
     }
 
@@ -178,10 +172,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @param keySet The keys to include in the vector.
      * @param value  The value to assign for all keys.
-     * @deprecated Use {@link #create(java.util.Collection)}.
      */
-    @Deprecated
-    public MutableSparseVector(LongSet keySet, double value) {
+    MutableSparseVector(LongSet keySet, double value) {
         this(keySet);
         keys.setAllActive(true);
         DoubleArrays.fill(values, 0, keys.domainSize(), value);
@@ -363,30 +355,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         checkFrozen();
         DoubleArrays.fill(values, 0, keys.domainSize(), value);
         keys.setAllActive(true);
-    }
-
-    /**
-     * Clear the value for a key.  The key remains in the key domain, but is
-     * removed from the key set.
-     *
-     * @param key The key to clear.
-     * @deprecated Use {@link #unset(long)} instead.
-     */
-    @Deprecated
-    public void clear(long key) {
-        unset(key);
-    }
-
-    /**
-     * Clear the value for a vector entry.
-     *
-     * @param e The entry to clear.
-     * @see #clear(long)
-     * @deprecated Use {@link #unset(VectorEntry)} instead.
-     */
-    @Deprecated
-    public void clear(VectorEntry e) {
-        unset(e);
     }
 
     /**
@@ -607,16 +575,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
                 e2 = i2.hasNext() ? i2.next() : null;
             }
         }
-    }
-
-    /**
-     * Deprecated alias for {@link #multiply(double)}.
-     * @param s The scalar.
-     * @deprecated Use {@link #multiply(double)}.
-     */
-    @Deprecated
-    public void scale(double s) {
-        multiply(s);
     }
 
     /**
@@ -862,7 +820,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return A mutable sparse vector with the specified keys in its domain, all unset.
      */
     public static MutableSparseVector create(long... keys) {
-        return new MutableSparseVector(new LongOpenHashSet(keys));
+        return MutableSparseVector.create(new LongOpenHashSet(keys));
     }
 
     /**
@@ -965,15 +923,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
-     * Deprecated alias for {@link #addChannelVector(Symbol)}.
-     * @deprecated Use {@link #addChannelVector(Symbol)}.
-     */
-    @Deprecated
-    public MutableSparseVector addChannel(Symbol channelSymbol) {
-        return addChannelVector(channelSymbol);
-    }
-
-    /**
      * Add a typed channel to this vector.  The new channel will be empty,
      * and will have the same key domain as this vector.
      *
@@ -1020,15 +969,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
-     * Deprecated alias for {@link #getOrAddChannelVector(Symbol)}.
-     * @deprecated Use {@link #getOrAddChannelVector(Symbol)} instead.
-     */
-    @Deprecated
-    public MutableSparseVector alwaysAddChannel(Symbol channelSymbol) {
-        return getOrAddChannelVector(channelSymbol);
-    }
-
-    /**
      * Add a typed channel to the vector, even if there is already a
      * channel with the same symbol.  The new channel will be empty,
      * and will have the same key domain as this vector.
@@ -1044,15 +984,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
             chan = addChannel(channelSymbol);
         }
         return chan;
-    }
-
-    /**
-     * Deprecated alias for {@link #getOrAddChannel(TypedSymbol)}.
-     * @deprecated Use {@link #getOrAddChannel(TypedSymbol)} instead.
-     */
-    @Deprecated
-    public <K> Long2ObjectMap<K> alwaysAddChannel(TypedSymbol<K> channelSymbol) {
-        return getOrAddChannel(channelSymbol);
     }
 
     void addVectorChannel(Symbol key, MutableSparseVector vectorEntries) {
@@ -1084,16 +1015,6 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     public MutableSparseVector getChannelVector(Symbol channelSymbol) {
         checkFrozen();
         return channelVectors.get(channelSymbol);
-    }
-
-    @Override @Deprecated
-    public SparseVector channel(Symbol channelSymbol) {
-        MutableSparseVector v = getChannelVector(channelSymbol);
-        if (v != null) {
-            return v;
-        } else {
-            throw new IllegalArgumentException("no such channel " + channelSymbol);
-        }
     }
 
     @SuppressWarnings("unchecked")

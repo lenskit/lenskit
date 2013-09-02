@@ -643,15 +643,6 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     public abstract boolean hasChannelVector(Symbol channelSymbol);
 
     /**
-     * Deprecated alias for {@link #hasChannelVector(Symbol)}.
-     * @deprecated Use {@link #hasChannelVector(Symbol)} instead.
-     */
-    @Deprecated
-    public boolean hasChannel(Symbol sym) {
-        return hasChannelVector(sym);
-    }
-    
-    /**
      * Return whether this sparse vector has a channel stored under a
      * particular typed symbol.
      *
@@ -680,40 +671,6 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      *                      the channel's type, or {@code null} if there is no such channel.
      */
     public abstract <K> Long2ObjectMap<K> getChannel(TypedSymbol<K> channelSymbol);
-
-    /**
-     * Deprecated version of {@link #getChannelVector(Symbol)}.
-     *
-     * @param channelSymbol the symbol under which the channel was/is
-     *                      stored in the vector.
-     * @return the channel, which is itself a sparse vector.
-     * @throws IllegalArgumentException if there is no channel under
-     *                                  that symbol
-     * @deprecated Use {@link #getChannelVector(Symbol)}.
-     */
-    @Deprecated
-    public abstract SparseVector channel(Symbol channelSymbol);
-
-    /**
-     * Deprecated version of {@link #getChannel(TypedSymbol)}.
-     *
-     * @param channelSymbol the typed symbol under which the channel was/is
-     *                      stored in the vector.
-     * @return the channel, which is itself a map from the key domain to objects of
-     *                      the channel's type
-     * @throws IllegalArgumentException if there is no channel under
-     *                                  that typed symbol
-     * @deprecated Use {@link #getChannel(TypedSymbol)}.
-     */
-    @Nonnull @Deprecated
-    public <K> Long2ObjectMap<K> channel(TypedSymbol<K> channelSymbol) {
-        Long2ObjectMap<K> chan = getChannel(channelSymbol);
-        if (chan == null) {
-            throw new IllegalArgumentException("no such channel " + channelSymbol);
-        } else {
-            return chan;
-        }
-    }
 
     /**
      * Retrieve all symbols that map to side channels for this vector.

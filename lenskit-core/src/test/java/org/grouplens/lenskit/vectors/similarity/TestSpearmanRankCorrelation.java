@@ -36,7 +36,7 @@ public class TestSpearmanRankCorrelation {
 
     @Test
     public void testRankEmpty() {
-        assertTrue(rank(new MutableSparseVector()).isEmpty());
+        assertTrue(rank(MutableSparseVector.create()).isEmpty());
     }
 
     @Test

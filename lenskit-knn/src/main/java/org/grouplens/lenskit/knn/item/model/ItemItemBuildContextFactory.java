@@ -78,7 +78,7 @@ public class ItemItemBuildContextFactory {
         while (iter.hasNext()) {
             final long item = iter.nextLong();
             Long2DoubleMap ratings = itemData.get(item);
-            SparseVector v = new ImmutableSparseVector(ratings);
+            SparseVector v = ImmutableSparseVector.create(ratings);
             assert v.size() == ratings.size();
             itemRatings.put(item, v);
             // clear the array so GC can free

@@ -79,6 +79,6 @@ public final class Preferences {
             }
         }
 
-        return new MutableSparseVector(prefMap);
+        return MutableSparseVector.create(prefMap);
     }
 }

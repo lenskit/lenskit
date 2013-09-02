@@ -50,7 +50,7 @@ public class SlopeOneModelDataAccumulator {
         LongIterator iter = items.iterator();
         while (iter.hasNext()) {
             long item = iter.nextLong();
-            workMatrix.put(item, new MutableSparseVector(items));
+            workMatrix.put(item, MutableSparseVector.create(items));
             workMatrix.get(item).addChannelVector(SlopeOneModel.CORATINGS_SYMBOL);
         }
     }

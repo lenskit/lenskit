@@ -71,7 +71,7 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
         logger.debug("building item-item model");
 
         ItemItemBuildContext context = contextFactory.buildContext();
-        MutableSparseVector currentRow = new MutableSparseVector(context.getItems());
+        MutableSparseVector currentRow = MutableSparseVector.create(context.getItems());
 
         LongSortedSet itemUniverse = context.getItems();
         Long2ObjectMap<List<ScoredId>> matrix =

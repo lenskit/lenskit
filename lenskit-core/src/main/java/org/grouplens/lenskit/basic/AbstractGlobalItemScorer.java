@@ -52,7 +52,7 @@ public abstract class AbstractGlobalItemScorer implements GlobalItemScorer {
     @Nonnull
     public MutableSparseVector globalScore(@Nonnull Collection<Long> queryItems,
                                            @Nonnull Collection<Long> items) {
-        MutableSparseVector v = new MutableSparseVector(items);
+        MutableSparseVector v = MutableSparseVector.create(items);
         globalScore(queryItems, v);
         return v;
     }

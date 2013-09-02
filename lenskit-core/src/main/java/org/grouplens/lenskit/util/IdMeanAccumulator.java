@@ -89,7 +89,7 @@ public final class IdMeanAccumulator {
      * @return The vector of means.
      */
     public ImmutableSparseVector computeIdMeans(double offset, double damping) {
-        MutableSparseVector v = new MutableSparseVector(sums);
+        MutableSparseVector v = MutableSparseVector.create(sums);
         for (VectorEntry e: v.fast()) {
             final int n = counts.get(e.getKey());
             // if n <= 0, how did we get this item?

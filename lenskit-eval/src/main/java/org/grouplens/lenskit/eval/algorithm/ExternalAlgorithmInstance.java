@@ -253,7 +253,7 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
         }
         Long2ObjectMap<SparseVector> vectors = new Long2ObjectOpenHashMap<SparseVector>(data.size());
         for (Long2ObjectMap.Entry<Long2DoubleMap> entry: CollectionUtils.fast(data.long2ObjectEntrySet())) {
-            vectors.put(entry.getLongKey(), new ImmutableSparseVector(entry.getValue()));
+            vectors.put(entry.getLongKey(), ImmutableSparseVector.create(entry.getValue()));
             entry.setValue(null);
         }
         return vectors;

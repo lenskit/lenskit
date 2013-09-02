@@ -64,7 +64,7 @@ public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorN
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
-            MutableSparseVector base = new MutableSparseVector(vector.keySet());
+            MutableSparseVector base = MutableSparseVector.create(vector.keySet());
             baselineScorer.score(user, base);
             vector.subtract(base);
             return vector;
@@ -72,7 +72,7 @@ public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorN
 
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
-            MutableSparseVector base = new MutableSparseVector(vector.keySet());
+            MutableSparseVector base = MutableSparseVector.create(vector.keySet());
             baselineScorer.score(user, base);
             vector.add(base);
             return vector;

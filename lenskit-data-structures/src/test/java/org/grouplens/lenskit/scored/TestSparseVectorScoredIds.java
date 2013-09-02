@@ -41,7 +41,7 @@ public class TestSparseVectorScoredIds {
     @Test
     public void testSparseVectorScoredIds() {
         long[] domain = {1,2,4};
-        MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
+        MutableSparseVector sv = MutableSparseVector.create(new LongSortedArraySet(domain));
         sv.set(1,1.0);
         sv.set(4,16.0);
         

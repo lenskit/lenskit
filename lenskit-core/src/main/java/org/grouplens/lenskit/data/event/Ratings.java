@@ -93,7 +93,7 @@ public final class Ratings {
                 tsMap.put(uid, ts);
             }
         }
-        return new MutableSparseVector(v);
+        return MutableSparseVector.create(v);
     }
 
     /**
