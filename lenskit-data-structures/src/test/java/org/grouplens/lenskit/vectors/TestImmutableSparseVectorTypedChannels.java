@@ -22,7 +22,7 @@ package org.grouplens.lenskit.vectors;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.junit.Test;
 
@@ -44,8 +44,7 @@ public class TestImmutableSparseVectorTypedChannels {
     
     @Test
     public void testChannel() {
-        long[] domain = {1,2};
-        MutableSparseVector msv = MutableSparseVector.create(new LongSortedArraySet(domain));
+        MutableSparseVector msv = MutableSparseVector.create(LongUtils.packedSet(1, 2));
         msv.set(1,1);
         Long2ObjectMap<String> msc = msv.addChannel(fooStrSym);
         msc.put(1,"a");
@@ -71,8 +70,7 @@ public class TestImmutableSparseVectorTypedChannels {
     
     @Test
     public void testMutableCopy() {
-        long[] domain = {1,2,4};
-        MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
+        MutableSparseVector sv = new MutableSparseVector(LongUtils.packedSet(1, 2, 4));
         sv.set(1,1); //required to ensure 1 and 2 in domain after immutable.
         sv.set(2,2);
         Long2ObjectMap<String> ts = sv.addChannel(fooStrSym);

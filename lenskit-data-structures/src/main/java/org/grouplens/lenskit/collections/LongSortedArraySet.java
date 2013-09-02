@@ -39,12 +39,8 @@ import java.util.NoSuchElementException;
  * the key set.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @compat Public
- * @deprecated Public visibility of this class is deprecated, and will be removed in LensKit 2.0.
- * Use the static methods in {@link LongUtils} to build packed long sets.
  */
-@Deprecated
-public class LongSortedArraySet extends AbstractLongSortedSet implements Serializable {
+class LongSortedArraySet extends AbstractLongSortedSet implements Serializable {
     private static final long serialVersionUID = 2L;
 
     final LongKeyDomain keys;

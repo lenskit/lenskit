@@ -28,7 +28,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleArrayMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.junit.Test;
 
 import java.util.Set;
@@ -244,8 +244,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
 
     @Test
     public void testSetConstructor() {
-        long[] keys = { 2, 5 };
-        MutableSparseVector v = new MutableSparseVector(new LongSortedArraySet(keys));
+        MutableSparseVector v = MutableSparseVector.create(LongUtils.packedSet(2,5));
         assertThat(v.size(), equalTo(0));
         assertThat(v.keyDomain().toLongArray(),
                    equalTo(new long[] { 2, 5 }));
@@ -256,9 +255,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
 
     @Test @SuppressWarnings("deprecation")
     public void testClear() {
-        long[] keys = { 2, 5 };
-        MutableSparseVector v =
-            new MutableSparseVector(new LongSortedArraySet(keys));
+        MutableSparseVector v = MutableSparseVector.create(2,5);
         assertThat(v.set(2, Math.PI), notANumber());
         assertThat(v.size(), equalTo(1));
         assertThat(v.get(2), closeTo(Math.PI));
@@ -276,9 +273,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
 
     @Test
     public void testSimpleUnset() {
-        long[] keys = { 2, 5 };
-        MutableSparseVector v =
-                new MutableSparseVector(new LongSortedArraySet(keys));
+        MutableSparseVector v = MutableSparseVector.create(2,5);
         assertThat(v.set(2, Math.PI), notANumber());
         assertThat(v.size(), equalTo(1));
         assertThat(v.get(2), closeTo(Math.PI));
@@ -515,9 +510,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
 
     @Test
     public void testOtherConstructors() {
-        long[] keys = { 3, 5, 8 };
-        MutableSparseVector msv =
-            new MutableSparseVector(new LongSortedArraySet(keys), 7);
+        MutableSparseVector msv = MutableSparseVector.create(LongUtils.packedSet(3,5,8), 7.0);
         assertThat(msv.get(3), closeTo(7));
         assertThat(msv.get(5), closeTo(7));
         assertThat(msv.get(8), closeTo(7));

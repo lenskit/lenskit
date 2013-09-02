@@ -20,9 +20,9 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.basic.AbstractGlobalItemScorer;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
@@ -56,7 +56,7 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer {
     public void globalScore(@Nonnull Collection<Long> queryItems,
                             @Nonnull MutableSparseVector output) {
         // create the unary rating for the items
-        LongSet qItems = new LongSortedArraySet(queryItems);
+        LongSortedSet qItems = LongUtils.packedSet(queryItems);
         MutableSparseVector basket = MutableSparseVector.create(qItems, 1.0);
 
         output.clear();

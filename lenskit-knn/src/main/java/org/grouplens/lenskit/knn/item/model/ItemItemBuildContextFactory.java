@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Event;
@@ -71,7 +71,7 @@ public class ItemItemBuildContextFactory {
         Long2ObjectMap<LongSortedSet> candidateData = new Long2ObjectOpenHashMap<LongSortedSet>(1000);
         buildItemRatings(itemData, candidateData);
 
-        LongSortedSet items = new LongSortedArraySet(itemData.keySet());
+        LongSortedSet items = LongUtils.packedSet(itemData.keySet());
         // finalize the item data into vectors
         Long2ObjectMap<SparseVector> itemRatings = new Long2ObjectOpenHashMap<SparseVector>(itemData.size());
         LongIterator iter = items.iterator();

@@ -23,7 +23,7 @@ package org.grouplens.lenskit.vectors;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import org.grouplens.lenskit.collections.LongKeyDomain;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.junit.Test;
 
@@ -134,8 +134,7 @@ public class TestMutableSparseVectorTypedChannels {
     
     @Test
     public void testMutableCopy() {
-        long[] domain = {1,2,4};
-        MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
+        MutableSparseVector sv = MutableSparseVector.create(1, 2, 4);
         Long2ObjectMap<String> ts = sv.addChannel(fooStrSym);
         ts.put(1,"a");
         
@@ -151,8 +150,7 @@ public class TestMutableSparseVectorTypedChannels {
     
     @Test
     public void testImmutableCopy() {
-        long[] domain = {1,2,4};
-        MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
+        MutableSparseVector sv = MutableSparseVector.create(1,2,4);
         sv.set(1, 1); // required to ensure 1 and 2 in domain after immutable copy.
         sv.set(2, 2);
         Long2ObjectMap<String> ts = sv.addChannel(fooStrSym);
@@ -168,8 +166,7 @@ public class TestMutableSparseVectorTypedChannels {
     
     @Test
     public void testFreeze() {
-        long[] domain = {1,2,4};
-        MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
+        MutableSparseVector sv = MutableSparseVector.create(1,2,4);
         sv.set(1, 1); // required to ensure 1 and 2 in domain after freeze.
         sv.set(2, 2);
         Long2ObjectMap<String> ts = sv.addChannel(fooStrSym);
@@ -188,12 +185,12 @@ public class TestMutableSparseVectorTypedChannels {
     @Test
     public void testWithDomain() {
         long[] domain = {1,2,4};
-        MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
+        MutableSparseVector sv = MutableSparseVector.create(1,2,4);
         Long2ObjectMap<String> ts = sv.addChannel(fooStrSym);
         ts.put(1,"a");
         ts.put(2, "b");
         
-        MutableSparseVector sv2 = sv.withDomain(new LongSortedArraySet(new long[]{1,4}));
+        MutableSparseVector sv2 = sv.withDomain(LongUtils.packedSet(1,4));
         Long2ObjectMap<String> ts2 = sv2.getChannel(fooStrSym);
         assertNotSame(ts,ts2);
         assertEquals("a", ts2.get(1));

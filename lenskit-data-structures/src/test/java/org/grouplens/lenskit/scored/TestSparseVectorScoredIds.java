@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -40,8 +40,7 @@ public class TestSparseVectorScoredIds {
     
     @Test
     public void testSparseVectorScoredIds() {
-        long[] domain = {1,2,4};
-        MutableSparseVector sv = MutableSparseVector.create(new LongSortedArraySet(domain));
+        MutableSparseVector sv = MutableSparseVector.create(LongUtils.packedSet(1,2,4));
         sv.set(1,1.0);
         sv.set(4,16.0);
         

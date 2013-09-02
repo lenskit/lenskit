@@ -3,7 +3,7 @@ package ${package};
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
@@ -65,7 +65,7 @@ public class TestMeanScorer {
     }
 
     LongSortedSet itemSet(long item) {
-        return new LongSortedArraySet(new long[]{item});
+        return LongUtils.packedSet(item);
     }
 
     @Test
