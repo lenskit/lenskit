@@ -71,12 +71,13 @@
 
   * <<<long>>>-related collection utilities have been moved to <<<LongUtils>>>.
 
-  * <<<LongSortedArraySet>>> should not be used directly; instead, use <<<LongUtils.packedSet>>>.
+  * <<<LongSortedArraySet>>> is no longer public; instead, use <<<LongUtils.packedSet>>>.
 
   * Removed <<<LongCursor>>>; it is no longer needed with the new DAOs.
 
-  * Deprecated pointers. They will be removed, or only used internally to the data structure code,
-    by LensKit 2.0.
+  * Removed pointers.
+
+  * <<<IntIntervalList>>> is no longer public; instead, use <<<CollectionUtils.interval>>>.
 
   * For consistency, all data structures should be created using builders or static factory methods,
     not their constructors (see Effective Java).  Public data structure constructors have therefore
