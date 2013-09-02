@@ -59,18 +59,6 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
     }
 
     @Override
-    @Deprecated
-    public double getValue(int i) {
-        return getIndexValue(i);
-    }
-
-    @Override
-    @Deprecated
-    public int apply(double v) {
-        return index(v);
-    }
-
-    @Override
     public int getCount() {
         return values.length;
     }
