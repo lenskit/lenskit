@@ -91,3 +91,10 @@
     for fractional holdouts.
 
   []
+
+* Algorithms
+
+  * Item-item CF once again uses sparsity to speed up the
+    model-building process.
+
+  []
