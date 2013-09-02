@@ -359,27 +359,6 @@ public final class LongKeyDomain implements Serializable {
     }
 
     /**
-     * Get a pointer over active indexes.
-     * @param mayBeModified Whether the set's active/inactive flags may be modified during iteration.
-     *                      If {@code false}, this method is slightly more efficient; if {@code true},
-     *                      the iterator will iterate over a snapshot of the current active/inactive
-     *                      state.
-     * @return A pointer over the active indexes.
-     */
-    public IntPointer activeIndexPointer(boolean mayBeModified) {
-        // shortcut - only iterate the bit set if it has clear bits
-        if (mask.nextClearBit(0) < domainSize) {
-            BitSet snap = mask;
-            if (mayBeModified) {
-                snap = (BitSet) snap.clone();
-            }
-            return new BitSetPointer(snap, 0, domainSize);
-        } else {
-            return Pointers.fromTo(0, domainSize);
-        }
-    }
-
-    /**
      * Get an iterator over active indexes, initialized to the specified index and limited to a
      * particular range.
      * @param min The minimum index for the iterator.

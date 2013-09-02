@@ -22,13 +22,13 @@ package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
+import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.IntPointer;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
@@ -133,7 +133,9 @@ public final class Vectors {
     private static class FastIntersectIterImpl implements Iterator<Pair<VectorEntry,VectorEntry>> {
         private boolean atNext = false;
         private final SparseVector vec1, vec2;
-        private IntPointer p1, p2;
+        private IntIterator iterA, iterB;
+        // indexes, or -1 for exhausted iterators
+        private int idxA, idxB;
         private VectorEntry leftEnt;
         private VectorEntry rightEnt;
         private MutablePair<VectorEntry,VectorEntry> pair;
@@ -141,8 +143,11 @@ public final class Vectors {
         public FastIntersectIterImpl(SparseVector v1, SparseVector v2) {
             vec1 = v1;
             vec2 = v2;
-            p1 = v1.keys.activeIndexPointer(false);
-            p2 = v2.keys.activeIndexPointer(false);
+            // FIXME The true here slows things down
+            iterA = v1.keys.activeIndexIterator(true);
+            iterB = v2.keys.activeIndexIterator(true);
+            idxA = iterA.hasNext() ? iterA.nextInt() : -1;
+            idxB = iterB.hasNext() ? iterB.nextInt() : -1;
             leftEnt = new VectorEntry(v1, -1, 0, 0, false);
             rightEnt = new VectorEntry(v2, -1, 0, 0, false);
             pair = MutablePair.of(leftEnt, rightEnt);
@@ -151,16 +156,16 @@ public final class Vectors {
         @Override
         public boolean hasNext() {
             if (!atNext) {
-                while (!p1.isAtEnd() && !p2.isAtEnd()) {
-                    long key1 = vec1.keys.getKey(p1.getInt());
-                    long key2 = vec2.keys.getKey(p2.getInt());
-                    if (key1 == key2) {
+                while (idxA >= 0 && idxB >= 0) {
+                    long ka = vec1.keys.getKey(idxA);
+                    long kb = vec2.keys.getKey(idxB);
+                    if (ka == kb) {
                         atNext = true;
                         break;
-                    } else if (key1 < key2) {
-                        p1.advance();
+                    } else if (ka < kb) {
+                        idxA = iterA.hasNext() ? iterA.nextInt() : -1;
                     } else {
-                        p2.advance();
+                        idxB = iterB.hasNext() ? iterB.nextInt() : -1;
                     }
                 }
             }
@@ -173,15 +178,13 @@ public final class Vectors {
                 throw new NoSuchElementException();
             }
 
-            final int i1 = p1.getInt();
-            final int i2 = p2.getInt();
-            assert vec1.keys.getKey(i1) == vec2.keys.getKey(i2);
+            assert vec1.keys.getKey(idxA) == vec2.keys.getKey(idxB);
 
-            leftEnt.set(i1, vec1.keys.getKey(i1), vec1.values[i1], true);
-            p1.advance();
+            leftEnt.set(idxA, vec1.keys.getKey(idxA), vec1.values[idxA], true);
+            idxA = iterA.hasNext() ? iterA.nextInt() : -1;
 
-            rightEnt.set(i2, vec2.keys.getKey(i2), vec2.values[i2], true);
-            p2.advance();
+            rightEnt.set(idxB, vec2.keys.getKey(idxB), vec2.values[idxB], true);
+            idxB = iterB.hasNext() ? iterB.nextInt() : -1;
 
             atNext = false;
 

@@ -186,15 +186,6 @@ public final class CollectionUtils {
     }
 
     /**
-     * @see Pointers#fromIterator(java.util.Iterator)
-     * @deprecated Deprecated alias for {@link Pointers#fromIterator(java.util.Iterator)}.
-     */
-    @Deprecated
-    public static <E> Pointer<E> pointer(Iterator<E> iter) {
-        return Pointers.fromIterator(iter);
-    }
-
-    /**
      * Create an {@link IntList} that contains all numbers in a specified interval.
      * @param from The first number (inclusive)
      * @param to the last number (exclusive).

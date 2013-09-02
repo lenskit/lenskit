@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.collections;
 
 import com.google.common.collect.Iterators;
+import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.*;
 
 import javax.annotation.Nonnull;
@@ -56,16 +57,17 @@ class RemovableLongSortedArraySet extends LongSortedArraySet {
      */
     private boolean removeAll(LongIterator iter) {
         boolean removed = false;
-        IntPointer posPtr = keys.activeIndexPointer(true);
-        while (iter.hasNext() && !posPtr.isAtEnd()) {
+        IntIterator posIter = keys.activeIndexIterator(true);
+        int idx = posIter.hasNext() ? posIter.nextInt() : -1;
+        while (iter.hasNext() && idx >= 0) {
             long rmk = iter.nextLong();
             // advance position pointer looking for this item
-            while (!posPtr.isAtEnd() && keys.getKey(posPtr.getInt()) < rmk) {
-                posPtr.advance();
+            while (idx >= 0 && keys.getKey(idx) < rmk) {
+                idx = posIter.hasNext() ? posIter.nextInt() : -1;
             }
             // remove if necessary
-            if (!posPtr.isAtEnd() && keys.getKey(posPtr.getInt()) == rmk) {
-                keys.setActive(posPtr.getInt(), false);
+            if (idx >= 0 && keys.getKey(idx) == rmk) {
+                keys.setActive(idx, false);
                 removed = true;
             }
         }
@@ -101,19 +103,20 @@ class RemovableLongSortedArraySet extends LongSortedArraySet {
      */
     private boolean retainAll(LongIterator iter) {
         boolean removed = false;
-        IntPointer posPtr = keys.activeIndexPointer(true);
-        while (iter.hasNext() && !posPtr.isAtEnd()) {
+        IntIterator posIter = keys.activeIndexIterator(true);
+        int pos = posIter.hasNext() ? posIter.nextInt() : -1;
+        while (iter.hasNext() && pos >= 0) {
             long rmk = iter.nextLong();
             // advance position pointer looking for this item
-            while (!posPtr.isAtEnd() && keys.getKey(posPtr.getInt()) < rmk) {
+            while (pos >= 0 && keys.getKey(pos) < rmk) {
                 // this item is < than rmk, delete it
-                keys.setActive(posPtr.getInt(), false);
+                keys.setActive(pos, false);
                 removed = true;
-                posPtr.advance();
+                pos = posIter.hasNext() ? posIter.nextInt() : -1;
             }
             // skip over the item, to prepare for next
-            if (!posPtr.isAtEnd() && keys.getKey(posPtr.getInt()) == rmk) {
-                posPtr.advance();
+            if (pos >= 0 && keys.getKey(pos) == rmk) {
+                pos = posIter.hasNext() ? posIter.nextInt() : -1;
             }
         }
         return removed;
