@@ -109,7 +109,7 @@ public class TestMeanScorer {
 
         // User 1
         MutableSparseVector scores1 = MutableSparseVector.wrap(items, ratings); // ratings ignored
-        scores1.clear(5L);  // make sure scores are returned even if the ratings are not set
+        scores1.unset(5L);  // make sure scores are returned even if the ratings are not set
         scorer.score(1L, scores1);
         assertThat(scores1.get(5), closeTo(3.25, 1.0e-5));
         assertThat(scores1.get(7), closeTo(3.75, 1.0e-5));
