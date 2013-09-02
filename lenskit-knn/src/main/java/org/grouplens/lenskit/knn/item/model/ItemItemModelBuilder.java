@@ -77,16 +77,26 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
         Accumulator accumulator = new Accumulator(buildContext.getItems(), threshold, modelSize);
 
         for (long itemId1 : buildContext.getItems()) {
+            SparseVector vec1 = buildContext.itemVector(itemId1);
+
             LongIterator itemIter;
-            if (itemSimilarity.isSymmetric()) {
-                itemIter = buildContext.getItems().iterator(itemId1);
+            if (itemSimilarity.isSparse()) {
+                if (itemSimilarity.isSymmetric()) {
+                    itemIter = buildContext.getUserItems(vec1.keySet()).iterator(itemId1);
+                } else {
+                    itemIter = buildContext.getUserItems(vec1.keySet()).iterator();
+                }
             } else {
-                itemIter = buildContext.getItems().iterator();
+                if (itemSimilarity.isSymmetric()) {
+                    itemIter = buildContext.getItems().iterator(itemId1);
+                } else {
+                    itemIter = buildContext.getItems().iterator();
+                }
             }
+
             while (itemIter.hasNext()) {
                 long itemId2 = itemIter.nextLong();
                 if (itemId1 != itemId2) {
-                    SparseVector vec1 = buildContext.itemVector(itemId1);
                     SparseVector vec2 = buildContext.itemVector(itemId2);
                     double sim = itemSimilarity.similarity(itemId1, vec1, itemId2, vec2);
                     accumulator.put(itemId1, itemId2, sim);

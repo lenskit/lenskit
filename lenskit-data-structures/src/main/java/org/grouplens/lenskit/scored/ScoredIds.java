@@ -20,12 +20,16 @@
  */
 package org.grouplens.lenskit.scored;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.grouplens.lenskit.collections.CopyingFastCollection;
 import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -39,7 +43,7 @@ import java.util.Iterator;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
- * @compat Experimental
+ * @compat Public
  */
 public final class ScoredIds {
     private ScoredIds() {}
@@ -51,11 +55,13 @@ public final class ScoredIds {
      */
     public static ScoredIdBuilder copyBuilder(ScoredId id) {
         ScoredIdBuilder bld = new ScoredIdBuilder(id.getId(), id.getScore());
-        for (Symbol chan: id.getChannels()) {
-            bld.addChannel(chan, id.channel(chan));
+        for (Symbol chan: id.getUnboxedChannelSymbols()) {
+            bld.addChannel(chan, id.getUnboxedChannelValue(chan));
         }
-        for (@SuppressWarnings("rawtypes") TypedSymbol sym: id.getTypedChannels()) {
-            bld.addChannel(sym, id.channel(sym));
+        for (@SuppressWarnings("rawtypes") SymbolValue chan: id.getChannels()) {
+            if (!chan.getSymbol().getType().equals(Double.class)) {
+                bld.addChannel(chan.getSymbol(), chan.getValue());
+            }
         }
         return bld;
     }
@@ -85,6 +91,40 @@ public final class ScoredIds {
         return new ScoredIdListBuilder(cap);
     }
 
+    /**
+     * Create a scored id with no channels.
+     * @param id The ID.
+     * @param score The score.
+     * @return An ID.
+     */
+    public static ScoredId create(long id, double score) {
+        return new ScoredIdImpl(id, score);
+    }
+
+    //region Functions
+    /**
+     * A {@link Function} that extracts the ID from a scored ID.
+     * @return A function returning the ID from any scored ID.
+     */
+    public static Function<ScoredId,Long> idFunction() {
+        return IdFunction.INSTANCE;
+    }
+
+    private static enum IdFunction implements Function<ScoredId,Long> {
+        INSTANCE {
+            @Nullable
+            @Override
+            public Long apply(@Nullable ScoredId input) {
+                if (input == null) {
+                    return null;
+                } else {
+                    return input.getId();
+                }
+            }
+        }
+    }
+    //endregion
+
     //region Ordering
     /**
      * An ordering (comparator) that compares IDs by score.
@@ -98,7 +138,8 @@ public final class ScoredIds {
 
     private static final class IdOrder extends Ordering<ScoredId> {
         @Override
-        public int compare(@Nullable ScoredId left, @Nullable ScoredId right) {
+        @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
+        public int compare(ScoredId left, ScoredId right) {
             return Longs.compare(left.getId(), right.getId());
         }
     }
@@ -115,7 +156,8 @@ public final class ScoredIds {
 
     private static final class ScoreOrder extends Ordering<ScoredId> {
         @Override
-        public int compare(@Nullable ScoredId left, @Nullable ScoredId right) {
+        @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
+        public int compare(ScoredId left, ScoredId right) {
             return Doubles.compare(left.getScore(), right.getScore());
         }
     }
@@ -129,14 +171,16 @@ public final class ScoredIds {
     public static Ordering<ScoredId> channelOrder(final Symbol chan) {
         return new Ordering<ScoredId>() {
             @Override
-            public int compare(@Nullable ScoredId left, @Nullable ScoredId right) {
-                if (left.hasChannel(chan)) {
-                    if (right.hasChannel(chan)) {
-                        return Doubles.compare(left.channel(chan), right.channel(chan));
+            @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
+            public int compare(ScoredId left, ScoredId right) {
+                if (left.hasUnboxedChannel(chan)) {
+                    if (right.hasUnboxedChannel(chan)) {
+                        return Doubles.compare(left.getUnboxedChannelValue(chan),
+                                               right.getUnboxedChannelValue(chan));
                     } else {
                         return 1;
                     }
-                } else if (right.hasChannel(chan)) {
+                } else if (right.hasUnboxedChannel(chan)) {
                     return -1;
                 } else {
                     return 0;
@@ -173,10 +217,10 @@ public final class ScoredIds {
                 T v1 = null;
                 T v2 = null;
                 if (left != null && left.hasChannel(chan)) {
-                    v1 = left.channel(chan);
+                    v1 = left.getChannelValue(chan);
                 }
                 if (right != null && right.hasChannel(chan)) {
-                    v2 = right.channel(chan);
+                    v2 = right.getChannelValue(chan);
                 }
                 return order.compare(v1, v2);
             }
@@ -209,11 +253,15 @@ public final class ScoredIds {
             ScoredIdBuilder builder = new ScoredIdBuilder();
             builder.setId(elt.getId());
             builder.setScore(elt.getScore());
-            for (Symbol s: elt.getChannels()) {
-                builder.addChannel(s, elt.channel(s));
+            for (DoubleSymbolValue chan: elt.getUnboxedChannels()) {
+                builder.addChannel(chan.getRawSymbol(),
+                                   chan.getDoubleValue());
             }
-            for (TypedSymbol s: elt.getTypedChannels()) {
-                builder.addChannel(s, elt.channel(s));
+            for (SymbolValue chan: elt.getChannels()) {
+                if (!chan.getSymbol().getType().equals(Double.class)) {
+                    builder.addChannel(chan.getSymbol(),
+                                       chan.getValue());
+                }
             }
             return builder.build();
         }

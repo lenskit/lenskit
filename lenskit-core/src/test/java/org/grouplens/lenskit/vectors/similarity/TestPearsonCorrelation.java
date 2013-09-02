@@ -45,7 +45,7 @@ public class TestPearsonCorrelation {
 
     @Test
     public void testEmptyVector() {
-        SparseVector v = new ImmutableSparseVector(Long2DoubleMaps.EMPTY_MAP);
+        SparseVector v = ImmutableSparseVector.create(Long2DoubleMaps.EMPTY_MAP);
         assertThat(sim.similarity(v, v), closeTo(0, EPSILON));
     }
 

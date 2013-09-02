@@ -52,7 +52,7 @@ public class TestSimilaritySumNeighborhoodScorer {
     @Test
     public void testEmpty() {
         List<ScoredId> nbrs = Collections.emptyList();
-        SparseVector scores = new MutableSparseVector();
+        SparseVector scores = MutableSparseVector.create();
         assertThat(scorer.score(nbrs, scores), notANumber());
     }
 

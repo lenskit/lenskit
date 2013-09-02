@@ -24,8 +24,7 @@ import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.EventType;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -75,7 +74,7 @@ public final class EventCountUserHistorySummarizer implements UserHistorySummari
             final long iid = e.getItemId();
             map.put(iid, map.get(iid) + 1);
         }
-        return new ImmutableSparseVector(map);
+        return ImmutableSparseVector.create(map);
     }
 
     @Override

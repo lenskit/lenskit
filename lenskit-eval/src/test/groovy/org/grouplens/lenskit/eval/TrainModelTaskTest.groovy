@@ -21,15 +21,12 @@
 package org.grouplens.lenskit.eval
 
 import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.BaselineItemScorer
-import org.grouplens.lenskit.baseline.BaselinePredictor
-import org.grouplens.lenskit.baseline.GlobalMeanPredictor
-import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
+import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer
+import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
-import org.grouplens.lenskit.data.event.SimpleRating
-import org.grouplens.lenskit.eval.script.ConfigTestBase
+import org.grouplens.lenskit.data.event.Ratings
 import org.grouplens.lenskit.eval.data.GenericDataSource
-import org.grouplens.lenskit.vectors.MutableSparseVector
+import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.junit.Test
 
 import static org.hamcrest.Matchers.*
@@ -37,33 +34,31 @@ import static org.junit.Assert.assertThat
 
 class TrainModelTaskTest extends ConfigTestBase {
     def ratings = [
-            new SimpleRating(1, 1, 1, 3.5),
-            new SimpleRating(2, 1, 2, 4.0),
-            new SimpleRating(3, 2, 1, 3.5),
-            new SimpleRating(3, 2, 3, 5.0)
+            Ratings.make(1, 1, 3.5),
+            Ratings.make(1, 2, 4.0),
+            Ratings.make(2, 1, 3.5),
+            Ratings.make(2, 3, 5.0)
     ]
-    def daoFactory = new EventCollectionDAO.Factory(ratings);
-    def dataSource = new GenericDataSource("test-data", daoFactory);
+    def dao = new EventCollectionDAO(ratings);
+    def dataSource = new GenericDataSource("test-data", dao);
 
     @Test
     void testTrainModel() {
         def obj = eval {
             trainModel {
                 algorithm {
-                    bind ItemScorer to BaselineItemScorer
-                    bind BaselinePredictor to GlobalMeanPredictor
+                    bind ItemScorer to GlobalMeanRatingItemScorer
                 }
                 input dataSource
                 action {
                     assertThat(it.itemScorer, notNullValue());
                     assertThat(it.ratingPredictor, notNullValue());
-                    assertThat(it.get(BaselinePredictor), notNullValue());
-                    return it.itemScorer.baseline
+                    return it.itemScorer
                 }
             }
         }
-        assertThat(obj, instanceOf(GlobalMeanPredictor))
-        def v = obj.predict(42, new MutableSparseVector(), [1l,2l,4l])
+        assertThat(obj, instanceOf(GlobalMeanRatingItemScorer))
+        def v = obj.score(42, [1l,2l,4l])
         assertThat(v.get(1), closeTo(4.0d, 1.0e-5d))
         assertThat(v.get(2), closeTo(4.0d, 1.0e-5d))
         assertThat(v.get(4), closeTo(4.0d, 1.0e-5d))
@@ -74,18 +69,16 @@ class TrainModelTaskTest extends ConfigTestBase {
         def obj = eval {
             trainModel("foobar") {
                 algorithm {
-                    bind ItemScorer to BaselineItemScorer
-                    bind BaselinePredictor to ItemUserMeanPredictor
+                    bind ItemScorer to ItemMeanRatingItemScorer
                 }
                 input dataSource
                 action {
                     assertThat(it.itemScorer, notNullValue());
                     assertThat(it.ratingPredictor, notNullValue());
-                    assertThat(it.get(BaselinePredictor), notNullValue());
-                    return it.itemScorer.baseline
+                    return it.itemScorer
                 }
             }
         }
-        assertThat(obj, instanceOf(ItemUserMeanPredictor))
+        assertThat(obj, instanceOf(ItemMeanRatingItemScorer))
     }
 }

@@ -21,10 +21,11 @@
 package org.grouplens.lenskit.util.test;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -39,16 +40,13 @@ import javax.annotation.Nonnull;
  */
 public class MockItemScorer extends AbstractItemScorer {
     private final Long2ObjectMap<ImmutableSparseVector> userData;
-    private final boolean usesHistory;
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
-    private MockItemScorer(Long2ObjectMap<? extends SparseVector> udat, boolean uh) {
-        super(null); // provide null DAO, we override the only method that uses it.
+    private MockItemScorer(Long2ObjectMap<? extends SparseVector> udat) {
         userData = new Long2ObjectOpenHashMap<ImmutableSparseVector>(udat.size());
         for (Long2ObjectMap.Entry<? extends SparseVector> e: udat.long2ObjectEntrySet()) {
             userData.put(e.getLongKey(), e.getValue().immutable());
         }
-        usesHistory = uh;
     }
 
     @Override
@@ -60,37 +58,14 @@ public class MockItemScorer extends AbstractItemScorer {
         }
     }
 
-    @Override
-    public boolean canUseHistory() {
-        return usesHistory;
-    }
-
-    @Override
-    public void score(@Nonnull UserHistory<? extends Event> profile, @Nonnull MutableSparseVector scores) {
-        score(profile.getUserId(), scores);
-    }
-
     /**
      * Builder for mock item scorers.
      */
     public static class Builder {
         private final Long2ObjectOpenHashMap<MutableSparseVector> userData;
-        private boolean usesHistory;
 
         public Builder() {
             userData = new Long2ObjectOpenHashMap<MutableSparseVector>();
-            usesHistory = false;
-        }
-
-        /**
-         * Set whether the item scorer will claim to use history.
-         * @param fake {@code true} to claim to use history ({@link #canUseHistory()} will return
-         *                         true).
-         * @return The builder (for chaining).
-         */
-        public Builder fakeUsingHistory(boolean fake) {
-            usesHistory = fake;
-            return this;
         }
 
         /**
@@ -118,12 +93,12 @@ public class MockItemScorer extends AbstractItemScorer {
                 LongSet domain = new LongOpenHashSet();
                 if (msv == null) {
                     domain.add(item);
-                    msv = new MutableSparseVector(domain);
+                    msv = MutableSparseVector.create(domain);
                 } else {
                     domain.addAll(msv.keyDomain());
                     domain.add(item);
                     SparseVector save = msv;
-                    msv = new MutableSparseVector(domain);
+                    msv = MutableSparseVector.create(domain);
                     msv.set(save);
                 }
                 userData.put(user, msv);
@@ -137,7 +112,7 @@ public class MockItemScorer extends AbstractItemScorer {
          * @return A mock item scorer that will return the configured scores.
          */
         public MockItemScorer build() {
-            return new MockItemScorer(userData, usesHistory);
+            return new MockItemScorer(userData);
         }
     }
 

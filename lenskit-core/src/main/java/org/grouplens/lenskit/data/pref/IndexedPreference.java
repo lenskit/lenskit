@@ -26,7 +26,7 @@ package org.grouplens.lenskit.data.pref;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
-public abstract class IndexedPreference extends Preference {
+public interface IndexedPreference extends Preference {
     /**
      * Get the preference index. Each indexed preference (within a given context,
      * such as a {@link org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot})
@@ -53,9 +53,4 @@ public abstract class IndexedPreference extends Preference {
      * @return The user index.
      */
     public abstract int getUserIndex();
-
-    @Override
-    public IndexedPreference copy() {
-        return IndexedPreferenceBuilder.copy(this).build();
-    }
 }

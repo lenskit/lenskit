@@ -31,8 +31,7 @@ import java.io.Serializable;
  * Stop when absolute value of the error drops below a threshold.
  * <p><b>Note:</b> Loop controllers created by
  * this stopping condition support waiting until the threshold has been met for multiple iterations
- * to stop.  This behavior is not supported by the deprecated {@link #isFinished(int, double)}
- * method.
+ * to stop.
  * <p>This stopping condition differs from {@link ThresholdStoppingCondition}
  * in that it thresholds the absolute error instead of the change in error from
  * one iteration to another.
@@ -69,12 +68,6 @@ public class ErrorThresholdStoppingCondition implements StoppingCondition, Seria
      */
     public ErrorThresholdStoppingCondition(double thresh) {
         this(thresh, 0);
-    }
-
-    @Override
-    @Deprecated
-    public boolean isFinished(int n, double d) {
-        return n >= minIterations && Math.abs(d) < threshold;
     }
 
     @Override

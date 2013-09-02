@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -40,30 +40,29 @@ public class TestSparseVectorScoredIds {
     
     @Test
     public void testSparseVectorScoredIds() {
-        long[] domain = {1,2,4};
-        MutableSparseVector sv = new MutableSparseVector(new LongSortedArraySet(domain));
+        MutableSparseVector sv = MutableSparseVector.create(LongUtils.packedSet(1,2,4));
         sv.set(1,1.0);
         sv.set(4,16.0);
         
-        MutableSparseVector foo = sv.addChannel(fooSym);
+        MutableSparseVector foo = sv.addChannelVector(fooSym);
         foo.set(1,2.0);
         foo.set(4,5.0);
         
-        MutableSparseVector bar = sv.addChannel(barSym);
+        MutableSparseVector bar = sv.addChannelVector(barSym);
         bar.set(1,3.0);
         
-        MutableSparseVector baz = sv.addChannel(bazSym);
+        MutableSparseVector baz = sv.addChannelVector(bazSym);
         baz.set(2, 100.0);
 
         Long2ObjectMap<String> wombat = sv.addChannel(tsym);
         wombat.put(1, "hello");
         wombat.put(4, "goodbye");
         
-        // check that the hasChannel function is correct.
+        // check that the hasUnboxedChannel function is correct.
         for(Iterator<ScoredId> it = ScoredIds.collectionFromVector(sv).fastIterator(); it.hasNext();) {
             ScoredId sid = it.next();
-            assertTrue(sid.hasChannel(fooSym));
-            assertFalse(sid.hasChannel(bazSym));
+            assertTrue(sid.hasUnboxedChannel(fooSym));
+            assertFalse(sid.hasUnboxedChannel(bazSym));
             assertTrue(sid.hasChannel(tsym));
         }
         

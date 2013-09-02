@@ -1,7 +1,5 @@
 import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.BaselineItemScorer
-import org.grouplens.lenskit.baseline.BaselinePredictor
-import org.grouplens.lenskit.baseline.ItemMeanPredictor
+import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 
 /*
  * LensKit, an open source recommender systems toolkit.
@@ -36,8 +34,7 @@ target("test-target") {
     trainTest {
         dataset data
         algorithm {
-            bind ItemScorer to BaselineItemScorer
-            bind BaselinePredictor to ItemMeanPredictor
+            bind ItemScorer to ItemMeanRatingItemScorer
         }
         output "${config.analysisDir}/output.csv"
     }

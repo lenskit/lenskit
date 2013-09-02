@@ -20,40 +20,30 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import java.io.BufferedReader;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.WillCloseWhenClosed;
-
-import org.grouplens.lenskit.data.event.AbstractEventCursor;
+import com.google.common.base.Preconditions;
+import org.grouplens.lenskit.cursors.AbstractPollingCursor;
 import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.util.DelimitedTextCursor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.WillCloseWhenClosed;
+import java.io.BufferedReader;
 
 /**
  * Cursor that parses arbitrary delimited text.
  *
  * @compat Public
  */
-public class DelimitedTextRatingCursor extends AbstractEventCursor<Rating> {
+public class DelimitedTextRatingCursor extends AbstractPollingCursor<Rating> {
     protected Logger logger = LoggerFactory.getLogger(getClass());
     private final String fileName;
     private MutableRating rating;
     private DelimitedTextCursor rowCursor;
-
-    /**
-     * Construct a rating cursor from a reader.
-     *
-     * @param s The reader to read.
-     */
-    public DelimitedTextRatingCursor(@WillCloseWhenClosed @Nonnull BufferedReader s) {
-        this(s, null, System.getProperty("lenskit.delimiter", "\t"));
-    }
 
     /**
      * Construct a rating cursor from a reader.
@@ -88,7 +78,6 @@ public class DelimitedTextRatingCursor extends AbstractEventCursor<Rating> {
                 continue;
             }
 
-            rating.setId(rowCursor.getLineNumber());
             rating.setUserId(Long.parseLong(fields[0]));
             rating.setItemId(Long.parseLong(fields[1]));
             rating.setRating(Double.parseDouble(fields[2]));
@@ -101,6 +90,11 @@ public class DelimitedTextRatingCursor extends AbstractEventCursor<Rating> {
         }
 
         return null;
+    }
+
+    @Override
+    public Rating copy(Rating r) {
+        return Ratings.copyBuilder(r).build();
     }
     //CHECKSTYLE:ON
 }

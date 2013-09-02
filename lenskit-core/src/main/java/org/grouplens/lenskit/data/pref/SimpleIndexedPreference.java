@@ -29,10 +29,7 @@ import javax.annotation.concurrent.Immutable;
  * @since 0.11
  */
 @Immutable
-public final class SimpleIndexedPreference extends IndexedPreference {
-    private final long userId;
-    private final long itemId;
-    private final double value;
+class SimpleIndexedPreference extends SimplePreference implements IndexedPreference {
     private final int index;
     private final int userIndex;
     private final int itemIndex;
@@ -49,23 +46,10 @@ public final class SimpleIndexedPreference extends IndexedPreference {
      */
     public SimpleIndexedPreference(long uid, long iid, double v,
                                    int idx, int uidx, int iidx) {
+        super(uid, iid, v);
         index = idx;
         userIndex = uidx;
         itemIndex = iidx;
-        userId = uid;
-        itemId = iid;
-        value = v;
-    }
-
-    /**
-     * Copy a preference object. This provides a convenient means of disconnecting
-     * a preference from a mutable or indirect preference with less boilerplate.
-     *
-     * @param pref The preference object to copy.
-     */
-    public SimpleIndexedPreference(IndexedPreference pref) {
-        this(pref.getUserId(), pref.getItemId(), pref.getValue(),
-             pref.getIndex(), pref.getUserIndex(), pref.getItemIndex());
     }
 
     @Override
@@ -74,32 +58,12 @@ public final class SimpleIndexedPreference extends IndexedPreference {
     }
 
     @Override
-    public long getUserId() {
-        return userId;
-    }
-
-    @Override
     public int getUserIndex() {
         return userIndex;
     }
 
     @Override
-    public long getItemId() {
-        return itemId;
-    }
-
-    @Override
     public int getItemIndex() {
         return itemIndex;
-    }
-
-    @Override
-    public double getValue() {
-        return value;
-    }
-
-    @Override
-    public IndexedPreference copy() {
-        return this;
     }
 }

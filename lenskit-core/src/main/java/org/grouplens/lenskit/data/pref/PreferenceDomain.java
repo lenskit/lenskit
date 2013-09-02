@@ -210,4 +210,12 @@ public final class PreferenceDomain implements Serializable {
             return new PreferenceDomain(min, max);
         }
     }
+
+    /**
+     * Create a new preference domain builder.
+     * @return A new preference domain builder.
+     */
+    public static PreferenceDomainBuilder newBuilder() {
+        return new PreferenceDomainBuilder();
+    }
 }

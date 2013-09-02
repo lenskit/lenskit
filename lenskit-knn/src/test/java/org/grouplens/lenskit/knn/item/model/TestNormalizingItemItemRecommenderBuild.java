@@ -20,18 +20,21 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
-import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.GlobalItemScorer;
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.basic.SimpleRatingPredictor;
+import org.grouplens.lenskit.basic.TopNGlobalItemRecommender;
+import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.data.dao.DAOFactory;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
-import org.grouplens.lenskit.knn.item.ItemItemGlobalRecommender;
 import org.grouplens.lenskit.knn.item.ItemItemGlobalScorer;
-import org.grouplens.lenskit.knn.item.ItemItemRecommender;
 import org.grouplens.lenskit.knn.item.ItemItemScorer;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,34 +56,33 @@ public class TestNormalizingItemItemRecommenderBuild {
         rs.add(Ratings.make(1, 7, 4));
         rs.add(Ratings.make(8, 4, 5));
         rs.add(Ratings.make(8, 5, 4));
-        DAOFactory daof = new EventCollectionDAO.Factory(rs);
+        EventDAO dao = new EventCollectionDAO(rs);
 
         LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(dao);
         config.bind(ItemItemModel.class).toProvider(NormalizingItemItemModelBuilder.class);
         config.bind(ItemScorer.class).to(ItemItemScorer.class);
-        config.bind(ItemRecommender.class).to(ItemItemRecommender.class);
-        config.bind(GlobalItemRecommender.class).to(ItemItemGlobalRecommender.class);
         config.bind(GlobalItemScorer.class).to(ItemItemGlobalScorer.class);
         // this is the default
 //        factory.setComponent(UserVectorNormalizer.class, VectorNormalizer.class,
 //                             IdentityVectorNormalizer.class);
 
-        engine = LenskitRecommenderEngine.build(daof, config);
+        engine = LenskitRecommenderEngine.build(config);
     }
 
     @SuppressWarnings("deprecation")
     @Test
     public void testItemItemRecommenderEngineCreate() {
-        Recommender rec = engine.open();
+        Recommender rec = engine.createRecommender();
 
         assertThat(rec.getItemScorer(),
                 instanceOf(ItemItemScorer.class));
         assertThat(rec.getRatingPredictor(),
                 instanceOf(SimpleRatingPredictor.class));
         assertThat(rec.getItemRecommender(),
-                instanceOf(ItemItemRecommender.class));
+                instanceOf(TopNItemRecommender.class));
         assertThat(rec.getGlobalItemRecommender(),
-                instanceOf(ItemItemGlobalRecommender.class));
+                instanceOf(TopNGlobalItemRecommender.class));
         assertThat(rec.getGlobalItemScorer(),
                 instanceOf(ItemItemGlobalScorer.class));
     }
@@ -89,22 +91,13 @@ public class TestNormalizingItemItemRecommenderBuild {
     public void testConfigSeparation() {
         LenskitRecommender rec1 = null;
         LenskitRecommender rec2 = null;
-        try {
-            rec1 = engine.open();
-            rec2 = engine.open();
+        rec1 = engine.createRecommender();
+        rec2 = engine.createRecommender();
 
-            assertThat(rec1.getItemScorer(),
-                    not(sameInstance(rec2.getItemScorer())));
-            assertThat(rec1.get(ItemItemModel.class),
-                    allOf(not(nullValue()),
-                            sameInstance(rec2.get(ItemItemModel.class))));
-        } finally {
-            if (rec2 != null) {
-                rec2.close();
-            }
-            if (rec1 != null) {
-                rec1.close();
-            }
-        }
+        assertThat(rec1.getItemScorer(),
+                   not(sameInstance(rec2.getItemScorer())));
+        assertThat(rec1.get(ItemItemModel.class),
+                   allOf(not(nullValue()),
+                         sameInstance(rec2.get(ItemItemModel.class))));
     }
 }

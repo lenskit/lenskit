@@ -20,8 +20,10 @@
  */
 
 import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.BaselinePredictor
-import org.grouplens.lenskit.baseline.ItemUserMeanPredictor
+import org.grouplens.lenskit.baseline.BaselineScorer
+import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
+import org.grouplens.lenskit.baseline.UserMeanBaseline
+import org.grouplens.lenskit.baseline.UserMeanItemScorer
 import org.grouplens.lenskit.slopeone.DeviationDamping
 import org.grouplens.lenskit.slopeone.SlopeOneItemScorer
 
@@ -29,7 +31,8 @@ dumpGraph {
     output "${config.analysisDir}/slope-one.dot"
     algorithm {
         bind ItemScorer to SlopeOneItemScorer
-        bind BaselinePredictor to ItemUserMeanPredictor
+        bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
+        bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
         set DeviationDamping to 0.0d
     }
 }

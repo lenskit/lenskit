@@ -21,7 +21,6 @@
 
 package org.grouplens.lenskit.util;
 
-import org.grouplens.lenskit.util.Indexer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Test;
 
@@ -38,7 +37,7 @@ public class TestIndexer {
     @Test
     public void testConvertArrayToVector(){
         Indexer ind = new Indexer();
-        MutableSparseVector vector = new MutableSparseVector();
+        MutableSparseVector vector = MutableSparseVector.create();
         double[] values = {1.0, 2.0, 3.0};
         assertThat(ind.getObjectCount(), equalTo(0));
         

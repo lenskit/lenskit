@@ -26,9 +26,6 @@ import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.util.ScoredItemAccumulator;
-import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
-import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -62,18 +59,10 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
     public void scoreItems(ItemItemModel model, SparseVector userData,
                            MutableSparseVector scores,
                            NeighborhoodScorer scorer) {
-        // We ran reuse accumulators
-        ScoredItemAccumulator accum;
-        if (neighborhoodSize > 0) {
-            accum = new TopNScoredItemAccumulator(neighborhoodSize);
-        } else {
-            accum = new UnlimitedScoredItemAccumulator();
-        }
-
         Predicate<ScoredId> usable = new VectorKeyPredicate(userData);
 
         // Create a channel for recording the neighborhoodsize
-        scores.getOrAddChannel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL);
+        scores.getOrAddChannelVector(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL);
         // for each item, compute its prediction
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
@@ -90,7 +79,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
 
             // compute score & place in vector
             final double score = scorer.score(neighbors, userData);
-            scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
+            scores.getChannelVector(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
                     set(e.getKey(), neighbors.size()); // set size even if no score
             if (!Double.isNaN(score)) {
                 scores.set(e, score);

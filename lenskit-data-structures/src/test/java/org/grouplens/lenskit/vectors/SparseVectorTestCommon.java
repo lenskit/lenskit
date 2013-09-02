@@ -24,7 +24,6 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.doubles.DoubleRBTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.collections.Pointer;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -69,101 +68,6 @@ public abstract class SparseVectorTestCommon {
     }
 
     @Test
-    public void testEmptyPointer() {
-        Pointer<VectorEntry> ptr = emptyVector().pointer(VectorEntry.State.SET);
-        assertThat(ptr.isAtEnd(), equalTo(true));
-        assertThat(ptr.advance(), equalTo(false));
-        try {
-            ptr.get();
-            fail("pointer should throw when out of bounds");
-        } catch (NoSuchElementException e) {
-            /* expected */
-        }
-
-        // try again, with EITHER (unmasked) pointer
-        ptr = emptyVector().pointer(VectorEntry.State.EITHER);
-        assertThat(ptr.isAtEnd(), equalTo(true));
-        assertThat(ptr.advance(), equalTo(false));
-        try {
-            ptr.get();
-            fail("pointer should throw when out of bounds");
-        } catch (NoSuchElementException e) {
-            /* expected */
-        }
-
-        // try again, with UNSET (inverted mask) pointer
-        ptr = emptyVector().pointer(VectorEntry.State.UNSET);
-        assertThat(ptr.isAtEnd(), equalTo(true));
-        assertThat(ptr.advance(), equalTo(false));
-        try {
-            ptr.get();
-            fail("pointer should throw when out of bounds");
-        } catch (NoSuchElementException e) {
-            /* expected */
-        }
-    }
-
-    @Test
-    public void testSimplePointer() {
-        Pointer<VectorEntry> ptr = simpleVector().pointer(VectorEntry.State.SET);
-        assertThat(ptr.isAtEnd(), equalTo(false));
-        assertThat(ptr.get().getKey(), equalTo(3L));
-        assertThat(ptr.get().getValue(), closeTo(1.5));
-        assertThat(ptr.get().isSet(), equalTo(true));
-        assertThat(ptr.advance(), equalTo(true));
-        assertThat(ptr.get().getKey(), equalTo(7L));
-        assertThat(ptr.get().getValue(), closeTo(3.5));
-        assertThat(ptr.get().isSet(), equalTo(true));
-        assertThat(ptr.isAtEnd(), equalTo(false));
-        assertThat(ptr.advance(), equalTo(true));
-        assertThat(ptr.get().getKey(), equalTo(8L));
-        assertThat(ptr.get().getValue(), closeTo(2));
-        assertThat(ptr.get().isSet(), equalTo(true));
-        assertThat(ptr.advance(), equalTo(false));
-        assertThat(ptr.isAtEnd(), equalTo(true));
-        try {
-            ptr.get();
-            fail("pointer should throw when out of bounds");
-        } catch (NoSuchElementException e) {
-            /* expected */
-        }
-
-        // try again, with EITHER (unmasked) pointer
-        ptr = simpleVector().pointer(VectorEntry.State.EITHER);
-        assertThat(ptr.isAtEnd(), equalTo(false));
-        assertThat(ptr.get().getKey(), equalTo(3L));
-        assertThat(ptr.get().getValue(), closeTo(1.5));
-        assertThat(ptr.get().isSet(), equalTo(true));
-        assertThat(ptr.advance(), equalTo(true));
-        assertThat(ptr.get().getKey(), equalTo(7L));
-        assertThat(ptr.get().getValue(), closeTo(3.5));
-        assertThat(ptr.get().isSet(), equalTo(true));
-        assertThat(ptr.isAtEnd(), equalTo(false));
-        assertThat(ptr.advance(), equalTo(true));
-        assertThat(ptr.get().getKey(), equalTo(8L));
-        assertThat(ptr.get().getValue(), closeTo(2));
-        assertThat(ptr.get().isSet(), equalTo(true));
-        assertThat(ptr.advance(), equalTo(false));
-        assertThat(ptr.isAtEnd(), equalTo(true));
-        try {
-            ptr.get();
-            fail("pointer should throw when out of bounds");
-        } catch (NoSuchElementException e) {
-            /* expected */
-        }
-
-        ptr = simpleVector().pointer(VectorEntry.State.UNSET);
-        assertThat(ptr.isAtEnd(), equalTo(true));
-        assertThat(ptr.advance(), equalTo(false));
-        try {
-            ptr.get();
-            fail("pointer should throw when out of bounds");
-        } catch (NoSuchElementException e) {
-            /* expected */
-        }
-    }
-
-    @Test
     public void testDot() {
         assertThat(emptyVector().dot(emptyVector()), closeTo(0));
         assertThat(emptyVector().dot(simpleVector()), closeTo(0));
@@ -193,10 +97,17 @@ public abstract class SparseVectorTestCommon {
      */
     @Test
     public void testGet() {
-        assertThat(emptyVector().get(5), notANumber());
+        try {
+            emptyVector().get(5);
+            fail("invalid key should throw exception");
+        } catch (IllegalArgumentException e) { /* expected */ }
+
         SparseVector v = singleton();
         assertThat(v.get(5), closeTo(Math.PI));
-        assertThat(v.get(2), notANumber());
+        try {
+            v.get(2);
+            fail("should throw IllegalArgumentException for bad argument");
+        } catch (IllegalArgumentException e) { /* expected */ }
 
         v = simpleVector();
         assertThat(v.get(7), closeTo(3.5));
@@ -326,59 +237,6 @@ public abstract class SparseVectorTestCommon {
         assertThat(keys, equalTo(new Long[]{3l, 7l, 8l}));
     }
 
-    @Test @SuppressWarnings("deprecation")
-    public void testVectorsGetPairedValues() {
-        Iterator<Vectors.EntryPair> noPairs = Vectors.pairedIterator(emptyVector(), simpleVector());
-        assertFalse(noPairs.hasNext());
-        assertNull(noPairs.next());
-        Iterator<Vectors.EntryPair> pairIter = Vectors.pairedIterator(simpleVector(), simpleVector2());
-        assertTrue(pairIter.hasNext());
-        Vectors.EntryPair pair = pairIter.next();
-        assertTrue(pair.getKey() == 3);
-        assertTrue(pair.getValue1() == 1.5);
-        assertTrue(pair.getValue2() == 2.0);
-        assertTrue(pairIter.hasNext());
-        Vectors.EntryPair lastPair = pair;
-        pair = pairIter.next();
-        // normal iteration returns new objects
-        assertTrue(lastPair.getKey() == 3);
-        assertTrue(lastPair.getValue1() == 1.5);
-        assertTrue(lastPair.getValue2() == 2.0);
-        assertTrue(pair.getKey() == 8);
-        assertTrue(pair.getValue1() == 2.0);
-        assertTrue(pair.getValue2() == 1.7);
-        assertFalse(pairIter.hasNext());
-        assertNull(pairIter.next());
-    }
-
-    @SuppressWarnings("deprecation")
-    @Test
-    public void testVectorsGetPairedValuesFast() {
-        Iterator<Vectors.EntryPair> noPairs =
-                Vectors.pairedFastIterator(emptyVector(), simpleVector());
-        assertFalse(noPairs.hasNext());
-        assertNull(noPairs.next());
-        Iterator<Vectors.EntryPair> pairIter =
-                Vectors.pairedFastIterator(simpleVector(), simpleVector2());
-        assertTrue(pairIter.hasNext());
-        Vectors.EntryPair pair = pairIter.next();
-        assertTrue(pair.getKey() == 3);
-        assertTrue(pair.getValue1() == 1.5);
-        assertTrue(pair.getValue2() == 2.0);
-        assertTrue(pairIter.hasNext());
-        Vectors.EntryPair lastPair = pair;
-        pair = pairIter.next();
-        // fast iteration modifies and returns the same object
-        assertFalse(lastPair.getKey() == 3);
-        assertFalse(lastPair.getValue1() == 1.5);
-        assertFalse(lastPair.getValue2() == 2.0);
-        assertTrue(pair.getKey() == 8);
-        assertTrue(pair.getValue1() == 2.0);
-        assertTrue(pair.getValue2() == 1.7);
-        assertFalse(pairIter.hasNext());
-        assertNull(pairIter.next());
-    }
-
     @Test
     public void testFast() {
         assertThat(emptyVector().fast(), notNullValue());
@@ -497,10 +355,16 @@ public abstract class SparseVectorTestCommon {
         assertThat(simple.get(3), closeTo(1.5));
         assertThat(ve.getValue(), closeTo(33));  // the VectorEntry is bogus
         assertThat(simple.get(ve), closeTo(1.5));
+        assertThat(simple.isSet(ve), equalTo(true));
         
         VectorEntry veBogus = new VectorEntry(null, -1, 3, 33, true);
         try {
             simple.get(veBogus);
+            fail("Should throw an IllegalArgumentException because the vector entry has a bogus index");
+        } catch (IllegalArgumentException iae) { /* skip */
+        }
+        try {
+            simple.isSet(veBogus);
             fail("Should throw an IllegalArgumentException because the vector entry has a bogus index");
         } catch (IllegalArgumentException iae) { /* skip */
         }
@@ -511,19 +375,34 @@ public abstract class SparseVectorTestCommon {
             fail("Should throw an IllegalArgumentException because the vector entry is not attached to this sparse vector");
         } catch (IllegalArgumentException iae) { /* skip */
         }
-        
-        VectorEntry veBogusKey = new VectorEntry(simple, 0, 22, 33, true);
         try {
-            simple.get(veBogusKey);
-            fail("Should throw an IllegalArgumentException because the vector entry has a bogus key");
+            simple.isSet(veNull);
+            fail("Should throw an IllegalArgumentException because the vector entry is not attached to this sparse vector");
         } catch (IllegalArgumentException iae) { /* skip */
         }
-
+        
         VectorEntry veBogusKeyDomain = new VectorEntry(simpleVector2(), 0, 3, 1.5, true);
         try {
             simple.get(veBogusKeyDomain);
             fail("Should throw an IllegalArgumentException because the vector entry has a different key domain from the vector");
         } catch (IllegalArgumentException iae) { /* skip */
+        }
+        try {
+            simple.isSet(veBogusKeyDomain);
+            fail("Should throw an IllegalArgumentException because the vector entry has a different key domain from the vector");
+        } catch (IllegalArgumentException iae) { /* skip */
+        }
+
+
+        MutableSparseVector msv = simpleVector().mutableCopy();
+        msv.unset(7);
+        VectorEntry veUnset = new VectorEntry(msv, 1, 7, 3.5, false);
+        assertThat(msv.isSet(veUnset), equalTo(false));
+        try {
+            msv.get(veUnset);
+            fail("should throw an IllegalArgumentException b/c the vector entry is unset.");
+        } catch (IllegalArgumentException e) {
+            /* expected */
         }
     }
 

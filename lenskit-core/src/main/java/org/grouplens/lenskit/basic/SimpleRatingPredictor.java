@@ -22,18 +22,14 @@ package org.grouplens.lenskit.basic;
 
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.baseline.BaselineScorer;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-
-import static org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer.makeRatingVector;
 
 /**
  * Basic {@link org.grouplens.lenskit.RatingPredictor} backed by an
@@ -52,18 +48,17 @@ import static org.grouplens.lenskit.data.history.RatingVectorUserHistorySummariz
 public final class SimpleRatingPredictor extends AbstractRatingPredictor {
     private final ItemScorer scorer;
     @Nullable
-    private final BaselinePredictor baselinePredictor;
+    private final ItemScorer baselineScorer;
     @Nullable
     private final PreferenceDomain preferenceDomain;
 
     @Inject
-    public SimpleRatingPredictor(DataAccessObject dao, ItemScorer scorer,
-                                 @Nullable BaselinePredictor baseline,
+    public SimpleRatingPredictor(ItemScorer scorer,
+                                 @Nullable @BaselineScorer ItemScorer baseline,
                                  @Nullable PreferenceDomain domain) {
         // TODO Make abstract rating predictors & item scorers not need the DAO
-        super(dao);
         this.scorer = scorer;
-        baselinePredictor = baseline;
+        baselineScorer = baseline;
         preferenceDomain = domain;
     }
 
@@ -91,49 +86,44 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
      * @return The baseline predictor, or {@code null} if no baseline is configured.
      */
     @Nullable
-    public BaselinePredictor getBaselinePredictor() {
-        return baselinePredictor;
+    public ItemScorer getBaselineScorer() {
+        return baselineScorer;
     }
 
     @Override
     public void predict(long user, @Nonnull MutableSparseVector scores) {
         scorer.score(user, scores);
-        if (baselinePredictor != null) {
-            baselinePredictor.predict(user, scores, false);
+        if (baselineScorer != null) {
+            MutableSparseVector unpred = MutableSparseVector.create(scores.unsetKeySet());
+            baselineScorer.score(user, unpred);
+            scores.set(unpred);
         }
         if (preferenceDomain != null) {
             preferenceDomain.clampVector(scores);
         }
     }
 
-    @Override
-    public void predict(@Nonnull UserHistory<? extends Event> profile, @Nonnull MutableSparseVector predictions) {
-        scorer.score(profile, predictions);
-        if (baselinePredictor != null) {
-            baselinePredictor.predict(profile.getUserId(), makeRatingVector(profile), predictions, false);
-        }
-        if (preferenceDomain != null) {
-            preferenceDomain.clampVector(predictions);
-        }
-    }
-
     /**
      * An intelligent provider for simple rating predictors. It provides a simple rating predictor
-     * if there is an {@link ItemScorer} available, and returns {@code null} otherwise.  This is
-     * the default provider for {@link RatingPredictor}
+     * if there are an {@link ItemScorer} and {@link UserEventDAO} available, and returns
+     * {@code null} otherwise.  This is the default provider for {@link RatingPredictor}.
      */
     public static class Provider implements javax.inject.Provider<RatingPredictor> {
-        private final DataAccessObject dao;
         private final ItemScorer scorer;
-        private final BaselinePredictor baseline;
+        private final ItemScorer baseline;
         private final PreferenceDomain domain;
 
+        /**
+         * Construct an automatic provider.
+         *
+         * @param s The item scorer.  If {@code null}, no rating predictor will be supplied.
+         * @param bp The baseline predictor, if configured.
+         * @param dom The preference domain, if known.
+         */
         @Inject
-        public Provider(DataAccessObject dao,
-                        @Nullable ItemScorer s,
-                        @Nullable BaselinePredictor bp,
+        public Provider(@Nullable ItemScorer s,
+                        @Nullable @BaselineScorer ItemScorer bp,
                         @Nullable PreferenceDomain dom) {
-            this.dao = dao;
             scorer = s;
             baseline = bp;
             domain = dom;
@@ -144,7 +134,7 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
             if (scorer == null) {
                 return null;
             } else {
-                return new SimpleRatingPredictor(dao, scorer, baseline, domain);
+                return new SimpleRatingPredictor(scorer, baseline, domain);
             }
         }
     }

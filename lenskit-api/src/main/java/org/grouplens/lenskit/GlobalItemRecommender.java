@@ -20,81 +20,70 @@
  */
 package org.grouplens.lenskit;
 
-import java.util.Set;
+import org.grouplens.lenskit.scored.ScoredId;
 
 import javax.annotation.Nullable;
-
-import org.grouplens.lenskit.collections.ScoredLongList;
+import java.util.List;
+import java.util.Set;
 
 
 /**
- * The interface for recommendation based on the items only. The difference from the {@link ItemRecommender} is
- * that the input is only the item or list of items instead of user specific information. This is a Find Similar
- * Items/ People Also Liked recommendation.
+ * The interface for recommendation based on the items only. The difference from {@link
+ * ItemRecommender} is that the input is only the item or list of items instead of user specific
+ * information. This interface can be used to provide a Find Similar Items / People Also Liked
+ * feature.
  *
- * <p>
- * The implementation is analogous to the {@link ItemRecommender}.
- * </p>
- *
+ * @see ItemRecommender
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  * @since 0.10
  */
 public interface GlobalItemRecommender {
-
-
     /**
      * Recommend all possible items for a basket of items using the default exclude set.
      *
      * @param items The items value.
-     * @return The sorted list of scored items.
+     * @return The recommended items.
      * @see #globalRecommend(Set, int, Set, Set)
      */
-    ScoredLongList globalRecommend(Set<Long> items);
+    List<ScoredId> globalRecommend(Set<Long> items);
 
     /**
-     * Recommend up to {@var n} items for a basket of items using the default exclude
-     * set.
+     * Recommend up to {@var n} items for a basket of items using the default exclude set.
      *
      * @param items The items value.
      * @param n     The number of recommendations to return.
-     * @return The sorted list of scored items.
+     * @return The recommended items.
      * @see #globalRecommend(Set, int, Set, Set)
      */
-    ScoredLongList globalRecommend(Set<Long> items, int n);
+    List<ScoredId> globalRecommend(Set<Long> items, int n);
 
     /**
-     * Recommend all possible items for a basket of items from a set of candidates using
-     * the default exclude set.
+     * Recommend all possible items for a basket of items from a set of candidates using the default
+     * exclude set.
      *
      * @param items      The items value.
-     * @param candidates The candidate set (can be null to represent the
-     *                   universe).
-     * @return The sorted list of scored items.
+     * @param candidates The candidate set (can be null to represent the universe).
+     * @return The recommended items.
      * @see #globalRecommend(Set, int, Set, Set)
      */
-    ScoredLongList globalRecommend(Set<Long> items, @Nullable Set<Long> candidates);
+    List<ScoredId> globalRecommend(Set<Long> items, @Nullable Set<Long> candidates);
 
     /**
-     * Produce a set of recommendations for the item. This is the most general
-     * recommendation method, allowing the recommendations to be constrained by
-     * both a candidate set and an exclude set. The exclude set is applied to
-     * the candidate set, so the final effective candidate set is
+     * Produce a set of recommendations for the item. This is the most general recommendation
+     * method, allowing the recommendations to be constrained by both a candidate set and an exclude
+     * set. The exclude set is applied to the candidate set, so the final effective candidate set is
      * {@var canditates} minus {@var exclude}.
      *
      * @param items      The items value
-     * @param n          The number of ratings to return. If negative, recommend all
-     *                   possible items.
-     * @param candidates A set of candidate items which can be recommended. If
-     *                   {@code null}, all items are considered candidates.
-     * @param exclude    A set of items to be excluded. If {@code null}, a default
-     *                   exclude set is used.
-     * @return A list of recommended items. If the recommender cannot assign
-     *         meaningful scores, the scores will be {@link Double#NaN}. For
-     *         most scoring recommenders, the items should be ordered in
-     *         decreasing order of score. This is not a hard requirement ??? e.g.
-     *         set recommenders are allowed to be more flexible.
+     * @param n          The number of ratings to return. If negative, no specific size is requested.
+     * @param candidates A set of candidate items which can be recommended. If {@code null}, all
+     *                   items are considered candidates.
+     * @param exclude    A set of items to be excluded. If {@code null}, a default exclude set is
+     *                   used.
+     * @return A list of recommended items. If the recommender cannot assign meaningful scores, the
+     *         scores will be {@link Double#NaN}.
      */
-    ScoredLongList globalRecommend(Set<Long> items, int n, @Nullable Set<Long> candidates,
+    List<ScoredId> globalRecommend(Set<Long> items, int n, @Nullable Set<Long> candidates,
                                    @Nullable Set<Long> exclude);
 }

@@ -94,7 +94,7 @@ public class Indexer implements Index {
             throw new IllegalArgumentException("Value array has incorrect length");
         }
 
-        MutableSparseVector newSparseVector = new MutableSparseVector(ids);
+        MutableSparseVector newSparseVector = MutableSparseVector.create(ids);
         for(VectorEntry e : newSparseVector.fast(State.EITHER)){
             final int iid = getIndex(e.getKey());
             newSparseVector.set(e, values[iid]);

@@ -20,8 +20,8 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
@@ -29,17 +29,17 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.IdentityVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,10 +47,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.closeTo;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.*;
 
 public class TestItemItemRecommender {
@@ -76,17 +74,17 @@ public class TestItemItemRecommender {
         rs.add(Ratings.make(6, 8, 2));
         rs.add(Ratings.make(1, 9, 3));
         rs.add(Ratings.make(3, 9, 4));
-        EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
+        EventCollectionDAO dao = new EventCollectionDAO(rs);
         LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(dao);
         config.bind(ItemScorer.class).to(ItemItemScorer.class);
-        config.bind(ItemRecommender.class).to(ItemItemRecommender.class);
         // this is the default
         config.bind(UserVectorNormalizer.class)
               .to(DefaultUserVectorNormalizer.class);
         config.bind(VectorNormalizer.class)
               .to(IdentityVectorNormalizer.class);
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(manager, config);
-        session = engine.open();
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
+        session = engine.createRecommender();
         recommender = session.getItemRecommender();
     }
 
@@ -97,15 +95,13 @@ public class TestItemItemRecommender {
      */
     @Test
     public void testItemScorerNoRating() {
-        UserHistory<Rating> history = getRatings(5);
         long[] items = {7, 8};
         ItemItemScorer scorer = session.get(ItemItemScorer.class);
         assertThat(scorer, notNullValue());
-        SparseVector scores = scorer.score(history, LongArrayList.wrap(items));
+        SparseVector scores = scorer.score(5, LongArrayList.wrap(items));
         assertThat(scores, notNullValue());
         assertThat(scores.size(), equalTo(1));
         assertThat(scores.get(7), not(notANumber()));
-        assertThat(scores.get(8), notANumber());
         assertThat(scores.containsKey(8), equalTo(false));
     }
 
@@ -116,25 +112,22 @@ public class TestItemItemRecommender {
      */
     @Test
     public void testItemScorerChannels() {
-        UserHistory<Rating> history = getRatings(5);
         long[] items = {7, 8};
         ItemItemScorer scorer = session.get(ItemItemScorer.class);
         assertThat(scorer, notNullValue());
-        SparseVector scores = scorer.score(history, LongArrayList.wrap(items));
+        SparseVector scores = scorer.score(5, LongArrayList.wrap(items));
         assertThat(scores, notNullValue());
         assertThat(scores.size(), equalTo(1));
         assertThat(scores.get(7), not(notANumber()));
-        assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
+        assertThat(scores.getChannelVector(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
                 get(7), closeTo(1.0, 1.0e-5));
-        assertThat(scores.get(8), notANumber());
         assertThat(scores.containsKey(8), equalTo(false));
 
-        history = getRatings(2);  // has rated 7, and 8
         long[] items2 = {7, 8, 9};
         scorer = session.get(ItemItemScorer.class);
         assertThat(scorer, notNullValue());
-        scores = scorer.score(history, LongArrayList.wrap(items2));
-        assertThat(scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
+        scores = scorer.score(2, LongArrayList.wrap(items2));
+        assertThat(scores.getChannelVector(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
                 get(9), closeTo(3.0, 1.0e-5));  // 1, 7, 8
     }
 
@@ -143,33 +136,29 @@ public class TestItemItemRecommender {
      */
     @Test
     public void testItemItemRecommender1() {
-        LongList recs = recommender.recommend(getRatings(1));
-        assertTrue(recs.isEmpty());
+        List<ScoredId> recs = recommender.recommend(1);
+        assertThat(recs, hasSize(0));
 
-        recs = recommender.recommend(getRatings(2));
-        assertEquals(1, recs.size());
-        assertTrue(recs.contains(9));
+        recs = recommender.recommend(2);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   contains(9L));
 
-        recs = recommender.recommend(getRatings(3));
-        assertEquals(1, recs.size());
-        assertTrue(recs.contains(6));
+        recs = recommender.recommend(3);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   contains(6L));
 
-        recs = recommender.recommend(getRatings(4));
+        recs = recommender.recommend(4);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   containsInAnyOrder(6L, 9L));
         assertEquals(2, recs.size());
-        assertTrue(recs.contains(6));
-        assertTrue(recs.contains(9));
 
-        recs = recommender.recommend(getRatings(5));
-        assertEquals(3, recs.size());
-        assertTrue(recs.contains(6));
-        assertTrue(recs.contains(7));
-        assertTrue(recs.contains(9));
+        recs = recommender.recommend(5);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   containsInAnyOrder(6L, 7L, 9L));
 
-        recs = recommender.recommend(getRatings(6));
-        assertEquals(3, recs.size());
-        assertTrue(recs.contains(6));
-        assertTrue(recs.contains(7));
-        assertTrue(recs.contains(9));
+        recs = recommender.recommend(6);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   containsInAnyOrder(6L, 7L, 9L));
     }
 
     /**
@@ -177,18 +166,20 @@ public class TestItemItemRecommender {
      */
     @Test
     public void testItemItemRecommender2() {
-        LongList recs = recommender.recommend(getRatings(2), 1);
-        assertEquals(1, recs.size());
-        assertTrue(recs.contains(9));
+        List<ScoredId> recs = recommender.recommend(2, 1);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   contains(9L));
 
-        recs = recommender.recommend(getRatings(2), 0);
-        assertTrue(recs.isEmpty());
+        recs = recommender.recommend(2, 0);
+        assertThat(recs, hasSize(0));
 
-        recs = recommender.recommend(getRatings(3), 1);
-        assertTrue(recs.contains(6) || recs.contains(9));
+        recs = recommender.recommend(3, 1);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   anyOf(contains(6L),
+                         contains(9L)));
 
-        recs = recommender.recommend(getRatings(4), 0);
-        assertTrue(recs.isEmpty());
+        recs = recommender.recommend(4, 0);
+        assertThat(recs, hasSize(0));
     }
 
     /**
@@ -196,7 +187,7 @@ public class TestItemItemRecommender {
      */
     @Test
     public void testItemItemRecommender3() {
-        LongList recs = recommender.recommend(getRatings(1), null);
+        List<ScoredId> recs = recommender.recommend(1, null);
         assertTrue(recs.isEmpty());
 
 
@@ -205,47 +196,43 @@ public class TestItemItemRecommender {
         candidates.add(7);
         candidates.add(8);
         candidates.add(9);
-        recs = recommender.recommend(getRatings(1), candidates);
-        assertTrue(recs.isEmpty());
+        recs = recommender.recommend(1, candidates);
+        assertThat(recs, hasSize(0));
 
-        recs = recommender.recommend(getRatings(2), null);
-        assertEquals(1, recs.size());
-        assertTrue(recs.contains(9));
+        recs = recommender.recommend(2, null);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   contains(9L));
 
         candidates.clear();
         candidates.add(7);
         candidates.add(8);
         candidates.add(9);
-        recs = recommender.recommend(getRatings(2), candidates);
-        assertEquals(1, recs.size());
-        assertTrue(recs.contains(9));
+        recs = recommender.recommend(2, candidates);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   contains(9L));
 
         candidates.add(6);
         candidates.remove(9);
-        recs = recommender.recommend(getRatings(2), candidates);
-        assertTrue(recs.isEmpty());
+        recs = recommender.recommend(2, candidates);
+        assertThat(recs, hasSize(0));
 
-        recs = recommender.recommend(getRatings(5), null);
-        assertEquals(3, recs.size());
-        assertTrue(recs.contains(6));
-        assertTrue(recs.contains(7));
-        assertTrue(recs.contains(9));
+        recs = recommender.recommend(5, null);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   containsInAnyOrder(9L, 7L, 6L));
 
         candidates.clear();
         candidates.add(6);
         candidates.add(7);
-        recs = recommender.recommend(getRatings(5), candidates);
-        assertEquals(2, recs.size());
-        assertTrue(recs.contains(6));
-        assertTrue(recs.contains(7));
+        recs = recommender.recommend(5, candidates);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   containsInAnyOrder(6L, 7L));
 
         candidates.clear();
         candidates.add(6);
         candidates.add(9);
-        recs = recommender.recommend(getRatings(5), candidates);
-        assertEquals(2, recs.size());
-        assertTrue(recs.contains(6));
-        assertTrue(recs.contains(9));
+        recs = recommender.recommend(5, candidates);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   containsInAnyOrder(6L, 9L));
     }
 
     /**
@@ -253,87 +240,69 @@ public class TestItemItemRecommender {
      */
     @Test
     public void testItemItemRecommender4() {
-        LongList recs = recommender.recommend(getRatings(5), -1, null, null);
-        assertEquals(3, recs.size());
-        assertTrue(recs.contains(6));
-        assertTrue(recs.contains(7));
-        assertTrue(recs.contains(9));
+        List<ScoredId> recs = recommender.recommend(5, -1, null, null);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   containsInAnyOrder(6L, 7L, 9L));
 
         LongOpenHashSet candidates = new LongOpenHashSet();
         candidates.add(6);
         candidates.add(7);
         candidates.add(8);
         candidates.add(9);
-        recs = recommender.recommend(getRatings(5), -1, candidates, null);
-        assertEquals(3, recs.size());
-        assertTrue(recs.contains(6));
-        assertTrue(recs.contains(7));
-        assertTrue(recs.contains(9));
+        recs = recommender.recommend(5, -1, candidates, null);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   containsInAnyOrder(6L, 7L, 9L));
 
         candidates.remove(6);
-        recs = recommender.recommend(getRatings(5), -1, candidates, null);
-        assertEquals(2, recs.size());
-        assertTrue(recs.contains(7));
-        assertTrue(recs.contains(9));
+        recs = recommender.recommend(5, -1, candidates, null);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   containsInAnyOrder(7L, 9L));
 
         candidates.remove(7);
-        recs = recommender.recommend(getRatings(5), -1, candidates, null);
-        assertEquals(1, recs.size());
-        assertTrue(recs.contains(9));
+        recs = recommender.recommend(5, -1, candidates, null);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   containsInAnyOrder(9L));
 
         candidates.remove(9);
-        recs = recommender.recommend(getRatings(5), -1, candidates, null);
-        assertTrue(recs.isEmpty());
+        recs = recommender.recommend(5, -1, candidates, null);
+        assertThat(recs, hasSize(0));
 
         candidates.add(9);
         candidates.add(7);
-        recs = recommender.recommend(getRatings(5), 1, candidates, null);
-        assertEquals(1, recs.size());
-        assertTrue(recs.contains(9) || recs.contains(7));
+        recs = recommender.recommend(5, 1, candidates, null);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   anyOf(contains(9L), contains(7L)));
 
         LongOpenHashSet exclude = new LongOpenHashSet();
         exclude.add(7);
-        recs = recommender.recommend(getRatings(5), 2, candidates, exclude);
-        assertEquals(1, recs.size());
-        assertTrue(recs.contains(9));
+        recs = recommender.recommend(5, 2, candidates, exclude);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   containsInAnyOrder(9L));
 
-        recs = recommender.recommend(getRatings(5), 0, candidates, null);
-        assertTrue(recs.isEmpty());
+        recs = recommender.recommend(5, 0, candidates, null);
+        assertThat(recs, hasSize(0));
 
         candidates.clear();
         candidates.add(7);
         candidates.add(9);
-        recs = recommender.recommend(getRatings(5), -1, candidates, null);
-        assertEquals(2, recs.size());
-        assertTrue(recs.contains(7));
-        assertTrue(recs.contains(9));
+        recs = recommender.recommend(5, -1, candidates, null);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   containsInAnyOrder(7L, 9L));
 
         candidates.add(6);
         exclude.clear();
         exclude.add(9);
-        recs = recommender.recommend(getRatings(5), -1, candidates, exclude);
-        assertEquals(2, recs.size());
-        assertTrue(recs.contains(6));
-        assertTrue(recs.contains(7));
+        recs = recommender.recommend(5, -1, candidates, exclude);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   containsInAnyOrder(6L, 7L));
 
         exclude.add(7);
-        recs = recommender.recommend(getRatings(5), -1, candidates, exclude);
-        assertEquals(1, recs.size());
-        assertTrue(recs.contains(6));
+        recs = recommender.recommend(5, -1, candidates, exclude);
+        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
+                   containsInAnyOrder(6L));
 
         exclude.add(6);
-        recs = recommender.recommend(getRatings(5), -1, candidates, exclude);
-        assertTrue(recs.isEmpty());
-    }
-
-    //Helper method to retrieve user's user and create SparseVector
-    private UserHistory<Rating> getRatings(long user) {
-        DataAccessObject dao = session.getDataAccessObject();
-        return dao.getUserHistory(user, Rating.class);
-    }
-
-    @After
-    public void cleanUp() {
-        session.close();
+        recs = recommender.recommend(5, -1, candidates, exclude);
+        assertThat(recs, hasSize(0));
     }
 }

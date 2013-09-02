@@ -79,13 +79,13 @@ public class UnitVectorNormalizer extends AbstractVectorNormalizer implements Se
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
-            vector.scale(1 / factor);
+            vector.multiply(1 / factor);
             return vector;
         }
 
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
-            vector.scale(factor);
+            vector.multiply(factor);
             return vector;
         }
 

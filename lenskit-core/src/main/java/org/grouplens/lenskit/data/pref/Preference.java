@@ -20,9 +20,6 @@
  */
 package org.grouplens.lenskit.data.pref;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 /**
  * A real-valued preference a user has for an item. Preferences can be articulated by the user in
  * the form of ratings, or they may be predicted or otherwise computed. The distinction will
@@ -34,77 +31,25 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
-public abstract class Preference {
+public interface Preference {
     /**
      * Get the ID of the user whose preference this is.
      *
      * @return The user ID.
      */
-    public abstract long getUserId();
+    long getUserId();
 
     /**
      * Get the ID of the item the preference is for.
      *
      * @return The item ID.
      */
-    public abstract long getItemId();
+    long getItemId();
 
     /**
      * Get the preference value.
      *
      * @return The preference value.
      */
-    public abstract double getValue();
-
-    /**
-     * Compare two preferences for equality. Preferences are equal if their users,
-     * items, and values are equal.
-     *
-     * @param obj The object to compare.
-     * @return {@code true} if the object compares equal to this.
-     */
-    @Override
-    public final boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        } else if (obj instanceof Preference) {
-            Preference op = (Preference) obj;
-            return new EqualsBuilder()
-                    .append(getUserId(), op.getUserId())
-                    .append(getItemId(), op.getItemId())
-                    .append(getValue(), op.getValue())
-                    .isEquals();
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public final int hashCode() {
-        return new HashCodeBuilder()
-                .append(getItemId())
-                .append(getUserId())
-                .append(getValue())
-                .toHashCode();
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Preference(u=%d, i=%d, v=%.2f", getUserId(), getItemId(), getValue());
-    }
-
-    /**
-     * Copy this preference. The resulting preference is guaranteed to be immutable,
-     * so this method can be used to save an object in fast iteration.  It may be the
-     * same object as {@var this}, if it is already immutable.  The copy should also be
-     * isolated from any backing store so it can be retained without holding references
-     * to large objects.
-     *
-     * @return The copied preference.
-     * @deprecated Use {@link PreferenceBuilder#copy(Preference)}.
-     */
-    @Deprecated
-    public Preference copy() {
-        return PreferenceBuilder.copy(this).build();
-    }
+    double getValue();
 }

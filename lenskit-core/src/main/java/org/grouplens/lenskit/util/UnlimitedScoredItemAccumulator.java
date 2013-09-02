@@ -70,7 +70,7 @@ public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulat
     @Override
     public MutableSparseVector finishVector() {
         if (scores == null) {
-            return new MutableSparseVector();
+            return MutableSparseVector.create();
         }
 
         return Vectors.fromScoredIds(finish());

@@ -20,11 +20,21 @@
  */
 package org.grouplens.lenskit.scored;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
@@ -36,23 +46,24 @@ import java.util.*;
  * {@link ScoredIdListBuilder} (see {@link ScoredIds#newListBuilder()}.
  *
  * @since 1.4
+ * @compat Public
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class PackedScoredIdList extends AbstractList<ScoredId> implements FastCollection<ScoredId>, Serializable {
     private static final long serialVersionUID = 1L;
     private final long[] ids;
     private final double[] scores;
-    private final Map<Symbol,double[]> channels;
-    private final Map<TypedSymbol<?>,Object[]> typedChannels;
+    private final Map<Symbol,double[]> unboxedChannels;
+    private final Map<TypedSymbol<?>,Object[]> channels;
 
     PackedScoredIdList(long[] ids, double[] scores,
-                       Map<Symbol, double[]> chans,
-                       Map<TypedSymbol<?>, Object[]> tchans) {
+                       Map<TypedSymbol<?>, Object[]> chans,
+                       Map<Symbol, double[]> unboxedChans) {
         assert ids.length == scores.length;
         this.ids = ids;
         this.scores = scores;
+        unboxedChannels = unboxedChans;
         channels = chans;
-        typedChannels = tchans;
     }
 
     /**
@@ -64,12 +75,12 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
         if (ids.length != scores.length) {
             throw new InvalidObjectException("score array has incorrect size");
         }
-        for (double[] chan: channels.values()) {
+        for (double[] chan: unboxedChannels.values()) {
             if (chan.length != ids.length) {
                 throw new InvalidObjectException("channel array has incorrect size");
             }
         }
-        for (Map.Entry<TypedSymbol<?>,Object[]> tc: typedChannels.entrySet()) {
+        for (Map.Entry<TypedSymbol<?>,Object[]> tc: channels.entrySet()) {
             if (tc.getValue().length != ids.length) {
                 throw new InvalidObjectException("channel array has incorrect size");
             }
@@ -135,46 +146,104 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
         }
 
         @Override
-        public Set<Symbol> getChannels() {
-            return channels.keySet();
+        public Set<Symbol> getUnboxedChannelSymbols() {
+            return unboxedChannels.keySet();
         }
 
         @Override
-        public Set<TypedSymbol<?>> getTypedChannels() {
-            return typedChannels.keySet();
+        public Set<TypedSymbol<?>> getChannelSymbols() {
+            ImmutableSet.Builder<TypedSymbol<?>> bld = ImmutableSet.builder();
+            for (Symbol s: unboxedChannels.keySet()) {
+                bld.add(s.withType(Double.class));
+            }
+            for (Map.Entry<TypedSymbol<?>,Object[]> e: channels.entrySet()) {
+                if (e.getValue()[index] != null) {
+                    bld.add(e.getKey());
+                }
+            }
+            return bld.build();
         }
 
+        @Nonnull
         @Override
-        public double channel(Symbol s) {
-            double[] chan = channels.get(s);
-            if (chan != null) {
-                return chan[index];
+        public Collection<SymbolValue<?>> getChannels() {
+            // FIXME Make this fast
+            List<SymbolValue<?>> channels = Lists.newArrayList();
+            FluentIterable.from(PackedScoredIdList.this.channels.entrySet())
+                    .transform(new Function<Map.Entry<TypedSymbol<?>, Object[]>, SymbolValue<?>>() {
+                        @SuppressWarnings({"rawtypes", "unchecked"})
+                        @Nullable
+                        @Override
+                        public SymbolValue<?> apply(@Nullable Map.Entry<TypedSymbol<?>, Object[]> input) {
+                            assert input != null;
+                            Object obj = input.getValue()[index];
+                            if (obj != null) {
+                                TypedSymbol sym = input.getKey();
+                                assert sym.getType().isInstance(obj);
+                                return sym.withValue(obj);
+                            } else {
+                                return null;
+                            }
+                        }
+                    }).filter(Predicates.notNull())
+                    .copyInto(channels);
+            channels.addAll(getUnboxedChannels());
+            return channels;
+        }
+
+        @Nonnull
+        @Override
+        public Collection<DoubleSymbolValue> getUnboxedChannels() {
+            return Collections2.transform(
+                    unboxedChannels.entrySet(),
+                    new Function<Map.Entry<Symbol, double[]>, DoubleSymbolValue>() {
+                        @Nullable
+                        @Override
+                        public DoubleSymbolValue apply(@Nullable Map.Entry<Symbol, double[]> input) {
+                            assert input != null;
+                            return SymbolValue.of(input.getKey(), input.getValue()[index]);
+                        }
+                    });
+        }
+
+        @Nullable
+        @Override
+        public <T> T getChannelValue(@Nonnull TypedSymbol<T> sym) {
+            if (sym.getType().equals(Double.class) && hasUnboxedChannel(sym.getRawSymbol())) {
+                return sym.getType().cast(getUnboxedChannelValue(sym.getRawSymbol()));
             } else {
-                throw new IllegalArgumentException("unknown symbol " + s);
+                Object[] array = channels.get(sym);
+                if (array == null) {
+                    return null;
+                } else {
+                    return sym.getType().cast(array[index]);
+                }
             }
         }
 
-        @SuppressWarnings("unchecked")
         @Override
-        public <K> K channel(TypedSymbol<K> s) {
-            Object[] chan = typedChannels.get(s);
-            if (chan != null) {
-                Object obj = chan[index];
-                assert obj == null || s.getType().isInstance(obj);
-                return (K) obj;
+        public double getUnboxedChannelValue(Symbol sym) {
+            double[] array = unboxedChannels.get(sym);
+            if (array != null) {
+                return array[index];
             } else {
-                throw new IllegalArgumentException("unknown symbol " + s);
+                throw new NullPointerException("no symbol " + sym);
             }
         }
 
         @Override
-        public boolean hasChannel(Symbol s) {
-            return channels.containsKey(s);
+        public boolean hasUnboxedChannel(Symbol s) {
+            return unboxedChannels.containsKey(s);
         }
 
         @Override
         public boolean hasChannel(TypedSymbol<?> s) {
-            return typedChannels.containsKey(s);
+            if (s.getType().equals(Double.class) && hasUnboxedChannel(s.getRawSymbol())) {
+                return true;
+            } else {
+                Object[] obj = channels.get(s);
+                return obj != null && obj[index] != null;
+            }
         }
     }
 

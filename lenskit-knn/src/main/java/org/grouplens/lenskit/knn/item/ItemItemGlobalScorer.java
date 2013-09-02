@@ -20,10 +20,9 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.basic.AbstractGlobalItemScorer;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
@@ -46,9 +45,7 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer {
     ItemScoreAlgorithm algorithm;
 
     @Inject
-    public ItemItemGlobalScorer(DataAccessObject dao, ItemItemModel m,
-                                ItemScoreAlgorithm algo) {
-        super(dao);
+    public ItemItemGlobalScorer(ItemItemModel m, ItemScoreAlgorithm algo) {
         model = m;
         // The global item scorer use the SimilaritySumNeighborhoodScorer for the unary ratings
         this.scorer = new SimilaritySumNeighborhoodScorer();
@@ -59,8 +56,8 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer {
     public void globalScore(@Nonnull Collection<Long> queryItems,
                             @Nonnull MutableSparseVector output) {
         // create the unary rating for the items
-        LongSet qItems = new LongSortedArraySet(queryItems);
-        MutableSparseVector basket = new MutableSparseVector(qItems, 1.0);
+        LongSortedSet qItems = LongUtils.packedSet(queryItems);
+        MutableSparseVector basket = MutableSparseVector.create(qItems, 1.0);
 
         output.clear();
         algorithm.scoreItems(model, basket, output, scorer);

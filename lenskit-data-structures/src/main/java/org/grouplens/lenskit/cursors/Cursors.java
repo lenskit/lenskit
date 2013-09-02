@@ -36,6 +36,7 @@ import java.util.*;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
+@SuppressWarnings("deprecation")
 public final class Cursors {
     private static final int DEFAULT_LIST_SIZE = 20;
 
@@ -162,90 +163,6 @@ public final class Cursors {
     }
 
     /**
-     * Read a LongCursor into a LongArrayList, closing the cursor when done.
-     *
-     * @param cursor The LongCursor to be read into a list.
-     * @return A new list containing the elements of the cursor. The list has been
-     *         allocated with a capacity of {@link Cursor#getRowCount()} if possible,
-     *         but has not been trimmed.
-     */
-    public static LongArrayList makeList(@WillClose LongCursor cursor) {
-        LongArrayList list = null;
-        try {
-            int n = cursor.getRowCount();
-            if (n < 0) {
-                n = DEFAULT_LIST_SIZE;
-            }
-            list = new LongArrayList(n);
-            while (cursor.hasNext()) {
-                list.add(cursor.nextLong());
-            }
-        } finally {
-            cursor.close();
-        }
-
-        return list;
-    }
-
-    /**
-     * Read a LongCursor into a LongSet, closing the cursor when done.
-     *
-     * @param cursor The LongCursor to be read into a set.
-     * @return A LongSet containing the elements of the cursor.
-     */
-    public static LongSet makeSet(@WillClose LongCursor cursor) {
-        LongOpenHashSet set = null;
-        try {
-            int n = cursor.getRowCount();
-            if (n < 0) {
-                n = DEFAULT_LIST_SIZE;
-            }
-            set = new LongOpenHashSet(n);
-            while (cursor.hasNext()) {
-                set.add(cursor.nextLong());
-            }
-        } finally {
-            cursor.close();
-        }
-        set.trim();
-        return set;
-    }
-
-    /**
-     * Wrap a long iterator in a cursor.
-     *
-     * @param iter An iterator.
-     * @return A cursor backed by {@code iter}. Closing the cursor is a no-op.
-     */
-    public static LongCursor wrap(LongIterator iter) {
-        return new LongIteratorCursor(iter);
-    }
-
-    /**
-     * Construct a cursor over a collection.
-     *
-     * @param collection A collection.
-     * @return A cursor over the collection. Closing the cursor is a no-op.
-     */
-    public static LongCursor wrap(LongCollection collection) {
-        return new LongIteratorCursor(collection.iterator(), collection.size());
-    }
-
-    /**
-     * Make a fast long cursor.
-     *
-     * @param cursor A cursor.
-     * @return A {@link LongCursor}. If {@code cursor} is a LongCursor, it is returned.
-     */
-    public static LongCursor makeLongCursor(@WillCloseWhenClosed final Cursor<Long> cursor) {
-        if (cursor instanceof LongCursor) {
-            return (LongCursor) cursor;
-        } else {
-            return new UnboxingLongCursor(cursor);
-        }
-    }
-
-    /**
      * Sort a cursor.  This reads the original cursor into a list, sorts it, and
      * returns a new cursor backed by the list (after closing the original cursor).
      *
@@ -259,55 +176,5 @@ public final class Cursors {
         final ArrayList<T> list = makeList(cursor);
         Collections.sort(list, comp);
         return wrap(list);
-    }
-
-    private static class UnboxingLongCursor implements LongCursor {
-        private final Cursor<Long> cursor;
-
-        public UnboxingLongCursor(Cursor<Long> cursor) {
-            this.cursor = cursor;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return cursor.hasNext();
-        }
-
-        @Nonnull
-        @Override
-        public Long next() {
-            return cursor.next();
-        }
-
-        @Nonnull
-        @Override
-        public Long fastNext() {
-            return cursor.fastNext();
-        }
-
-        @Override
-        public LongIterable fast() {
-            return this;
-        }
-
-        @Override
-        public long nextLong() {
-            return next();
-        }
-
-        @Override
-        public void close() {
-            cursor.close();
-        }
-
-        @Override
-        public int getRowCount() {
-            return cursor.getRowCount();
-        }
-
-        @Override
-        public LongIterator iterator() {
-            return new LongCursorIterator(this);
-        }
     }
 }

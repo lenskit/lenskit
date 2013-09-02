@@ -20,11 +20,12 @@
  */
 package org.grouplens.lenskit.eval.data;
 
-import org.grouplens.lenskit.data.dao.DAOFactory;
+import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.script.BuiltBy;
 
 import javax.annotation.Nullable;
+import javax.inject.Provider;
 
 /**
  * Data source for a single data set.
@@ -49,12 +50,50 @@ public interface DataSource {
     PreferenceDomain getPreferenceDomain();
 
     /**
-     * Get a DAO factory for this data source. The data source must be prepared
-     * before this method is called or the resulting DAO factory used.
+     * Get an event DAO for this data source.
      *
      * @return A DAO factory backed by this data source.
      */
-    DAOFactory getDAOFactory();
+    EventDAO getEventDAO();
+
+    /**
+     * Get an event DAO provider.
+     *
+     * @return A provider of event DAOs.
+     */
+    Provider<EventDAO> getEventDAOProvider();
+
+    /**
+     * Get a user-event DAO for this data source.  This implementation will probably not be used
+     * for model training at present.
+     *
+     * @return A user-event DAO.
+     */
+    UserEventDAO getUserEventDAO();
+
+    /**
+     * Get a item-event DAO for this data source.  This implementation will probably not be used
+     * for model training at present.
+     *
+     * @return A item-event DAO.
+     */
+    ItemEventDAO getItemEventDAO();
+
+    /**
+     * Get an item DAO for this data source.  This implementation will probably not be used
+     * for model training at present.
+     *
+     * @return An item DAO.
+     */
+    ItemDAO getItemDAO();
+
+    /**
+     * Get an user DAO for this data source.  This implementation will probably not be used
+     * for model training at present.
+     *
+     * @return An user DAO.
+     */
+    UserDAO getUserDAO();
 
     long lastModified();
 }

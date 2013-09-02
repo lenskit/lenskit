@@ -20,33 +20,22 @@
  */
 package org.grouplens.lenskit.vectors;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Sets;
+import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.longs.Long2DoubleArrayMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import org.grouplens.lenskit.collections.LongUtils;
+import org.junit.Test;
 
-import java.util.BitSet;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-
-import org.grouplens.lenskit.collections.Pointer;
-import org.junit.Test;
-
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Sets;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -88,66 +77,6 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(v2.get(3), closeTo(1.5));
     }
 
-    // Ensure that the constructors work too.
-    @Test
-    public void testConstructor() {
-        long[] keys = { 3, 5, 8 };
-        double[] values = { 2, 2.3, 1.7 };
- 
-        MutableSparseVector v1 = new MutableSparseVector(keys, values);
-        assertThat(v1.set(3, 77), closeTo(2));
-        assertThat(v1.get(3), closeTo(77));
-    }
-
-    // Ensure that the constructors work too.
-    @Test
-    public void testNotSortedConstructor() {
-        long[] keys = { 3, 8, 5 };
-        double[] values = { 2, 2.3, 1.7 };
- 
-        @SuppressWarnings("unused")
-        MutableSparseVector v1;
-        try {
-            v1 = new MutableSparseVector(keys, values);
-            fail("Should throw an exception since the keys are not sorted");
-        } catch(IllegalArgumentException iae) { /* good */ }
-    }
-    
-    // Ensure that the constructors work too.
-    @Test
-    public void testNotSortedUsedConstructor() {
-        long[] keys = { 3, 8, 5 };
-        double[] values = { 2, 2.3, 1.7 };
-        BitSet used = new BitSet();
-        used.set(3);
-        used.set(8);
-        used.set(5);
-        
-        @SuppressWarnings("unused")
-        MutableSparseVector v1;
-        try {
-            v1 = new MutableSparseVector(keys, values, keys.length, used);
-            fail("Should throw an exception since the keys are not sorted");
-        } catch(IllegalArgumentException iae) { /* good */ }
-    }
-    
-    // Ensure that the constructors work too.
-    @Test
-    public void testUsedConstructor() {
-        long[] keys = { 3, 5, 8 };
-        double[] values = { 2, 2.3, 1.7 };
-        BitSet used = new BitSet();
-        used.set(0);
-        used.set(2);
-
-        MutableSparseVector v1;
-        v1 = new MutableSparseVector(keys, values, keys.length, used);
-        assertThat(v1.get(3), closeTo(2));
-        assertThat(v1.get(8), closeTo(1.7));
-        assertThat(v1.get(5), notANumber());
-    }
-
-    // Ensure that the constructors work too.
     @Test
     public void testMapConstructor() {
         Long2DoubleMap map = new Long2DoubleArrayMap();
@@ -163,9 +92,6 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(msv.get(7), closeTo(3.5));
         assertThat(msv.get(8), closeTo(2));
     }
-
-
-
 
     @Test
     public void testCopy() {
@@ -185,6 +111,8 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     public void testImmutable() {
         MutableSparseVector v = simpleVector();
         ImmutableSparseVector iv = v.immutable();
+        // we don't want to freeze
+        assertThat(iv.values, not(sameInstance(v.values)));
         v.set(7, 42.0);  // the original is still mutable
         assertThat(v.get(7), closeTo(42.0));
         assertThat(iv.get(7), closeTo(3.5));
@@ -193,8 +121,11 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     @Test
     public void testFreeze() {
         MutableSparseVector v = simpleVector();
+        double[] vs = v.values;
         ImmutableSparseVector iv = v.freeze();
         assertThat(iv, equalTo((SparseVector) simpleVector()));
+        // make sure freeze actually reused storage
+        assertThat(iv.values, sameInstance(vs));
         
         MutableSparseVector v2 = simpleVector();
         ImmutableSparseVector iv2 = v2.freeze();
@@ -246,7 +177,8 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         v2.unset(7);  
         v.unset(3);
         v.subtract(v2);
-        assertThat(v.get(3), notANumber());
+        assertThat(v.containsKey(3), equalTo(false));
+        assertThat(v.get(3, Double.NaN), notANumber());
         assertThat(v.get(7), closeTo(3.5));
         assertThat(v.get(8), closeTo(0));
     }
@@ -284,7 +216,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         v2.unset(7);  
         v.unset(3);
         v.add(v2);
-        assertThat(v.get(3), notANumber());
+        assertThat(v.get(3, Double.NaN), notANumber());
         assertThat(v.get(7), closeTo(3.5));
         assertThat(v.get(8), closeTo(4));
     }
@@ -293,65 +225,37 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     public void testAddValue() {
         MutableSparseVector msv = simpleVector();
        
-        // The following test is for the 2.0 behavior, and should be uncommented at 2.0 time.
-//        try {
-//            msv.add(12, 12);
-//            fail("should throw IllegalStateException because the key is not in the keyset");
-//        } catch(IllegalStateException iae) { /* skip */ }
-        assertThat(msv.add(12, 12), notANumber());  // pre 2.0 behavior
-        
+        try {
+            msv.add(12, 12);
+            fail("should throw IllegalStateException because the key is not in the keyset");
+        } catch(IllegalArgumentException iae) { /* skip */ }
+
         msv.add(3, 1);
         assertThat(msv.get(3), closeTo(2.5));
         
         msv.unset(3);
         
-        // The following test is for the 2.0 behavior, and should be uncommented at 2.0 time.
-//        try {
-//            msv.add(3, 12);
-//            fail("should throw IllegalStateException because the key is not set to a value");
-//        } catch(IllegalStateException iae) { /* skip */ }
-        assertThat(msv.add(3, 12), notANumber());  // pre 2.0 behavior
+        try {
+            msv.add(3, 12);
+            fail("should throw IllegalStateException because the key is not set to a value");
+        } catch(IllegalArgumentException iae) { /* skip */ }
 
      }
 
     @Test
     public void testSetConstructor() {
-        long[] keys = { 2, 5 };
-        MutableSparseVector v =
-            new MutableSparseVector(new LongSortedArraySet(keys));
+        MutableSparseVector v = MutableSparseVector.create(LongUtils.packedSet(2,5));
         assertThat(v.size(), equalTo(0));
         assertThat(v.keyDomain().toLongArray(),
                    equalTo(new long[] { 2, 5 }));
         assertFalse(v.containsKey(2));
         assertTrue(v.keyDomain().contains(2));
-        assertThat(v.get(2), notANumber());
+        assertThat(v.get(2, Double.NaN), notANumber());
     }
 
     @Test @SuppressWarnings("deprecation")
     public void testClear() {
-        long[] keys = { 2, 5 };
-        MutableSparseVector v =
-            new MutableSparseVector(new LongSortedArraySet(keys));
-        assertThat(v.set(2, Math.PI), notANumber());
-        assertThat(v.size(), equalTo(1));
-        assertThat(v.get(2), closeTo(Math.PI));
-        assertThat(v.containsKey(2), equalTo(true));
-        assertThat(v.containsKey(5), equalTo(false));
-        assertThat(v.keySet(),
-                   equalTo((Set<Long>) Sets.newHashSet(2l)));
-
-        v.clear(2);
-        assertThat(v.isEmpty(), equalTo(true));
-        assertThat(v.size(), equalTo(0));
-        assertThat(v.get(2), notANumber());
-        assertThat(v.set(2, Math.E), notANumber());
-    }
-
-    @Test
-    public void testSimpleUnset() {
-        long[] keys = { 2, 5 };
-        MutableSparseVector v =
-                new MutableSparseVector(new LongSortedArraySet(keys));
+        MutableSparseVector v = MutableSparseVector.create(2,5);
         assertThat(v.set(2, Math.PI), notANumber());
         assertThat(v.size(), equalTo(1));
         assertThat(v.get(2), closeTo(Math.PI));
@@ -363,7 +267,25 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         v.unset(2);
         assertThat(v.isEmpty(), equalTo(true));
         assertThat(v.size(), equalTo(0));
-        assertThat(v.get(2), notANumber());
+        assertThat(v.containsKey(2), equalTo(false));
+        assertThat(v.set(2, Math.E), notANumber());
+    }
+
+    @Test
+    public void testSimpleUnset() {
+        MutableSparseVector v = MutableSparseVector.create(2,5);
+        assertThat(v.set(2, Math.PI), notANumber());
+        assertThat(v.size(), equalTo(1));
+        assertThat(v.get(2), closeTo(Math.PI));
+        assertThat(v.containsKey(2), equalTo(true));
+        assertThat(v.containsKey(5), equalTo(false));
+        assertThat(v.keySet(),
+                   equalTo((Set<Long>) Sets.newHashSet(2l)));
+
+        v.unset(2);
+        assertThat(v.isEmpty(), equalTo(true));
+        assertThat(v.size(), equalTo(0));
+        assertThat(v.get(2, Double.NaN), notANumber());
         assertThat(v.set(2, Math.E), notANumber());
     }
 
@@ -400,7 +322,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         v = simpleVector();
         v.set(simpleVector2());
         assertThat(v.get(3), closeTo(2));
-        assertThat(v.get(5), notANumber());
+        assertThat(v.get(5, Double.NaN), notANumber());
         assertThat(v.get(7), closeTo(3.5));
         assertThat(v.get(8), closeTo(1.7));
 
@@ -410,7 +332,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         
         v = simpleVector();
         MutableSparseVector v2 = simpleVector();
-        v2.unset(7);  
+        v2.unset(7);
         v.unset(3);
         v.set(v2);
         assertThat(v.get(3), closeTo(1.5));
@@ -421,28 +343,28 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     @Test
     public void testScale() {
         MutableSparseVector v = emptyVector();
-        v.scale(1);
+        v.multiply(1);
         assertTrue(v.isEmpty());
 
         v = simpleVector2();
-        v.scale(1);
+        v.multiply(1);
         assertThat(v.get(3), closeTo(2));
         assertThat(v.get(5), closeTo(2.3));
         assertThat(v.get(8), closeTo(1.7));
 
         v = simpleVector2();
-        v.scale(2);
+        v.multiply(2);
         assertThat(v.get(3), closeTo(4));
         assertThat(v.get(5), closeTo(4.6));
         assertThat(v.get(8), closeTo(3.4));
 
         v = singleton();
         assertThat(v.sum(), closeTo(Math.PI));
-        v.scale(3);
+        v.multiply(3);
         assertThat(v.sum(), closeTo(Math.PI * 3));
 
         v = simpleVector();
-        v.scale(0.5);
+        v.multiply(0.5);
         assertThat(v.get(3), closeTo(1.5 / 2));
         assertThat(v.get(7), closeTo(3.5 / 2));
         assertThat(v.get(8), closeTo(2 / 2));
@@ -451,7 +373,12 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     
     @Test
     public void testAddToItem() {
-        assertThat(emptyVector().add(5, 5), notANumber());
+        try {
+            emptyVector().add(5, 5);
+            fail("add with invalid key should throw exception");
+        } catch (IllegalArgumentException e) {
+            /* expected */
+        }
         MutableSparseVector v = simpleVector();
         assertThat(v.add(7, 2), closeTo(5.5));
         assertThat(v.get(7), closeTo(5.5));
@@ -516,7 +443,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         MutableSparseVector v = MutableSparseVector.wrap(keys, values, 2);
         assertThat(v.size(), equalTo(2));
         assertThat(v.containsKey(9), equalTo(false));
-        assertThat(v.get(9), notANumber());
+        assertThat(v.get(9, Double.NaN), notANumber());
         assertThat(v.get(3), closeTo(Math.PI));
         v.unset(3);
         assertThat(v.size(), equalTo(1));
@@ -527,7 +454,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
             fail("Should throw an IllegalArgumentException because the key is not in the key domain.");
         } catch (IllegalArgumentException iae) { /* skip */
         }
-        assertThat(v.get(9), notANumber());
+        assertThat(v.get(9, Double.NaN), notANumber());
         assertThat(v.containsKey(9), equalTo(false));
     }
 
@@ -544,7 +471,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(f.get(3), closeTo(Math.PI));
         assertThat(f.get(9), closeTo(0.42));
         assertThat(f.containsKey(7), equalTo(false));
-        assertThat(f.get(7), notANumber());
+        assertThat(f.get(7, Double.NaN), notANumber());
     }
 
     @Test
@@ -570,22 +497,20 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         assertThat(Iterators.size(simple.fast(VectorEntry.State.EITHER)
             .iterator()), equalTo(3));
         assertThat(Iterators.size(simple.fast(VectorEntry.State.UNSET)
-            .iterator()), equalTo(1));
+                                        .iterator()), equalTo(1));
 
         MutableSparseVector msvShrunk = simple.shrinkDomain();
         assertThat(Iterators.size(msvShrunk.fast(VectorEntry.State.UNSET)
-            .iterator()), equalTo(0));
+                                           .iterator()), equalTo(0));
         assertThat(Iterators.size(msvShrunk.fast(VectorEntry.State.EITHER)
-            .iterator()), equalTo(2));
+                                           .iterator()), equalTo(2));
         assertThat(Iterators.size(msvShrunk.fast(VectorEntry.State.SET)
-            .iterator()), equalTo(2));
+                                           .iterator()), equalTo(2));
     }
 
     @Test
     public void testOtherConstructors() {
-        long[] keys = { 3, 5, 8 };
-        MutableSparseVector msv =
-            new MutableSparseVector(new LongSortedArraySet(keys), 7);
+        MutableSparseVector msv = MutableSparseVector.create(LongUtils.packedSet(3,5,8), 7.0);
         assertThat(msv.get(3), closeTo(7));
         assertThat(msv.get(5), closeTo(7));
         assertThat(msv.get(8), closeTo(7));
@@ -616,6 +541,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     // } catch (IllegalArgumentException iae) { /* skip */ }
     // }
 
+    @Override
     @Test
     public void testVectorEntryMethods() {
         MutableSparseVector simple = simpleVector();
@@ -650,13 +576,6 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         } catch (IllegalArgumentException iae) { /* skip */
         }
         
-        VectorEntry veBogusKey = new VectorEntry(simple, 0, 22, 33, true);
-        try {
-            simple.set(veBogusKey, 7);
-            fail("Should throw an IllegalArgumentException because the vector entry has a bogus key");
-        } catch (IllegalArgumentException iae) { /* skip */
-        }
-
         VectorEntry veBogusKeyDomain = new VectorEntry(simpleVector2(), 0, 3, 1.5, true);
         try {
             simple.set(veBogusKeyDomain, 7);
@@ -684,13 +603,6 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         } catch (IllegalArgumentException iae) { /* skip */
         }
 
-        VectorEntry veBogusKey = new VectorEntry(simple, 0, 22, 33, true);
-        try {
-            simple.set(veBogusKey, 7);
-            fail("Should throw an IllegalArgumentException because the vector entry has a bogus key");
-        } catch (IllegalArgumentException iae) { /* skip */
-        }
-        
         VectorEntry veGood= new VectorEntry(simple, 0, 3, 1.5, true);
         simple.unset(veGood);
         assertThat(simple.get(3, -1), closeTo(-1));
@@ -741,6 +653,7 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     
     // We already have tests that keysByValue works as long as the values are unique.
     // Here we extend those tests to make sure non-unique values sort as expected. (By key, that is.)
+    @Override
     @Test
     public void testSortedKeys() {
         long[] keys = { 3, 5, 8 };
@@ -798,79 +711,6 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
     }
 
     @Test
-    public void testPartialSetPointer() {
-        MutableSparseVector msv = simpleVector();
-        msv.unset(7);
-
-        Pointer<VectorEntry> ptr = msv.pointer(VectorEntry.State.SET);
-        assertThat(ptr.isAtEnd(), equalTo(false));
-        assertThat(ptr.get().getKey(), equalTo(3L));
-        assertThat(ptr.get().getValue(), closeTo(1.5));
-        assertThat(ptr.get().isSet(), equalTo(true));
-        assertThat(ptr.isAtEnd(), equalTo(false));
-        assertThat(ptr.advance(), equalTo(true));
-        assertThat(ptr.get().getKey(), equalTo(8L));
-        assertThat(ptr.get().getValue(), closeTo(2));
-        assertThat(ptr.get().isSet(), equalTo(true));
-        assertThat(ptr.advance(), equalTo(false));
-        assertThat(ptr.isAtEnd(), equalTo(true));
-        try {
-            ptr.get();
-            fail("pointer should throw when out of bounds");
-        } catch (NoSuchElementException e) {
-            /* expected */
-        }
-    }
-
-    @Test
-    public void testPartialUnsetPointer() {
-        MutableSparseVector msv = simpleVector();
-        msv.unset(7);
-
-        Pointer<VectorEntry> ptr = msv.pointer(VectorEntry.State.UNSET);
-        assertThat(ptr.isAtEnd(), equalTo(false));
-        assertThat(ptr.get().getKey(), equalTo(7L));
-        assertThat(ptr.get().isSet(), equalTo(false));
-        assertThat(ptr.isAtEnd(), equalTo(false));
-        assertThat(ptr.advance(), equalTo(false));
-        assertThat(ptr.isAtEnd(), equalTo(true));
-        try {
-            ptr.get();
-            fail("pointer should throw when out of bounds");
-        } catch (NoSuchElementException e) {
-            /* expected */
-        }
-    }
-
-    @Test
-    public void testPartialEitherPointer() {
-        MutableSparseVector msv = simpleVector();
-        msv.unset(7);
-
-        Pointer<VectorEntry> ptr = msv.pointer(VectorEntry.State.EITHER);
-        assertThat(ptr.isAtEnd(), equalTo(false));
-        assertThat(ptr.get().getKey(), equalTo(3L));
-        assertThat(ptr.get().getValue(), closeTo(1.5));
-        assertThat(ptr.get().isSet(), equalTo(true));
-        assertThat(ptr.advance(), equalTo(true));
-        assertThat(ptr.get().getKey(), equalTo(7L));
-        assertThat(ptr.get().isSet(), equalTo(false));
-        assertThat(ptr.isAtEnd(), equalTo(false));
-        assertThat(ptr.advance(), equalTo(true));
-        assertThat(ptr.get().getKey(), equalTo(8L));
-        assertThat(ptr.get().getValue(), closeTo(2));
-        assertThat(ptr.get().isSet(), equalTo(true));
-        assertThat(ptr.advance(), equalTo(false));
-        assertThat(ptr.isAtEnd(), equalTo(true));
-        try {
-            ptr.get();
-            fail("pointer should throw when out of bounds");
-        } catch (NoSuchElementException e) {
-            /* expected */
-        }
-    }
-
-    @Test
     public void testVectorEntryIsSet() {
         MutableSparseVector msv = simpleVector();
         VectorEntry entry = msv.iterator().next();
@@ -879,5 +719,44 @@ public class TestMutableSparseVector extends SparseVectorTestCommon {
         entry = msv.fastIterator(VectorEntry.State.EITHER).next();
         assertThat(entry.getKey(), equalTo(3L));
         assertThat(msv.isSet(entry), equalTo(false));
+    }
+
+    @Test
+    public void testPairwiseMultiply() {
+        MutableSparseVector v1 = simpleVector();
+        MutableSparseVector v2 = MutableSparseVector.create(3, 5, 8, 9);
+        v2.fill(2);
+        v2.set(8, 3);
+        v1.multiply(v2);
+        assertThat(v1.get(3), closeTo(3));
+        assertThat(v1.get(7), closeTo(3.5));
+        assertThat(v1.get(8), closeTo(6));
+    }
+
+    @Test
+    public void testRemoveKeys() {
+        MutableSparseVector v1 = simpleVector();
+        assertThat(v1.keySet().remove(7),
+                   equalTo(true));
+        assertThat(v1.keySet(), contains(3L, 8L));
+        assertThat(v1.size(), equalTo(2));
+        assertThat(v1.containsKey(7L), equalTo(false));
+    }
+
+    @Test
+    public void testRetainKeys() {
+        MutableSparseVector v1 = simpleVector();
+        assertThat(v1.keySet().retainAll(Longs.asList(3, 4, 8)),
+                   equalTo(true));
+        assertThat(v1.keySet(), contains(3L, 8L));
+        assertThat(v1.size(), equalTo(2));
+        assertThat(v1.containsKey(7L), equalTo(false));
+    }
+
+    @Test
+    public void testUnsetKeySet() {
+        MutableSparseVector v1 = simpleVector();
+        v1.unset(7);
+        assertThat(v1.unsetKeySet(), contains(7L));
     }
 }

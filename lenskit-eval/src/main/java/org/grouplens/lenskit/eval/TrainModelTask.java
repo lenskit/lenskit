@@ -22,12 +22,9 @@ package org.grouplens.lenskit.eval;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.io.Closer;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitRecommender;
-import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.util.LogContext;
@@ -35,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Train a recommender algorithm and process it with a function.
@@ -125,31 +121,20 @@ public class TrainModelTask<T> extends AbstractTask<T> {
             context.put("lenskit.eval.command.class", getName());
             context.put("lenskit.eval.command.name", getName());
             context.put("lenskit.eval.algorithm.name", algorithm.getName());
-            Closer closer = Closer.create();
+
+            // TODO Support serializing the recommender
+            LenskitRecommender rec;
+            StopWatch timer = new StopWatch();
+            timer.start();
             try {
-                DAOFactory daoFactory = inputData.getDAOFactory();
-                DataAccessObject dao = closer.register(daoFactory.snapshot());
-                // TODO Support serializing the recommender
-                LenskitRecommender rec;
-                StopWatch timer = new StopWatch();
-                timer.start();
-                try {
-                    logger.info("{}: building recommender {}", getName(), algorithm.getName());
-                    rec = closer.register(algorithm.buildRecommender(
-                            dao, null, inputData.getPreferenceDomain(), null, false));
-                } catch (RecommenderBuildException e) {
-                    throw new TaskExecutionException(getName() + ": error building recommender", e);
-                }
-                timer.stop();
-                logger.info("{}: trained in {}", getName(), timer);
-                return action.apply(rec);
-            } catch (Throwable th) {
-                throw closer.rethrow(th, TaskExecutionException.class);
-            } finally {
-                closer.close();
+                logger.info("{}: building recommender {}", getName(), algorithm.getName());
+                rec = algorithm.buildRecommender(inputData, null, null);
+            } catch (RecommenderBuildException e) {
+                throw new TaskExecutionException(getName() + ": error building recommender", e);
             }
-        } catch (IOException ioe) {
-            throw new TaskExecutionException("error in " + getName(), ioe);
+            timer.stop();
+            logger.info("{}: trained in {}", getName(), timer);
+            return action.apply(rec);
         } finally {
             context.finish();
         }

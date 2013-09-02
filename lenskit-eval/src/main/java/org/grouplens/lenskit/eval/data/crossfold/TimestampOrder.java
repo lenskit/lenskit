@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import org.grouplens.lenskit.data.Event;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Events;
 
 /**

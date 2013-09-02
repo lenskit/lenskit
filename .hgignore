@@ -1,5 +1,5 @@
 ^bin
-(^|/)target/
+(^|/)target(/|$)
 (^|/)\.gradle/
 ^([^/]+/)?data/
 (^|/)\.(project|classpath)$

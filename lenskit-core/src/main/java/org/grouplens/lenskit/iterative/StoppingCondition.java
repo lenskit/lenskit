@@ -27,16 +27,6 @@ import org.grouplens.grapht.annotation.DefaultImplementation;
  */
 @DefaultImplementation(IterationCountStoppingCondition.class)
 public interface StoppingCondition {
-    /**
-     * Query whether the computation should stop.
-     *
-     * @param niters The number of iterations done so far.
-     * @param delta  The last delta. The delta may be {@link Double#NaN} before the first iteration.
-     * @return {@code true} if the computation is finished.
-     * @deprecated The newLoop() should be used instead
-     */
-    @Deprecated
-    boolean isFinished(int niters, double delta);
 
     /**
      * Create a controller for a new training loop.

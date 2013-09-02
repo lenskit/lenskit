@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Test;
 
@@ -33,12 +33,11 @@ import static org.junit.Assert.assertThat;
 
 public class UnitVectorNormalizerTest {
     UnitVectorNormalizer norm = new UnitVectorNormalizer();
-    long[] keys = {1, 3, 4, 6};
-    LongSortedSet keySet = LongSortedArraySet.wrap(keys);
+    LongSortedSet keySet = LongUtils.packedSet(1,3,4,6);
 
     @Test
     public void testScale() {
-        MutableSparseVector v = new MutableSparseVector(keySet);
+        MutableSparseVector v = MutableSparseVector.create(keySet);
         v.set(1, 1);
         v.set(4, 1);
         assertThat(norm.normalize(v.immutable(), v), sameInstance(v));
@@ -50,10 +49,10 @@ public class UnitVectorNormalizerTest {
 
     @Test
     public void testScaleOther() {
-        MutableSparseVector v = new MutableSparseVector(keySet);
+        MutableSparseVector v = MutableSparseVector.create(keySet);
         v.set(1, 1);
         v.set(4, 1);
-        MutableSparseVector ref = new MutableSparseVector(keySet);
+        MutableSparseVector ref = MutableSparseVector.create(keySet);
         ref.set(1, 1);
         ref.set(6, 1);
         ref.set(3, 2);
