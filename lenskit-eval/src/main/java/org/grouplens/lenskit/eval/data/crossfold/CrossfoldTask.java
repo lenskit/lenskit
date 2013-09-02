@@ -139,15 +139,6 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     }
 
     /**
-     * @deprecated use {@link #setHoldoutFraction(double)} instead.
-     */
-    @Deprecated
-    public CrossfoldTask setHoldout(double f) {
-        partition = new FractionPartition<Rating>(f);
-        return this;
-    }
-    
-    /**
      * Set holdout from using the retain part to a fixed number of items.
      * 
      * @param n The number of items to train data set from each user's profile.

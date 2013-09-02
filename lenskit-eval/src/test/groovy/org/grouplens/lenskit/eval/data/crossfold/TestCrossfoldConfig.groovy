@@ -73,7 +73,7 @@ class TestCrossfoldConfig extends ConfigTestBase {
             crossfold("tempRatings") {
                 source file
                 partitions 10
-                holdout 0.5
+                holdoutFraction 0.5
                 order RandomOrder
                 train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
                 test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"

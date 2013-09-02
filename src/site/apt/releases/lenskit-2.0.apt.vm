@@ -83,3 +83,10 @@
     been deprecated, and will be removed in LensKit 2.0.
 
   []
+
+* Evaluator
+
+  * <<<holdout>>> directive on crossfold commands no longer supports fractions; use <<<holdoutFraction>>>
+    for fractional holdouts.
+
+  []
