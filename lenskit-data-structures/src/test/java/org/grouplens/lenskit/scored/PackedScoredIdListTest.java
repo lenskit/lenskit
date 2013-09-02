@@ -119,7 +119,7 @@ public class PackedScoredIdListTest {
         assertThat(id.getScore(), equalTo(3.5));
 
         assertThat(id.getUnboxedChannelSymbols(), contains(sym));
-        assertThat(id.channel(sym), equalTo(Math.PI));
+        assertThat(id.getUnboxedChannelValue(sym), equalTo(Math.PI));
 
         Iterator<ScoredId> iter = list.iterator();
         assertThat(Lists.newArrayList(iter),

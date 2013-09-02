@@ -40,7 +40,7 @@ import java.util.Set;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
- * @comput Public
+ * @compat Public
  */
 public abstract class AbstractScoredId implements ScoredId {
 
@@ -154,33 +154,5 @@ public abstract class AbstractScoredId implements ScoredId {
     @Override
     public boolean hasUnboxedChannel(Symbol sym) {
         return hasChannel(sym.withType(Double.class));
-    }
-
-    /**
-     * {@inheritDoc}
-     * This implementation delegates to {@link #hasUnboxedChannel(Symbol)}.
-     */
-    @Override @Deprecated
-    public boolean hasChannel(Symbol sym) {
-        return hasUnboxedChannel(sym);
-    }
-
-    @Override @Deprecated
-    public double channel(Symbol sym) {
-        try {
-            return getUnboxedChannelValue(sym);
-        } catch (NullPointerException e) {
-            throw new IllegalArgumentException("unknown symbol " + sym, e);
-        }
-    }
-
-    @Override @Deprecated
-    public <T> T channel(TypedSymbol<T> sym) {
-        T obj = getChannelValue(sym);
-        if (obj == null) {
-            throw new IllegalArgumentException("unknown symbol " + sym);
-        } else {
-            return obj;
-        }
     }
 }

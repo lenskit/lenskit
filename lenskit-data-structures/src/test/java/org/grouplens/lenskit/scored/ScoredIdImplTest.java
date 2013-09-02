@@ -84,21 +84,18 @@ public class ScoredIdImplTest {
     @Test
     public void testChannel() {
         ScoredIdImpl sid = new ScoredIdImpl(1,10.5,Lists.newArrayList(SymbolValue.of(fooSym, 1.0)));
-        assertEquals(1.0, sid.channel(fooSym), 0.0001);
+        assertEquals(1.0, sid.getUnboxedChannelValue(fooSym), 0.0001);
         try {
-            sid.channel(barSym);
+            sid.getUnboxedChannelValue(barSym);
             fail("expection expected");
-        } catch (IllegalArgumentException e) { /*expected */ }
+        } catch (NullPointerException e) { /*expected */ }
     }
 
     @Test
     public void testTypedChannel() {
         ScoredIdImpl sid = new ScoredIdImpl(1, 10.5, Lists.newArrayList(SymbolValue.of(fooIntSym, 1)));
-        assertEquals(new Integer(1), sid.channel(fooIntSym));
-        try {
-            sid.channel(barStrSym);
-            fail("expection expected");
-        } catch (IllegalArgumentException e) { /*expected */ }
+        assertEquals(new Integer(1), sid.getChannelValue(fooIntSym));
+        assertNull(sid.getChannelValue(barStrSym));
     }
 
     @Test

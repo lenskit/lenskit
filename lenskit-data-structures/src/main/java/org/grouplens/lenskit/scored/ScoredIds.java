@@ -27,7 +27,9 @@ import com.google.common.primitives.Longs;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.grouplens.lenskit.collections.CopyingFastCollection;
 import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -54,10 +56,12 @@ public final class ScoredIds {
     public static ScoredIdBuilder copyBuilder(ScoredId id) {
         ScoredIdBuilder bld = new ScoredIdBuilder(id.getId(), id.getScore());
         for (Symbol chan: id.getUnboxedChannelSymbols()) {
-            bld.addChannel(chan, id.channel(chan));
+            bld.addChannel(chan, id.getUnboxedChannelValue(chan));
         }
-        for (@SuppressWarnings("rawtypes") TypedSymbol sym: id.getChannelSymbols()) {
-            bld.addChannel(sym, id.channel(sym));
+        for (@SuppressWarnings("rawtypes") SymbolValue chan: id.getChannels()) {
+            if (!chan.getSymbol().getType().equals(Double.class)) {
+                bld.addChannel(chan.getSymbol(), chan.getValue());
+            }
         }
         return bld;
     }
@@ -171,7 +175,8 @@ public final class ScoredIds {
             public int compare(ScoredId left, ScoredId right) {
                 if (left.hasUnboxedChannel(chan)) {
                     if (right.hasUnboxedChannel(chan)) {
-                        return Doubles.compare(left.channel(chan), right.channel(chan));
+                        return Doubles.compare(left.getUnboxedChannelValue(chan),
+                                               right.getUnboxedChannelValue(chan));
                     } else {
                         return 1;
                     }
@@ -212,10 +217,10 @@ public final class ScoredIds {
                 T v1 = null;
                 T v2 = null;
                 if (left != null && left.hasChannel(chan)) {
-                    v1 = left.channel(chan);
+                    v1 = left.getChannelValue(chan);
                 }
                 if (right != null && right.hasChannel(chan)) {
-                    v2 = right.channel(chan);
+                    v2 = right.getChannelValue(chan);
                 }
                 return order.compare(v1, v2);
             }
@@ -248,11 +253,15 @@ public final class ScoredIds {
             ScoredIdBuilder builder = new ScoredIdBuilder();
             builder.setId(elt.getId());
             builder.setScore(elt.getScore());
-            for (Symbol s: elt.getUnboxedChannelSymbols()) {
-                builder.addChannel(s, elt.channel(s));
+            for (DoubleSymbolValue chan: elt.getUnboxedChannels()) {
+                builder.addChannel(chan.getRawSymbol(),
+                                   chan.getDoubleValue());
             }
-            for (TypedSymbol s: elt.getChannelSymbols()) {
-                builder.addChannel(s, elt.channel(s));
+            for (SymbolValue chan: elt.getChannels()) {
+                if (!chan.getSymbol().getType().equals(Double.class)) {
+                    builder.addChannel(chan.getSymbol(),
+                                       chan.getValue());
+                }
             }
             return builder.build();
         }

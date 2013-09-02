@@ -123,25 +123,4 @@ public interface ScoredId {
      * with this symbol, {@code false} otherwise.
      */
     boolean hasChannel(TypedSymbol<?> s);
-
-    /**
-     * Deprecated alias for {@link #hasUnboxedChannel(Symbol)}.
-     * @deprecated Use {@link #hasUnboxedChannel(Symbol)}.
-     */
-    @Deprecated
-    boolean hasChannel(Symbol s);
-
-    /**
-     * Deprecated alias for {@link #getUnboxedChannelValue(Symbol)}.
-     * @deprecated Use {@link #getUnboxedChannelValue(Symbol)}
-     */
-    @Deprecated
-    double channel(Symbol sym);
-
-    /**
-     * Deprecated version of {@link #getChannelValue(TypedSymbol)}.
-     * @deprecated Use {@link #getChannelValue(TypedSymbol)}.
-     */
-    @Deprecated
-    <T> T channel(TypedSymbol<T> sym);
 }
