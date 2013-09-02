@@ -72,10 +72,8 @@ class LongSortedArraySet extends AbstractLongSortedSet implements Serializable {
      * Construct a new array set from a collection of items.
      *
      * @param items The set's contents.
-     * @deprecated Use {@link LongUtils#packedSet(java.util.Collection)}.
      */
-    @Deprecated
-    public LongSortedArraySet(@Nonnull Collection<Long> items) {
+    LongSortedArraySet(@Nonnull Collection<Long> items) {
         this(LongKeyDomain.fromCollection(items));
     }
 
@@ -83,10 +81,8 @@ class LongSortedArraySet extends AbstractLongSortedSet implements Serializable {
      * Construct a new array set from an array of items.
      * @param items The items to initialize the set with.  The items are copied, the array is
      *              not reused.
-     * @deprecated Use {@link LongUtils#packedSet(long...)}.
      */
-    @Deprecated
-    public LongSortedArraySet(long[] items) {
+    LongSortedArraySet(long[] items) {
         this(LongKeyDomain.create(items));
     }
 

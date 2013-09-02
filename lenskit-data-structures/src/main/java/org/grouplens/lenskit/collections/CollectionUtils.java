@@ -106,33 +106,6 @@ public final class CollectionUtils {
                         });
 
     /**
-     * Get a Fastutil {@link it.unimi.dsi.fastutil.longs.LongCollection} from a {@link java.util.Collection} of longs.
-     * This method simply casts the collection, if possible, and returns a
-     * wrapper otherwise.
-     *
-     * @param longs A collection of longs.
-     * @return The collection as a {@link it.unimi.dsi.fastutil.longs.LongCollection}.
-     * @deprecated Use {@link LongUtils#asLongCollection(Collection)} instead.
-     */
-    @Deprecated
-    public static LongCollection fastCollection(final Collection<Long> longs) {
-        return LongUtils.asLongCollection(longs);
-    }
-
-    /**
-     * Get a Fastutil {@link it.unimi.dsi.fastutil.longs.LongSet} from a {@link Set} of longs.
-     *
-     * @param longs The set of longs.
-     * @return {@code longs} as a fastutil {@link it.unimi.dsi.fastutil.longs.LongSet}. If {@code longs} is already
-     *         a LongSet, it is cast.
-     * @deprecated Use {@link LongUtils#asLongSet(Set)} instead.
-     */
-    @Deprecated
-    public static LongSet fastSet(final Set<Long> longs) {
-        return LongUtils.asLongSet(longs);
-    }
-
-    /**
      * Wrap a {@link Collection} in an {@link ObjectCollection}.
      * @param objects The collection of objects.
      * @param <E> The type of objects.

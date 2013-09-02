@@ -25,13 +25,12 @@ package org.grouplens.lenskit.data.snapshot;
 
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
+import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.data.pref.IndexedPreference;
 
 import java.util.AbstractCollection;
 import java.util.Iterator;
-
-import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.collections.IntIntervalList;
-import org.grouplens.lenskit.data.pref.IndexedPreference;
 
 /**
  * Preference collection implemented as a view on top of
@@ -54,7 +53,7 @@ class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
      * @param data A packed rating data set.
      */
     PackedPreferenceCollection(PackedPreferenceData data) {
-        this(data, new IntIntervalList(data.size()));
+        this(data, CollectionUtils.interval(0, data.size()));
     }
 
     /**
