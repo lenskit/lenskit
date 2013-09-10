@@ -58,6 +58,41 @@ public class EventCollectionDAO implements EventDAO {
         types = TypeUtils.findTypes(fast(evts), Event.class);
     }
 
+    // Create an empty EventCollectionDao object.
+    private EventCollectionDAO(){
+    }
+
+    /**
+     * Create a new data source from a cursor of events.
+     *
+     * @param eventCursor   The event cursor to be used.
+     * @return              A EventCollectionDao generated from events read from the cursor.
+     */
+    public static EventCollectionDAO CreateEventCollectionDAO(Cursor<Event> eventCursor){
+        EventCollectionDAO ecDAO = new EventCollectionDAO();
+        List<Event> eventList = new ArrayList<Event>();
+        while(eventCursor.hasNext()){
+            eventList.add(eventCursor.next());
+        }
+        eventCursor.close();
+
+        logger.debug("Creating event collection DAO for {} events", eventList.size());
+        ecDAO.setEvents(eventList);
+        ecDAO.setTypes(TypeUtils.findTypes(fast(ecDAO.getEvents()), Event.class));
+        return ecDAO;
+    }
+
+
+    /**
+     * Create a new data source from EventDAO.
+     *
+     * @param eventDAO      The EventDAO to be used.
+     * @return              A EventCollectionDao generated from events read from the cursor.
+     */
+    public static EventCollectionDAO CreateEventCollectionDAO(EventDAO eventDAO){
+        return  CreateEventCollectionDAO(eventDAO.streamEvents());
+    }
+
     @Override
     public Cursor<Event> streamEvents() {
         return Cursors.wrap(events);
@@ -92,4 +127,22 @@ public class EventCollectionDAO implements EventDAO {
             }
         }
     }
+
+
+    public Collection<? extends Event> getEvents() {
+        return events;
+    }
+
+    public void setEvents(Collection<? extends Event> events) {
+        this.events = events;
+    }
+
+    public Set<Class<? extends Event>> getTypes() {
+        return types;
+    }
+
+    public void setTypes(Set<Class<? extends Event>> types) {
+        this.types = types;
+    }
+
 }
