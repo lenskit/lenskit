@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.algorithm;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.script.ConfigDelegate;
 
 import javax.annotation.Nonnull;
@@ -40,6 +41,7 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
     private String name;
     private Map<String, Object> attributes = new HashMap<String, Object>();
     private boolean preload;
+    private EvalProject project;
 
     public LenskitAlgorithmInstanceBuilder() {
         this("Unnamed Algorithm");
@@ -80,6 +82,15 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
     }
 
     /**
+     * Get the project of this algorithm
+     * 
+     * @return The project
+     */
+    public EvalProject getProject() {
+        return project;
+    }
+    
+    /**
      * Set whether the algorithm wants ratings pre-loaded. Use this for algorithms that
      * are too slow reading on a CSV file if you have enough memory to load them all.
      *
@@ -106,6 +117,16 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
         return this;
     }
 
+    /**
+     * Set the project of Algorithm.
+     * 
+     * @param prj The project for this algorithm.
+     * @return The command for chaining.
+     */
+    public LenskitAlgorithmInstanceBuilder setProject(EvalProject prj) {
+        project = prj;
+        return this;        
+    }
     /**
      * Get the attributes of this algorithm instance.
      *

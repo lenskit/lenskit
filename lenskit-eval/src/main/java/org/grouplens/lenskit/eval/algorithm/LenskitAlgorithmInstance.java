@@ -47,6 +47,7 @@ import javax.inject.Provider;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * An instance of a recommender algorithm to be benchmarked.
@@ -63,6 +64,7 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
     @Nonnull
     private final Map<String, Object> attributes;
     private final boolean preload;
+    private Random random;
 
     public LenskitAlgorithmInstance(String name, LenskitConfiguration config) {
         this(name, config, Collections.<String, Object>emptyMap(), false);
@@ -107,6 +109,16 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
         return config;
     }
 
+    /**
+     * Let LenskitAlgorithmInstanceBuilder to pass random number generator to algorithm instance
+     * 
+     * @param builder The LenskitAlgorithmInstanceBuilder
+     * @return The new algorithm instance
+     */
+    public LenskitAlgorithmInstance setRandom(LenskitAlgorithmInstanceBuilder builder) {
+        random = builder.getProject().getRandom();
+        return this;
+    }
     public LenskitRecommender buildRecommender(DataSource data,
                                                @Nullable final Provider<? extends PreferenceSnapshot> sharedSnapshot,
                                                @Nullable ExecutionInfo info) throws RecommenderBuildException {
@@ -126,6 +138,10 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
             cfg.bind(ExecutionInfo.class).to(info);
         }
 
+        if (random != null) {
+            cfg.bind(Random.class).to(random);
+        }
+        
         cfg.bind(EventDAO.class).toProvider(data.getEventDAOProvider());
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(cfg);

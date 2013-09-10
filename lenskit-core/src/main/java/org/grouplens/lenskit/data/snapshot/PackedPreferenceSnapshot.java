@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * An in-memory snapshot of rating data stored in packed arrays.
@@ -62,10 +63,12 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
      */
     public static class Provider implements javax.inject.Provider<PackedPreferenceSnapshot> {
         private final EventDAO dao;
+        private Random random;
 
         @Inject
-        public Provider(@Transient EventDAO dao) {
+        public Provider(@Transient EventDAO dao, Random random) {
             this.dao = dao;
+            this.random = random;
         }
 
         @Override
@@ -128,8 +131,8 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
         }
     }
 
-    public static PreferenceSnapshot pack(EventDAO dao) {
-        Provider p = new Provider(dao);
+    public static PreferenceSnapshot pack(EventDAO dao, Random random) {
+        Provider p = new Provider(dao, random);
         return p.get();
     }
 

@@ -69,20 +69,20 @@ public class TestPackedPreferenceDataBuilder {
 
     @Test
     public void testAddMany() {
-        Random rnd = new Random();
+        Random rng = new Random();
         long[] users = new long[500];
         long[] items = new long[1000];
         for (int i = 0; i < 500; i++) {
-            users[i] = rnd.nextInt(20000);
-            items[i * 2] = rnd.nextInt(20000);
-            items[i * 2 + 1] = rnd.nextInt(20000);
+            users[i] = rng.nextInt(20000);
+            items[i * 2] = rng.nextInt(20000);
+            items[i * 2 + 1] = rng.nextInt(20000);
         }
         Preference[] prefs = new Preference[10000];
         for (int i = 0; i < 10000; i++) {
             prefs[i] = Preferences.make(
-                    users[rnd.nextInt(500)],
-                    items[rnd.nextInt(1000)],
-                    rnd.nextGaussian());
+                    users[rng.nextInt(500)],
+                    items[rng.nextInt(1000)],
+                    rng.nextGaussian());
             bld.add(prefs[i]);
         }
         assertThat(bld.size(), equalTo(10000));
