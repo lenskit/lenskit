@@ -57,7 +57,9 @@ public class SimpleFileRatingDAO implements EventDAO {
      * @param file      The file.
      * @param delim     The delimiter to look for in the file.
      * @param comp      Whether the input is compressed.
+     * @deprecated      use {@link #CreateSimpleFileRatingDAO(File, String, CompressionMode)} instead.
      */
+    @Deprecated
     public SimpleFileRatingDAO(File file, String delim, CompressionMode comp) {
         sourceFile = file;
         delimiter = delim;
@@ -85,7 +87,9 @@ public class SimpleFileRatingDAO implements EventDAO {
      *
      * @param file      The file.
      * @param delim     The delimiter to look for in the file.
+     * @deprecated      use {@link #CreateSimpleFileRatingDAO(File file, String delim)} instead.
      */
+    @Deprecated
     public SimpleFileRatingDAO(File file, String delim) {
         this(file, delim, CompressionMode.AUTO);
     }

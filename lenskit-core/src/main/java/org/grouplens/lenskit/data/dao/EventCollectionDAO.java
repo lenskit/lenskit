@@ -49,7 +49,9 @@ public class EventCollectionDAO implements EventDAO {
      * Construct a new data source from a collection of events.
      *
      * @param evts The events to use.
+     * @deprecated use {@link #CreateEventCollectionDAO(Collection)} instead
      */
+    @Deprecated
     public EventCollectionDAO(Collection<? extends Event> evts) {
         logger.debug("Creating event collection DAO for {} events", evts.size());
         events = evts;
@@ -60,6 +62,20 @@ public class EventCollectionDAO implements EventDAO {
 
     // Create an empty EventCollectionDao object.
     private EventCollectionDAO(){
+    }
+
+    /**
+     * Create a new data source from a collection of events.
+     *
+     * @param evts          The events collection to be used.
+     * @return              A EventCollectionDao generated from events collection.
+     */
+    public static EventCollectionDAO CreateEventCollectionDAO(Collection<? extends Event> evts){
+        logger.debug("Creating event collection DAO for {} events", evts.size());
+        EventCollectionDAO ecDAO = new EventCollectionDAO();
+        ecDAO.setEvents(evts);
+        ecDAO.setTypes(TypeUtils.findTypes(fast(evts), Event.class));
+        return ecDAO;
     }
 
     /**
