@@ -34,6 +34,7 @@ import org.junit.Test;
 import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 
@@ -65,7 +66,7 @@ public class TestLeastSquareItemScorer {
         rs.add(Ratings.make(3, 6, 4));
 
         final EventCollectionDAO dao = new EventCollectionDAO(rs);
-        final Provider<PackedPreferenceSnapshot> provider = new PackedPreferenceSnapshot.Provider(dao);
+        final Provider<PackedPreferenceSnapshot> provider = new PackedPreferenceSnapshot.Provider(dao, new Random());
         snapshot = provider.get();
         final StoppingCondition stop = new ThresholdStoppingCondition(0.1, 10);
 

@@ -35,6 +35,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.*;
@@ -80,7 +81,7 @@ public class TestPackedPreferenceSnapshot {
         rs.add(rating(3, 11, 5, 2));
         rs.add(rating(4, 11, 5, 1));
         EventCollectionDAO dao = new EventCollectionDAO(rs);
-        snap = new PackedPreferenceSnapshot.Provider(dao).get();
+        snap = new PackedPreferenceSnapshot.Provider(dao, new Random()).get();
     }
 
     @Test
