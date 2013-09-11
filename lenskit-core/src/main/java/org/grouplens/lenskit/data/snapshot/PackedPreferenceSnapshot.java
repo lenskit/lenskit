@@ -131,8 +131,8 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
         }
     }
 
-    public static PreferenceSnapshot pack(EventDAO dao, Random random) {
-        Provider p = new Provider(dao, random);
+    public static PreferenceSnapshot pack(EventDAO dao) {
+        Provider p = new Provider(dao, new Random());
         return p.get();
     }
 

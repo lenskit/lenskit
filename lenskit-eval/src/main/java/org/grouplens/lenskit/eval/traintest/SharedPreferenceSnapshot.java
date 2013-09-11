@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.inject.Provider;
 import java.io.Serializable;
-import java.util.Random;
 
 @Shareable
 public class SharedPreferenceSnapshot implements PreferenceSnapshot, Serializable {
@@ -115,7 +114,7 @@ public class SharedPreferenceSnapshot implements PreferenceSnapshot, Serializabl
             StopWatch timer = new StopWatch();
             timer.start();
             EventDAO dao = dataSet.getTrainingDAO();
-            PreferenceSnapshot snapshot = PackedPreferenceSnapshot.pack(dao, new Random());
+            PreferenceSnapshot snapshot = PackedPreferenceSnapshot.pack(dao);
             timer.stop();
             logger.info("Rating snapshot for {} loaded in {}",
                         dataSet.getName(), timer);

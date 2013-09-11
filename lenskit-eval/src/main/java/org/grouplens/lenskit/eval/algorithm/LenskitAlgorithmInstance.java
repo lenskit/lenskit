@@ -115,10 +115,11 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
      * @param builder The LenskitAlgorithmInstanceBuilder
      * @return The new algorithm instance
      */
-    public LenskitAlgorithmInstance setRandom(LenskitAlgorithmInstanceBuilder builder) {
-        random = builder.getProject().getRandom();
+    public LenskitAlgorithmInstance setRandom(Random rd) {
+        random = rd;
         return this;
     }
+    
     public LenskitRecommender buildRecommender(DataSource data,
                                                @Nullable final Provider<? extends PreferenceSnapshot> sharedSnapshot,
                                                @Nullable ExecutionInfo info) throws RecommenderBuildException {
