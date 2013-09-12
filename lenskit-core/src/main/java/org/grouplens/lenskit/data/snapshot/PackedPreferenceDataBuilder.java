@@ -47,7 +47,7 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
 
     private Indexer itemIndex;
     private Indexer userIndex;
-
+    
     private IntHeapPriorityQueue freeList;
 
     public PackedPreferenceDataBuilder() {
