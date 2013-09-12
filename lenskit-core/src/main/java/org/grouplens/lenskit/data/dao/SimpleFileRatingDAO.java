@@ -49,7 +49,7 @@ public class SimpleFileRatingDAO implements EventDAO {
 
     private final File sourceFile;
     private final String delimiter;
-    private CompressionMode compression;
+    private final CompressionMode compression;
 
     /**
      * Create a DAO reading from the specified file/URL and delimiter.
@@ -57,7 +57,7 @@ public class SimpleFileRatingDAO implements EventDAO {
      * @param file      The file.
      * @param delim     The delimiter to look for in the file.
      * @param comp      Whether the input is compressed.
-     * @deprecated      use {@link #CreateSimpleFileRatingDAO(File, String, CompressionMode)} instead.
+     * @deprecated      use {@link #create(File, String, CompressionMode)} instead.
      */
     @Deprecated
     public SimpleFileRatingDAO(File file, String delim, CompressionMode comp) {
@@ -76,9 +76,8 @@ public class SimpleFileRatingDAO implements EventDAO {
      * @param comp      Whether the input is compressed.
      * @return          A SimpleFileRatingDao Object
      */
-    public static SimpleFileRatingDAO CreateSimpleFileRatingDAO(File file, String delim, CompressionMode comp){
-        SimpleFileRatingDAO sfrd = new SimpleFileRatingDAO(file,delim);
-        sfrd.compression = comp;
+    public static SimpleFileRatingDAO create(File file, String delim, CompressionMode comp){
+        SimpleFileRatingDAO sfrd = new SimpleFileRatingDAO(file,delim,comp);
         return sfrd;
     }
 
@@ -87,7 +86,7 @@ public class SimpleFileRatingDAO implements EventDAO {
      *
      * @param file      The file.
      * @param delim     The delimiter to look for in the file.
-     * @deprecated      use {@link #CreateSimpleFileRatingDAO(File file, String delim)} instead.
+     * @deprecated      use {@link #create(File file, String delim)} instead.
      */
     @Deprecated
     public SimpleFileRatingDAO(File file, String delim) {
@@ -102,8 +101,8 @@ public class SimpleFileRatingDAO implements EventDAO {
      * @param delim     The delimiter to look for in the file.
      * @return          A SimpleFileRatingDao Object
      */
-    public static SimpleFileRatingDAO CreateSimpleFileRatingDAO(File file, String delim){
-        SimpleFileRatingDAO sfrd = new SimpleFileRatingDAO(file,delim);
+    public static SimpleFileRatingDAO create(File file, String delim){
+        SimpleFileRatingDAO sfrd = new SimpleFileRatingDAO(file,delim, CompressionMode.AUTO);
         return sfrd;
     }
 

@@ -49,7 +49,7 @@ public class EventCollectionDAO implements EventDAO {
      * Construct a new data source from a collection of events.
      *
      * @param evts The events to use.
-     * @deprecated use {@link #CreateEventCollectionDAO(Collection)} instead
+     * @deprecated use {@link #create(Collection)} instead
      */
     @Deprecated
     public EventCollectionDAO(Collection<? extends Event> evts) {
@@ -60,21 +60,15 @@ public class EventCollectionDAO implements EventDAO {
         types = TypeUtils.findTypes(fast(evts), Event.class);
     }
 
-    // Create an empty EventCollectionDao object.
-    private EventCollectionDAO(){
-    }
-
     /**
      * Create a new data source from a collection of events.
      *
      * @param evts          The events collection to be used.
      * @return              A EventCollectionDao generated from events collection.
      */
-    public static EventCollectionDAO CreateEventCollectionDAO(Collection<? extends Event> evts){
+    public static EventDAO create(Collection<? extends Event> evts){
         logger.debug("Creating event collection DAO for {} events", evts.size());
-        EventCollectionDAO ecDAO = new EventCollectionDAO();
-        ecDAO.setEvents(evts);
-        ecDAO.setTypes(TypeUtils.findTypes(fast(evts), Event.class));
+        EventCollectionDAO ecDAO = new EventCollectionDAO(evts);
         return ecDAO;
     }
 
@@ -84,17 +78,14 @@ public class EventCollectionDAO implements EventDAO {
      * @param eventCursor   The event cursor to be used.
      * @return              A EventCollectionDao generated from events read from the cursor.
      */
-    public static EventCollectionDAO CreateEventCollectionDAO(Cursor<Event> eventCursor){
-        EventCollectionDAO ecDAO = new EventCollectionDAO();
+    public static EventDAO fromCursor(Cursor<Event> eventCursor){
         List<Event> eventList = new ArrayList<Event>();
         while(eventCursor.hasNext()){
             eventList.add(eventCursor.next());
         }
         eventCursor.close();
-
+        EventCollectionDAO ecDAO = new EventCollectionDAO(eventList);
         logger.debug("Creating event collection DAO for {} events", eventList.size());
-        ecDAO.setEvents(eventList);
-        ecDAO.setTypes(TypeUtils.findTypes(fast(ecDAO.getEvents()), Event.class));
         return ecDAO;
     }
 
@@ -105,8 +96,8 @@ public class EventCollectionDAO implements EventDAO {
      * @param eventDAO      The EventDAO to be used.
      * @return              A EventCollectionDao generated from events read from the cursor.
      */
-    public static EventCollectionDAO CreateEventCollectionDAO(EventDAO eventDAO){
-        return  CreateEventCollectionDAO(eventDAO.streamEvents());
+    public static EventDAO loadAndWrap(EventDAO eventDAO){
+        return  fromCursor(eventDAO.streamEvents());
     }
 
     @Override
@@ -142,23 +133,6 @@ public class EventCollectionDAO implements EventDAO {
                 return Cursors.wrap(filtered);
             }
         }
-    }
-
-
-    public Collection<? extends Event> getEvents() {
-        return events;
-    }
-
-    public void setEvents(Collection<? extends Event> events) {
-        this.events = events;
-    }
-
-    public Set<Class<? extends Event>> getTypes() {
-        return types;
-    }
-
-    public void setTypes(Set<Class<? extends Event>> types) {
-        this.types = types;
     }
 
 }
