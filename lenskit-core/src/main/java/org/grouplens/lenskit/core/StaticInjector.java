@@ -20,16 +20,19 @@
  */
 package org.grouplens.lenskit.core;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Maps;
 import org.grouplens.grapht.Injector;
-import org.grouplens.grapht.graph.Edge;
-import org.grouplens.grapht.graph.Graph;
-import org.grouplens.grapht.graph.Node;
+import org.grouplens.grapht.graph.DAGEdge;
+import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.spi.*;
 import org.grouplens.grapht.util.MemoizingProvider;
 
+import javax.annotation.Nullable;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Map;
 
 /**
  * A Grapht injector that uses a precomputed graph.
@@ -38,44 +41,31 @@ import java.util.*;
  */
 class StaticInjector implements Injector {
     private InjectSPI spi;
-    private Graph graph;
-    private Node root;
-    private Map<Node, Provider<?>> providerCache;
+    private DAGNode<CachedSatisfaction, DesireChain> graph;
+    private Map<DAGNode<CachedSatisfaction,DesireChain>, Provider<?>> providerCache;
 
     /**
-     * Create a new static injector. The node labelled with
-     * {@code null} is the root node.
+     * Create a new static injector.
      *
      * @param spi The inject SPI.
      * @param g   The object graph.
      */
-    public StaticInjector(InjectSPI spi, Graph g) {
-        this(spi, g, g.getNode(null));
-    }
-
-    /**
-     * Create a new static injector with a specified root node.
-     *
-     * @param spi The inject SPI.
-     * @param g   The object graph.
-     * @param rt  The root node.
-     */
-    public StaticInjector(InjectSPI spi, Graph g, Node rt) {
+    public StaticInjector(InjectSPI spi, DAGNode<CachedSatisfaction, DesireChain> g) {
         this.spi = spi;
         graph = g;
-        root = rt;
-        providerCache = new HashMap<Node, Provider<?>>();
+        providerCache = Maps.newHashMap();
     }
 
     @Override
     public <T> T getInstance(Class<T> type) {
         Desire d = spi.desire(null, type, true);
-        Edge e = graph.getOutgoingEdge(root, d);
+        DAGEdge<CachedSatisfaction, DesireChain> e =
+                graph.getOutgoingEdgeWithLabel(DesireChain.hasInitialDesire(d));
 
         if (e != null) {
             return type.cast(instantiate(e.getTail()));
         } else {
-            Node node = findSatisfyingNode(spi.matchDefault(), type);
+            DAGNode<CachedSatisfaction,DesireChain> node = findSatisfyingNode(spi.matchDefault(), type);
             if (node != null) {
                 return type.cast(instantiate(node));
             } else {
@@ -85,7 +75,7 @@ class StaticInjector implements Injector {
     }
 
     public <T> T getInstance(Class<? extends Annotation> qual, Class<T> type) {
-        Node node = findSatisfyingNode(spi.match(qual), type);
+        DAGNode<CachedSatisfaction,DesireChain> node = findSatisfyingNode(spi.match(qual), type);
         if (node != null) {
             return type.cast(instantiate(node));
         } else {
@@ -101,37 +91,29 @@ class StaticInjector implements Injector {
      * @return A node whose satisfaction is compatible with {@code type}.
      * @review Decide how to handle qualifiers and contexts
      */
-    private Node findSatisfyingNode(QualifierMatcher qmatch, Class<?> type) {
-        Queue<Node> work = new LinkedList<Node>();
-        Set<Node> seen = new HashSet<Node>();
-        work.add(root);
-        seen.add(root);
-        while (!work.isEmpty()) {
-            Node node = work.remove();
-            for (Edge e : graph.getOutgoingEdges(node)) {
-                // is this the node we are looking for?
-                Node nbr = e.getTail();
-                CachedSatisfaction lbl = nbr.getLabel();
-                assert lbl != null;
-                Satisfaction sat = lbl.getSatisfaction();
-                if (type.isAssignableFrom(sat.getErasedType())) {
-                    // right type, check the qualifier
-                    Desire d = e.getDesire();
-                    assert d != null;
-                    if (qmatch.matches(d.getInjectionPoint().getAttributes().getQualifier())) {
-                        return nbr;
-                    }
-                }
-
-                // these are not the nodes we're looking for
-                if (!seen.contains(nbr)) {
-                    seen.add(nbr);
-                    work.add(nbr);
-                }
+    @Nullable
+    private DAGNode<CachedSatisfaction,DesireChain> findSatisfyingNode(final QualifierMatcher qmatch, final Class<?> type) {
+        Predicate<DAGEdge<CachedSatisfaction,DesireChain>> pred = new Predicate<DAGEdge<CachedSatisfaction, DesireChain>>() {
+            @Override
+            public boolean apply(@Nullable DAGEdge<CachedSatisfaction, DesireChain> input) {
+                return input != null
+                       && type.isAssignableFrom(input.getTail()
+                                                     .getLabel()
+                                                     .getSatisfaction()
+                                                     .getErasedType())
+                       && qmatch.apply(input.getLabel()
+                                            .getInitialDesire()
+                                            .getInjectionPoint()
+                                            .getAttributes()
+                                            .getQualifier());
             }
+        };
+        DAGEdge<CachedSatisfaction,DesireChain> edge = graph.findEdgeBFS(pred);
+        if (edge != null) {
+            return edge.getTail();
+        } else {
+            return null;
         }
-        // got this far, no node
-        return null;
     }
 
     /**
@@ -140,14 +122,14 @@ class StaticInjector implements Injector {
      * @param node The node to instantiate.
      * @return The instantiation of the node.
      */
-    public Object instantiate(Node node) {
+    public Object instantiate(DAGNode<CachedSatisfaction,DesireChain> node) {
         Provider<?> p = getProvider(node);
 
         return p.get();
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private synchronized Provider<?> getProvider(Node node) {
+    private synchronized Provider<?> getProvider(DAGNode<CachedSatisfaction,DesireChain> node) {
         Provider<?> provider = providerCache.get(node);
         if (provider == null) {
             CachedSatisfaction lbl = node.getLabel();
@@ -176,16 +158,17 @@ class StaticInjector implements Injector {
     }
 
     private class DepSrc implements ProviderSource {
-        private Node node;
+        private DAGNode<CachedSatisfaction,DesireChain> node;
 
-        private DepSrc(Node n) {
+        private DepSrc(DAGNode<CachedSatisfaction,DesireChain> n) {
             this.node = n;
         }
 
         @Override
         @SuppressWarnings("rawtypes")
         public Provider<?> apply(Desire desire) {
-            final Node dep = graph.getOutgoingEdge(node, desire).getTail();
+            final DAGNode<CachedSatisfaction,DesireChain> dep =
+                    node.getOutgoingEdgeWithLabel(DesireChain.hasInitialDesire(desire)).getTail();
             return new Provider() {
                 @Override
                 public Object get() {

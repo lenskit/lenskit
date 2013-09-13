@@ -21,8 +21,9 @@
 package org.grouplens.lenskit.core;
 
 import com.google.common.base.Preconditions;
-import org.grouplens.grapht.graph.Graph;
-import org.grouplens.grapht.graph.Node;
+import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.solver.DesireChain;
+import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.grapht.spi.reflect.ReflectionInjectSPI;
 import org.grouplens.lenskit.RecommenderBuildException;
@@ -44,18 +45,15 @@ import java.io.*;
  * @see LenskitRecommender
  */
 public final class LenskitRecommenderEngine implements RecommenderEngine {
-    private final Graph dependencies;
-    private final Node rootNode;
+    private final DAGNode<CachedSatisfaction, DesireChain> graph;
 
     private final InjectSPI spi;
 
-    LenskitRecommenderEngine(Graph dependencies, InjectSPI spi) {
+    LenskitRecommenderEngine(DAGNode<CachedSatisfaction, DesireChain> dependencies, InjectSPI spi) {
         Preconditions.checkArgument(spi instanceof ReflectionInjectSPI,
                                     "SPI must be a reflection SPI");
-        this.dependencies = dependencies;
+        this.graph = dependencies;
         this.spi = spi;
-
-        rootNode = dependencies.getNode(null);
     }
 
     /**
@@ -93,7 +91,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
         InjectSPI spi = new ReflectionInjectSPI();
         ObjectInputStream in = new ObjectInputStream(input);
         try {
-            Graph dependencies = (Graph) in.readObject();
+            DAGNode<CachedSatisfaction,DesireChain> dependencies = (DAGNode) in.readObject();
             return new LenskitRecommenderEngine(dependencies, spi);
         } catch (ClassNotFoundException e) {
             throw new RecommenderConfigurationException(e);
@@ -134,7 +132,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     public void write(@Nonnull OutputStream stream) throws IOException {
         ObjectOutputStream out = new ObjectOutputStream(stream);
         try {
-            out.writeObject(dependencies);
+            out.writeObject(graph);
         } finally {
             out.close();
         }
@@ -142,7 +140,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
 
     @Override
     public LenskitRecommender createRecommender() {
-        StaticInjector inj = new StaticInjector(spi, dependencies, rootNode);
+        StaticInjector inj = new StaticInjector(spi, graph);
         return new LenskitRecommender(inj);
     }
 
@@ -151,8 +149,8 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      *
      * @return The dependency graph.
      */
-    Graph getDependencies() {
-        return dependencies;
+    DAGNode<CachedSatisfaction, DesireChain> getGraph() {
+        return graph;
     }
 
     /**
@@ -164,7 +162,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @return The recommender engine.
      */
     public static LenskitRecommenderEngine build(LenskitConfiguration config) throws RecommenderBuildException {
-        Graph graph = RecommenderInstantiator.forConfig(config).instantiate();
+        DAGNode<CachedSatisfaction, DesireChain> graph = RecommenderInstantiator.forConfig(config).instantiate();
         return new LenskitRecommenderEngine(graph, config.getSPI());
     }
 }

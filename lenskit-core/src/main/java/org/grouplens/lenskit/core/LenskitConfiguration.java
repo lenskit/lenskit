@@ -21,16 +21,17 @@
 package org.grouplens.lenskit.core;
 
 import org.grouplens.grapht.BindingFunctionBuilder;
-import org.grouplens.grapht.graph.Graph;
+import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.DefaultDesireBindingFunction;
 import org.grouplens.grapht.solver.DependencySolver;
+import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.spi.CachePolicy;
+import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.lenskit.*;
 
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -138,13 +139,16 @@ public class LenskitConfiguration extends AbstractConfigContext {
         solver.resolve(bindings.getSPI().desire(null, type, true));
     }
 
-    private Graph resolveGraph(BindingFunctionBuilder cfg) throws SolverException {
-        DependencySolver solver = new DependencySolver(
-                Arrays.asList(cfg.build(BindingFunctionBuilder.RuleSet.EXPLICIT),
-                              cfg.build(BindingFunctionBuilder.RuleSet.INTERMEDIATE_TYPES),
-                              cfg.build(BindingFunctionBuilder.RuleSet.SUPER_TYPES),
-                              new DefaultDesireBindingFunction(cfg.getSPI())),
-                CachePolicy.MEMOIZE, RESOLVE_DEPTH_LIMIT);
+    private DAGNode<CachedSatisfaction, DesireChain> resolveGraph(BindingFunctionBuilder cfg) throws SolverException {
+        DependencySolver solver =
+                DependencySolver.newBuilder()
+                                .addBindingFunction(cfg.build(BindingFunctionBuilder.RuleSet.EXPLICIT))
+                                .addBindingFunction(cfg.build(BindingFunctionBuilder.RuleSet.INTERMEDIATE_TYPES))
+                                .addBindingFunction(cfg.build(BindingFunctionBuilder.RuleSet.SUPER_TYPES))
+                                .addBindingFunction(new DefaultDesireBindingFunction(cfg.getSPI()))
+                                .setDefaultPolicy(CachePolicy.MEMOIZE)
+                                .setMaxDepth(RESOLVE_DEPTH_LIMIT)
+                                .build();
 
         // Resolve all required types to complete a Recommender
         for (Class<?> root : roots) {
@@ -163,7 +167,7 @@ public class LenskitConfiguration extends AbstractConfigContext {
      *
      * @return The full graph.
      */
-    public Graph buildGraph() throws RecommenderConfigurationException {
+    public DAGNode<CachedSatisfaction, DesireChain> buildGraph() throws RecommenderConfigurationException {
         try {
             return resolveGraph(bindings);
         } catch (SolverException e) {
