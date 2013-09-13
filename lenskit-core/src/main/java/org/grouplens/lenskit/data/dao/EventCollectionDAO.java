@@ -67,7 +67,6 @@ public class EventCollectionDAO implements EventDAO {
      * @return              A EventCollectionDao generated from events collection.
      */
     public static EventDAO create(Collection<? extends Event> evts){
-        logger.debug("Creating event collection DAO for {} events", evts.size());
         EventCollectionDAO ecDAO = new EventCollectionDAO(evts);
         return ecDAO;
     }
@@ -75,17 +74,11 @@ public class EventCollectionDAO implements EventDAO {
     /**
      * Create a new data source from a cursor of events.
      *
-     * @param eventCursor   The event cursor to be used.
+     * @param eventCursor   The event cursor to be used. @WillClose
      * @return              A EventCollectionDao generated from events read from the cursor.
      */
     public static EventDAO fromCursor(Cursor<Event> eventCursor){
-        List<Event> eventList = new ArrayList<Event>();
-        while(eventCursor.hasNext()){
-            eventList.add(eventCursor.next());
-        }
-        eventCursor.close();
-        EventCollectionDAO ecDAO = new EventCollectionDAO(eventList);
-        logger.debug("Creating event collection DAO for {} events", eventList.size());
+        EventCollectionDAO ecDAO = new EventCollectionDAO(Cursors.makeList(eventCursor));
         return ecDAO;
     }
 
