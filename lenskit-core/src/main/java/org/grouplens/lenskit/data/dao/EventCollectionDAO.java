@@ -30,6 +30,7 @@ import org.grouplens.lenskit.util.TypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.WillClose;
 import java.util.*;
 
 import static org.grouplens.lenskit.collections.CollectionUtils.fast;
@@ -74,10 +75,10 @@ public class EventCollectionDAO implements EventDAO {
     /**
      * Create a new data source from a cursor of events.
      *
-     * @param eventCursor   The event cursor to be used. @WillClose
+     * @param eventCursor   The event cursor to be used.
      * @return              A EventCollectionDao generated from events read from the cursor.
      */
-    public static EventDAO fromCursor(Cursor<Event> eventCursor){
+    public static EventDAO fromCursor(@WillClose Cursor<Event> eventCursor){
         EventCollectionDAO ecDAO = new EventCollectionDAO(Cursors.makeList(eventCursor));
         return ecDAO;
     }
