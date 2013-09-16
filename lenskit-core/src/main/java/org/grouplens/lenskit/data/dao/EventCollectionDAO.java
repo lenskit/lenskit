@@ -30,6 +30,7 @@ import org.grouplens.lenskit.util.TypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.WillClose;
 import java.util.*;
 
 import static org.grouplens.lenskit.collections.CollectionUtils.fast;
@@ -49,13 +50,48 @@ public class EventCollectionDAO implements EventDAO {
      * Construct a new data source from a collection of events.
      *
      * @param evts The events to use.
+     * @deprecated use {@link #create(Collection)} instead
      */
+    @Deprecated
     public EventCollectionDAO(Collection<? extends Event> evts) {
         logger.debug("Creating event collection DAO for {} events", evts.size());
         events = evts;
 
         // Scan for the types in the data source.
         types = TypeUtils.findTypes(fast(evts), Event.class);
+    }
+
+    /**
+     * Create a new data source from a collection of events.
+     *
+     * @param evts          The events collection to be used.
+     * @return              A EventCollectionDao generated from events collection.
+     */
+    public static EventDAO create(Collection<? extends Event> evts){
+        EventCollectionDAO ecDAO = new EventCollectionDAO(evts);
+        return ecDAO;
+    }
+
+    /**
+     * Create a new data source from a cursor of events.
+     *
+     * @param eventCursor   The event cursor to be used.
+     * @return              A EventCollectionDao generated from events read from the cursor.
+     */
+    public static EventDAO fromCursor(@WillClose Cursor<Event> eventCursor){
+        EventCollectionDAO ecDAO = new EventCollectionDAO(Cursors.makeList(eventCursor));
+        return ecDAO;
+    }
+
+
+    /**
+     * Create a new data source from EventDAO.
+     *
+     * @param eventDAO      The EventDAO to be used.
+     * @return              A EventCollectionDao generated from events read from the cursor.
+     */
+    public static EventDAO loadAndWrap(EventDAO eventDAO){
+        return  fromCursor(eventDAO.streamEvents());
     }
 
     @Override
@@ -92,4 +128,5 @@ public class EventCollectionDAO implements EventDAO {
             }
         }
     }
+
 }

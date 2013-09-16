@@ -18,9 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-/**
- *
- */
+
 package org.grouplens.lenskit.data.dao;
 
 import com.google.common.base.Throwables;
@@ -51,29 +49,61 @@ public class SimpleFileRatingDAO implements EventDAO {
 
     private final File sourceFile;
     private final String delimiter;
-    private CompressionMode compression;
+    private final CompressionMode compression;
 
     /**
      * Create a DAO reading from the specified file/URL and delimiter.
      *
      * @param file      The file.
-     * @param delim The delimiter to look for in the file.
+     * @param delim     The delimiter to look for in the file.
      * @param comp      Whether the input is compressed.
+     * @deprecated      use {@link #create(File, String, CompressionMode)} instead.
      */
+    @Deprecated
     public SimpleFileRatingDAO(File file, String delim, CompressionMode comp) {
         sourceFile = file;
         delimiter = delim;
         compression = comp;
     }
 
+
+    /**
+     * Create a DAO reading from the specified file/URL and delimiter.
+     * Instead of a constructor, use a static constructor method.
+     *
+     * @param file      The file.
+     * @param delim     The delimiter to look for in the file.
+     * @param comp      Whether the input is compressed.
+     * @return          A SimpleFileRatingDao Object
+     */
+    public static SimpleFileRatingDAO create(File file, String delim, CompressionMode comp){
+        SimpleFileRatingDAO sfrd = new SimpleFileRatingDAO(file,delim,comp);
+        return sfrd;
+    }
+
     /**
      * Create a DAO reading from the specified file and delimiter.
      *
      * @param file      The file.
-     * @param delim The delimiter to look for in the file.
+     * @param delim     The delimiter to look for in the file.
+     * @deprecated      use {@link #create(File file, String delim)} instead.
      */
+    @Deprecated
     public SimpleFileRatingDAO(File file, String delim) {
         this(file, delim, CompressionMode.AUTO);
+    }
+
+    /**
+     * Create a DAO reading from the specified file and delimiter.
+     * Instead of a constructor, use a static constructor method.
+     *
+     * @param file      The file.
+     * @param delim     The delimiter to look for in the file.
+     * @return          A SimpleFileRatingDao Object
+     */
+    public static SimpleFileRatingDAO create(File file, String delim){
+        SimpleFileRatingDAO sfrd = new SimpleFileRatingDAO(file,delim, CompressionMode.AUTO);
+        return sfrd;
     }
 
     public File getSourceFile() {
