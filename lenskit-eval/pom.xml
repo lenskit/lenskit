@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.grouplens.lenskit</groupId>
     <artifactId>lenskit</artifactId>
-    <version>2.0</version>
+    <version>2.0.1</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>lenskit-eval</artifactId>
@@ -75,6 +75,17 @@
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>${basedir}/src/main/resources</directory>
+        <filtering>false</filtering>
+      </resource>
+      <resource>
+        <directory>${basedir}/src/main/meta</directory>
+        <filtering>true</filtering>
+        <targetPath>META-INF/lenskit-eval</targetPath>
+      </resource>
+    </resources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

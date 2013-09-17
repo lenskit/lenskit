@@ -28,6 +28,7 @@ target('download') {
             throw new RuntimeException("GroupLens data license not acknoweldged");
         }
     }
+    ant.mkdir(dir: config.dataDir)
     ant.get(src: 'http://www.grouplens.org/system/files/ml-100k.zip',
             dest: zipFile,
             skipExisting: true)
