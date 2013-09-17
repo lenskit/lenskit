@@ -12,9 +12,9 @@
 
 LensKit Releases
 
-  #release("2.0")
+  #release("2.0.1")
 
-  #release("1.4") (in progresss))
+  #release("2.0")
 
   #release("1.3")
 
