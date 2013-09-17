@@ -70,7 +70,7 @@ public class TestMeanScorer {
 
     @Test
     public void testUserItemMeanScorer() {
-        ItemScorer scorer = new ExtendedItemUserMeanScorer(ueDAO, new ItemMeanModel.Provider(dao, 0).get(), 0);
+        ItemScorer scorer = new ExtendedItemUserMeanScorer(ueDAO, new ItemMeanModelBuilder(dao, 0).get(), 0);
 
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
@@ -102,7 +102,7 @@ public class TestMeanScorer {
 
     @Test
     public void testUserItemMeanMissing() {
-        ItemScorer scorer = new ExtendedItemUserMeanScorer(ueDAO, new ItemMeanModel.Provider(dao, 0).get(), 0);
+        ItemScorer scorer = new ExtendedItemUserMeanScorer(ueDAO, new ItemMeanModelBuilder(dao, 0).get(), 0);
 
         long[] items = {5, 7, 10};
         double[] ratings = {3, 6, 4};
