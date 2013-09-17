@@ -83,6 +83,8 @@
     not their constructors (see Effective Java).  Public data structure constructors have therefore
     been deprecated, and will be removed in LensKit 2.0.
 
+  * Return packed lists from Top-N accumulators.
+
   []
 
 * Evaluator
@@ -96,5 +98,7 @@
 
   * Item-item CF once again uses sparsity to speed up the
     model-building process.
+
+  * Use scored ID lists for neighborhoods in item-item CF.
 
   []
