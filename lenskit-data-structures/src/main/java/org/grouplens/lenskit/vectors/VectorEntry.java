@@ -88,16 +88,6 @@ public final class VectorEntry implements Cloneable {
     }
 
     /**
-     * Construct a new vector entry.
-     *
-     * @param k The entry's key.
-     * @param v The entry's value.
-     */
-    public VectorEntry(long k, double v) {
-        this(null, -1, k, v, true);
-    }
-
-    /**
      * Get the key at this entry.
      *
      * @return The key of this entry.

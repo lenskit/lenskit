@@ -26,9 +26,11 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.scored.ScoredIdListBuilder;
+import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.truncate.VectorTruncator;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -37,6 +39,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.List;
 
 /**
  * Build an item-item CF model from rating data.
@@ -68,11 +71,11 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
         logger.debug("building item-item model");
 
         ItemItemBuildContext context = contextFactory.buildContext();
-        MutableSparseVector currentRow = new MutableSparseVector(context.getItems());
+        MutableSparseVector currentRow = MutableSparseVector.create(context.getItems());
 
         LongSortedSet itemUniverse = context.getItems();
-        Long2ObjectMap<ImmutableSparseVector> matrix =
-                new Long2ObjectOpenHashMap<ImmutableSparseVector>(itemUniverse.size());
+        Long2ObjectMap<List<ScoredId>> matrix =
+                new Long2ObjectOpenHashMap<List<ScoredId>>(itemUniverse.size());
 
         LongIterator outer = context.getItems().iterator();
         while (outer.hasNext()) {
@@ -85,7 +88,14 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
             }
             MutableSparseVector normalized = rowNormalizer.normalize(rowItem, currentRow, null);
             truncator.truncate(normalized);
-            matrix.put(rowItem, normalized.immutable());
+            ScoredIdListBuilder bld = new ScoredIdListBuilder(normalized.size());
+            // TODO Allow the symbols in use to be customized
+            List<ScoredId> row = bld.addChannels(normalized.getChannelVectorSymbols())
+                                    .addTypedChannels(normalized.getChannelSymbols())
+                                    .addAll(ScoredIds.collectionFromVector(normalized))
+                                    .sort(ScoredIds.scoreOrder().reverse())
+                                    .finish();
+            matrix.put(rowItem, row);
         }
 
         return new SimilarityMatrixModel(itemUniverse, matrix);

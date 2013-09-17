@@ -20,12 +20,12 @@
  */
 package org.grouplens.lenskit.data.event;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.grouplens.lenskit.data.pref.Preference;
+
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
-
-import com.google.common.base.Preconditions;
-import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.data.pref.SimplePreference;
 
 /**
  * A simple rating immutable rating implementation, storing ratings in fields.
@@ -39,90 +39,41 @@ import org.grouplens.lenskit.data.pref.SimplePreference;
  * @compat Public
  */
 @Immutable
-public final class SimpleRating extends AbstractEvent implements Rating {
-    final long eventId;
+final class SimpleRating implements Rating, Preference {
     final long timestamp;
-    @Nonnull
-    final Preference preference;
-
-    /**
-     * Construct a rating without a timestamp.
-     *
-     * @param eid  The event ID.
-     * @param pref The preference.
-     * @deprecated Use {@link RatingBuilder}.
-     */
-    @Deprecated
-    public SimpleRating(long eid, @Nonnull Preference pref) {
-        this(eid, -1L, pref);
-    }
-
-    /**
-     * Construct a rating with a timestamp.
-     *
-     * @param eid  The event ID.
-     * @param ts   The event timestamp.
-     * @param pref The preference.
-     * @deprecated Use {@link RatingBuilder}.
-     */
-    @Deprecated
-    public SimpleRating(long eid, long ts, @Nonnull Preference pref) {
-        Preconditions.checkNotNull(pref);
-        eventId = eid;
-        timestamp = ts;
-        preference = pref;
-    }
-
-    /**
-     * Construct a rating with a value directly.
-     *
-     * @param eid The event ID.
-     * @param uid The user ID.
-     * @param iid The item ID.
-     * @param v   The rating value.
-     * @deprecated Use {@link RatingBuilder}.
-     */
-    @Deprecated
-    public SimpleRating(long eid, long uid, long iid, double v) {
-        this(eid, uid, iid, v, -1L);
-    }
+    final long user;
+    final long item;
+    final double value;
 
     /**
      * Construct a rating with a timestamp and value.
      *
-     * @param eid The event ID.
      * @param uid The user ID.
      * @param iid The item ID.
      * @param v   The rating value.
      * @param ts  The event timestamp.
-     * @deprecated Use {@link RatingBuilder}.
      */
-    @Deprecated
-    public SimpleRating(long eid, long uid, long iid, double v, long ts) {
-        eventId = eid;
+    SimpleRating(long uid, long iid, double v, long ts) {
         timestamp = ts;
-        preference = new SimplePreference(uid, iid, v);
-    }
-
-    @Override
-    public long getId() {
-        return eventId;
+        user = uid;
+        item = iid;
+        value = v;
     }
 
     @Override
     public final long getUserId() {
-        return preference.getUserId();
+        return user;
     }
 
     @Override
     public final long getItemId() {
-        return preference.getItemId();
+        return item;
     }
 
     @Override
     @Nonnull
     public final Preference getPreference() {
-        return preference;
+        return this;
     }
 
     @Override
@@ -130,8 +81,41 @@ public final class SimpleRating extends AbstractEvent implements Rating {
         return timestamp;
     }
 
-    @Override @Deprecated
-    public Rating copy() {
-        return this;
+    @Override
+    public final double getValue() {
+        return value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Rating) {
+            Rating ro = (Rating) o;
+            Preference op = ro.getPreference();
+            if (op != null) {
+                return new EqualsBuilder().append(user, ro.getUserId())
+                                          .append(item, ro.getItemId())
+                                          .append(value, op.getValue())
+                                          .append(timestamp,  ro.getTimestamp())
+                                          .isEquals();
+            } else {
+                return false;
+            }
+        } else if (o instanceof Preference) {
+            Preference op = (Preference) o;
+            return new EqualsBuilder().append(user, op.getUserId())
+                                      .append(item, op.getItemId())
+                                      .append(value, op.getValue())
+                                      .isEquals();
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(user)
+                                    .append(item)
+                                    .append(value)
+                                    .toHashCode();
     }
 }

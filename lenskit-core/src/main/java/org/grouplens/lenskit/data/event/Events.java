@@ -22,7 +22,6 @@ package org.grouplens.lenskit.data.event;
 
 import com.google.common.collect.ComparisonChain;
 import com.google.common.primitives.Longs;
-import org.grouplens.lenskit.data.Event;
 
 import java.util.Comparator;
 

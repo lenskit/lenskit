@@ -74,18 +74,6 @@ public abstract class AbstractTask<T> extends AbstractFuture<T> implements EvalT
     }
 
     /**
-     * Get the command's configuration.
-     *
-     * @deprecated Use {@link EvalProject#getConfig()} directly.
-     * @return The command's configuration object.
-     */
-    @Nonnull
-    @Deprecated
-    public EvalConfig getEvalConfig() {
-        return getProject().getConfig();
-    }
-
-    /**
      * Set this command's name.
      *
      * @param name The new name.

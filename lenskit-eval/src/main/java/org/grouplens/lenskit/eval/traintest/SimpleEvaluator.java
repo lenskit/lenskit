@@ -20,7 +20,8 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import org.grouplens.lenskit.data.dao.DAOFactory;
+import org.grouplens.grapht.util.Providers;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
@@ -190,8 +191,8 @@ public class SimpleEvaluator implements Callable<Table> {
      * @param dom The {@code PreferenceDomain} to be supplied to the new {@code TTDataSet}
      * @return Itself for  method chaining.
      */
-    public SimpleEvaluator addDataset(String name, DAOFactory train, DAOFactory test, PreferenceDomain dom){
-        result.addDataset(new GenericTTDataSet(name, train, test, dom));
+    public SimpleEvaluator addDataset(String name, EventDAO train, EventDAO test, PreferenceDomain dom){
+        result.addDataset(new GenericTTDataSet(name, Providers.of(train), Providers.of(test), dom));
         return this;
     }
 
@@ -206,8 +207,8 @@ public class SimpleEvaluator implements Callable<Table> {
      * @param dom The {@code PreferenceDomain} to be supplied to the new {@code TTDataSet}
      * @return Itself for  method chaining.
      */
-    public SimpleEvaluator addDataset(DAOFactory train, DAOFactory test, PreferenceDomain dom){
-        result.addDataset(new GenericTTDataSet("generic-data-source", train, test, dom));
+    public SimpleEvaluator addDataset(DataSource train, DataSource test, PreferenceDomain dom){
+        result.addDataset(new GenericTTDataSet("generic-data-source", train, test, dom, null));
         return this;
     }
     /**

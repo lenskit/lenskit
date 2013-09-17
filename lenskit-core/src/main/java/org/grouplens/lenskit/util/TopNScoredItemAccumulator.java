@@ -22,10 +22,10 @@ package org.grouplens.lenskit.util;
 
 import it.unimi.dsi.fastutil.doubles.DoubleHeapIndirectPriorityQueue;
 import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.scored.ScoredIdBuilder;
+import org.grouplens.lenskit.scored.ScoredIdListBuilder;
+import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -98,24 +98,22 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         for (int i = size - 1; i >= 0; i--) {
             indices[i] = heap.dequeue();
         }
-        ArrayList<ScoredId> l = new ArrayList<ScoredId>(size);
-        ScoredIdBuilder idBuilder = new ScoredIdBuilder();
+        ScoredIdListBuilder bld = ScoredIds.newListBuilder(size);
         for (int i : indices) {
-            ScoredId id = idBuilder.setId(items[i]).setScore(scores[i]).build();
-            l.add(id);
+            bld.add(items[i], scores[i]);
         }
 
         assert heap.isEmpty();
 
         size = 0;
         slot = 0;
-        return l;
+        return bld.finish();
     }
 
     @Override
     public MutableSparseVector finishVector() {
         if (scores == null) {
-            return new MutableSparseVector();
+            return MutableSparseVector.create();
         }
 
         assert size == heap.size();

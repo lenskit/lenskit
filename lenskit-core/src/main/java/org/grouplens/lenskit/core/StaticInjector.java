@@ -75,12 +75,21 @@ class StaticInjector implements Injector {
         if (e != null) {
             return type.cast(instantiate(e.getTail()));
         } else {
-            Node node = findSatisfyingNode(type);
+            Node node = findSatisfyingNode(spi.matchDefault(), type);
             if (node != null) {
                 return type.cast(instantiate(node));
             } else {
                 return null;
             }
+        }
+    }
+
+    public <T> T getInstance(Class<? extends Annotation> qual, Class<T> type) {
+        Node node = findSatisfyingNode(spi.match(qual), type);
+        if (node != null) {
+            return type.cast(instantiate(node));
+        } else {
+            return null;
         }
     }
 
@@ -92,19 +101,29 @@ class StaticInjector implements Injector {
      * @return A node whose satisfaction is compatible with {@code type}.
      * @review Decide how to handle qualifiers and contexts
      */
-    private Node findSatisfyingNode(Class<?> type) {
+    private Node findSatisfyingNode(QualifierMatcher qmatch, Class<?> type) {
         Queue<Node> work = new LinkedList<Node>();
         Set<Node> seen = new HashSet<Node>();
         work.add(root);
         seen.add(root);
         while (!work.isEmpty()) {
             Node node = work.remove();
-            CachedSatisfaction lbl = node.getLabel();
-            if (lbl != null && type.isAssignableFrom(lbl.getSatisfaction().getErasedType())) {
-                return node;
-            }
             for (Edge e : graph.getOutgoingEdges(node)) {
+                // is this the node we are looking for?
                 Node nbr = e.getTail();
+                CachedSatisfaction lbl = nbr.getLabel();
+                assert lbl != null;
+                Satisfaction sat = lbl.getSatisfaction();
+                if (type.isAssignableFrom(sat.getErasedType())) {
+                    // right type, check the qualifier
+                    Desire d = e.getDesire();
+                    assert d != null;
+                    if (qmatch.matches(d.getInjectionPoint().getAttributes().getQualifier())) {
+                        return nbr;
+                    }
+                }
+
+                // these are not the nodes we're looking for
                 if (!seen.contains(nbr)) {
                     seen.add(nbr);
                     work.add(nbr);
@@ -133,18 +152,17 @@ class StaticInjector implements Injector {
         if (provider == null) {
             CachedSatisfaction lbl = node.getLabel();
             assert lbl != null;
-            Provider<?> np = lbl.getSatisfaction().makeProvider(new DepSrc(node));
+            provider = lbl.getSatisfaction().makeProvider(new DepSrc(node));
             CachePolicy pol = lbl.getCachePolicy();
             if (pol == CachePolicy.NO_PREFERENCE) {
                 pol = lbl.getSatisfaction().getDefaultCachePolicy();
             }
             switch (pol) {
             case NEW_INSTANCE:
-                provider = np;
                 break;
             default:
                 // TODO allow default policy to be specified
-                provider = new MemoizingProvider(np);
+                provider = new MemoizingProvider(provider);
                 break;
             }
             providerCache.put(node, provider);

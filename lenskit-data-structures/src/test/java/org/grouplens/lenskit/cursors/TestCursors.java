@@ -23,10 +23,12 @@ package org.grouplens.lenskit.cursors;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.longs.*;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -202,42 +204,6 @@ public class TestCursors {
         List<String> lst = Cursors.makeList(Cursors.wrap(Arrays.asList(strings)));
         assertThat(lst, hasSize(3));
         assertThat(lst, contains(strings));
-    }
-
-    @Test
-    public void testMakeListOfLongIterator() {
-        long[] nums = { 42, 39, 67 };
-        // go through an iteator so the cursor doesn't know its length
-        LongList lst = Cursors.makeList(Cursors.wrap(LongIterators.wrap(nums)));
-        assertThat(lst, hasSize(3));
-        assertThat(lst, contains(42L, 39L, 67L));
-    }
-
-    @Test
-    public void testMakeListOfLongList() {
-        // same test as previous, but with a cursor with a known length
-        long[] nums = { 42, 39, 67 };
-        LongList lst = Cursors.makeList(Cursors.wrap(LongArrayList.wrap(nums)));
-        assertThat(lst, hasSize(3));
-        assertThat(lst, contains(42L, 39L, 67L));
-    }
-
-    @Test
-    public void testMakeSetOfLongs() {
-        long[] nums = { 42, 39, 67, 39 };
-        LongSet lst = Cursors.makeSet(Cursors.wrap(LongArrayList.wrap(nums)));
-        assertThat(lst, hasSize(3));
-        assertThat(lst, containsInAnyOrder(42L, 39L, 67L));
-    }
-
-    @Test
-    public void testMakeListOfListOfLongs() {
-        // same test as previous, but with a cursor with a known length
-        long[] nums = { 42, 39, 67 };
-        Cursor<Long> curs = Cursors.wrap(LongArrayList.wrap(nums));
-        List<Long> lst = Cursors.makeList(curs);
-        assertThat(lst, hasSize(3));
-        assertThat(lst, contains(42L, 39L, 67L));
     }
     //endregion
 }

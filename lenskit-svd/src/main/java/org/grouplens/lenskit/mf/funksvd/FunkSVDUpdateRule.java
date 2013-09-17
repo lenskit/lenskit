@@ -20,7 +20,8 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.baseline.BaselineScorer;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.iterative.LearningRate;
@@ -44,7 +45,7 @@ public final class FunkSVDUpdateRule implements Serializable {
     private final double learningRate;
     private final double trainingRegularization;
     private final boolean useTrailingEstimate;
-    private final BaselinePredictor baseline;
+    private final ItemScorer baseline;
     private final ClampingFunction clampingFunction;
     private final StoppingCondition stoppingCondition;
 
@@ -60,7 +61,7 @@ public final class FunkSVDUpdateRule implements Serializable {
     public FunkSVDUpdateRule(@LearningRate double lrate,
                              @RegularizationTerm double reg,
                              @UseTrailingEstimate boolean trail,
-                             BaselinePredictor bl,
+                             @BaselineScorer ItemScorer bl,
                              ClampingFunction clamp,
                              StoppingCondition stop) {
         learningRate = lrate;

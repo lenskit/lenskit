@@ -20,19 +20,32 @@
  */
 package org.grouplens.lenskit.scored;
 
+import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Set;
 
 /**
  * A numerical ID associated with a score and optional side channels.
- * A {@code ScoredId} object is intended to be immutable. The {@code ScoredId.Builder}
- * class may be used instantiate to a new {@code ScoredId} object.
+ * A {@code ScoredId} object is intended to be immutable.  Scored IDs can be created by using the
+ * {@linkplain ScoredIds#newBuilder() builder} or accumulated in a {@link PackedScoredIdList}.
+ * <p>
+ * In addition to the score, a scored id associates <emph>channels</emph> with the id.  Channels are
+ * identified by {@link TypedSymbol}s.  As an optimization, channels of type {@code double} can be
+ * accessed in unboxed fashion using an untyped {@link Symbol}.
+ * </p>
+ * <p>
+ * A channel, if it is present, cannot contain {@code null}.
+ * </p>
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
- * @compat Experimental — this interface may change in future versions of LensKit.
+ * @compat Public
  */
 public interface ScoredId {
 
@@ -49,34 +62,51 @@ public interface ScoredId {
     double getScore();
 
     /**
-     * Determine the symbols associated with all side channels of a {@code ScoredId}.
+     * Determine the symbols associated with all unboxed double side channels of a {@code ScoredId}.
      * @return A set of {@code  Symbol} objects, each of which maps to a value in
+     * one of the {@code ScoredId}'s unboxed double side channels.
+     */
+    @Nonnull
+    Set<Symbol> getUnboxedChannelSymbols();
+
+    /**
+     * Determine the typed symbols associated with all side channels of a {@code ScoredId}.
+     * @return A set of {@code  TypedSymbol} objects, each of which maps to a value in
      * one of the {@code ScoredId}'s side channels.
      */
-    Set<Symbol> getChannels();
+    @Nonnull
+    Set<TypedSymbol<?>> getChannelSymbols();
 
     /**
-     * Determine the typed symbols associated with all typed side channels of a {@code ScoredId}.
-     * @return A set of {@code  TypedSymbol} objects, each of which maps to a value in
-     * one of the {@code ScoredId}'s typed side channels.
+     * Get the channels associated with a scored ID.
+     * @return The channels associated with this ID and their values.
      */
-    Set<TypedSymbol<?>> getTypedChannels();
+    @Nonnull
+    Collection<SymbolValue<?>> getChannels();
 
     /**
-     * Retrieve the value stored in the {@code ScoredId}'s side channel
-     * associated with a specific symbol.
-     * @param s The side channel's symbol.
-     * @return The value of the appropriate side channel.
+     * Get the unboxed channels associated with a scored ID.
+     * @return The unboxed channels associated with this ID and their values.
      */
-    double channel(Symbol s);
-    
+    @Nonnull
+    Collection<DoubleSymbolValue> getUnboxedChannels();
+
     /**
-     * Retrieve the value stored in the {@code ScoredId}'s typed side channel
-     * associated with a specific symbol.
-     * @param s The typed side channel's typed symbol.
-     * @return The value of the appropriate side channel.
+     * Get the value for a channel.
+     * @param sym The channel symbol.
+     * @param <T> The type contained.
+     * @return The channel's value, or {@code null} if no such channel is present.
      */
-    <K> K channel(TypedSymbol<K> s);
+    @Nullable
+    <T> T getChannelValue(@Nonnull TypedSymbol<T> sym);
+
+    /**
+     * Get the unboxed value for a channel.  The channel must exist.
+     * @param sym The channel symbol.
+     * @return The channel's value.
+     * @throws NullPointerException if the symbol names a nonexistent channel.
+     */
+    double getUnboxedChannelValue(Symbol sym);
 
     /**
      * Determine if a {@code ScoredId} has a specific channel.
@@ -84,7 +114,7 @@ public interface ScoredId {
      * @return {@code true} if the {@code ScoredId} has a channel associated
      * with this symbol, {@code false} otherwise.
      */
-    boolean hasChannel(Symbol s);
+    boolean hasUnboxedChannel(Symbol s);
     
     /**
      * Determine if a {@code ScoredId} has a specific typed channel.

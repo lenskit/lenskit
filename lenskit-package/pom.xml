@@ -3,19 +3,18 @@
   <parent>
     <artifactId>lenskit</artifactId>
     <groupId>org.grouplens.lenskit</groupId>
-    <version>1.3.1-SNAPSHOT</version>
+    <version>2.0</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>lenskit-package</artifactId>
   <name>LensKit Packaging</name>
   <packaging>pom</packaging>
   <description>
-    This module prepares LensKit packages.
+    Project to package all LensKit modules and dependencies as JAR fies.
   </description>
 
   <properties>
     <jar.directory>${project.build.directory}/jars</jar.directory>
-    <package.directory>${project.build.directory}/dist/lenskit</package.directory>
   </properties>
 
   <dependencies>
@@ -73,64 +72,12 @@
         <executions>
           <execution>
             <id>assemble</id>
-            <phase>prepare-package</phase>
+            <phase>package</phase>
             <goals>
               <goal>assemble</goal>
             </goals>
           </execution>
         </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>license-maven-plugin</artifactId>
-        <version>1.5</version>
-        <executions>
-          <execution>
-            <id>set-third-party</id>
-            <goals><goal>add-third-party</goal></goals>
-            <phase>prepare-package</phase>
-            <configuration>
-              <outputDirectory>${package.directory}</outputDirectory>
-              <acceptPomPackaging>true</acceptPomPackaging>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>package-prep</id>
-            <goals><goal>run</goal></goals>
-            <phase>prepare-package</phase>
-            <configuration>
-              <target>
-                <property name="packageDir" value="${package.directory}" />
-                <copy todir="${package.directory}">
-                  <fileset dir="${basedir}/src/package/text">
-                    <include name="*.txt" />
-                  </fileset>
-                </copy>
-                <chmod perm="a+x">
-                  <fileset dir="${package.directory}">
-                    <include name="bin/*" />
-                  </fileset>
-                </chmod>
-                <script language="groovy" src="${basedir}/src/package/groovy/prepare-notice.groovy" />
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-            <version>${groovy.version}</version>
-          </dependency>
-        </dependencies>
       </plugin>
     </plugins>
   </build>
@@ -152,11 +99,16 @@
                 </goals>
                 <configuration>
                   <target>
+                    <chmod perm="a+x">
+                      <fileset dir="${project.build.directory}/dist/lenskit">
+                        <include name="bin/*" />
+                      </fileset>
+                    </chmod>
                     <tar destfile="${project.build.directory}/lenskit-${project.version}.tar.gz" compression="gzip">
-                      <tarfileset dir="${package.directory}" prefix="lenskit-${project.version}/" />
+                      <tarfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
                     </tar>
                     <zip destfile="${project.build.directory}/lenskit-${project.version}.zip">
-                      <zipfileset dir="${package.directory}" prefix="lenskit-${project.version}/" />
+                      <zipfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
                     </zip>
                   </target>
                 </configuration>

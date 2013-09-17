@@ -22,9 +22,9 @@ package org.grouplens.lenskit.knn.item;
 
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -50,6 +50,7 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemScorer {
             Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodSize");
     protected final ItemItemModel model;
 
+    private final UserEventDAO dao;
     @Nonnull
     protected final UserVectorNormalizer normalizer;
     protected final UserHistorySummarizer summarizer;
@@ -68,12 +69,12 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemScorer {
      * @param algo   The item scoring algorithm.  It converts neighborhoods to scores.
      */
     @Inject
-    public ItemItemScorer(DataAccessObject dao, ItemItemModel m,
+    public ItemItemScorer(UserEventDAO dao, ItemItemModel m,
                           UserHistorySummarizer sum,
                           NeighborhoodScorer scorer,
                           ItemScoreAlgorithm algo,
                           UserVectorNormalizer norm) {
-        super(dao);
+        this.dao = dao;
         model = m;
         summarizer = sum;
         this.scorer = scorer;
@@ -93,12 +94,10 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemScorer {
      * @see ItemScoreAlgorithm#scoreItems(ItemItemModel, SparseVector, MutableSparseVector, NeighborhoodScorer)
      */
     @Override
-    public void score(@Nonnull UserHistory<? extends Event> history,
-                      @Nonnull MutableSparseVector scores) {
-        final long uid = history.getUserId();
-
+    public void score(long user, @Nonnull MutableSparseVector scores) {
+        UserHistory<? extends Event> history = dao.getEventsForUser(user, summarizer.eventTypeWanted());
         SparseVector summary = summarizer.summarize(history);
-        VectorTransformation transform = normalizer.makeTransformation(uid, summary);
+        VectorTransformation transform = normalizer.makeTransformation(user, summary);
         MutableSparseVector normed = summary.mutableCopy();
         transform.apply(normed);
 

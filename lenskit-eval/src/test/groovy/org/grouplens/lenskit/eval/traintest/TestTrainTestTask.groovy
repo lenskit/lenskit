@@ -22,10 +22,8 @@ package org.grouplens.lenskit.eval.traintest
 
 import org.apache.commons.lang3.tuple.Pair
 import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.BaselineItemScorer
-import org.grouplens.lenskit.baseline.BaselinePredictor
-import org.grouplens.lenskit.baseline.ItemMeanPredictor
-import org.grouplens.lenskit.baseline.UserMeanPredictor
+import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
+import org.grouplens.lenskit.baseline.UserMeanItemScorer
 import org.grouplens.lenskit.data.dao.DataAccessException
 import org.grouplens.lenskit.eval.EvalConfig
 import org.grouplens.lenskit.eval.TaskExecutionException
@@ -171,9 +169,9 @@ class TestTrainTestTask {
         assertThat(data.size(), equalTo(1))
         assertThat(data.get(0), instanceOf(GenericTTDataSet))
         GenericTTDataSet ds = data.get(0) as GenericTTDataSet
-        assertThat(ds.trainData, instanceOf(CSVDataSource))
-        assertThat(ds.trainData.sourceFile, equalTo(new File("train.csv")))
-        assertThat(ds.trainData.delimiter, equalTo(","))
+        assertThat(ds.trainingData, instanceOf(CSVDataSource))
+        assertThat(ds.trainingData.sourceFile, equalTo(new File("train.csv")))
+        assertThat(ds.trainingData.delimiter, equalTo(","))
         assertThat(ds.testData, instanceOf(CSVDataSource))
         assertThat(ds.testData.sourceFile, equalTo(new File("test.csv")))
     }
@@ -193,8 +191,8 @@ class TestTrainTestTask {
         assertThat(data.size(), equalTo(1))
         assertThat(data.get(0), instanceOf(GenericTTDataSet))
         GenericTTDataSet ds = data.get(0) as GenericTTDataSet
-        assertThat(ds.trainData, instanceOf(CSVDataSource))
-        assertThat(ds.trainData.sourceFile, equalTo(new File("train.csv")))
+        assertThat(ds.trainingData, instanceOf(CSVDataSource))
+        assertThat(ds.trainingData.sourceFile, equalTo(new File("train.csv")))
         assertThat(ds.testData, instanceOf(CSVDataSource))
         assertThat(ds.testData.sourceFile, equalTo(new File("test.csv")))
     }
@@ -245,8 +243,7 @@ class TestTrainTestTask {
                 test "${folder.root.absolutePath}/ratings.test.%d.csv"
             }
             algorithm {
-                bind ItemScorer to BaselineItemScorer
-                bind BaselinePredictor to ItemMeanPredictor
+                bind ItemScorer to ItemMeanRatingItemScorer
             }
             output null
         }
@@ -272,16 +269,14 @@ class TestTrainTestTask {
                 test "${folder.root.absolutePath}/noRatings.test.csv"
             }
             algorithm {
-                bind ItemScorer to BaselineItemScorer
-                bind BaselinePredictor to ItemMeanPredictor
+                bind ItemScorer to ItemMeanRatingItemScorer
             }
             algorithm {
-                bind ItemScorer to BaselineItemScorer
-                bind BaselinePredictor to UserMeanPredictor
+                bind ItemScorer to UserMeanItemScorer
             }
             output null
         }
-        assertThat(command.evalConfig.threadCount, equalTo(2))
+        assertThat(command.project.config.threadCount, equalTo(2))
         assertThat(command.dataSources(), hasSize(3))
         assertThat(command.makeJobGroups(), hasSize(1));
         assertThat(command.makeJobGroups()[0], hasSize(6));

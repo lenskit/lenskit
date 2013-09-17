@@ -21,22 +21,22 @@
 package org.grouplens.lenskit.eval.algorithm;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Supplier;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.ExecutionInfo;
+import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.script.BuiltBy;
-import org.grouplens.lenskit.eval.traintest.SharedPreferenceSnapshot;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +45,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -106,58 +107,38 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
         return config;
     }
 
-    public LenskitRecommender buildRecommender(DataAccessObject dao,
-                                               @Nullable final Supplier<? extends PreferenceSnapshot> sharedSnapshot,
-                                               @Nullable PreferenceDomain dom,
-                                               @Nullable ExecutionInfo info,
-                                               boolean shouldClose) throws RecommenderBuildException {
-        try {
-            // Copy the config & set up a shared rating snapshot
-            LenskitConfiguration cfg = new LenskitConfiguration(config);
+    public LenskitRecommender buildRecommender(DataSource data,
+                                               @Nullable final Provider<? extends PreferenceSnapshot> sharedSnapshot,
+                                               @Nullable ExecutionInfo info) throws RecommenderBuildException {
+        // Copy the config & set up a shared rating snapshot
+        LenskitConfiguration cfg = new LenskitConfiguration(config);
 
-            if (dom != null) {
-                cfg.bind(PreferenceDomain.class).to(dom);
-            }
-
-            if (sharedSnapshot != null) {
-                Provider<PreferenceSnapshot> prv = new Provider<PreferenceSnapshot>() {
-                    @Override
-                    public PreferenceSnapshot get() {
-                        return sharedSnapshot.get();
-                    }
-                };
-                cfg.bind(PreferenceSnapshot.class).toProvider(prv);
-            }
-
-            if (info != null) {
-                cfg.bind(ExecutionInfo.class).to(info);
-            }
-
-            LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(dao, cfg);
-
-            return engine.open(dao, shouldClose);
-        } catch (RuntimeException e) {
-            if (shouldClose) {
-                dao.close();
-            }
-            throw e;
-        } catch (RecommenderBuildException e) {
-            if (shouldClose) {
-                dao.close();
-            }
-            throw e;
+        PreferenceDomain dom = data.getPreferenceDomain();
+        if (dom != null) {
+            cfg.bind(PreferenceDomain.class).to(dom);
         }
+
+        if (sharedSnapshot != null) {
+            cfg.bind(PreferenceSnapshot.class).toProvider(sharedSnapshot);
+        }
+
+        if (info != null) {
+            cfg.bind(ExecutionInfo.class).to(info);
+        }
+
+        cfg.bind(EventDAO.class).toProvider(data.getEventDAOProvider());
+
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(cfg);
+
+        return engine.createRecommender();
     }
 
     @Override
     public RecommenderInstance makeTestableRecommender(TTDataSet data,
-                                                       Supplier<SharedPreferenceSnapshot> snapshot,
+                                                       Provider<? extends PreferenceSnapshot> snapshot,
                                                        ExecutionInfo info) throws RecommenderBuildException {
-        return new RecInstance(buildRecommender(data.getTrainFactory().create(),
-                                                snapshot,
-                                                data.getPreferenceDomain(),
-                                                info,
-                                                true));
+        return new RecInstance(buildRecommender(data.getTrainingData(),
+                                                snapshot, info));
     }
 
     private static class RecInstance implements RecommenderInstance {
@@ -168,8 +149,8 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
         }
 
         @Override
-        public DataAccessObject getDAO() {
-            return recommender.getDataAccessObject();
+        public UserEventDAO getUserEventDAO() {
+            return recommender.get(UserEventDAO.class);
         }
 
         @Override
@@ -181,7 +162,7 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
         }
 
         @Override
-        public ScoredLongList getRecommendations(long uid, LongSet testItems, int n) {
+        public List<ScoredId> getRecommendations(long uid, LongSet testItems, int n) {
             ItemRecommender irec = recommender.getItemRecommender();
             if (irec == null) {
                 return null;
@@ -193,11 +174,6 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
         @Override
         public LenskitRecommender getRecommender() {
             return recommender;
-        }
-
-        @Override
-        public void close() {
-            recommender.close();
         }
     }
 

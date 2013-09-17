@@ -28,7 +28,7 @@ import javax.annotation.concurrent.Immutable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Immutable
-public final class SimplePreference extends Preference {
+class SimplePreference extends AbstractPreference {
     private final long userId;
     private final long itemId;
     private final double value;
@@ -40,20 +40,10 @@ public final class SimplePreference extends Preference {
      * @param iid The item ID.
      * @param v   The preference value.
      */
-    public SimplePreference(long uid, long iid, double v) {
+    SimplePreference(long uid, long iid, double v) {
         userId = uid;
         itemId = iid;
         value = v;
-    }
-
-    /**
-     * Copy a preference object. This provides a convenient means of disconnecting
-     * a preference from a mutable or indirect preference with less boilerplate.
-     *
-     * @param pref The preference object to copy.
-     */
-    public SimplePreference(Preference pref) {
-        this(pref.getUserId(), pref.getItemId(), pref.getValue());
     }
 
     @Override
@@ -69,10 +59,5 @@ public final class SimplePreference extends Preference {
     @Override
     public double getValue() {
         return value;
-    }
-
-    @Override
-    public Preference copy() {
-        return this;
     }
 }

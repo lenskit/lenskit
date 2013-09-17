@@ -22,9 +22,9 @@ package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -40,24 +40,24 @@ import javax.inject.Inject;
  */
 public class SlopeOneItemScorer extends AbstractItemScorer {
 
+    protected final UserEventDAO dao;
     protected SlopeOneModel model;
     protected final PreferenceDomain domain;
 
     @Inject
-    public SlopeOneItemScorer(DataAccessObject dao,
+    public SlopeOneItemScorer(UserEventDAO dao,
                               SlopeOneModel model,
                               @Nullable PreferenceDomain dom) {
-        super(dao);
+        this.dao = dao;
         this.model = model;
         domain = dom;
     }
 
     @Override
-    public void score(@Nonnull UserHistory<? extends Event> history,
-                      @Nonnull MutableSparseVector scores) {
+    public void score(long uid, @Nonnull MutableSparseVector scores) {
+        UserHistory<Rating> history = dao.getEventsForUser(uid, Rating.class);
         SparseVector user = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
-        int nUnpred = 0;
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             final long predicteeItem = e.getKey();
             if (!user.containsKey(predicteeItem)) {
@@ -80,7 +80,6 @@ public class SlopeOneItemScorer extends AbstractItemScorer {
                     }
                     scores.set(e, predValue);
                 } else {
-                    nUnpred += 1;
                     scores.unset(e);
                 }
             }

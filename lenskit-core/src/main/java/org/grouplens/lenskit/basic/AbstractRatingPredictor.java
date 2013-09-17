@@ -22,9 +22,6 @@ package org.grouplens.lenskit.basic;
 
 import it.unimi.dsi.fastutil.longs.LongLists;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -32,40 +29,12 @@ import javax.annotation.Nonnull;
 import java.util.Collection;
 
 /**
- * Base class to make rating predictors easier to implement. Delegates single-item predict methods
- * to collection-based ones, and {@link #predict(long, MutableSparseVector)} to {@link
- * #predict(org.grouplens.lenskit.data.UserHistory, MutableSparseVector)}. It also delegates all
- * deprecated {@code score} methods to their corresponding {@code predict} methods.
+ * Base class to make rating predictors easier to implement. Delegates all predict methods to
+ * {@link #predict(long, MutableSparseVector)}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class AbstractRatingPredictor implements RatingPredictor {
-    /**
-     * The DAO passed to the constructor.
-     */
-    @Nonnull
-    protected final DataAccessObject dao;
-
-    /**
-     * Initialize the abstract item scorer.
-     *
-     * @param dao The data access object to use for retrieving histories.
-     */
-    protected AbstractRatingPredictor(@Nonnull DataAccessObject dao) {
-        this.dao = dao;
-    }
-
-    /**
-     * Get the user's history. Subclasses that only require a particular type of
-     * event can override this to filter the history.
-     *
-     * @param user The user whose history is required.
-     * @return The event history for this user.
-     */
-    protected UserHistory<? extends Event> getUserHistory(long user) {
-        return dao.getUserHistory(user);
-    }
-
     /**
      * {@inheritDoc}
      * <p>Delegates to {@link #predict(long, MutableSparseVector)}.
@@ -73,38 +42,10 @@ public abstract class AbstractRatingPredictor implements RatingPredictor {
     @Nonnull
     @Override
     public SparseVector predict(long user, @Nonnull Collection<Long> items) {
-        MutableSparseVector scores = new MutableSparseVector(items);
+        MutableSparseVector scores = MutableSparseVector.create(items);
         predict(user, scores);
         // FIXME Create a more efficient way of "releasing" mutable sparse vectors
         return scores.freeze();
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>Delegates to {@link #predict(org.grouplens.lenskit.data.UserHistory, MutableSparseVector)}.
-     */
-    @Nonnull
-    @Override
-    public SparseVector predict(@Nonnull UserHistory<? extends Event> history,
-                                @Nonnull Collection<Long> items) {
-        MutableSparseVector scores = new MutableSparseVector(items);
-        predict(history, scores);
-        return scores.freeze();
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>Delegates to {@link #predict(org.grouplens.lenskit.data.UserHistory, MutableSparseVector)}, with a
-     * history retrieved from the DAO.
-     *
-     * @param user   The user ID.
-     * @param scores The score vector.
-     * @see #getUserHistory(long)
-     */
-    @Override
-    public void predict(long user, @Nonnull MutableSparseVector scores) {
-        UserHistory<? extends Event> profile = getUserHistory(user);
-        predict(profile, scores);
     }
 
     /**
@@ -115,63 +56,5 @@ public abstract class AbstractRatingPredictor implements RatingPredictor {
     public double predict(long user, long item) {
         SparseVector v = predict(user, LongLists.singleton(item));
         return v.get(item, Double.NaN);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>Delegates to {@link #predict(org.grouplens.lenskit.data.UserHistory, java.util.Collection)}.
-     */
-    @Override
-    public double predict(@Nonnull UserHistory<? extends Event> profile, long item) {
-        SparseVector v = predict(profile, LongLists.singleton(item));
-        return v.get(item, Double.NaN);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>Default implementation assumes history is usable. Override this in subclasses where
-     * it isn't.
-     */
-    @Override
-    public boolean canUseHistory() {
-        return true;
-    }
-
-    @Deprecated
-    @Override
-    public double score(long user, long item) {
-        return predict(user, item);
-    }
-
-    @Deprecated
-    @Nonnull
-    @Override
-    public SparseVector score(long user, @Nonnull Collection<Long> items) {
-        return predict(user, items);
-    }
-
-    @Deprecated
-    @Override
-    public void score(long user, @Nonnull MutableSparseVector scores) {
-        predict(user, scores);
-    }
-
-    @Deprecated
-    @Override
-    public double score(@Nonnull UserHistory<? extends Event> profile, long item) {
-        return predict(profile, item);
-    }
-
-    @Deprecated
-    @Nonnull
-    @Override
-    public SparseVector score(@Nonnull UserHistory<? extends Event> profile, @Nonnull Collection<Long> items) {
-        return predict(profile, items);
-    }
-
-    @Deprecated
-    @Override
-    public void score(@Nonnull UserHistory<? extends Event> profile, @Nonnull MutableSparseVector scores) {
-        predict(profile, scores);
     }
 }

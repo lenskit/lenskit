@@ -21,9 +21,9 @@
 package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -39,17 +39,16 @@ import javax.inject.Inject;
  */
 public class WeightedSlopeOneItemScorer extends SlopeOneItemScorer {
     @Inject
-    public WeightedSlopeOneItemScorer(DataAccessObject dao, SlopeOneModel model,
+    public WeightedSlopeOneItemScorer(UserEventDAO dao, SlopeOneModel model,
                                       @Nullable PreferenceDomain dom) {
         super(dao, model, dom);
     }
 
     @Override
-    public void score(@Nonnull UserHistory<? extends Event> history,
-                      @Nonnull MutableSparseVector scores) {
+    public void score(long uid, @Nonnull MutableSparseVector scores) {
+        UserHistory<Rating> history = dao.getEventsForUser(uid, Rating.class);
         SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
-        int nUnpred = 0;
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             final long predicteeItem = e.getKey();
             if (!ratings.containsKey(predicteeItem)) {
@@ -66,7 +65,6 @@ public class WeightedSlopeOneItemScorer extends SlopeOneItemScorer {
                     }
                 }
                 if (nusers == 0) {
-                    nUnpred += 1;
                     scores.unset(e);
                 } else {
                     double predValue = total / nusers;

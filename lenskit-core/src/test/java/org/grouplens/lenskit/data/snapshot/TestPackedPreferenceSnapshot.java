@@ -24,10 +24,10 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.SimpleRating;
+import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.data.pref.SimplePreference;
+import org.grouplens.lenskit.data.pref.Preferences;
 import org.grouplens.lenskit.util.Index;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
@@ -44,14 +44,12 @@ public class TestPackedPreferenceSnapshot {
     private PackedPreferenceSnapshot snap;
     private static final double EPSILON = 1.0e-6;
 
-    private static int eid;
-
     private static Rating rating(long uid, long iid, double value, long ts) {
-        return new SimpleRating(eid++, uid, iid, value, ts);
+        return Ratings.make(uid, iid, value, ts);
     }
 
     private static Preference preference(long uid, long iid, double value) {
-        return new SimplePreference(uid, iid, value);
+        return Preferences.make(uid, iid, value);
     }
 
     @Before
@@ -81,8 +79,8 @@ public class TestPackedPreferenceSnapshot {
         rs.add(rating(1, 11, 5, 1));
         rs.add(rating(3, 11, 5, 2));
         rs.add(rating(4, 11, 5, 1));
-        EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        snap = new PackedPreferenceSnapshot.Provider(manager.create()).get();
+        EventCollectionDAO dao = new EventCollectionDAO(rs);
+        snap = new PackedPreferenceSnapshot.Provider(dao).get();
     }
 
     @Test

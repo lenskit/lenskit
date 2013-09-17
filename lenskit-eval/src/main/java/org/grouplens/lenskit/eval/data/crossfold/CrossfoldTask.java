@@ -20,15 +20,14 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.eval.AbstractTask;
@@ -43,7 +42,6 @@ import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -68,9 +66,6 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     private boolean splitUsers = true;
 
     private boolean cacheOutput = true;
-
-    @Nullable
-    private Function<DAOFactory, DAOFactory> wrapper;
 
     public CrossfoldTask() {
         super(null);
@@ -144,15 +139,6 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     }
 
     /**
-     * @deprecated use {@link #setHoldoutFraction(double)} instead.
-     */
-    @Deprecated
-    public CrossfoldTask setHoldout(double f) {
-        partition = new FractionPartition<Rating>(f);
-        return this;
-    }
-    
-    /**
      * Set holdout from using the retain part to a fixed number of items.
      * 
      * @param n The number of items to train data set from each user's profile.
@@ -182,18 +168,6 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      */
     public CrossfoldTask setSource(DataSource source) {
         this.source = source;
-        return this;
-    }
-
-    /**
-     * Set a wrapper function for the constructed data sources.
-     *
-     * @param wrapFun The wrapper function.
-     * @return The CrossfoldCommand object  (for chaining)
-     * @see org.grouplens.lenskit.eval.data.CSVDataSourceBuilder#setWrapper(Function)
-     */
-    public CrossfoldTask setWrapper(Function<DAOFactory, DAOFactory> wrapFun) {
-        wrapper = wrapFun;
         return this;
     }
 
@@ -372,16 +346,10 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
                 trainWriters[i] = closer.register(CSVWriter.open(train, null));
                 testWriters[i] = closer.register(CSVWriter.open(test, null));
             }
-            DAOFactory factory = source.getDAOFactory();
-            DataAccessObject daoSnap = factory.snapshot();
-            try {
-                if (getSplitUsers()) {                   
-                    writeTTFilesByUsers(trainWriters, testWriters, daoSnap);
-                } else {                    
-                    writeTTFilesByRatings(trainWriters, testWriters, daoSnap);
-                }
-            } finally {
-                daoSnap.close();
+            if (getSplitUsers()) {
+                writeTTFilesByUsers(trainWriters, testWriters);
+            } else {
+                writeTTFilesByRatings(trainWriters, testWriters);
             }
         } catch (Throwable th) {
             throw closer.rethrow(th);
@@ -395,20 +363,19 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      * 
      * @param trainWriters The tableWriter that write train files
      * @param testWriters  The tableWriter that writ test files
-     * @param dao The DAO of the data source file
      * @throws org.grouplens.lenskit.eval.TaskExecutionException
      */
-    protected void writeTTFilesByUsers(TableWriter[] trainWriters, TableWriter[] testWriters,
-                                        DataAccessObject dao) throws TaskExecutionException {
+    protected void writeTTFilesByUsers(TableWriter[] trainWriters, TableWriter[] testWriters) throws TaskExecutionException {
         logger.info("splitting data source {} to {} partitions by users",
                     getName(), partitionCount);
-        Cursor<UserHistory<Rating>> historyCursor = dao.getUserHistories(Rating.class);
-        Long2IntMap splits = splitUsers(dao);
+        Long2IntMap splits = splitUsers(source.getUserDAO());
+        Cursor<UserHistory<Event>> historyCursor = source.getUserEventDAO().streamEventsByUser();
         Holdout mode = this.getHoldout();
         try {
-            for (UserHistory<Rating> history : historyCursor) {
+            for (UserHistory<Event> history : historyCursor) {
                 int foldNum = splits.get(history.getUserId());
-                List<Rating> ratings = new ArrayList<Rating>(history);
+                // FIXME Use filtered streaming
+                List<Rating> ratings = new ArrayList<Rating>(history.filter(Rating.class));
                 final int p = mode.partition(ratings, getProject().getRandom());
                 final int n = ratings.size();
 
@@ -440,14 +407,12 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      * 
      * @param trainWriters The tableWriter that write train files
      * @param testWriters  The tableWriter that writ test files
-     * @param dao The DAO of the data source file
      * @throws org.grouplens.lenskit.eval.TaskExecutionException
      */
-    protected void writeTTFilesByRatings(TableWriter[] trainWriters, TableWriter[] testWriters, 
-                                          DataAccessObject dao) throws TaskExecutionException {
+    protected void writeTTFilesByRatings(TableWriter[] trainWriters, TableWriter[] testWriters) throws TaskExecutionException {
         logger.info("splitting data source {} to {} partitions by ratings",
                     getName(), partitionCount);
-        ArrayList<Rating> ratings = Cursors.makeList(dao.getEvents(Rating.class));
+        ArrayList<Rating> ratings = Cursors.makeList(source.getEventDAO().streamEvents(Rating.class));
         Collections.shuffle(ratings);
         try {
             final int n = ratings.size();
@@ -489,9 +454,9 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      * @param dao The DAO of the source file
      * @return a map of users to partition numbers.
      */
-    protected Long2IntMap splitUsers(DataAccessObject dao) {
+    protected Long2IntMap splitUsers(UserDAO dao) {
         Long2IntMap userMap = new Long2IntOpenHashMap();
-        LongArrayList users = Cursors.makeList(dao.getUsers());
+        LongArrayList users = new LongArrayList(dao.getUserIds());
         LongLists.shuffle(users, getProject().getRandom());
         LongListIterator iter = users.listIterator();
         while (iter.hasNext()) {
@@ -515,12 +480,10 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
         File[] testFiles = getFiles(getTestPattern());
         for (int i = 0; i < partitionCount; i++) {
             CSVDataSourceBuilder trainBuilder = new CSVDataSourceBuilder()
-                    .setWrapper(wrapper)
                     .setDomain(source.getPreferenceDomain())
                     .setCache(cacheOutput)
                     .setFile(trainFiles[i]);
             CSVDataSourceBuilder testBuilder = new CSVDataSourceBuilder()
-                    .setWrapper(wrapper)
                     .setDomain(source.getPreferenceDomain())
                     .setCache(cacheOutput)
                     .setFile(testFiles[i]);

@@ -34,6 +34,13 @@ import java.lang.annotation.Annotation;
  * @since 1.0
  */
 public interface LenskitConfigContext extends Context {
+    @Override
+    <T> LenskitBinding<T> bind(Class<T> type);
+    @Override
+    <T> LenskitBinding<T> bind(Class<? extends Annotation> qual, Class<T> type);
+    @Override
+    <T> LenskitBinding<T> bindAny(Class<T> type);
+
     /**
      * Start a binding that sets a parameter. Parameters are qualifiers that
      * bear the {@link Parameter} annotation.

@@ -31,7 +31,28 @@ import java.util.Collection;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class Preferences {
+public final class Preferences {
+    private Preferences() {}
+
+    /**
+     * Construct a new preference builder.
+     * @return A new preference builder.
+     */
+    public static PreferenceBuilder newBuilder() {
+        return new PreferenceBuilder();
+    }
+
+    /**
+     * Create a new preference.
+     * @param uid The user ID.
+     * @param iid The item ID.
+     * @param val The value.
+     * @return A preference with the specified properties.
+     */
+    public static Preference make(long uid, long iid, double val) {
+        return new SimplePreference(uid, iid, val);
+    }
+
     /**
      * Compute a user preference vector.
      *
@@ -58,6 +79,6 @@ public class Preferences {
             }
         }
 
-        return new MutableSparseVector(prefMap);
+        return MutableSparseVector.create(prefMap);
     }
 }

@@ -30,7 +30,8 @@ public final class MoreArrays {
     }
 
     /**
-     * Check that the array is sorted.
+     * Check that the array is sorted. Duplicates are not allowed in a sorted array, by this
+     * method's definition.
      *
      * @param data  The data to test for sortedness.
      * @param start The beginning of the range to test (inclusive)
@@ -39,7 +40,7 @@ public final class MoreArrays {
      */
     public static boolean isSorted(final long[] data, final int start, final int end) {
         for (int i = start; i < end - 1; i++) {
-            if (data[i] > data[i + 1]) {
+            if (data[i] >= data[i + 1]) {
                 return false;
             }
         }

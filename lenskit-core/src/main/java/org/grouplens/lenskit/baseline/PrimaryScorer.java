@@ -20,20 +20,20 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import org.grouplens.grapht.annotation.DefaultNull;
+import org.grouplens.grapht.annotation.AllowUnqualifiedMatch;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
 /**
- * The primary scorer to be used with {@link BaselineItemScorer}.
+ * The primary scorer for a {@link FallbackItemScorer}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
  */
 @Documented
 @Qualifier
-@DefaultNull
+@AllowUnqualifiedMatch
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PrimaryScorer {

@@ -20,10 +20,12 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.vectors.*;
 
 import java.util.Map;
@@ -40,14 +42,16 @@ public class SlopeOneModelDataAccumulator {
      * @param damping   A damping term for deviation calculations.
      * @param dao       The DataAccessObject interfacing with the data for the model
      */
-    public SlopeOneModelDataAccumulator(double damping, DataAccessObject dao) {
+    public SlopeOneModelDataAccumulator(double damping, ItemDAO dao) {
         this.damping = damping;
-        LongList items = Cursors.makeList(dao.getItems());
+        LongSet items = dao.getItemIds();
 
         workMatrix = new Long2ObjectOpenHashMap<MutableSparseVector>(items.size());
-        for (long item : items) {
-            workMatrix.put(item, new MutableSparseVector(items));
-            workMatrix.get(item).addChannel(SlopeOneModel.CORATINGS_SYMBOL);
+        LongIterator iter = items.iterator();
+        while (iter.hasNext()) {
+            long item = iter.nextLong();
+            workMatrix.put(item, MutableSparseVector.create(items));
+            workMatrix.get(item).addChannelVector(SlopeOneModel.CORATINGS_SYMBOL);
         }
     }
 
@@ -75,7 +79,7 @@ public class SlopeOneModelDataAccumulator {
             deviation = (coratings == 0) ? Double.NaN : deviation;
 
             workMatrix.get(id1).set(id2, deviation);
-            workMatrix.get(id1).channel(SlopeOneModel.CORATINGS_SYMBOL).set(id2, coratings);
+            workMatrix.get(id1).getChannelVector(SlopeOneModel.CORATINGS_SYMBOL).set(id2, coratings);
         }
     }
 
@@ -94,7 +98,7 @@ public class SlopeOneModelDataAccumulator {
         for (MutableSparseVector vec : workMatrix.values()) {
             for (VectorEntry e : vec.fast()) {
                 double deviation = e.getValue();
-                int coratings = (int)vec.channel(SlopeOneModel.CORATINGS_SYMBOL).get(e);
+                int coratings = (int)vec.getChannelVector(SlopeOneModel.CORATINGS_SYMBOL).get(e);
                 vec.set(e, deviation/(coratings + damping));
             }
         }

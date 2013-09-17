@@ -24,7 +24,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.dao.SortOrder;
-import org.grouplens.lenskit.data.dao.UnsupportedQueryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +38,6 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
             LoggerFactory.getLogger(BasicSQLStatementFactory.class);
     @Nonnull
     private String tableName = "ratings";
-    @Nonnull
-    private String idColumn = "id";
     @Nonnull
     private String userColumn = "user";
     @Nonnull
@@ -66,24 +63,6 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
      */
     public void setTableName(@Nonnull String name) {
         tableName = name;
-    }
-
-    /**
-     * Get the column of the event ID in the rating table.
-     *
-     * @return The name of the event ID column.
-     */
-    public String getIdColumn() {
-        return idColumn;
-    }
-
-    /**
-     * Set the name of the event ID column in the rating table.
-     *
-     * @param col The name of the event ID column.
-     */
-    public void setIdColumn(@Nonnull String col) {
-        idColumn = col;
     }
 
     /**
@@ -187,8 +166,6 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
      */
     protected void rqAddSelectFrom(StringBuilder query) {
         query.append("SELECT ");
-        query.append(idColumn);
-        query.append(", ");
         query.append(userColumn);
         query.append(", ");
         query.append(itemColumn);
@@ -234,7 +211,7 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
             }
             break;
         default:
-            throw new UnsupportedQueryException();
+            throw new IllegalArgumentException("unknown sort order " + order);
         }
     }
 
@@ -274,6 +251,17 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
         query.append(" WHERE ").append(itemColumn).append(" = ?");
         rqFinish(query);
         logger.debug("Item rating query: {}", query);
+        return query.toString();
+    }
+
+    @Override
+    public String prepareItemUsers() {
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT DISTINCT ").append(userColumn)
+             .append(" FROM ").append(tableName)
+             .append(" WHERE ").append(itemColumn).append(" = ?");
+        rqFinish(query);
+        logger.debug("Item user query: {}", query);
         return query.toString();
     }
 }

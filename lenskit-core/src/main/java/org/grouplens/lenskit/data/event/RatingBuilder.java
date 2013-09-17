@@ -23,8 +23,6 @@ package org.grouplens.lenskit.data.event;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 /**
  * Build a {@link Rating}.
  *
@@ -32,10 +30,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class RatingBuilder implements Builder<Rating> {
-    private static final AtomicLong eventIds = new AtomicLong();
-
-    private boolean hasId;
-    private long eventId;
     private boolean hasUserId;
     private long userId;
     private boolean hasItemId;
@@ -50,52 +44,12 @@ public class RatingBuilder implements Builder<Rating> {
     public RatingBuilder() {}
 
     /**
-     * Create a rating builder with a particular event ID.
-     * @param id The event ID.
-     */
-    public RatingBuilder(long id) {
-        eventId = id;
-        hasId = true;
-    }
-
-    /**
      * Construct a new rating builder that is a copy of a particular rating.
      * @param r The rating to copy.
      * @return A rating builder that will initially build a copy of the specified rating.
      */
     public static RatingBuilder copy(Rating r) {
         return Ratings.copyBuilder(r);
-    }
-
-    /**
-     * Get the event ID.
-     * @return The event ID.
-     */
-    public long getId() {
-        Preconditions.checkState(hasId, "Event ID must be set");
-        return eventId;
-    }
-
-    /**
-     * Set the event ID.
-     * @param id The event ID.
-     * @return The builder (for chaining).
-     */
-    public RatingBuilder setId(long id) {
-        eventId = id;
-        hasId = true;
-        return this;
-    }
-
-    /**
-     * Set a new unique event ID.  IDs are generated incrementally starting from 1 at the beginning
-     * of the application.  This method is really only useful for testing.
-     *
-     * @return The builder (for chaining).
-     */
-    public RatingBuilder newId() {
-        setId(eventIds.incrementAndGet());
-        return this;
     }
 
     /**
@@ -193,13 +147,12 @@ public class RatingBuilder implements Builder<Rating> {
 
     @Override
     public Rating build() {
-        Preconditions.checkState(hasId, "no event ID set");
         Preconditions.checkState(hasUserId, "no user ID set");
         Preconditions.checkState(hasItemId, "no item ID set");
         if (hasRating) {
-            return new SimpleRating(eventId,  userId, itemId, rating, timestamp);
+            return new SimpleRating(userId, itemId, rating, timestamp);
         } else {
-            return new SimpleNullRating(eventId, userId, itemId, timestamp);
+            return new SimpleNullRating(userId, itemId, timestamp);
         }
     }
 }

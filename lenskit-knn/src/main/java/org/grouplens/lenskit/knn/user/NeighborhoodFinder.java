@@ -23,15 +23,15 @@ package org.grouplens.lenskit.knn.user;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
+import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.UserHistory;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
 
 /**
  * Interface for neighborhood-finding strategies. These strategies are used by
- * {@link UserUserRecommender} to find neighbors for recommendation.
+ * {@link UserUserItemScorer} to find neighbors for generating scores.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */

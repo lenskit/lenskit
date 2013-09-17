@@ -28,10 +28,12 @@ import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.AbstractSatisfactionVisitor;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.Satisfaction;
+import org.grouplens.grapht.util.Providers;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.core.RecommenderInstantiator;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
@@ -57,7 +59,6 @@ public class DumpGraphTask extends AbstractTask<File> {
     private LenskitAlgorithmInstance algorithm;
     private File output;
     private PreferenceDomain domain = null;
-    private Class<? extends DataAccessObject> daoType;
 
     public DumpGraphTask() {
         this(null);
@@ -111,15 +112,6 @@ public class DumpGraphTask extends AbstractTask<File> {
         return this;
     }
 
-    public Class<? extends DataAccessObject> getDaoType() {
-        return daoType;
-    }
-
-    public DumpGraphTask setDaoType(Class<? extends DataAccessObject> daoType) {
-        this.daoType = daoType;
-        return this;
-    }
-
     @Override
     public File perform() throws TaskExecutionException {
         if (output == null) {
@@ -127,13 +119,15 @@ public class DumpGraphTask extends AbstractTask<File> {
             throw new IllegalStateException("no graph output file specified");
         }
         LenskitConfiguration config = algorithm.getConfig().copy();
+        // FIXME This is an ugly DAO-type kludge
+        config.bind(EventDAO.class).toProvider(Providers.<EventDAO>of(null, EventDAO.class));
         if (domain != null) {
             config.bind(PreferenceDomain.class).to(domain);
         }
         logger.info("dumping graph {}", getName());
         RecommenderInstantiator instantiator;
         try {
-            instantiator = RecommenderInstantiator.forConfig(config, daoType);
+            instantiator = RecommenderInstantiator.forConfig(config);
         } catch (RecommenderConfigurationException e) {
             throw new TaskExecutionException("error resolving algorithm configuration", e);
         }

@@ -20,55 +20,51 @@
  */
 package org.grouplens.lenskit.eval.data;
 
-import com.google.common.base.Function;
-import com.google.common.base.Supplier;
+import org.grouplens.grapht.util.Providers;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.dao.DAOFactory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.util.SoftMemoizingProvider;
+import org.grouplens.lenskit.util.io.CompressionMode;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
+import javax.inject.Provider;
 import java.io.File;
 import java.util.List;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class CSVDataSource implements DataSource {
+public class CSVDataSource extends AbstractDataSource {
     final String name;
-    final DAOFactory factory;
+    final Provider<EventDAO> provider;
     final File sourceFile;
     final PreferenceDomain domain;
     final String delimiter;
 
-    CSVDataSource(String name, File file, String delim, boolean cache, PreferenceDomain pdom,
-                  @Nullable Function<DAOFactory, DAOFactory> wrap) {
+    CSVDataSource(String name, File file, String delim, boolean cache, PreferenceDomain pdom) {
         this.name = name;
         sourceFile = file;
         domain = pdom;
         delimiter = delim;
-        final DAOFactory csvFactory = new SimpleFileRatingDAO.Factory(file, delim);
-        DAOFactory daof = csvFactory;
+
+        final EventDAO fileDao = new SimpleFileRatingDAO(file, delim, CompressionMode.AUTO);
+
         if (cache) {
-            daof = new EventCollectionDAO.SoftFactory(new Supplier<List<Rating>>() {
+            provider = new SoftMemoizingProvider<EventDAO>() {
+                @Nonnull
                 @Override
-                public List<Rating> get() {
-                    DataAccessObject dao = csvFactory.create();
-                    try {
-                        return Cursors.makeList(dao.getEvents(Rating.class));
-                    } finally {
-                        dao.close();
-                    }
+                protected EventDAO newValue() {
+                    List<Rating> ratings = Cursors.makeList(fileDao.streamEvents(Rating.class));
+                    return new EventCollectionDAO(ratings);
                 }
-            });
+            };
+        } else {
+            provider = Providers.of(fileDao);
         }
-        if (wrap != null) {
-            daof = wrap.apply(daof);
-        }
-        factory = daof;
     }
 
     @Override
@@ -95,7 +91,7 @@ public class CSVDataSource implements DataSource {
     }
 
     @Override
-    public DAOFactory getDAOFactory() {
-        return factory;
+    public Provider<EventDAO> getEventDAOProvider() {
+        return provider;
     }
 }

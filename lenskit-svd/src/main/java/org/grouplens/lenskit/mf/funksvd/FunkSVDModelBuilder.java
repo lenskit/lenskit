@@ -22,7 +22,6 @@ package org.grouplens.lenskit.mf.funksvd;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import org.apache.commons.lang3.time.StopWatch;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Transient;
@@ -60,7 +59,6 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      * The feature count. This is used by {@link #get()} and {@link #computeTrailingValue(int)}.
      */
     protected final int featureCount;
-    protected final BaselinePredictor baseline;
     protected final PreferenceSnapshot snapshot;
     protected final double initialValue;
 
@@ -69,12 +67,10 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     @Inject
     public FunkSVDModelBuilder(@Transient @Nonnull PreferenceSnapshot snapshot,
                                @Transient @Nonnull FunkSVDUpdateRule rule,
-                               @Nonnull BaselinePredictor baseline,
                                @FeatureCount int featureCount,
                                @InitialFeatureValue double initVal) {
         this.featureCount = featureCount;
         this.initialValue = initVal;
-        this.baseline = baseline;
         this.snapshot = snapshot;
         this.rule = rule;
     }
@@ -121,7 +117,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
         return new FunkSVDModel(featureCount, itemFeatures, userFeatures,
                                 rule.getClampingFunction(),
                                 snapshot.itemIndex(), snapshot.userIndex(),
-                                baseline, featureInfo);
+                                featureInfo);
     }
 
     /**

@@ -28,12 +28,11 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
 import org.grouplens.lenskit.knn.item.ModelSize;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.List;
 
 /**
  * Build an item-item CF model from rating data.
@@ -77,16 +77,26 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
         Accumulator accumulator = new Accumulator(buildContext.getItems(), threshold, modelSize);
 
         for (long itemId1 : buildContext.getItems()) {
+            SparseVector vec1 = buildContext.itemVector(itemId1);
+
             LongIterator itemIter;
-            if (itemSimilarity.isSymmetric()) {
-                itemIter = buildContext.getItems().iterator(itemId1);
+            if (itemSimilarity.isSparse()) {
+                if (itemSimilarity.isSymmetric()) {
+                    itemIter = buildContext.getUserItems(vec1.keySet()).iterator(itemId1);
+                } else {
+                    itemIter = buildContext.getUserItems(vec1.keySet()).iterator();
+                }
             } else {
-                itemIter = buildContext.getItems().iterator();
+                if (itemSimilarity.isSymmetric()) {
+                    itemIter = buildContext.getItems().iterator(itemId1);
+                } else {
+                    itemIter = buildContext.getItems().iterator();
+                }
             }
+
             while (itemIter.hasNext()) {
                 long itemId2 = itemIter.nextLong();
                 if (itemId1 != itemId2) {
-                    SparseVector vec1 = buildContext.itemVector(itemId1);
                     SparseVector vec2 = buildContext.itemVector(itemId2);
                     double sim = itemSimilarity.similarity(itemId1, vec1, itemId2, vec2);
                     accumulator.put(itemId1, itemId2, sim);
@@ -133,10 +143,10 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
         }
 
         public SimilarityMatrixModel build() {
-            Long2ObjectMap<ImmutableSparseVector> data = new Long2ObjectOpenHashMap<ImmutableSparseVector>(rows.size());
+            Long2ObjectMap<List<ScoredId>> data = new Long2ObjectOpenHashMap<List<ScoredId>>(rows.size());
             for (Long2ObjectMap.Entry<ScoredItemAccumulator> row : rows.long2ObjectEntrySet()) {
-                MutableSparseVector similarities = row.getValue().finishVector();
-                data.put(row.getLongKey(), similarities.freeze());
+                List<ScoredId> similarities = row.getValue().finish();
+                data.put(row.getLongKey(), similarities);
             }
             SimilarityMatrixModel model = new SimilarityMatrixModel(itemUniverse, data);
             rows = null;  // Mark that this model has already been built.

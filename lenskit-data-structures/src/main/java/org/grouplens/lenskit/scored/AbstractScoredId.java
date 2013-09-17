@@ -20,11 +20,19 @@
  */
 package org.grouplens.lenskit.scored;
 
-import com.google.common.primitives.Doubles;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Ordering;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
+
+import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * A base class for {@code ScoredId} implementations providing
@@ -32,6 +40,7 @@ import org.grouplens.lenskit.symbols.TypedSymbol;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
+ * @compat Public
  */
 public abstract class AbstractScoredId implements ScoredId {
 
@@ -46,7 +55,7 @@ public abstract class AbstractScoredId implements ScoredId {
                .append(getId())
                .append(") = ")
                .append(getScore());
-            int nchans = getChannels().size() + getTypedChannels().size();
+            int nchans = getChannels().size();
             if (nchans > 0) {
                 bld.append(" [with ").append(nchans).append(" channels]");
             }
@@ -64,16 +73,9 @@ public abstract class AbstractScoredId implements ScoredId {
                     .append(getScore());
 
             double sum = 0;
-            for (Symbol s : getChannels()) {
-                sum += s.hashCode();
-                sum += Doubles.hashCode(channel(s));
-            }
-            builder.append(sum);
-            
-            sum = 0;
-            for (TypedSymbol s : getTypedChannels()) {
-                sum += s.hashCode();
-                sum += channel(s).hashCode();
+            // FIXME Don't incur the boxing cost of doing this to double side channels
+            for (SymbolValue<?> sym: getChannels()) {
+                sum += sym.hashCode();
             }
             builder.append(sum);
             
@@ -89,26 +91,68 @@ public abstract class AbstractScoredId implements ScoredId {
             return true;
         } else if (o instanceof ScoredId) {
             ScoredId oid = (ScoredId) o;
-            EqualsBuilder builder = new EqualsBuilder()
+            Ordering<SymbolValue<?>> ord = Ordering.arbitrary()
+                                                   .onResultOf(SymbolValue.extractSymbol());
+            return new EqualsBuilder()
                     .append(getId(), oid.getId())
                     .append(getScore(), oid.getScore())
-                    .append(getChannels(), oid.getChannels())
-                    .append(getTypedChannels(), oid.getTypedChannels());
-
-            // Try to avoid iterating through side channels if possible
-            if (!builder.isEquals()) {
-                return false;
-            }
-
-            for (Symbol s : getChannels()) {
-                builder.append(channel(s), oid.channel(s));
-            }
-            
-            for (TypedSymbol s : getTypedChannels()) {
-                builder.append(channel(s), oid.channel(s));
-            }
-            return builder.isEquals();
+                            // FIXME Don't incur the boxing cost of doing this to double side channels
+                    .append(ord.sortedCopy(getChannels()),
+                            ord.sortedCopy(oid.getChannels()))
+                    .isEquals();
         }
         return false;
+    }
+
+    @Nonnull
+    @Override
+    public Collection<DoubleSymbolValue> getUnboxedChannels() {
+        return FluentIterable.from(getChannels())
+                             .filter(DoubleSymbolValue.class)
+                             .toList();
+    }
+
+    @Override
+    public Set<TypedSymbol<?>> getChannelSymbols() {
+        ImmutableSet.Builder<TypedSymbol<?>> builder = ImmutableSet.builder();
+        for (SymbolValue<?> sv: getChannels()) {
+            builder.add(sv.getSymbol());
+        }
+        return builder.build();
+    }
+
+    @Override
+    public Set<Symbol> getUnboxedChannelSymbols() {
+        ImmutableSet.Builder<Symbol> builder = ImmutableSet.builder();
+        for (SymbolValue<?> sv: getUnboxedChannels()) {
+            builder.add(sv.getRawSymbol());
+        }
+        return builder.build();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation scans the result of {@link #getChannels()} for a matching channel.
+     */
+    @Override
+    public boolean hasChannel(TypedSymbol<?> sym) {
+        for (SymbolValue<?> val: getChannels()) {
+            if (sym == val.getSymbol()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     * This implementation delgates to {@link #hasChannel(TypedSymbol)}.
+     * @param sym
+     * @return
+     */
+    @Override
+    public boolean hasUnboxedChannel(Symbol sym) {
+        return hasChannel(sym.withType(Double.class));
     }
 }

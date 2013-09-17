@@ -20,14 +20,15 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.vectors.SparseVector;
-
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.vectors.SparseVector;
+
+import java.util.List;
 
 /**
  * A user in a test set, with the results of their recommendations or predictions.
@@ -39,7 +40,7 @@ public class TestUser {
     private Supplier<UserHistory<Event>> historySupplier;
     private Supplier<UserHistory<Event>> testHistorySupplier;
     private Supplier<SparseVector> predSupplier;
-    private Supplier<ScoredLongList> recSupplier;
+    private Supplier<List<ScoredId>> recSupplier;
 
     /**
      * Construct a new test user.
@@ -54,7 +55,7 @@ public class TestUser {
                     Supplier<UserHistory<Event>> hist,
                     Supplier<UserHistory<Event>> testHist,
                     Supplier<SparseVector> predictions,
-                    Supplier<ScoredLongList> recommendations) {
+                    Supplier<List<ScoredId>> recommendations) {
         userId = id;
         historySupplier = Suppliers.memoize(hist);
         testHistorySupplier = Suppliers.memoize(testHist);
@@ -71,17 +72,6 @@ public class TestUser {
         return userId;
     }
 
-    /**
-     * Return this user's training history.
-     *
-     * @return The history of the user from the training/query set.
-     * @deprecated use {@link #getTrainHistory()}
-     */
-    @Deprecated 
-    public UserHistory<Event> getHistory() {
-        return historySupplier.get();
-    }
-    
     /**
      * Return this user's training history.
      *
@@ -126,7 +116,7 @@ public class TestUser {
      *
      * @return Some recommendations for the user.
      */
-    public ScoredLongList getRecommendations() {
+    public List<ScoredId> getRecommendations() {
         return recSupplier.get();
     }
 }

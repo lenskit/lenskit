@@ -20,12 +20,13 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold
 
+import org.grouplens.lenskit.data.dao.EventDAO
+
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.*
 
 import org.grouplens.lenskit.cursors.Cursors
-import org.grouplens.lenskit.data.dao.DAOFactory
-import org.grouplens.lenskit.data.dao.DataAccessObject
+
 import org.grouplens.lenskit.data.event.Rating
 import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet
@@ -72,7 +73,7 @@ class TestCrossfoldConfig extends ConfigTestBase {
             crossfold("tempRatings") {
                 source file
                 partitions 10
-                holdout 0.5
+                holdoutFraction 0.5
                 order RandomOrder
                 train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
                 test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
@@ -83,7 +84,7 @@ class TestCrossfoldConfig extends ConfigTestBase {
         def tt = obj as List<TTDataSet>
         assertThat(tt[1].name, equalTo("tempRatings.1"))
         assertThat(tt[2].attributes.get("Partition"), equalTo(2))
-        assertThat(tt[3].testFactory, instanceOf(DAOFactory))
+        assertThat(tt[3].testDAO, instanceOf(EventDAO))
     }
     
     @Test
@@ -102,34 +103,12 @@ class TestCrossfoldConfig extends ConfigTestBase {
         def tt = obj as List<TTDataSet>
         assertThat(tt[1].name, equalTo("tempRatings.1"))
         assertThat(tt[2].attributes.get("Partition"), equalTo(2))
-        assertThat(tt[3].testFactory, instanceOf(DAOFactory))
+        assertThat(tt[3].testDAO, instanceOf(EventDAO))
         for (TTDataSet data: tt) {
-            DAOFactory factory = data.getTestFactory();
-            DataAccessObject daoSnap = factory.snapshot();
-            try{
-                List<Rating> ratings = Cursors.makeList(daoSnap.getEvents(Rating.class));
-         
-                assertThat(ratings.size(), equalTo(2))
-            } finally{
-                daoSnap.close();
-            }
-        }
-    }
+            EventDAO dao = data.getTestDAO();
+            List<Rating> ratings = Cursors.makeList(dao.streamEvents(Rating.class));
 
-    @Test @Ignore("wrapper functions not supported")
-    void testWrapperFunction() {
-        def obj = eval {
-            crossfold("tempRatings") {
-                source file
-                wrapper {
-                    it
-                }
-                train "${buildDir}/temp/ratings.train.%d.csv"
-                test "${buildDir}/temp/ratings.test.%d.csv"
-            }
+            assertThat(ratings.size(), equalTo(2))
         }
-        obj = obj as List<TTDataSet>
-        assertThat(obj.size(), equalTo(10))
-        assertThat(obj[1], instanceOf(TTDataSet))
     }
 }

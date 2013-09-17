@@ -22,6 +22,8 @@ package org.grouplens.lenskit.data.event;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.data.pref.Preference;
 
 /**
@@ -32,8 +34,7 @@ import org.grouplens.lenskit.data.pref.Preference;
  * @compat Public
  */
 @Immutable
-public final class SimpleNullRating implements Rating {
-    private final long id;
+final class SimpleNullRating implements Rating {
     private final long userId;
     private final long itemId;
     private final long timestamp;
@@ -41,36 +42,14 @@ public final class SimpleNullRating implements Rating {
     /**
      * Construct a new null rating.
      *
-     * @param id  The event ID.
-     * @param uid The user ID.
-     * @param iid The item ID.
-     * @deprecated Use {@link RatingBuilder}.
-     */
-    @Deprecated
-    public SimpleNullRating(long id, long uid, long iid) {
-        this(id, uid, iid, -1);
-    }
-
-    /**
-     * Construct a new null rating.
-     *
-     * @param id  The event ID.
      * @param uid The user ID.
      * @param iid The item ID.
      * @param ts  The event timestamp.
-     * @deprecated Use {@link RatingBuilder}.
      */
-    @Deprecated
-    public SimpleNullRating(long id, long uid, long iid, long ts) {
-        this.id = id;
+    SimpleNullRating(long uid, long iid, long ts) {
         userId = uid;
         itemId = iid;
         timestamp = ts;
-    }
-
-    @Override
-    public long getId() {
-        return id;
     }
 
     @Override
@@ -93,9 +72,24 @@ public final class SimpleNullRating implements Rating {
         return null;
     }
 
-    @Override @Deprecated
-    public Rating copy() {
-        /* this object is immutable. Just return it. */
-        return this;
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Rating) {
+            Rating or = (Rating) o;
+            if (or.getPreference() == null) {
+                return new EqualsBuilder().append(userId, or.getUserId())
+                                          .append(itemId, or.getItemId())
+                                          .append(timestamp, or.getTimestamp())
+                                          .isEquals();
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(userId)
+                                    .append(itemId)
+                                    .toHashCode();
     }
 }

@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import com.google.common.base.Preconditions;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.fastutil.Swapper;
@@ -28,12 +29,12 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import org.grouplens.lenskit.collections.BitSetIterator;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.collections.MoreArrays;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
@@ -62,6 +63,10 @@ import java.util.Map.Entry;
  * normalized.subtract(normFactor);
  * </pre>
  *
+ * <p>Create mutable sparse vectors using the various {@code create} static methods provided
+ * ({@link #create(java.util.Collection)}, {@link #create(java.util.Collection, double)},
+ * {@link #create(long...)}, {@link #create(java.util.Map)}).
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
@@ -69,16 +74,74 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     private static final long serialVersionUID = 2L;
 
     @SuppressFBWarnings(value="SE_BAD_FIELD", justification="stored value is always serializable")
-    private final Map<Symbol, MutableSparseVector> channelMap;
+    private final Map<Symbol, MutableSparseVector> channelVectors;
     @SuppressFBWarnings(value="SE_BAD_FIELD", justification="stored value is always serializable")
-    private final Map<TypedSymbol<?>, TypedSideChannel<?>> typedChannelMap;
+    private final Map<TypedSymbol<?>, Long2ObjectMap<?>> channels;
+
+    /**
+     * Create a new empty mutable sparse vector with the specified key domain.
+     *
+     * @param domain The key domain.  This method is more efficient if you pass some form of {@link
+     *               LongCollection}, particularly a {@link LongSortedSet}.
+     * @return A mutable sparse vector with the specified domain and no active keys.
+     */
+    public static MutableSparseVector create(Collection<Long> domain) {
+        return new MutableSparseVector(LongKeyDomain.fromCollection(domain, false));
+    }
+
+    /**
+     * Create a new mutable sparse vector with the specified key domain and filled with a value.
+     *
+     * @param domain The key domain.  This method is more efficient if you pass some form of {@link
+     *               LongCollection}, particularly a {@link LongSortedSet}.
+     * @param value  The value to fill the vector with.
+     * @return A mutable sparse vector with the specified domain and no active keys.
+     */
+    public static MutableSparseVector create(Collection<Long> domain, double value) {
+        MutableSparseVector msv = create(domain);
+        msv.fill(value);
+        return msv;
+    }
+
+    /**
+     * Create a new mutable sparse vector with the specified content.
+     * @param content The content of the vector.  Pass a {@link Long2DoubleMap} for more efficiency.
+     *                It may not contain any {@code null} values.
+     * @return The content.
+     */
+    public static MutableSparseVector create(Map<Long,Double> content) {
+        MutableSparseVector msv = create(content.keySet());
+        msv.keys.setAllActive(true);
+        final int len = msv.keys.domainSize();
+        if (content instanceof Long2DoubleMap) {
+            Long2DoubleMap fast = (Long2DoubleMap) content;
+            for (int i = 0; i < len; i++) {
+                msv.values[i] = fast.get(msv.keys.getKey(i));
+            }
+        } else {
+            for (int i = 0; i < len; i++) {
+                msv.values[i] = content.get(msv.keys.getKey(i));
+            }
+        }
+        return msv;
+    }
 
     /**
      * Construct a new empty vector. Since it also has an empty key domain, this
      * vector isn't very useful, because nothing can ever be put into it.
      */
-    public MutableSparseVector() {
-        this(new long[0], new double[0]);
+    MutableSparseVector() {
+        this(LongKeyDomain.empty());
+    }
+
+    /**
+     * Construct a new vector with the specified domain.  The domain is used as-is, no clone is
+     * taken.  The domain is cleared.
+     */
+    MutableSparseVector(LongKeyDomain domain) {
+        super(domain);
+        channelVectors = new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
+        channels = new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>();
     }
 
     /**
@@ -87,10 +150,10 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @param keyValueMap A map providing the values for the vector.
      */
-    public MutableSparseVector(Long2DoubleMap keyValueMap) {
+    MutableSparseVector(Long2DoubleMap keyValueMap) {
         super(keyValueMap);
-        channelMap = new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
-        typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>, TypedSideChannel<?>>();
+        channelVectors = new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
+        channels = new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>();
     }
 
     /**
@@ -98,10 +161,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @param domain The key domain.
      */
-    public MutableSparseVector(Collection<Long> domain) {
-        super(domain);
-        channelMap = new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
-        typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>, TypedSideChannel<?>>();
+    MutableSparseVector(Collection<Long> domain) {
+        this(LongKeyDomain.fromCollection(domain, false));
     }
 
     /**
@@ -112,86 +173,42 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param keySet The keys to include in the vector.
      * @param value  The value to assign for all keys.
      */
-    public MutableSparseVector(LongSet keySet, double value) {
+    MutableSparseVector(LongSet keySet, double value) {
         this(keySet);
-        DoubleArrays.fill(values, 0, domainSize, value);
-        usedKeys.set(0, domainSize);
+        keys.setAllActive(true);
+        DoubleArrays.fill(values, 0, keys.domainSize(), value);
     }
 
-    /**
-     * Construct a new vector from existing arrays.  It is assumed that the keys
-     * are sorted and duplicate-free, and that the values is the same length. The
-     * key array is the key domain, and all keys are considered used.
-     * No new keys can be added to this vector.  Clients should call
-     * the {@link #wrap(long[], double[]) wrap()} method rather than
-     * directly calling this constructor.
-     *
-     * @param ks The array of keys backing this vector. They must be sorted.
-     * @param vs The array of values backing this vector.
-     */
-    protected MutableSparseVector(long[] ks, double[] vs) {
-        this(ks, vs, ks.length);
-    }
-
-    /**
-     * Construct a new vector from existing arrays. It is assumed that
-     * the keys are sorted and duplicate-free, and that the keys and
-     * values both have at least {@var length} items.  The key set
-     * and key domain are both set to the keys array.  Clients should
-     * call the {@link #wrap(long[], double[], int) wrap()} method rather
-     * than directly calling this constructor.
-     *
-     * @param ks     The array of keys backing the vector. It must be sorted.
-     * @param vs     The array of values backing the vector.
-     * @param length Number of items to actually use.
-     */
-    protected MutableSparseVector(long[] ks, double[] vs, int length) {
-        super(ks, vs, length);
-        channelMap = new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
-        typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>, TypedSideChannel<?>>();
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    MutableSparseVector(LongKeyDomain ks, double[] vs) {
+        this(ks, vs, new Reference2ObjectArrayMap<Symbol, MutableSparseVector>(),
+             new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>());
     }
 
     /**
      * Construct a new vector from existing arrays, including an
-     * already instantiated Set for the used keys. It is assumed that the keys
-     * are sorted and duplicate-free, and that the keys and values
-     * both have at least {@var length} items.
-     * The key set and key domain are both set to the keys array.
-     *
-     * @param ks     The array of keys backing the vector.
-     * @param vs     The array of values backing the vector.
-     * @param length Number of items to actually use.
-     * @param used   The entries in use.
-     */
-    protected MutableSparseVector(long[] ks, double[] vs, int length, BitSet used) {
-        super(ks, vs, length, used);
-        channelMap = new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
-        typedChannelMap = new Reference2ObjectArrayMap<TypedSymbol<?>, TypedSideChannel<?>>();
-    }
-
-    /**
-     * Construct a new vector from existing arrays, including an
-     * already instantiated Set for the used keys. It is assumed that the keys
-     * are sorted and duplicate-free, and that the keys and values
-     * both have at least {@var length} items.
+     * already instantiated Set for the used keys.
      * <p>
      * The key set and key domain are both set to the keys array.
      * The ks, vs, used, and chs objects must not be changed after
      * they are used to create this new object.
      *
-     * @param ks     The array of keys backing the vector.
+     * @param ks     The key set backing the vector.
      * @param vs     The array of values backing the vector.
-     * @param length Number of items to actually use.
-     * @param used   The entries in use.
-     * @param chs    The initial side channels.
-     * @param tchs   the initial typed side channels.
+     * @param cvs    The initial channel vectors.
+     * @param chs    The initial channel map (all channels).
      */
-    protected MutableSparseVector(long[] ks, double[] vs, int length, BitSet used,
-                                  Map<Symbol, MutableSparseVector> chs,
-                                  Map<TypedSymbol<?>, TypedSideChannel<?>> tchs) {
-        super(ks, vs, length, used);
-        channelMap = chs;
-        typedChannelMap = tchs;
+    MutableSparseVector(LongKeyDomain ks, double[] vs,
+                        Map<Symbol, MutableSparseVector> cvs,
+                        Map<TypedSymbol<?>, Long2ObjectMap<?>> chs) {
+        super(ks, vs);
+        channelVectors = cvs;
+        channels = chs;
+    }
+
+    @Override
+    public LongSortedSet keySet() {
+        return keys.modifiableActiveSetView();
     }
 
     /**
@@ -209,14 +226,32 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public MutableSparseVector withDomain(LongSet keyDomain) {
-        MutableSparseVector msvNew = new MutableSparseVector(keyDomain);
+        LongKeyDomain domain = LongKeyDomain.fromCollection(keyDomain, false);
+        // pass an unowned domain to avoid the extra copy
+        return withDomain(domain.unowned());
+    }
+
+    /**
+     * Create a version of this vector with a different domain.
+     * @param domain The domain (active key mask is ignored and reset).
+     * @return The vector.
+     */
+    MutableSparseVector withDomain(LongKeyDomain domain) {
+        MutableSparseVector msvNew = new MutableSparseVector(domain.clone());
         msvNew.set(this); // copy appropriate elements from "this"
-        for (Map.Entry<Symbol, MutableSparseVector> entry : channelMap.entrySet()) {
-            msvNew.addChannel(entry.getKey(), entry.getValue().withDomain(keyDomain));
+        for (Map.Entry<Symbol, MutableSparseVector> entry : channelVectors.entrySet()) {
+            msvNew.addVectorChannel(entry.getKey(), entry.getValue().withDomain(domain));
         }
-        for (Entry<TypedSymbol<?>, TypedSideChannel<?>> entry : typedChannelMap.entrySet()) {
-            TypedSymbol key = entry.getKey();
-            msvNew.addChannel(key, entry.getValue().withDomain(keyDomain));
+        for (Entry<TypedSymbol<?>, Long2ObjectMap<?>> entry : channels.entrySet()) {
+            TypedSymbol<?> key = entry.getKey();
+            if (!key.getType().equals(Double.class)) {
+                Long2ObjectMap<?> chan = entry.getValue();
+                assert chan instanceof MutableTypedSideChannel;
+                msvNew.addChannel(key, ((MutableTypedSideChannel) chan).withDomain(domain));
+            } else {
+                assert msvNew.hasChannel(key);
+                assert entry.getValue() instanceof MutableSparseVectorMap;
+            }
         }
         return msvNew;
     }
@@ -232,11 +267,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return the new vector with a contracted domain.
      */
     public MutableSparseVector shrinkDomain() {
-        LongSet newDomain = new LongArraySet();
-        for (VectorEntry entry : this) {
-            newDomain.add(entry.getKey());
-        }
-        return this.withDomain(newDomain);
+        return withDomain(keys.compactCopy().unowned());
     }
 
     /**
@@ -252,9 +283,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
     private double setAt(int index, double value) {
         assert index >= 0;
-        final double v = usedKeys.get(index) ? values[index] : Double.NaN;
+        final double v = keys.indexIsActive(index) ? values[index] : Double.NaN;
         values[index] = value;
-        usedKeys.set(index);
+        keys.setActive(index, true);
         return v;
     }
 
@@ -270,7 +301,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public double set(long key, double value) {
         checkFrozen();
-        final int idx = findIndex(key);
+        final int idx = keys.getIndex(key);
         if (idx < 0) {
             throw new IllegalArgumentException("Cannot 'set' key=" + key + " that is not in the key domain.");
         }
@@ -294,19 +325,20 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @throws IllegalArgumentException if {@code entry} does not come
      *                                  from this vector, or if the index in the entry is corrupt.
      */
-    public double set(VectorEntry entry, double value) {
+    public double set(@Nonnull VectorEntry entry, double value) {
+        Preconditions.checkNotNull(entry, "vector entry");
         checkFrozen();
         final SparseVector evec = entry.getVector();
         final int eind = entry.getIndex();
         if (evec == null) {
             throw new IllegalArgumentException("entry is not associated with a vector");
-        } else if (evec.keys != this.keys) {
+        } else if (!keys.isCompatibleWith(evec.keys)) {
             throw new IllegalArgumentException("entry does not have safe key domain");
         } else if (eind < 0) {
             throw new IllegalArgumentException("Cannot 'set' a key with a negative index.");
-        } else if (entry.getKey() != keys[eind]) {
-            throw new IllegalArgumentException("entry does not have the correct key for its index");
         }
+
+        assert keys.getKey(eind) == entry.getKey();
 
         if (evec == this) {  // if this is the original, not a copy or channel
             entry.setValue(value);
@@ -321,32 +353,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void fill(double value) {
         checkFrozen();
-        DoubleArrays.fill(values, 0, domainSize, value);
-        usedKeys.set(0, domainSize);
-    }
-
-    /**
-     * Clear the value for a key.  The key remains in the key domain, but is
-     * removed from the key set.
-     *
-     * @param key The key to clear.
-     * @deprecated Use {@link #unset(long)} instead.
-     */
-    @Deprecated
-    public void clear(long key) {
-        unset(key);
-    }
-
-    /**
-     * Clear the value for a vector entry.
-     *
-     * @param e The entry to clear.
-     * @see #clear(long)
-     * @deprecated Use {@link #unset(VectorEntry)} instead.
-     */
-    @Deprecated
-    public void clear(VectorEntry e) {
-        unset(e);
+        DoubleArrays.fill(values, 0, keys.domainSize(), value);
+        keys.setAllActive(true);
     }
 
     /**
@@ -357,9 +365,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void unset(long key) {
         checkFrozen();
-        final int idx = findIndex(key);
+        final int idx = keys.getIndex(key);
         if (idx >= 0) {
-            usedKeys.clear(idx);
+            keys.setActive(idx, false);
         } else {
             throw new IllegalArgumentException("unset should only be used on keys that are in the key domain");
         }
@@ -368,42 +376,48 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     /**
      * Unset the value for a vector entry. The key remains in the domain, but
      * is removed from the key set.
-     * @param e The entry to unset.
+     * @param entry The entry to unset.
      */
-    public void unset(VectorEntry e) {
-        if (e.getVector() != this) {
-            throw new IllegalArgumentException("clearing vector from wrong entry");
-        }
+    public void unset(@Nonnull VectorEntry entry) {
+        Preconditions.checkNotNull(entry, "vector entry");
         checkFrozen();
-        usedKeys.clear(e.getIndex());
+        final SparseVector evec = entry.getVector();
+        final int eind = entry.getIndex();
+        if (evec == null) {
+            throw new IllegalArgumentException("entry is not associated with a vector");
+        } else if (!keys.isCompatibleWith(evec.keys)) {
+            throw new IllegalArgumentException("entry does not have safe key domain");
+        } else if (eind < 0) {
+            throw new IllegalArgumentException("Cannot 'set' a key with a negative index.");
+        }
+
+        assert keys.getKey(eind) == entry.getKey();
+        keys.setActive(eind, false);
     }
 
     /**
      * Clear all values from the set.
      */
     public void clear() {
-        usedKeys.clear();
+        keys.setAllActive(false);
     }
 
     /**
-     * Add a value to the specified entry. The key must be in the key domain, and must have a value.
+     * Add a value to the specified entry. The key must be in the key set.
      * 
-     * Note that the return value on a missing key will be changed in 2.0 to throwing an IllegalArgumentException
-     * so code should not rely on Double.NaN coming back.  In general, this function should only be called
-     * on keys that are in the key set and that already have a value.
-     *
      * @param key   The key whose value should be added.
      * @param value The value to increase it by.
-     * @return The new value (or {@link Double#NaN} if no such key existed).
+     * @return The new value.
+     * @throws IllegalArgumentException if the key is not in the key set.
      */
     public double add(long key, double value) {
         checkFrozen();
-        final int idx = findIndex(key);
-        if (idx >= 0 && usedKeys.get(idx)) {
+        final int idx = keys.getIndexIfActive(key);
+        if (idx >= 0) {
             values[idx] += value;
             return values[idx];
         } else {
-            return Double.NaN;
+            throw new IllegalArgumentException("invalid key " + key);
         }
     }
 
@@ -415,7 +429,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     public void add(double value) {
         checkFrozen();
         // just update all values. if a value is unset, what we do to it is undefined
-        for (int i = 0; i < domainSize; i++) {
+        final int end = keys.domainSize();
+        for (int i = 0; i < end; i++) {
             values[i] += value;
         }
     }
@@ -431,18 +446,24 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void subtract(final SparseVector other) {
         checkFrozen();
-        int i = 0;
-        for (VectorEntry oe : other.fast()) {
-            final long k = oe.getKey();
-            while (i < domainSize && keys[i] < k) {
-                i++;
+        Iterator<VectorEntry> i1 = fastIterator();
+        Iterator<VectorEntry> i2 = other.fastIterator();
+
+        VectorEntry e1 = i1.hasNext() ? i1.next() : null;
+        VectorEntry e2 = i2.hasNext() ? i2.next() : null;
+
+        while (e1 != null && e2 != null) {
+            final long k1 = e1.getKey();
+            final long k2 = e2.getKey();
+            if (k1 < k2) {
+                e1 = i1.hasNext() ? i1.next() : null;
+            } else if (k2 < k1) {
+                e2 = i2.hasNext() ? i2.next() : null;
+            } else {
+                set(e1, e1.getValue() - e2.getValue());
+                e1 = i1.hasNext() ? i1.next() : null;
+                e2 = i2.hasNext() ? i2.next() : null;
             }
-            if (i >= domainSize) {
-                break; // no more entries
-            }
-            if (keys[i] == k && usedKeys.get(i)) {
-                values[i] -= oe.getValue();
-            } // otherwise, key is greater; advance outer
         }
     }
 
@@ -457,18 +478,24 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void add(final SparseVector other) {
         checkFrozen();
-        int i = 0;
-        for (VectorEntry oe : other.fast()) {
-            final long k = oe.getKey();
-            while (i < domainSize && keys[i] < k) {
-                i++;
+        Iterator<VectorEntry> i1 = fastIterator();
+        Iterator<VectorEntry> i2 = other.fastIterator();
+
+        VectorEntry e1 = i1.hasNext() ? i1.next() : null;
+        VectorEntry e2 = i2.hasNext() ? i2.next() : null;
+
+        while (e1 != null && e2 != null) {
+            final long k1 = e1.getKey();
+            final long k2 = e2.getKey();
+            if (k1 < k2) {
+                e1 = i1.hasNext() ? i1.next() : null;
+            } else if (k2 < k1) {
+                e2 = i2.hasNext() ? i2.next() : null;
+            } else {
+                set(e1, e1.getValue() + e2.getValue());
+                e1 = i1.hasNext() ? i1.next() : null;
+                e2 = i2.hasNext() ? i2.next() : null;
             }
-            if (i >= domainSize) {
-                break; // no more entries
-            }
-            if (keys[i] == k && usedKeys.get(i)) {
-                values[i] += oe.getValue();
-            } // otherwise, key is greater; advance outer
         }
     }
 
@@ -486,19 +513,24 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void set(final SparseVector other) {
         checkFrozen();
-        int i = 0;
-        for (VectorEntry oe : other.fast()) {
-            final long k = oe.getKey();
-            while (i < domainSize && keys[i] < k) {
-                i++;
+        Iterator<VectorEntry> i1 = fastIterator(VectorEntry.State.EITHER);
+        Iterator<VectorEntry> i2 = other.fastIterator();
+
+        VectorEntry e1 = i1.hasNext() ? i1.next() : null;
+        VectorEntry e2 = i2.hasNext() ? i2.next() : null;
+
+        while (e1 != null && e2 != null) {
+            final long k1 = e1.getKey();
+            final long k2 = e2.getKey();
+            if (k1 < k2) {
+                e1 = i1.hasNext() ? i1.next() : null;
+            } else if (k2 < k1) {
+                e2 = i2.hasNext() ? i2.next() : null;
+            } else {
+                setAt(e1.getIndex(), e2.getValue());
+                e1 = i1.hasNext() ? i1.next() : null;
+                e2 = i2.hasNext() ? i2.next() : null;
             }
-            if (i >= domainSize) {
-                break; // no more entries
-            }
-            if (keys[i] == k) {
-                values[i] = oe.getValue();
-                usedKeys.set(i);
-            } // otherwise, key is greater; advance outer
         }
     }
 
@@ -508,12 +540,40 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *
      * @param s The scalar to rescale the vector by.
      */
-    public void scale(double s) {
+    public void multiply(double s) {
         checkFrozen();
-        BitSetIterator iter = new BitSetIterator(usedKeys, 0, domainSize);
-        while (iter.hasNext()) {
-            int i = iter.nextInt();
+        final int end = keys.domainSize();
+        for (int i = 0; i < end; i++) {
             values[i] *= s;
+        }
+    }
+
+    /**
+     * Multiply each element in the vector by the corresponding element in another vector.  Elements
+     * not in the other vector are left unchanged.
+     *
+     * @param other The vector to pairwise-multiply with this one.
+     */
+    public void multiply(SparseVector other) {
+        checkFrozen();
+        Iterator<VectorEntry> i1 = fastIterator();
+        Iterator<VectorEntry> i2 = other.fastIterator();
+
+        VectorEntry e1 = i1.hasNext() ? i1.next() : null;
+        VectorEntry e2 = i2.hasNext() ? i2.next() : null;
+
+        while (e1 != null && e2 != null) {
+            final long k1 = e1.getKey();
+            final long k2 = e2.getKey();
+            if (k1 < k2) {
+                e1 = i1.hasNext() ? i1.next() : null;
+            } else if (k2 < k1) {
+                e2 = i2.hasNext() ? i2.next() : null;
+            } else {
+                set(e1, e1.getValue() * e2.getValue());
+                e1 = i1.hasNext() ? i1.next() : null;
+                e2 = i2.hasNext() ? i2.next() : null;
+            }
         }
     }
 
@@ -526,32 +586,38 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         return mutableCopy();
     }
 
-    private Map<Symbol, MutableSparseVector> copyOfChannelMap() {
-        Map<Symbol, MutableSparseVector> copyOfChannels =
-                new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
-        for (Map.Entry<Symbol, MutableSparseVector> entry : channelMap.entrySet()) {
-            copyOfChannels.put(entry.getKey(), entry.getValue().copy());
-        }
-        return copyOfChannels;
-    }
-    
-    private Map<TypedSymbol<?>, TypedSideChannel<?>> copyOfTypedChannelMap() {
-        Map<TypedSymbol<?>, TypedSideChannel<?>> copyOfChannels=
-                new Reference2ObjectArrayMap<TypedSymbol<?>, TypedSideChannel<?>>();
-        for (Entry<TypedSymbol<?>, TypedSideChannel<?>> entry : typedChannelMap.entrySet()) {
-            copyOfChannels.put(entry.getKey(), entry.getValue().mutableCopy());
-        }
-        return copyOfChannels;
-    }
-
     @Override
     public MutableSparseVector mutableCopy() {
         checkFrozen();
-        double[] nvs = java.util.Arrays.copyOf(values, domainSize);
-        BitSet nbs = (BitSet) usedKeys.clone();
+        LongKeyDomain mks = keys.clone();
+        double[] mvs = java.util.Arrays.copyOf(values, keys.domainSize());
 
-        return new MutableSparseVector(keys, nvs, domainSize, nbs, 
-                                       copyOfChannelMap(), copyOfTypedChannelMap());
+        // copy the channel maps
+        Map<Symbol, MutableSparseVector> newChanVectors =
+                new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
+        Map<TypedSymbol<?>, Long2ObjectMap<?>> newChannels =
+                new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>();
+        // copy all unboxed channels into both maps
+        for (Map.Entry<Symbol, MutableSparseVector> entry : channelVectors.entrySet()) {
+            Symbol key = entry.getKey();
+            MutableSparseVector msv = entry.getValue().copy();
+            newChanVectors.put(key, msv);
+            newChannels.put(key.withType(Double.class), new MutableSparseVectorMap(msv));
+        }
+        // copy all remaining channels into the channel map
+        for (Entry<TypedSymbol<?>, Long2ObjectMap<?>> entry : channels.entrySet()) {
+            TypedSymbol<?> key = entry.getKey();
+            if (!key.getType().equals(Double.class)) {
+                Long2ObjectMap<?> chan = entry.getValue();
+                assert chan instanceof MutableTypedSideChannel;
+                newChannels.put(key, ((MutableTypedSideChannel<?>) chan).mutableCopy());
+            } else {
+                assert newChannels.containsKey(key);
+                assert entry.getValue() instanceof MutableSparseVectorMap;
+            }
+        }
+
+        return new MutableSparseVector(mks, mvs, newChanVectors, newChannels);
     }
 
     @Override
@@ -560,12 +626,13 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
-     * Construct an immutable sparse vector from this vector's data,
+     * Construct an immutable sparse vector from this vector's data (if possible),
      * invalidating this vector in the process. Any subsequent use of this
      * vector is invalid; all access must be through the returned immutable
-     * vector. The frozen vector's key set is equal to this vector's key domain.
+     * vector. The frozen vector's key domain is equal to this vector's key set.
      *
      * @return An immutable vector built from this vector's data.
+     * @see #immutable()
      */
     public ImmutableSparseVector freeze() {
         return immutable(true);
@@ -588,16 +655,10 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param freeze Whether to freeze this vector.
      * @return An immutable vector built from this vector's data.
      */
-    public ImmutableSparseVector immutable(boolean freeze) {
+    ImmutableSparseVector immutable(boolean freeze) {
         checkFrozen();
-        long[] keyDomain;
-        if (freeze && usedKeys.cardinality() == keys.length) {
-            keyDomain = keys;
-        } else {
-            keyDomain = keySet().toLongArray();
-        }
-
-        return immutable(freeze, keyDomain);
+        // TODO Don't copy bit set if we are freezing?
+        return immutable(freeze, keys.compactCopy().unowned());
     }
 
     /**
@@ -617,66 +678,67 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * {@var keyDomain} is the key domain for the new immutable sparse
      * vector, which should be the key set of the original vector.
      *
+     * @param freeze Whether to freeze the vector.
+     * @param keyDomain The key set to use as the domain.
      * @return An immutable vector built from this vector's data.
      */
-    private ImmutableSparseVector immutable(boolean freeze, long[] keyDomain) {
+    private ImmutableSparseVector immutable(boolean freeze, LongKeyDomain keyDomain) {
         double[] nvs;
-        BitSet newUsedKeys;
-
-        // can't easily test the fourth condition below, because no public method
-        // does it this way.
-        if (keyDomain == keys && freeze) {
-            nvs = values;
-            newUsedKeys = usedKeys;
+        LongKeyDomain newDomain = keyDomain.clone();
+        if (newDomain.isCompatibleWith(keys)) {
+            nvs = freeze ? values : java.util.Arrays.copyOf(values, newDomain.domainSize());
+            newDomain.setActive(keys.getActiveMask());
         } else {
-            nvs = new double[keyDomain.length];
-            newUsedKeys = new BitSet(keyDomain.length);
+            nvs = new double[newDomain.domainSize()];
 
             int i = 0;
             int j = 0;
-            while (i < nvs.length && j < domainSize) {
-                if (keyDomain[i] == keys[j]) {
+            final int end = keys.domainSize();
+            while (i < nvs.length && j < end) {
+                final long ki = newDomain.getKey(i);
+                final long kj = keys.getKey(j);
+                if (ki == kj) {
                     nvs[i] = values[j];
-                    if (usedKeys.get(j)) {
-                        newUsedKeys.set(i);
-                    }
+                    newDomain.setActive(i, keys.indexIsActive(j));
                     i++;
                     j++;
-                } else if (keys[j] < keyDomain[i]) {
+                } else if (kj < ki) {
                     j++;
                 } else {
                     // untestable
-                    throw new AssertionError("Key domain of new immutable vector must " +
-                                             "be subset of original domain");
+                    throw new AssertionError("new domain not subset of old domain");
                 }
             }
         }
 
-        Map<Symbol, ImmutableSparseVector> newChannelMap =
-                new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>(channelMap.size());
+        Map<Symbol, ImmutableSparseVector> newChannelVectors =
+                new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>(channelVectors.size());
+        Map<TypedSymbol<?>, Long2ObjectMap<?>> newChannels =
+                new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>();
         // We recursively generate immutable versions of all channels.  If freeze
         // is true, these versions will be made without copying.
-        for (Map.Entry<Symbol, MutableSparseVector> entry : channelMap.entrySet()) {
-            newChannelMap.put(entry.getKey(), entry.getValue().immutable(freeze, keyDomain));
+        for (Map.Entry<Symbol, MutableSparseVector> entry : channelVectors.entrySet()) {
+            Symbol key = entry.getKey();
+            ImmutableSparseVector chan = entry.getValue().immutable(freeze, newDomain);
+            newChannelVectors.put(key, chan);
+            newChannels.put(key.withType(Double.class), new SparseVectorMap(chan));
         }
 
-        Map<TypedSymbol<?>, ImmutableTypedSideChannel<?>> newTypedChannelMap =
-                new Reference2ObjectArrayMap<TypedSymbol<?>, ImmutableTypedSideChannel<?>>();
-        for (Entry<TypedSymbol<?>, TypedSideChannel<?>> entry : typedChannelMap.entrySet()) {
-            if(keyDomain == keys) {
-                newTypedChannelMap.put(entry.getKey(), entry.getValue().freeze());
+        for (Entry<TypedSymbol<?>, Long2ObjectMap<?>> entry : channels.entrySet()) {
+            TypedSymbol<?> key = entry.getKey();
+            if (!key.getType().equals(Double.class)) {
+                Long2ObjectMap<?> chan = entry.getValue();
+                assert chan instanceof MutableTypedSideChannel;
+                newChannels.put(key, ((MutableTypedSideChannel<?>) chan).immutable(newDomain, freeze));
             } else {
-                newTypedChannelMap.put(entry.getKey(), entry.getValue()
-                                                            .withDomain(new LongSortedArraySet(keyDomain))
-                                                            .freeze());
-                if (freeze) {
-                    entry.getValue().partialFreeze();
-                }
+                assert newChannels.containsKey(key);
+                assert entry.getValue() instanceof MutableSparseVectorMap;
             }
         }
         
-        ImmutableSparseVector isv =
-                new ImmutableSparseVector(keyDomain, nvs, keyDomain.length, newUsedKeys, newChannelMap, newTypedChannelMap);
+        ImmutableSparseVector isv = new ImmutableSparseVector(newDomain, nvs,
+                                                              newChannelVectors,
+                                                              newChannels);
         if (freeze) {
             values = null;
         }
@@ -731,7 +793,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         if (!MoreArrays.isSorted(keys, 0, size)) {
             throw new IllegalArgumentException("item array not sorted");
         }
-        return new MutableSparseVector(keys, values, size);
+        LongKeyDomain keySet = LongKeyDomain.wrap(keys, size, true);
+        return new MutableSparseVector(keySet, values);
     }
 
     /**
@@ -757,7 +820,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return A mutable sparse vector with the specified keys in its domain, all unset.
      */
     public static MutableSparseVector create(long... keys) {
-        return new MutableSparseVector(new LongOpenHashSet(keys));
+        return MutableSparseVector.create(new LongOpenHashSet(keys));
     }
 
     /**
@@ -789,11 +852,12 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @throws IllegalArgumentException if this vector does not have
      *                                  such a channel at this time.
      */
-    public SparseVector removeChannel(Symbol channelSymbol) {
+    public SparseVector removeChannelVector(Symbol channelSymbol) {
         checkFrozen();
         SparseVector retval;
-        if (hasChannel(channelSymbol)) {
-            retval = channelMap.remove(channelSymbol);
+        if (hasChannelVector(channelSymbol)) {
+            retval = channelVectors.remove(channelSymbol);
+            channels.remove(channelSymbol.withType(Double.class));
             return retval;
         }
         throw new IllegalArgumentException("No such channel " +
@@ -810,11 +874,14 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *                                  such a channel at this time.
      */
     @SuppressWarnings("unchecked")
-    public <K> TypedSideChannel<K> removeChannel(TypedSymbol<K> channelSymbol) {
+    public <K> Long2ObjectMap<K> removeChannel(TypedSymbol<K> channelSymbol) {
         checkFrozen();
-        TypedSideChannel<K> retval;
+        Long2ObjectMap<K> retval;
         if (hasChannel(channelSymbol)) {
-            retval = (TypedSideChannel<K>) typedChannelMap.remove(channelSymbol);
+            retval = (Long2ObjectMap<K>) channels.remove(channelSymbol);
+            if (channelSymbol.getType().equals(Double.class)) {
+                channelVectors.remove(channelSymbol.getRawSymbol());
+            }
             return retval;
         }
         throw new IllegalArgumentException("No such channel " +
@@ -828,8 +895,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void removeAllChannels() {
         checkFrozen();
-        channelMap.clear();
-        typedChannelMap.clear();
+        channelVectors.clear();
+        channels.clear();
     }
 
     /**
@@ -842,14 +909,16 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @throws IllegalArgumentException if there is already a channel
      *                                  with that symbol
      */
-    public MutableSparseVector addChannel(Symbol channelSymbol) {
+    public MutableSparseVector addChannelVector(Symbol channelSymbol) {
         checkFrozen();
-        if (hasChannel(channelSymbol)) {
+        if (hasChannelVector(channelSymbol)) {
             throw new IllegalArgumentException("Channel " + channelSymbol.getName()
                                                + " already exists");
         }
-        MutableSparseVector theChannel = new MutableSparseVector(keyDomain());
-        channelMap.put(channelSymbol, theChannel);
+        MutableSparseVector theChannel = new MutableSparseVector(keys.inactiveCopy());
+        channelVectors.put(channelSymbol, theChannel);
+        assert !channels.containsKey(channelSymbol.withType(Double.class));
+        channels.put(channelSymbol.withType(Double.class), new MutableSparseVectorMap(theChannel));
         return theChannel;
     }
 
@@ -863,16 +932,22 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @throws IllegalArgumentException if there is already a channel
      *                                  with that symbol
      */
-    public <K> TypedSideChannel<K> addChannel(TypedSymbol<K> channelSymbol) {
+    @SuppressWarnings("unchecked")
+    public <K> Long2ObjectMap<K> addChannel(TypedSymbol<K> channelSymbol) {
         checkFrozen();
         if (hasChannel(channelSymbol)) {
             throw new IllegalArgumentException("Channel " + channelSymbol.getName()
                                                + " with type " + channelSymbol.getType().getSimpleName() 
                                                + " already exists");
         }
-        TypedSideChannel<K> theChannel = new TypedSideChannel<K>(keyDomain().toLongArray());
-        typedChannelMap.put(channelSymbol, theChannel);
-        return theChannel;
+        if (channelSymbol.getType().equals(Double.class)) {
+            addChannelVector(channelSymbol.getRawSymbol());
+            return (Long2ObjectMap<K>) channels.get(channelSymbol);
+        } else {
+            MutableTypedSideChannel<K> theChannel = new MutableTypedSideChannel<K>(keys.inactiveCopy());
+            channels.put(channelSymbol, theChannel);
+            return theChannel;
+        }
     }
 
     /**
@@ -885,10 +960,10 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      *                      should be created.
      * @return the newly created channel
      */
-    public MutableSparseVector alwaysAddChannel(Symbol channelSymbol) {
-        MutableSparseVector chan = channelMap.get(channelSymbol);
+    public MutableSparseVector getOrAddChannelVector(Symbol channelSymbol) {
+        MutableSparseVector chan = getChannelVector(channelSymbol);
         if (chan == null) {
-            chan = addChannel(channelSymbol);
+            chan = addChannelVector(channelSymbol);
         }
         return chan;
     }
@@ -903,112 +978,60 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @return the newly created channel
      */
     @SuppressWarnings("unchecked")
-    public <K> TypedSideChannel<K> alwaysAddChannel(TypedSymbol<K> channelSymbol) {
-        if (!hasChannel(channelSymbol)) {
-            addChannel(channelSymbol);
+    public <K> Long2ObjectMap<K> getOrAddChannel(TypedSymbol<K> channelSymbol) {
+        Long2ObjectMap<K> chan = getChannel(channelSymbol);
+        if (chan == null) {
+            chan = addChannel(channelSymbol);
         }
-        return (TypedSideChannel<K>) typedChannelMap.get(channelSymbol);
+        return chan;
     }
 
-    /**
-     * Add a channel to this vector, and set it equal to a given
-     * value.  The input channel must have a compatible key domain to
-     * this channel.  The input channel is copied to avoid aliasing issues.
-     *
-     * @param channelSymbol the symbol under which this new channel
-     *                      should be created.
-     * @param theChannel    The channel to add.
-     * @return the newly created channel
-     * @throws IllegalArgumentException if there is already a channel
-     *                                  with that symbol
-     */
-    public MutableSparseVector addChannel(Symbol channelSymbol, SparseVector theChannel) {
-        checkFrozen();
-        if (hasChannel(channelSymbol)) {
-            throw new IllegalArgumentException("Channel " + channelSymbol.getName()
-                                               + " already exists");
-        }
-        if (!this.keyDomain().containsAll(theChannel.keyDomain())) {
-            throw new IllegalArgumentException("The channel you are trying to add to this vector "
-                                                       + "has an incompatible key domain.");
-        }
-        MutableSparseVector theChannelCopy = theChannel.mutableCopy();
-        channelMap.put(channelSymbol, theChannelCopy);
-        return theChannelCopy;
-    }
-    
-
-    /**
-     * Add a typed channel to this vector, and set it equal to a given
-     * value.  The input channel must have a compatible key domain to
-     * this channel.  The input channel is copied to avoid aliasing issues.
-     *
-     * @param channelSymbol the symbol under which this new channel
-     *                      should be created.
-     * @param theChannel    The channel to add.
-     * @return the newly created channel
-     * @throws IllegalArgumentException if there is already a channel
-     *                                  with that symbol
-     */
-    public <K> TypedSideChannel<K> addChannel(TypedSymbol<K> channelSymbol, TypedSideChannel<K>theChannel) {
-        checkFrozen();
-        if (hasChannel(channelSymbol)) {
-            throw new IllegalArgumentException("Channel " + channelSymbol.getName()
-                                               + " with the type " + channelSymbol.getType().getSimpleName()
-                                               + " already exists");
-        }
-        if (!this.keyDomain().containsAll(theChannel.keyDomain())) {
-            throw new IllegalArgumentException("The channel you are trying to add to this vector "
-                                                       + "has an incompatible key domain.");
-        }
-        TypedSideChannel<K> theChannelCopy = theChannel.mutableCopy();
-        typedChannelMap.put(channelSymbol, theChannelCopy);
-        return theChannelCopy;
+    void addVectorChannel(Symbol key, MutableSparseVector vectorEntries) {
+        Preconditions.checkArgument(keys.isCompatibleWith(vectorEntries.keys),
+                                    "vector has incompatible key domain");
+        channelVectors.put(key, vectorEntries);
+        channels.put(key.withType(Double.class), new MutableSparseVectorMap(vectorEntries));
     }
 
+    <T> void addChannel(TypedSymbol<T> sym, MutableTypedSideChannel<T> chan) {
+        Preconditions.checkArgument(keys.isCompatibleWith(chan.keys),
+                                    "vector has incompatible key domain");
+        Preconditions.checkArgument(!sym.getType().equals(Double.class),
+                                    "cannot add double channel like this");
+        channels.put(sym, chan);
+    }
 
     @Override
-    public boolean hasChannel(Symbol channelSymbol) {
-        return channelMap.containsKey(channelSymbol);
+    public boolean hasChannelVector(Symbol channelSymbol) {
+        return channelVectors.containsKey(channelSymbol);
     }
-
 
     @Override
     public boolean hasChannel(TypedSymbol<?> channelSymbol) {
-        return typedChannelMap.containsKey(channelSymbol);
+        return channels.containsKey(channelSymbol);
     }
 
     @Override
-    public MutableSparseVector channel(Symbol channelSymbol) {
+    public MutableSparseVector getChannelVector(Symbol channelSymbol) {
         checkFrozen();
-        if (hasChannel(channelSymbol)) {
-            return channelMap.get(channelSymbol);
-        }
-        throw new IllegalArgumentException("No existing channel under name " +
-                                                   channelSymbol.getName());
+        return channelVectors.get(channelSymbol);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <K> TypedSideChannel<K> channel(TypedSymbol<K> channelSymbol) {
+    public <K> Long2ObjectMap<K> getChannel(TypedSymbol<K> channelSymbol) {
         checkFrozen();
-        if (hasChannel(channelSymbol)) {
-            return (TypedSideChannel<K>) typedChannelMap.get(channelSymbol);
-        }
-        throw new IllegalArgumentException("No existing channel under name "
-                                           + channelSymbol.getName()
-                                           + "with the type "
-                                           + channelSymbol.getType().getSimpleName());
+        return (Long2ObjectMap<K>) channels.get(channelSymbol);
     }
 
     @Override
-    public Set<Symbol> getChannels() {
-        return Collections.unmodifiableSet(channelMap.keySet());
+    public Set<Symbol> getChannelVectorSymbols() {
+        return Collections.unmodifiableSet(channelVectors.keySet());
     }
 
     @Override
-    public Set<TypedSymbol<?>> getTypedChannels() {
-        return Collections.unmodifiableSet(typedChannelMap.keySet());
+    public Set<TypedSymbol<?>> getChannelSymbols() {
+        return Collections.unmodifiableSet(channels.keySet());
     }
 
     private static class IdComparator extends AbstractIntComparator {

@@ -42,10 +42,10 @@ class TestCSVFileConfig extends ConfigTestBase {
     void testBasic() {
         def source = eval {
             csvfile("ml-100k.dat")
-        }
+        } as CSVDataSource
         assertThat(source, notNullValue())
         assertThat(source.name, equalTo("ml-100k.dat"))
-        assertThat(source.file, equalTo(new File("ml-100k.dat")))
+        assertThat(source.sourceFile, equalTo(new File("ml-100k.dat")))
         assertThat(source.delimiter, equalTo(","))
     }
 
@@ -56,9 +56,9 @@ class TestCSVFileConfig extends ConfigTestBase {
                 file "ml-100k/u.data"
                 delimiter "::"
             }
-        }
+        } as CSVDataSource
         assertThat(source.name, equalTo("ml-100k"))
-        assertThat(source.file, equalTo(new File("ml-100k/u.data")))
+        assertThat(source.sourceFile, equalTo(new File("ml-100k/u.data")))
         assertThat(source.delimiter, equalTo("::"))
     }
 
@@ -68,9 +68,9 @@ class TestCSVFileConfig extends ConfigTestBase {
             csvfile {
                 file "ml-100k.dat"
             }
-        }
+        } as CSVDataSource
         assertThat(source.name, equalTo("ml-100k.dat"))
-        assertThat(source.file, equalTo(new File("ml-100k.dat")))
+        assertThat(source.sourceFile, equalTo(new File("ml-100k.dat")))
     }
 
     @Test
@@ -83,7 +83,7 @@ class TestCSVFileConfig extends ConfigTestBase {
                     precision 1.0
                 }
             }
-        }
+        } as CSVDataSource
         assertThat(source.domain, equalTo(new PreferenceDomain(1.0, 5.0, 1.0)))
     }
 
@@ -97,8 +97,8 @@ class TestCSVFileConfig extends ConfigTestBase {
             csvfile(name) {
                 file "${name}.csv"
             }
-        }
+        } as CSVDataSource
         assertThat(source.name, equalTo("ml-100k"))
-        assertThat(source.file, equalTo(new File("ml-100k.csv")))
+        assertThat(source.sourceFile, equalTo(new File("ml-100k.csv")))
     }
 }

@@ -20,21 +20,22 @@
  */
 package org.grouplens.lenskit.knn.item;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
-import org.grouplens.lenskit.util.ScoredItemAccumulator;
-import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
-import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.knn.item.model.ItemItemModel;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Default item scoring algorithm. It uses up to {@link NeighborhoodSize} neighbors to
@@ -58,45 +59,43 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
     public void scoreItems(ItemItemModel model, SparseVector userData,
                            MutableSparseVector scores,
                            NeighborhoodScorer scorer) {
-        // We ran reuse accumulators
-        ScoredItemAccumulator accum;
-        if (neighborhoodSize > 0) {
-            accum = new TopNScoredItemAccumulator(neighborhoodSize);
-        } else {
-            accum = new UnlimitedScoredItemAccumulator();
-        }
+        Predicate<ScoredId> usable = new VectorKeyPredicate(userData);
 
         // Create a channel for recording the neighborhoodsize
-        scores.alwaysAddChannel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL);
+        scores.getOrAddChannelVector(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL);
         // for each item, compute its prediction
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
 
             // find all potential neighbors
-            ImmutableSparseVector neighbors = model.getNeighbors(item);
-            final int nnbrs = neighbors.size();
-
-            // filter and truncate the neighborhood
-            for (VectorEntry neighbor : neighbors.fast()) {
-                long oi = neighbor.getKey();
-                double score = neighbor.getValue();
-                if (userData.containsKey(oi)) {
-                    accum.put(oi, score);
-                }
+            // we will use the fast iterator - that seems to work
+            FluentIterable<ScoredId> neighborIter =
+                    FluentIterable.from(model.getNeighbors(item))
+                                  .filter(usable);
+            if (neighborhoodSize > 0) {
+                neighborIter = neighborIter.limit(neighborhoodSize);
             }
-            neighbors = accum.finishVector().freeze();
-            if (logger.isTraceEnabled()) { // conditional to avoid alloc
-                logger.trace("using {} of {} neighbors for {}",
-                             new Object[]{neighbors.size(), nnbrs, item});
-            }
+            List<ScoredId> neighbors = neighborIter.toList();
 
             // compute score & place in vector
             final double score = scorer.score(neighbors, userData);
-            scores.channel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
+            scores.getChannelVector(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
                     set(e.getKey(), neighbors.size()); // set size even if no score
             if (!Double.isNaN(score)) {
                 scores.set(e, score);
             }
+        }
+    }
+
+    private static class VectorKeyPredicate implements Predicate<ScoredId> {
+        private final SparseVector vector;
+
+        public VectorKeyPredicate(SparseVector v) {
+            vector = v;
+        }
+        @Override
+        public boolean apply(@Nullable ScoredId input) {
+            return input != null && vector.containsKey(input.getId());
         }
     }
 }

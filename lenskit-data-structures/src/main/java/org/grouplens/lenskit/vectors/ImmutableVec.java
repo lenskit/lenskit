@@ -24,9 +24,11 @@ import javax.annotation.concurrent.Immutable;
 import java.util.Arrays;
 
 /**
- * Immutable {@link Vec}.  This vector cannot be modified (by anyone) and is thread-safe.
+ * Immutable {@link Vec}.  This vector cannot be modified (by anyone) and is thread-safe.  You can
+ * create one using {@link #create(double[])} or {@link #immutable()}.
  *
- * @compat Experimental — this interface may change in future versions of LensKit.
+ * @since 1.3
+ * @compat
  */
 @Immutable
 public final class ImmutableVec extends Vec {
@@ -48,7 +50,7 @@ public final class ImmutableVec extends Vec {
      *
      * @param data The data array.
      * @return A new vector wrapping the specified array. It is the caller's responsibility to make
-     *         sure that this cannot be modified anymore.
+     *         sure that this cannot be modified anymore!
      */
     static ImmutableVec wrap(double[] data) {
         return new ImmutableVec(data);
@@ -60,7 +62,7 @@ public final class ImmutableVec extends Vec {
      * @param data The data array.
      * @return A vector containing the data in {@code data}.
      */
-    public static ImmutableVec make(double[] data) {
+    public static ImmutableVec create(double[] data) {
         return new ImmutableVec(Arrays.copyOf(data, data.length));
     }
 

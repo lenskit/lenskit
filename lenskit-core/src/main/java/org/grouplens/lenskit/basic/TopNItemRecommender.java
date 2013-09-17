@@ -24,16 +24,16 @@ package org.grouplens.lenskit.basic;
 import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.collections.ScoredLongArrayList;
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.collections.LongUtils;
+import org.grouplens.lenskit.data.dao.ItemDAO;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -41,6 +41,8 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Recommender that recommends the top N items by a scorer.
@@ -53,11 +55,14 @@ import javax.inject.Inject;
  * @since 1.1
  */
 public class TopNItemRecommender extends AbstractItemRecommender {
+    protected final UserEventDAO userEventDAO;
+    protected final ItemDAO itemDAO;
     protected final ItemScorer scorer;
 
     @Inject
-    public TopNItemRecommender(DataAccessObject dao, ItemScorer scorer) {
-        super(dao);
+    public TopNItemRecommender(UserEventDAO uedao, ItemDAO idao, ItemScorer scorer) {
+        userEventDAO = uedao;
+        itemDAO = idao;
         this.scorer = scorer;
     }
     
@@ -70,7 +75,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      * uses {@link #getDefaultExcludes(long)} to supply a missing exclude set.
      */
     @Override
-    protected ScoredLongList recommend(long user, int n, LongSet candidates, LongSet exclude) {
+    protected List<ScoredId> recommend(long user, int n, LongSet candidates, LongSet exclude) {
         if (candidates == null) {
             candidates = getPredictableItems(user);
         }
@@ -78,28 +83,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
             exclude = getDefaultExcludes(user);
         }
         if (!exclude.isEmpty()) {
-            candidates = LongSortedArraySet.setDifference(candidates, exclude);
-        }
-
-        SparseVector scores = scorer.score(user, candidates);
-        return recommend(n, scores);
-    }
-
-    /**
-     * Implement profile-based recommendation in terms of the scorer. This
-     * method uses {@link #getDefaultExcludes(long)} to supply a missing exclude
-     * set.
-     */
-    @Override
-    protected ScoredLongList recommend(UserHistory<? extends Event> user, int n, LongSet candidates, LongSet exclude) {
-        if (candidates == null) {
-            candidates = Cursors.makeSet(dao.getItems());
-        }
-        if (exclude == null) {
-            exclude = getDefaultExcludes(user);
-        }
-        if (!exclude.isEmpty()) {
-            candidates = LongSortedArraySet.setDifference(candidates, exclude);
+            candidates = LongUtils.setDifference(candidates, exclude);
         }
 
         SparseVector scores = scorer.score(user, candidates);
@@ -114,9 +98,9 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      * @return The top {@var n} items from {@var scores}, in descending
      *         order of score.
      */
-    protected ScoredLongList recommend(int n, SparseVector scores) {
+    protected List<ScoredId> recommend(int n, SparseVector scores) {
         if (scores.isEmpty()) {
-            return new ScoredLongArrayList();
+            Collections.emptyList();
         }
 
         if (n < 0) {
@@ -129,7 +113,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
             accum.put(pred.getKey(), v);
         }
 
-        return new ScoredLongArrayList(accum.finish());
+        return accum.finish();
     }
 
     /**
@@ -140,7 +124,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      * @return The set of items to exclude.
      */
     protected LongSet getDefaultExcludes(long user) {
-        return getDefaultExcludes(dao.getUserHistory(user));
+        return getDefaultExcludes(userEventDAO.getEventsForUser(user));
     }
 
     /**
@@ -150,7 +134,10 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      * @param user The user history.
      * @return The set of items to exclude.
      */
-    protected LongSet getDefaultExcludes(UserHistory<? extends Event> user) {
+    protected LongSet getDefaultExcludes(@Nullable UserHistory<? extends Event> user) {
+        if (user == null) {
+            return LongSets.EMPTY_SET;
+        }
         LongSet excludes = new LongOpenHashSet();
         for (Rating r : Iterables.filter(user, Rating.class)) {
             excludes.add(r.getItemId());
@@ -167,7 +154,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      * @return All items for which predictions can be generated for the user.
      */
     protected LongSet getPredictableItems(long user) {
-        return Cursors.makeSet(dao.getItems());
+        return itemDAO.getItemIds();
     }
 
     /**
@@ -176,13 +163,15 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      * the default provider for {@link ItemRecommender}.
      */
     public static class Provider implements javax.inject.Provider<TopNItemRecommender> {
-        private final DataAccessObject dao;
+        private final UserEventDAO userEventDAO;
+        private final ItemDAO itemDAO;
         private final ItemScorer scorer;
 
         @Inject
-        public Provider(DataAccessObject dao,
+        public Provider(UserEventDAO uedao, ItemDAO idao,
                         @Nullable ItemScorer s) {
-            this.dao = dao;
+            userEventDAO = uedao;
+            itemDAO = idao;
             scorer = s;
         }
 
@@ -191,7 +180,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
             if (scorer == null) {
                 return null;
             } else {
-                return new TopNItemRecommender(dao, scorer);
+                return new TopNItemRecommender(userEventDAO, itemDAO, scorer);
             }
         }
     }

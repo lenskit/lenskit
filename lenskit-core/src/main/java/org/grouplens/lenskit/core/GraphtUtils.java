@@ -22,20 +22,19 @@ package org.grouplens.lenskit.core;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.grouplens.grapht.graph.Edge;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.graph.Node;
 import org.grouplens.grapht.spi.*;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.inject.Provider;
 import javax.inject.Singleton;
+import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -47,13 +46,6 @@ import java.util.Set;
  */
 public final class GraphtUtils {
     private GraphtUtils() {
-    }
-
-    public static boolean isDAONode(@Nullable Node n) {
-        CachedSatisfaction label = n == null ? null : n.getLabel();
-        return label != null &&
-                DataAccessObject.class.isAssignableFrom(
-                        label.getSatisfaction().getErasedType());
     }
 
     public static Node replaceNodeWithPlaceholder(InjectSPI spi, Graph graph, Node node) {
@@ -92,10 +84,6 @@ public final class GraphtUtils {
             return false;
         }
 
-        if (isDAONode(node)) {
-            return false;
-        }
-
         if (label.getSatisfaction().hasInstance()) {
             return true;
         }
@@ -113,48 +101,34 @@ public final class GraphtUtils {
             return true;
         }
 
-        return false;
-    }
-
-    /**
-     * Find the DAO node in a graph.
-     *
-     * @param graph The graph to search.
-     * @return The DAO node, if one exists, or {@code null}.
-     * @throws IllegalArgumentException if there is more than one DAO node in the graph.
-     */
-    public static Node findDAONode(Graph graph) {
-        Set<Node> nodes = graph.getNodes();
-        Iterator<Node> daoNodes = Iterators.filter(nodes.iterator(), new Predicate<Node>() {
+        // finally examine the satisfaction in more detail
+        return label.getSatisfaction().visit(new AbstractSatisfactionVisitor<Boolean>() {
             @Override
-            public boolean apply(@Nullable Node input) {
-                return isDAONode(input);
+            public Boolean visitDefault() {
+                return false;
+            }
+
+            @Override
+            public Boolean visitProviderClass(Class<? extends Provider<?>> pclass) {
+                Method m = null;
+                try {
+                    m = pclass.getMethod("get");
+                } catch (NoSuchMethodException e) {
+                /* fine, leave it null */
+                }
+                if (m != null && m.getAnnotation(Shareable.class) != null) {
+                    return true;
+                }
+                return false;
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public Boolean visitProviderInstance(Provider<?> provider) {
+                // cast to raw type to work around inference issue
+                return visitProviderClass((Class) provider.getClass());
             }
         });
-        Node node = null;
-        if (daoNodes.hasNext()) {
-            node = daoNodes.next();
-        }
-        if (daoNodes.hasNext()) {
-            throw new IllegalArgumentException("graph has multiple DAO nodes");
-        }
-        return node;
-    }
-
-    /**
-     * Replace the DAO node in a graph with a placeholder.
-     * @param spi The SPI to use.
-     * @param graph The graph (this will be modified).
-     * @return The new placeholder node that has been used to replace the DAO node in the graph,
-     *         or {@code null} if the original graph had no DAO node.
-     */
-    public static Node replaceDAONode(InjectSPI spi, Graph graph) {
-        Node daoNode = findDAONode(graph);
-        Node daoPlaceholder = null;
-        if (daoNode != null) {
-            daoPlaceholder = GraphtUtils.replaceNodeWithPlaceholder(spi, graph, daoNode);
-        }
-        return daoPlaceholder;
     }
 
     /**

@@ -28,18 +28,19 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.collections.ScoredLongList;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.Event;
-import org.grouplens.lenskit.data.UserHistory;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.RecommenderInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -48,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.inject.Provider;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,7 +82,7 @@ class TrainTestEvalJob implements Runnable {
     private final Supplier<TableWriter> userOutputSupplier;
     @Nonnull
     private final Supplier<TableWriter> predictOutputSupplier;
-    private final Supplier<SharedPreferenceSnapshot> snapshot;
+    private final Provider<PreferenceSnapshot> snapshot;
 
     /**
      * Create a new train-test eval job.
@@ -104,7 +106,7 @@ class TrainTestEvalJob implements Runnable {
                             @Nonnull List<TestUserMetric> evals,
                             @Nonnull List<ModelMetric> mMetrics,
                             @Nonnull List<Pair<Symbol,String>> chans,
-                            @Nonnull TTDataSet ds, Supplier<SharedPreferenceSnapshot> snap,
+                            @Nonnull TTDataSet ds, Provider<PreferenceSnapshot> snap,
                             @Nonnull Supplier<TableWriter> out,
                             @Nonnull Supplier<TableWriter> userOut,
                             @Nonnull Supplier<TableWriter> predOut,
@@ -166,13 +168,13 @@ class TrainTestEvalJob implements Runnable {
 
             List<Object> userRow = new ArrayList<Object>();
 
-            DataAccessObject testDao = closer.register(data.getTestFactory().create());
+            UserEventDAO testUsers = data.getTestData().getUserEventDAO();
             for (TestUserMetric eval : evaluators) {
                 TestUserMetricAccumulator accum = eval.makeAccumulator(algorithm, data);
                 evalAccums.add(accum);
             }
 
-            Cursor<UserHistory<Event>> userProfiles = closer.register(testDao.getUserHistories());
+            Cursor<UserHistory<Event>> userProfiles = closer.register(testUsers.streamEventsByUser());
             for (UserHistory<Event> p : userProfiles) {
                 assert userRow.isEmpty();
                 userRow.add(p.getUserId());
@@ -182,9 +184,9 @@ class TrainTestEvalJob implements Runnable {
 
                 Supplier<SparseVector> preds =
                         new PredictionSupplier(rec, uid, testItems);
-                Supplier<ScoredLongList> recs =
+                Supplier<List<ScoredId>> recs =
                         new RecommendationSupplier(rec, uid, testItems);
-                Supplier<UserHistory<Event>> hist = new HistorySupplier(rec.getDAO(), uid);
+                Supplier<UserHistory<Event>> hist = new HistorySupplier(rec.getUserEventDAO(), uid);
                 Supplier<UserHistory<Event>> testHist = Suppliers.ofInstance(p);
 
                 TestUser test = new TestUser(uid, hist, testHist, preds, recs);
@@ -246,8 +248,8 @@ class TrainTestEvalJob implements Runnable {
             int i = 4;
             for (Pair<Symbol,String> pair: channels) {
                 Symbol c = pair.getLeft();
-                if (predictions.hasChannel(c) && predictions.channel(c).containsKey(iid)) {
-                    row[i] = Double.toString(predictions.channel(c).get(iid));
+                if (predictions.hasChannelVector(c) && predictions.getChannelVector(c).containsKey(iid)) {
+                    row[i] = Double.toString(predictions.getChannelVector(c).get(iid));
                 } else {
                     row[i] = null;
                 }
@@ -308,7 +310,7 @@ class TrainTestEvalJob implements Runnable {
         }
     }
 
-    private class RecommendationSupplier implements Supplier<ScoredLongList> {
+    private class RecommendationSupplier implements Supplier<List<ScoredId>> {
         private final RecommenderInstance recommender;
         private final long user;
         private final LongSet items;
@@ -320,11 +322,11 @@ class TrainTestEvalJob implements Runnable {
         }
 
         @Override
-        public ScoredLongList get() {
+        public List<ScoredId> get() {
             if (recommender == null) {
                 throw new IllegalArgumentException("cannot compute recommendations without a recommender");
             }
-            ScoredLongList recs = recommender.getRecommendations(user, items, numRecs);
+            List<ScoredId> recs = recommender.getRecommendations(user, items, numRecs);
             if (recs == null) {
                 throw new IllegalArgumentException("no recommendations");
             }
@@ -333,17 +335,17 @@ class TrainTestEvalJob implements Runnable {
     }
 
     private class HistorySupplier implements Supplier<UserHistory<Event>> {
-        private final DataAccessObject dao;
+        private final UserEventDAO userEventDAO;
         private final long user;
 
-        public HistorySupplier(DataAccessObject dao, long id) {
-            this.dao = dao;
+        public HistorySupplier(UserEventDAO dao, long id) {
+            userEventDAO = dao;
             user = id;
         }
 
         @Override
         public UserHistory<Event> get() {
-            return dao.getUserHistory(user);
+            return userEventDAO.getEventsForUser(user);
         }
     }
 }

@@ -20,21 +20,20 @@
  */
 package org.grouplens.lenskit.scored;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
-
-import java.util.Collections;
-
+import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 public class ScoredIdImplTest {
 
@@ -47,17 +46,11 @@ public class ScoredIdImplTest {
     @Test
     public void testConstructors() {
         ScoredIdImpl sid = new ScoredIdImpl(1, 10);
-        ScoredIdImpl sid2 = new ScoredIdImpl(1, 10, null, null);
-        ScoredIdImpl sid3 = new ScoredIdImpl(1, 10, new Reference2DoubleArrayMap<Symbol>(), null);
-        ScoredIdImpl sid4 = new ScoredIdImpl(1, 10, new Reference2DoubleArrayMap<Symbol>(), 
-                                             new Reference2ObjectArrayMap<TypedSymbol<?>,Object>());
+        ScoredIdImpl sid2 = new ScoredIdImpl(1, 10);
+        ScoredIdImpl sid3 = new ScoredIdImpl(1, 10, Collections.<SymbolValue<?>>emptyList());
         assertEquals(sid2, sid);
         assertEquals(sid3, sid);
-        assertEquals(sid4, sid);
         assertEquals(sid3, sid2);
-        assertEquals(sid4, sid2);
-        assertEquals(sid4, sid3);
-        
     }
     
     @Test
@@ -74,79 +67,65 @@ public class ScoredIdImplTest {
 
     @Test
     public void testHasChannel() {
-        Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
-        channels.put(fooSym,1.0);
-        ScoredIdImpl sid = new ScoredIdImpl(1,10.5,channels,null);
-        channels.put(barSym,2.0); // shouldn't effect sid.
-        assertTrue(sid.hasChannel(fooSym));
-        assertFalse(sid.hasChannel(barSym));
+        ArrayList<DoubleSymbolValue> channels = Lists.newArrayList(SymbolValue.of(fooSym, 1.0));
+        ScoredIdImpl sid = new ScoredIdImpl(1, 10.5, channels);
+        channels.add(SymbolValue.of(barSym, 2.0));
+        assertTrue(sid.hasUnboxedChannel(fooSym));
+        assertFalse(sid.hasUnboxedChannel(barSym));
     }
 
     @Test
     public void testHasTypedChannel() {
-        Reference2ObjectMap<TypedSymbol<?>,Object> typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>();
-        typedChannels.put(fooIntSym,1);
-        ScoredIdImpl sid = new ScoredIdImpl(1, 10.5, null, typedChannels);
-        typedChannels.put(barStrSym,"hat"); // shouldn't effect sid.
+        ScoredIdImpl sid = new ScoredIdImpl(1, 10.5, Lists.newArrayList(SymbolValue.of(fooIntSym, 1)));
         assertTrue(sid.hasChannel(fooIntSym));
         assertFalse(sid.hasChannel(barStrSym));
     }
 
     @Test
     public void testChannel() {
-        Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
-        channels.put(fooSym,1.0);
-        ScoredIdImpl sid = new ScoredIdImpl(1,10.5,channels,null);
-        assertEquals(1.0, sid.channel(fooSym), 0.0001);
+        ScoredIdImpl sid = new ScoredIdImpl(1,10.5,Lists.newArrayList(SymbolValue.of(fooSym, 1.0)));
+        assertEquals(1.0, sid.getUnboxedChannelValue(fooSym), 0.0001);
         try {
-            sid.channel(barSym);
+            sid.getUnboxedChannelValue(barSym);
             fail("expection expected");
-        } catch (IllegalArgumentException e) { /*expected */ }
+        } catch (NullPointerException e) { /*expected */ }
     }
 
     @Test
     public void testTypedChannel() {
-        Reference2ObjectMap<TypedSymbol<?>,Object> typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>();
-        typedChannels.put(fooIntSym,1);
-        ScoredIdImpl sid = new ScoredIdImpl(1, 10.5, null, typedChannels);
-        assertEquals(new Integer(1), sid.channel(fooIntSym));
-        try {
-            sid.channel(barStrSym);
-            fail("expection expected");
-        } catch (IllegalArgumentException e) { /*expected */ }
+        ScoredIdImpl sid = new ScoredIdImpl(1, 10.5, Lists.newArrayList(SymbolValue.of(fooIntSym, 1)));
+        assertEquals(new Integer(1), sid.getChannelValue(fooIntSym));
+        assertNull(sid.getChannelValue(barStrSym));
     }
 
     @Test
     public void testGetChannels() {
         Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
         channels.put(fooSym,1.0);
-        ScoredIdImpl sid = new ScoredIdImpl(1,10.5,channels,null);
-        assertEquals(Collections.singleton(fooSym),sid.getChannels());
+        ScoredIdImpl sid = new ScoredIdImpl(1,10.5,Lists.newArrayList(SymbolValue.of(fooSym, 1.0)));
+        assertEquals(Collections.singleton(fooSym),sid.getUnboxedChannelSymbols());
     }
     
     @Test
     public void testGetTypedChannels() {
-        Reference2ObjectMap<TypedSymbol<?>,Object> typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>();
-        typedChannels.put(fooIntSym,1);
-        ScoredIdImpl sid = new ScoredIdImpl(1, 10.5, null, typedChannels);
-        assertEquals(Collections.singleton(fooIntSym),sid.getTypedChannels());
+        ScoredIdImpl sid = new ScoredIdImpl(1, 10.5, Lists.newArrayList(SymbolValue.of(fooIntSym, 1)));
+        assertEquals(Collections.singleton(fooIntSym),sid.getChannelSymbols());
     }
     
     @Test
     public void testGetChannelsEmpty() {
         ScoredIdImpl sid = new ScoredIdImpl(1,10.5);
-        assertEquals(Collections.emptySet(),sid.getChannels());
-        assertEquals(Collections.emptySet(),sid.getTypedChannels());
+        assertEquals(Collections.emptySet(),sid.getUnboxedChannelSymbols());
+        assertEquals(Collections.emptySet(),sid.getChannelSymbols());
     }
 
     @Test
     public void testEqualsAndHashCode() {
-        Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
-        channels.put(fooSym,1.0);
-        Reference2ObjectMap<TypedSymbol<?>,Object> typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>();
-        typedChannels.put(fooIntSym,1);
-        ScoredIdImpl sid = new ScoredIdImpl(1, 10.5, channels, typedChannels);
-        ScoredIdImpl sid2 = new ScoredIdImpl(1, 10.5, channels, typedChannels);
+        List<SymbolValue<?>> channels = Lists.<SymbolValue<?>>newArrayList(
+                SymbolValue.of(fooSym, 1.0),
+                SymbolValue.of(fooIntSym, 1));
+        ScoredIdImpl sid = new ScoredIdImpl(1, 10.5, channels);
+        ScoredIdImpl sid2 = new ScoredIdImpl(1, 10.5, channels);
         assertEquals(sid, sid2);
         assertEquals(sid.hashCode(), sid2.hashCode());
     }
@@ -167,63 +146,43 @@ public class ScoredIdImplTest {
     
     @Test
     public void testEqualsDifferentChannels() {
-        Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
-        channels.put(fooSym,1.0);
-        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, channels, null);
-        Reference2DoubleMap<Symbol> channels2 = new Reference2DoubleArrayMap<Symbol>();
-        channels2.put(barSym,1.0);
-        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, channels2, null);
+        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, Lists.newArrayList(SymbolValue.of(fooSym, 1.0)));
+        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, Lists.newArrayList(SymbolValue.of(barSym, 1.0)));
         assertNotEquals(sid, sid2);
     }
     
     @Test
     public void testEqualsDifferentTypedChannels() {
-        Reference2ObjectMap<TypedSymbol<?>,Object> typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>();
-        typedChannels.put(fooIntSym,1);
-        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, null, typedChannels);
-        Reference2ObjectMap<TypedSymbol<?>,Object> typedChannels2 = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>();
-        typedChannels.put(barStrSym,"hat");
-        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, null, typedChannels2);
+        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, Lists.newArrayList(SymbolValue.of(fooIntSym, 1)));
+        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, Lists.newArrayList(SymbolValue.of(barStrSym, "hat")));
         assertNotEquals(sid, sid2);
     }
     
     @Test
     public void testEqualsDifferentChannelValues() {
-        Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
-        channels.put(fooSym,1.0);
-        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, channels, null);
-        Reference2DoubleMap<Symbol> channels2 = new Reference2DoubleArrayMap<Symbol>();
-        channels2.put(fooSym,1.1);
-        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, channels2, null);
+        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, Lists.newArrayList(SymbolValue.of(fooSym, 1.0)));
+        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, Lists.newArrayList(SymbolValue.of(fooSym, 1.1)));
         assertNotEquals(sid, sid2);
     }
     
     @Test
     public void testEqualsDifferentTypedChannelValues() {
-        Reference2ObjectMap<TypedSymbol<?>,Object> typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>();
-        typedChannels.put(fooIntSym,1);
-        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, null, typedChannels);
-        Reference2ObjectMap<TypedSymbol<?>,Object> typedChannels2 = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>();
-        typedChannels.put(fooIntSym,2);
-        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, null, typedChannels2);
+        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, Lists.newArrayList(SymbolValue.of(fooIntSym, 1)));
+        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, Lists.newArrayList(SymbolValue.of(fooIntSym, 2)));
         assertNotEquals(sid, sid2);
     }
     
     @Test
     public void testEqualsChanneltoNoChannel() {
-        Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
-        channels.put(fooSym,1.0);
-        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, channels, null);
-        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, null, null);
+        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, Lists.newArrayList(SymbolValue.of(fooSym, 1.0)));
+        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5);
         assertNotEquals(sid, sid2);
     }
     
     @Test
     public void testEqualsTypedChanneltoNoChannel() {
-        Reference2ObjectMap<TypedSymbol<?>,Object> typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, Object>();
-        typedChannels.put(fooIntSym,1);
-        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, null, typedChannels);
-        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, null, null);
+        ScoredIdImpl sid = new ScoredIdImpl(1,10.5, Lists.newArrayList(SymbolValue.of(fooIntSym, 1)));
+        ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5);
         assertNotEquals(sid, sid2);
     }
 }

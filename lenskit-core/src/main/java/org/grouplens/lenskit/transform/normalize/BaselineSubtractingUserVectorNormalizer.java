@@ -20,7 +20,8 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
-import org.grouplens.lenskit.baseline.BaselinePredictor;
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.baseline.BaselineScorer;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -29,55 +30,50 @@ import javax.inject.Inject;
 import java.io.Serializable;
 
 /**
- * User vector normalizer that subtracts a user's baseline predictions.
+ * User vector normalizer that subtracts a user's baseline scores.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
 public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorNormalizer implements Serializable {
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 3L;
 
-    protected final BaselinePredictor baselinePredictor;
+    protected final ItemScorer baselineScorer;
 
     /**
-     * Create a new BaselineSubtractingUserVectorNormalizer with the given baseline.
+     * Create a new baseline-subtracting normalizer with the given baseline.
      *
-     * @param baseline The baseline predictor to use for normalization.
+     * @param baseline The baseline scorer to use for normalization.
      */
     @Inject
-    public BaselineSubtractingUserVectorNormalizer(BaselinePredictor baseline) {
-        baselinePredictor = baseline;
+    public BaselineSubtractingUserVectorNormalizer(@BaselineScorer ItemScorer baseline) {
+        baselineScorer = baseline;
     }
 
     @Override
     public VectorTransformation makeTransformation(long user, SparseVector ratings) {
-        if (ratings.isEmpty()) {
-            return new IdentityVectorNormalizer().makeTransformation(ratings);
-        }
-        return new Transformation(user, ratings);
+        return new Transformation(user);
     }
 
     private class Transformation implements VectorTransformation {
         private final long user;
-        private final SparseVector reference;
 
-        public Transformation(long u, SparseVector r) {
+        public Transformation(long u) {
             user = u;
-            reference = r;
         }
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
-            MutableSparseVector base = new MutableSparseVector(vector.keySet());
-            baselinePredictor.predict(user, reference, base);
+            MutableSparseVector base = MutableSparseVector.create(vector.keySet());
+            baselineScorer.score(user, base);
             vector.subtract(base);
             return vector;
         }
 
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
-            MutableSparseVector base = new MutableSparseVector(vector.keySet());
-            baselinePredictor.predict(user, reference, base);
+            MutableSparseVector base = MutableSparseVector.create(vector.keySet());
+            baselineScorer.score(user, base);
             vector.add(base);
             return vector;
         }
@@ -85,6 +81,6 @@ public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorN
 
     @Override
     public String toString() {
-        return String.format("[BaselineNorm: %s]", baselinePredictor);
+        return String.format("[BaselineNorm: %s]", baselineScorer);
     }
 }

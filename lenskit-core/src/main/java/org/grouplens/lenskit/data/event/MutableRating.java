@@ -29,7 +29,6 @@ import org.grouplens.lenskit.data.pref.Preference;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class MutableRating implements Rating {
-    private long eid;
     private long uid;
     private long iid;
     private double value;
@@ -52,20 +51,6 @@ public class MutableRating implements Rating {
             return value;
         }
     };
-
-    @Override
-    public long getId() {
-        return eid;
-    }
-
-    /**
-     * Set the rating's ID.
-     *
-     * @param eid The rating's new ID.
-     */
-    public void setId(long eid) {
-        this.eid = eid;
-    }
 
     @Override
     public long getUserId() {
@@ -125,10 +110,5 @@ public class MutableRating implements Rating {
      */
     public void setTimestamp(long ts) {
         timestamp = ts;
-    }
-
-    @Override @Deprecated
-    public Rating copy() {
-        return Ratings.copyBuilder(this).build();
     }
 }

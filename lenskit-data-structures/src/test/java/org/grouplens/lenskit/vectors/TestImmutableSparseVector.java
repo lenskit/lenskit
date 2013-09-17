@@ -60,7 +60,7 @@ public class TestImmutableSparseVector extends SparseVectorTestCommon {
     public void testEmptyConstructor() {
         SparseVector v = new ImmutableSparseVector();
         assertThat(v.isEmpty(), equalTo(true));
-        assertThat(v.get(15), notANumber());
+        assertThat(v.get(15, Double.NaN), notANumber());
     }
 
     @Test
@@ -76,7 +76,7 @@ public class TestImmutableSparseVector extends SparseVectorTestCommon {
         ImmutableSparseVector v = MutableSparseVector.wrap(keys, values, 2).freeze();
         assertThat(v.size(), equalTo(2));
         assertThat(v.containsKey(9), equalTo(false));
-        assertThat(v.get(9), notANumber());
+        assertThat(v.get(9, Double.NaN), notANumber());
         assertThat(v.get(3), closeTo(Math.PI));
         assertThat(v.containsKey(9), equalTo(false));
     }

@@ -1,37 +1,31 @@
 /* This file may be freely modified, used, and redistributed without restriction. */
 package ${package};
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-
-import java.io.Serializable;
-import java.util.Iterator;
-
-import javax.inject.Inject;
-
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.MeanDamping;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import java.io.Serializable;
+import java.util.Iterator;
+
 /**
  * Model that maintains the mean offset from the global mean for the ratings
  * for each item.
- * 
- * These offsets can be used for predictions by calling the {@link getGlobalMean} 
- * and {@link getItemOffsets} methods.
+ *
+ * These offsets can be used for predictions by calling the {@link #getGlobalMean()}
+ * and {@link #getItemOffsets()} methods.
  *
  * <p>These computations support mean smoothing (see {@link MeanDamping}).
- * 
+ *
  * Users of this model will usually call the Provider's get method to create
  * a suitable model.  The model can be kept around until recomputation is necessary.
  *
@@ -66,7 +60,7 @@ public class ItemMeanModel implements Serializable {
 
     public static class Provider implements javax.inject.Provider<ItemMeanModel> {
         private double damping = 0;
-        private DataAccessObject dao;
+        private EventDAO dao;
 
         /**
          * Construct a new provider.
@@ -76,7 +70,7 @@ public class ItemMeanModel implements Serializable {
          *            towards the global mean.
          */
         @Inject
-        public Provider(@Transient DataAccessObject dao, @MeanDamping double d) {
+        public Provider(@Transient EventDAO dao, @MeanDamping double d) {
             this.dao = dao;
             damping = d;
         }
@@ -98,7 +92,7 @@ public class ItemMeanModel implements Serializable {
          *         {@var itemMeans}.
          */
         public static double computeItemOffsets(Iterator<? extends Rating> ratings, double damping,
-                                                 Long2DoubleMap itemOffsetsResult) {
+                                                Long2DoubleMap itemOffsetsResult) {
             // We iterate the loop to compute the global and per-item mean
             // ratings.  Subtracting the global mean from each per-item mean
             // is equivalent to averaging the offsets from the global mean, so
@@ -146,7 +140,7 @@ public class ItemMeanModel implements Serializable {
         @Override
         public ItemMeanModel get() {
             Long2DoubleMap itemOffsetsResult = new Long2DoubleOpenHashMap();
-            Cursor<Rating> ratings = dao.getEvents(Rating.class);
+            Cursor<Rating> ratings = dao.streamEvents(Rating.class);
             double globalMeanResult = computeItemOffsets(ratings.fast().iterator(), damping, itemOffsetsResult);
             ratings.close();
 

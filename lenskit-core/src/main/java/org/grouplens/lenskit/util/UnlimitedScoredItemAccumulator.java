@@ -20,18 +20,13 @@
  */
 package org.grouplens.lenskit.util;
 
-import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.doubles.DoubleComparators;
-import org.grouplens.lenskit.collections.ScoredLongArrayList;
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.collections.ScoredLongListIterator;
 import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.scored.ScoredIdBuilder;
+import org.grouplens.lenskit.scored.ScoredIdListBuilder;
+import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.Vectors;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -40,16 +35,13 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulator {
-    private ScoredLongList scores;
-    private ScoredIdBuilder builder;
+    private ScoredIdListBuilder scores;
 
-    public UnlimitedScoredItemAccumulator() {
-        builder = new ScoredIdBuilder();
-    }
+    public UnlimitedScoredItemAccumulator() {}
 
     @Override
     public boolean isEmpty() {
-        return scores == null || scores.isEmpty();
+        return scores == null || scores.size() == 0;
     }
 
     @Override
@@ -60,7 +52,7 @@ public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulat
     @Override
     public void put(long item, double score) {
         if (scores == null) {
-            scores = new ScoredLongArrayList();
+            scores = ScoredIds.newListBuilder();
         }
         scores.add(item, score);
     }
@@ -70,34 +62,17 @@ public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulat
         if (scores == null) {
             return Collections.emptyList();
         }
-        List<ScoredId> ids = Lists.newArrayListWithCapacity(scores.size());
-        ScoredLongListIterator it = scores.iterator();
-        while (it.hasNext()) {
-            long item = it.nextLong();
-            double score = it.getScore();
-            ids.add(builder.setId(item).setScore(score).build());
-        }
-
-        Collections.sort(ids, new Comparator<ScoredId>() {
-            @Override
-            public int compare(ScoredId o1, ScoredId o2) {
-                return DoubleComparators.OPPOSITE_COMPARATOR.compare(o1.getScore(), o2.getScore());
-            }
-        });
-
+        List<ScoredId> list = scores.sort(ScoredIds.scoreOrder().reverse()).finish();
         scores = null;
-        return ids;
+        return list;
     }
 
     @Override
     public MutableSparseVector finishVector() {
         if (scores == null) {
-            return new MutableSparseVector();
+            return MutableSparseVector.create();
         }
 
-        // FIXME Don't make a copy here
-        MutableSparseVector v = scores.scoreVector().mutableCopy();
-        scores = null;
-        return v;
+        return Vectors.fromScoredIds(finish());
     }
 }

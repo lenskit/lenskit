@@ -20,13 +20,17 @@
  */
 package org.grouplens.lenskit.slopeone;
 
-import org.grouplens.lenskit.data.dao.DataAccessObject;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.LenskitRecommenderEngine;
+import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.data.pref.PreferenceDomainBuilder;
 import org.grouplens.lenskit.knn.item.model.ItemItemBuildContextFactory;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.junit.Test;
@@ -40,17 +44,18 @@ public class TestWeightedSlopeOneItemScorer {
 
     private static final double EPSILON = 1.0e-6;
 
-    private SlopeOneModel getModel(DataAccessObject dao) {
+    private SlopeOneModel getModel(EventDAO dao) {
+        UserEventDAO uedao = new PrefetchingUserEventDAO(dao);
+        ItemDAO idao = new PrefetchingItemDAO(dao);
         UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
         ItemItemBuildContextFactory contextFactory = new ItemItemBuildContextFactory(
-                dao, new DefaultUserVectorNormalizer(), summarizer);
-        SlopeOneModelBuilder provider = new SlopeOneModelBuilder(
-                dao, contextFactory, 0);
+                uedao, new DefaultUserVectorNormalizer(), summarizer);
+        SlopeOneModelBuilder provider = new SlopeOneModelBuilder(idao, contextFactory, 0);
         return provider.get();
     }
 
     @Test
-    public void testPredict1() {
+    public void testPredict1() throws RecommenderBuildException {
 
         List<Rating> rs = new ArrayList<Rating>();
         rs.add(Ratings.make(1, 6, 4));
@@ -68,11 +73,15 @@ public class TestWeightedSlopeOneItemScorer {
         rs.add(Ratings.make(1, 9, 3));
         rs.add(Ratings.make(3, 9, 4));
 
-        EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        EventCollectionDAO dao = manager.create();
-        SlopeOneModel model = getModel(dao);
-        WeightedSlopeOneItemScorer predictor =
-                new WeightedSlopeOneItemScorer(dao, model, new PreferenceDomain(1, 5, 1));
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(new EventCollectionDAO(rs));
+        config.bind(ItemScorer.class).to(WeightedSlopeOneItemScorer.class);
+        config.bind(PreferenceDomain.class).to(new PreferenceDomainBuilder(1, 5)
+                                                       .setPrecision(1)
+                                                       .build());
+        ItemScorer predictor = LenskitRecommenderEngine.build(config)
+                                                       .createRecommender()
+                                                       .getItemScorer();
 
         assertEquals(2.6, predictor.score(2, 9), EPSILON);
         assertEquals(4.2, predictor.score(3, 6), EPSILON);
@@ -87,7 +96,7 @@ public class TestWeightedSlopeOneItemScorer {
     }
 
     @Test
-    public void testPredict2() {
+    public void testPredict2() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
         rs.add(Ratings.make(1, 4, 3.5));
         rs.add(Ratings.make(2, 4, 5));
@@ -97,11 +106,15 @@ public class TestWeightedSlopeOneItemScorer {
         rs.add(Ratings.make(2, 7, 4));
         rs.add(Ratings.make(3, 7, 1.5));
 
-        EventCollectionDAO.Factory manager = new EventCollectionDAO.Factory(rs);
-        EventCollectionDAO dao = manager.create();
-        SlopeOneModel model = getModel(dao);
-        WeightedSlopeOneItemScorer predictor =
-                new WeightedSlopeOneItemScorer(dao, model, new PreferenceDomain(1, 5, 1));
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(new EventCollectionDAO(rs));
+        config.bind(ItemScorer.class).to(WeightedSlopeOneItemScorer.class);
+        config.bind(PreferenceDomain.class).to(new PreferenceDomainBuilder(1, 5)
+                                                       .setPrecision(1)
+                                                       .build());
+        ItemScorer predictor = LenskitRecommenderEngine.build(config)
+                                                       .createRecommender()
+                                                       .getItemScorer();
 
         assertEquals(5, predictor.score(1, 5), EPSILON);
         assertEquals(2.25, predictor.score(1, 6), EPSILON);

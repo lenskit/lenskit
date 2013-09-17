@@ -3,10 +3,18 @@
                         ---------------------
 
 #macro ( release $ver )
+#if( $project.version == "${ver}-SNAPSHOT" )##
+* {{{./lenskit-${ver}.html}Release $ver}} (in progress)
+#else
 * {{{./lenskit-${ver}.html}Release $ver}}
+#end
 #end
 
 LensKit Releases
+
+  #release("2.0")
+
+  #release("1.4") (in progresss))
 
   #release("1.3")
 

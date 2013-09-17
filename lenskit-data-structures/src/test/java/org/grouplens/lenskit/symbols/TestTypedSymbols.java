@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import java.io.InputStream;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.*;
 
@@ -73,8 +74,8 @@ public class TestTypedSymbols {
     public void testToString() {
         TypedSymbol<String> sbar = TypedSymbol.of(String.class, "bar");
         TypedSymbol<Integer> sfoo = TypedSymbol.of(Integer.class, "foo");
-        assertEquals("TypedSymbol.of(bar,String)", sbar.toString());
-        assertEquals("TypedSymbol.of(foo,Integer)", sfoo.toString());
+        assertEquals("TypedSymbol.of(String,bar)", sbar.toString());
+        assertEquals("TypedSymbol.of(Integer,foo)", sfoo.toString());
     }
 
     @Test
@@ -82,5 +83,22 @@ public class TestTypedSymbols {
         TypedSymbol<InputStream> sbar = TypedSymbol.of(InputStream.class, "ratings");
         TypedSymbol<InputStream> cloned = SerializationUtils.clone(sbar);
         assertThat(cloned, sameInstance(sbar));
+    }
+
+    @Test
+    public void testPrimitive() {
+        TypedSymbol<Double> boxed = TypedSymbol.of(Double.class, "symbol");
+        TypedSymbol<Double> unboxed = TypedSymbol.of(double.class, "symbol");
+        assertThat(unboxed, equalTo(boxed));
+        assertThat(unboxed, sameInstance(boxed));
+    }
+
+    @Test
+    public void testWithType() {
+        Symbol foo = Symbol.of("foo");
+        TypedSymbol<String> s1 = foo.withType(String.class);
+        TypedSymbol<String> s2 = foo.withType(String.class);
+        assertThat(s2, equalTo(s1));
+        assertThat(s2, sameInstance(s1));
     }
 }

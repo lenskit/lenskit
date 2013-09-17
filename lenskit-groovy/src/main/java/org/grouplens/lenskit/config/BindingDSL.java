@@ -24,6 +24,7 @@ import groovy.lang.Closure;
 import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.Module;
 import org.grouplens.lenskit.core.AbstractConfigContext;
+import org.grouplens.lenskit.core.LenskitBinding;
 import org.grouplens.lenskit.core.LenskitConfigContext;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.pref.PreferenceDomainBuilder;
@@ -83,19 +84,19 @@ public class BindingDSL extends AbstractConfigContext {
 
     /** @see LenskitConfigContext#bind(Class) */
     @Override
-    public <T> Binding<T> bind(Class<T> type) {
+    public <T> LenskitBinding<T> bind(Class<T> type) {
         return context.bind(type);
     }
 
     /** @see LenskitConfigContext#bind(Class, Class) */
     @Override
-    public <T> Binding<T> bind(Class<? extends Annotation> qual, Class<T> type) {
+    public <T> LenskitBinding<T> bind(Class<? extends Annotation> qual, Class<T> type) {
         return context.bind(qual, type);
     }
 
     /** @see LenskitConfigContext#bindAny(Class) */
     @Override
-    public <T> Binding<T> bindAny(Class<T> type) {
+    public <T> LenskitBinding<T> bindAny(Class<T> type) {
         return context.bindAny(type);
     }
 

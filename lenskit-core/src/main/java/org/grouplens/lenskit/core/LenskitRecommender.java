@@ -21,43 +21,33 @@
 package org.grouplens.lenskit.core;
 
 import org.grouplens.grapht.Injector;
-import org.grouplens.lenskit.GlobalItemRecommender;
-import org.grouplens.lenskit.GlobalItemScorer;
-import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.*;
+
+import java.lang.annotation.Annotation;
 
 /**
  * Recommender implementation built on LensKit containers.  Recommenders built
- * with {@link LenskitRecommenderEngineFactory} will produce this type of
+ * with {@link LenskitRecommenderEngine} will produce this type of
  * recommender.
  *
  * <p>The {@link Recommender} interface will meet most needs, so most users can
  * ignore this class.  However, if you need to inspect internal components of a
  * recommender (e.g. extract the item-item similarity matrix), this class and its
- * {@link #getComponent(Class)} method can be useful.
+ * {@link #get(Class)} method can be useful.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public class LenskitRecommender implements Recommender {
-    private final Injector injector;
-    private final DataAccessObject dao;
-    private final boolean shouldCloseDao;
+    private final StaticInjector injector;
 
     /**
      * Create a new LensKit recommender.
      *
-     * @param injector       The injector housing this recommender's configuration.
-     * @param dao            The DAO backing this recommender session.
-     * @param shouldCloseDao Whether the session should close the DAO.
+     * @param injector The injector housing this recommender's configuration.
      */
-    public LenskitRecommender(Injector injector, DataAccessObject dao, boolean shouldCloseDao) {
+    public LenskitRecommender(StaticInjector injector) {
         this.injector = injector;
-        this.dao = dao;
-        this.shouldCloseDao = shouldCloseDao;
     }
 
     /**
@@ -72,6 +62,21 @@ public class LenskitRecommender implements Recommender {
      */
     public <T> T get(Class<T> cls) {
         return injector.getInstance(cls);
+    }
+
+    /**
+     * Get a particular qualified component from the recommender session.  Generally you
+     * want to use one of the type-specific getters; this method only exists for
+     * specialized applications which need deep access to the recommender
+     * components.
+     *
+     * @param <T> The type of component to get.
+     * @param qual The qualifying annotation of the component class.
+     * @param cls The component class to get.
+     * @return The instance of the specified component.
+     */
+    public <T> T get(Class<? extends Annotation> qual, Class<T> cls) {
+        return injector.getInstance(qual, cls);
     }
 
     @Override
@@ -90,34 +95,6 @@ public class LenskitRecommender implements Recommender {
     }
 
     @Override
-    public void close() {
-        if (shouldCloseDao) {
-            dao.close();
-        }
-    }
-
-    /**
-     * Get the DAO for this recommender session.
-     *
-     * @return The DAO, or {@var null} if this recommender is not connected
-     *         to a DAO.  All LensKit recommenders are connected to DAOs; recommenders
-     *         from other frameworks that are adapted to the LensKit API may not be.
-     */
-    public DataAccessObject getDataAccessObject() {
-        return dao;
-    }
-
-    /**
-     * Get the DAO.
-     * @return The DAO.
-     * @deprecated Use {@link #getDataAccessObject()}.
-     */
-    @Deprecated
-    public DataAccessObject getRatingDataAccessObject() {
-        return dao;
-    }
-
-    @Override
     public ItemRecommender getItemRecommender() {
         return get(ItemRecommender.class);
     }
@@ -125,5 +102,20 @@ public class LenskitRecommender implements Recommender {
     @Override
     public GlobalItemRecommender getGlobalItemRecommender() {
         return get(GlobalItemRecommender.class);
+    }
+
+    /**
+     * Build a recommender from a configuration.  The recommender is immediately usable.  This is
+     * mostly useful for evaluations and test programs; more sophisticated applications that need
+     * to build multiple recommenders from the same model should use a {@linkplain LenskitRecommenderEngine
+     * recommender engine}.
+     *
+     * @param config The configuration.
+     * @return The recommender.
+     * @throws RecommenderBuildException If there is an error building the recommender.
+     * @since 2.0
+     */
+    public static LenskitRecommender build(LenskitConfiguration config) throws RecommenderBuildException {
+        return LenskitRecommenderEngine.build(config).createRecommender();
     }
 }

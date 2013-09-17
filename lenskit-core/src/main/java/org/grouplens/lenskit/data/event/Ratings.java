@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.event;
 
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
@@ -30,6 +31,7 @@ import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
+import javax.annotation.Nonnull;
 import javax.annotation.WillClose;
 import java.util.Arrays;
 import java.util.Collection;
@@ -91,7 +93,7 @@ public final class Ratings {
                 tsMap.put(uid, ts);
             }
         }
-        return new MutableSparseVector(v);
+        return MutableSparseVector.create(v);
     }
 
     /**
@@ -151,22 +153,24 @@ public final class Ratings {
      * Make a fresh rating object with no timestamp.
      *
      * @see #make(long, long, double, long)
-     * @deprecated Use {@link #newBuilder()}.
      */
-    @Deprecated
     public static Rating make(long uid, long iid, double value) {
-        return make(uid, iid, value, -1);
+        return new RatingBuilder().setUserId(uid)
+                                  .setItemId(iid)
+                                  .setRating(value)
+                                  .build();
     }
 
     /**
      * Make a fresh rating event. Event IDs are generated sequentially. This is
      * mostly useful in test cases.
-     * @deprecated Use {@link #newBuilder()}.
      */
-    @Deprecated
     public static Rating make(long uid, long iid, double value, long ts) {
-        return new SimpleRating(nextEventId.incrementAndGet(),
-                                uid, iid, value, ts);
+        return new RatingBuilder().setUserId(uid)
+                                  .setItemId(iid)
+                                  .setRating(value)
+                                  .setTimestamp(ts)
+                                  .build();
     }
 
     /**
@@ -184,10 +188,10 @@ public final class Ratings {
      * @return A rating builder that will initially build a copy of {@var r}.
      * @since 1.e
      */
-    public static RatingBuilder copyBuilder(Rating r) {
+    public static RatingBuilder copyBuilder(@Nonnull Rating r) {
+        Preconditions.checkNotNull(r, "rating");
         RatingBuilder rb = newBuilder();
-        rb.setId(r.getId())
-          .setUserId(r.getUserId())
+        rb.setUserId(r.getUserId())
           .setItemId(r.getItemId())
           .setTimestamp(r.getTimestamp());
         Preference pref = r.getPreference();

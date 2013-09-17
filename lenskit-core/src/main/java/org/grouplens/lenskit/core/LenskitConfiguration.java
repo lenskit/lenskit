@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.core;
 
-import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.BindingFunctionBuilder;
 import org.grouplens.grapht.graph.Graph;
 import org.grouplens.grapht.solver.DefaultDesireBindingFunction;
@@ -29,7 +28,6 @@ import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.spi.CachePolicy;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.lenskit.*;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -41,8 +39,9 @@ import static org.grouplens.lenskit.core.ContextWrapper.coerce;
 
 /**
  * A LensKit algorithm configuration.  Once you have a configuration, you can pass it to
- * {@link LenskitRecommenderEngine#build(org.grouplens.lenskit.data.dao.DAOFactory, LenskitConfiguration)}
- * to build a recommender engine.
+ * {@link LenskitRecommenderEngine#build(LenskitConfiguration)}
+ * to build a recommender engine, or {@link LenskitRecommender#build(LenskitConfiguration)}
+ * to skip the engine and just build a recommender.
  *
  * @since 1.2
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -101,13 +100,8 @@ public class LenskitConfiguration extends AbstractConfigContext {
     }
 
     @Override
-    public <T> Binding<T> bind(Class<T> type) {
-        return bindings.getRootContext().bind(type);
-    }
-
-    @Override
-    public <T> Binding<T> bind(Class<? extends Annotation> qualifier, Class<T> type) {
-        return bind(type).withQualifier(qualifier);
+    public <T> LenskitBinding<T> bind(Class<T> type) {
+        return ContextWrapper.coerce(bindings.getRootContext()).bind(type);
     }
 
     @Override
@@ -167,52 +161,11 @@ public class LenskitConfiguration extends AbstractConfigContext {
      * Get a mockup of the full recommender graph. This fully resolves the graph so that
      * it can be analyzed, but does not create any objects.
      *
-     * @param daoType The type of the DAO (so resolution can be successful in the face of
-     *                dependencies on DAO subtypes).
-     * @return The full graph.
-     */
-    public Graph buildGraph(Class<? extends DataAccessObject> daoType) throws RecommenderConfigurationException {
-        BindingFunctionBuilder cfg = bindings.clone();
-        if (daoType == null) {
-            cfg.getRootContext().bind(DataAccessObject.class).toNull();
-        } else {
-            cfg.getRootContext().bind(DataAccessObject.class).to(daoType);
-            cfg.getRootContext().bind(daoType).toNull();
-        }
-        try {
-            return resolveGraph(cfg);
-        } catch (SolverException e) {
-            throw new RecommenderConfigurationException("Cannot resolve configuration graph", e);
-        }
-    }
-
-    /**
-     * Get a mockup of the full recommender graph. This fully resolves the graph so that
-     * it can be analyzed, but does not create any objects.  Use {@link #buildGraph(Class)} if your
-     * configuration depends on a custom DAO subclass.
-     *
      * @return The full graph.
      */
     public Graph buildGraph() throws RecommenderConfigurationException {
-        return buildGraph(DataAccessObject.class);
-    }
-
-    /**
-     * Get the full recommender graph with a live DAO.  This does not instantiate any other nodes.
-     *
-     * @param dao The DAO object.
-     * @return The full configuration graph with the live DAO in place.
-     */
-    public Graph buildGraph(DataAccessObject dao) throws RecommenderConfigurationException {
-        BindingFunctionBuilder cfg = bindings.clone();
-        if (dao == null) {
-            cfg.getRootContext().bind(DataAccessObject.class).toNull();
-        } else {
-            cfg.getRootContext().bind(DataAccessObject.class).to(dao);
-        }
-
         try {
-            return resolveGraph(cfg);
+            return resolveGraph(bindings);
         } catch (SolverException e) {
             throw new RecommenderConfigurationException("Cannot resolve configuration graph", e);
         }

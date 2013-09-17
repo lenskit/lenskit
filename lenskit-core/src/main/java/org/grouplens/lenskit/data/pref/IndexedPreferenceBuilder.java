@@ -116,6 +116,7 @@ public final class IndexedPreferenceBuilder implements Builder<IndexedPreference
      * Build the indexed preference.
      * @return The newly-constructed indexed preference.
      */
+    @Override
     public IndexedPreference build() {
         return new SimpleIndexedPreference(user, item, value,
                                            index, userIndex, itemIndex);

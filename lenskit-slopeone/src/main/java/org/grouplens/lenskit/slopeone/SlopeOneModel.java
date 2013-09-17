@@ -22,7 +22,6 @@ package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.baseline.BaselinePredictor;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
@@ -33,8 +32,6 @@ import java.io.Serializable;
 /**
  * A model for a {@link SlopeOneItemScorer} or {@link WeightedSlopeOneItemScorer}.
  * Stores calculated deviation values and number of co-rating users for each item pair.
- * Also contains a {@link BaselinePredictor} and the minimum and maximum rating values
- * for use by a scorer.
  */
 @DefaultProvider(SlopeOneModelBuilder.class)
 @Shareable
@@ -78,7 +75,7 @@ public class SlopeOneModel implements Serializable {
             if (row == null) {
                 return 0;
             } else {
-                double coratings = row.channel(CORATINGS_SYMBOL).get(item2, 0);
+                double coratings = row.getChannelVector(CORATINGS_SYMBOL).get(item2, 0);
                 return (int) coratings;
             }
         } else {
@@ -86,7 +83,7 @@ public class SlopeOneModel implements Serializable {
             if (row == null) {
                 return 0;
             } else {
-                double coratings = row.channel(CORATINGS_SYMBOL).get(item1, 0);
+                double coratings = row.getChannelVector(CORATINGS_SYMBOL).get(item1, 0);
                 return (int) coratings;
             }
         }

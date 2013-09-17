@@ -23,11 +23,9 @@ package org.grouplens.lenskit.basic;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.GlobalItemScorer;
-import org.grouplens.lenskit.collections.LongSortedArraySet;
-import org.grouplens.lenskit.collections.ScoredLongArrayList;
-import org.grouplens.lenskit.collections.ScoredLongList;
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.dao.DataAccessObject;
+import org.grouplens.lenskit.collections.LongUtils;
+import org.grouplens.lenskit.data.dao.ItemDAO;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -35,6 +33,8 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A global item recommender that recommends the top N items from a scorer.
@@ -43,11 +43,11 @@ import javax.inject.Inject;
  * @since 1.1
  */
 public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
-
+    protected final ItemDAO itemDAO;
     protected final GlobalItemScorer scorer;
 
-    public TopNGlobalItemRecommender(DataAccessObject dao, GlobalItemScorer scorer) {
-        super(dao);
+    public TopNGlobalItemRecommender(ItemDAO idao, GlobalItemScorer scorer) {
+        itemDAO = idao;
         this.scorer = scorer;
     }
 
@@ -56,15 +56,15 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
      * uses {@link #getDefaultExcludes(LongSet)} to supply a missing exclude set.
      */
     @Override
-    protected ScoredLongList globalRecommend(LongSet items, int n, LongSet candidates, LongSet exclude) {
+    protected List<ScoredId> globalRecommend(LongSet items, int n, LongSet candidates, LongSet exclude) {
         if (candidates == null) {
-            candidates = Cursors.makeSet(dao.getItems());
+            candidates = itemDAO.getItemIds();
         }
         if (exclude == null) {
             exclude = getDefaultExcludes(items);
         }
         if (!exclude.isEmpty()) {
-            candidates = LongSortedArraySet.setDifference(candidates, exclude);
+            candidates = LongUtils.setDifference(candidates, exclude);
         }
 
         SparseVector scores = scorer.globalScore(items, candidates);
@@ -90,9 +90,9 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
      * @return The top {@var n} items from {@var scores}, in descending
      *         order of score.
      */
-    protected ScoredLongList recommend(int n, SparseVector scores) {
+    protected List<ScoredId> recommend(int n, SparseVector scores) {
         if (scores.isEmpty()) {
-            return new ScoredLongArrayList();
+            return Collections.emptyList();
         }
 
         if (n < 0) {
@@ -105,7 +105,7 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
             accum.put(pred.getKey(), v);
         }
 
-        return new ScoredLongArrayList(accum.finish());
+        return accum.finish();
     }
 
     /**
@@ -114,13 +114,13 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
      * the default provider for {@link GlobalItemRecommender}.
      */
     public static class Provider implements javax.inject.Provider<TopNGlobalItemRecommender> {
-        private final DataAccessObject dao;
+        private final ItemDAO itemDAO;
         private final GlobalItemScorer scorer;
 
         @Inject
-        public Provider(DataAccessObject dao,
+        public Provider(ItemDAO dao,
                         @Nullable GlobalItemScorer s) {
-            this.dao = dao;
+            itemDAO = dao;
             scorer = s;
         }
 
@@ -129,7 +129,7 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
             if (scorer == null) {
                 return null;
             } else {
-                return new TopNGlobalItemRecommender(dao, scorer);
+                return new TopNGlobalItemRecommender(itemDAO, scorer);
             }
         }
     }

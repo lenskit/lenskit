@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.symbols;
 
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.ObjectStreamException;
@@ -68,13 +69,20 @@ public final class TypedSymbol<K> implements Serializable {
 
     @SuppressWarnings("unchecked")
     public static synchronized <T> TypedSymbol<T> of(Class<T> type, Symbol sym) {
-        Pair<Class,Symbol> key = Pair.of((Class) type, sym);
+        Pair<Class,Symbol> key;
+        if (type.isPrimitive()) {
+            key = Pair.of((Class) ClassUtils.primitiveToWrapper(type), sym);
+        } else {
+            key = Pair.of((Class) type, sym);
+        }
         TypedSymbol tsym = symbolCache.get(key);
         if (tsym == null) {
+            if (type.isPrimitive()) {
+                type = (Class<T>) ClassUtils.primitiveToWrapper(type);
+            }
             tsym = new TypedSymbol<T>(type, sym);
             symbolCache.put(key, tsym);
         }
-        assert tsym.getType().equals(type);
         return tsym;
     }
 
@@ -100,12 +108,21 @@ public final class TypedSymbol<K> implements Serializable {
      * Get the symbol.
      * @return The symbol associated with the type.
      */
-    public Symbol getSymbol() {
+    public Symbol getRawSymbol() {
         return symbol;
+    }
+
+    /**
+     * Create a value paired with this symbol.
+     * @param val The value.
+     * @return A pair of this symbol and the value.
+     */
+    public SymbolValue<K> withValue(K val) {
+        return SymbolValue.of(this, val);
     }
 
     @Override
     public String toString() {
-        return String.format("TypedSymbol.of(%s,%s)", this.getName(), this.getType().getSimpleName());
+        return String.format("TypedSymbol.of(%s,%s)", getType().getSimpleName(), getName());
     }
 }

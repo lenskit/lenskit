@@ -56,6 +56,7 @@ public final class PreferenceBuilder implements Builder<SimplePreference> {
         return this;
     }
 
+    @Override
     public SimplePreference build() {
         return new SimplePreference(user, item, value);
     }

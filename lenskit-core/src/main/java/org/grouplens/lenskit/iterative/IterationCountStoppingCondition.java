@@ -57,11 +57,6 @@ public class IterationCountStoppingCondition implements StoppingCondition, Seria
         return iterCount;
     }
 
-    @Override @Deprecated
-    public boolean isFinished(int n, double delta) {
-        return n >= iterCount;
-    }
-
     @Override
     public TrainingLoopController newLoop() {
         return new Controller();

@@ -31,7 +31,8 @@ import static java.lang.Math.sqrt;
  * A real vector.  This is a read-only view of a vector of doubles.  It is backed by an array,
  * and contains values associated with indices [0,{@link #size()}).
  *
- * @compat Experimental — this interface may change in future versions of LensKit.
+ * @since 1.3
+ * @compat Public
  */
 public abstract class Vec implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -124,7 +125,7 @@ public abstract class Vec implements Serializable {
      * @return The immutable vector.
      */
     public ImmutableVec immutable() {
-        return ImmutableVec.make(data);
+        return ImmutableVec.create(data);
     }
 
     /**

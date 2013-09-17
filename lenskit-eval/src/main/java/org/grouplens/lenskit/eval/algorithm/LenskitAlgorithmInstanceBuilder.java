@@ -23,7 +23,6 @@ package org.grouplens.lenskit.eval.algorithm;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineFactory;
 import org.grouplens.lenskit.eval.script.ConfigDelegate;
 
 import javax.annotation.Nonnull;
@@ -37,20 +36,18 @@ import java.util.Map;
  */
 @ConfigDelegate(AlgorithmInstanceBuilderDelegate.class)
 public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithmInstance> {
+    private final LenskitConfiguration config;
     private String name;
     private Map<String, Object> attributes = new HashMap<String, Object>();
     private boolean preload;
-    @SuppressWarnings("deprecation")
-    private LenskitRecommenderEngineFactory factory;
 
     public LenskitAlgorithmInstanceBuilder() {
         this("Unnamed Algorithm");
     }
 
-    @SuppressWarnings("deprecation")
     public LenskitAlgorithmInstanceBuilder(String name) {
         this.name = name;
-        factory = new LenskitRecommenderEngineFactory();
+        config = new LenskitConfiguration();
     }
 
     /**
@@ -118,26 +115,13 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
         return attributes;
     }
 
-    /**
-     * Get the factory for this instance.
-     *
-     * @return The factory for this recommender instance. Each instance has the factory
-     *         instantiated to a fresh, empty factory.
-     * @deprecated Use {@link #getConfig()} instead.
-     */
-    @SuppressWarnings("deprecation")
-    @Deprecated
-    public LenskitRecommenderEngineFactory getFactory() {
-        return factory;
-    }
-
     public LenskitConfiguration getConfig() {
-        return factory.getConfig();
+        return config;
     }
 
     @Override
     public LenskitAlgorithmInstance build() {
-        return new LenskitAlgorithmInstance(getName(), factory.getConfig(), attributes, preload);
+        return new LenskitAlgorithmInstance(getName(), config, attributes, preload);
     }
 
 }
