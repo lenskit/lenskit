@@ -3,21 +3,18 @@ package ${package};
 
 import org.grouplens.lenskit.baseline.MeanDamping;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
-import java.util.Collection;
 import java.util.Collections;
 
 /**
@@ -68,37 +65,36 @@ public class ExtendedItemUserMeanScorer extends AbstractItemScorer {
             return 0;
         }
 
-        Collection<Double> values = ratings.values();
-        double total = 0;
+        // we want to compute the average of the user's offset from item mean
+        // first subtract item means, in 2 phases: global mean and item mean offset
+        // sparse vector bulk operations let us do this very quickly
+        MutableSparseVector v = ratings.mutableCopy();
+        v.add(-model.getGlobalMean());
+        v.subtract(model.getItemOffsets());
 
-        for (VectorEntry rating : ratings.fast()) {
-            double r = rating.getValue();
-            long iid = rating.getKey();
-            total += r - getItemMean(iid);
-        }
-        return total / (values.size() + userDamping);
+        // now return the damped mean
+        return v.sum() / (v.size() + userDamping);
     }
 
     @Override
     public void score(long user, @Nonnull MutableSparseVector scores) {
         logger.debug("score called to attempt to score %d elements", scores.size());
+
+        // Get the user's profile
         UserHistory<Rating> profile = dao.getEventsForUser(user, Rating.class);
         if (profile == null) {
             profile = History.forUser(user, Collections.<Rating>emptyList());
         }
-        double meanOffset = computeUserOffset(RatingVectorUserHistorySummarizer.makeRatingVector(profile));
-        for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
-            scores.set(e, meanOffset + getItemMean(e.getKey()));
-        }
-    }
 
-    /**
-     * Get the mean for a particular item.
-     *
-     * @param id The item ID.
-     * @return The item's mean rating.
-     */
-    protected double getItemMean(long id) {
-        return model.getGlobalMean() + model.getItemOffsets().get(id);
+        // Convert the user's profile into a rating vector
+        SparseVector vector = RatingVectorUserHistorySummarizer.makeRatingVector(profile);
+        double meanOffset = computeUserOffset(vector);
+
+        // fill scores with the global rating
+        scores.fill(model.getGlobalMean());
+        // add in item offset for all items
+        scores.add(model.getItemOffsets());
+        // add user mean offset to all scores
+        scores.add(meanOffset);
     }
 }
