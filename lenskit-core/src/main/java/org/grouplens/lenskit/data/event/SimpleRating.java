@@ -62,11 +62,7 @@ final class SimpleRating implements Rating, Preference {
 
     @Override 
     public final boolean hasValue() {
-        if (Double.isNaN(value)) {
-            return false;
-        } else {
-            return true;
-        }
+        return true;
     }
     
     @Override
@@ -86,13 +82,8 @@ final class SimpleRating implements Rating, Preference {
     }
 
     @Override
-    public final double getValue() throws IllegalStateException {
-        if (this.hasValue()) {
-            return value;
-        } else {
-            String msg = "There is no rating";
-            throw new IllegalStateException(msg);
-        }
+    public final double getValue() {
+        return value;
     }
     
     @Override
