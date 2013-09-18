@@ -22,9 +22,9 @@ package org.grouplens.lenskit.eval.graph;
 
 import com.google.common.io.Closer;
 import com.google.common.io.Files;
-import org.grouplens.grapht.graph.Edge;
-import org.grouplens.grapht.graph.Graph;
-import org.grouplens.grapht.graph.Node;
+import org.grouplens.grapht.graph.DAGEdge;
+import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.spi.AbstractSatisfactionVisitor;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.Satisfaction;
@@ -144,12 +144,12 @@ public class DumpGraphTask extends AbstractTask<File> {
         } catch (RecommenderConfigurationException e) {
             throw new TaskExecutionException("error resolving algorithm configuration", e);
         }
-        Graph initial = instantiator.getGraph();
-        logger.debug("graph has {} nodes", initial.getNodes().size());
-        Graph unshared = instantiator.simulate();
-        logger.debug("unshared graph has {} nodes", unshared.getNodes().size());
+        DAGNode<CachedSatisfaction,DesireChain> initial = instantiator.getGraph();
+        logger.debug("graph has {} nodes", initial.getReachableNodes().size());
+        DAGNode<CachedSatisfaction,DesireChain> unshared = instantiator.simulate();
+        logger.debug("unshared graph has {} nodes", unshared.getReachableNodes().size());
         try {
-            writeGraph(initial, unshared.getNodes(), output);
+            writeGraph(initial, unshared.getReachableNodes(), output);
         } catch (IOException e) {
             throw new TaskExecutionException("error writing graph", e);
         }
@@ -158,7 +158,7 @@ public class DumpGraphTask extends AbstractTask<File> {
     }
 
     @SuppressWarnings("PMD.AvoidCatchingThrowable")
-    private void writeGraph(Graph g, Set<Node> unshared, File file) throws IOException, TaskExecutionException {
+    private void writeGraph(DAGNode<CachedSatisfaction,DesireChain> g, Set<DAGNode<CachedSatisfaction,DesireChain>> unshared, File file) throws IOException, TaskExecutionException {
         Files.createParentDirs(output);
         Closer close = Closer.create();
         try {
@@ -172,20 +172,15 @@ public class DumpGraphTask extends AbstractTask<File> {
         }
     }
 
-    private void renderGraph(final Graph g, Set<Node> unshared, final GraphWriter gw) throws TaskExecutionException {
+    private void renderGraph(final DAGNode<CachedSatisfaction,DesireChain> graph, Set<DAGNode<CachedSatisfaction,DesireChain>> unshared, final GraphWriter gw) throws TaskExecutionException {
         // Handle the root node
-        Node root = g.getNode(null);
-        if (root == null) {
-            throw new TaskExecutionException("no root node for graph");
-        }
-        GraphDumper dumper = new GraphDumper(g, unshared, gw);
+        GraphDumper dumper = new GraphDumper(graph, unshared, gw);
         try {
-            String rid = dumper.setRoot(root);
+            String rid = dumper.setRoot(graph);
 
-            for (Edge e: g.getOutgoingEdges(root)) {
-                Node target = e.getTail();
+            for (DAGEdge<CachedSatisfaction,DesireChain> e: graph.getOutgoingEdges()) {
+                DAGNode<CachedSatisfaction,DesireChain> target = e.getTail();
                 CachedSatisfaction csat = target.getLabel();
-                assert csat != null;
                 if (!satIsNull(csat.getSatisfaction())) {
                     String id = dumper.process(target);
                     gw.putEdge(EdgeBuilder.create(rid, id)
