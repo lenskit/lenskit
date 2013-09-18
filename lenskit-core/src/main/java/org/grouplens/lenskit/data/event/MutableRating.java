@@ -52,6 +52,25 @@ public class MutableRating implements Rating {
         }
     };
 
+    @Override 
+    public final boolean hasValue() {
+        if (Double.isNaN(value)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
+    @Override
+    public final double getValue() throws IllegalStateException {
+        if (this.hasValue()) {
+            return preference.getValue();
+        } else {
+            String msg = "There is no rating";
+            throw new IllegalStateException(msg);
+        }
+    }
+
     @Override
     public long getUserId() {
         return uid;

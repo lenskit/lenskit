@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.event;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.grouplens.lenskit.data.pref.Preference;
@@ -40,4 +41,20 @@ public interface Rating extends Event {
      */
     @Nullable
     Preference getPreference();
+    
+    /**
+     * Judge if there is a rating.
+     * preference will be non-null.
+     *  
+     * @return boolean If there is a rating, return  true, else return  false.
+     */
+    @Nonnull
+    boolean hasValue();
+    
+    /**
+     * Get the value rating.
+     * 
+     * @return double The value Rating.
+     */
+    double getValue() throws IllegalStateException;
 }
