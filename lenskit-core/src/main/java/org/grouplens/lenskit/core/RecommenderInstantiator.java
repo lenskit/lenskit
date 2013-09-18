@@ -22,8 +22,6 @@ package org.grouplens.lenskit.core;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicates;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -97,6 +95,9 @@ public final class RecommenderInstantiator {
             public DAGNode<CachedSatisfaction,DesireChain> apply(@Nullable DAGNode<CachedSatisfaction,DesireChain> node) {
                 Preconditions.checkNotNull(node);
                 assert node != null;
+                if (node.getLabel().getSatisfaction().hasInstance()) {
+                    return node;
+                }
                 Object obj = injector.instantiate(node);
                 CachedSatisfaction label = node.getLabel();
                 Satisfaction instanceSat;
@@ -203,11 +204,12 @@ public final class RecommenderInstantiator {
 
             // see if we depend on any non-shared nodes
             // since nodes are sorted, all shared nodes will have been seen
-            Set<DAGEdge<CachedSatisfaction, DesireChain>> intransient =
-                    Sets.filter(node.getOutgoingEdges(), Predicates.not(GraphtUtils.edgeIsTransient()));
-            boolean isShared =
-                    Iterables.all(Iterables.transform(intransient, DAGEdge.<CachedSatisfaction, DesireChain>extractTail()),
-                                  Predicates.in(shared));
+            boolean isShared = true;
+            for (DAGEdge<CachedSatisfaction,DesireChain> edge: node.getOutgoingEdges()) {
+                if (!GraphtUtils.edgeIsTransient(edge)) {
+                    isShared &= shared.contains(edge.getTail());
+                }
+            }
             if (isShared) {
                 shared.add(node);
             }

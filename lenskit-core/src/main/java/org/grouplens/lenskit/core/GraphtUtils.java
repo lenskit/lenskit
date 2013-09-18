@@ -139,7 +139,7 @@ public final class GraphtUtils {
 
     public static boolean edgeIsTransient(DAGEdge<?, DesireChain> input) {
         Desire desire = input.getLabel().getInitialDesire();
-        return !desireIsTransient(desire);
+        return desireIsTransient(desire);
     }
 
     public static Predicate<DAGEdge<?, DesireChain>> edgeIsTransient() {
@@ -147,7 +147,7 @@ public final class GraphtUtils {
             @Override
             public boolean apply(@Nullable DAGEdge<?, DesireChain> input) {
                 Desire desire = input == null ? null : input.getLabel().getInitialDesire();
-                return desire == null || !desireIsTransient(desire);
+                return desire != null && !desireIsTransient(desire);
             }
         };
     }
