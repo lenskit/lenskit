@@ -3,7 +3,7 @@ jdk:
   - oraclejdk7
   - openjdk6
 before_install:
-  - sudo apt-add-repository ppa:marutter/rrutter
+  - echo | sudo apt-add-repository ppa:marutter/rrutter
   - sudo apt-get install r-cran-ggplot2 graphviz
 install: mvn dependency:go-offline
 script: mvn install -Ptest-archetypes -Dgrouplens.mldata.acknowledge=yes
