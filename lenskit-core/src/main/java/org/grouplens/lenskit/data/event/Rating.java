@@ -40,4 +40,20 @@ public interface Rating extends Event {
      */
     @Nullable
     Preference getPreference();
+    
+    /**
+     * Query whether this rating has a value. Ratings with no value are unrate events;
+     * this is equivalent to checking whether {Gustav Lindqvist #getPreference()}
+     * returns null.
+     *  
+     * @return {code true} if there is a rating (the preference is non-null)..
+     */
+    boolean hasValue();
+    
+    /**
+     * Get the value rating.
+     * 
+     * @return double The value Rating.
+     */
+    double getValue() throws IllegalStateException;
 }

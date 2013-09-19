@@ -51,7 +51,12 @@ final class SimpleNullRating implements Rating {
         itemId = iid;
         timestamp = ts;
     }
-
+    
+    @Override 
+    public final boolean hasValue() {
+        return false;
+    }
+    
     @Override
     public long getUserId() {
         return userId;
@@ -72,6 +77,12 @@ final class SimpleNullRating implements Rating {
         return null;
     }
 
+    @Override
+    public final double getValue() throws IllegalStateException {
+        String msg = "There is no rating";
+        throw new IllegalStateException(msg);
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (o instanceof Rating) {

@@ -35,6 +35,27 @@ import java.util.List;
  */
 public class TestRatings {
     @Test
+    public void testGetValueOfSR() {
+        SimpleRating rating = new SimpleRating(1, 2, 3.0, 3);
+        assertThat(rating.hasValue(), equalTo(true));
+        assertThat(rating.getValue(), equalTo(3.0));
+    }
+    
+    @Test
+    public void testGetValueOfSNR() {
+        SimpleNullRating rating = new SimpleNullRating(1, 3, 5);
+        assertThat(rating.hasValue(), equalTo(false));
+    }
+    
+    @Test
+    public void testGetValueOfMR() {
+        MutableRating rating = new MutableRating();
+        assertThat(rating.hasValue(), equalTo(true));
+        rating.setRating(2.0);
+        assertThat(rating.getValue(), equalTo(2.0));
+
+    }
+    @Test
     public void testEmptyURV() {
         List<Rating> ratings = Collections.emptyList();
         MutableSparseVector urv = Ratings.userRatingVector(ratings);
