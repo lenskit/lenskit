@@ -5,8 +5,8 @@ jdk:
 before_install:
   - echo | sudo apt-add-repository ppa:marutter/rrutter
   - sudo apt-get update
-  - sudo apt-get install r-cran-ggplot2 graphviz
-install: mvn dependency:go-offline
+  - sudo apt-get install r-cran-ggplot2 graphviz texlive-latex-base
+install: true
 script: mvn install -Ptest-archetypes -Dgrouplens.mldata.acknowledge=yes
 
 branches:
