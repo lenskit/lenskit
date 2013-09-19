@@ -3,10 +3,9 @@ jdk:
   - oraclejdk7
   - openjdk6
 before_install:
-  - echo | sudo apt-add-repository ppa:marutter/rrutter
   - sudo apt-get update
-  - sudo apt-get install r-cran-ggplot2 graphviz texlive-latex-base
-install: true
+  - sudo apt-get install r-devel graphviz texlive-latex-base
+install: Rscript etc/setup-R-deps.R
 script: mvn install -Ptest-archetypes -Dgrouplens.mldata.acknowledge=yes
 
 branches:
