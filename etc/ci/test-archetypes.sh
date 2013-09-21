@@ -60,11 +60,12 @@ require_files()
 generate simple-analysis
 cmd cp "$MLDATA_ZIP" test-simple-analysis/ml100k.zip
 execute simple-analysis
-require_files test-simple-analysis/{accuracy,speed}.pdf
+require_files test-simple-analysis/accuracy.pdf test-simple-analysis/speed.pdf
 
 generate fancy-analysis
 cmd mkdir -p test-fancy-analysis/target/data
 cmd cp "$MLDATA_ZIP" test-fancy-analysis/target/data/ml100k.zip
 execute fancy-analysis
 require_files test-fancy-analysis/target/paper.pdf \
-    test-fancy-analysis/target/analysis/{speed,accuracy}.pdf
+    test-fancy-analysis/target/analysis/speed.pdf \
+    test-fancy-analysis/target/analysis/accuracy.pdf
