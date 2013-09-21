@@ -1,0 +1,13 @@
+language: java
+jdk:
+  - oraclejdk7
+  - openjdk6
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install r-base-dev graphviz texlive-latex-base
+install: sudo Rscript etc/setup-R-deps.R
+script: mvn install -Ptest-archetypes -Dgrouplens.mldata.acknowledge=yes
+
+branches:
+  except:
+    - stable
