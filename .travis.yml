@@ -1,15 +1,20 @@
 language: java
 jdk:
-  - oraclejdk7
-  - openjdk6
+- oraclejdk7
+- openjdk6
 before_install:
-  - sudo apt-get update
-  - sudo apt-get install r-base-dev graphviz texlive-latex-base
+- sudo apt-get update
+- sudo apt-get install r-base-dev graphviz texlive-latex-base
 install: sudo Rscript etc/setup-R-deps.R
 script:
-  - mvn install -Dgrouplens.mldata.acknowledge=yes
-  - ./etc/ci/test-archetypes.sh
-
+- mvn install -Dgrouplens.mldata.acknowledge=yes
+- ./etc/ci/test-archetypes.sh
+after_success:
+- ./etc/ci/maybe-deploy.sh
 branches:
   except:
-    - stable
+  - stable
+env:
+  global:
+  - secure: D3tCdALkjsp9W1hs1A32FaIOB0VkGT6+dG8maFY+In7wAF2KQ/jkYkYG+uutPn01gjaZgQiaGzal+Ck97+kfHMnm4YrK41mCL6XbZy3O7x68e/VK0GUVOJf88L8/bH2OhS33KA9Bif73I1eBy4ZfuQhXeh/UXqh7zOyOnYV1sJQ=
+  - secure: IhWXB3LGdaEoiD7lgdaH83aVw/yK4T/f2lNalQn8skdA4nsLA1IWNgXU9MOFPTg50699oNiZOd39SptX5guZ25K0ov4nYXxPm1qCS6YpganfzeSiZ3sRZgBXKeTOnfzh8damVsDvebHYRMdPnjb1mELaoasNCHSfzprXL+PZois=

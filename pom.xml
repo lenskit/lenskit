@@ -73,37 +73,6 @@
     <module>lenskit-package</module>
   </modules>
 
-  <repositories>
-    <!-- The current trunk may depend on snapshots of dependencies, such as Grapht,
-         that are published to the GroupLens development repository. -->
-    <repository>
-      <id>grouplens-devel</id>
-      <url>http://dev.grouplens.org/maven</url>
-      <layout>default</layout>
-      <snapshots>
-        <enabled>true</enabled>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-      <releases><enabled>false</enabled></releases>
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <!-- The current trunk may depend on snapshots of dependencies, such as Grapht,
-         that are published to the GroupLens development repository. -->
-    <pluginRepository>
-      <id>grouplens-devel</id>
-      <url>http://dev.grouplens.org/maven</url>
-      <layout>default</layout>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-      <releases><enabled>false</enabled></releases>
-    </pluginRepository>
-  </pluginRepositories>
-
   <dependencyManagement>
     <dependencies>
       <!-- logging -->
