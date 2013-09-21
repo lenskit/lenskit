@@ -11,6 +11,7 @@ script:
 - ./etc/ci/test-archetypes.sh
 after_success:
 - ./etc/ci/maybe-deploy.sh
+- ./etc/ci/disk-stats.sh
 branches:
   except:
   - stable
