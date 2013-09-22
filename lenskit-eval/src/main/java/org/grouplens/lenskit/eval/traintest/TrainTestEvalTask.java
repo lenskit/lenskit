@@ -305,20 +305,24 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         int nthreads = getProject().getConfig().getThreadCount();
         logger.info("Running evaluator with {} threads", nthreads);
         ExecutorService exec = Executors.newFixedThreadPool(nthreads);
-        for (List<TrainTestEvalJob> group: jobGroups) {
-            TaskGroupRunner runner = TaskGroupRunner.create(exec);
-            runner.submitAll(group);
-            try {
-                runner.waitForAll();
-            } catch (ExecutionException e) {
-                Throwable cause = e.getCause();
-                if (cause instanceof TrainTestJobException) {
-                    cause = cause.getCause();
+        try {
+            for (List<TrainTestEvalJob> group: jobGroups) {
+                TaskGroupRunner runner = TaskGroupRunner.create(exec);
+                runner.submitAll(group);
+                try {
+                    runner.waitForAll();
+                } catch (ExecutionException e) {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof TrainTestJobException) {
+                        cause = cause.getCause();
+                    }
+                    throw new TaskExecutionException(cause);
+                } catch (TrainTestJobException e) {
+                    throw new TaskExecutionException(e);
                 }
-                throw new TaskExecutionException(cause);
-            } catch (TrainTestJobException e) {
-                throw new TaskExecutionException(e);
             }
+        } finally {
+            exec.shutdown();
         }
     }
 
