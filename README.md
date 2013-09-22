@@ -11,8 +11,8 @@ without downloading the source code.  If this is your first time working
 with LensKit we recommend checking out the [Getting Started][] guide.
 
 [web site]: http://lenskit.grouplens.org
-[wiki]: http://bitbucket.org/grouplens/lenskit/wiki/
-[Getting Started]: http://bitbucket.org/grouplens/lenskit/wiki/GettingStarted
+[wiki]: http://github.com/grouplens/lenskit/wiki/
+[Getting Started]: http://github.com/grouplens/lenskit/wiki/GettingStarted
 [mailing list]: https://wwws.cs.umn.edu/mm-cs/listinfo/lenskit
 
 LensKit is made available under the GNU Lesser General Public License
@@ -21,14 +21,14 @@ LensKit is made available under the GNU Lesser General Public License
 ## Installation and Dependency Management
 
 LensKit is built and deployed via [Maven][].  To install it, check out
-this repository and run `mvn install`; it is then available to other projects by
-depending directly on it as above (consult `pom.xml` for the version to use; all LensKit
-modules share the same version).  The source code can also be checked out and used
-in most Java IDEs.  NetBeans and IntelliJ both include Maven support, LensKit should import
-fine with no special tricks.  For Eclipse, we have a [page of instructions][UsingEclipse].
+this repository and run `mvn install`; it is then available to other
+projects by depending directly on it as above (consult `pom.xml` for
+the version to use; all LensKit modules share the same version).  The
+source code can also be checked out and used in most Java IDEs.
+NetBeans and IntelliJ both include Maven support, LensKit should
+import fine with no special tricks.
 
 [Maven]: http://maven.apache.org
-[UsingEclipse]: https://bitbucket.org/grouplens/lenskit/wiki/UsingEclipse
 
 ## Modules
 
@@ -65,14 +65,14 @@ We welcome contribution to LensKit.  If you are looking for something
 to work on, we recommend perusing the open tickets on our [Trac][wiki]
 or asking on the [mailing list][].
 
-We prefer to receive code submissions as BitBucket pull requests.  To
+We prefer to receive code submissions as GitHub pull requests.  To
 do this:
 
-1. Fork the LensKit repository (`grouplens/lenskit`) on BitBucket
+1. Fork the LensKit repository (`grouplens/lenskit`) on GitHub
 2. Push your changes to your fork
-3. Submit a pull request via the BitBucket web interface
+3. Submit a pull request via the GitHub web interface
    
-When submitting a pull request via BitBucket, you warrant that you
+When submitting a pull request via GitHub, you warrant that you
 either own the code or have appropriate authority to submit it, and
 license your changes under LensKit's copyright license (LGPLv2.1+).
 
