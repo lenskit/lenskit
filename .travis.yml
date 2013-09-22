@@ -6,7 +6,9 @@ before_install:
   - sudo apt-get update
   - sudo apt-get install r-base-dev graphviz texlive-latex-base
 install: sudo Rscript etc/setup-R-deps.R
-script: mvn install -Ptest-archetypes -Dgrouplens.mldata.acknowledge=yes
+script:
+  - mvn install -Dgrouplens.mldata.acknowledge=yes
+  - ./etc/ci/test-archetypes.sh
 
 branches:
   except:

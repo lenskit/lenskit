@@ -70,6 +70,7 @@
     <module>lenskit-archetype-fancy-analysis</module>
     <module>lenskit-eval-maven-plugin</module>
     <module>lenskit-test</module>
+    <module>lenskit-integration-tests</module>
     <module>lenskit-package</module>
   </modules>
 
@@ -624,19 +625,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-
-    <profile>
-      <id>integration-tests</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-        <property>
-          <name>lenskit.ci</name>
-        </property>
-      </activation>
-      <modules>
-        <module>lenskit-integration-tests</module>
-      </modules>
     </profile>
   </profiles>
 </project>
