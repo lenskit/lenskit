@@ -16,6 +16,9 @@ cmd()
         fi
 }
 
+LENSKIT_VERSION=$(./etc/ci/maven-version.py)
+echo "Testing archetypes for version $LENSKIT_VERSION"
+
 cmd mkdir -p target/test-archetypes
 cd target/test-archetypes || exit 1
 TEST_ROOT="$PWD"
