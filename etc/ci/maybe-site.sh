@@ -13,5 +13,5 @@ esac
 TARGET=$(echo "$TRAVIS_BRANCH" | sed -e 's@/@-@g')
 
 echo "Building Maven site for $TARGET"
-cmd mvn --batch-mode site-deploy -Dlenskit.web.path=/tmp/lenskit-web
-cmd rsync -r /tmp/lenskit-web/ rsync://travis@elehack.net/lenskit-web/lenskit-$TARGET/
+cmd mvn --batch-mode site site:stage
+cmd rsync -r target/staging/ rsync://travis@elehack.net/lenskit-web/lenskit-$TARGET/

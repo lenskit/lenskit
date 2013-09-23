@@ -5,9 +5,10 @@ jdk:
 before_install:
 - sudo apt-get update
 - sudo apt-get install r-base-dev graphviz texlive-latex-base
-install: sudo Rscript etc/setup-R-deps.R
+- sudo Rscript etc/setup-R-deps.R
+install: mvn dependency:go-offline
 script:
-- mvn install -Dgrouplens.mldata.acknowledge=yes
+- ./etc/ci/in-fold.sh build mvn install
 - ./etc/ci/test-archetypes.sh
 after_success:
 - ./etc/ci/maybe-deploy.sh

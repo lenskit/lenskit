@@ -49,7 +49,7 @@ travis_begin_section()
         exit 2
     fi
     TRAVIS_SECTION="$1"
-    echo "travis_fold:start:$1"
+    echo -n "travis_fold:start:$1\r"
 }
 
 travis_end_section()
