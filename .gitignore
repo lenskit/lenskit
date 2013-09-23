@@ -1,0 +1,13 @@
+target
+data
+.project
+.classpath
+.settings
+/.idea
+/.idea_modules
+*.iml
+*.ipr
+*.iws
+
+TAGS
+ERRS
