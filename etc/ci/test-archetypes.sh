@@ -59,7 +59,7 @@ execute simple-analysis
 require_files test-simple-analysis/accuracy.pdf test-simple-analysis/speed.pdf
 travis_end_section
 
-travis_begin_section "archetype.simple"
+travis_begin_section "archetype.fancy"
 generate fancy-analysis
 cmd mkdir -p test-fancy-analysis/target/data
 cmd cp "$MLDATA_ZIP" test-fancy-analysis/target/data/ml100k.zip
