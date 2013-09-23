@@ -49,13 +49,13 @@ travis_begin_section()
         exit 2
     fi
     TRAVIS_SECTION="$1"
-    echo "travis_fold:begin:$1"
+    echo "travis_fold:start:$1"
 }
 
 travis_end_section()
 {
     if [ ! -z "$TRAVIS_SECTION" ]; then
-        echo "travis_fold:end:$1"
+        echo "travis_fold:end:$TRAVIS_SECTION"
         TRAVIS_SECTION=
     fi
 }
