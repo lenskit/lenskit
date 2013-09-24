@@ -1,17 +1,27 @@
 cmd()
 {
     mode=run
+    dir=
     case "$1" in
     -e) mode=exec; shift;;
+    -d) dir="$2"; shift 2;;
     esac
 
-    echo + "$@"
     if [ "$mode" = exec ]; then
+        echo -> "$@"
         exec "$@"
     else
-        "$@"
-        if [ "$?" -ne 0 ]; then
-            echo "$1: exited with code $?" >&2
+        if [ -z "$dir" ]; then
+            echo + "$@"
+            "$@"
+            ec="$?"
+        else
+            echo "[in $dir]" "$@"
+            (cd "$dir" && "$@")
+            ec="$?"
+        fi
+        if [ "$ec" -ne 0 ]; then
+            echo "$1: exited with code $ec" >&2
             exit 2
         fi
     fi
@@ -20,7 +30,11 @@ cmd()
 skip()
 {
     echo "$@" >&2
-    exit 0
+    if [ "$CI_FORCE_RUN" = true ]; then
+        echo "but not, because run is forced" >&2
+    else
+        exit 0
+    fi
 }
 
 # Check if this build is a master build (on grouplens/lenskit, jdk7, not pull request)

@@ -7,7 +7,7 @@ branches:
   - www
 before_install:
 - sudo apt-get update
-- sudo apt-get install r-base-dev graphviz texlive-latex-base
+- sudo apt-get install r-base-dev graphviz texlive-latex-base python-requests
 - sudo Rscript etc/setup-R-deps.R
 install: mvn dependency:resolve-plugins
 script:
