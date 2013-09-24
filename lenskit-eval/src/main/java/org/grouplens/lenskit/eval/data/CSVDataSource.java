@@ -36,6 +36,10 @@ import java.io.File;
 import java.util.List;
 
 /**
+ * Data source backed by a CSV file.  Use {@link CSVDataSourceBuilder} to configure and build one
+ * of these, or the <code>csvfile</code> command in an eval script.
+ *
+ * @see CSVDataSourceBuilder
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class CSVDataSource extends AbstractDataSource {
