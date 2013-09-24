@@ -25,13 +25,13 @@
     </license>
   </licenses>
   <issueManagement>
-    <system>BitBucket</system>
-    <url>https://bitbucket.org/grouplens/lenskit/issues</url>
+    <system>GitHub</system>
+    <url>https://github.com/grouplens/lenskit/issues</url>
   </issueManagement>
   <scm>
-    <connection>scm:hg:https://bitbucket.org/grouplens/lenskit</connection>
-    <developerConnection>scm:hg:https://bitbucket.org/grouplens/lenskit</developerConnection>
-    <url>https://bitbucket.org/grouplens/lenskit</url>
+    <connection>scm:git:http://github.com/grouplens/lenskit.git</connection>
+    <developerConnection>scm:git:git@github.com:grouplens/lenskit.git</developerConnection>
+    <url>http://github.com/grouplens/lenskit</url>
     <tag>HEAD</tag>
   </scm>
 
@@ -42,7 +42,6 @@
     <lenskit.web.url>http://lenskit.grouplens.org/maven-site/</lenskit.web.url>
     <lenskit.web.path>file:///web/research/lenskit.grouplens.org/maven-site/</lenskit.web.path>
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
-    <javadoc.cite.database>${basedir}/etc/references.rdf</javadoc.cite.database>
     <groovy.version>2.1.5</groovy.version>
     <groovy.eclipse.version>2.7.0-01</groovy.eclipse.version>
     <groovy.eclipse.batch>2.1.5-03</groovy.eclipse.batch>
@@ -433,6 +432,12 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <version>2.3</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9</version>
         <configuration>
@@ -604,9 +609,11 @@
           <value>true</value>
         </property>
       </activation>
+
       <properties>
         <grouplens.mldata.acknowledge>yes</grouplens.mldata.acknowledge>
       </properties>
+
       <pluginRepositories>
         <pluginRepository>
           <id>sonatype-snapshots</id>
@@ -615,6 +622,7 @@
           <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </pluginRepository>
       </pluginRepositories>
+
       <build>
         <plugins>
           <!-- Start up test coverage -->
@@ -667,6 +675,52 @@
 
       <reporting>
         <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>taglist-maven-plugin</artifactId>
+            <version>2.4</version>
+            <inherited>false</inherited>
+            <configuration>
+              <aggregate>true</aggregate>
+              <tagListOptions>
+                <tagClasses>
+                  <tagClass>
+                    <displayName>Review</displayName>
+                    <tags>
+                      <tag>
+                        <matchString>review</matchString>
+                        <matchType>ignoreCase</matchType>
+                      </tag>
+                      <tag>
+                        <matchString>@review</matchString>
+                        <matchType>exact</matchType>
+                      </tag>
+                    </tags>
+                  </tagClass>
+                  <tagClass>
+                    <displayName>To Do</displayName>
+                    <tags>
+                      <tag>
+                        <matchString>todo</matchString>
+                        <matchType>ignoreCase</matchType>
+                      </tag>
+                      <tag>
+                        <matchString>FIXME</matchString>
+                        <matchType>exact</matchType>
+                      </tag>
+                    </tags>
+                  </tagClass>
+                </tagClasses>
+              </tagListOptions>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>jdepend-maven-plugin</artifactId>
+            <version>2.0-beta-2</version>
+          </plugin>
+
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
