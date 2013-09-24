@@ -25,6 +25,8 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 
+import javax.annotation.Nullable;
+
 /**
  * DAO to retrieve events by user.
  *
@@ -45,6 +47,7 @@ public interface UserEventDAO {
      * @param user The user ID.
      * @return The user's history, or {@code null} if the user is unknown.
      */
+    @Nullable
     UserHistory<Event> getEventsForUser(long user);
 
     /**
@@ -54,5 +57,6 @@ public interface UserEventDAO {
      * @param type The type of events to retrieve.
      * @return The user's history, or {@code null} if the user is unknown.
      */
+    @Nullable
     <E extends Event> UserHistory<E> getEventsForUser(long user, Class<E> type);
 }
