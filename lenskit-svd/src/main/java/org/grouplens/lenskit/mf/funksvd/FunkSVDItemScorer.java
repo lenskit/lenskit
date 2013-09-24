@@ -29,6 +29,8 @@ import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.history.History;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -136,7 +138,11 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
     @Override
     public void score(long user, @Nonnull MutableSparseVector scores) {
         int uidx = model.getUserIndex().getIndex(user);
-        SparseVector ratings = Ratings.userRatingVector(dao.getEventsForUser(user, Rating.class));
+        UserHistory<Rating> history = dao.getEventsForUser(user, Rating.class);
+        if (history == null) {
+            history = History.forUser(user);
+        }
+        SparseVector ratings = Ratings.userRatingVector(history);
 
         MutableSparseVector estimates = initialEstimates(user, ratings, scores.keyDomain());
         // propagate estimates to the output scores
