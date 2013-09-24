@@ -722,6 +722,52 @@
           </plugin>
 
           <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+            <version>2.10</version>
+            <inherited>false</inherited>
+            <configuration>
+              <configLocation>${basedir}/etc/checkstyle.xml</configLocation>
+            </configuration>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-pmd-plugin</artifactId>
+            <version>3.0.1</version>
+            <configuration>
+              <rulesets>
+                <ruleset>/rulesets/java/basic.xml</ruleset>
+                <ruleset>/rulesets/java/imports.xml</ruleset>
+                <ruleset>/rulesets/java/unusedcode.xml</ruleset>
+                <ruleset>/rulesets/java/strings.xml</ruleset>
+                <ruleset>/rulesets/java/design.xml</ruleset>
+                <ruleset>/rulesets/java/unnecessary.xml</ruleset>
+              </rulesets>
+            </configuration>
+            <reportSets>
+              <reportSet>
+                <id>aggregate-pmd</id>
+                <inherited>false</inherited>
+                <reports>
+                  <report>pmd</report>
+                  <report>cpd</report>
+                </reports>
+                <configuration>
+                  <aggregate>true</aggregate>
+                </configuration>
+              </reportSet>
+              <reportSet>
+                <id>single-pmd</id>
+                <reports>
+                  <report>pmd</report>
+                  <report>cpd</report>
+                </reports>
+              </reportSet>
+            </reportSets>
+          </plugin>
+
+          <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>0.6.4-SNAPSHOT</version>
