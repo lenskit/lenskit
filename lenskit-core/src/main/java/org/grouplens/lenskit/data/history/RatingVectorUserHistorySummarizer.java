@@ -28,6 +28,7 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Singleton;
 import java.io.Serializable;
@@ -50,12 +51,12 @@ public final class RatingVectorUserHistorySummarizer implements UserHistorySumma
         return Rating.class;
     }
 
-    @Override
-    public SparseVector summarize(UserHistory<? extends Event> history) {
+    @Override @Nonnull
+    public SparseVector summarize(@Nonnull UserHistory<? extends Event> history) {
         return history.memoize(SummaryFunction.INSTANCE);
     }
 
-    public static SparseVector makeRatingVector(UserHistory<? extends Event> history) {
+    public static SparseVector makeRatingVector(@Nonnull UserHistory<? extends Event> history) {
         return INSTANCE.summarize(history);
     }
 
