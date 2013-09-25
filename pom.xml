@@ -626,5 +626,26 @@
         </plugins>
       </build>
     </profile>
+
+    <profile>
+      <id>lint</id>
+      <activation>
+        <property>
+          <name>CI</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <properties>
+        <grouplens.mldata.acknowledge>yes</grouplens.mldata.acknowledge>
+      </properties>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>sonatype-snapshots</id>
+          <releases><enabled>false</enabled></releases>
+          <snapshots><enabled>true</enabled></snapshots>
+          <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
   </profiles>
 </project>
