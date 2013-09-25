@@ -23,6 +23,7 @@ package org.grouplens.lenskit.knn.item;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
@@ -96,6 +97,9 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemScorer {
     @Override
     public void score(long user, @Nonnull MutableSparseVector scores) {
         UserHistory<? extends Event> history = dao.getEventsForUser(user, summarizer.eventTypeWanted());
+        if (history == null) {
+            history = History.forUser(user);
+        }
         SparseVector summary = summarizer.summarize(history);
         VectorTransformation transform = normalizer.makeTransformation(user, summary);
         MutableSparseVector normed = summary.mutableCopy();

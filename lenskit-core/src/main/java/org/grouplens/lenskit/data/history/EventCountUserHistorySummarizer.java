@@ -67,8 +67,8 @@ public final class EventCountUserHistorySummarizer implements UserHistorySummari
         return wantedType;
     }
 
-    @Override
-    public SparseVector summarize(UserHistory<? extends Event> history) {
+    @Override @Nonnull
+    public SparseVector summarize(@Nonnull UserHistory<? extends Event> history) {
         Long2DoubleMap map = new Long2DoubleOpenHashMap();
         for (Event e : Iterables.filter(history, wantedType)) {
             final long iid = e.getItemId();
