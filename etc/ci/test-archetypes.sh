@@ -1,20 +1,12 @@
 #!/bin/sh
 
+. etc/ci/ci-helpers.sh
+
 MLDATA_ZIP="$PWD/lenskit-integration-tests/target/data/ml100k.zip"
 if [ ! -r "$MLDATA_ZIP" ]; then
     echo "MovieLens data not downloaded!" >&2
     exit 3
 fi
-
-cmd()
-{
-    echo + "$@"
-    "$@"
-    if [ "$?" -ne 0 ]; then
-        echo "$1: exited with code $?" >&2
-        exit 2
-        fi
-}
 
 LENSKIT_VERSION=$(./etc/ci/maven-version.py)
 echo "Testing archetypes for version $LENSKIT_VERSION"
@@ -60,11 +52,14 @@ require_files()
     fi
 }
 
+travis_begin_section "archetype.simple"
 generate simple-analysis
 cmd cp "$MLDATA_ZIP" test-simple-analysis/ml100k.zip
 execute simple-analysis
 require_files test-simple-analysis/accuracy.pdf test-simple-analysis/speed.pdf
+travis_end_section
 
+travis_begin_section "archetype.fancy"
 generate fancy-analysis
 cmd mkdir -p test-fancy-analysis/target/data
 cmd cp "$MLDATA_ZIP" test-fancy-analysis/target/data/ml100k.zip
@@ -72,3 +67,4 @@ execute fancy-analysis
 require_files test-fancy-analysis/target/paper.pdf \
     test-fancy-analysis/target/analysis/speed.pdf \
     test-fancy-analysis/target/analysis/accuracy.pdf
+travis_end_section

@@ -1,0 +1,16 @@
+<settings xmlns="http://maven.apache.org/POM/4.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <servers>
+    <server>
+      <id>grouplens.org</id>
+      <filePermissions>664</filePermissions>
+      <directoryPermissions>775</directoryPermissions>
+    </server>
+    <server>
+      <id>sonatype-nexus-snapshots</id>
+      <username>${env.CI_DEPLOY_USER}</username>
+      <password>${env.CI_DEPLOY_PASSWORD}</password>
+    </server>
+  </servers>
+</settings>
