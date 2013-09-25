@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
@@ -83,6 +84,9 @@ public class UserUserItemScorer extends AbstractItemScorer {
     @Override
     public void score(long user, @Nonnull MutableSparseVector scores) {
         UserHistory<Event> history = dao.getEventsForUser(user);
+        if (history == null) {
+            History.forUser(user);
+        }
         logger.trace("Predicting for user {} with {} events",
                      user, history.size());
 

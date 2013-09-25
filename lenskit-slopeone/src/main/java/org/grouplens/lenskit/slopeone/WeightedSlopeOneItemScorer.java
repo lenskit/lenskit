@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
@@ -47,6 +48,9 @@ public class WeightedSlopeOneItemScorer extends SlopeOneItemScorer {
     @Override
     public void score(long uid, @Nonnull MutableSparseVector scores) {
         UserHistory<Rating> history = dao.getEventsForUser(uid, Rating.class);
+        if (history == null) {
+            history = History.forUser(uid);
+        }
         SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {

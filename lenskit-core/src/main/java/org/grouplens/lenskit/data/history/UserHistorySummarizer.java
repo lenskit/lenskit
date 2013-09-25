@@ -24,6 +24,8 @@ import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.annotation.Nonnull;
+
 /**
  * Summarize user histories as real-valued vectors.
  *
@@ -42,8 +44,9 @@ public interface UserHistorySummarizer {
     /**
      * Compute a vector summary of a user's history.
      *
+     *
      * @param history The history to summarize.
      * @return A vector summarizing the user's history.
      */
-    SparseVector summarize(UserHistory<? extends Event> history);
+    @Nonnull SparseVector summarize(@Nonnull UserHistory<? extends Event> history);
 }

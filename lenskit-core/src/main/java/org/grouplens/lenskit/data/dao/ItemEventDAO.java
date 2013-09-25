@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.data.event.Event;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -48,6 +49,7 @@ public interface ItemEventDAO {
      * @param type The type of events to retrieve.
      * @return The item's history, or {@code null} if the item is unknown.
      */
+    @Nullable
     <E extends Event> List<E> getEventsForItem(long item, Class<E> type);
 
     /**
@@ -57,5 +59,6 @@ public interface ItemEventDAO {
      * @return The set of users who have interacted with this item, or {@code null} if the item
      * is unknown.
      */
+    @Nullable
     LongSet getUsersForItem(long item);
 }
