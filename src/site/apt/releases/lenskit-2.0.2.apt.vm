@@ -13,4 +13,7 @@
 
   * Improve <<<CSVDataSource>>> documentation (#issue(364)).
 
+  * Added <<<forUser(long)>>> method to <<<History>>> to make it easy to create empty
+    user histories.
+
   []
