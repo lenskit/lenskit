@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
@@ -67,6 +68,13 @@ public class EvalCLI {
         EvalScriptEngine engine = new EvalScriptEngine(loader, options.getProperties());
 
         File f = options.getScriptFile();
+        if (!f.exists()) {
+            logger.error("script file {} does not exist", f);
+            System.err.format("%s: file does not exist\n", f);
+            System.err.println("lenskit-eval requires an eval script to execute (default: eval.groovy)");
+            System.err.println("run lenskit-eval --help for more information");
+            System.exit(1);
+        }
         logger.info("loading evaluation from {}", f);
         try {
             EvalProject project = engine.loadProject(f);
@@ -93,10 +101,8 @@ public class EvalCLI {
         } catch (TaskExecutionException e) {
             // we handle these specially
             reportError(e.getCause(), "%s: %s", f.getPath(), e.getMessage());
-            return;
         } catch (IOException e) {
             reportError(e, "%s: %s", f.getPath(), e.getMessage());
-            return;
         }
     }
 
