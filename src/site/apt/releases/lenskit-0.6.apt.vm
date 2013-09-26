@@ -1,5 +1,5 @@
 #parse("relnotes.vm")
-#stdHeader("0.6")
+#stdHeader("0.6", 11)
 
   * Fixed a bug where FunkSVD crashed when predicting for a user not in
     the model.

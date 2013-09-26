@@ -1,5 +1,5 @@
 #parse("relnotes.vm")
-#stdHeader("0.8")
+#stdHeader("0.8", 12)
 
   * Cleaned up cursor utilities, moving all methods from
     <<<Cursors2>>> to <<<Cursors>>>.  The old <<<Cursors2>>> methods

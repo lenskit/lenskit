@@ -1,5 +1,5 @@
 #parse("relnotes.vm")
-#stdHeader("1.3")
+#stdHeader("1.3", "18")
 
   * <<<PreferenceDomain>>> now uses a precision of 0 to represent a continuous scale.  The
     precision was previously undefined.

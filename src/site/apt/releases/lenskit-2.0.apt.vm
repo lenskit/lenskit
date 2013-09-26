@@ -1,5 +1,5 @@
 #parse("relnotes.vm")
-#stdHeader("2.0")
+#stdHeader("2.0", "19")
 
   * Remove many deprecated classes and methods, including algorithm-specific recommenders.
 

@@ -1,5 +1,5 @@
 #parse("relnotes.vm")
-#stdHeader("0.10")
+#stdHeader("0.10", 5)
 
 * Evaluation
 

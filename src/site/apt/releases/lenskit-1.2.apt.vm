@@ -1,5 +1,5 @@
 #parse("relnotes.vm")
-#stdHeader("1.2")
+#stdHeader("1.2", 17)
 
   * Added <<<LenskitConfiguration>>> class and deprecated <<<LenskitRecommenderEngineFactory>>>.
     Use <<<LenskitRecommenderEngine.build()>>> to build an engine from a configuration.

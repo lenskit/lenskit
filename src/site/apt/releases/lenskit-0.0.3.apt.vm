@@ -1,5 +1,5 @@
 #parse("relnotes.vm")
-#stdHeader("0.0.3")
+#stdHeader("0.0.3", 3)
 
   This release contains many large changes, including significant
   architectural and API changes to make it easier to take LensKit

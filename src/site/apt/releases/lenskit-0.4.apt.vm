@@ -1,5 +1,5 @@
 #parse("relnotes.vm")
-#stdHeader("0.4")
+#stdHeader("0.4", 9)
 
 * Recommendation and Prediction API
 

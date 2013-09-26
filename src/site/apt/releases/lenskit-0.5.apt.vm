@@ -1,5 +1,5 @@
 #parse("relnotes.vm")
-#stdHeader("0.5")
+#stdHeader("0.5", 10)
 
   * Reworked <<<IndexedPreference>>>, making it an interface that can
     be backed by indirect implementations in rating snapshots.  This
