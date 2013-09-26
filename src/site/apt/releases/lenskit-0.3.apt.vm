@@ -1,5 +1,5 @@
 #parse("relnotes.vm")
-#stdHeader("0.3")
+#stdHeader("0.3", 8)
 
 * Event Infrastructure
 

@@ -1,5 +1,5 @@
 #parse("relnotes.vm")
-#header("0.11")
+#stdHeader("0.11", 6)
 
   The primary focus of this release is making LensKit use {{{http://bitbucket.org/grouplens/grapht}Grapht}}
   rather than PicoContainer, with additional refactorings of components to more

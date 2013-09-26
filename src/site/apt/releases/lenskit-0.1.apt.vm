@@ -1,5 +1,5 @@
 #parse("relnotes.vm")
-#header("0.1")
+#stdHeader("0.1", 4)
 
   The first beta release!  What this means for the future is that our
   core APIs (such as the recommenders and predictors) are pretty
