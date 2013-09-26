@@ -22,6 +22,7 @@ package org.grouplens.lenskit.data.history;
 
 import org.grouplens.lenskit.data.event.Event;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +44,7 @@ public final class History {
      * @return A history object.
      */
     @SuppressWarnings("deprecation")
+    @Nonnull
     public static <E extends Event> UserHistory<E> forUser(long id, List<? extends E> events) {
         return new BasicUserHistory<E>(id, events);
     }
@@ -53,6 +55,7 @@ public final class History {
      * @param <E> The type of event in the history.
      * @return An empty history for the user.
      */
+    @Nonnull
     public static <E extends Event> UserHistory<E> forUser(long id) {
         List<E> list = Collections.emptyList();
         return new BasicUserHistory<E>(id, list);
