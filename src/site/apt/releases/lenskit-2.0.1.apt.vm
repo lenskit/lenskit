@@ -1,5 +1,5 @@
 #parse("relnotes.vm")
-#stdHeader("2.0.1")
+#stdHeader("2.0.1", 20)
 
   * Revised fancy archetype with cleaner layout and better comments.
 
