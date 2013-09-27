@@ -134,21 +134,21 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
             }
             final Neighbor n = new Neighbor(uid2, urv, sim);
 
-            LongIterator iit = urv.keySet().iterator();
+            LongSet commonItems = new LongOpenHashSet(items);
+            commonItems.retainAll(urv.keySet());
+            LongIterator iit = commonItems.iterator();
             while (iit.hasNext()) {
                 final long item = iit.nextLong();
-                if (items.contains(item)) {
-                    PriorityQueue<Neighbor> heap = heaps.get(item);
-                    if (heap == null) {
-                        heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1,
-                                                           Neighbor.SIMILARITY_COMPARATOR);
-                        heaps.put(item, heap);
-                    }
-                    heap.add(n);
-                    if (heap.size() > neighborhoodSize) {
-                        assert heap.size() == neighborhoodSize + 1;
-                        heap.remove();
-                    }
+                PriorityQueue<Neighbor> heap = heaps.get(item);
+                if (heap == null) {
+                    heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1,
+                                                       Neighbor.SIMILARITY_COMPARATOR);
+                    heaps.put(item, heap);
+                }
+                heap.add(n);
+                if (heap.size() > neighborhoodSize) {
+                    assert heap.size() == neighborhoodSize + 1;
+                    heap.remove();
                 }
             }
         }
