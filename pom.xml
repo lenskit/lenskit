@@ -25,14 +25,14 @@
     </license>
   </licenses>
   <issueManagement>
-    <system>BitBucket</system>
-    <url>https://bitbucket.org/grouplens/lenskit/issues</url>
+    <system>GitHub</system>
+    <url>https://github.com/grouplens/lenskit/issues</url>
   </issueManagement>
   <scm>
-    <connection>scm:hg:https://bitbucket.org/grouplens/lenskit</connection>
-    <developerConnection>scm:hg:https://bitbucket.org/grouplens/lenskit</developerConnection>
-    <url>https://bitbucket.org/grouplens/lenskit</url>
-    <tag>hotfix/2.0.2</tag>
+    <connection>scm:git:http://github.com/grouplens/lenskit.git</connection>
+    <developerConnection>scm:git:git@github.com:grouplens/lenskit.git</developerConnection>
+    <url>http://github.com/grouplens/lenskit</url>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
