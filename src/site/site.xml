@@ -16,6 +16,15 @@
     <src>http://lenskit.grouplens.org/logo.png</src>
     <href>http://lenskit.grouplens.org</href>
   </bannerLeft>
+  <custom>
+    <fluidoSkin>
+      <gitHub>
+        <projectId>grouplens/lenskit</projectId>
+        <ribbonOrientation>right</ribbonOrientation>
+        <ribbonColor>black</ribbonColor>
+      </gitHub>
+    </fluidoSkin>
+  </custom>
   <body>
     <breadcrumbs>
       <item name="GroupLens Research"
@@ -25,11 +34,11 @@
     </breadcrumbs>
     <menu name="LensKit" inherit="top">
       <item name="Project Home" href="http://lenskit.grouplens.org"/>
-      <item name="BitBucket" href="http://bitbucket.org/grouplens/lenskit"/>
+      <item name="GitHub" href="http://github.com/grouplens/lenskit"/>
     </menu>
     <menu name="Documentation">
-      <item name="Getting Started" href="http://bitbucket.org/grouplens/lenskit/wiki/GettingStarted"/>
-      <item name="Manual" href="http://bitbucket.org/grouplens/lenskit/wiki/Manual"/>
+      <item name="Getting Started" href="http://github.com/grouplens/lenskit/wiki/GettingStarted"/>
+      <item name="Manual" href="http://github.com/grouplens/lenskit/wiki/Manual"/>
       <item name="Release Notes" href="releases"/>
       <item name="JavaDoc" href="apidocs"/>
     </menu>
