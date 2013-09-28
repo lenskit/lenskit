@@ -8,7 +8,7 @@
   </parent>
   <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit</artifactId>
-  <version>2.0.2-SNAPSHOT</version>
+  <version>2.0.2</version>
   <packaging>pom</packaging>
   <name>LensKit</name>
   <description>Collaborative filtering toolkit from GroupLens Research</description>
@@ -32,7 +32,7 @@
     <connection>scm:git:http://github.com/grouplens/lenskit.git</connection>
     <developerConnection>scm:git:git@github.com:grouplens/lenskit.git</developerConnection>
     <url>http://github.com/grouplens/lenskit</url>
-    <tag>HEAD</tag>
+    <tag>lenskit-2.0.2</tag>
   </scm>
 
   <properties>
