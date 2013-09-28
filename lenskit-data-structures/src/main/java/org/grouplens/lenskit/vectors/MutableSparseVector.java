@@ -637,7 +637,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
             } else if (map instanceof MutableSparseVectorMap) {
                 ((MutableSparseVectorMap) map).msv.accumulateAllKeys(domain);
             } else {
-                throw new AssertionError("unexpected channel value " + map);
+                throw new AssertionError("unexpected channel type " + map.getClass());
             }
         }
     }
