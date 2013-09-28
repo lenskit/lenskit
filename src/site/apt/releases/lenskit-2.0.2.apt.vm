@@ -16,4 +16,6 @@
   * Added <<<forUser(long)>>> method to <<<History>>> to make it easy to create empty
     user histories.
 
+  * Resolved inconsistency between docs and code for <<<SparseVector.immutable()>>> (#issue(368)).
+
   []
