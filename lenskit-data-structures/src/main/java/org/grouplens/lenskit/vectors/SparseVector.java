@@ -613,7 +613,8 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     //region Copying
     /**
      * Return an immutable snapshot of this sparse vector. The new vector's key
-     * domain will be equal to the {@link #keySet()} of this vector.
+     * domain may be shrunk to remove storage of unused keys; no keys in
+     * the key set will be removed.
      *
      * @return An immutable sparse vector whose contents are the same as this
      *         vector. If the vector is already immutable, the returned object
