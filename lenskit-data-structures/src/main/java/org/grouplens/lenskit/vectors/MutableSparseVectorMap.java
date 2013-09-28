@@ -25,7 +25,7 @@ package org.grouplens.lenskit.vectors;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class MutableSparseVectorMap extends SparseVectorMap {
-    private final MutableSparseVector msv;
+    final MutableSparseVector msv;
 
     MutableSparseVectorMap(MutableSparseVector vec) {
         super(vec);
