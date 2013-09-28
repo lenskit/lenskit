@@ -620,9 +620,35 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         return new MutableSparseVector(mks, mvs, newChanVectors, newChannels);
     }
 
+    /**
+     * Accumulate all keys used by this vector and its side channels into a single
+     * key domain.
+     * @param domain The domain to modify. It must be compatible with this vector's
+     *               key domain, and all keys used by this vector or any of its side
+     *               channels will be activated in the key domain.
+     */
+    private void accumulateAllKeys(LongKeyDomain domain) {
+        assert keys.isCompatibleWith(domain);
+        domain.activate(keys.getActiveMask());
+        for (Entry<TypedSymbol<?>, Long2ObjectMap<?>> entry: channels.entrySet()) {
+            Long2ObjectMap<?> map = entry.getValue();
+            if (map instanceof MutableTypedSideChannel) {
+                domain.activate(((MutableTypedSideChannel) map).keys.getActiveMask());
+            } else if (map instanceof MutableSparseVectorMap) {
+                ((MutableSparseVectorMap) map).msv.accumulateAllKeys(domain);
+            } else {
+                throw new AssertionError("unexpected channel value " + map);
+            }
+        }
+    }
+
     @Override
     public ImmutableSparseVector immutable() {
-        return immutable(false);
+        checkFrozen();
+        // TODO Don't copy bit set if we are freezing?
+        LongKeyDomain newDomain = keys.clone();
+        accumulateAllKeys(newDomain);
+        return immutable(false, newDomain.compactCopy().unowned());
     }
 
     /**
@@ -635,30 +661,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @see #immutable()
      */
     public ImmutableSparseVector freeze() {
-        return immutable(true);
-    }
-
-    /**
-     * Construct an immutable sparse vector from this vector's data.
-     *
-     * {@var freeze} indicates whether this (mutable) vector should be
-     * frozen as a side effect of generating the immutable form of the
-     * vector.  If it is okay to freeze this mutable vector, then
-     * parts of the mutable vector may be used to efficiently form the
-     * new immutable vector.  Otherwise, the parts of the mutable
-     * vector must be copied, to ensure immutability.
-     * <p>
-     * {@var freeze} applies
-     * also to the channels: any channels of this mutable vector may
-     * also be frozen if the vector is frozen, to avoid copying them.
-     *
-     * @param freeze Whether to freeze this vector.
-     * @return An immutable vector built from this vector's data.
-     */
-    ImmutableSparseVector immutable(boolean freeze) {
-        checkFrozen();
-        // TODO Don't copy bit set if we are freezing?
-        return immutable(freeze, keys.compactCopy().unowned());
+        return immutable(true, keys.compactCopy().unowned());
     }
 
     /**

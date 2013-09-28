@@ -472,12 +472,22 @@ public final class LongKeyDomain implements Serializable {
 
     /**
      * Set the active bits from a bit set.
-     * @param active The bits to set.
-     * @return The key set (for chaining).
+     * @param active The bits to set.  Unset bits in this set are cleared.
+     * @return The key domain (for chaining).
      */
     public LongKeyDomain setActive(BitSet active) {
         mask.set(0, domainSize);
         mask.and(active);
+        return this;
+    }
+
+    /**
+     * Activate bits from a bit set.
+     * @param active The bits to set. Unset bits in this set are left unchanged.
+     * @return The key domain (for chaining).
+     */
+    public LongKeyDomain activate(BitSet active) {
+        mask.or(active);
         return this;
     }
     //endregion
