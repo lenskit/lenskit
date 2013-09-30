@@ -126,6 +126,9 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         while (uiter.hasNext()) {
             final long uid2 = uiter.nextLong();
             SparseVector urv = getUserRatingVector(uid2);
+            if (urv == null)
+                continue;
+
             MutableSparseVector nurv = normalizer.normalize(uid2, urv, null);
 
             final double sim = similarity.similarity(uid1, nratings, uid2, nurv);
@@ -183,6 +186,9 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
      */
     private synchronized SparseVector getUserRatingVector(long user) {
         List<Rating> ratings = userDAO.getEventsForUser(user, Rating.class);
+        if (ratings == null){
+             return null;
+        }
         return Ratings.userRatingVector(ratings);
     }
 }
