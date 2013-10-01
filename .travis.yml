@@ -2,6 +2,9 @@ language: java
 jdk:
 - oraclejdk7
 - openjdk6
+branches:
+  except:
+  - www
 before_install:
 - sudo apt-get update
 - sudo apt-get install r-base-dev graphviz texlive-latex-base
