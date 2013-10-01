@@ -64,26 +64,12 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     private static final long serialVersionUID = -6324767320394518347L;
     private static final Logger logger = LoggerFactory.getLogger(SimpleNeighborhoodFinder.class);
 
-    static class CacheEntry {
-        final long user;
-        final SparseVector ratings;
-        final long lastRatingTimestamp;
-        final int ratingCount;
-
-        CacheEntry(long uid, SparseVector urv, long ts, int count) {
-            user = uid;
-            ratings = urv;
-            lastRatingTimestamp = ts;
-            ratingCount = count;
-        }
-    }
 
     private final UserEventDAO userDAO;
     private final ItemEventDAO itemDAO;
     private final int neighborhoodSize;
     private final UserSimilarity similarity;
     private final UserVectorNormalizer normalizer;
-    private final Long2ObjectMap<CacheEntry> userVectorCache;
 
     /**
      * Construct a new user-user recommender.
@@ -103,7 +89,6 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         neighborhoodSize = nnbrs;
         similarity = sim;
         normalizer = norm;
-        userVectorCache = new Long2ObjectOpenHashMap<CacheEntry>(500);
     }
 
     /**
@@ -141,6 +126,9 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         while (uiter.hasNext()) {
             final long uid2 = uiter.nextLong();
             SparseVector urv = getUserRatingVector(uid2);
+            if (urv == null)
+                continue;
+
             MutableSparseVector nurv = normalizer.normalize(uid2, urv, null);
 
             final double sim = similarity.similarity(uid1, nratings, uid2, nurv);
@@ -149,21 +137,21 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
             }
             final Neighbor n = new Neighbor(uid2, urv, sim);
 
-            LongIterator iit = urv.keySet().iterator();
+            LongSet commonItems = new LongOpenHashSet(items);
+            commonItems.retainAll(urv.keySet());
+            LongIterator iit = commonItems.iterator();
             while (iit.hasNext()) {
                 final long item = iit.nextLong();
-                if (items.contains(item)) {
-                    PriorityQueue<Neighbor> heap = heaps.get(item);
-                    if (heap == null) {
-                        heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1,
-                                                           Neighbor.SIMILARITY_COMPARATOR);
-                        heaps.put(item, heap);
-                    }
-                    heap.add(n);
-                    if (heap.size() > neighborhoodSize) {
-                        assert heap.size() == neighborhoodSize + 1;
-                        heap.remove();
-                    }
+                PriorityQueue<Neighbor> heap = heaps.get(item);
+                if (heap == null) {
+                    heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1,
+                                                       Neighbor.SIMILARITY_COMPARATOR);
+                    heaps.put(item, heap);
+                }
+                heap.add(n);
+                if (heap.size() > neighborhoodSize) {
+                    assert heap.size() == neighborhoodSize + 1;
+                    heap.remove();
                 }
             }
         }
@@ -193,38 +181,14 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     }
 
     /**
-     * Look up the user's rating vector, using the cached version if possible.
-     *
      * @param user The user ID.
      * @return The user's rating vector.
      */
     private synchronized SparseVector getUserRatingVector(long user) {
         List<Rating> ratings = userDAO.getEventsForUser(user, Rating.class);
-        CacheEntry e = userVectorCache.get(user);
-
-        // check rating count
-        if (e != null && e.ratingCount != ratings.size()) {
-            e = null;
+        if (ratings == null){
+             return null;
         }
-
-        // check max timestamp
-        long ts = -1;
-        if (e != null) {
-            for (Rating r : ratings) {
-                ts = max(ts, r.getTimestamp());
-            }
-            if (ts != e.lastRatingTimestamp) {
-                e = null;
-            }
-        }
-
-        // create new cache entry
-        if (e == null) {
-            SparseVector v = Ratings.userRatingVector(ratings);
-            e = new CacheEntry(user, v, ts, ratings.size());
-            userVectorCache.put(user, e);
-        }
-
-        return e.ratings;
+        return Ratings.userRatingVector(ratings);
     }
 }
