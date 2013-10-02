@@ -57,7 +57,7 @@ if git log --format=medium -n1 HEAD |fgrep -q "[skip archetypes]"; then
 fi
 
 travis_begin_section "archetype.setup"
-cmd sudo apt-get install r-base-dev graphviz texlive-latex-base
+cmd sudo apt-get install r-base-dev texlive-latex-base
 cmd sudo Rscript etc/setup-R-deps.R
 travis_end_section
 
