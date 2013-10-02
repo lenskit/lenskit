@@ -7,7 +7,7 @@ branches:
   - www
 before_install:
 - sudo apt-get update
-- sudo apt-get install graphviz r-base python-requests
+- sudo apt-get install --no-install-recommends graphviz r-base-core python-requests
 install: mvn dependency:resolve-plugins
 script:
 - ./etc/ci/in-fold.sh build mvn install
