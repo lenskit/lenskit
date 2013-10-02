@@ -35,11 +35,20 @@
     <tag>HEAD</tag>
   </scm>
 
+  <distributionManagement>
+    <site>
+      <id>lenskit.grouplens.org</id>
+      <name>LensKit web site</name>
+      <url>${lenskit.web.path}</url>
+    </site>
+  </distributionManagement>
+
   <properties>
     <copyrightHolder>Regents of the University of Minnesota</copyrightHolder>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <lenskit.web.url>http://lenskit.grouplens.org/maven-site/</lenskit.web.url>
+    <lenskit.web.path>${lenskit.web.url}</lenskit.web.path>
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
     <groovy.version>2.1.5</groovy.version>
     <groovy.eclipse.version>2.7.0-01</groovy.eclipse.version>
