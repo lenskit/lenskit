@@ -100,7 +100,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      */
     protected List<ScoredId> recommend(int n, SparseVector scores) {
         if (scores.isEmpty()) {
-            Collections.emptyList();
+            return Collections.emptyList();
         }
 
         if (n < 0) {
