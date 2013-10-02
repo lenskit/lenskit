@@ -13,7 +13,7 @@
   <poweredBy/>
   <bannerLeft>
     <name>LensKit</name>
-    <src>http://lenskit.grouplens.org/logo.png</src>
+    <src>logo.png</src>
     <href>http://lenskit.grouplens.org</href>
   </bannerLeft>
   <custom>
