@@ -52,6 +52,11 @@ require_files()
     fi
 }
 
+travis_begin_section "archetype.setup"
+cmd sudo apt-get install r-base-dev graphviz texlive-latex-base
+cmd sudo Rscript etc/setup-R-deps.R
+travis_end_section
+
 travis_begin_section "archetype.simple"
 generate simple-analysis
 cmd cp "$MLDATA_ZIP" test-simple-analysis/ml100k.zip
