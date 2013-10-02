@@ -34,7 +34,6 @@ import java.io.Serializable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
-@Singleton
 public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Serializable {
     private static final long serialVersionUID = 1L;
 

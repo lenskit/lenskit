@@ -44,7 +44,6 @@ import java.util.Collection;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
-@Singleton
 public class ConstantItemScorer implements ItemScorer, Serializable {
     /**
      * Parameter: the value used by the constant scorer.
