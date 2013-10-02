@@ -25,7 +25,9 @@ auth = checksum.hexdigest()
 result = requests.post(url, data={'branch': branch, 'hmac': auth},
                        files={'archive': open(zipfile, 'rb')})
 if result.status_code == 200:
-    print "Uploaded %s successfully" % (zipfile,)
+    print >>sys.stderr, "Uploaded %s successfully" % (zipfile,)
+    print result.content
 else:
-    print "Upload failed with code %s" % (result.status_code,)
+    print >>sys.stderr, "Upload failed with code %s" % (result.status_code,)
+    print result.content
     sys.exit(2)
