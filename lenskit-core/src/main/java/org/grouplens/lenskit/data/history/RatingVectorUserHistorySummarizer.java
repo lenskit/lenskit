@@ -30,7 +30,6 @@ import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
-import javax.inject.Singleton;
 import java.io.Serializable;
 
 /**
@@ -40,7 +39,6 @@ import java.io.Serializable;
  */
 @Shareable
 @ThreadSafe
-@Singleton
 public final class RatingVectorUserHistorySummarizer implements UserHistorySummarizer, Serializable {
     private static final RatingVectorUserHistorySummarizer INSTANCE = new RatingVectorUserHistorySummarizer();
 

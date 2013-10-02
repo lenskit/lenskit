@@ -32,7 +32,6 @@ import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 /**
  * Summarize a history by counting all events referencing an item.  The history
@@ -41,7 +40,6 @@ import javax.inject.Singleton;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
-@Singleton
 public final class EventCountUserHistorySummarizer implements UserHistorySummarizer {
     protected final Class<? extends Event> wantedType;
 

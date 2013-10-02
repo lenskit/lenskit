@@ -26,7 +26,6 @@ import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.vectors.SparseVector;
 
-import javax.inject.Singleton;
 import java.io.Serializable;
 
 /**
@@ -35,7 +34,6 @@ import java.io.Serializable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
-@Singleton
 public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Serializable {
     private static final long serialVersionUID = 1L;
 

@@ -33,7 +33,6 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Qualifier;
-import javax.inject.Singleton;
 import java.io.Serializable;
 import java.lang.annotation.*;
 import java.util.Collection;
@@ -44,7 +43,6 @@ import java.util.Collection;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
-@Singleton
 public class ConstantItemScorer implements ItemScorer, Serializable {
     /**
      * Parameter: the value used by the constant scorer.

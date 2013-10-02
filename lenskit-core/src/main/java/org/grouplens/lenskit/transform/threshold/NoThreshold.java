@@ -22,7 +22,6 @@ package org.grouplens.lenskit.transform.threshold;
 
 import org.grouplens.lenskit.core.Shareable;
 
-import javax.inject.Singleton;
 import java.io.Serializable;
 
 /**
@@ -30,7 +29,6 @@ import java.io.Serializable;
  * to retain all similarity values passed to it.
  */
 @Shareable
-@Singleton
 public class NoThreshold implements Threshold, Serializable {
     private static final long serialVersionUID = 1;
 
