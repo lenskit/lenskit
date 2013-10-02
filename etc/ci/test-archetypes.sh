@@ -58,7 +58,7 @@ fi
 
 travis_begin_section "archetype.setup"
 cmd sudo apt-get install --no-install-recommends r-base-dev texlive-latex-base
-cmd sudo Rscript etc/setup-R-deps.R
+cmd sudo Rscript "$PWD/etc/ci/setup-R-deps.R"
 travis_end_section
 
 travis_begin_section "archetype.simple"
