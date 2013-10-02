@@ -4,3 +4,5 @@
   This is the third bugfix release in the 2.0 series.
 
   #pmIntro("2.0.3", 21)
+
+  * Fix <<<TopNItemRecommender>>> bug when no scores are available (#issue(373)).
