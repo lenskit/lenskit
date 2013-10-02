@@ -52,6 +52,10 @@ require_files()
     fi
 }
 
+if git log --format=medium -n1 HEAD |fgrep -q "[skip archetypes]"; then
+    skip "Skipping archetype tests"
+fi
+
 travis_begin_section "archetype.setup"
 cmd sudo apt-get install r-base-dev graphviz texlive-latex-base
 cmd sudo Rscript etc/setup-R-deps.R
