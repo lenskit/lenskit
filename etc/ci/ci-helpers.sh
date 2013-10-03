@@ -8,7 +8,7 @@ cmd()
     esac
 
     if [ "$mode" = exec ]; then
-        echo -> "$@"
+        echo "->" "$@"
         exec "$@"
     else
         if [ -z "$dir" ]; then
