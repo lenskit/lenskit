@@ -18,7 +18,7 @@ after_success:
 - ./etc/ci/disk-stats.sh
 env:
   global:
-  - secure: D3tCdALkjsp9W1hs1A32FaIOB0VkGT6+dG8maFY+In7wAF2KQ/jkYkYG+uutPn01gjaZgQiaGzal+Ck97+kfHMnm4YrK41mCL6XbZy3O7x68e/VK0GUVOJf88L8/bH2OhS33KA9Bif73I1eBy4ZfuQhXeh/UXqh7zOyOnYV1sJQ=
-  - secure: IhWXB3LGdaEoiD7lgdaH83aVw/yK4T/f2lNalQn8skdA4nsLA1IWNgXU9MOFPTg50699oNiZOd39SptX5guZ25K0ov4nYXxPm1qCS6YpganfzeSiZ3sRZgBXKeTOnfzh8damVsDvebHYRMdPnjb1mELaoasNCHSfzprXL+PZois=
+  - secure: "D3tCdALkjsp9W1hs1A32FaIOB0VkGT6+dG8maFY+In7wAF2KQ/jkYkYG+uutPn01gjaZgQiaGzal+Ck97+kfHMnm4YrK41mCL6XbZy3O7x68e/VK0GUVOJf88L8/bH2OhS33KA9Bif73I1eBy4ZfuQhXeh/UXqh7zOyOnYV1sJQ="
+  - secure: "IhWXB3LGdaEoiD7lgdaH83aVw/yK4T/f2lNalQn8skdA4nsLA1IWNgXU9MOFPTg50699oNiZOd39SptX5guZ25K0ov4nYXxPm1qCS6YpganfzeSiZ3sRZgBXKeTOnfzh8damVsDvebHYRMdPnjb1mELaoasNCHSfzprXL+PZois="
   - secure: "ZC1tSpBnNgNPsSmJFvRaebNarx10Sn61kNzriHMsqD2qtwPdqlg3TlTHpmAkRxWcqP3FgncgWtEeTNgacXJMyyC8uID38K+L+tQaIbA9mse+VBkvbdTZi0rHMii0MNbfqmqABvrbLOMt+ZiLnhU70lqsrabkFBDCJft/oe0Rt+M="
   - secure: "GPGJxVvzYXygEeUTrb847+6ByZ1QeHGWDKwPLiKgxyyABD06z5pg950+uPd4sX3tMha8eqhQ411rZnT1HB0IQohb28Y1ub2gScsKEPguemmhJR4z3SNg6YySdDiJav0Mo6xsKPHVWY3eGBY1OJ6azRJT6a4I/mLzBCc2FwkYS4I="
