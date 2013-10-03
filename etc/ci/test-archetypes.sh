@@ -11,10 +11,6 @@ fi
 LENSKIT_VERSION=$(./etc/ci/maven-version.py)
 echo "Testing archetypes for version $LENSKIT_VERSION"
 
-cmd mkdir -p target/test-archetypes
-cd target/test-archetypes || exit 1
-TEST_ROOT="$PWD"
-
 generate()
 {
     cmd mvn -B archetype:generate \
@@ -60,6 +56,10 @@ travis_begin_section "archetype.setup"
 cmd sudo apt-get install --no-install-recommends r-base-dev texlive-latex-base
 cmd sudo Rscript "$PWD/etc/ci/setup-R-deps.R"
 travis_end_section
+
+cmd mkdir -p target/test-archetypes
+cd target/test-archetypes || exit 1
+TEST_ROOT="$PWD"
 
 travis_begin_section "archetype.simple"
 generate simple-analysis
