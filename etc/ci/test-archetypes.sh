@@ -53,8 +53,8 @@ if git log --format=medium -n1 HEAD |fgrep -q "[skip archetypes]"; then
 fi
 
 travis_begin_section "archetype.setup"
-cmd sudo apt-get install --no-install-recommends r-cran-lattice r-base-dev texlive-latex-base
-cmd sudo Rscript "$PWD/etc/ci/setup-R-deps.R"
+cmd time sudo apt-get install --no-install-recommends r-base r-base-dev texlive-latex-base
+cmd time sudo Rscript "$PWD/etc/ci/setup-R-deps.R"
 travis_end_section
 
 cmd mkdir -p target/test-archetypes
