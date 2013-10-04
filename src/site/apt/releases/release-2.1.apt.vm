@@ -1,0 +1,22 @@
+#parse("relnotes.vm")
+#stdHeader("2.1", "22")
+
+* General Changes
+
+  * RNG now configured via dependency injection.
+
+  * <<<Rating>>> class now has <<<hasValue()>>> and <<<getValue()>>> methods for convenience.
+
+  []
+
+* Data Access
+
+  * New methods to more easily construct DAOs (#issue(346))
+
+  []
+
+* Algorithms
+
+  * Updated user-user CF to be simpler & make better use of new DAOs (#issue(356)).
+
+  []
