@@ -11,10 +11,6 @@ fi
 LENSKIT_VERSION=$(./etc/ci/maven-version.py)
 echo "Testing archetypes for version $LENSKIT_VERSION"
 
-cmd mkdir -p target/test-archetypes
-cd target/test-archetypes || exit 1
-TEST_ROOT="$PWD"
-
 generate()
 {
     cmd mvn -B archetype:generate \
@@ -51,6 +47,19 @@ require_files()
         exit 5
     fi
 }
+
+if git log --format=medium -n1 HEAD |fgrep -q "[skip archetypes]"; then
+    skip "Skipping archetype tests"
+fi
+
+travis_begin_section "archetype.setup"
+cmd time sudo apt-get install --no-install-recommends r-base r-base-dev texlive-latex-base
+cmd time sudo Rscript "etc/ci/setup-R-deps.R"
+travis_end_section
+
+cmd mkdir -p target/test-archetypes
+cd target/test-archetypes || exit 1
+TEST_ROOT="$PWD"
 
 travis_begin_section "archetype.simple"
 generate simple-analysis

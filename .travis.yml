@@ -7,8 +7,7 @@ branches:
   - www
 before_install:
 - sudo apt-get update
-- sudo apt-get install r-base-dev graphviz texlive-latex-base
-- sudo Rscript etc/setup-R-deps.R
+- sudo apt-get install --no-install-recommends time graphviz r-base-core python-requests
 install: mvn dependency:resolve-plugins
 script:
 - ./etc/ci/in-fold.sh build mvn install
@@ -21,4 +20,5 @@ env:
   global:
   - secure: D3tCdALkjsp9W1hs1A32FaIOB0VkGT6+dG8maFY+In7wAF2KQ/jkYkYG+uutPn01gjaZgQiaGzal+Ck97+kfHMnm4YrK41mCL6XbZy3O7x68e/VK0GUVOJf88L8/bH2OhS33KA9Bif73I1eBy4ZfuQhXeh/UXqh7zOyOnYV1sJQ=
   - secure: IhWXB3LGdaEoiD7lgdaH83aVw/yK4T/f2lNalQn8skdA4nsLA1IWNgXU9MOFPTg50699oNiZOd39SptX5guZ25K0ov4nYXxPm1qCS6YpganfzeSiZ3sRZgBXKeTOnfzh8damVsDvebHYRMdPnjb1mELaoasNCHSfzprXL+PZois=
-  - secure: JNscsfVaNUdOeSSi/PqSx8P5JxXlQA3m8nB4OxX1o5WZas9guG95Fzx/w5cycJVVsrxP3EhYFq4U9m9G1KbKorwvf+aO/C7rikhUTtYqm/Wl3xvZFelO5N14zCyjgMAdPScRdZ0JT6SzbKhei7/5hTkL4XDZlJ7rVZktAVynYYo=
+  - secure: d3Wbcu7AO5Tn6XhHOXL3DUgoyr7koBI2LiRBOAOt4dQtNH0tbeTXBvs+MPSMWwIlFFrrGLW+DRHDcfTCMhL+kWy0r0W67gIswJKsiYbY3mFd9rOAheaoxjF633EnLFFekBLhfIbpuR42EJesxWwq8xiS1QB6ZisF5IqrDLd/DNg=
+  - secure: AVggpU1aBNQYEmCa1AbcCSiX1uZF33i7xxpEI5UZIt6syR5wSMjrdKTk5ihupUc2cTF3fHJjgc2tQVelizGxJ68Lk/OYz7iv+POvWIx10DLhWWELV3TV4YIfZudiRhGAnEbVXQhZCHLdMcM93ZQ/mrlfjMTAz4zc4MsOHwQ7rAw=
