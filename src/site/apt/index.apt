@@ -13,11 +13,11 @@ LensKit Recommender Toolkit
 
   * {{{http://lenskit.grouplens.org}LensKit home page}}
 
-  * {{{http://bitbucket.org/grouplens/lenskit/wiki}Wiki and manual}}
+  * {{{http://github.com/grouplens/lenskit/wiki}Wiki and manual}}
 
   * {{{./apidocs}JavaDoc}}
 
-  * {{{http://bitbucket.org/grouplens/lenskit/overview}README}} (mostly about how to work with the
+  * {{{http://github.com/grouplens/lenskit/}Source and README}} (mostly about how to work with the
     LensKit source code).
 
   * {{{./lenskit-eval-maven-plugin/index.html}Maven plugin docs}}
