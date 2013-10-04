@@ -142,7 +142,7 @@
                     available for non-commercial use. To accept the license terms and
                     automatically download the dataset, set the property
                     'grouplens.mldata.acknowledge' to 'yes'.
-                    For more information, see http://dev.grouplens.org/trac/lenskit/wiki/ML100K.
+                    For more information, see http://lenskit.grouplens.org/ML100K.
                   </message>
                 </requireProperty>
               </rules>
