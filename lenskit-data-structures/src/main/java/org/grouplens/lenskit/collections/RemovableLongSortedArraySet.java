@@ -105,8 +105,8 @@ class RemovableLongSortedArraySet extends LongSortedArraySet {
         boolean removed = false;
         IntIterator posIter = keys.activeIndexIterator(true);
         int pos = posIter.hasNext() ? posIter.nextInt() : -1;
-        while (iter.hasNext() && pos >= 0) {
-            long rmk = iter.nextLong();
+        while (pos >= 0) {
+            long rmk = iter.hasNext() ? iter.nextLong() : Long.MAX_VALUE;
             // advance position pointer looking for this item
             while (pos >= 0 && keys.getKey(pos) < rmk) {
                 // this item is < than rmk, delete it
