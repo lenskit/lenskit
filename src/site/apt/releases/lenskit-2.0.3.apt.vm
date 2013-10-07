@@ -6,3 +6,11 @@
   #pmIntro("2.0.3", 21)
 
   * Fix <<<TopNItemRecommender>>> bug when no scores are available (#issue(373)).
+
+  * Fix bug in <<<retainAll>>> for long sorted array sets (#issue(379)).
+
+  []
+
+* Credits
+
+  Thanks to #user("hmf") and #user("ethanl") for reporting bugs fixed in this release.
