@@ -90,4 +90,12 @@ public class RemovableLongSortedArraySetTest {
         assertThat(ls.retainAll(Lists.newArrayList()), equalTo(true));
         assertThat(ls.isEmpty(), equalTo(true));
     }
+
+    @Test
+    public void testRetainAllLongMaxLong() {
+        LongKeyDomain lks = LongKeyDomain.create(20, Long.MAX_VALUE);
+        LongSet ls = lks.modifiableActiveSetView();
+        assertThat(ls.retainAll(Lists.newArrayList()), equalTo(true));
+        assertThat(ls.isEmpty(), equalTo(true));
+    }
 }
