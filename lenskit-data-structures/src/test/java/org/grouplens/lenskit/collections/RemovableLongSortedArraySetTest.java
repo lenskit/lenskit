@@ -81,6 +81,12 @@ public class RemovableLongSortedArraySetTest {
         assertThat(ls, contains(20L, 25L, 30L, 62L));
         assertThat(Lists.newArrayList(lks.activeIndexIterator(false)),
                    contains(0, 1, 2, 4));
+    }
+
+    @Test
+    public void testRetainAllEmptyList() {
+        LongKeyDomain lks = LongKeyDomain.create(20, 25, 30, 42, 62, 99);
+        LongSet ls = lks.modifiableActiveSetView();
         assertThat(ls.retainAll(Lists.newArrayList()), equalTo(true));
         assertThat(ls.isEmpty(), equalTo(true));
     }
