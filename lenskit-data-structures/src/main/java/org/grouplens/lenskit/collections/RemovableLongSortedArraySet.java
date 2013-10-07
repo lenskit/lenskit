@@ -103,20 +103,25 @@ class RemovableLongSortedArraySet extends LongSortedArraySet {
      */
     private boolean retainAll(LongIterator iter) {
         boolean removed = false;
+        // keep track of the next item that we want to retain
+        boolean wantToRetainMore = iter.hasNext();
+        long nextToRetain = wantToRetainMore ? iter.nextLong() : 0;
+
+        // scan all items, keeping only the ones to keep
         IntIterator posIter = keys.activeIndexIterator(true);
-        int pos = posIter.hasNext() ? posIter.nextInt() : -1;
-        while (iter.hasNext() && pos >= 0) {
-            long rmk = iter.nextLong();
-            // advance position pointer looking for this item
-            while (pos >= 0 && keys.getKey(pos) < rmk) {
-                // this item is < than rmk, delete it
+        while (posIter.hasNext()) {
+            final int pos = posIter.nextInt();
+            final long cur = keys.getKey(pos);
+            while (wantToRetainMore && nextToRetain < cur) {
+                // gone past next to retain, advance it
+                wantToRetainMore = iter.hasNext();
+                nextToRetain = wantToRetainMore ? iter.nextLong() : 0;
+            }
+
+            assert !wantToRetainMore || cur <= nextToRetain;
+            if (!wantToRetainMore || cur < nextToRetain) {
                 keys.setActive(pos, false);
                 removed = true;
-                pos = posIter.hasNext() ? posIter.nextInt() : -1;
-            }
-            // skip over the item, to prepare for next
-            if (pos >= 0 && keys.getKey(pos) == rmk) {
-                pos = posIter.hasNext() ? posIter.nextInt() : -1;
             }
         }
         return removed;
