@@ -28,7 +28,7 @@ import javax.inject.Inject;
 import java.io.Serializable;
 
 /**
- * Cosine similarity for vectors.
+ * Distance similarity for vectors.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -36,30 +36,22 @@ import java.io.Serializable;
 public class DistanceVectorSimilarity implements VectorSimilarity, Serializable {
     private static final long serialVersionUID = 1L;
 
-    private final double dampingFactor;
 
     /**
-     * Construct an undamped cosine similarity function.
-     */
-    public DistanceVectorSimilarity() {
-        this(0.0);
-    }
-
-    /**
-     * Construct a new cosine similarity function.
-     *
-     * @param damping The Bayesian damping term (added to denominator), to bias the
-     *                similarity towards 0 for low-cooccurance vectors.
+     * Construct a new distance similarity function.
+     * Similiarity is in range [-1,1];
      */
     @Inject
-    public DistanceVectorSimilarity(@SimilarityDamping double damping) {
-        dampingFactor = damping;
+    public DistanceVectorSimilarity() {
     }
 
     @Override
     public double similarity(SparseVector vec1, SparseVector vec2) {
         final double distance;
         MutableSparseVector v1 = vec1.mutableCopy();
+        if (vec1.norm() == 0 || vec2.norm() == 0){
+            return 0;
+        }
         v1.multiply(1.0/v1.norm());
         v1.addScaled(vec2,-1.0/vec2.norm());
         distance = v1.norm();
