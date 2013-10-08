@@ -20,11 +20,7 @@
  */
 package org.grouplens.lenskit.vectors.similarity;
 
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongSets;
-import it.unimi.dsi.fastutil.longs.LongSortedSets;
-import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -32,7 +28,6 @@ import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.inject.Inject;
 import java.io.Serializable;
-import java.util.HashSet;
 
 /**
  * Distance similarity for vectors.
