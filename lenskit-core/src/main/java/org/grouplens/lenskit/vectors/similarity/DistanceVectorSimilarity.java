@@ -20,12 +20,19 @@
  */
 package org.grouplens.lenskit.vectors.similarity;
 
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSets;
+import it.unimi.dsi.fastutil.longs.LongSortedSets;
+import org.grouplens.lenskit.collections.LongKeyDomain;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.inject.Inject;
 import java.io.Serializable;
+import java.util.HashSet;
 
 /**
  * Distance similarity for vectors.
@@ -39,7 +46,8 @@ public class DistanceVectorSimilarity implements VectorSimilarity, Serializable 
 
     /**
      * Construct a new distance similarity function.
-     * Similiarity is in range [-1,1];
+     * It computes similarity as (1-|v1-v2|_2). after normalizing vectors to be unit vectors
+     * Similarity is in range [-1,1];
      */
     @Inject
     public DistanceVectorSimilarity() {
@@ -48,19 +56,26 @@ public class DistanceVectorSimilarity implements VectorSimilarity, Serializable 
     @Override
     public double similarity(SparseVector vec1, SparseVector vec2) {
         final double distance;
-        MutableSparseVector v1 = vec1.mutableCopy();
+        // One of the vector is empty
         if (vec1.norm() == 0 || vec2.norm() == 0){
-            return 0;
+            return Double.NaN;
         }
-        v1.multiply(1.0/v1.norm());
-        v1.addScaled(vec2,-1.0/vec2.norm());
+
+        LongSet ts = LongUtils.setUnion(vec1.keySet(),vec2.keySet());
+
+        MutableSparseVector v1 = MutableSparseVector.create(ts);
+        v1.fill(0);
+        v1.set(vec1);
+        v1.multiply(1.0 / v1.norm());
+        v1.addScaled(vec2, -1.0 / vec2.norm());
+
         distance = v1.norm();
         return 1-distance;
     }
 
     @Override
     public boolean isSparse() {
-        return true;
+        return false;
     }
 
     @Override

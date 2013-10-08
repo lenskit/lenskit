@@ -45,7 +45,7 @@ public class TestDistanceSimilarity {
 
     @Test
     public void testEmpty() {
-        assertEquals(0, similarity.similarity(emptyVector(), emptyVector()), EPSILON);
+        assertEquals(Double.NaN, similarity.similarity(emptyVector(), emptyVector()), EPSILON);
     }
 
     @Test
@@ -57,7 +57,8 @@ public class TestDistanceSimilarity {
         SparseVector v1, v2;
         v1 = MutableSparseVector.wrap(k1, val1).freeze();
         v2 = MutableSparseVector.wrap(k2, val2).freeze();
-        assertEquals(0, similarity.similarity(v1, v2), EPSILON);
+        assertEquals(1, similarity.similarity(v1, v1), EPSILON);
+        assertEquals(-0.414213562, similarity.similarity(v1, v2), EPSILON);
     }
 
     @Test
@@ -81,6 +82,6 @@ public class TestDistanceSimilarity {
         SparseVector v2 = MutableSparseVector.wrap(k2, val2).freeze();
         assertEquals(1, similarity.similarity(v1, v1), EPSILON);
         assertEquals(1, similarity.similarity(v2, v2), EPSILON);
-        assertEquals(0.106269648, similarity.similarity(v1, v2), EPSILON);
+        assertEquals(-0.191220847, similarity.similarity(v1, v2), EPSILON);
     }
 }
