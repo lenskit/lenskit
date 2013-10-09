@@ -9,6 +9,8 @@
 
   * Fix bug in <<<retainAll>>> for long sorted array sets (#issue(379)).
 
+  * Fix erroneous fix for scorer null pointer problems (#issue(363)).
+
   []
 
 * Credits
