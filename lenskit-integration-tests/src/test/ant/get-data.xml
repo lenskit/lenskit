@@ -33,7 +33,7 @@
     <echo message="Downloading ML-100K data set"/>
 
     <mkdir dir="${project.build.directory}/data"/>
-    <get src="http://www.grouplens.org/system/files/ml-100k.zip"
+    <get src="http://files.grouplens.org/datasets/movielens/ml-100k.zip"
          dest="${mldata.zipfile}"
          skipexisting="true"/>
   </target>
