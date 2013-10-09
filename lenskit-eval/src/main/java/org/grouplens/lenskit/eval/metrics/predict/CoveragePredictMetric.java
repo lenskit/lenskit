@@ -75,9 +75,8 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
             int n = 0;
             int good = 0;
             for (VectorEntry e : ratings.fast()) {
-                double pv = predictions.get(e.getKey());
                 n += 1;
-                if (!Double.isNaN(pv)) {
+                if (predictions.containsKey(e.getKey())) {
                     good += 1;
                 }
             }
