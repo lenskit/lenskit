@@ -58,7 +58,7 @@ public class SlopeOneItemScorer extends AbstractItemScorer {
     public void score(long uid, @Nonnull MutableSparseVector scores) {
         UserHistory<Rating> history = dao.getEventsForUser(uid, Rating.class);
         if (history == null) {
-            History.forUser(uid);
+            history = History.forUser(uid);
         }
         SparseVector user = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
