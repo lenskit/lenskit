@@ -26,6 +26,8 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.closeTo;
 import static org.junit.Assert.assertEquals;
 
 public class TestDistanceSimilarity {
@@ -57,8 +59,8 @@ public class TestDistanceSimilarity {
         SparseVector v1, v2;
         v1 = MutableSparseVector.wrap(k1, val1).freeze();
         v2 = MutableSparseVector.wrap(k2, val2).freeze();
-        assertEquals(1, similarity.similarity(v1, v1), EPSILON);
-        assertEquals(-0.414213562, similarity.similarity(v1, v2), EPSILON);
+        assertThat(similarity.similarity(v1, v1), closeTo(1, EPSILON));
+        assertThat(similarity.similarity(v1, v2), closeTo(-0.414213562, EPSILON));
     }
 
     @Test
@@ -68,8 +70,8 @@ public class TestDistanceSimilarity {
         double[] val2 = {1, 2, 5};
         SparseVector v1 = MutableSparseVector.wrap(keys, val1).freeze();
         SparseVector v2 = MutableSparseVector.wrap(keys, val2).freeze();
-        assertEquals(1, similarity.similarity(v1, v1), EPSILON);
-        assertEquals(0.28635582, similarity.similarity(v1, v2), EPSILON);
+        assertThat(similarity.similarity(v1, v1), closeTo(1, EPSILON));
+        assertThat(similarity.similarity(v1, v2), closeTo(0.28635582, EPSILON));
     }
 
     @Test
@@ -80,8 +82,8 @@ public class TestDistanceSimilarity {
         double[] val2 = {1, 7, 2, 5, 0};
         SparseVector v1 = MutableSparseVector.wrap(k1, val1).freeze();
         SparseVector v2 = MutableSparseVector.wrap(k2, val2).freeze();
-        assertEquals(1, similarity.similarity(v1, v1), EPSILON);
-        assertEquals(1, similarity.similarity(v2, v2), EPSILON);
-        assertEquals(-0.191220847, similarity.similarity(v1, v2), EPSILON);
+        assertThat(similarity.similarity(v1, v1), closeTo(1, EPSILON));
+        assertThat(similarity.similarity(v2, v2), closeTo(1, EPSILON));
+        assertThat(similarity.similarity(v1, v2), closeTo(-0.191220847, EPSILON));
     }
 }
