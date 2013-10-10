@@ -22,7 +22,10 @@ package org.grouplens.lenskit;
 
 import org.grouplens.lenskit.scored.ScoredId;
 
+import it.unimi.dsi.fastutil.longs.LongSet;
+
 import javax.annotation.Nullable;
+
 import java.util.List;
 import java.util.Set;
 
@@ -117,4 +120,23 @@ public interface ItemRecommender {
      */
     List<ScoredId> recommend(long user, int n, @Nullable Set<Long> candidates,
                              @Nullable Set<Long> exclude);
+    
+    /**
+     * Determine the items for which predictions can be made for a certain user.
+     * This allows us to ask for predictions when no candidates are available.
+     *
+     * @param user The user's ID.
+     * @return All items for which predictions can be generated for the user.
+     */
+    LongSet getPredictableItems(long user);
+    
+    /**
+     * Get the default exclude set for a user.   
+     * This allows us to ask for predictions when no candidates are available.
+     *
+     * @param user The user ID.
+     * @return The set of items to exclude.
+     */
+    LongSet getDefaultExcludes(long user);
+
 }

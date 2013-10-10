@@ -182,14 +182,14 @@ class TrainTestEvalJob implements Runnable {
                 long uid = p.getUserId();
                 LongSet testItems = p.itemSet();
 
-                Supplier<SparseVector> preds =
-                        new PredictionSupplier(rec, uid, testItems);
-                Supplier<List<ScoredId>> recs =
-                        new RecommendationSupplier(rec, uid, testItems);
+                SwitchedSupplier<SparseVector> preds =
+                        new PredictionSupplier(rec, numRecs, uid, testItems);
+                SwitchedSupplier<List<ScoredId>> recs =
+                        new RecommendationSupplier(rec, numRecs, uid, testItems);
                 Supplier<UserHistory<Event>> hist = new HistorySupplier(rec.getUserEventDAO(), uid);
                 Supplier<UserHistory<Event>> testHist = Suppliers.ofInstance(p);
 
-                TestUser test = new TestUser(uid, hist, testHist, preds, recs);
+                TestUser test = new TestUser(uid, numRecs, hist, testHist, preds, recs);
 
                 for (TestUserMetricAccumulator accum : evalAccums) {
                     Object[] ures = accum.evaluate(test);
@@ -283,54 +283,6 @@ class TrainTestEvalJob implements Runnable {
             output.writeRow(row);
         } finally {
             output.close();
-        }
-    }
-
-    private class PredictionSupplier implements Supplier<SparseVector> {
-        private final RecommenderInstance predictor;
-        private final long user;
-        private final LongSet items;
-
-        public PredictionSupplier(RecommenderInstance pred, long id, LongSet is) {
-            predictor = pred;
-            user = id;
-            items = is;
-        }
-
-        @Override
-        public SparseVector get() {
-            if (predictor == null) {
-                throw new IllegalArgumentException("cannot compute predictions without a predictor");
-            }
-            SparseVector preds = predictor.getPredictions(user, items);
-            if (preds == null) {
-                throw new IllegalArgumentException("no predictions");
-            }
-            return preds;
-        }
-    }
-
-    private class RecommendationSupplier implements Supplier<List<ScoredId>> {
-        private final RecommenderInstance recommender;
-        private final long user;
-        private final LongSet items;
-
-        public RecommendationSupplier(RecommenderInstance rec, long id, LongSet is) {
-            recommender = rec;
-            user = id;
-            items = is;
-        }
-
-        @Override
-        public List<ScoredId> get() {
-            if (recommender == null) {
-                throw new IllegalArgumentException("cannot compute recommendations without a recommender");
-            }
-            List<ScoredId> recs = recommender.getRecommendations(user, items, numRecs);
-            if (recs == null) {
-                throw new IllegalArgumentException("no recommendations");
-            }
-            return recs;
         }
     }
 
