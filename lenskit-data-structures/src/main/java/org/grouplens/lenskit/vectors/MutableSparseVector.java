@@ -445,26 +445,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param other The vector to subtract.
      */
     public void subtract(final SparseVector other) {
-        checkFrozen();
-        Iterator<VectorEntry> i1 = fastIterator();
-        Iterator<VectorEntry> i2 = other.fastIterator();
-
-        VectorEntry e1 = i1.hasNext() ? i1.next() : null;
-        VectorEntry e2 = i2.hasNext() ? i2.next() : null;
-
-        while (e1 != null && e2 != null) {
-            final long k1 = e1.getKey();
-            final long k2 = e2.getKey();
-            if (k1 < k2) {
-                e1 = i1.hasNext() ? i1.next() : null;
-            } else if (k2 < k1) {
-                e2 = i2.hasNext() ? i2.next() : null;
-            } else {
-                set(e1, e1.getValue() - e2.getValue());
-                e1 = i1.hasNext() ? i1.next() : null;
-                e2 = i2.hasNext() ? i2.next() : null;
-            }
-        }
+        this.addScaled(other,-1);
     }
 
     /**
@@ -477,9 +458,22 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param other The vector to add.
      */
     public void add(final SparseVector other) {
+        this.addScaled(other,1);
+    }
+
+
+    /**
+     * Add a vector to this vector with a scaling factor.  It multiplies {@code v} by
+     * the scaling factor {@param scale} and adds it to this vector.  Only keys set
+     * in both {@code v} and {@code this} are modified.  The scaling is done
+     * on-the-fly; {@code v} is unmodified.
+     * @param v The vector to add to this vector.
+     * @param scale The scaling factor to be applied to the vector.
+     */
+    public void addScaled(SparseVector v, double scale){
         checkFrozen();
         Iterator<VectorEntry> i1 = fastIterator();
-        Iterator<VectorEntry> i2 = other.fastIterator();
+        Iterator<VectorEntry> i2 = v.fastIterator();
 
         VectorEntry e1 = i1.hasNext() ? i1.next() : null;
         VectorEntry e2 = i2.hasNext() ? i2.next() : null;
@@ -492,12 +486,14 @@ public final class MutableSparseVector extends SparseVector implements Serializa
             } else if (k2 < k1) {
                 e2 = i2.hasNext() ? i2.next() : null;
             } else {
-                set(e1, e1.getValue() + e2.getValue());
+                set(e1, e1.getValue() + e2.getValue()*scale);
                 e1 = i1.hasNext() ? i1.next() : null;
                 e2 = i2.hasNext() ? i2.next() : null;
             }
         }
     }
+
+
 
     /**
      * Set the values in this SparseVector to equal the values in
