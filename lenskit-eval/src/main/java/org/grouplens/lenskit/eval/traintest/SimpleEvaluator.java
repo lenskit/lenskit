@@ -99,6 +99,7 @@ public class SimpleEvaluator implements Callable<Table> {
      * @return Itself to allow for  method chaining.
      */
     public SimpleEvaluator addDataset(CrossfoldTask cross){
+        cross.setProject(project);
         try {
             for (TTDataSet data: cross.perform()) {
                 result.addDataset(data);
@@ -125,7 +126,6 @@ public class SimpleEvaluator implements Callable<Table> {
                 .setSource(source)
                 .setPartitions(partitions)
                 .setHoldoutFraction(holdout);
-        cross.setProject(project);
         addDataset(cross);
         return this;
     }

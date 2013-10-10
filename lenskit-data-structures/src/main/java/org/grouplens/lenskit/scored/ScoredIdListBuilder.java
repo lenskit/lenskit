@@ -23,11 +23,13 @@ package org.grouplens.lenskit.scored;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+
 import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
+
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.symbols.DoubleSymbolValue;
@@ -222,7 +224,8 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
             } else {
                 TypedChannelStorage<?> chan = typedChannels.get(sv.getSymbol());
                 if (chan != null) {
-                    chan.values[idx] = sv.getValue();
+                    //chan.values[idx] = sv.getValue();
+                    throw new RuntimeException("Compile error 1.");
                 }
             }
         }

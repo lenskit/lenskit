@@ -123,7 +123,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      * @param user The user ID.
      * @return The set of items to exclude.
      */
-    protected LongSet getDefaultExcludes(long user) {
+    public LongSet getDefaultExcludes(long user) {
         return getDefaultExcludes(userEventDAO.getEventsForUser(user));
     }
 
@@ -153,7 +153,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      * @param user The user's ID.
      * @return All items for which predictions can be generated for the user.
      */
-    protected LongSet getPredictableItems(long user) {
+    public LongSet getPredictableItems(long user) {
         return itemDAO.getItemIds();
     }
 
