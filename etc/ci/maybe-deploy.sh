@@ -10,7 +10,7 @@ master|release/*) DO_RUN=yes;;
 *) skip "deploy disabled for branch $TRAVIS_BRANCH";;
 esac
 
-if [ -z "$CI_DEPLOY_USER" -o -z "$CI_DEPLOY_USER" ]; then
+if [ -z "$CI_DEPLOY_USER" -o -z "$CI_DEPLOY_PASSWORD" ]; then
     echo "Deploy credentials unavailable" >&2
     exit 2
 fi
