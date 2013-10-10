@@ -18,7 +18,10 @@ after_success:
 - ./etc/ci/disk-stats.sh
 env:
   global:
+  # CI_DEPLOY_USER
   - secure: D3tCdALkjsp9W1hs1A32FaIOB0VkGT6+dG8maFY+In7wAF2KQ/jkYkYG+uutPn01gjaZgQiaGzal+Ck97+kfHMnm4YrK41mCL6XbZy3O7x68e/VK0GUVOJf88L8/bH2OhS33KA9Bif73I1eBy4ZfuQhXeh/UXqh7zOyOnYV1sJQ=
+  # CI_DEPLOY_PASSwORD
   - secure: IhWXB3LGdaEoiD7lgdaH83aVw/yK4T/f2lNalQn8skdA4nsLA1IWNgXU9MOFPTg50699oNiZOd39SptX5guZ25K0ov4nYXxPm1qCS6YpganfzeSiZ3sRZgBXKeTOnfzh8damVsDvebHYRMdPnjb1mELaoasNCHSfzprXL+PZois=
-  - secure: d3Wbcu7AO5Tn6XhHOXL3DUgoyr7koBI2LiRBOAOt4dQtNH0tbeTXBvs+MPSMWwIlFFrrGLW+DRHDcfTCMhL+kWy0r0W67gIswJKsiYbY3mFd9rOAheaoxjF633EnLFFekBLhfIbpuR42EJesxWwq8xiS1QB6ZisF5IqrDLd/DNg=
-  - secure: AVggpU1aBNQYEmCa1AbcCSiX1uZF33i7xxpEI5UZIt6syR5wSMjrdKTk5ihupUc2cTF3fHJjgc2tQVelizGxJ68Lk/OYz7iv+POvWIx10DLhWWELV3TV4YIfZudiRhGAnEbVXQhZCHLdMcM93ZQ/mrlfjMTAz4zc4MsOHwQ7rAw=
+  - SITE_UPLOAD_URL=http://dev.grouplens.org/cgi/lenskit/site_upload.py
+  # UPLOAD_SECRET
+  - secure: O3DZVMifyBuguxnoLHG9YiWyJd6tOjAXdT8Mve27iw3fT1T3yZ2Jfx/9RPYlvEfOYVXbpeEkR/aDb1d+4RiipF/77/1RIRl1Rh9c+sjsJPosc1zwJImHzeUBMFBBYzfI3X58qB7q0oRanUcA5bIBi9B7t+krybQZUWp9QEgnTIw=
