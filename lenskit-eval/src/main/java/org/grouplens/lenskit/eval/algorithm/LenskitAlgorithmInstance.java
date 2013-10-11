@@ -36,6 +36,7 @@ import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.script.BuiltBy;
+import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -155,19 +156,30 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
                                                        Provider<? extends PreferenceSnapshot> snapshot,
                                                        ExecutionInfo info) throws RecommenderBuildException {
         return new RecInstance(buildRecommender(data.getTrainingData(),
-                                                snapshot, info));
+                                                snapshot, info),
+                               data.getTestData());
     }
 
     private static class RecInstance implements RecommenderInstance {
         private final LenskitRecommender recommender;
+        private final DataSource testData;
+        private final UserEventDAO userTestData;
 
-        public RecInstance(LenskitRecommender rec) {
+        public RecInstance(LenskitRecommender rec, DataSource test) {
             recommender = rec;
+            testData = test;
+            // FIXME Cache user event DAOs in the data source
+            userTestData = testData.getUserEventDAO();
         }
 
         @Override
         public UserEventDAO getUserEventDAO() {
             return recommender.get(UserEventDAO.class);
+        }
+
+        @Override
+        public TestUser getUserResults(long uid) {
+            return new LenskitTestUser(recommender, userTestData.getEventsForUser(uid));
         }
 
         @Override
