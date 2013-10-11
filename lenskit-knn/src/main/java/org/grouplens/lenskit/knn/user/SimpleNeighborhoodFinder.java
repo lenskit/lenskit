@@ -31,6 +31,7 @@ import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -111,7 +112,9 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
 
         SparseVector urs = RatingVectorUserHistorySummarizer.makeRatingVector(user);
         final long uid1 = user.getUserId();
-        MutableSparseVector nratings = normalizer.normalize(user.getUserId(), urs, null);
+        // freeze vector to make neighbor-finding a bit faster
+        ImmutableSparseVector nratings = normalizer.normalize(user.getUserId(), urs, null)
+                                                   .freeze();
 
         /* Find candidate neighbors. To reduce scanning, we limit users to those
          * rating target items. If the similarity is sparse and the user has
