@@ -97,4 +97,9 @@ class LenskitTestUser extends AbstractTestUser {
         LongSet excludes = exclSel.select(getTrainHistory(), getTestHistory(), idao.getItemIds());
         return irec.recommend(getUserId(), n, candidates, excludes);
     }
+
+    @Override
+    public LenskitRecommender getRecommender() {
+        return recommender;
+    }
 }

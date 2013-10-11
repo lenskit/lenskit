@@ -20,12 +20,14 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -86,4 +88,11 @@ public interface TestUser {
      * @see org.grouplens.lenskit.ItemRecommender#recommend(long, int, java.util.Set, java.util.Set)
      */
     List<ScoredId> getRecommendations(int n, ItemSelector candSel, ItemSelector exclSel);
+
+    /**
+     * Get the recommender
+     * @return The recommender.
+     * @throws UnsupportedOperationException if this test user is not backed by a recommender.
+     */
+    Recommender getRecommender();
 }
