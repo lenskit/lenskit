@@ -21,10 +21,8 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.RecommenderBuildException;
@@ -40,7 +38,6 @@ import org.grouplens.lenskit.eval.algorithm.RecommenderInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
-import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -180,16 +177,8 @@ class TrainTestEvalJob implements Runnable {
                 userRow.add(p.getUserId());
 
                 long uid = p.getUserId();
-                LongSet testItems = p.itemSet();
 
-                Supplier<SparseVector> preds =
-                        new PredictionSupplier(rec, uid, testItems);
-                Supplier<List<ScoredId>> recs =
-                        new RecommendationSupplier(rec, uid, testItems);
-                Supplier<UserHistory<Event>> hist = new HistorySupplier(rec.getUserEventDAO(), uid);
-                Supplier<UserHistory<Event>> testHist = Suppliers.ofInstance(p);
-
-                TestUser test = new TestUser(uid, hist, testHist, preds, recs);
+                TestUser test = rec.getUserResults(uid);
 
                 for (TestUserMetricAccumulator accum : evalAccums) {
                     Object[] ures = accum.evaluate(test);
@@ -283,69 +272,6 @@ class TrainTestEvalJob implements Runnable {
             output.writeRow(row);
         } finally {
             output.close();
-        }
-    }
-
-    private class PredictionSupplier implements Supplier<SparseVector> {
-        private final RecommenderInstance predictor;
-        private final long user;
-        private final LongSet items;
-
-        public PredictionSupplier(RecommenderInstance pred, long id, LongSet is) {
-            predictor = pred;
-            user = id;
-            items = is;
-        }
-
-        @Override
-        public SparseVector get() {
-            if (predictor == null) {
-                throw new IllegalArgumentException("cannot compute predictions without a predictor");
-            }
-            SparseVector preds = predictor.getPredictions(user, items);
-            if (preds == null) {
-                throw new IllegalArgumentException("no predictions");
-            }
-            return preds;
-        }
-    }
-
-    private class RecommendationSupplier implements Supplier<List<ScoredId>> {
-        private final RecommenderInstance recommender;
-        private final long user;
-        private final LongSet items;
-
-        public RecommendationSupplier(RecommenderInstance rec, long id, LongSet is) {
-            recommender = rec;
-            user = id;
-            items = is;
-        }
-
-        @Override
-        public List<ScoredId> get() {
-            if (recommender == null) {
-                throw new IllegalArgumentException("cannot compute recommendations without a recommender");
-            }
-            List<ScoredId> recs = recommender.getRecommendations(user, items, numRecs);
-            if (recs == null) {
-                throw new IllegalArgumentException("no recommendations");
-            }
-            return recs;
-        }
-    }
-
-    private class HistorySupplier implements Supplier<UserHistory<Event>> {
-        private final UserEventDAO userEventDAO;
-        private final long user;
-
-        public HistorySupplier(UserEventDAO dao, long id) {
-            userEventDAO = dao;
-            user = id;
-        }
-
-        @Override
-        public UserHistory<Event> get() {
-            return userEventDAO.getEventsForUser(user);
         }
     }
 }
