@@ -20,13 +20,16 @@
  */
 package org.grouplens.lenskit.eval.algorithm;
 
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
+import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
 import org.grouplens.lenskit.eval.traintest.AbstractTestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -81,12 +84,17 @@ class LenskitTestUser extends AbstractTestUser {
     }
 
     @Override
-    public List<ScoredId> getRecommendations() {
+    public List<ScoredId> getRecommendations(int n, ItemSelector candSel, ItemSelector exclSel) {
+        ItemDAO idao = recommender.get(ItemDAO.class);
+        if (idao == null ) {
+            throw new RuntimeException("cannot recommend without item DAO");
+        }
         ItemRecommender irec = recommender.getItemRecommender();
         if (irec == null) {
             throw new UnsupportedOperationException("no item recommender configured");
         }
-        // FIXME Make this all configurable!
-        return irec.recommend(getUserId());
+        LongSet candidates = candSel.select(getTrainHistory(), getTestHistory(), idao.getItemIds());
+        LongSet excludes = exclSel.select(getTrainHistory(), getTestHistory(), idao.getItemIds());
+        return irec.recommend(getUserId(), n, candidates, excludes);
     }
 }

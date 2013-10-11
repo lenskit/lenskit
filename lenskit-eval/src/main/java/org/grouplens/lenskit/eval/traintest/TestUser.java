@@ -22,6 +22,7 @@ package org.grouplens.lenskit.eval.traintest;
 
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -75,9 +76,14 @@ public interface TestUser {
     /**
      * Get the user's recommendations.
      *
+     *
+     * @param n        The number of recommendations to generate.
+     * @param candSel The candidate selector.
+     * @param exclSel The exclude selector.
      * @return Some recommendations for the user.
      * @throws UnsupportedOperationException if the configured recommender does not support item
      *                                       recommendation.
+     * @see org.grouplens.lenskit.ItemRecommender#recommend(long, int, java.util.Set, java.util.Set)
      */
-    List<ScoredId> getRecommendations();
+    List<ScoredId> getRecommendations(int n, ItemSelector candSel, ItemSelector exclSel);
 }

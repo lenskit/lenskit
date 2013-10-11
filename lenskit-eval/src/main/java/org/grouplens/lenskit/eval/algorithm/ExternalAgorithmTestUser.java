@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.algorithm;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
 import org.grouplens.lenskit.eval.traintest.AbstractTestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -60,7 +61,7 @@ class ExternalAgorithmTestUser extends AbstractTestUser {
     }
 
     @Override
-    public List<ScoredId> getRecommendations() {
+    public List<ScoredId> getRecommendations(int n, ItemSelector candSel, ItemSelector exclSel) {
         throw new UnsupportedOperationException("external algorithms are predict-only");
     }
 }
