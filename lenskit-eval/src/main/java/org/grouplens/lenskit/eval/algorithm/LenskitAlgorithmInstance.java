@@ -163,13 +163,10 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
     private static class RecInstance implements RecommenderInstance {
         private final LenskitRecommender recommender;
         private final DataSource testData;
-        private final UserEventDAO userTestData;
 
         public RecInstance(LenskitRecommender rec, DataSource test) {
             recommender = rec;
             testData = test;
-            // FIXME Cache user event DAOs in the data source
-            userTestData = testData.getUserEventDAO();
         }
 
         @Override
@@ -179,7 +176,7 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
 
         @Override
         public TestUser getUserResults(long uid) {
-            return new LenskitTestUser(recommender, userTestData.getEventsForUser(uid));
+            return new LenskitTestUser(recommender, testData.getUserEventDAO().getEventsForUser(uid));
         }
 
         @Override
