@@ -11,6 +11,8 @@
 
   * Fix erroneous fix for scorer null pointer problems (#issue(363)).
 
+  * Performance improvement: don't needlessly copy user histories (#issue(387)).
+
   []
 
 * Credits
