@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
   <appender name="MAVEN" class="org.grouplens.lenskit.eval.maven.MavenLogAppender">
-    <encoder>
+    <layout class="ch.qos.logback.classic.PatternLayout">
       <pattern>%date{HH:mm:ss.SSS} %logger{24}: %msg</pattern>
-    </encoder>
+    </layout>
   </appender>
 
   <logger name="org.grouplens.grapht" level="WARN"/>
