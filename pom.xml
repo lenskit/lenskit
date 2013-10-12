@@ -411,7 +411,7 @@
               <docletArtifact>
                 <groupId>org.grouplens.common</groupId>
                 <artifactId>common-javadoc</artifactId>
-                <version>0.8-SNAPSHOT</version>
+                <version>0.8</version>
               </docletArtifact>
               <useStandardDocletOptions>false</useStandardDocletOptions>
               <additionalparam>-outfile "${project.build.outputDirectory}/META-INF/classes.lst"</additionalparam>
