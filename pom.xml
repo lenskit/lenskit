@@ -428,6 +428,29 @@
         </execution>
         </executions>
       </plugin>
+
+      <!-- Generate class lists. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-class-list</id>
+            <phase>process-classes</phase>
+            <goals><goal>javadoc</goal></goals>
+            <configuration>
+              <doclet>org.grouplens.javadoc.classlist.ClassListDoclet</doclet>
+              <docletArtifact>
+                <groupId>org.grouplens.common</groupId>
+                <artifactId>common-javadoc</artifactId>
+                <version>0.8-SNAPSHOT</version>
+              </docletArtifact>
+              <useStandardDocletOptions>false</useStandardDocletOptions>
+              <additionalparam>-outfile "${project.build.outputDirectory}/META-INF/classes.lst"</additionalparam>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
