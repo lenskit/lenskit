@@ -20,14 +20,17 @@
  */
 package org.grouplens.lenskit.eval.script;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import groovy.lang.Binding;
 import groovy.lang.GroovyRuntimeException;
 import groovy.lang.GroovyShell;
+import groovy.lang.MissingPropertyException;
 import org.apache.commons.lang3.builder.Builder;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.grouplens.lenskit.eval.ClassDirectory;
 import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
@@ -42,10 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Load and process configuration files. Also provides helper methods used by the
@@ -59,6 +59,7 @@ public class EvalScriptEngine {
     private static final String METHOD_PATH = "META-INF/lenskit-eval/methods/";
 
     protected ClassLoader classLoader;
+    protected ClassDirectory directory;
     protected GroovyShell shell;
     @Nullable
     protected final Properties properties;
@@ -105,6 +106,8 @@ public class EvalScriptEngine {
         classLoader = loader;
 
         loadExternalMethods();
+
+        directory = ClassDirectory.forClassLoader(loader);
     }
 
     /**
@@ -141,7 +144,9 @@ public class EvalScriptEngine {
         try {
             script =  (EvalScript) shell.parse(in);
         } catch (GroovyRuntimeException e) {
-            Throwables.propagateIfInstanceOf(e, IOException.class);
+            if (e.getCause() != null) {
+                Throwables.propagateIfInstanceOf(e.getCause(), IOException.class);
+            }
             throw e;
         }
         return script;
@@ -162,6 +167,14 @@ public class EvalScriptEngine {
         Object result = null;
         try {
             result = script.run();
+        } catch (MissingPropertyException e) {
+            String name = e.getProperty();
+            Set<String> packages = directory.getPackages(name);
+            logger.error("Cannot resolve class or property " + name);
+            if (!packages.isEmpty()) {
+                logger.info("Did you intend to import it from {}?", Joiner.on(", ").join(packages));
+            }
+            throw new TaskExecutionException("unresolvable property " + name, e);
         } catch (RuntimeException e) {
             Throwables.propagateIfInstanceOf(e.getCause(), TaskExecutionException.class);
             throw new TaskExecutionException("error running configuration script", e);

@@ -18,20 +18,31 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-/*
- * We use a Groovy-based logback config so it overrides the default one in the eval code
- * without warnings. Since Eval pulls in Groovy, this is just fine.
+package org.grouplens.lenskit.eval;
+
+import org.junit.Test;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.contains;
+import static org.junit.Assert.assertThat;
+
+/**
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+public class ClassDirectoryTest {
+    @Test
+    public void testLookupNonexistentClass() {
+        ClassDirectory dir = ClassDirectory.forClassLoader(getClass().getClassLoader());
+        assertThat(dir.getPackages("HackemMuche"),
+                   hasSize(0));
+    }
 
-import static ch.qos.logback.classic.Level.*
-
-import org.grouplens.lenskit.eval.maven.MavenLogAppender
-import ch.qos.logback.classic.PatternLayout
-
-appender("Maven", MavenLogAppender) {
-    layout(PatternLayout) {
-        pattern = "%date{HH:mm:ss.SSS} %logger{24}: %msg"
+    @Test
+    public void testLookupSelfClass() {
+        ClassDirectory dir = ClassDirectory.forClassLoader(getClass().getClassLoader());
+        assertThat(dir.getPackages("ClassDirectory"),
+                   hasSize(1));
+        assertThat(dir.getPackages("ClassDirectory"),
+                   contains("org.grouplens.lenskit.eval"));
     }
 }
-logger("org.grouplens.grapht", WARN)
-root(DEBUG, ["Maven"])
