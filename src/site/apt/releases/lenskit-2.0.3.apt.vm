@@ -13,6 +13,10 @@
 
   * Performance improvement: don't needlessly copy user histories (#issue(387)).
 
+  * Add <<<MeanCenteringVectorNormalizer>>> for more efficient mean centering.
+
+  * Small performance improvements.
+
   []
 
 * Credits
