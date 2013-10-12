@@ -20,103 +20,79 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * A user in a test set, with the results of their recommendations or predictions.
+ * Expose recommender data to evaluate recommendations and predictions for a single user.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TestUser {
-    private final long userId;
-    private Supplier<UserHistory<Event>> historySupplier;
-    private Supplier<UserHistory<Event>> testHistorySupplier;
-    private Supplier<SparseVector> predSupplier;
-    private Supplier<List<ScoredId>> recSupplier;
-
-    /**
-     * Construct a new test user.
-     *
-     * @param id              The user ID.
-     * @param hist            Access to the user's training history.
-     * @param testHist        Access to the user's test history.
-     * @param predictions     Supplier of predictions (will be memoized)
-     * @param recommendations Supplier of recommendations (will be memoized)
-     */
-    public TestUser(long id, 
-                    Supplier<UserHistory<Event>> hist,
-                    Supplier<UserHistory<Event>> testHist,
-                    Supplier<SparseVector> predictions,
-                    Supplier<List<ScoredId>> recommendations) {
-        userId = id;
-        historySupplier = Suppliers.memoize(hist);
-        testHistorySupplier = Suppliers.memoize(testHist);
-        predSupplier = Suppliers.memoize(predictions);
-        recSupplier = Suppliers.memoize(recommendations);
-    }
-
+public interface TestUser {
     /**
      * Get the ID of this user.
      *
      * @return The user's ID.
      */
-    public long getUserId() {
-        return userId;
-    }
+    long getUserId();
 
     /**
      * Return this user's training history.
      *
      * @return The history of the user from the training/query set.
      */
-    public UserHistory<Event> getTrainHistory() {
-        return historySupplier.get();
-    }
-  
+    UserHistory<Event> getTrainHistory();
+
     /**
      * Return this user's test history.
-     * 
+     *
      * @return The history of the user from the test set.
      */
-    public UserHistory<Event> getTestHistory() {
-        return testHistorySupplier.get();
-    }
+    UserHistory<Event> getTestHistory();
 
     /**
      * Get the user's test ratings.
-     * 
-     * Summarizes the user's ratings from the history. 
+     *
+     * Summarizes the user's ratings from the history.
      *
      * @return The user's ratings for the test items.
      */
-    public SparseVector getTestRatings() {
-        // Since the summarizer is memoized, it will only run once.
-        return RatingVectorUserHistorySummarizer.makeRatingVector(getTestHistory());
-    }
+    SparseVector getTestRatings();
 
     /**
      * Get the user's predictions.
      *
      * @return The predictions of the user's preference for items.
+     * @throws UnsupportedOperationException if the configured recommender does not support rating
+     *                                       prediction.
      */
-    public SparseVector getPredictions() {
-        return predSupplier.get();
-    }
+    SparseVector getPredictions();
 
     /**
      * Get the user's recommendations.
      *
+     *
+     * @param n        The number of recommendations to generate.
+     * @param candSel The candidate selector.
+     * @param exclSel The exclude selector.
      * @return Some recommendations for the user.
+     * @throws UnsupportedOperationException if the configured recommender does not support item
+     *                                       recommendation.
+     * @see org.grouplens.lenskit.ItemRecommender#recommend(long, int, java.util.Set, java.util.Set)
      */
-    public List<ScoredId> getRecommendations() {
-        return recSupplier.get();
-    }
+    List<ScoredId> getRecommendations(int n, ItemSelector candSel, ItemSelector exclSel);
+
+    /**
+     * Get the recommender
+     * @return The recommender.
+     * @throws UnsupportedOperationException if this test user is not backed by a recommender.
+     */
+    Recommender getRecommender();
 }
