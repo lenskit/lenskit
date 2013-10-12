@@ -62,6 +62,8 @@ public class TaskGroupRunner {
         for (Runnable r: tasks) {
             submit(r);
         }
+        logger.info("submitted {} tasks, runner has {} active tasks",
+                    tasks.size(), activeTasks.size());
     }
 
     public void waitForAll() throws ExecutionException {
@@ -117,6 +119,7 @@ public class TaskGroupRunner {
                 cancelRemainingTasks();
             }
             removeTask(future);
+            logger.info("{} tasks remaining", activeTasks.size());
         }
     }
 }
