@@ -19,6 +19,8 @@
 
   * Small performance improvements.
 
+  * Initial support for Top-N evaluation (#issue(388)).
+
   []
 
 * Credits
