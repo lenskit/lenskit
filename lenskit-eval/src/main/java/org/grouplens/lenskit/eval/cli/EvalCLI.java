@@ -88,10 +88,10 @@ public class EvalCLI {
                                                        @Nullable
                                                        @Override
                                                        public Object apply(@Nullable Object input) {
-                                                           return input == null ? null : ((Target) input).getName();
+                                                           return input == null ? null : input;
                                                        }
                                                    }));
-                    logger.error("No targets specified and no default provided (try one of {})",
+                    logger.error("No targets specified and no default provided (try one of: {})",
                                  targets);
                     System.exit(2);
                 }

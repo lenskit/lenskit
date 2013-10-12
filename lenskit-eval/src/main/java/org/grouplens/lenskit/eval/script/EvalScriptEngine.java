@@ -144,7 +144,9 @@ public class EvalScriptEngine {
         try {
             script =  (EvalScript) shell.parse(in);
         } catch (GroovyRuntimeException e) {
-            Throwables.propagateIfInstanceOf(e, IOException.class);
+            if (e.getCause() != null) {
+                Throwables.propagateIfInstanceOf(e.getCause(), IOException.class);
+            }
             throw e;
         }
         return script;
