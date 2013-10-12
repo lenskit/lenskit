@@ -2,9 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.grouplens</groupId>
-    <artifactId>grouplens-oss-parent</artifactId>
-    <version>2</version>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
   </parent>
   <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit</artifactId>
@@ -646,6 +646,36 @@
           <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </pluginRepository>
       </pluginRepositories>
+    </profile>
+
+    <profile>
+      <id>external-build-dir</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+        <property>
+          <name>external.build.root</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>net.elehack.maven.plugins</groupId>
+            <artifactId>external-build-maven-plugin</artifactId>
+            <version>0.1-SNAPSHOT</version>
+            <configuration>
+              <buildDirectory>${external.build.root}/${project.groupId}:${project.artifactId}</buildDirectory>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>setup-build-dir</goal>
+                  <goal>teardown-build-dir</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
