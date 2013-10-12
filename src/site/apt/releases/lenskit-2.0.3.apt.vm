@@ -15,6 +15,8 @@
 
   * Add <<<MeanCenteringVectorNormalizer>>> for more efficient mean centering.
 
+  * Improve evaluator error reporting and logging output.
+
   * Small performance improvements.
 
   []
