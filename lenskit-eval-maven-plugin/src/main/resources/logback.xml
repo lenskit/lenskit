@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <appender name="MAVEN" class="org.grouplens.lenskit.eval.maven.MavenLogAppender">
+    <encoder>
+      <pattern>%date{HH:mm:ss.SSS} %logger{24}: %msg</pattern>
+    </encoder>
+  </appender>
+
+  <logger name="org.grouplens.grapht" level="WARN"/>
+
+  <root level="DEBUG">
+    <appender-ref ref="MAVEN"/>
+  </root>
+</configuration>
