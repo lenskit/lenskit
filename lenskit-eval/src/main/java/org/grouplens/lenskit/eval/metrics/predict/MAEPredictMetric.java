@@ -78,6 +78,9 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
         public Object[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
+            if (predictions == null) {
+                return userRow();
+            }
             double err = 0;
             int n = 0;
             for (VectorEntry e : predictions.fast()) {
