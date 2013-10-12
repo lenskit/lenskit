@@ -20,7 +20,13 @@
  */
 package org.grouplens.lenskit.eval.algorithm;
 
+import com.google.common.base.Throwables;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.core.LenskitRecommender;
@@ -35,6 +41,7 @@ import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * A user in a test set, with the results of their recommendations or predictions.
@@ -44,7 +51,9 @@ import java.util.List;
 class LenskitTestUser extends AbstractTestUser {
     private final LenskitRecommender recommender;
     private final UserHistory<Event> userHistory;
-    private transient SparseVector predictions = null;
+    private final LoadingCache<RecommendRequest,List<ScoredId>> recommendCache =
+            CacheBuilder.newBuilder().build(new RecommendLoader());
+    private transient SparseVector predictionCache = null;
 
     /**
      * Construct a new test user.
@@ -73,33 +82,79 @@ class LenskitTestUser extends AbstractTestUser {
 
     @Override
     public SparseVector getPredictions() {
-        if (predictions == null) {
+        if (predictionCache == null) {
             RatingPredictor pred = recommender.getRatingPredictor();
             if (pred == null) {
                 throw new UnsupportedOperationException("no rating predictor configured");
             }
-            predictions = pred.predict(getUserId(), getTestRatings().keySet());
+            predictionCache = pred.predict(getUserId(), getTestRatings().keySet());
         }
-        return predictions;
+        return predictionCache;
     }
 
     @Override
     public List<ScoredId> getRecommendations(int n, ItemSelector candSel, ItemSelector exclSel) {
-        ItemDAO idao = recommender.get(ItemDAO.class);
-        if (idao == null ) {
-            throw new RuntimeException("cannot recommend without item DAO");
+        try {
+            return recommendCache.get(new RecommendRequest(n, candSel, exclSel));
+        } catch (ExecutionException e) {
+            throw Throwables.propagate(e);
         }
-        ItemRecommender irec = recommender.getItemRecommender();
-        if (irec == null) {
-            throw new UnsupportedOperationException("no item recommender configured");
-        }
-        LongSet candidates = candSel.select(getTrainHistory(), getTestHistory(), idao.getItemIds());
-        LongSet excludes = exclSel.select(getTrainHistory(), getTestHistory(), idao.getItemIds());
-        return irec.recommend(getUserId(), n, candidates, excludes);
     }
 
     @Override
     public LenskitRecommender getRecommender() {
         return recommender;
+    }
+
+    private static class RecommendRequest {
+        final int listSize;
+        final ItemSelector candidates;
+        final ItemSelector exclude;
+
+        private RecommendRequest(int listSize, ItemSelector candidates, ItemSelector exclude) {
+            this.listSize = listSize;
+            this.candidates = candidates;
+            this.exclude = exclude;
+        }
+
+        @Override
+        public boolean equals(Object that) {
+            if (this == that) {
+                return true;
+            } else if (that instanceof RecommendRequest) {
+                RecommendRequest rr = (RecommendRequest) that;
+                return new EqualsBuilder().append(listSize, rr.listSize)
+                                          .append(candidates, rr.candidates)
+                                          .append(exclude, rr.exclude)
+                                          .isEquals();
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder().append(listSize)
+                                        .append(candidates)
+                                        .append(exclude)
+                                        .toHashCode();
+        }
+    }
+
+    private class RecommendLoader extends CacheLoader<RecommendRequest,List<ScoredId>> {
+        @Override
+        public List<ScoredId> load(RecommendRequest key) throws Exception {
+            ItemDAO idao = recommender.get(ItemDAO.class);
+            if (idao == null ) {
+                throw new RuntimeException("cannot recommend without item DAO");
+            }
+            ItemRecommender irec = recommender.getItemRecommender();
+            if (irec == null) {
+                throw new UnsupportedOperationException("no item recommender configured");
+            }
+            LongSet candidates = key.candidates.select(getTrainHistory(), getTestHistory(), idao.getItemIds());
+            LongSet excludes = key.exclude.select(getTrainHistory(), getTestHistory(), idao.getItemIds());
+            return irec.recommend(getUserId(), key.listSize, candidates, excludes);
+        }
     }
 }
