@@ -102,7 +102,13 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
         @Nonnull
         @Override
         public Object[] evaluate(TestUser user) {
-            return evaluatePredictions(user.getTestRatings(), user.getPredictions());
+            SparseVector predictions;
+            try {
+                predictions = user.getPredictions();
+            } catch (UnsupportedOperationException e) {
+                return new Object[COLUMNS.size()];
+            }
+            return evaluatePredictions(user.getTestRatings(), predictions);
         }
 
         Object[] evaluatePredictions(SparseVector ratings, SparseVector predictions) {

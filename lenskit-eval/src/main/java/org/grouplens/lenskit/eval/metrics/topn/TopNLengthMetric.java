@@ -70,7 +70,12 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
         @Nonnull
         @Override
         public Object[] evaluate(TestUser user) {
-            List<ScoredId> recs = user.getRecommendations(listSize, candidates, exclude);
+            List<ScoredId> recs;
+            try {
+                recs = user.getRecommendations(listSize, candidates, exclude);
+            } catch (UnsupportedOperationException e) {
+                return new Object[1];
+            }
             int n = recs.size();
             total += n;
             nusers += 1;

@@ -83,7 +83,12 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
         @Override
         public String[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
-            SparseVector predictions = user.getPredictions();
+            SparseVector predictions;
+            try {
+                predictions = user.getPredictions();
+            } catch (UnsupportedOperationException e) {
+                return new String[COLUMNS.size()];
+            }
 
             // TODO Re-use accumulators
             MutualInformationAccumulator accum = new MutualInformationAccumulator(quantizer.getCount());

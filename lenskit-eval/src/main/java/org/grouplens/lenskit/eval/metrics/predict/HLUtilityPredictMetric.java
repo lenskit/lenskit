@@ -84,7 +84,13 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
         @Nonnull
         @Override
         public Object[] evaluate(TestUser user) {
-            return evaluatePredictions(user.getTestRatings(), user.getPredictions());
+            SparseVector predictions;
+            try {
+                predictions = user.getPredictions();
+            } catch (UnsupportedOperationException e) {
+                return new Object[1];
+            }
+            return evaluatePredictions(user.getTestRatings(), predictions);
         }
 
         @Nonnull
