@@ -69,30 +69,30 @@ public interface TestUser {
     /**
      * Get the user's predictions.
      *
-     * @return The predictions of the user's preference for items.
-     * @throws UnsupportedOperationException if the configured recommender does not support rating
-     *                                       prediction.
+     * @return The predictions of the user's preference for items, or {@code null} if the algorithm
+     *         does not support rating prediction.
      */
+    @Nullable
     SparseVector getPredictions();
 
     /**
      * Get the user's recommendations.
      *
-     *
-     * @param n        The number of recommendations to generate.
+     * @param n       The number of recommendations to generate.
      * @param candSel The candidate selector.
      * @param exclSel The exclude selector.
-     * @return Some recommendations for the user.
-     * @throws UnsupportedOperationException if the configured recommender does not support item
-     *                                       recommendation.
-     * @see org.grouplens.lenskit.ItemRecommender#recommend(long, int, java.util.Set, java.util.Set)
+     * @return Some recommendations for the user, or {@code null} if the recommender does not
+     *         support recommendation.
+     * @see org.grouplens.lenskit.ItemRecommender#recommend(long, int, java.util.Set,
+     *      java.util.Set)
      */
+    @Nullable
     List<ScoredId> getRecommendations(int n, ItemSelector candSel, ItemSelector exclSel);
 
     /**
      * Get the recommender
      * @return The recommender.
-     * @throws UnsupportedOperationException if this test user is not backed by a recommender.
      */
+    @Nullable
     Recommender getRecommender();
 }
