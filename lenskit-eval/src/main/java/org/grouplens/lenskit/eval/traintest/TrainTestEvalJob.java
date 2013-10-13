@@ -196,9 +196,12 @@ class TrainTestEvalJob implements Runnable {
                 userRow.clear();
 
                 if (predictTable != null) {
-                    writePredictions(predictTable, uid,
-                                     RatingVectorUserHistorySummarizer.makeRatingVector(p),
-                                     test.getPredictions());
+                    SparseVector preds = test.getPredictions();
+                    if (preds != null) {
+                        writePredictions(predictTable, uid,
+                                         RatingVectorUserHistorySummarizer.makeRatingVector(p),
+                                         test.getPredictions());
+                    }
                 }
             }
             testTimer.stop();
