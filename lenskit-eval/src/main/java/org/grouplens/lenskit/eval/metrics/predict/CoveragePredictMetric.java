@@ -94,7 +94,10 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
         @Nonnull
         @Override
         public Object[] finalResults() {
-            double coverage = (double) ngood / npreds;
+            Double coverage = null;
+            if (npreds > 0) {
+                coverage = (double) ngood / npreds;
+            }
             logger.info("Coverage: {}", coverage);
 
             return new Object[]{nusers, npreds, ngood, coverage};
