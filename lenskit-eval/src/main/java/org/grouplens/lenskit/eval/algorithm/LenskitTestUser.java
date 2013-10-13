@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.algorithm;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -51,7 +52,7 @@ import java.util.concurrent.ExecutionException;
 class LenskitTestUser extends AbstractTestUser {
     private final LenskitRecommender recommender;
     private final UserHistory<Event> userHistory;
-    private final LoadingCache<RecommendRequest,List<ScoredId>> recommendCache =
+    private final LoadingCache<RecommendRequest,Optional<List<ScoredId>>> recommendCache =
             CacheBuilder.newBuilder().build(new RecommendLoader());
     private transient SparseVector predictionCache = null;
 
@@ -84,10 +85,9 @@ class LenskitTestUser extends AbstractTestUser {
     public SparseVector getPredictions() {
         if (predictionCache == null) {
             RatingPredictor pred = recommender.getRatingPredictor();
-            if (pred == null) {
-                throw new UnsupportedOperationException("no rating predictor configured");
+            if (pred != null) {
+                predictionCache = pred.predict(getUserId(), getTestRatings().keySet());
             }
-            predictionCache = pred.predict(getUserId(), getTestRatings().keySet());
         }
         return predictionCache;
     }
@@ -95,7 +95,7 @@ class LenskitTestUser extends AbstractTestUser {
     @Override
     public List<ScoredId> getRecommendations(int n, ItemSelector candSel, ItemSelector exclSel) {
         try {
-            return recommendCache.get(new RecommendRequest(n, candSel, exclSel));
+            return recommendCache.get(new RecommendRequest(n, candSel, exclSel)).orNull();
         } catch (ExecutionException e) {
             throw Throwables.propagate(e);
         }
@@ -141,20 +141,20 @@ class LenskitTestUser extends AbstractTestUser {
         }
     }
 
-    private class RecommendLoader extends CacheLoader<RecommendRequest,List<ScoredId>> {
+    private class RecommendLoader extends CacheLoader<RecommendRequest,Optional<List<ScoredId>>> {
         @Override
-        public List<ScoredId> load(RecommendRequest key) throws Exception {
+        public Optional<List<ScoredId>> load(RecommendRequest key) throws Exception {
             ItemDAO idao = recommender.get(ItemDAO.class);
             if (idao == null ) {
                 throw new RuntimeException("cannot recommend without item DAO");
             }
             ItemRecommender irec = recommender.getItemRecommender();
             if (irec == null) {
-                throw new UnsupportedOperationException("no item recommender configured");
+                return Optional.absent();
             }
             LongSet candidates = key.candidates.select(getTrainHistory(), getTestHistory(), idao.getItemIds());
             LongSet excludes = key.exclude.select(getTrainHistory(), getTestHistory(), idao.getItemIds());
-            return irec.recommend(getUserId(), key.listSize, candidates, excludes);
+            return Optional.of(irec.recommend(getUserId(), key.listSize, candidates, excludes));
         }
     }
 }

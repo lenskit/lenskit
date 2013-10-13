@@ -63,11 +63,11 @@ class ExternalAgorithmTestUser extends AbstractTestUser {
 
     @Override
     public List<ScoredId> getRecommendations(int n, ItemSelector candSel, ItemSelector exclSel) {
-        throw new UnsupportedOperationException("external algorithms are predict-only");
+        return null;
     }
 
     @Override
     public Recommender getRecommender() {
-        throw new UnsupportedOperationException("external algorithms do not have recommenders");
+        return null;
     }
 }

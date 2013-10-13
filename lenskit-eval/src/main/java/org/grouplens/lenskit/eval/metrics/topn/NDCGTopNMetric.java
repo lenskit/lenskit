@@ -111,9 +111,8 @@ public class NDCGTopNMetric extends AbstractTestUserMetric {
         @Override
         public Object[] evaluate(TestUser user) {
             List<ScoredId> recommendations;
-            try {
-                recommendations = user.getRecommendations(listSize, candidates, exclude);
-            } catch (UnsupportedOperationException e) {
+            recommendations = user.getRecommendations(listSize, candidates, exclude);
+            if (recommendations == null) {
                 return new Object[1];
             }
             return evaluateRecommendations(user.getTestRatings(), recommendations);

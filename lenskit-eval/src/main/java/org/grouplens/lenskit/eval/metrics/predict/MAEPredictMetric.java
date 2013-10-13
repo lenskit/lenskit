@@ -77,11 +77,9 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
         @Override
         public Object[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
-            SparseVector predictions;
-            try {
-                predictions = user.getPredictions();
-            } catch (UnsupportedOperationException e) {
-                return new Object[1];
+            SparseVector predictions = user.getPredictions();
+            if (predictions == null) {
+                return new Object[USER_COLUMNS.size()];
             }
             double err = 0;
             int n = 0;
