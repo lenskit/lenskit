@@ -79,7 +79,7 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
             if (predictions == null) {
-                return new Object[USER_COLUMNS.size()];
+                return userRow();
             }
             double err = 0;
             int n = 0;
@@ -98,19 +98,23 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
                 double errRate = err / n;
                 totalUserError += errRate;
                 nusers += 1;
-                return new Object[]{errRate};
+                return userRow(errRate);
             } else {
-                return new Object[1];
+                return userRow();
             }
         }
 
         @Nonnull
         @Override
         public Object[] finalResults() {
-            double v = totalError / nratings;
-            double uv = totalUserError / nusers;
-            logger.info("MAE: {}", v);
-            return new Object[]{v, uv};
+            if (nratings > 0) {
+                double v = totalError / nratings;
+                double uv = totalUserError / nusers;
+                logger.info("MAE: {}", v);
+                return finalRow(v, uv);
+            } else {
+                return finalRow();
+            }
         }
 
     }

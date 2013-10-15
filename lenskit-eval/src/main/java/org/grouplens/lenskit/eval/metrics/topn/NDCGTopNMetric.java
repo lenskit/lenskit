@@ -113,7 +113,7 @@ public class NDCGTopNMetric extends AbstractTestUserMetric {
             List<ScoredId> recommendations;
             recommendations = user.getRecommendations(listSize, candidates, exclude);
             if (recommendations == null) {
-                return new Object[1];
+                return userRow();
             }
             return evaluateRecommendations(user.getTestRatings(), recommendations);
         }
@@ -134,15 +134,19 @@ public class NDCGTopNMetric extends AbstractTestUserMetric {
             double score = gain / idealGain;
             total += score;
             nusers += 1;
-            return new Object[]{score};
+            return userRow(score);
         }
 
         @Nonnull
         @Override
         public Object[] finalResults() {
-            double v = total / nusers;
-            logger.info("Top-N nDCG: {}", v);
-            return new Object[]{v};
+            if (nusers > 0) {
+                double v = total / nusers;
+                logger.info("Top-N nDCG: {}", v);
+                return finalRow(v);
+            } else {
+                return finalRow();
+            }
         }
     }
 }

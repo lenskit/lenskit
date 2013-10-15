@@ -78,14 +78,17 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
             int n = recs.size();
             total += n;
             nusers += 1;
-            return new Object[]{n};
+            return userRow(n);
         }
 
         @Nonnull
         @Override
         public Object[] finalResults() {
-            double v = total / nusers;
-            return new Object[]{v};
+            if (nusers > 0) {
+                return finalRow(total / nusers);
+            } else {
+                return finalRow();
+            }
         }
     }
 }
