@@ -76,6 +76,17 @@ public class TestPearsonCorrelation {
         double val2[] = {2, 2.5, 1.7};
         SparseVector v1 = MutableSparseVector.wrap(k1, val1).freeze();
         SparseVector v2 = MutableSparseVector.wrap(k2, val2).freeze();
-        assertThat(sim.similarity(v1, v2), closeTo(0.806404996, EPSILON));
+        assertThat(sim.similarity(v1, v2), closeTo(1, EPSILON));
+    }
+
+    @Test
+    public void testSimilarity2() {
+        long k1[] = {1, 5, 7, 8};
+        double val1[] = {1.5, 2.5, 2, 3.5};
+        long k2[] = {1, 5, 7, 9};
+        double val2[] = {2, 2.5, 1.7, 0.8};
+        SparseVector v1 = MutableSparseVector.wrap(k1, val1).freeze();
+        SparseVector v2 = MutableSparseVector.wrap(k2, val2).freeze();
+        assertThat(sim.similarity(v1, v2), closeTo(0.6185896, EPSILON));
     }
 }

@@ -74,8 +74,23 @@ public class PearsonCorrelation implements VectorSimilarity, Serializable {
          * correlation only considers items shared by both vectors; other items
          * are discarded for the purpose of similarity computation.
          */
-        final double mu1 = vec1.mean();
-        final double mu2 = vec2.mean();
+
+        // first compute means of common items
+        double sum1 = 0;
+        double sum2 = 0;
+        int n = 0;
+        for (Pair<VectorEntry,VectorEntry> pair: Vectors.fastIntersect(vec1, vec2)) {
+            sum1 += pair.getLeft().getValue();
+            sum2 += pair.getRight().getValue();
+            n += 1;
+        }
+
+        if (n == 0) {
+            return 0;
+        }
+
+        final double mu1 = sum1 / n;
+        final double mu2 = sum2 / n;
 
         double var1 = 0;
         double var2 = 0;
