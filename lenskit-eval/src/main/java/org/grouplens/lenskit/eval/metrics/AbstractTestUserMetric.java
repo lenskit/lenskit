@@ -20,7 +20,10 @@
  */
 package org.grouplens.lenskit.eval.metrics;
 
+import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.eval.traintest.TrainTestEvalTask;
+
+import java.util.Arrays;
 
 /**
  * Abstract base implementation of {@link TestUserMetric}.
@@ -31,4 +34,25 @@ import org.grouplens.lenskit.eval.traintest.TrainTestEvalTask;
 public abstract class AbstractTestUserMetric
         extends AbstractMetric<TrainTestEvalTask>
         implements TestUserMetric {
+    /**
+     * Make a user result row. This expands it to the length of the user columns, inserting
+     * {@code null}s as needed.
+     * @return The result row, the same length as {@link #getUserColumnLabels()}.
+     */
+    protected Object[] userRow(Object... results) {
+        int len = getUserColumnLabels().size();
+        Preconditions.checkArgument(results.length <= len, "too many results");;
+        return Arrays.copyOf(results, len);
+    }
+
+    /**
+     * Make a final aggregate result row. This expands it to the length of the columns, inserting
+     * {@code null}s as needed.
+     * @return The result row, the same length as {@link #getColumnLabels()}.
+     */
+    protected Object[] finalRow(Object... results) {
+        int len = getColumnLabels().size();
+        Preconditions.checkArgument(results.length <= len, "too many results");;
+        return Arrays.copyOf(results, len);
+    }
 }
