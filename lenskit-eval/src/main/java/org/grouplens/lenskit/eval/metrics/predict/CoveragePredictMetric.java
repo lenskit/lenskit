@@ -83,9 +83,8 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
             npreds += n;
             ngood += good;
             nusers += 1;
-            return new Object[]{n, good,
-                                n > 0 ? (((double) good) / n) : null
-            };
+            return userRow(n, good,
+                           n > 0 ? (((double) good) / n) : null);
         }
 
         @Nonnull
@@ -97,7 +96,7 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
             }
             logger.info("Coverage: {}", coverage);
 
-            return new Object[]{nusers, npreds, ngood, coverage};
+            return finalRow(nusers, npreds, ngood, coverage);
         }
 
     }
