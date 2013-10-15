@@ -120,8 +120,8 @@ public class NDCGTopNMetric extends AbstractTestUserMetric {
 
         Object[] evaluateRecommendations(SparseVector ratings, List<ScoredId> recommendations) {
             LongList ideal = ratings.keysByValue(true);
-            if (ideal.size() > recommendations.size()) {
-                ideal = ideal.subList(0, recommendations.size());
+            if (ideal.size() > listSize) {
+                ideal = ideal.subList(0, listSize);
             }
             double idealGain = computeDCG(ideal, ratings);
 
