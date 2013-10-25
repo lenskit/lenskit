@@ -37,10 +37,11 @@ import java.util.List;
  */
 public class TestUser {
     private final long userId;
+    private final int numRecs;
     private Supplier<UserHistory<Event>> historySupplier;
     private Supplier<UserHistory<Event>> testHistorySupplier;
-    private Supplier<SparseVector> predSupplier;
-    private Supplier<List<ScoredId>> recSupplier;
+    private SwitchedSupplier<SparseVector> predSupplier;
+    private SwitchedSupplier<List<ScoredId>> recSupplier;
 
     /**
      * Construct a new test user.
@@ -51,16 +52,18 @@ public class TestUser {
      * @param predictions     Supplier of predictions (will be memoized)
      * @param recommendations Supplier of recommendations (will be memoized)
      */
-    public TestUser(long id, 
+    public TestUser(long id,
+                    int numRcs,
                     Supplier<UserHistory<Event>> hist,
                     Supplier<UserHistory<Event>> testHist,
-                    Supplier<SparseVector> predictions,
-                    Supplier<List<ScoredId>> recommendations) {
+                    SwitchedSupplier<SparseVector> predictions,
+                    SwitchedSupplier<List<ScoredId>> recommendations) {
         userId = id;
+        numRecs = numRcs;
         historySupplier = Suppliers.memoize(hist);
         testHistorySupplier = Suppliers.memoize(testHist);
-        predSupplier = Suppliers.memoize(predictions);
-        recSupplier = Suppliers.memoize(recommendations);
+        predSupplier = SwitchedSuppliers.memoize(predictions);
+        recSupplier = SwitchedSuppliers.memoize(recommendations);
     }
 
     /**
@@ -71,6 +74,16 @@ public class TestUser {
     public long getUserId() {
         return userId;
     }
+    
+    /**
+     * Get the number of recommendations that were requested.
+     *
+     * @return The number of requested recommendations.
+     */
+    public int getNumRecs() {
+      return numRecs;
+    }
+
 
     /**
      * Return this user's training history.
@@ -119,4 +132,14 @@ public class TestUser {
     public List<ScoredId> getRecommendations() {
         return recSupplier.get();
     }
+    
+    public void setGuessCandidates(boolean t){
+        predSupplier.setGuessCandidates(t);
+        recSupplier.setGuessCandidates(t);
+    }
+
+    public boolean guessCandidates(){
+        return predSupplier.guessCandidates() && recSupplier.guessCandidates();
+    }
+    
 }
