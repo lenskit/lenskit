@@ -22,7 +22,6 @@ package org.grouplens.lenskit.eval.data.traintest;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.data.DataSource;
 
 import java.util.LinkedHashMap;
@@ -39,6 +38,7 @@ public class GenericTTDataBuilder implements Builder<GenericTTDataSet> {
     private DataSource trainingData;
     private DataSource testData;
     private Map<String, Object> attributes = new LinkedHashMap<String, Object>();
+    private DataSource queryData;
 
     public GenericTTDataBuilder() {
         this(null);
@@ -60,6 +60,11 @@ public class GenericTTDataBuilder implements Builder<GenericTTDataSet> {
 
     public GenericTTDataBuilder setTrain(DataSource ds) {
         trainingData = ds;
+        return this;
+    }
+
+    public GenericTTDataBuilder setQuery(DataSource query) {
+        queryData = query;
         return this;
     }
 
@@ -91,6 +96,6 @@ public class GenericTTDataBuilder implements Builder<GenericTTDataSet> {
             attributes.put("DataSet", getName());
         }
         Preconditions.checkNotNull(trainingData, "train data is Null");
-        return new GenericTTDataSet(getName(), trainingData, testData, attributes);
+        return new GenericTTDataSet(getName(), trainingData, queryData, testData, attributes);
     }
 }

@@ -82,6 +82,20 @@ public interface TTDataSet {
     EventDAO getTrainingDAO();
 
     /**
+     * Get the query data.
+     *
+     * @return A data source containing the query data.
+     */
+    DataSource getQueryData();
+
+    /**
+     * Get the query data.
+     *
+     * @return An event DAO encompassing the query data.
+     */
+    EventDAO getQueryDAO();
+
+    /**
      * Get the training data.
      *
      * @return A data source containing the test data.

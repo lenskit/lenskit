@@ -44,6 +44,8 @@ public class GenericTTDataSet implements TTDataSet {
     private final String name;
     @Nonnull
     private final DataSource trainData;
+    @Nullable
+    private final DataSource queryData;
     @Nonnull
     private final DataSource testData;
     @Nullable
@@ -52,12 +54,14 @@ public class GenericTTDataSet implements TTDataSet {
 
     public GenericTTDataSet(@Nonnull String name,
                             @Nonnull DataSource train,
+                            @Nullable DataSource query,
                             @Nonnull DataSource test,
                             Map<String, Object> attrs) {
         Preconditions.checkNotNull(train, "no training data");
         Preconditions.checkNotNull(test, "no test data");
         this.name = name;
         trainData = train;
+        queryData = query;
         testData = test;
         preferenceDomain = trainData.getPreferenceDomain();
         if (attrs == null) {
@@ -77,6 +81,7 @@ public class GenericTTDataSet implements TTDataSet {
      */
     public GenericTTDataSet(@Nonnull String name,
                             @Nonnull Provider<EventDAO> train,
+                            @Nullable Provider<EventDAO> query,
                             @Nonnull Provider<EventDAO> test,
                             @Nullable PreferenceDomain domain) {
         Preconditions.checkNotNull(name);
@@ -84,6 +89,11 @@ public class GenericTTDataSet implements TTDataSet {
         Preconditions.checkNotNull(test);
         this.name = name;
         trainData = new GenericDataSource(name + ".train", train, domain);
+        if (query != null) {
+            queryData = new GenericDataSource(name + ".query", test, domain);
+        } else {
+            queryData = null;
+        }
         testData = new GenericDataSource(name + ".test", test, domain);
         preferenceDomain = domain;
         attributes = Collections.singletonMap("DataSet", (Object) name);
@@ -123,6 +133,11 @@ public class GenericTTDataSet implements TTDataSet {
     }
 
     @Override
+    public EventDAO getQueryDAO() {
+        return queryData.getEventDAO();
+    }
+
+    @Override
     public EventDAO getTestDAO() {
         return testData.getEventDAO();
     }
@@ -137,6 +152,11 @@ public class GenericTTDataSet implements TTDataSet {
     @Nonnull
     public DataSource getTrainingData() {
         return trainData;
+    }
+
+    @Override
+    public DataSource getQueryData() {
+        return queryData;
     }
 
     @Override
@@ -168,6 +188,7 @@ public class GenericTTDataSet implements TTDataSet {
     public GenericTTDataBuilder copyBuilder() {
         GenericTTDataBuilder builder = newBuilder(getName());
         builder.setTest(getTestData())
+               .setQuery(getQueryData())
                .setTrain(getTrainingData());
         for (Map.Entry<String,Object> attr: getAttributes().entrySet()) {
             builder.setAttribute(attr.getKey(), attr.getValue());
