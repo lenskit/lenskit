@@ -30,7 +30,7 @@ import org.grouplens.grapht.annotation.DefaultImplementation;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultImplementation(PrefetchingItemDAO.class)
-public interface ItemDAO {
+public interface ItemDAO extends DataAccessObject {
     /**
      * Get all known item IDs.
      * @return The set of known item IDs.

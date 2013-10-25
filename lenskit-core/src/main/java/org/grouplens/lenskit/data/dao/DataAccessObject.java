@@ -20,37 +20,11 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.event.Event;
-
 /**
- * Basic interface for accessing events.
+ * Root interface for all data access objects.  Currently, it does nothing but mark a component
+ * as a data access object.
  *
- * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public interface EventDAO extends DataAccessObject {
-    /**
-     * Stream all events.
-     *
-     * @return A cursor over all events.
-     */
-    Cursor<Event> streamEvents();
-
-    /**
-     * Stream all events of a given type.
-     *
-     * @param type The event type.
-     * @return A cursor over all events.
-     */
-    <E extends Event> Cursor<E> streamEvents(Class<E> type);
-
-    /**
-     * Stream all events of a given type in a specified order.
-     *
-     * @param type The event type.
-     * @param order The order.
-     * @return A cursor over all events.
-     */
-    <E extends Event> Cursor<E> streamEvents(Class<E> type, SortOrder order);
+public interface DataAccessObject {
 }
