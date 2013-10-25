@@ -22,12 +22,16 @@ package org.grouplens.lenskit.eval.data.traintest;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.data.DataSource;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
+ * Builder for generic train-test data sets.
+ *
+ * @see GenericTTDataSet
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class GenericTTDataBuilder implements Builder<GenericTTDataSet> {
@@ -44,6 +48,11 @@ public class GenericTTDataBuilder implements Builder<GenericTTDataSet> {
         this.name = name;
     }
 
+    /**
+     * Set the data set's name.
+     * @param n The data set's name.
+     * @return The builder (for chaining)
+     */
     public GenericTTDataBuilder setName(String n) {
         name = n;
         return this;
@@ -82,8 +91,6 @@ public class GenericTTDataBuilder implements Builder<GenericTTDataSet> {
             attributes.put("DataSet", getName());
         }
         Preconditions.checkNotNull(trainingData, "train data is Null");
-        return new GenericTTDataSet(getName(), trainingData,
-                                    testData, trainingData.getPreferenceDomain(),
-                                    attributes);
+        return new GenericTTDataSet(getName(), trainingData, testData, attributes);
     }
 }
