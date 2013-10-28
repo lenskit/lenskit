@@ -46,7 +46,7 @@ import com.google.common.io.Files
 class TestCrossfoldConfig extends ConfigTestBase {
 
     @Rule
-    def folder = new TemporaryFolder()
+    public TemporaryFolder folder = new TemporaryFolder()
     def file = null
 
     @Before

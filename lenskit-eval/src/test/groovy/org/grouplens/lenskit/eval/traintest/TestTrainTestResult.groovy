@@ -46,7 +46,7 @@ import static org.junit.Assert.assertThat
  */
 class TestTrainTestResult extends ConfigTestBase {
     @Rule
-    def workDir = new TemporaryFolder()
+    public TemporaryFolder workDir = new TemporaryFolder()
 
     File sourceFile = null
 
