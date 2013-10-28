@@ -61,7 +61,7 @@ class TestTrainTestTask {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder()
-    def file = File.createTempFile("tempRatings", "csv")
+    def file = null
 
     @Before
     void prepareFile() {
