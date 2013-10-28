@@ -73,7 +73,7 @@
             <phase>pre-integration-test</phase>
             <configuration>
               <target>
-                <ant antfile="${basedir}/src/test/ant/get-data.xml" target="fetch-100k">
+                <ant antfile="${basedir}/src/test/ant/get-data.xml" target="unpack-100k">
                   <!--
                    Maven only exports POM value to Ant, not command-line value.
                    re-export here to get the right value.
@@ -120,33 +120,6 @@
               <goal>integration-test</goal>
               <goal>verify</goal>
             </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <!-- Fail-fast if we can't get MovieLens data. -->
-          <execution>
-            <id>validate-integration-tests</id>
-            <phase>validate</phase>
-            <goals><goal>enforce</goal></goals>
-            <configuration>
-              <rules>
-                <requireProperty>
-                  <property>grouplens.mldata.acknowledge</property>
-                  <message>
-                    Integration tests require MovieLens 100K data set, which is freely
-                    available for non-commercial use. To accept the license terms and
-                    automatically download the dataset, set the property
-                    'grouplens.mldata.acknowledge' to 'yes'.
-                    For more information, see http://lenskit.grouplens.org/ML100K.
-                  </message>
-                </requireProperty>
-              </rules>
-            </configuration>
           </execution>
         </executions>
       </plugin>
