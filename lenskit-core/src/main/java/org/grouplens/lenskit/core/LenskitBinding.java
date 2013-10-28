@@ -24,6 +24,7 @@ import org.grouplens.grapht.Binding;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 
 /**
@@ -33,6 +34,12 @@ import java.lang.annotation.Annotation;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface LenskitBinding<T> extends Binding<T> {
+    /**
+     * Explicitly bind to an instance.
+     * @param instance The instance to bind to.
+     */
+    void toInstance(@Nullable T instance);
+
     @Override
     LenskitBinding<T> withQualifier(@Nonnull Class<? extends Annotation> qualifier);
     @Override
