@@ -18,39 +18,21 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.dao;
+package org.grouplens.lenskit.eval.data.traintest;
 
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.grapht.annotation.AllowUnqualifiedMatch;
+
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
- * Basic interface for accessing events.
- *
- * @since 1.3
+ * Qualifier to access query data available.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public interface EventDAO extends DataAccessObject {
-    /**
-     * Stream all events.
-     *
-     * @return A cursor over all events.
-     */
-    Cursor<Event> streamEvents();
-
-    /**
-     * Stream all events of a given type.
-     *
-     * @param type The event type.
-     * @return A cursor over all events.
-     */
-    <E extends Event> Cursor<E> streamEvents(Class<E> type);
-
-    /**
-     * Stream all events of a given type in a specified order.
-     *
-     * @param type The event type.
-     * @param order The order.
-     * @return A cursor over all events.
-     */
-    <E extends Event> Cursor<E> streamEvents(Class<E> type, SortOrder order);
+@Documented
+@Qualifier
+@AllowUnqualifiedMatch
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.PARAMETER, ElementType.METHOD})
+public @interface QueryData {
 }
