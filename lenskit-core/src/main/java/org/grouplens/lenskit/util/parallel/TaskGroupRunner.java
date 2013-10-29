@@ -119,7 +119,7 @@ public class TaskGroupRunner {
                 cancelRemainingTasks();
             }
             removeTask(future);
-            logger.info("{} tasks remaining", activeTasks.size());
+            logger.debug("{} tasks remaining", activeTasks.size());
         }
     }
 }
