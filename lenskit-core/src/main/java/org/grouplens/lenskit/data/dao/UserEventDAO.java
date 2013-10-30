@@ -34,7 +34,7 @@ import javax.annotation.Nullable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultImplementation(PrefetchingUserEventDAO.class)
-public interface UserEventDAO extends DataAccessObject {
+public interface UserEventDAO {
     /**
      * Stream events grouped by user.
      *

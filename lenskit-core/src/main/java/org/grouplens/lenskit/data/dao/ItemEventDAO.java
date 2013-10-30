@@ -34,7 +34,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultImplementation(PrefetchingItemEventDAO.class)
-public interface ItemEventDAO extends DataAccessObject {
+public interface ItemEventDAO {
     /**
      * Get the events for a specific item.
      * @param item The item ID.

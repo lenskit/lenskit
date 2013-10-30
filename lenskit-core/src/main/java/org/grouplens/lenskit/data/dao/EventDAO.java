@@ -29,7 +29,7 @@ import org.grouplens.lenskit.data.event.Event;
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public interface EventDAO extends DataAccessObject {
+public interface EventDAO {
     /**
      * Stream all events.
      *
