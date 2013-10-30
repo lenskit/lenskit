@@ -29,6 +29,11 @@ import org.grouplens.lenskit.data.dao.*;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class AbstractDataSource implements DataSource {
+    private transient volatile UserDAO userDAO;
+    private transient volatile UserEventDAO userEventDAO;
+    private transient volatile ItemDAO itemDAO;
+    private transient volatile ItemEventDAO itemEventDAO;
+
     /**
      * Get an event DAO from the provider.
      * @return The event DAO.
@@ -47,12 +52,19 @@ public abstract class AbstractDataSource implements DataSource {
      */
     @Override
     public UserEventDAO getUserEventDAO() {
-        EventDAO dao = getEventDAO();
-        if (dao instanceof UserEventDAO) {
-            return (UserEventDAO) dao;
-        } else {
-            return new PrefetchingUserEventDAO(dao);
+        if (userEventDAO == null) {
+            synchronized(this) {
+                if (userEventDAO == null) {
+                    EventDAO dao = getEventDAO();
+                    if (dao instanceof UserEventDAO) {
+                        userEventDAO = (UserEventDAO) dao;
+                    } else {
+                        userEventDAO = new PrefetchingUserEventDAO(dao);
+                    }
+                }
+            }
         }
+        return userEventDAO;
     }
 
     /**
@@ -64,12 +76,19 @@ public abstract class AbstractDataSource implements DataSource {
      */
     @Override
     public ItemEventDAO getItemEventDAO() {
-        EventDAO dao = getEventDAO();
-        if (dao instanceof ItemEventDAO) {
-            return (ItemEventDAO) dao;
-        } else {
-            return new PrefetchingItemEventDAO(dao);
+        if (itemEventDAO == null) {
+            synchronized(this) {
+                if (itemEventDAO == null) {
+                    EventDAO dao = getEventDAO();
+                    if (dao instanceof ItemEventDAO) {
+                        itemEventDAO = (ItemEventDAO) dao;
+                    } else {
+                        itemEventDAO = new PrefetchingItemEventDAO(dao);
+                    }
+                }
+            }
         }
+        return itemEventDAO;
     }
 
     /**
@@ -81,12 +100,19 @@ public abstract class AbstractDataSource implements DataSource {
      */
     @Override
     public ItemDAO getItemDAO() {
-        EventDAO dao = getEventDAO();
-        if (dao instanceof ItemDAO) {
-            return (ItemDAO) dao;
-        } else {
-            return new PrefetchingItemDAO(dao);
+        if (itemDAO == null) {
+            synchronized(this) {
+                if (itemDAO == null) {
+                    EventDAO dao = getEventDAO();
+                    if (dao instanceof ItemDAO) {
+                        itemDAO = (ItemDAO) dao;
+                    } else {
+                        itemDAO = new PrefetchingItemDAO(dao);
+                    }
+                }
+            }
         }
+        return itemDAO;
     }
 
     /**
@@ -98,11 +124,18 @@ public abstract class AbstractDataSource implements DataSource {
      */
     @Override
     public UserDAO getUserDAO() {
-        EventDAO dao = getEventDAO();
-        if (dao instanceof UserDAO) {
-            return (UserDAO) dao;
-        } else {
-            return new PrefetchingUserDAO(dao);
+        if (userDAO == null) {
+            synchronized(this) {
+                if (userDAO == null) {
+                    EventDAO dao = getEventDAO();
+                    if (dao instanceof UserDAO) {
+                        userDAO = (UserDAO) dao;
+                    } else {
+                        userDAO = new PrefetchingUserDAO(dao);
+                    }
+                }
+            }
         }
+        return userDAO;
     }
 }

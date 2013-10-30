@@ -72,6 +72,9 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
         public Object[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
+            if (predictions == null) {
+                return new Object[USER_COLUMNS.size()];
+            }
             int n = 0;
             int good = 0;
             for (VectorEntry e : ratings.fast()) {

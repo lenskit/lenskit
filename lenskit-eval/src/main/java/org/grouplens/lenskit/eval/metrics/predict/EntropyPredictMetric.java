@@ -84,6 +84,9 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
         public Object[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
+            if (predictions == null) {
+                return userRow();
+            }
 
             // TODO Re-use accumulators
             MutualInformationAccumulator accum = new MutualInformationAccumulator(quantizer.getCount());

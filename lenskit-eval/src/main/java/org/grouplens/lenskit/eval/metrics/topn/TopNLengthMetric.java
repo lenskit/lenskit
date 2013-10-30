@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.metrics.predict;
+package org.grouplens.lenskit.eval.metrics.topn;
 
 import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
@@ -26,85 +26,66 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
 import org.grouplens.lenskit.eval.traintest.TestUser;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.grouplens.lenskit.scored.ScoredId;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 
-import static java.lang.Math.sqrt;
-
 /**
- * Evaluate a recommender's prediction accuracy with RMSE.
- *
+ * Metric that measures how long a TopN list actually is.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class RMSEPredictMetric extends AbstractTestUserMetric {
-    private static final Logger logger = LoggerFactory.getLogger(RMSEPredictMetric.class);
-    private static final ImmutableList<String> COLUMNS = ImmutableList.of("RMSE.ByRating", "RMSE.ByUser");
-    private static final ImmutableList<String> USER_COLUMNS = ImmutableList.of("RMSE");
+public class TopNLengthMetric extends AbstractTestUserMetric {
+    private final int listSize;
+    private final ItemSelector candidates;
+    private final ItemSelector exclude;
+    private final ImmutableList<String> columns;
+
+    public TopNLengthMetric(String lbl, int listSize, ItemSelector candidates, ItemSelector exclude) {
+        this.listSize = listSize;
+        this.candidates = candidates;
+        this.exclude = exclude;
+        columns = ImmutableList.of(lbl);
+    }
 
     @Override
-    public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
+    public Accum makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
         return new Accum();
     }
 
     @Override
     public List<String> getColumnLabels() {
-        return COLUMNS;
+        return columns;
     }
 
     @Override
     public List<String> getUserColumnLabels() {
-        return USER_COLUMNS;
+        return columns;
     }
 
     class Accum implements TestUserMetricAccumulator {
-        private double sse = 0;
-        private double totalRMSE = 0;
-        private int nratings = 0;
-        private int nusers = 0;
+        double total = 0;
+        int nusers = 0;
 
         @Nonnull
         @Override
         public Object[] evaluate(TestUser user) {
-            SparseVector ratings = user.getTestRatings();
-            SparseVector predictions = user.getPredictions();
-            if (predictions == null) {
-                return userRow();
+            List<ScoredId> recs;
+            recs = user.getRecommendations(listSize, candidates, exclude);
+            if (recs == null) {
+                return new Object[1];
             }
-            double usse = 0;
-            int n = 0;
-            for (VectorEntry e : predictions.fast()) {
-                if (Double.isNaN(e.getValue())) {
-                    continue;
-                }
-
-                double err = e.getValue() - ratings.get(e.getKey());
-                usse += err * err;
-                n++;
-            }
-            sse += usse;
-            nratings += n;
-            if (n > 0) {
-                double rmse = sqrt(usse / n);
-                totalRMSE += rmse;
-                nusers++;
-                return userRow(rmse);
-            } else {
-                return userRow();
-            }
+            int n = recs.size();
+            total += n;
+            nusers += 1;
+            return userRow(n);
         }
 
         @Nonnull
         @Override
         public Object[] finalResults() {
-            if (nratings > 0) {
-                double v = sqrt(sse / nratings);
-                logger.info("RMSE: {}", v);
-                return finalRow(v, totalRMSE / nusers);
+            if (nusers > 0) {
+                return finalRow(total / nusers);
             } else {
                 return finalRow();
             }

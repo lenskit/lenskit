@@ -18,16 +18,19 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.metrics.predict;
+package org.grouplens.lenskit.eval.metrics.topn;
 
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
 import org.grouplens.lenskit.eval.traintest.TestUser;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,23 +41,28 @@ import java.util.List;
 import static java.lang.Math.log;
 
 /**
- * Evaluate a recommender's predictions with normalized discounted cumulative gain.
- *
- * <p>This is a prediction evaluator that uses base-2 nDCG to evaluate recommender
- * accuracy. The items are ordered by predicted preference and the nDCG is
- * computed using the user's real rating as the gain for each item. Doing this
- * only over the queried items, rather than in the general recommend condition,
- * avoids penalizing recommenders for recommending items that would be better
- * if the user had known about them and provided ratings (e.g., for doing their
- * job).
- *
- * <p>nDCG is computed per-user and then averaged over all users.
- *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class NDCGPredictMetric extends AbstractTestUserMetric {
-    private static final Logger logger = LoggerFactory.getLogger(NDCGPredictMetric.class);
-    private static final ImmutableList<String> COLUMNS = ImmutableList.of("nDCG");
+public class NDCGTopNMetric extends AbstractTestUserMetric {
+    private static final Logger logger = LoggerFactory.getLogger(NDCGTopNMetric.class);
+
+    private final int listSize;
+    private final ItemSelector candidates;
+    private final ItemSelector exclude;
+    private final ImmutableList<String> columns;
+
+    /**
+     * Construct a new nDCG Top-N metric.
+     * @param listSize The number of recommendations to fetch.
+     * @param candidates The candidate selector.
+     * @param exclude The exclude selector.
+     */
+    public NDCGTopNMetric(String lbl, int listSize, ItemSelector candidates, ItemSelector exclude) {
+        this.listSize = listSize;
+        this.candidates = candidates;
+        this.exclude = exclude;
+        columns = ImmutableList.of(lbl);
+    }
 
     @Override
     public Accum makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
@@ -63,12 +71,12 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
 
     @Override
     public List<String> getColumnLabels() {
-        return COLUMNS;
+        return columns;
     }
 
     @Override
     public List<String> getUserColumnLabels() {
-        return COLUMNS;
+        return columns;
     }
 
     /**
@@ -83,7 +91,7 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
         LongIterator iit = items.iterator();
         while (iit.hasNext()) {
             final long item = iit.nextLong();
-            final double v = values.get(item);
+            final double v = values.get(item, 0);
             rank++;
             if (rank < 2) {
                 gain += v;
@@ -102,18 +110,27 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
         @Nonnull
         @Override
         public Object[] evaluate(TestUser user) {
-            SparseVector predictions = user.getPredictions();
-            if (predictions == null) {
+            List<ScoredId> recommendations;
+            recommendations = user.getRecommendations(listSize, candidates, exclude);
+            if (recommendations == null) {
                 return userRow();
             }
-            return evaluatePredictions(user.getTestRatings(), predictions);
+            return evaluateRecommendations(user.getTestRatings(), recommendations);
         }
 
-        Object[] evaluatePredictions(SparseVector ratings, SparseVector predictions) {
+        Object[] evaluateRecommendations(SparseVector ratings, List<ScoredId> recommendations) {
             LongList ideal = ratings.keysByValue(true);
-            LongList actual = predictions.keysByValue(true);
+            if (ideal.size() > listSize) {
+                ideal = ideal.subList(0, listSize);
+            }
             double idealGain = computeDCG(ideal, ratings);
+
+            LongList actual = new LongArrayList(recommendations.size());
+            for (ScoredId id: CollectionUtils.fast(recommendations)) {
+                actual.add(id.getId());
+            }
             double gain = computeDCG(actual, ratings);
+
             double score = gain / idealGain;
             total += score;
             nusers += 1;
@@ -125,7 +142,7 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
         public Object[] finalResults() {
             if (nusers > 0) {
                 double v = total / nusers;
-                logger.info("nDCG: {}", v);
+                logger.info("Top-N nDCG: {}", v);
                 return finalRow(v);
             } else {
                 return finalRow();
