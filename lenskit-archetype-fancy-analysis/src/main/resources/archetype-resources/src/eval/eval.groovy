@@ -15,18 +15,11 @@ def dataDir = config.get('mldata.directory', "${config.dataDir}/ml100k")
 // This target unpacks the data
 target('download') {
     perform {
-        // check if the data license is acknowledged
-        if (!BooleanUtils.toBoolean(config["grouplens.mldata.acknowledge"])) {
-            logger.error(
-                    "This analysis makes use of the MovieLens 100K data " +
+        logger.warn("This analysis makes use of the MovieLens 100K data " +
                             "set from GroupLens Research. Use of this data set is restricted to " +
                             "non-commercial purposes and is only permitted in accordance with the " +
-                            "license terms. To use this data in LensKit's automated tests, set the " +
-                            "`grouplens.mldata.acknowledge' property to `yes' to indicate you " +
-                            "acknowledge the usage license.  More information is available at " +
-                            "<http://www.grouplens.org/node/73>.")
-            throw new RuntimeException("GroupLens data license not acknoweldged");
-        }
+                            "license terms.  More information is available at " +
+                            "<http://lenskit.grouplens.org/ML100K>.")
     }
     ant.mkdir(dir: config.dataDir)
     ant.get(src: 'http://www.grouplens.org/system/files/ml-100k.zip',

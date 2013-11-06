@@ -12,23 +12,9 @@
     </condition>
   </target>
 
-  <target name="download-100k" depends="check-100k">
-
-    <fail message="This analysis makes use of the MovieLens 100K data
-         set from GroupLens Research. Use of this data set is restricted to
-         non-commercial purposes and is only permitted in accordance with the
-         license terms. To use this data in LensKit's automated tests, set the
-         `grouplens.mldata.acknowledge' property to `yes' to indicate you
-         acknowledge the usage license.  More information is available at
-         &lt;http://lenskit.grouplens.org/ML100K&gt;.">
-
-      <condition>
-        <not>
-          <equals arg1="${grouplens.mldata.acknowledge}" arg2="yes"
-                  trim="true" casesensitive="false"/>
-        </not>
-      </condition>
-    </fail>
+  <target name="download-100k" depends="check-100k" unless="lenskit.movielens.100k.avail">
+    <echo message="This analysis makes use of the MovieLens 100K data set from GroupLens Research.  Use of this data set is restricted to non-commercial purposes and is only permitted in accordance with the license terms.  More information is available at &lt;http://lenskit.grouplens.org/ML100K&gt;.">
+    </echo>
 
     <echo message="Downloading ML-100K data set"/>
 
@@ -38,7 +24,7 @@
          skipexisting="true"/>
   </target>
 
-  <target name="extract-100k" depends="check-100k,download-100k" unless="lenskit.movielens.100k.avail">
+  <target name="unpack-100k" depends="check-100k,download-100k" unless="lenskit.movielens.100k.avail">
     <echo message="Extracting ML-100K data set to ${lenskit.movielens.100k}"/>
     <unzip src="${mldata.zipfile}" dest="${lenskit.movielens.100k}">
       <patternset>
@@ -47,7 +33,5 @@
       <mapper type="flatten"/>
     </unzip>
   </target>
-
-  <target name="fetch-100k" depends="extract-100k"/>
 </project>
 

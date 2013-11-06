@@ -21,6 +21,8 @@
 package org.grouplens.lenskit.eval.data.crossfold
 
 import org.grouplens.lenskit.data.dao.EventDAO
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.*
@@ -43,12 +45,13 @@ import com.google.common.io.Files
  */
 class TestCrossfoldConfig extends ConfigTestBase {
 
-    def file = File.createTempFile("tempRatings", "csv")
-    def trainTestDir = Files.createTempDir()
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder()
+    def file = null
 
     @Before
     void prepareFile() {
-        file.deleteOnExit()
+        file = folder.newFile("ratings.csv")
         file.append('19,242,3,881250949\n')
         file.append('296,242,3.5,881250949\n')
         file.append('196,242,3,881250949\n')
@@ -61,12 +64,6 @@ class TestCrossfoldConfig extends ConfigTestBase {
         file.append('196,242,3,881250949\n')
     }
 
-    @After
-    void cleanUpFiles() {
-        file.delete()
-        trainTestDir.deleteDir()
-    }
-
     @Test
     void testBasicCrossfold() {
         def obj = eval {
@@ -75,8 +72,8 @@ class TestCrossfoldConfig extends ConfigTestBase {
                 partitions 10
                 holdoutFraction 0.5
                 order RandomOrder
-                train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
-                test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
+                train "$folder.root.absolutePath/ratings.train/%d.csv"
+                test "$folder.root.absolutePath/ratings.test/%d.csv"
             }
         }
         assertThat(obj.size(), equalTo(10))
@@ -94,8 +91,8 @@ class TestCrossfoldConfig extends ConfigTestBase {
                 source file
                 partitions 5
                 splitUsers false
-                train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
-                test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
+                train "$folder.root.absolutePath/ratings.train/%d.csv"
+                test "$folder.root.absolutePath/ratings.test/%d.csv"
             }
         }
         assertThat(obj.size(), equalTo(5))

@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.eval.traintest
 
-import com.google.common.io.Files
 import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.BaselineScorer
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
@@ -31,7 +30,9 @@ import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.grouplens.lenskit.util.table.TableImpl
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 
 import static org.hamcrest.Matchers.instanceOf
 import static org.hamcrest.Matchers.nullValue
@@ -44,38 +45,35 @@ import static org.junit.Assert.assertThat
  *
  */
 class TestTrainTestResult extends ConfigTestBase {
-    def file = File.createTempFile("tempRatings", "csv")
-    def trainTestDir = Files.createTempDir()
+    @Rule
+    public TemporaryFolder workDir = new TemporaryFolder()
+
+    File sourceFile = null
 
     @Before
     void prepareFile() {
-        file.deleteOnExit()
-        file.append('19,242,3,881250949\n')
-        file.append('296,242,3.5,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-        file.append('196,242,3,881250949\n')
-    }
-
-    @After
-    void cleanUpFiles() {
-        file.delete()
-        trainTestDir.deleteDir()
+        sourceFile = workDir.newFile("ratings.csv")
+        sourceFile.deleteOnExit()
+        sourceFile.append('19,242,3,881250949\n')
+        sourceFile.append('296,242,3.5,881250949\n')
+        sourceFile.append('196,242,3,881250949\n')
+        sourceFile.append('196,242,3,881250949\n')
+        sourceFile.append('196,242,3,881250949\n')
+        sourceFile.append('196,242,3,881250949\n')
+        sourceFile.append('196,242,3,881250949\n')
+        sourceFile.append('196,242,3,881250949\n')
+        sourceFile.append('196,242,3,881250949\n')
+        sourceFile.append('196,242,3,881250949\n')
     }
 
     @Test
     void testResult() {
         def dat = eval {
             crossfold("tempRatings") {
-                source file
+                source sourceFile
                 partitions 5
-                train trainTestDir.getAbsolutePath() + "/ratings.train.%d.csv"
-                test trainTestDir.getAbsolutePath() + "/ratings.test.%d.csv"
+                train workDir.root.absolutePath + "/ratings.train.%d.csv"
+                test workDir.root.absolutePath + "/ratings.test.%d.csv"
             }
         }
         def result = eval {

@@ -21,7 +21,9 @@
 package org.grouplens.lenskit.util.io;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +37,9 @@ import static org.junit.Assert.assertThat;
  */
 public class UpToDateCheckerTest {
     UpToDateChecker checker;
+
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
 
     @Before
     public void newChecker() {
@@ -73,7 +78,7 @@ public class UpToDateCheckerTest {
     @Test
     public void testFileAccum() throws InterruptedException, IOException {
         long time = System.currentTimeMillis();
-        File f = File.createTempFile("test", "input");
+        File f = folder.newFile("test.input");
         try {
             if (!f.setLastModified(time - 2500)) {
                 throw new IOException("could not set last-modified");
