@@ -20,14 +20,20 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+
+import java.io.Serializable;
 
 /**
  * Vector normlizer that subtracts the mean from every value.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class MeanCenteringVectorNormalizer extends AbstractVectorNormalizer {
+@Shareable
+public class MeanCenteringVectorNormalizer extends AbstractVectorNormalizer implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Override
     public VectorTransformation makeTransformation(SparseVector reference) {
         return new Transform(reference.mean());

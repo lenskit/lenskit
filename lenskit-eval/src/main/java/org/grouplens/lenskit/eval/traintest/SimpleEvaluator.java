@@ -20,15 +20,15 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import org.grouplens.grapht.util.Providers;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.eval.EvalConfig;
+import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceBuilder;
-import org.grouplens.lenskit.eval.EvalConfig;
-import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.data.DataSource;
+import org.grouplens.lenskit.eval.data.GenericDataSource;
 import org.grouplens.lenskit.eval.data.crossfold.CrossfoldTask;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
@@ -192,7 +192,10 @@ public class SimpleEvaluator implements Callable<Table> {
      * @return Itself for  method chaining.
      */
     public SimpleEvaluator addDataset(String name, EventDAO train, EventDAO test, PreferenceDomain dom){
-        result.addDataset(new GenericTTDataSet(name, Providers.of(train), Providers.of(test), dom));
+        result.addDataset(GenericTTDataSet.newBuilder(name)
+                                          .setTrain(new GenericDataSource(name + ".train", train, dom))
+                                          .setTest(new GenericDataSource(name + ".test", test, dom))
+                                          .build());
         return this;
     }
 
@@ -204,11 +207,13 @@ public class SimpleEvaluator implements Callable<Table> {
      *
      * @param train The {@code DAOFactory} with the train data.
      * @param test The {@code DAOFactory} with the test data.
-     * @param dom The {@code PreferenceDomain} to be supplied to the new {@code TTDataSet}
      * @return Itself for  method chaining.
      */
-    public SimpleEvaluator addDataset(DataSource train, DataSource test, PreferenceDomain dom){
-        result.addDataset(new GenericTTDataSet("generic-data-source", train, test, dom, null));
+    public SimpleEvaluator addDataset(DataSource train, DataSource test){
+        result.addDataset(GenericTTDataSet.newBuilder("generic-data-source")
+                                          .setTrain(train)
+                                          .setTest(test)
+                                          .build());
         return this;
     }
     /**

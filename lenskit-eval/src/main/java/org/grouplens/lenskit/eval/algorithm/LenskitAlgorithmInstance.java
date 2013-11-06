@@ -34,6 +34,7 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.data.DataSource;
+import org.grouplens.lenskit.eval.data.traintest.QueryData;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.script.BuiltBy;
 import org.grouplens.lenskit.eval.traintest.TestUser;
@@ -124,6 +125,13 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
     public LenskitRecommender buildRecommender(DataSource data,
                                                @Nullable final Provider<? extends PreferenceSnapshot> sharedSnapshot,
                                                @Nullable ExecutionInfo info) throws RecommenderBuildException {
+        return buildRecommender(data, null, sharedSnapshot, info);
+    }
+
+    public LenskitRecommender buildRecommender(DataSource data,
+                                               @Nullable DataSource queryData,
+                                               @Nullable final Provider<? extends PreferenceSnapshot> sharedSnapshot,
+                                               @Nullable ExecutionInfo info) throws RecommenderBuildException {
         // Copy the config & set up a shared rating snapshot
         LenskitConfiguration cfg = new LenskitConfiguration(config);
 
@@ -146,6 +154,10 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
         
         cfg.bind(EventDAO.class).toProvider(data.getEventDAOProvider());
 
+        if (queryData != null) {
+            cfg.bind(QueryData.class, EventDAO.class).toProvider(queryData.getEventDAOProvider());
+        }
+
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(cfg);
 
         return engine.createRecommender();
@@ -156,6 +168,7 @@ public class LenskitAlgorithmInstance implements AlgorithmInstance {
                                                        Provider<? extends PreferenceSnapshot> snapshot,
                                                        ExecutionInfo info) throws RecommenderBuildException {
         return new RecInstance(buildRecommender(data.getTrainingData(),
+                                                data.getQueryData(),
                                                 snapshot, info),
                                data.getTestData());
     }

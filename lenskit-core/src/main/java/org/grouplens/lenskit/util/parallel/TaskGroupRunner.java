@@ -109,6 +109,7 @@ public class TaskGroupRunner {
         public void onSuccess(Object result) {
             logger.debug("task completed successfully");
             removeTask(future);
+            logger.info("{} tasks remaining", activeTasks.size());
         }
 
         @Override

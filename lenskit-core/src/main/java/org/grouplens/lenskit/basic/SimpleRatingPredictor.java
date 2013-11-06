@@ -23,6 +23,7 @@ package org.grouplens.lenskit.basic;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselineScorer;
+import org.grouplens.lenskit.baseline.PrimaryScorer;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -53,7 +54,7 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
     private final PreferenceDomain preferenceDomain;
 
     @Inject
-    public SimpleRatingPredictor(ItemScorer scorer,
+    public SimpleRatingPredictor(@PrimaryScorer ItemScorer scorer,
                                  @Nullable @BaselineScorer ItemScorer baseline,
                                  @Nullable PreferenceDomain domain) {
         // TODO Make abstract rating predictors & item scorers not need the DAO
