@@ -23,9 +23,9 @@ package org.grouplens.lenskit.config;
 import groovy.lang.Binding;
 import groovy.lang.MissingMethodException;
 import groovy.lang.Script;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.RecommenderConfigurationException;
 
 /**
  * Base class for LensKit configuration scripts.  This class mixes in {@code LenskitConfigDSL}, so
@@ -46,10 +46,6 @@ public abstract class LenskitConfigScript extends Script {
         delegate = new LenskitConfigDSL();
     }
 
-    void setConfig(LenskitConfiguration cfg) {
-        delegate = new LenskitConfigDSL(cfg);
-    }
-
     public LenskitConfiguration getConfig() {
         return delegate.getConfig();
     }
@@ -66,5 +62,36 @@ public abstract class LenskitConfigScript extends Script {
         } catch (MissingMethodException mme) {
             throw new MissingMethodException(name, getClass(), mme.getArguments());
         }
+    }
+
+
+    /**
+     * Run this script against an existing configuration.
+     * @throws RecommenderConfigurationException if an error occurs.
+     */
+    public void configure(LenskitConfiguration config) throws RecommenderConfigurationException {
+        LenskitConfigDSL old = delegate;
+        delegate = new LenskitConfigDSL(config);
+        try {
+            run();
+        } catch (Exception ex) {
+            throw new RecommenderConfigurationException("error configuring recommender", ex);
+        } finally {
+            delegate = old;
+        }
+    }
+
+    /**
+     * Run this script and produce a new configuration.
+     * @return The configuration.
+     * @throws RecommenderConfigurationException if an error occurs.
+     */
+    public LenskitConfiguration configure() throws RecommenderConfigurationException {
+        try {
+            run();
+        } catch (Exception ex) {
+            throw new RecommenderConfigurationException("error configuring recommender", ex);
+        }
+        return delegate.getConfig();
     }
 }
