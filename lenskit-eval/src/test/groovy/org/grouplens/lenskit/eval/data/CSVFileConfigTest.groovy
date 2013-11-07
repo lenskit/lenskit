@@ -30,7 +30,7 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class TestCSVFileConfig extends ConfigTestBase {
+class CSVFileConfigTest extends ConfigTestBase {
     @Test
     void testBuilderAvailable() {
         def cmdClass = engine.lookupMethod("csvfile")

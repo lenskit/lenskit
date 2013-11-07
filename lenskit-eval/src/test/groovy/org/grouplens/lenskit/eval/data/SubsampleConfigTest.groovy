@@ -43,7 +43,7 @@ import static org.junit.Assert.assertThat;
  * Test subsample configuration
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class TestSubsampleConfig extends ConfigTestBase {
+class SubsampleConfigTest extends ConfigTestBase {
 
     def GenericDataSource dataSource = null;
     def trainTestDir = Files.createTempDir();

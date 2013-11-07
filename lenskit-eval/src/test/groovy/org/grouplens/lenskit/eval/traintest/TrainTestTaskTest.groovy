@@ -53,7 +53,7 @@ import static org.junit.Assert.fail
  * framework.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class TestTrainTestTask {
+class TrainTestTaskTest {
     EvalScriptEngine engine
     TrainTestEvalTask command
     DefaultConfigDelegate delegate

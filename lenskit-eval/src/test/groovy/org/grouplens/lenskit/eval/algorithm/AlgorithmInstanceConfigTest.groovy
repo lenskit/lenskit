@@ -39,7 +39,7 @@ import static org.junit.Assert.assertThat
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class TestAlgorithmInstanceConfig extends ConfigTestBase {
+class AlgorithmInstanceConfigTest extends ConfigTestBase {
     @Test
     void testBasicAlgorithm() {
         def obj = eval {

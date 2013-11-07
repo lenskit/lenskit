@@ -30,7 +30,7 @@ import org.junit.Ignore
  * Test the eval config engine and make sure it can actually execute tests.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class TestEvalConfigEngine {
+class EvalConfigEngineTest {
     EvalScriptEngine engine;
 
     @Before

@@ -38,7 +38,7 @@ import org.junit.Test
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
-class TestConfigLoading {
+class ConfigLoadingTest {
     EventDAO dao = new EventCollectionDAO([])
 
     @Test

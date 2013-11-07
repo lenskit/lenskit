@@ -43,7 +43,7 @@ import com.google.common.io.Files
  * Test crossfold configuration
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class TestCrossfoldConfig extends ConfigTestBase {
+class CrossfoldConfigTest extends ConfigTestBase {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder()

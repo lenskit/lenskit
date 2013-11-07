@@ -44,7 +44,7 @@ import static org.junit.Assert.assertThat
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  *
  */
-class TestTrainTestResult extends ConfigTestBase {
+class TrainTestResultTest extends ConfigTestBase {
     @Rule
     public TemporaryFolder workDir = new TemporaryFolder()
 

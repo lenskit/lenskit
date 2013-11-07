@@ -36,7 +36,7 @@ import static org.junit.Assert.*
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class TestTargets extends ConfigTestBase {
+class TargetTest extends ConfigTestBase {
     @Test
     void testBasicTarget() {
         def ranTarget = false
