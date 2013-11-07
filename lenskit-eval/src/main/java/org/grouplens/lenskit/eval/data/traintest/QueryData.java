@@ -18,40 +18,21 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
+package org.grouplens.lenskit.eval.data.traintest;
 
-import org.grouplens.grapht.Binding;
-import org.grouplens.lenskit.symbols.TypedSymbol;
+import org.grouplens.grapht.annotation.AllowUnqualifiedMatch;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.lang.annotation.Annotation;
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
- * LensKit-augmented binding interface.
- *
- * @since 2.0
+ * Qualifier to access query data available.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public interface LenskitBinding<T> extends Binding<T> {
-    /**
-     * Explicitly bind to an instance.
-     * @param instance The instance to bind to.
-     */
-    void toInstance(@Nullable T instance);
-
-    @Override
-    LenskitBinding<T> withQualifier(@Nonnull Class<? extends Annotation> qualifier);
-    @Override
-    LenskitBinding<T> withQualifier(@Nonnull Annotation annot);
-    @Override
-    LenskitBinding<T> withAnyQualifier();
-    @Override
-    LenskitBinding<T> unqualified();
-    @Override
-    LenskitBinding<T> exclude(@Nonnull Class<?> exclude);
-    @Override
-    LenskitBinding<T> shared();
-    @Override
-    LenskitBinding<T> unshared();
+@Documented
+@Qualifier
+@AllowUnqualifiedMatch
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.PARAMETER, ElementType.METHOD})
+public @interface QueryData {
 }

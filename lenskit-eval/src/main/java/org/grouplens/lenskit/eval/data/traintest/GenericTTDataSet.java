@@ -44,6 +44,8 @@ public class GenericTTDataSet implements TTDataSet {
     private final String name;
     @Nonnull
     private final DataSource trainData;
+    @Nullable
+    private final DataSource queryData;
     @Nonnull
     private final DataSource testData;
     @Nullable
@@ -52,15 +54,16 @@ public class GenericTTDataSet implements TTDataSet {
 
     public GenericTTDataSet(@Nonnull String name,
                             @Nonnull DataSource train,
+                            @Nullable DataSource query,
                             @Nonnull DataSource test,
-                            @Nullable PreferenceDomain dom,
                             Map<String, Object> attrs) {
         Preconditions.checkNotNull(train, "no training data");
         Preconditions.checkNotNull(test, "no test data");
         this.name = name;
         trainData = train;
+        queryData = query;
         testData = test;
-        preferenceDomain = dom;
+        preferenceDomain = trainData.getPreferenceDomain();
         if (attrs == null) {
             attributes = Collections.emptyMap();
         } else {
@@ -78,6 +81,7 @@ public class GenericTTDataSet implements TTDataSet {
      */
     public GenericTTDataSet(@Nonnull String name,
                             @Nonnull Provider<EventDAO> train,
+                            @Nullable Provider<EventDAO> query,
                             @Nonnull Provider<EventDAO> test,
                             @Nullable PreferenceDomain domain) {
         Preconditions.checkNotNull(name);
@@ -85,6 +89,11 @@ public class GenericTTDataSet implements TTDataSet {
         Preconditions.checkNotNull(test);
         this.name = name;
         trainData = new GenericDataSource(name + ".train", train, domain);
+        if (query != null) {
+            queryData = new GenericDataSource(name + ".query", test, domain);
+        } else {
+            queryData = null;
+        }
         testData = new GenericDataSource(name + ".test", test, domain);
         preferenceDomain = domain;
         attributes = Collections.singletonMap("DataSet", (Object) name);
@@ -124,6 +133,11 @@ public class GenericTTDataSet implements TTDataSet {
     }
 
     @Override
+    public EventDAO getQueryDAO() {
+        return queryData.getEventDAO();
+    }
+
+    @Override
     public EventDAO getTestDAO() {
         return testData.getEventDAO();
     }
@@ -141,7 +155,44 @@ public class GenericTTDataSet implements TTDataSet {
     }
 
     @Override
+    public DataSource getQueryData() {
+        return queryData;
+    }
+
+    @Override
     public String toString() {
         return String.format("{TTDataSet %s}", name);
+    }
+
+    /**
+     * Create a new generic train-test data set builder.
+     * @return The new builder.
+     */
+    public static GenericTTDataBuilder newBuilder() {
+        return new GenericTTDataBuilder();
+    }
+
+    /**
+     * Create a new generic train-test data set builder.
+     * @param name The data set name.
+     * @return The new builder.
+     */
+    public static GenericTTDataBuilder newBuilder(String name) {
+        return new GenericTTDataBuilder(name);
+    }
+
+    /**
+     * Create a new builder initialized with this data set's values.
+     * @return A new builder initialized to make a copy of this data set definition.
+     */
+    public GenericTTDataBuilder copyBuilder() {
+        GenericTTDataBuilder builder = newBuilder(getName());
+        builder.setTest(getTestData())
+               .setQuery(getQueryData())
+               .setTrain(getTrainingData());
+        for (Map.Entry<String,Object> attr: getAttributes().entrySet()) {
+            builder.setAttribute(attr.getKey(), attr.getValue());
+        }
+        return builder;
     }
 }

@@ -100,6 +100,11 @@ class LenskitBindingImpl<T> implements LenskitBinding<T> {
     }
 
     @Override
+    public void toInstance(@Nullable T instance) {
+        binding.to(instance);
+    }
+
+    @Override
     public void toProvider(@Nonnull Class<? extends Provider<? extends T>> provider) {
         binding.toProvider(provider);
     }
