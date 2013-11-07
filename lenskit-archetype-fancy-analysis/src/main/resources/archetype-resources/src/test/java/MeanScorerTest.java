@@ -26,7 +26,7 @@ import static org.junit.Assert.assertThat;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TestMeanScorer {
+public class MeanScorerTest {
     private EventDAO dao;
     private UserEventDAO ueDAO;
 
