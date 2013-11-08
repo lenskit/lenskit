@@ -26,10 +26,13 @@ import org.grouplens.grapht.Module;
 import org.grouplens.lenskit.core.AbstractConfigContext;
 import org.grouplens.lenskit.core.LenskitBinding;
 import org.grouplens.lenskit.core.LenskitConfigContext;
+import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.pref.PreferenceDomainBuilder;
 
 import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 
@@ -71,6 +74,28 @@ public class BindingDSL extends AbstractConfigContext {
      */
     public void include(Closure<?> cl) {
         GroovyUtils.callWithDelegate(cl, this);
+    }
+
+    /**
+     * Include another configuration file.
+     * @param file The configuration file.
+     * @throws IOException if an error is thrown loading the script.
+     * @throws RecommenderConfigurationException if there is an error running the script.
+     * @throws UnsupportedOperationException if the current context does not support loading.
+     */
+    public void include(File file) throws IOException, RecommenderConfigurationException {
+        // doesn't work in nested bindings. Top-level bindings use LenskitConfigDSL, which
+        // overrides it to work.
+        throw new UnsupportedOperationException("cannot include a file in a nested configuration");
+    }
+
+    /**
+     * Include another configuration file.
+     * @param file The configuration file.
+     * @see #include(File)
+     */
+    public void include(String file) throws IOException, RecommenderConfigurationException {
+        include(new File(file));
     }
 
     /**

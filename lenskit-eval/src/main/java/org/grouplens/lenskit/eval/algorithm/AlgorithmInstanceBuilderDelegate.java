@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.algorithm;
 
+import org.grouplens.lenskit.config.ConfigurationLoader;
 import org.grouplens.lenskit.config.LenskitConfigDSL;
 
 import java.util.Map;
@@ -34,7 +35,8 @@ public class AlgorithmInstanceBuilderDelegate extends LenskitConfigDSL {
     private LenskitAlgorithmInstanceBuilder builder;
 
     public AlgorithmInstanceBuilderDelegate(LenskitAlgorithmInstanceBuilder builder) {
-        super(builder.getConfig());
+        // FIXME Use the correct classpath
+        super(new ConfigurationLoader(), builder.getConfig());
         this.builder = builder;
     }
 

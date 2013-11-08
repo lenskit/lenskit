@@ -127,6 +127,7 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
         project = prj;
         return this;        
     }
+
     /**
      * Get the attributes of this algorithm instance.
      *

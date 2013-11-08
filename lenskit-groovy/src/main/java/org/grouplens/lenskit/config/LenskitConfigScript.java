@@ -43,11 +43,29 @@ public abstract class LenskitConfigScript extends Script {
 
     protected LenskitConfigScript(Binding binding) {
         super(binding);
-        delegate = new LenskitConfigDSL();
     }
 
     public LenskitConfiguration getConfig() {
         return delegate.getConfig();
+    }
+
+    /**
+     * Get the delegate.
+     * @return The DSL delegate.
+     */
+    LenskitConfigDSL getDelegate() {
+        if (delegate == null) {
+            throw new IllegalStateException("no delegate set");
+        }
+        return delegate;
+    }
+
+    /**
+     * Set the delegate.
+     * @param dsl The delegate.
+     */
+    void setDelegate(LenskitConfigDSL dsl) {
+        delegate = dsl;
     }
 
     /**
@@ -58,7 +76,7 @@ public abstract class LenskitConfigScript extends Script {
      */
     public Object methodMissing(String name, Object args) {
         try {
-            return InvokerHelper.invokeMethod(delegate, name, args);
+            return InvokerHelper.invokeMethod(getDelegate(), name, args);
         } catch (MissingMethodException mme) {
             throw new MissingMethodException(name, getClass(), mme.getArguments());
         }
@@ -70,14 +88,14 @@ public abstract class LenskitConfigScript extends Script {
      * @throws RecommenderConfigurationException if an error occurs.
      */
     public void configure(LenskitConfiguration config) throws RecommenderConfigurationException {
-        LenskitConfigDSL old = delegate;
-        delegate = new LenskitConfigDSL(config);
+        LenskitConfigDSL old = getDelegate();
+        setDelegate(new LenskitConfigDSL(old.getConfigLoader(), config));
         try {
             run();
         } catch (Exception ex) {
             throw new RecommenderConfigurationException("error configuring recommender", ex);
         } finally {
-            delegate = old;
+            setDelegate(old);;
         }
     }
 

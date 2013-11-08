@@ -24,9 +24,10 @@ import com.google.common.base.Preconditions;
 import groovy.lang.*;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -40,6 +41,7 @@ import java.net.URL;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ConfigurationLoader {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigurationLoader.class);
     private final ClassLoader classLoader;
     private final GroovyShell shell;
     private final Binding binding;
@@ -69,11 +71,15 @@ public class ConfigurationLoader {
     }
 
     private LenskitConfigScript loadScript(GroovyCodeSource source) throws RecommenderConfigurationException {
+        logger.info("loading script from {}", source.getName());
+        LenskitConfigScript script;
         try {
-            return (LenskitConfigScript) shell.parse(source);
+            script = (LenskitConfigScript) shell.parse(source);
         } catch (GroovyRuntimeException e) {
             throw new RecommenderConfigurationException("Error loading Groovy script", e);
         }
+        script.setDelegate(new LenskitConfigDSL(this));;
+        return script;
     }
 
     /**
