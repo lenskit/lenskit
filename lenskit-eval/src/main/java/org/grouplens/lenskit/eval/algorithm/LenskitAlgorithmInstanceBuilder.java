@@ -22,11 +22,16 @@ package org.grouplens.lenskit.eval.algorithm;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.config.ConfigurationLoader;
+import org.grouplens.lenskit.config.LenskitConfigScript;
 import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.script.ConfigDelegate;
 
 import javax.annotation.Nonnull;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -141,9 +146,39 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
         return config;
     }
 
+    /**
+     * Configure the algorithm instance builder from a file.
+     * @param attributes The attributes.  Attributes 'name' and 'preload' are mapped to their
+     *                   corresponding real properties.
+     * @param file The file.
+     * @return The builder (for chaining).
+     * @throws RecommenderConfigurationException If there is an error running the script.
+     * @throws IOException If there is an error loading the script.
+     */
+    public LenskitAlgorithmInstanceBuilder configureFromFile(Map<String,Object> attributes, File file) throws RecommenderConfigurationException, IOException {
+        if (attributes.containsKey("name")) {
+            setName(attributes.get("name").toString());
+        } else {
+            setName(file.getName().replaceAll("\\.groovy$", ""));
+        }
+        if (attributes.containsKey("preload")) {
+            setPreload((Boolean) attributes.get("preload"));
+        }
+        for (Map.Entry<String,Object> attr: attributes.entrySet()) {
+            String name = attr.getKey();
+            if (!name.equals("name") && !name.equals("preload")) {
+                setAttribute(name, attr.getValue());
+            }
+        }
+        // FIXME Use the correct class loader
+        ConfigurationLoader loader = new ConfigurationLoader();
+        LenskitConfigScript script = loader.loadScript(file);
+        script.configure(getConfig());
+        return this;
+    }
+
     @Override
     public LenskitAlgorithmInstance build() {
         return new LenskitAlgorithmInstance(getName(), config, attributes, preload);
     }
-
 }
