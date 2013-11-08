@@ -21,6 +21,10 @@
 package org.grouplens.lenskit.config;
 
 import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.RecommenderConfigurationException;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Methods for the LensKit configuration DSL.  This extends {@link BindingDSL} with additional
@@ -31,12 +35,13 @@ import org.grouplens.lenskit.core.LenskitConfiguration;
  */
 public class LenskitConfigDSL extends BindingDSL {
     private final LenskitConfiguration config;
+    private final ConfigurationLoader configLoader;
 
     /**
      * Construct a new delegate with an empty configuration.
      */
-    public LenskitConfigDSL() {
-        this(new LenskitConfiguration());
+    public LenskitConfigDSL(ConfigurationLoader loader) {
+        this(loader, new LenskitConfiguration());
     }
 
     /**
@@ -44,13 +49,14 @@ public class LenskitConfigDSL extends BindingDSL {
      *
      * @param cfg The context to configure.
      */
-    protected LenskitConfigDSL(LenskitConfiguration cfg) {
+    protected LenskitConfigDSL(ConfigurationLoader loader, LenskitConfiguration cfg) {
         super(cfg);
         config = cfg;
+        configLoader = loader;
     }
 
-    public static LenskitConfigDSL forConfig(LenskitConfiguration cfg) {
-        return new LenskitConfigDSL(cfg);
+    static LenskitConfigDSL forConfig(LenskitConfiguration cfg) {
+        return new LenskitConfigDSL(null, cfg);
     }
 
     /**
@@ -62,11 +68,30 @@ public class LenskitConfigDSL extends BindingDSL {
     }
 
     /**
+     * Get the configuration loader associated with this DSL (used to power the {@link #include(java.io.File)}
+     * method).
+     * @throws IllegalStateException if there is no associated loader.
+     */
+    public ConfigurationLoader getConfigLoader() {
+        if (configLoader == null) {
+            throw new IllegalStateException("no configuration loader specified");
+        }
+        return configLoader;
+    }
+
+    /**
      * Add a root type.
      * @param type The type to add.
      * @see LenskitConfiguration#addRoot(Class)
      */
     public void root(Class<?> type) {
         config.addRoot(type);
+    }
+
+    // Override to make it actually work
+    @Override
+    public void include(File file) throws IOException, RecommenderConfigurationException {
+        LenskitConfigScript script = getConfigLoader().loadScript(file);
+        script.configure(getConfig());
     }
 }

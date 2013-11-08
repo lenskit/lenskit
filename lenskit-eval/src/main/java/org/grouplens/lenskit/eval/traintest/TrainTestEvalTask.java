@@ -29,12 +29,14 @@ import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.ExternalAlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
@@ -119,6 +121,12 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
     public TrainTestEvalTask addAlgorithm(LenskitAlgorithmInstance algorithm) {
         algorithms.add(algorithm);
+        return this;
+    }
+
+    public TrainTestEvalTask setAlgorithm(Map<String,Object> attrs, String file) throws IOException, RecommenderConfigurationException {
+        algorithms.add(new LenskitAlgorithmInstanceBuilder().configureFromFile(attrs, new File(file))
+                                                            .build());
         return this;
     }
 

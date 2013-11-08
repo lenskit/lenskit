@@ -27,7 +27,6 @@ import org.grouplens.lenskit.basic.SimpleRatingPredictor
 import org.grouplens.lenskit.basic.TopNItemRecommender
 import org.grouplens.lenskit.core.LenskitConfiguration
 import org.grouplens.lenskit.core.LenskitRecommenderEngine
-
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
 import org.grouplens.lenskit.vectors.similarity.PearsonCorrelation
@@ -46,6 +45,23 @@ class ConfigLoadingTest {
         LenskitConfiguration config = ConfigHelpers.load {
             bind ItemScorer to ConstantItemScorer
             set ConstantItemScorer.Value to Math.PI
+        }
+        config.bind(EventDAO).to(dao)
+        def engine = LenskitRecommenderEngine.build(config)
+        def rec = engine.createRecommender()
+        assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
+        assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
+        assertThat(rec.getGlobalItemRecommender(), nullValue());
+        def bl = rec.itemScorer as ConstantItemScorer
+        assertThat(bl.value, equalTo(Math.PI))
+    }
+
+    @Test
+    void testEditBasicConfig() {
+        LenskitConfiguration config = new LenskitConfiguration()
+        config.set(ConstantItemScorer.Value).to(Math.PI)
+        ConfigHelpers.configure(config) {
+            bind ItemScorer to ConstantItemScorer
         }
         config.bind(EventDAO).to(dao)
         def engine = LenskitRecommenderEngine.build(config)
@@ -113,6 +129,24 @@ set ConstantItemScorer.Value to Math.PI""");
     void testLoadBasicURL() {
         LenskitConfiguration config = ConfigHelpers.load(getClass().getResource("test-config.groovy"))
         config.bind(EventDAO).to(dao)
+        def engine = LenskitRecommenderEngine.build(config)
+        def rec = engine.createRecommender()
+        assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
+        assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
+        assertThat(rec.getGlobalItemRecommender(), nullValue());
+        assertThat(rec.itemScorer.value, equalTo(Math.PI))
+    }
+
+    @Test
+    void testModifyBasicText() {
+        LenskitConfiguration config = new LenskitConfiguration()
+        ConfigurationLoader loader = new ConfigurationLoader();
+        LenskitConfigScript script = loader.loadScript(
+                """import org.grouplens.lenskit.baseline.*
+bind ItemScorer to ConstantItemScorer
+set ConstantItemScorer.Value to Math.PI""");
+        config.bind(EventDAO).to(dao)
+        script.configure(config);
         def engine = LenskitRecommenderEngine.build(config)
         def rec = engine.createRecommender()
         assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))

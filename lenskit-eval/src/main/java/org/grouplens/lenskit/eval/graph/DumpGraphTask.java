@@ -32,12 +32,12 @@ import org.grouplens.grapht.util.Providers;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.core.RecommenderInstantiator;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +45,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -87,6 +88,18 @@ public class DumpGraphTask extends AbstractTask<File> {
 
     public DumpGraphTask setAlgorithm(LenskitAlgorithmInstance algorithm) {
         this.algorithm = algorithm;
+        return this;
+    }
+
+    public DumpGraphTask setAlgorithm(Map<String,Object> attrs, File file) throws IOException, RecommenderConfigurationException {
+        algorithm = new LenskitAlgorithmInstanceBuilder().configureFromFile(attrs, file)
+                                                         .build();
+        return this;
+    }
+
+    public DumpGraphTask setAlgorithm(Map<String,Object> attrs, String file) throws IOException, RecommenderConfigurationException {
+        algorithm = new LenskitAlgorithmInstanceBuilder().configureFromFile(attrs, new File(file))
+                                                         .build();
         return this;
     }
 

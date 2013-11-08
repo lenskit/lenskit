@@ -20,17 +20,16 @@
  */
 package org.grouplens.lenskit.config;
 
+import com.google.common.base.Preconditions;
 import groovy.lang.Closure;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.Builder;
-import org.codehaus.groovy.runtime.InvokerHelper;
+import groovy.lang.GroovyRuntimeException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Map;
 
 /**
  * LensKit configuration helper utilities.
@@ -49,7 +48,10 @@ public class ConfigHelpers {
      * @see ConfigurationLoader#load(groovy.lang.Closure)
      */
     public static LenskitConfiguration load(Closure<?> block) throws RecommenderConfigurationException {
-        return new ConfigurationLoader().load(block);
+        Preconditions.checkNotNull(block, "Configuration block");
+        LenskitConfiguration config = new LenskitConfiguration();
+        configure(config, block);
+        return config;
     }
 
     /**
@@ -57,7 +59,9 @@ public class ConfigHelpers {
      *
      * @param script The script source text to evaluate.
      * @return The LensKit configuration.
+     * @deprecated Loading from Groovy source strings is confusing.
      */
+    @Deprecated
     public static LenskitConfiguration load(String script) throws RecommenderConfigurationException {
         return new ConfigurationLoader().load(script);
     }
@@ -80,5 +84,29 @@ public class ConfigHelpers {
      */
     public static LenskitConfiguration load(URL script) throws IOException, RecommenderConfigurationException {
         return new ConfigurationLoader().load(script);
+    }
+
+    /**
+     * Modify a configuration from a closure. The class loader is not really consulted in this case.
+     * @param block The block to evaluate. This block will be evaluated with a delegate providing
+     *              the LensKit DSL and the {@link Closure#DELEGATE_FIRST} resolution strategy.
+     * @return The resulting LensKit configuration.
+     */
+    public static void configure(LenskitConfiguration config, @Nonnull Closure<?> block) throws RecommenderConfigurationException {
+        Preconditions.checkNotNull(block, "Configuration block");
+        BindingDSL delegate = LenskitConfigDSL.forConfig(config);
+        try {
+            GroovyUtils.callWithDelegate(block, delegate);
+        } catch (GroovyRuntimeException e) {
+            // this quite possibly wraps an exception we want to throw
+            if (e.getClass().equals(GroovyRuntimeException.class) && e.getCause() != null) {
+                throw new RecommenderConfigurationException("Error evaluating Groovy block",
+                                                            e.getCause());
+            } else {
+                throw new RecommenderConfigurationException("Error evaluating Groovy block", e);
+            }
+        } catch (RuntimeException e) {
+            throw new RecommenderConfigurationException("Error evaluating Groovy block", e);
+        }
     }
 }

@@ -24,9 +24,10 @@ import com.google.common.base.Preconditions;
 import groovy.lang.*;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -40,6 +41,7 @@ import java.net.URL;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ConfigurationLoader {
+    private static final Logger logger = LoggerFactory.getLogger(ConfigurationLoader.class);
     private final ClassLoader classLoader;
     private final GroovyShell shell;
     private final Binding binding;
@@ -68,22 +70,16 @@ public class ConfigurationLoader {
         shell = new GroovyShell(loader, binding, config);
     }
 
-    private LenskitConfiguration load(GroovyCodeSource source) throws RecommenderConfigurationException {
+    private LenskitConfigScript loadScript(GroovyCodeSource source) throws RecommenderConfigurationException {
+        logger.info("loading script from {}", source.getName());
         LenskitConfigScript script;
         try {
             script = (LenskitConfigScript) shell.parse(source);
         } catch (GroovyRuntimeException e) {
             throw new RecommenderConfigurationException("Error loading Groovy script", e);
         }
-
-        try {
-            script.run();
-        } catch (Exception ex) {
-            throw new RecommenderConfigurationException("Error running Groovy script",
-                                                        StackTraceUtils.deepSanitize(ex));
-        }
-
-        return script.getConfig();
+        script.setDelegate(new LenskitConfigDSL(this));;
+        return script;
     }
 
     /**
@@ -93,7 +89,7 @@ public class ConfigurationLoader {
      */
     public LenskitConfiguration load(@Nonnull File file) throws IOException, RecommenderConfigurationException {
         Preconditions.checkNotNull(file, "Configuration file");
-        return load(new GroovyCodeSource(file));
+        return loadScript(file).configure();
     }
 
     /**
@@ -103,18 +99,50 @@ public class ConfigurationLoader {
      */
     public LenskitConfiguration load(@Nonnull URL url) throws IOException, RecommenderConfigurationException {
         Preconditions.checkNotNull(url, "Configuration URL");
-        return load(new GroovyCodeSource(url));
+        return loadScript(url).configure();
     }
 
     /**
      * Load a configuration from a script source.
      * @param source The configuration script to load.
      * @return The resulting LensKit configuration.
+     * @deprecated Loading from Groovy sources as strings is confusing.
      */
+    @Deprecated
     public LenskitConfiguration load(@Nonnull String source) throws RecommenderConfigurationException {
         Preconditions.checkNotNull(source, "Configuration source text");
-        return load(new GroovyCodeSource(source, "LKConfig" + (++scriptNumber),
-                                         GroovyShell.DEFAULT_CODE_BASE));
+        return loadScript(source).configure();
+    }
+
+    /**
+     * Load a configuration script from a file.
+     * @param file The configuration script to load.
+     * @return The resulting LensKit configuration.
+     */
+    public LenskitConfigScript loadScript(@Nonnull File file) throws IOException, RecommenderConfigurationException {
+        Preconditions.checkNotNull(file, "Configuration file");
+        return loadScript(new GroovyCodeSource(file));
+    }
+
+    /**
+     * Load a configuration script from a URL.
+     * @param url The configuration script to load.
+     * @return The resulting LensKit configuration.
+     */
+    public LenskitConfigScript loadScript(@Nonnull URL url) throws IOException, RecommenderConfigurationException {
+        Preconditions.checkNotNull(url, "Configuration URL");
+        return loadScript(new GroovyCodeSource(url));
+    }
+
+    /**
+     * Load a configuration script from a script source.
+     * @param source The configuration script to load.
+     * @return The resulting LensKit configuration.
+     */
+    public LenskitConfigScript loadScript(@Nonnull String source) throws RecommenderConfigurationException {
+        Preconditions.checkNotNull(source, "Configuration source text");
+        return loadScript(new GroovyCodeSource(source, "LKConfig" + (++scriptNumber),
+                                               GroovyShell.DEFAULT_CODE_BASE));
     }
 
     /**
@@ -122,24 +150,10 @@ public class ConfigurationLoader {
      * @param block The block to evaluate. This block will be evaluated with a delegate providing
      *              the LensKit DSL and the {@link Closure#DELEGATE_FIRST} resolution strategy.
      * @return The resulting LensKit configuration.
+     * @deprecated Use {@link ConfigHelpers#load(groovy.lang.Closure)} instead.
      */
+    @Deprecated
     public LenskitConfiguration load(@Nonnull Closure<?> block) throws RecommenderConfigurationException {
-        Preconditions.checkNotNull(block, "Configuration block");
-        LenskitConfiguration config = new LenskitConfiguration();
-        BindingDSL delegate = LenskitConfigDSL.forConfig(config);
-        try {
-            GroovyUtils.callWithDelegate(block, delegate);
-        } catch (GroovyRuntimeException e) {
-            // this quite possibly wraps an exception we want to throw
-            if (e.getClass().equals(GroovyRuntimeException.class) && e.getCause() != null) {
-                throw new RecommenderConfigurationException("Error evaluating Groovy block",
-                                                            e.getCause());
-            } else {
-                throw new RecommenderConfigurationException("Error evaluating Groovy block", e);
-            }
-        } catch (RuntimeException e) {
-            throw new RecommenderConfigurationException("Error evaluating Groovy block", e);
-        }
-        return config;
+        return ConfigHelpers.load(block);
     }
 }

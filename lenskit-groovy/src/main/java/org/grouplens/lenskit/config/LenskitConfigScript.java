@@ -21,9 +21,11 @@
 package org.grouplens.lenskit.config;
 
 import groovy.lang.Binding;
+import groovy.lang.MissingMethodException;
 import groovy.lang.Script;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.RecommenderConfigurationException;
 
 /**
  * Base class for LensKit configuration scripts.  This class mixes in {@code LenskitConfigDSL}, so
@@ -33,18 +35,10 @@ import org.grouplens.lenskit.core.LenskitConfiguration;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class LenskitConfigScript extends Script {
-    /*
-     * This class exists to be a base class for LensKit configuration scripts.  Java does not have
-     * multiple inheritance, but Groovy has mixins via its meta object protocol.  We mix the
-     * LensKit config DSL into this class; all the methods are available to scripts, and we can get
-     * the configuration by asking the metaclass for the "config" property.  These extra methods
-     * and properties won't be easily available from Java, but that's OK, this class is only ever
-     * used as the base class for Groovy scripts.
-     */
-    static {
-        DefaultGroovyMethods.mixin(LenskitConfigScript.class, LenskitConfigDSL.class);
-    }
+    private LenskitConfigDSL delegate;
+
     protected LenskitConfigScript() {
+        this(new Binding());
     }
 
     protected LenskitConfigScript(Binding binding) {
@@ -52,6 +46,70 @@ public abstract class LenskitConfigScript extends Script {
     }
 
     public LenskitConfiguration getConfig() {
-        return (LenskitConfiguration) getMetaClass().getProperty(this, "context");
+        return delegate.getConfig();
+    }
+
+    /**
+     * Get the delegate.
+     * @return The DSL delegate.
+     */
+    LenskitConfigDSL getDelegate() {
+        if (delegate == null) {
+            throw new IllegalStateException("no delegate set");
+        }
+        return delegate;
+    }
+
+    /**
+     * Set the delegate.
+     * @param dsl The delegate.
+     */
+    void setDelegate(LenskitConfigDSL dsl) {
+        delegate = dsl;
+    }
+
+    /**
+     * Groovy override to pass things off to the delegate.
+     * @param name The name of the method.
+     * @param args The method arguments.
+     * @return The return value of the method.
+     */
+    public Object methodMissing(String name, Object args) {
+        try {
+            return InvokerHelper.invokeMethod(getDelegate(), name, args);
+        } catch (MissingMethodException mme) {
+            throw new MissingMethodException(name, getClass(), mme.getArguments());
+        }
+    }
+
+
+    /**
+     * Run this script against an existing configuration.
+     * @throws RecommenderConfigurationException if an error occurs.
+     */
+    public void configure(LenskitConfiguration config) throws RecommenderConfigurationException {
+        LenskitConfigDSL old = getDelegate();
+        setDelegate(new LenskitConfigDSL(old.getConfigLoader(), config));
+        try {
+            run();
+        } catch (Exception ex) {
+            throw new RecommenderConfigurationException("error configuring recommender", ex);
+        } finally {
+            setDelegate(old);;
+        }
+    }
+
+    /**
+     * Run this script and produce a new configuration.
+     * @return The configuration.
+     * @throws RecommenderConfigurationException if an error occurs.
+     */
+    public LenskitConfiguration configure() throws RecommenderConfigurationException {
+        try {
+            run();
+        } catch (Exception ex) {
+            throw new RecommenderConfigurationException("error configuring recommender", ex);
+        }
+        return delegate.getConfig();
     }
 }
