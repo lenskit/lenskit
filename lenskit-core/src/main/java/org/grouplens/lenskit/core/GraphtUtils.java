@@ -20,13 +20,10 @@
  */
 package org.grouplens.lenskit.core;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import org.grouplens.grapht.graph.Edge;
-import org.grouplens.grapht.graph.Graph;
-import org.grouplens.grapht.graph.Node;
+import org.grouplens.grapht.graph.DAGEdge;
+import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.spi.*;
 
 import javax.annotation.Nonnull;
@@ -34,9 +31,6 @@ import javax.annotation.Nullable;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Helper utilities for Grapht integration.
@@ -48,37 +42,38 @@ public final class GraphtUtils {
     private GraphtUtils() {
     }
 
-    public static Node replaceNodeWithPlaceholder(InjectSPI spi, Graph graph, Node node) {
-        // replace it with a null satisfaction
-        final CachedSatisfaction daoLbl = node.getLabel();
-        assert daoLbl != null;
-        final Satisfaction oldSat = daoLbl.getSatisfaction();
-        final Class<?> type = oldSat.getErasedType();
-        final Satisfaction sat = spi.satisfyWithNull(type);
-        final Node placeholder = new Node(sat, CachePolicy.MEMOIZE);
-        graph.replaceNode(node, placeholder);
-
-        // replace desires on edges (truncates desire chains to only contain head, dropping refs)
-        for (Edge e: Lists.newArrayList(graph.getIncomingEdges(placeholder))) {
-            Desire d = e.getDesire();
-            List<Desire> lbl = null;
-            if (d != null) {
-                lbl = Collections.singletonList(d);
-            }
-            Edge replacement = new Edge(e.getHead(), e.getTail(), lbl);
-            graph.replaceEdge(e, replacement);
-        }
-
-        return placeholder;
-    }
+//    public static Node replaceNodeWithPlaceholder(InjectSPI spi, Graph graph, Node node) {
+//        // replace it with a null satisfaction
+//        final CachedSatisfaction daoLbl = node.getLabel();
+//        assert daoLbl != null;
+//        final Satisfaction oldSat = daoLbl.getSatisfaction();
+//        final Class<?> type = oldSat.getErasedType();
+//        final Satisfaction sat = spi.satisfyWithNull(type);
+//        final Node placeholder = new Node(sat, CachePolicy.MEMOIZE);
+//        graph.replaceNode(node, placeholder);
+//
+//        // replace desires on edges (truncates desire chains to only contain head, dropping refs)
+//        for (Edge e: Lists.newArrayList(graph.getIncomingEdges(placeholder))) {
+//            Desire d = e.getDesire();
+//            List<Desire> lbl = null;
+//            if (d != null) {
+//                lbl = Collections.singletonList(d);
+//            }
+//            Edge replacement = new Edge(e.getHead(), e.getTail(), lbl);
+//            graph.replaceEdge(e, replacement);
+//        }
+//
+//        return placeholder;
+//    }
 
     /**
      * Determine if a node is a shareable component.
      *
+     *
      * @param node The node.
      * @return {@code true} if the component is shareable.
      */
-    public static boolean isShareable(Node node) {
+    public static boolean isShareable(DAGNode<CachedSatisfaction, DesireChain> node) {
         CachedSatisfaction label = node.getLabel();
         if (label == null) {
             return false;
@@ -132,22 +127,6 @@ public final class GraphtUtils {
     }
 
     /**
-     * Remove transient edges from a set.
-     *
-     * @param edges The set of edges.
-     * @return A new set containing only the non-transient edges.
-     */
-    public static Set<Edge> removeTransient(Set<Edge> edges) {
-        return Sets.filter(edges, new Predicate<Edge>() {
-            @Override
-            public boolean apply(@Nullable Edge input) {
-                Desire desire = input == null ? null : input.getDesire();
-                return desire == null || !desireIsTransient(desire);
-            }
-        });
-    }
-
-    /**
      * Determine whether a desire is transient.
      *
      * @param d The desire to test.
@@ -158,37 +137,18 @@ public final class GraphtUtils {
         return attrs.getAttribute(Transient.class) != null;
     }
 
-    /**
-     * Predicate satisfied by nodes whose satisfactions have the specified type.
-     *
-     * @param type The requested type.
-     * @return A predicate accepting nodes with the specified type.
-     */
-    public static Predicate<Node> nodeHasType(final Class<?> type) {
-        return new Predicate<Node>() {
+    public static boolean edgeIsTransient(DAGEdge<?, DesireChain> input) {
+        Desire desire = input.getLabel().getInitialDesire();
+        return desireIsTransient(desire);
+    }
+
+    public static Predicate<DAGEdge<?, DesireChain>> edgeIsTransient() {
+        return new Predicate<DAGEdge<?, DesireChain>>() {
             @Override
-            public boolean apply(@Nullable Node input) {
-                CachedSatisfaction lbl = input == null ? null : input.getLabel();
-                return lbl != null && type.isAssignableFrom(lbl.getSatisfaction().getErasedType());
+            public boolean apply(@Nullable DAGEdge<?, DesireChain> input) {
+                Desire desire = input == null ? null : input.getLabel().getInitialDesire();
+                return desire != null && !desireIsTransient(desire);
             }
         };
-    }
-
-    /**
-     * Function to extract the tail of a node.
-     *
-     * @return A function extracting the tail of a node.
-     */
-    public static Function<Edge, Node> edgeTail() {
-        return EdgeTail.INSTANCE;
-    }
-
-    private static class EdgeTail implements Function<Edge, Node> {
-        public static final EdgeTail INSTANCE = new EdgeTail();
-
-        @Override
-        public Node apply(@Nullable Edge input) {
-            return input == null ? null : input.getTail();
-        }
     }
 }

@@ -25,10 +25,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.grapht.graph.Edge;
-import org.grouplens.grapht.graph.Graph;
-import org.grouplens.grapht.graph.Node;
+import org.grouplens.grapht.graph.DAGEdge;
+import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.spi.*;
 import org.grouplens.grapht.spi.reflect.*;
 import org.grouplens.lenskit.core.GraphtUtils;
@@ -51,19 +52,19 @@ class GraphDumper {
     private static final String ROOT_ID = "root";
 
     private final GraphWriter writer;
-    private final Graph graph;
-    private final Set<Node> unsharedNodes;
-    private final Map<Node, String> nodeIds;
+    private final DAGNode<CachedSatisfaction,DesireChain> graph;
+    private final Set<DAGNode<CachedSatisfaction,DesireChain>> unsharedNodes;
+    private final Map<DAGNode<CachedSatisfaction,DesireChain>, String> nodeIds;
     private final Map<String, String> nodeTargets;
     private final Queue<GVEdge> edgeQueue;
 
-    public GraphDumper(Graph g, Set<Node> unshared, GraphWriter gw) {
+    public GraphDumper(DAGNode<CachedSatisfaction,DesireChain> g, Set<DAGNode<CachedSatisfaction,DesireChain>> unshared, GraphWriter gw) {
         writer = gw;
         graph = g;
-        unsharedNodes = new HashSet<Node>(unshared);
-        unsharedNodes.retainAll(g.getNodes());
+        unsharedNodes = Sets.newHashSet(unshared);
+        unsharedNodes.retainAll(g.getReachableNodes());
         logger.debug("{} shared nodes", unsharedNodes.size());
-        nodeIds = new HashMap<Node, String>();
+        nodeIds = new HashMap<DAGNode<CachedSatisfaction,DesireChain>, String>();
         nodeTargets = new HashMap<String, String>();
         edgeQueue = new LinkedList<GVEdge>();
     }
@@ -73,7 +74,7 @@ class GraphDumper {
      * @param root The root node.
      * @return The ID of the root node.
      */
-    public String setRoot(Node root) throws IOException {
+    public String setRoot(DAGNode<CachedSatisfaction,DesireChain> root) throws IOException {
         if (!nodeTargets.isEmpty()) {
             throw new IllegalStateException("root node already specificied");
         }
@@ -92,7 +93,7 @@ class GraphDumper {
      * @param node The node to process
      * @return The node's target descriptor (ID, possibly with port).
      */
-    public String process(Node node) throws IOException {
+    public String process(DAGNode<CachedSatisfaction,DesireChain> node) throws IOException {
         Preconditions.checkNotNull(node, "node must not be null");
         if (nodeTargets.isEmpty()) {
             throw new IllegalStateException("root node has not been set");
@@ -141,11 +142,11 @@ class GraphDumper {
     }
 
     private class Visitor implements SatisfactionVisitor<String> {
-        private final Node currentNode;
+        private final DAGNode<CachedSatisfaction,DesireChain> currentNode;
         private final String nodeId;
         private final Satisfaction satisfaction;
 
-        private Visitor(Node nd, String id) {
+        private Visitor(DAGNode<CachedSatisfaction,DesireChain> nd, String id) {
             currentNode = nd;
             nodeId = id;
             if (currentNode == null) {
@@ -264,13 +265,12 @@ class GraphDumper {
             bld.setShareable(pid == null && GraphtUtils.isShareable(currentNode))
                .setShared(!unsharedNodes.contains(currentNode))
                .setIsProvider(pid != null);
-            List<Edge> edges = Lists.newArrayList(graph.getOutgoingEdges(currentNode));
+            List<DAGEdge<CachedSatisfaction,DesireChain>> edges = Lists.newArrayList(currentNode.getOutgoingEdges());
             Collections.sort(edges, EDGE_ORDER);
-            for (Edge e: edges) {
-                Desire dep = e.getDesire();
-                assert dep != null;
+            for (DAGEdge<CachedSatisfaction,DesireChain> e: edges) {
+                Desire dep = e.getLabel().getInitialDesire();
                 Annotation q = dep.getInjectionPoint().getAttributes().getQualifier();
-                Node targetNode = e.getTail();
+                DAGNode<CachedSatisfaction,DesireChain> targetNode = e.getTail();
                 if (q != null && q.annotationType().getAnnotation(Parameter.class) != null) {
                     logger.debug("dumping parameter {}", q);
                     CachedSatisfaction tcsat = targetNode.getLabel();
@@ -309,17 +309,14 @@ class GraphDumper {
         }
     }
 
-    private static Function<Edge,List<String>> ORDER_KEY = new Function<Edge, List<String>>() {
+    private static Function<DAGEdge<CachedSatisfaction,DesireChain>,List<String>> ORDER_KEY = new Function<DAGEdge<CachedSatisfaction,DesireChain>, List<String>>() {
         @Nullable
         @Override
-        public List<String> apply(@Nullable Edge input) {
+        public List<String> apply(@Nullable DAGEdge<CachedSatisfaction,DesireChain> input) {
             if (input == null) {
                 throw new IllegalArgumentException("cannot order null edge");
             }
-            Desire desire = input.getDesire();
-            if (desire == null) {
-                throw new IllegalArgumentException("cannot order null desire");
-            }
+            Desire desire = input.getLabel().getInitialDesire();
             InjectionPoint ip = desire.getInjectionPoint();
             List<String> key = new ArrayList<String>(4);
             if (ip instanceof ConstructorParameterInjectionPoint) {
@@ -350,7 +347,7 @@ class GraphDumper {
         }
     };
 
-    private static Ordering<Edge> EDGE_ORDER = Ordering.<String>natural()
+    private static Ordering<DAGEdge<CachedSatisfaction,DesireChain>> EDGE_ORDER = Ordering.<String>natural()
                                                        .lexicographical()
                                                        .onResultOf(ORDER_KEY);
 }

@@ -20,9 +20,8 @@
  */
 package org.grouplens.lenskit.core;
 
-import org.grouplens.grapht.graph.Edge;
-import org.grouplens.grapht.graph.Graph;
-import org.grouplens.grapht.graph.Node;
+import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.grapht.spi.reflect.InstanceSatisfaction;
@@ -168,7 +167,7 @@ public class LenskitRecommenderEngineTest {
     }
 
     @SuppressWarnings({"rawtypes"})
-    private void assertNodeNotEVDao(Node node) {
+    private void assertNodeNotEVDao(DAGNode<CachedSatisfaction,DesireChain> node) {
         CachedSatisfaction lbl = node.getLabel();
         if (lbl == null) {
             return;
@@ -190,16 +189,10 @@ public class LenskitRecommenderEngineTest {
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
 
-        Graph g = engine.getDependencies();
+        DAGNode<CachedSatisfaction,DesireChain> g = engine.getGraph();
         // make sure we have no record of an instance dao
-        for (Node n: g.getNodes()) {
+        for (DAGNode<CachedSatisfaction,DesireChain> n: g.getReachableNodes()) {
             assertNodeNotEVDao(n);
-            for (Edge e: g.getOutgoingEdges(n)) {
-                assertNodeNotEVDao(e.getTail());
-            }
-            for (Edge e: g.getIncomingEdges(n)) {
-                assertNodeNotEVDao(e.getHead());
-            }
         }
     }
 
@@ -325,6 +318,7 @@ public class LenskitRecommenderEngineTest {
     }
 
     public static class BufferProvider implements Provider<ByteBuffer> {
+        @Override
         @Shareable
         public ByteBuffer get() {
             return ByteBuffer.allocate(32);
@@ -332,6 +326,7 @@ public class LenskitRecommenderEngineTest {
     }
 
     public static class StreamProvider implements Provider<InputStream> {
+        @Override
         public InputStream get() {
             return new ByteArrayInputStream(new byte[] {0, 3, 2});
         }
