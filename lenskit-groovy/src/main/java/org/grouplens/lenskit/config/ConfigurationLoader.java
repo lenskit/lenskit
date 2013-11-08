@@ -106,7 +106,9 @@ public class ConfigurationLoader {
      * Load a configuration from a script source.
      * @param source The configuration script to load.
      * @return The resulting LensKit configuration.
+     * @deprecated Loading from Groovy sources as strings is confusing.
      */
+    @Deprecated
     public LenskitConfiguration load(@Nonnull String source) throws RecommenderConfigurationException {
         Preconditions.checkNotNull(source, "Configuration source text");
         return loadScript(source).configure();

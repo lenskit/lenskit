@@ -59,7 +59,9 @@ public class ConfigHelpers {
      *
      * @param script The script source text to evaluate.
      * @return The LensKit configuration.
+     * @deprecated Loading from Groovy source strings is confusing.
      */
+    @Deprecated
     public static LenskitConfiguration load(String script) throws RecommenderConfigurationException {
         return new ConfigurationLoader().load(script);
     }
