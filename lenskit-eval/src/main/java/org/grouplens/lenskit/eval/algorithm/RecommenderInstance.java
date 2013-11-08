@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.algorithm;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -40,6 +41,13 @@ public interface RecommenderInstance {
      * @return The training DAO.
      */
     UserEventDAO getUserEventDAO();
+
+    /**
+     * Get the recommender's results for the test user.
+     * @param uid The user ID.
+     * @return The user's recommendation results for measurement.
+     */
+    TestUser getUserResults(long uid);
 
     /**
      * Get a user's predictions.

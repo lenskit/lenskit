@@ -84,7 +84,11 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
         @Nonnull
         @Override
         public Object[] evaluate(TestUser user) {
-            return evaluatePredictions(user.getTestRatings(), user.getPredictions());
+            SparseVector predictions = user.getPredictions();
+            if (predictions == null) {
+                return userRow();
+            }
+            return evaluatePredictions(user.getTestRatings(), predictions);
         }
 
         @Nonnull
@@ -96,15 +100,19 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
             double u = actualUtility / idealUtility;
             total += u;
             nusers++;
-            return new Object[]{u};
+            return userRow(u);
         }
 
         @Nonnull
         @Override
         public Object[] finalResults() {
-            double v = total / nusers;
-            logger.info("HLU: {}", v);
-            return new Object[]{v};
+            if (nusers > 0) {
+                double v = total / nusers;
+                logger.info("HLU: {}", v);
+                return finalRow(v);
+            } else {
+                return finalRow();
+            }
         }
     }
 }

@@ -1,0 +1,16 @@
+#parse("relnotes.vm")
+#header("2.0.4")
+
+  This is a bugfix release in the 2.0 series.
+
+  #pmIntro("2.0.4", 26)
+
+  Highlights:
+
+  * Added a <query> set to train-test data sets.  The event DAO from this data source is bound
+    to <<<(@QueryData, EventDAO)>>> by the evaluator if it is present.  Defaults to unset (so
+    the training data set will be used).
+
+  * Mark mean-centering normalizer as shareable.
+
+  []

@@ -72,30 +72,34 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
         public Object[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
+            if (predictions == null) {
+                return new Object[USER_COLUMNS.size()];
+            }
             int n = 0;
             int good = 0;
             for (VectorEntry e : ratings.fast()) {
-                double pv = predictions.get(e.getKey());
                 n += 1;
-                if (!Double.isNaN(pv)) {
+                if (predictions.containsKey(e.getKey())) {
                     good += 1;
                 }
             }
             npreds += n;
             ngood += good;
             nusers += 1;
-            return new Object[]{n, good,
-                                n > 0 ? (((double) good) / n) : null
-            };
+            return userRow(n, good,
+                           n > 0 ? (((double) good) / n) : null);
         }
 
         @Nonnull
         @Override
         public Object[] finalResults() {
-            double coverage = (double) ngood / npreds;
+            Double coverage = null;
+            if (npreds > 0) {
+                coverage = (double) ngood / npreds;
+            }
             logger.info("Coverage: {}", coverage);
 
-            return new Object[]{nusers, npreds, ngood, coverage};
+            return finalRow(nusers, npreds, ngood, coverage);
         }
 
     }

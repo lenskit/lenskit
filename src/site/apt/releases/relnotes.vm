@@ -1,6 +1,9 @@
 #macro( issue $num )##
 {{{https://github.com/grouplens/lenskit/issues/$num}#$num}}##
 #end
+#macro( user $name)##
+{{{https://github.com/$name}@$name}}##
+#end
 
 #macro( makeHeader $ver $tail )##
                          --------------------

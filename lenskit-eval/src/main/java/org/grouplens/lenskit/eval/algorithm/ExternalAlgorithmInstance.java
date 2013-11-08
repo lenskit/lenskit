@@ -31,7 +31,10 @@ import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.history.History;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.ExecutionInfo;
@@ -39,6 +42,7 @@ import org.grouplens.lenskit.eval.script.BuiltBy;
 import org.grouplens.lenskit.eval.data.CSVDataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.util.DelimitedTextCursor;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
@@ -227,7 +231,9 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
             throw new RecommenderBuildException("recommender produced no output", e);
         }
 
-        return new RecInstance(data.getTrainingData().getUserEventDAO(), vectors);
+        return new RecInstance(data.getTrainingData().getUserEventDAO(),
+                               data.getTestData().getUserEventDAO(),
+                               vectors);
     }
 
     private Long2ObjectMap<SparseVector> readPredictions(File predFile) throws FileNotFoundException, RecommenderBuildException {
@@ -260,17 +266,28 @@ public class ExternalAlgorithmInstance implements AlgorithmInstance {
     }
 
     private static class RecInstance implements RecommenderInstance {
-        private final UserEventDAO dao;
+        private final UserEventDAO trainDAO;
+        private final UserEventDAO testDAO;
         private final Long2ObjectMap<SparseVector> vectors;
 
-        public RecInstance(UserEventDAO dao, Long2ObjectMap<SparseVector> vs) {
-            this.dao = dao;
+        public RecInstance(UserEventDAO train, UserEventDAO test, Long2ObjectMap<SparseVector> vs) {
+            trainDAO = train;
+            testDAO = test;
             vectors = vs;
         }
 
         @Override
         public UserEventDAO getUserEventDAO() {
-            return dao;
+            return trainDAO;
+        }
+
+        @Override
+        public TestUser getUserResults(long uid) {
+            UserHistory<Event> history = testDAO.getEventsForUser(uid);
+            if (history == null) {
+                history = History.forUser(uid);
+            }
+            return new ExternalAgorithmTestUser(trainDAO, history, vectors.get(uid));
         }
 
         @Override

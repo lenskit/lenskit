@@ -72,6 +72,9 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
         public Object[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
+            if (predictions == null) {
+                return userRow();
+            }
             double usse = 0;
             int n = 0;
             for (VectorEntry e : predictions.fast()) {
@@ -89,18 +92,22 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
                 double rmse = sqrt(usse / n);
                 totalRMSE += rmse;
                 nusers++;
-                return new Object[]{rmse};
+                return userRow(rmse);
             } else {
-                return new Object[1];
+                return userRow();
             }
         }
 
         @Nonnull
         @Override
         public Object[] finalResults() {
-            double v = sqrt(sse / nratings);
-            logger.info("RMSE: {}", v);
-            return new Object[]{v, totalRMSE / nusers};
+            if (nratings > 0) {
+                double v = sqrt(sse / nratings);
+                logger.info("RMSE: {}", v);
+                return finalRow(v, totalRMSE / nusers);
+            } else {
+                return finalRow();
+            }
         }
     }
 }

@@ -81,9 +81,12 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public String[] evaluate(TestUser user) {
+        public Object[] evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
+            if (predictions == null) {
+                return userRow();
+            }
 
             // TODO Re-use accumulators
             MutualInformationAccumulator accum = new MutualInformationAccumulator(quantizer.getCount());
@@ -101,27 +104,28 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
                 ratingEntropySum += ratingEntropy;
                 predictionEntropySum += predEntropy;
                 nusers += 1;
-                return new String[] {
-                        Double.toString(ratingEntropy),
-                        Double.toString(predEntropy),
-                        Double.toString(info)
-                };
+                return userRow(ratingEntropy,
+                               predEntropy,
+                               info);
             } else {
-                return new String[3];
+                return userRow();
             }
         }
 
         @Nonnull
         @Override
-        public String[] finalResults() {
+        public Object[] finalResults() {
+            if (nusers <= 0) {
+                return finalRow();
+            }
+
             logger.info("H(rating|user): {}", ratingEntropySum / nusers);
             logger.info("H(prediction|user): {}", predictionEntropySum / nusers);
             logger.info("I(rating;prediction): {}", informationSum / nusers);
-            return new String[]{
-                    Double.toString(ratingEntropySum / nusers),
-                    Double.toString(predictionEntropySum / nusers),
-                    Double.toString(informationSum / nusers)
-            };
+
+            return finalRow(ratingEntropySum / nusers,
+                            predictionEntropySum / nusers,
+                            informationSum / nusers);
         }
     }
 }

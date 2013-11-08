@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.data.history;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import org.grouplens.lenskit.data.event.Event;
@@ -96,10 +97,16 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
      * <p>This implementation filters into a new {@link BasicUserHistory} backed
      * by an {@link ArrayList}.
      */
+    @SuppressWarnings("unchecked")
     @Override
     public <T extends Event> UserHistory<T> filter(Class<T> type) {
-        List<T> evts = ImmutableList.copyOf(Iterables.filter(this, type));
-        return new BasicUserHistory<T>(getUserId(), evts);
+        // pre-scan the history to see if we need to copy
+        if (Iterables.all(this, Predicates.instanceOf(type))) {
+            return (UserHistory<T>) this;
+        } else {
+            List<T> evts = ImmutableList.copyOf(Iterables.filter(this, type));
+            return new BasicUserHistory<T>(getUserId(), evts);
+        }
     }
 
     /**
@@ -109,7 +116,11 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
      */
     @Override
     public UserHistory<E> filter(Predicate<? super E> pred) {
-        List<E> evts = ImmutableList.copyOf(Iterables.filter(this, pred));
-        return new BasicUserHistory<E>(getUserId(), evts);
+        if (Iterables.all(this, pred)) {
+            return this;
+        } else {
+            List<E> evts = ImmutableList.copyOf(Iterables.filter(this, pred));
+            return new BasicUserHistory<E>(getUserId(), evts);
+        }
     }
 }

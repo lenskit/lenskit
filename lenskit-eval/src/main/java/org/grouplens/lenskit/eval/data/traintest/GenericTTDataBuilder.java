@@ -28,6 +28,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
+ * Builder for generic train-test data sets.
+ *
+ * @see GenericTTDataSet
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class GenericTTDataBuilder implements Builder<GenericTTDataSet> {
@@ -35,6 +38,7 @@ public class GenericTTDataBuilder implements Builder<GenericTTDataSet> {
     private DataSource trainingData;
     private DataSource testData;
     private Map<String, Object> attributes = new LinkedHashMap<String, Object>();
+    private DataSource queryData;
 
     public GenericTTDataBuilder() {
         this(null);
@@ -44,6 +48,11 @@ public class GenericTTDataBuilder implements Builder<GenericTTDataSet> {
         this.name = name;
     }
 
+    /**
+     * Set the data set's name.
+     * @param n The data set's name.
+     * @return The builder (for chaining)
+     */
     public GenericTTDataBuilder setName(String n) {
         name = n;
         return this;
@@ -51,6 +60,11 @@ public class GenericTTDataBuilder implements Builder<GenericTTDataSet> {
 
     public GenericTTDataBuilder setTrain(DataSource ds) {
         trainingData = ds;
+        return this;
+    }
+
+    public GenericTTDataBuilder setQuery(DataSource query) {
+        queryData = query;
         return this;
     }
 
@@ -82,8 +96,6 @@ public class GenericTTDataBuilder implements Builder<GenericTTDataSet> {
             attributes.put("DataSet", getName());
         }
         Preconditions.checkNotNull(trainingData, "train data is Null");
-        return new GenericTTDataSet(getName(), trainingData,
-                                    testData, trainingData.getPreferenceDomain(),
-                                    attributes);
+        return new GenericTTDataSet(getName(), trainingData, queryData, testData, attributes);
     }
 }

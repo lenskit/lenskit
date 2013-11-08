@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.grouplens</groupId>
-    <artifactId>grouplens-oss-parent</artifactId>
-    <version>2</version>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
   </parent>
   <groupId>org.grouplens.lenskit</groupId>
   <artifactId>lenskit</artifactId>
-  <version>2.0.2</version>
+  <version>2.0.4</version>
   <packaging>pom</packaging>
   <name>LensKit</name>
   <description>Collaborative filtering toolkit from GroupLens Research</description>
@@ -32,7 +32,7 @@
     <connection>scm:git:http://github.com/grouplens/lenskit.git</connection>
     <developerConnection>scm:git:git@github.com:grouplens/lenskit.git</developerConnection>
     <url>http://github.com/grouplens/lenskit</url>
-    <tag>lenskit-2.0.2</tag>
+    <tag>lenskit-2.0.4</tag>
   </scm>
 
   <properties>
@@ -428,6 +428,29 @@
         </execution>
         </executions>
       </plugin>
+
+      <!-- Generate class lists. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-class-list</id>
+            <phase>process-classes</phase>
+            <goals><goal>javadoc</goal></goals>
+            <configuration>
+              <doclet>org.grouplens.javadoc.classlist.ClassListDoclet</doclet>
+              <docletArtifact>
+                <groupId>org.grouplens.common</groupId>
+                <artifactId>common-javadoc</artifactId>
+                <version>0.8</version>
+              </docletArtifact>
+              <useStandardDocletOptions>false</useStandardDocletOptions>
+              <additionalparam>-outfile "${project.build.outputDirectory}/META-INF/classes.lst"</additionalparam>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -646,6 +669,36 @@
           <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </pluginRepository>
       </pluginRepositories>
+    </profile>
+
+    <profile>
+      <id>external-build-dir</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+        <property>
+          <name>external.build.root</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>net.elehack.maven.plugins</groupId>
+            <artifactId>external-build-maven-plugin</artifactId>
+            <version>0.1</version>
+            <configuration>
+              <buildDirectory>${external.build.root}/${project.groupId}:${project.artifactId}</buildDirectory>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>setup-build-dir</goal>
+                  <goal>teardown-build-dir</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

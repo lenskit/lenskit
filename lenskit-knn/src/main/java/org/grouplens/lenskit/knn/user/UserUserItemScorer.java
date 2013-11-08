@@ -85,7 +85,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
     public void score(long user, @Nonnull MutableSparseVector scores) {
         UserHistory<Event> history = dao.getEventsForUser(user);
         if (history == null) {
-            History.forUser(user);
+            history = History.forUser(user);
         }
         logger.trace("Predicting for user {} with {} events",
                      user, history.size());

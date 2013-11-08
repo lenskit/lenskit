@@ -20,7 +20,7 @@
          license terms. To use this data in LensKit's automated tests, set the
          `grouplens.mldata.acknowledge' property to `yes' to indicate you
          acknowledge the usage license.  More information is available at
-         &lt;http://bitbucket.org/grouplens/lenskit/wiki/ML100K&gt;.">
+         &lt;http://lenskit.grouplens.org/ML100K&gt;.">
 
       <condition>
         <not>
@@ -33,7 +33,7 @@
     <echo message="Downloading ML-100K data set"/>
 
     <mkdir dir="${project.build.directory}/data"/>
-    <get src="http://www.grouplens.org/system/files/ml-100k.zip"
+    <get src="http://files.grouplens.org/datasets/movielens/ml-100k.zip"
          dest="${mldata.zipfile}"
          skipexisting="true"/>
   </target>
