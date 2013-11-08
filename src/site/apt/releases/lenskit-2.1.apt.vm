@@ -20,3 +20,10 @@
   * Updated user-user CF to be simpler & make better use of new DAOs (#issue(356)).
 
   []
+
+* Evaluator
+
+  * The evaluator now supports loading algorithms from config files in both train-test
+    and graph dumping tasks (#issue(406)).
+
+  []
