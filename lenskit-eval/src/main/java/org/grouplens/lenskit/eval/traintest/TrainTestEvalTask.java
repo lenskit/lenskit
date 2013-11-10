@@ -304,25 +304,37 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private void runEvaluations(List<List<TrainTestEvalJob>> jobGroups) throws TaskExecutionException {
         int nthreads = getProject().getConfig().getThreadCount();
         logger.info("Running evaluator with {} threads", nthreads);
-        ExecutorService exec = Executors.newFixedThreadPool(nthreads);
-        try {
-            for (List<TrainTestEvalJob> group: jobGroups) {
-                TaskGroupRunner runner = TaskGroupRunner.create(exec);
-                runner.submitAll(group);
+        if (nthreads == 1) {
+            for (TrainTestEvalJob job: Iterables.concat(jobGroups)) {
                 try {
-                    runner.waitForAll();
-                } catch (ExecutionException e) {
-                    Throwable cause = e.getCause();
-                    if (cause instanceof TrainTestJobException) {
-                        cause = cause.getCause();
-                    }
-                    throw new TaskExecutionException(cause);
-                } catch (TrainTestJobException e) {
+                    job.run();
+                } catch (TrainTestJobException ex) {
+                    throw new TaskExecutionException(ex.getCause());
+                } catch (RuntimeException e) {
                     throw new TaskExecutionException(e);
                 }
             }
-        } finally {
-            exec.shutdown();
+        } else {
+            ExecutorService exec = Executors.newFixedThreadPool(nthreads);
+            try {
+                for (List<TrainTestEvalJob> group: jobGroups) {
+                    TaskGroupRunner runner = TaskGroupRunner.create(exec);
+                    runner.submitAll(group);
+                    try {
+                        runner.waitForAll();
+                    } catch (ExecutionException e) {
+                        Throwable cause = e.getCause();
+                        if (cause instanceof TrainTestJobException) {
+                            cause = cause.getCause();
+                        }
+                        throw new TaskExecutionException(cause);
+                    } catch (TrainTestJobException e) {
+                        throw new TaskExecutionException(e);
+                    }
+                }
+            } finally {
+                exec.shutdown();
+            }
         }
     }
 
