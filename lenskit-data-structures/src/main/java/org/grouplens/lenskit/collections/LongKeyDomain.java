@@ -417,6 +417,14 @@ public final class LongKeyDomain implements Serializable {
     }
 
     /**
+     * Get the key set's list of keys (domain) as a list.
+     * @return A list of all keys in the key domain.
+     */
+    public LongList keyList() {
+        return new KeyList();
+    }
+
+    /**
      * Get the active keys as a bit set.  The returned bit set <strong>must not</strong> be modified.
      */
     public BitSet getActiveMask() {
@@ -517,6 +525,19 @@ public final class LongKeyDomain implements Serializable {
         @Override
         public long previousLong() {
             return getKey(delegate.previousInt());
+        }
+    }
+
+    private class KeyList extends AbstractLongList {
+        @Override
+        public int size() {
+            return domainSize();
+        }
+
+        @Override
+        public long getLong(int i) {
+            Preconditions.checkElementIndex(i, domainSize());
+            return getKey(i);
         }
     }
 }
