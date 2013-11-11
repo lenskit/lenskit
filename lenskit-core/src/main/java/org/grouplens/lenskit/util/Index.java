@@ -28,16 +28,16 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 /**
  * An index mapping long IDs to consecuitive 0-based integers.  The indexes
- * fall in the range [0,{@linkplain #getObjectCount()}).
+ * fall in the range [0,{@linkplain #getObjectCount()}).  This is useful to
+ * index arrays, matrices, etc. by user or item IDs.
  *
- * Indexes must be serializable.
+ * Indexes are serializable.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface Index extends Serializable {
     /**
-     * Get the index of an id.  If the object has not been interned,
-     * returns a negative number.
+     * Get the index of an id.  If the id is not in the index, returns a negative number.
      *
      * @param id The id to query.
      * @return The id's index or a negative value if the id does not exist.
@@ -45,17 +45,17 @@ public interface Index extends Serializable {
     int getIndex(long id);
 
     /**
-     * Get the key for an index.
+     * Get the id for an index.
      *
      * @param idx The index of the ID to retrieve.
-     * @return The ID for the given {@var idx}
+     * @return The ID for the given {@var idx}.
      */
     long getId(int idx);
 
     /**
-     * Get the number of ID in the index.
+     * Get the number of IDs in the index.
      *
-     * @return The number of indexed keys.
+     * @return The number of indexed ids.
      */
     int getObjectCount();
 
