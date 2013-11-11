@@ -34,7 +34,9 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
  * Indexes are serializable.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Use {@link org.grouplens.lenskit.indexes.IdIndexMapping} instead.
  */
+@Deprecated
 public interface Index extends Serializable {
     /**
      * Get the index of an id.  If the id is not in the index, returns a negative number.
