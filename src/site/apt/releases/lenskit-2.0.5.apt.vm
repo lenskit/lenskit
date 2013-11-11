@@ -1,0 +1,9 @@
+#parse("relnotes.vm")
+#header("2.0.4")
+
+  This is a minor enhancement release in the 2.0 series.
+
+  * Add <<<.o.g.l.indexes>>> to <<<lenskit-data-structures>>> to maintain indexes, replacing the
+    old <<<Index>>> and <<<Indexer>>> classes.
+
+  []
