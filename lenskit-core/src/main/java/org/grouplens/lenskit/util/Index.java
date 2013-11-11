@@ -65,13 +65,13 @@ public interface Index extends Serializable {
      * @return The list of (unique) IDs in the index.
      */
     LongList getIds();
-    
+
     /**
      * This method is used to convert arrays to sparse arrays.
-     * It takes an array of `double` values corresponding to the ids 
+     * It takes an array of `double` values corresponding to the ids
      * interned in the index and converts it to a sparse vector whose
      * keys are the IDs.
-     * 
+     *
      * @param values A array of double value.
      * @return A new sparse vector that is converted from the Array.
      */
