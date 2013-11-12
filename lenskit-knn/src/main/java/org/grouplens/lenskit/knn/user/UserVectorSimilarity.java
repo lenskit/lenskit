@@ -58,4 +58,9 @@ public class UserVectorSimilarity implements UserSimilarity, Serializable {
     public boolean isSymmetric() {
         return delegate.isSymmetric();
     }
+
+    @Override
+    public String toString() {
+        return "{user similarity: " + delegate.toString() + "}";
+    }
 }

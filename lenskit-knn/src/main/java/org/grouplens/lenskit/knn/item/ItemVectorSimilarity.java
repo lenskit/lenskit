@@ -57,4 +57,9 @@ public class ItemVectorSimilarity implements ItemSimilarity, Serializable {
     public boolean isSymmetric() {
         return delegate.isSymmetric();
     }
+
+    @Override
+    public String toString() {
+        return "{item similarity: " + delegate.toString() + "}";
+    }
 }
