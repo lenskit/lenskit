@@ -28,16 +28,18 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 /**
  * An index mapping long IDs to consecuitive 0-based integers.  The indexes
- * fall in the range [0,{@linkplain #getObjectCount()}).
+ * fall in the range [0,{@linkplain #getObjectCount()}).  This is useful to
+ * index arrays, matrices, etc. by user or item IDs.
  *
- * Indexes must be serializable.
+ * Indexes are serializable.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Use {@link org.grouplens.lenskit.indexes.IdIndexMapping} instead.
  */
+@Deprecated
 public interface Index extends Serializable {
     /**
-     * Get the index of an id.  If the object has not been interned,
-     * returns a negative number.
+     * Get the index of an id.  If the id is not in the index, returns a negative number.
      *
      * @param id The id to query.
      * @return The id's index or a negative value if the id does not exist.
@@ -45,17 +47,17 @@ public interface Index extends Serializable {
     int getIndex(long id);
 
     /**
-     * Get the key for an index.
+     * Get the id for an index.
      *
      * @param idx The index of the ID to retrieve.
-     * @return The ID for the given {@var idx}
+     * @return The ID for the given {@var idx}.
      */
     long getId(int idx);
 
     /**
-     * Get the number of ID in the index.
+     * Get the number of IDs in the index.
      *
-     * @return The number of indexed keys.
+     * @return The number of indexed ids.
      */
     int getObjectCount();
 
@@ -65,13 +67,13 @@ public interface Index extends Serializable {
      * @return The list of (unique) IDs in the index.
      */
     LongList getIds();
-    
+
     /**
      * This method is used to convert arrays to sparse arrays.
-     * It takes an array of `double` values corresponding to the ids 
+     * It takes an array of `double` values corresponding to the ids
      * interned in the index and converts it to a sparse vector whose
      * keys are the IDs.
-     * 
+     *
      * @param values A array of double value.
      * @return A new sparse vector that is converted from the Array.
      */

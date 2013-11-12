@@ -114,13 +114,12 @@ public class TaskGroupRunner {
 
         @Override
         public void onFailure(Throwable t) {
-            logger.debug("task completed with error", t);
             if (!(t instanceof CancellationException)) {
+                logger.debug("task completed with error ", t);
                 errors.add(t);
                 cancelRemainingTasks();
             }
             removeTask(future);
-            logger.info("{} tasks remaining", activeTasks.size());
         }
     }
 }

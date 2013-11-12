@@ -239,7 +239,7 @@ public class EvalScriptMojo extends AbstractMojo {
                     report = e;
                 }
                 getLog().error("Evaluation script failed:", report);
-                throw new MojoExecutionException("Invalid evaluation script", e);
+                throw new MojoExecutionException("An error occurred running the evaluation script", e);
             } catch (IOException e) {
                 getLog().error(script + ": IO error", e);
                 throw new MojoExecutionException("IO Exception on script", e);
