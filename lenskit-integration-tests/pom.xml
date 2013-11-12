@@ -111,7 +111,7 @@
             <lenskit.temp.dir>${project.build.directory}/eval.scratch</lenskit.temp.dir>
           </systemPropertyVariables>
           <includes>
-            <include>**/Test*.java</include>
+            <include>**/*Test.java</include>
           </includes>
         </configuration>
         <executions>
