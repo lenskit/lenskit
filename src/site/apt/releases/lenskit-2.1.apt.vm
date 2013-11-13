@@ -25,6 +25,17 @@
 
   * Updated user-user CF to be simpler & make better use of new DAOs (#issue(356)).
 
+  * Refactored item-item model build:
+
+    * Build the context with a provider rather than injecting a factory.
+
+    * Use the strategy pattern to abstract sparse vs. non-sparse iteration, allowing sparse
+      iteration to be disabled by overriding the default provider.
+
+    * Better logging of the item-item model build process.
+
+    []
+
   []
 
 * Evaluator
