@@ -57,20 +57,37 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     }
 
     /**
-     * Create a new LenskitRecommenderEngine by reading a previously serialized
-     * engine from the given file. The new engine will be identical to the old
-     * except it will use the new DAOFactory. It is assumed that the file was
-     * created by using {@link #write(OutputStream)}.
+     * Create a new LenskitRecommenderEngine by reading a previously serialized engine from the
+     * given file. The new engine will be identical to the old except it will use the new
+     * DAOFactory. It is assumed that the file was created by using {@link #write(OutputStream)}.
+     * Classes will be loaded using a default class loader.
      *
      * @param file The file from which to load the engine.
      * @return The loaded recommender engine.
      * @throws IOException If there is an error reading from the file.
-     * @throws RecommenderConfigurationException If the configuration cannot be used.
+     * @throws RecommenderConfigurationException
+     *                     If the configuration cannot be used.
      */
     public static LenskitRecommenderEngine load(File file) throws IOException, RecommenderConfigurationException {
+        return load(file, null);
+    }
+
+    /**
+     * Create a new LenskitRecommenderEngine by reading a previously serialized engine from the
+     * given file. The new engine will be identical to the old except it will use the new
+     * DAOFactory. It is assumed that the file was created by using {@link #write(OutputStream)}.
+     *
+     * @param file   The file from which to load the engine.
+     * @param loader The class loader to load from ({@code null} to use a default class loader).
+     * @return The loaded recommender engine.
+     * @throws IOException If there is an error reading from the file.
+     * @throws RecommenderConfigurationException
+     *                     If the configuration cannot be used.
+     */
+    public static LenskitRecommenderEngine load(File file, ClassLoader loader) throws IOException, RecommenderConfigurationException {
         FileInputStream input = new FileInputStream(file);
         try {
-            return load(input);
+            return load(input, loader);
         } finally {
             input.close();
         }
@@ -79,7 +96,8 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     /**
      * Create a new LenskitRecommenderEngine by reading a previously serialized engine from the
      * given input stream. The new engine will be identical to the old. It is assumed that the file
-     * was created by using {@link #write(OutputStream)}.
+     * was created by using {@link #write(OutputStream)}.  Classes will be loaded using a default
+     * class loader.
      *
      * @param input The stream from which to load the engine.
      * @return The loaded recommender engine.
@@ -88,11 +106,42 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      *                     If the configuration cannot be used.
      */
     public static LenskitRecommenderEngine load(InputStream input) throws IOException, RecommenderConfigurationException {
+        return load(input, null);
+    }
+
+    /**
+     * Create a new LenskitRecommenderEngine by reading a previously serialized engine from the
+     * given input stream. The new engine will be identical to the old. It is assumed that the file
+     * was created by using {@link #write(OutputStream)}.
+     *
+     * @param input  The stream from which to load the engine.
+     * @param loader The class loader to load from ({@code null} to use a default class loader).
+     * @return The loaded recommender engine.
+     * @throws IOException If there is an error reading from the file.
+     * @throws RecommenderConfigurationException
+     *                     If the configuration cannot be used.
+     */
+    public static LenskitRecommenderEngine load(InputStream input, ClassLoader loader) throws IOException, RecommenderConfigurationException {
         InjectSPI spi = new ReflectionInjectSPI();
         ObjectInputStream in = new ObjectInputStream(input);
         try {
-            DAGNode<CachedSatisfaction,DesireChain> dependencies = (DAGNode) in.readObject();
-            return new LenskitRecommenderEngine(dependencies, spi);
+            Thread current = Thread.currentThread();
+            // save the old class loader
+            ClassLoader oldLoader = current.getContextClassLoader();
+            if (loader != null) {
+                // set the new class loader
+                // Grapht will automatically use the context class loader
+                current.setContextClassLoader(loader);
+            }
+            try {
+                DAGNode<CachedSatisfaction, DesireChain> dependencies = (DAGNode) in.readObject();
+                return new LenskitRecommenderEngine(dependencies, spi);
+            } finally {
+                if (loader != null) {
+                    // restore the old class loader if needed
+                    current.setContextClassLoader(oldLoader);
+                }
+            }
         } catch (ClassNotFoundException e) {
             throw new RecommenderConfigurationException(e);
         } finally {
