@@ -10,6 +10,9 @@
   * Recommender engines can now be deserialized with arbitrary class loaders (fixes bugs using
     LensKit in Play, see #issue(434)).
 
+  * Added <<<lenskit-all>>> module so you can easily depend on all of LensKit with a single
+    dependency.
+
   []
 
 * Data Access
