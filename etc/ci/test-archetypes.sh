@@ -26,8 +26,7 @@ generate()
 execute()
 {
     cd test-"$1" || exit 1
-    cmd mvn -B -e -Dgrouplens.mldata.acknowledge=yes \
-        -Dlenskit.eval.threadCount=2 \
+    cmd mvn -B -e -Dlenskit.eval.threadCount=2 \
         -Drscript.executable=Rscript \
         lenskit-publish
     cd "$TEST_ROOT" || exit 1
