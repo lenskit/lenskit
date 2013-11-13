@@ -22,7 +22,10 @@ package org.grouplens.lenskit.knn.item.model;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
 import org.grouplens.lenskit.knn.item.ModelSize;
@@ -55,16 +58,19 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
     private final ItemSimilarity itemSimilarity;
     private final ItemItemBuildContext buildContext;
     private final Threshold threshold;
+    private final NeighborIterationStrategy neighborStrategy;
     private final int modelSize;
 
     @Inject
     public ItemItemModelBuilder(@Transient ItemSimilarity similarity,
                                 @Transient ItemItemBuildContext context,
                                 @Transient Threshold thresh,
+                                @Transient NeighborIterationStrategy nbrStrat,
                                 @ModelSize int size) {
         itemSimilarity = similarity;
         buildContext = context;
         threshold = thresh;
+        neighborStrategy = nbrStrat;
         modelSize = size;
     }
 
@@ -93,21 +99,8 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
                          itemId1, ndone, nitems);
             SparseVector vec1 = buildContext.itemVector(itemId1);
 
-            LongIterator itemIter;
-            if (itemSimilarity.isSparse()) {
-                LongSet users = vec1.keySet();
-                if (itemSimilarity.isSymmetric()) {
-                    itemIter = new AdaptiveSparseItemIterator(buildContext, users, itemId1);
-                } else {
-                    itemIter = new AdaptiveSparseItemIterator(buildContext, users);
-                }
-            } else {
-                if (itemSimilarity.isSymmetric()) {
-                    itemIter = allItems.iterator(itemId1);
-                } else {
-                    itemIter = allItems.iterator();
-                }
-            }
+            LongIterator itemIter = neighborStrategy.neighborIterator(buildContext, itemId1,
+                                                                      itemSimilarity.isSymmetric());
 
             while (itemIter.hasNext()) {
                 long itemId2 = itemIter.nextLong();
