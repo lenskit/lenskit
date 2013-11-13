@@ -94,19 +94,18 @@ public class ItemItemBuildContext {
     }
 
     /**
-     * Get the union of all items rated by the provided set of users.
-     *
-     * @param users The users to accumulate
-     * @return The item candidates for {@code item}.
+     * Get the items rated by a particular user.
+     * 
+     * @param user The user to query for.
+     * @return The items rated by {@code user}.
      */
     @Nonnull
-    public LongSortedSet getUserItems(LongSet users) {
-        LongSortedSet union = new LongRBTreeSet();
-        LongIterator it = users.iterator();
-        while (it.hasNext()) {
-            union.addAll(userItems.get(it.nextLong()));
+    public LongSortedSet getUserItems(long user) {
+        LongSortedSet items = userItems.get(user);
+        if (items == null) {
+            items = LongSortedSets.EMPTY_SET;
         }
-        return union;
+        return items;
     }
 
     /**

@@ -22,10 +22,7 @@ package org.grouplens.lenskit.knn.item.model;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
 import org.grouplens.lenskit.knn.item.ModelSize;
@@ -98,16 +95,17 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
 
             LongIterator itemIter;
             if (itemSimilarity.isSparse()) {
+                LongSet users = vec1.keySet();
                 if (itemSimilarity.isSymmetric()) {
-                    itemIter = buildContext.getUserItems(vec1.keySet()).iterator(itemId1);
+                    itemIter = new AdaptiveSparseItemIterator(buildContext, users, itemId1);
                 } else {
-                    itemIter = buildContext.getUserItems(vec1.keySet()).iterator();
+                    itemIter = new AdaptiveSparseItemIterator(buildContext, users);
                 }
             } else {
                 if (itemSimilarity.isSymmetric()) {
-                    itemIter = buildContext.getItems().iterator(itemId1);
+                    itemIter = allItems.iterator(itemId1);
                 } else {
-                    itemIter = buildContext.getItems().iterator();
+                    itemIter = allItems.iterator();
                 }
             }
 
@@ -178,4 +176,5 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
             return model;
         }
     }
+
 }
