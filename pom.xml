@@ -88,6 +88,7 @@
     <module>lenskit-archetype-fancy-analysis</module>
     <module>lenskit-eval-maven-plugin</module>
     <module>lenskit-test</module>
+    <module>lenskit-all</module>
   </modules>
 
   <dependencyManagement>
