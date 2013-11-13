@@ -56,17 +56,17 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemModelBuilder.class);
 
     private final ItemSimilarity itemSimilarity;
-    private final ItemItemBuildContextFactory contextFactory;
+    private final ItemItemBuildContext buildContext;
     private final Threshold threshold;
     private final int modelSize;
 
     @Inject
     public ItemItemModelBuilder(@Transient ItemSimilarity similarity,
-                                @Transient ItemItemBuildContextFactory ctxFactory,
+                                @Transient ItemItemBuildContext context,
                                 @Transient Threshold thresh,
                                 @ModelSize int size) {
         itemSimilarity = similarity;
-        contextFactory = ctxFactory;
+        buildContext = context;
         threshold = thresh;
         modelSize = size;
     }
@@ -80,7 +80,6 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
         logger.debug("similarity function is {}",
                      itemSimilarity.isSymmetric() ? "symmetric" : "non-symmetric");
 
-        ItemItemBuildContext buildContext = contextFactory.buildContext();
         Accumulator accumulator = new Accumulator(buildContext.getItems(), threshold, modelSize);
 
         LongSortedSet allItems = buildContext.getItems();

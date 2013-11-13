@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.grouplens.grapht.annotation.DefaultProvider;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,6 +38,7 @@ import java.util.Iterator;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see ItemItemModelBuilder
  */
+@DefaultProvider(ItemItemBuildContextProvider.class)
 public class ItemItemBuildContext {
     @Nonnull
     private
