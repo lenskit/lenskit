@@ -200,6 +200,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
                                       SparseVector ratings, MutableSparseVector estimates,
                                       int feature) {
         assert rule != null;
+        FunkSVDUpdater updater = rule.createUpdater();
         double sse = 0;
         int n = 0;
         for (VectorEntry e: ratings.fast()) {
@@ -212,21 +213,12 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
                 trailingValue += uprefs[f] * model.getItemFeatures()[f][iidx];
             }
 
-            // Step 2: Save the old feature values before computing the new ones
-            final double ouf = uprefs[feature];
-            final double oif = model.getItemFeatures()[feature][iidx];
-
-            // Step 3: Compute the error
-            final double err = rule.computeError(user, iid, trailingValue,
-                                                 estimates.get(iid), e.getValue(),
-                                                 ouf, oif);
+            updater.prepare(user, iid, trailingValue, estimates.get(iid), e.getValue(),
+                            uprefs[feature], model.getItemFeatures()[feature][iidx]);
 
             // Step 4: update user preferences
-            uprefs[feature] += rule.userUpdate(err, ouf, oif);
-
-            sse += err * err;
-            n += 1;
+            uprefs[feature] += updater.getUserFeatureUpdate();
         }
-        return Math.sqrt(sse / n);
+        return updater.getRMSE();
     }
 }
