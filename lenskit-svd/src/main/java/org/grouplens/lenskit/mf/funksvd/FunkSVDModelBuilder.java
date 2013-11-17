@@ -182,31 +182,24 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     protected double doFeatureIteration(TrainingEstimator estimates,
                                         FastCollection<IndexedPreference> ratings,
                                         double[] ufvs, double[] ifvs, double trail) {
-        double sse = 0;
-        int n = 0;
+        // We'll create a fresh updater for each feature iteration
+        // Not much overhead, and prevents needing another parameter
+        FunkSVDUpdater updater = rule.createUpdater();
 
         for (IndexedPreference r : CollectionUtils.fast(ratings)) {
             final int uidx = r.getUserIndex();
             final int iidx = r.getItemIndex();
 
-            // Step 1: Save the old feature values before computing the new ones
-            final double ouf = ufvs[uidx];
-            final double oif = ifvs[iidx];
-
-            // Step 2: Compute the error
-            final double err = rule.computeError(r.getUserId(), r.getItemId(),
-                                                 trail, estimates.get(r),
-                                                 r.getValue(), ouf, oif);
+            updater.prepare(r.getUserId(), r.getItemId(),
+                           trail, estimates.get(r), r.getValue(),
+                           ufvs[uidx], ifvs[iidx]);
 
             // Step 3: Update feature values
-            ufvs[uidx] += rule.userUpdate(err, ouf, oif);
-            ifvs[iidx] += rule.itemUpdate(err, ouf, oif);
-
-            sse += err * err;
-            n += 1;
+            ufvs[uidx] += updater.getUserFeatureUpdate();
+            ifvs[iidx] += updater.getItemFeatureUpdate();
         }
 
-        return Math.sqrt(sse / n);
+        return updater.getRMSE();
     }
 
     /**
