@@ -36,6 +36,7 @@ import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 
 import javax.inject.Inject;
 import java.io.Serializable;
+import java.lang.Math;
 
 /**
  * Configuration for computing SVDPlusPlus updates.
@@ -149,7 +150,7 @@ public final class SVDPlusPlusUpdateRule implements Serializable {
         int ratnum = uratings.size();
         for (IndexedPreference r : CollectionUtils.fast(uratings)) {
             int ratedidx = r.getItemIndex();
-            uside += iifv[ratedidx] / (double)ratnum;
+            uside += iifv[ratedidx] / Math.sqrt((double)ratnum);
         }
         pred += uside * ifv[iidx];
 
@@ -194,8 +195,8 @@ public final class SVDPlusPlusUpdateRule implements Serializable {
      * @param ratnum The number of the user's ratings.
      * @return The adjustment to be made to the item feature value.
      */
-    public double itemUpdate(double err, double ufv, double ifv, double iifv, int ratnum) {
-        double delta = err * ifv / (double)ratnum - trainingRegularization * iifv;
+    public double itemImpUpdate(double err, double ufv, double ifv, double iifv, int ratnum) {
+        double delta = err * ifv / Math.sqrt((double)ratnum) - trainingRegularization * iifv;
         return delta * learningRate;
     }
 }

@@ -29,6 +29,7 @@ import org.grouplens.lenskit.util.Index;
 
 import java.io.Serializable;
 import java.util.List;
+import java.lang.Math;
 
 /**
  * The SVDPlusPlus model class.

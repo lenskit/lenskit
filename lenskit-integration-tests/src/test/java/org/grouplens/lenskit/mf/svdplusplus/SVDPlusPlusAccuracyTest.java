@@ -50,7 +50,7 @@ public class SVDPlusPlusAccuracyTest extends CrossfoldTestSuite {
               .set(MeanDamping.class)
               .to(10);
         config.set(FeatureCount.class).to(10);
-        config.set(IterationCount.class).to(125);
+        config.set(IterationCount.class).to(50);
     }
 
     @Override

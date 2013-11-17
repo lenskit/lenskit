@@ -45,6 +45,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.List;
+import java.lang.Math;
 
 /**
  * SVD++ recommender builder using gradient descent (SVD++).
@@ -67,8 +68,8 @@ public class SVDPlusPlusModelBuilder implements Provider<SVDPlusPlusModel> {
     protected final SVDPlusPlusUpdateRule rule;
 
     @Inject
-    public SVDPlusPlusModelBuilder(@Transient @Nonnull PreferenceSnapshot snapshot,
-                               @Transient @Nonnull SVDPlusPlusUpdateRule rule,
+    public SVDPlusPlusModelBuilder(@Transient PreferenceSnapshot snapshot,
+                               @Transient SVDPlusPlusUpdateRule rule,
                                @FeatureCount int featureCount,
                                @InitialFeatureValue double initVal) {
         this.featureCount = featureCount;
@@ -166,7 +167,7 @@ public class SVDPlusPlusModelBuilder implements Provider<SVDPlusPlusModel> {
             int ratnum = userRatings.size();
             for (IndexedPreference ir : CollectionUtils.fast(userRatings)) {
                 int ratedidx = ir.getItemIndex();
-                ufvs[uidx] += iifvs[ratedidx] / (double)ratnum;
+                ufvs[uidx] += iifvs[ratedidx] / Math.sqrt((double)ratnum);
             }
         }
     }
@@ -205,7 +206,7 @@ public class SVDPlusPlusModelBuilder implements Provider<SVDPlusPlusModel> {
             // Step 3: Update feature values
             ufvs[uidx] += rule.userUpdate(err, ouf, oif);
             ifvs[iidx] += rule.itemUpdate(err, ouf, oif, uside);
-            iifvs[iidx] += rule.itemUpdate(err, ouf, oif, oiif, userRatings.size());
+            iifvs[iidx] += rule.itemImpUpdate(err, ouf, oif, oiif, userRatings.size());
 
             sse += err * err;
             n += 1;

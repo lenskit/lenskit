@@ -41,14 +41,10 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.lang.Math;
 
 /**
  * Do recommendations and predictions based on SVD++ matrix factorization.
- *
- * Recommendation is done based on folding-in.  The strategy is do a fold-in
- * operation as described in
- * <a href="http://www.grouplens.org/node/212">Sarwar et al., 2002</a> with the
- * user's ratings.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -191,7 +187,7 @@ public class SVDPlusPlusItemScorer extends AbstractItemScorer {
         int ratnum = ratings.size();
         for (VectorEntry itemId : ratings.fast()) {
             final long iid = itemId.getKey();
-            uprefs[feature] += model.getItemImpFactor(iid, feature) / (double)ratnum;
+            uprefs[feature] += model.getItemImpFactor(iid, feature) / Math.sqrt((double)ratnum);
         }
 
         // After training this feature, we need to update each rating's cached
@@ -216,7 +212,7 @@ public class SVDPlusPlusItemScorer extends AbstractItemScorer {
         for (VectorEntry e: ratings.fast()) {
             final long iid = e.getKey();
             final int iidx = model.getItemIndex().getIndex(iid);
-            uside += iifs[feature][iidx] / (double)ratnum;
+            uside += iifs[feature][iidx] / Math.sqrt((double)ratnum);
         }
         for (VectorEntry e: ratings.fast()) {
             final long iid = e.getKey();
