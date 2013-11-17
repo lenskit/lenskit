@@ -47,7 +47,7 @@ public final class SVDPlusPlusModel implements Serializable {
     private final int numItem;
 
     private final double[][] itemFeatures;
-    private final double[][] itemImpFactors;
+    private final double[][] itemImpFeatures;
     private final double[][] userFeatures;
 
     private final ClampingFunction clampingFunction;
@@ -63,7 +63,7 @@ public final class SVDPlusPlusModel implements Serializable {
         clampingFunction = clamp;
 
         itemFeatures = ifeats;
-        itemImpFactors = iimpfats;
+        itemImpFeatures = iimpfats;
         userFeatures = ufeats;
 
         itemIndex = iidx;
@@ -127,8 +127,8 @@ public final class SVDPlusPlusModel implements Serializable {
      * The item-feature matrix (features, then items).  Do not modify this array.
      */
     @Deprecated
-    public double[][] getItemImpFactors() {
-        return itemImpFactors;
+    public double[][] getItemImpFeatures() {
+        return itemImpFeatures;
     }
 
     /**
@@ -176,17 +176,17 @@ public final class SVDPlusPlusModel implements Serializable {
     }
 
     /**
-     * Get a particular implicit factor value for an item.
+     * Get a particular implicit feature value for an item.
      * @param iid The item ID.
      * @param feature The feature.
-     * @return The item-implicit-factor value, or 0 if the item was not in the training set.
+     * @return The item-implicit-feature value, or 0 if the item was not in the training set.
      */
-    public double getItemImpFactor(long iid, int feature) {
+    public double getItemImpFeature(long iid, int feature) {
         int iidx = itemIndex.getIndex(iid);
         if (iidx < 0) {
             return 0;
         } else {
-            return itemImpFactors[feature][iidx];
+            return itemImpFeatures[feature][iidx];
         }
     }
 

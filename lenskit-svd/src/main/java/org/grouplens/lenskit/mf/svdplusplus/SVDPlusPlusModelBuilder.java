@@ -195,18 +195,20 @@ public class SVDPlusPlusModelBuilder implements Provider<SVDPlusPlusModel> {
             // Step 1: Save the old feature values before computing the new ones
             final double ouf = ufvs[uidx];
             final double oif = ifvs[iidx];
-            final double oiif = iifvs[iidx];
 
             // Step 2: Compute the error
-            double uside = 0;
             FastCollection<IndexedPreference> userRatings = snapshot.getUserRatings(r.getUserId());
-            final double err = rule.computeError(uidx, iidx, r.getUserId(), r.getItemId(), uside,
-                    ufvs, ifvs, iifvs, r.getValue(), estimates.get(r), userRatings);
+            final double uside = rule.computeUserAddedFeature(ouf, iifvs, userRatings);
+            final double err = rule.computeError(r.getUserId(), r.getItemId(), uside, oif,
+                                                 r.getValue(), estimates.get(r));
 
             // Step 3: Update feature values
             ufvs[uidx] += rule.userUpdate(err, ouf, oif);
-            ifvs[iidx] += rule.itemUpdate(err, ouf, oif, uside);
-            iifvs[iidx] += rule.itemImpUpdate(err, ouf, oif, oiif, userRatings.size());
+            ifvs[iidx] += rule.itemUpdate(err, oif, uside);
+            for (IndexedPreference ur : CollectionUtils.fast(userRatings)) {
+                int ratedidx = ur.getItemIndex();
+                iifvs[ratedidx] += rule.itemImpUpdate(err, oif, iifvs[ratedidx], userRatings.size());
+            }
 
             sse += err * err;
             n += 1;

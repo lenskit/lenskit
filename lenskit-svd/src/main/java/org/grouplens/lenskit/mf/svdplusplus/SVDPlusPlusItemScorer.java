@@ -187,7 +187,7 @@ public class SVDPlusPlusItemScorer extends AbstractItemScorer {
         int ratnum = ratings.size();
         for (VectorEntry itemId : ratings.fast()) {
             final long iid = itemId.getKey();
-            uprefs[feature] += model.getItemImpFactor(iid, feature) / Math.sqrt((double)ratnum);
+            uprefs[feature] += model.getItemImpFeature(iid, feature) / Math.sqrt((double)ratnum);
         }
 
         // After training this feature, we need to update each rating's cached
@@ -206,13 +206,13 @@ public class SVDPlusPlusItemScorer extends AbstractItemScorer {
         assert rule != null;
         double sse = 0;
         int n = 0;
-        double uside = 0;
-        final double[][] iifs = model.getItemImpFactors();
+        double impSum = 0;
+        final double[][] iifs = model.getItemImpFeatures();
         int ratnum = ratings.size();
         for (VectorEntry e: ratings.fast()) {
             final long iid = e.getKey();
             final int iidx = model.getItemIndex().getIndex(iid);
-            uside += iifs[feature][iidx] / Math.sqrt((double)ratnum);
+            impSum += iifs[feature][iidx] / Math.sqrt((double)ratnum);
         }
         for (VectorEntry e: ratings.fast()) {
             final long iid = e.getKey();
@@ -224,7 +224,7 @@ public class SVDPlusPlusItemScorer extends AbstractItemScorer {
             final double oif = model.getItemFeatures()[feature][iidx];
 
             // Step 2: Compute the error
-            final double err = rule.computeError(user, iid, uside, ouf, oif, e.getValue(), estimates.get(iid));
+            final double err = rule.computeError(user, iid, impSum + ouf, oif, e.getValue(), estimates.get(iid));
 
             // Step 3: Update feature values
             uprefs[feature] += rule.userUpdate(err, ouf, oif);
