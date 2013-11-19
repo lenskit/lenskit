@@ -28,6 +28,8 @@ import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.grapht.spi.reflect.ReflectionInjectSPI;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.RecommenderEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.*;
@@ -45,6 +47,8 @@ import java.io.*;
  * @see LenskitRecommender
  */
 public final class LenskitRecommenderEngine implements RecommenderEngine {
+    private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngine.class);
+
     private final DAGNode<CachedSatisfaction, DesireChain> graph;
 
     private final InjectSPI spi;
@@ -85,6 +89,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      *                     If the configuration cannot be used.
      */
     public static LenskitRecommenderEngine load(File file, ClassLoader loader) throws IOException, RecommenderConfigurationException {
+        logger.info("Loading recommender engine from {}", file);
         FileInputStream input = new FileInputStream(file);
         try {
             return load(input, loader);
@@ -122,6 +127,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      *                     If the configuration cannot be used.
      */
     public static LenskitRecommenderEngine load(InputStream input, ClassLoader loader) throws IOException, RecommenderConfigurationException {
+        logger.debug("using classloader {}", loader);
         InjectSPI spi = new ReflectionInjectSPI();
         ObjectInputStream in = new ObjectInputStream(input);
         try {
