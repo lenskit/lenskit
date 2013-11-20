@@ -129,7 +129,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     public static LenskitRecommenderEngine load(InputStream input, ClassLoader loader) throws IOException, RecommenderConfigurationException {
         logger.debug("using classloader {}", loader);
         InjectSPI spi = new ReflectionInjectSPI();
-        ObjectInputStream in = new ObjectInputStream(input);
+        ObjectInputStream in = new CustomClassLoaderObjectInputStream(input, loader);
         try {
             Thread current = Thread.currentThread();
             // save the old class loader
