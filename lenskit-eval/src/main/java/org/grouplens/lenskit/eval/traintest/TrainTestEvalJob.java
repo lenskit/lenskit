@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Run a single train-test evaluation of a single algorithm.
@@ -58,7 +59,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
-class TrainTestEvalJob implements Runnable {
+class TrainTestEvalJob implements Callable<Void> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalJob.class);
 
     private final int numRecs;
@@ -121,12 +122,9 @@ class TrainTestEvalJob implements Runnable {
     }
 
     @Override
-    public void run() {
-        try {
-            runEvaluation();
-        } catch (Exception e) {
-            throw new TrainTestJobException(e);
-        }
+    public Void call() throws IOException, RecommenderBuildException {
+        runEvaluation();
+        return null;
     }
 
     @SuppressWarnings("PMD.AvoidCatchingThrowable")
