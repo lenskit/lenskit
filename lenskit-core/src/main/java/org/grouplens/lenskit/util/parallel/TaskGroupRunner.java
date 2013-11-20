@@ -36,7 +36,9 @@ import java.util.concurrent.*;
  *
  * @since 1.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Use {@link TaskGroup}.
  */
+@Deprecated
 public class TaskGroupRunner {
     private static Logger logger = LoggerFactory.getLogger(TaskGroupRunner.class);
     private final ListeningExecutorService executor;
