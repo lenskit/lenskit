@@ -70,8 +70,6 @@
     <lenskit.web.path>${lenskit.web.url}</lenskit.web.path>
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
     <groovy.version>2.1.5</groovy.version>
-    <groovy.eclipse.version>2.7.0-01</groovy.eclipse.version>
-    <groovy.eclipse.batch>2.1.5-03</groovy.eclipse.batch>
     <lenskit.clean.removeAll>false</lenskit.clean.removeAll>
   </properties>
 
@@ -227,7 +225,9 @@
   <build>
     <pluginManagement>
       <plugins>
-        <!-- Configure the compiler -->
+        <!-- Configure the compiler.  We allow Groovy in LensKit tests, so this is a bit subtle.
+             We want to use stock javac to build the main LensKit sources, but the joint
+             Groovy/Java compiler from Eclipse to build the test sources. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
@@ -244,8 +244,31 @@
               <compilerArg>-Xlint</compilerArg>
               <compilerArg>-Xlint:-processing</compilerArg>
             </compilerArgs>
-            <fork>true</fork>
           </configuration>
+
+          <executions>
+            <!-- Use the Groovy compiler to build tests. -->
+            <execution>
+              <id>default-testCompile</id>
+              <configuration>
+                <compilerId>groovy-eclipse-compiler</compilerId>
+              </configuration>
+            </execution>
+          </executions>
+
+          <!-- Make Groovy compiler available -->
+          <dependencies>
+            <dependency>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy-eclipse-compiler</artifactId>
+              <version>2.8.0-01</version>
+            </dependency>
+            <dependency>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy-eclipse-batch</artifactId>
+              <version>2.1.8-01</version>
+            </dependency>
+          </dependencies>
         </plugin>
 
         <!-- Testing and verification -->
