@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -55,7 +56,7 @@ import java.util.Random;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultProvider(PackedPreferenceSnapshot.Provider.class)
+@DefaultProvider(PackedPreferenceSnapshot.Builder.class)
 @Shareable
 public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
     private static final Logger logger = LoggerFactory.getLogger(PackedPreferenceSnapshot.class);
@@ -64,12 +65,12 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
      * A Factory that creates PackedRatingBuildSnapshots from an opened
      * DataAccessObject.
      */
-    public static class Provider implements javax.inject.Provider<PackedPreferenceSnapshot> {
+    public static class Builder implements Provider<PackedPreferenceSnapshot> {
         private final EventDAO dao;
         private Random random;
 
         @Inject
-        public Provider(@Transient EventDAO dao, Random random) {
+        public Builder(@Transient EventDAO dao, Random random) {
             this.dao = dao;
             this.random = random;
         }
@@ -127,7 +128,7 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
                 ratings.close();
             }
 
-            bld.shuffle();
+            bld.shuffle(random);
             PackedPreferenceData data = bld.build();
 
             return new PackedPreferenceSnapshot(data);
@@ -135,7 +136,7 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
     }
 
     public static PreferenceSnapshot pack(EventDAO dao) {
-        Provider p = new Provider(dao, new Random());
+        Builder p = new Builder(dao, new Random());
         return p.get();
     }
 

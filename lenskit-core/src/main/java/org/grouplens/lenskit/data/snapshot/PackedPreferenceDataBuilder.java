@@ -252,15 +252,16 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
      * Shuffle the data. This uses a Fischer-Yates shuffle to uniformly permute
      * (subject to limitations of the PRNG) the data. The arrays are repacked
      * to eliminate free slots prior to shuffling.
+     *
+     * @param rng The random number generator to use.
      */
-    public void shuffle() {
+    public void shuffle(Random rng) {
         repack();
         // do a reverse Fisher-Yates shuffle on the arrays
-        Random rnd = new Random();
         final int np = nprefs;
         for (int i = 0; i < np - 1; i++) {
             // swap w/ j s.t. i <= j < end
-            int j = i + rnd.nextInt(np - i);
+            int j = i + rng.nextInt(np - i);
             assert j >= i;
             assert j < np;
             swap(i, j);
