@@ -175,25 +175,28 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     // so we can avoid computing them more than once.
     @Override
     public double norm() {
-        if (norm == null) {
-            norm = super.norm();
+        Double n = norm;
+        if (n == null) {
+            norm = n = super.norm();
         }
-        return norm;
+        return n;
     }
 
     @Override
     public double sum() {
-        if (sum == null) {
-            sum = super.sum();
+        Double s = sum;
+        if (s == null) {
+            sum = s = super.sum();
         }
-        return sum;
+        return s;
     }
 
     @Override
     public double mean() {
-        if (mean == null) {
-            mean = super.mean();
+        Double m = mean;
+        if (m == null) {
+            mean = m = super.mean();
         }
-        return mean;
+        return m;
     }
 }

@@ -50,15 +50,16 @@ public abstract class AbstractUserHistory<E extends Event> extends AbstractList<
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public <T> T memoize(Function<? super UserHistory<E>, ? extends T> func) {
-        if (memTable == null) {
+        Map<Function,Object> table = memTable;
+        if (table == null) {
             synchronized (this) {
-                if (memTable == null) {
-                    memTable = new ConcurrentHashMap<Function, Object>();
+                table = memTable;
+                if (table == null) {
+                    memTable = table = new ConcurrentHashMap<Function, Object>();
                 }
             }
         }
 
-        Map<Function,Object> table = memTable;
         if (!table.containsKey(func)) {
             // worst case scenario: we compute the function twice. This is permissible.
             table.put(func, func.apply(this));
