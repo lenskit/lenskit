@@ -32,4 +32,12 @@
   * The evaluator now supports loading algorithms from config files in both train-test
     and graph dumping tasks (#issue(406)).
 
+  * In single-threaded mode, run eval tasks on the same thread as the evaluator (#issue(426)).
+
+  []
+
+* Utilities
+
+  * Remove <<<TaskGroupRunner>>> in favor of new <<<TaskGroup>>> class.
+
   []
