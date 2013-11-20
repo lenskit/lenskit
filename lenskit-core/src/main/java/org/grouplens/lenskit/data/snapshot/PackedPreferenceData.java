@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.snapshot;
 
 import org.grouplens.lenskit.data.pref.AbstractPreference;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.util.Index;
+import org.grouplens.lenskit.indexes.IdIndexMapping;
 
 /**
  * Data storage for packed rating snapshots.
@@ -39,11 +39,11 @@ final class PackedPreferenceData {
     private final double[][] values;
     private final int nprefs;
 
-    private final Index itemIndex;
-    private final Index userIndex;
+    private final IdIndexMapping itemIndex;
+    private final IdIndexMapping userIndex;
 
-    public PackedPreferenceData(int[][] us, int[][] is, double[][] vs,
-                                int size, Index uidx, Index iidx) {
+    public PackedPreferenceData(int[][] us, int[][] is, double[][] vs, int size,
+                                IdIndexMapping uidx, IdIndexMapping iidx) {
         users = us;
         items = is;
         values = vs;
@@ -97,7 +97,7 @@ final class PackedPreferenceData {
      *
      * @return The user index.
      */
-    public Index getUserIndex() {
+    public IdIndexMapping getUserIndex() {
         return userIndex;
     }
 
@@ -106,7 +106,7 @@ final class PackedPreferenceData {
      *
      * @return The item index.
      */
-    public Index getItemIndex() {
+    public IdIndexMapping getItemIndex() {
         return itemIndex;
     }
 

@@ -36,7 +36,7 @@ import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.util.Index;
+import org.grouplens.lenskit.indexes.IdIndexMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,22 +157,22 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
 
     @Override
     public LongCollection getUserIds() {
-        return userIndex().getIds();
+        return userIndex().getIdList();
     }
 
     @Override
     public LongCollection getItemIds() {
-        return itemIndex().getIds();
+        return itemIndex().getIdList();
     }
 
     @Override
-    public Index userIndex() {
+    public IdIndexMapping userIndex() {
         requireValid();
         return data.getUserIndex();
     }
 
     @Override
-    public Index itemIndex() {
+    public IdIndexMapping itemIndex() {
         requireValid();
         return data.getItemIndex();
     }
@@ -184,7 +184,7 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
 
     @Override
     public FastCollection<IndexedPreference> getUserRatings(long userId) {
-        int uidx = userIndex().getIndex(userId);
+        int uidx = userIndex().tryGetIndex(userId);
         List<IntList> uidxes = userIndexLists.get();
         if (uidx < 0 || uidx >= uidxes.size()) {
             return CollectionUtils.emptyFastCollection();
@@ -207,7 +207,7 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
     private class UserIndexListSupplier implements Supplier<List<IntList>> {
         @Override @Nonnull
         public List<IntList> get() {
-            int nusers = data.getUserIndex().getObjectCount();
+            int nusers = data.getUserIndex().size();
             ArrayList<IntList> userLists = new ArrayList<IntList>(nusers);
             for (int i = 0; i < nusers; i++) {
                 userLists.add(new IntArrayList());

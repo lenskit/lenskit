@@ -104,7 +104,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
     private void predict(long user, double[] uprefs, MutableSparseVector output) {
         for (VectorEntry e : output.fast()) {
             final long item = e.getKey();
-            final int iidx = model.getItemIndex().getIndex(item);
+            final int iidx = model.getItemIndex().tryGetIndex(item);
 
             if (iidx < 0) {
                 continue;
@@ -137,7 +137,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
 
     @Override
     public void score(long user, @Nonnull MutableSparseVector scores) {
-        int uidx = model.getUserIndex().getIndex(user);
+        int uidx = model.getUserIndex().tryGetIndex(user);
         UserHistory<Rating> history = dao.getEventsForUser(user, Rating.class);
         if (history == null) {
             history = History.forUser(user);
