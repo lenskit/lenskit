@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -36,32 +38,32 @@ import javax.inject.Inject;
  */
 public final class PrefetchingItemDAO implements ItemDAO {
     private final EventDAO eventDAO;
-    private transient volatile LongSet items;
+    private final Supplier<LongSet> itemCache;
 
     @Inject
     public PrefetchingItemDAO(EventDAO events) {
         eventDAO = events;
+        itemCache = Suppliers.memoize(new ItemScanner());
     }
 
     @Override
     public LongSet getItemIds() {
-        if (items == null) {
-            synchronized (this) {
-                if (items == null) {
-                    LongSet us = new LongOpenHashSet();
-                    Cursor<Event> events = eventDAO.streamEvents();
-                    try {
-                        for (Event e: events) {
-                            us.add(e.getItemId());
-                        }
-                    } finally {
-                        events.close();
-                    }
-                    items = us;
-                }
-            }
-        }
+        return itemCache.get();
+    }
 
-        return items;
+    private class ItemScanner implements Supplier<LongSet> {
+        @Override
+        public LongSet get() {
+            LongSet items = new LongOpenHashSet();
+            Cursor<Event> events = eventDAO.streamEvents();
+            try {
+                for (Event e: events) {
+                    items.add(e.getItemId());
+                }
+            } finally {
+                events.close();
+            }
+            return items;
+        }
     }
 }

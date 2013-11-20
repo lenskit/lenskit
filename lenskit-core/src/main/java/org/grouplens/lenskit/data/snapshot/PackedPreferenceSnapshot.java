@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.data.snapshot;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.*;
@@ -38,6 +40,7 @@ import org.grouplens.lenskit.util.Index;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
@@ -137,43 +140,17 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
     }
 
     private PackedPreferenceData data;
-    private volatile List<? extends IntList> userIndices;
+    private Supplier<List<IntList>> userIndexLists;
 
     protected PackedPreferenceSnapshot(PackedPreferenceData data) {
         super();
         this.data = data;
+        userIndexLists = Suppliers.memoize(new UserIndexListSupplier());
     }
 
     private void requireValid() {
         if (data == null) {
             throw new IllegalStateException("build context closed");
-        }
-    }
-
-    private List<? extends IntList> computeUserIndices() {
-        int nusers = data.getUserIndex().getObjectCount();
-        ArrayList<IntArrayList> userLists = new ArrayList<IntArrayList>(nusers);
-        for (int i = 0; i < nusers; i++) {
-            userLists.add(new IntArrayList());
-        }
-        for (IndexedPreference pref : CollectionUtils.fast(getRatings())) {
-            final int uidx = pref.getUserIndex();
-            final int idx = pref.getIndex();
-            userLists.get(uidx).add(idx);
-        }
-        for (IntArrayList lst : userLists) {
-            lst.trim();
-        }
-        return userLists;
-    }
-
-    private void requireUserIndices() {
-        if (userIndices == null) {
-            synchronized (this) {
-                if (userIndices == null) {
-                    userIndices = computeUserIndices();
-                }
-            }
         }
     }
 
@@ -207,17 +184,42 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
     @Override
     public FastCollection<IndexedPreference> getUserRatings(long userId) {
         int uidx = userIndex().getIndex(userId);
-        requireUserIndices();
-        if (uidx < 0 || uidx >= userIndices.size()) {
+        List<IntList> uidxes = userIndexLists.get();
+        if (uidx < 0 || uidx >= uidxes.size()) {
             return CollectionUtils.emptyFastCollection();
         } else {
-            return new PackedPreferenceCollection(data, userIndices.get(uidx));
+            return new PackedPreferenceCollection(data, uidxes.get(uidx));
         }
     }
 
     @Override
     public void close() {
+        // FIXME Close is kinda pointless
         super.close();
         data = null;
+        userIndexLists = null;
+    }
+
+    /**
+     * Supplier to create user index lists.  Used to re-use memoization logic.
+     */
+    private class UserIndexListSupplier implements Supplier<List<IntList>> {
+        @Override @Nonnull
+        public List<IntList> get() {
+            int nusers = data.getUserIndex().getObjectCount();
+            ArrayList<IntList> userLists = new ArrayList<IntList>(nusers);
+            for (int i = 0; i < nusers; i++) {
+                userLists.add(new IntArrayList());
+            }
+            for (IndexedPreference pref : CollectionUtils.fast(getRatings())) {
+                final int uidx = pref.getUserIndex();
+                final int idx = pref.getIndex();
+                userLists.get(uidx).add(idx);
+            }
+            for (IntList lst : userLists) {
+                ((IntArrayList) lst).trim();
+            }
+            return userLists;
+        }
     }
 }
