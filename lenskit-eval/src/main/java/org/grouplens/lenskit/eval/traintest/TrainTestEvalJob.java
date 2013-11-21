@@ -26,6 +26,7 @@ import com.google.common.io.Closer;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Event;
@@ -38,6 +39,9 @@ import org.grouplens.lenskit.eval.algorithm.RecommenderInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
+import org.grouplens.lenskit.eval.metrics.topn.ItemSelectors;
+import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -79,6 +83,8 @@ class TrainTestEvalJob implements Runnable {
     private final Supplier<TableWriter> userOutputSupplier;
     @Nonnull
     private final Supplier<TableWriter> predictOutputSupplier;
+    @Nonnull
+    private final Supplier<TableWriter> recommendOutputSupplier;
     private final Provider<PreferenceSnapshot> snapshot;
 
     /**
@@ -107,6 +113,7 @@ class TrainTestEvalJob implements Runnable {
                             @Nonnull Supplier<TableWriter> out,
                             @Nonnull Supplier<TableWriter> userOut,
                             @Nonnull Supplier<TableWriter> predOut,
+                            @Nonnull Supplier<TableWriter> recoOut,
                             int nrecs) {
         algorithm = algo;
         evaluators = evals;
@@ -117,6 +124,7 @@ class TrainTestEvalJob implements Runnable {
         outputSupplier = out;
         userOutputSupplier = userOut;
         predictOutputSupplier = predOut;
+        recommendOutputSupplier = recoOut;
         numRecs = nrecs;
     }
 
@@ -141,6 +149,11 @@ class TrainTestEvalJob implements Runnable {
             if (predictTable != null) {
                 closer.register(predictTable);
             }
+            TableWriter recommendTable = recommendOutputSupplier.get();
+            if (recommendTable != null) {
+                closer.register(recommendTable);
+            }
+
 
             List<Object> outputRow = Lists.newArrayList();
 
@@ -203,6 +216,15 @@ class TrainTestEvalJob implements Runnable {
                                          test.getPredictions());
                     }
                 }
+
+                if(recommendTable != null) {
+                    // FIXME: for now, the recommend ouput default to predict on all items excluding rated items
+                    List<ScoredId> reco = test.getRecommendations(-1, ItemSelectors.allItems(),
+                                                                  ItemSelectors.trainingItems());
+                    if (reco != null) {
+                        writeRecommendations(recommendTable, uid, reco);
+                    }
+                }
             }
             testTimer.stop();
             logger.info("Tested {} in {}", algorithm.getName(), testTimer);
@@ -248,6 +270,21 @@ class TrainTestEvalJob implements Runnable {
                 i += 1;
             }
             predictTable.writeRow(row);
+        }
+    }
+
+    private void writeRecommendations(TableWriter recommendTable, long uid, List<ScoredId> predictions) throws IOException {
+        final int ncols = recommendTable.getLayout().getColumnCount();
+        final String[] row = new String[ncols];
+        row[0] = Long.toString(uid);
+        int counter = 1;
+        for (ScoredId p : CollectionUtils.fast(predictions)) {
+            long iid = p.getId();
+            row[1] = Long.toString(iid);
+            row[2] = String.valueOf(counter);
+            counter ++;
+            row[3] = Double.toString(p.getScore());
+            recommendTable.writeRow(row);
         }
     }
 
