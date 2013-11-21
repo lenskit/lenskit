@@ -20,6 +20,10 @@
  */
 package org.grouplens.lenskit.core;
 
+import org.apache.commons.lang3.ClassUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -31,6 +35,7 @@ import java.io.ObjectStreamClass;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class CustomClassLoaderObjectInputStream extends ObjectInputStream {
+    private static final Logger logger = LoggerFactory.getLogger(CustomClassLoaderObjectInputStream.class);
     private final ClassLoader classLoader;
 
     CustomClassLoaderObjectInputStream(InputStream in, ClassLoader loader) throws IOException {
@@ -44,7 +49,8 @@ class CustomClassLoaderObjectInputStream extends ObjectInputStream {
             return super.resolveClass(desc);
         } else {
             String name = desc.getName();
-            return classLoader.loadClass(name);
+            logger.debug("resolving class {}", name);
+            return ClassUtils.getClass(classLoader, name);
         }
     }
 }
