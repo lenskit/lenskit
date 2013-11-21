@@ -26,6 +26,9 @@ import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.indexes.IdIndexMapping;
 import org.grouplens.lenskit.mf.svd.MFModel;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
+import org.grouplens.lenskit.vectors.ImmutableVec;
+import org.grouplens.lenskit.vectors.MutableVec;
+import org.grouplens.lenskit.vectors.Vec;
 
 import java.util.List;
 
@@ -43,6 +46,7 @@ public final class FunkSVDModel extends MFModel {
     private final ClampingFunction clampingFunction;
 
     private final List<FeatureInfo> featureInfo;
+    private final ImmutableVec averageUser;
 
     public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
                         ClampingFunction clamp, IdIndexMapping iidx, IdIndexMapping uidx,
@@ -51,6 +55,12 @@ public final class FunkSVDModel extends MFModel {
         clampingFunction = clamp;
 
         featureInfo = ImmutableList.copyOf(features);
+
+        double[] means = new double[featureCount];
+        for (int f = featureCount - 1; f >= 0; f--) {
+            means[f] = featureInfo.get(f).getUserAverage();
+        }
+        averageUser = ImmutableVec.create(means);
     }
 
     /**
@@ -75,5 +85,9 @@ public final class FunkSVDModel extends MFModel {
      */
     public ClampingFunction getClampingFunction() {
         return clampingFunction;
+    }
+
+    public Vec getAverageUserVector() {
+        return averageUser;
     }
 }

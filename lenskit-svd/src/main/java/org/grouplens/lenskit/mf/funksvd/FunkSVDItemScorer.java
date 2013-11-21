@@ -33,9 +33,7 @@ import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
+import org.grouplens.lenskit.vectors.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -97,11 +95,11 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
      * Predict for a user using their preference array and history vector.
      *
      * @param user   The user's ID
-     * @param uprefs The user's preference array from the model.
+     * @param uprefs The user's preference vector.
      * @param output The output vector, whose key domain is the items to predict for. It must
      *               be initialized to the user's baseline predictions.
      */
-    private void predict(long user, double[] uprefs, MutableSparseVector output) {
+    private void computeScores(long user, Vec uprefs, MutableSparseVector output) {
         for (VectorEntry e : output.fast()) {
             final long item = e.getKey();
             final int iidx = model.getItemIndex().tryGetIndex(item);
@@ -112,7 +110,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
 
             double score = e.getValue();
             for (int f = 0; f < featureCount; f++) {
-                score += uprefs[f] * model.getItemFeatures()[f][iidx];
+                score += uprefs.get(f) * model.getItemFeatures()[f][iidx];
                 score = clamp.apply(user, item, score);
             }
             output.set(e, score);
@@ -137,7 +135,6 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
 
     @Override
     public void score(long user, @Nonnull MutableSparseVector scores) {
-        int uidx = model.getUserIndex().tryGetIndex(user);
         UserHistory<Rating> history = dao.getEventsForUser(user, Rating.class);
         if (history == null) {
             history = History.forUser(user);
@@ -147,35 +144,29 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         MutableSparseVector estimates = initialEstimates(user, ratings, scores.keyDomain());
         // propagate estimates to the output scores
         scores.set(estimates);
-        if (uidx < 0 && ratings.isEmpty()) {
-            // no real work to do, stop with baseline predictions
-            return;
-        }
 
-        double[] uprefs;
-        if (uidx < 0) {
-            uprefs = new double[model.getFeatureCount()];
-            for (int i = 0; i < model.getFeatureCount(); i++) {
-                uprefs[i] = model.getFeatureInfo(i).getUserAverage();
+        Vec uprefs = model.getUserVector(user);
+        if (uprefs == null) {
+            if (ratings.isEmpty()) {
+                // no real work to do, stop with baseline predictions
+                return;
             }
-        } else {
-            uprefs = new double[featureCount];
-            for (int i = 0; i < featureCount; i++) {
-                uprefs[i] = model.getUserFeatures()[i][uidx];
-            }
+            uprefs = model.getAverageUserVector();
         }
 
         if (!ratings.isEmpty() && rule != null) {
+            MutableVec updated = uprefs.mutableCopy();
             for (int f = 0; f < featureCount; f++) {
-                trainUserFeature(user, uprefs, ratings, estimates, f);
+                trainUserFeature(user, updated, ratings, estimates, f);
             }
+            uprefs = updated;
         }
 
         // scores are the estimates, uprefs are trained up.
-        predict(user, uprefs, scores);
+        computeScores(user, uprefs, scores);
     }
 
-    private void trainUserFeature(long user, double[] uprefs, SparseVector ratings,
+    private void trainUserFeature(long user, MutableVec uprefs, SparseVector ratings,
                                   MutableSparseVector estimates, int feature) {
         assert rule != null;
 
@@ -190,19 +181,17 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         for (VectorEntry itemId : ratings.fast()) {
             final long iid = itemId.getKey();
             double est = estimates.get(iid);
-            double offset = uprefs[feature] * model.getItemFeature(iid, feature);
+            double offset = uprefs.get(feature) * model.getItemFeature(iid, feature);
             est = clamp.apply(user, iid, est + offset);
             estimates.set(iid, est);
         }
     }
 
-    private double doFeatureIteration(long user, double[] uprefs,
+    private double doFeatureIteration(long user, MutableVec uprefs,
                                       SparseVector ratings, MutableSparseVector estimates,
                                       int feature) {
         assert rule != null;
         FunkSVDUpdater updater = rule.createUpdater();
-        double sse = 0;
-        int n = 0;
         for (VectorEntry e: ratings.fast()) {
             final long iid = e.getKey();
             final int iidx = model.getItemIndex().getIndex(iid);
@@ -210,14 +199,14 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
             // Step 1: Compute the trailing value for this item-feature pair
             double trailingValue = 0.0;
             for (int f = feature + 1; f < featureCount; f++) {
-                trailingValue += uprefs[f] * model.getItemFeatures()[f][iidx];
+                trailingValue += uprefs.get(f) * model.getItemFeatures()[f][iidx];
             }
 
             updater.prepare(user, iid, trailingValue, estimates.get(iid), e.getValue(),
-                            uprefs[feature], model.getItemFeatures()[feature][iidx]);
+                            uprefs.get(feature), model.getItemFeatures()[feature][iidx]);
 
             // Step 4: update user preferences
-            uprefs[feature] += updater.getUserFeatureUpdate();
+            uprefs.add(feature, updater.getUserFeatureUpdate());
         }
         return updater.getRMSE();
     }

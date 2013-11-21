@@ -21,6 +21,8 @@
 package org.grouplens.lenskit.mf.svd;
 
 import org.grouplens.lenskit.indexes.IdIndexMapping;
+import org.grouplens.lenskit.vectors.MutableVec;
+import org.grouplens.lenskit.vectors.Vec;
 
 import java.io.Serializable;
 
@@ -103,6 +105,19 @@ public class MFModel implements Serializable {
     @Deprecated
     public double[][] getUserFeatures() {
         return userFeatures;
+    }
+
+    public Vec getUserVector(long user) {
+        int uidx = userIndex.tryGetIndex(user);
+        if (uidx < 0) {
+            return null;
+        }
+
+        MutableVec vec = MutableVec.create(featureCount);
+        for (int f = featureCount - 1; f >= 0; f--) {
+            vec.set(f, userFeatures[f][uidx]);
+        }
+        return vec;
     }
 
     /**
