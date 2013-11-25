@@ -68,7 +68,7 @@ public class LenskitRecommenderEngineTest {
 
     @Test
     public void testBasicRec() throws RecommenderBuildException {
-        LenskitConfiguration config = configureBasicRecommender();
+        LenskitConfiguration config = configureBasicRecommender(true);
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         verifyBasicRecommender(engine.createRecommender());
@@ -76,20 +76,22 @@ public class LenskitRecommenderEngineTest {
 
     @Test
     public void testBasicNoEngine() throws RecommenderBuildException {
-        LenskitConfiguration config = configureBasicRecommender();
+        LenskitConfiguration config = configureBasicRecommender(true);
 
         LenskitRecommender rec = LenskitRecommender.build(config);
         verifyBasicRecommender(rec);
     }
 
-    private LenskitConfiguration configureBasicRecommender() {
+    private LenskitConfiguration configureBasicRecommender(boolean includeData) {
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(ItemScorer.class)
               .to(ConstantItemScorer.class);
         config.bind(ItemRecommender.class)
               .to(TopNItemRecommender.class);
-        config.bind(EventDAO.class)
-              .to(dao);
+        if (includeData) {
+            config.bind(EventDAO.class)
+                  .to(dao);
+        }
         return config;
     }
 
@@ -180,12 +182,27 @@ public class LenskitRecommenderEngineTest {
     }
 
     /**
+     * Test that we can configure data separately.
+     */
+    @Test
+    public void testSeparateBuild() throws RecommenderBuildException {
+        LenskitRecommenderEngineBuilder reb = LenskitRecommenderEngine.newBuilder();
+        reb.addConfiguration(configureBasicRecommender(false));
+        LenskitConfiguration daoConfig = new LenskitConfiguration();
+        daoConfig.bind(EventDAO.class).to(dao);
+        reb.addConfiguration(daoConfig);
+        LenskitRecommenderEngine engine = reb.build();
+        LenskitRecommender rec = engine.createRecommender();
+        verifyBasicRecommender(rec);
+    }
+
+    /**
      * Test that no instance satisfaction contains an event collection DAO reference.
      */
     @Ignore("broken until 2.1 brings back serialization")
     @Test
     public void testBasicNoInstance() throws RecommenderBuildException, IOException, ClassNotFoundException {
-        LenskitConfiguration config = configureBasicRecommender();
+        LenskitConfiguration config = configureBasicRecommender(true);
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
 
@@ -199,7 +216,7 @@ public class LenskitRecommenderEngineTest {
     @Ignore("broken until 2.1 brings back serialization")
     @Test
     public void testSerialize() throws RecommenderBuildException, IOException, ClassNotFoundException {
-        LenskitConfiguration config = configureBasicRecommender();
+        LenskitConfiguration config = configureBasicRecommender(true);
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         // engine.setSymbolMapping(null);

@@ -217,7 +217,14 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @return The recommender engine.
      */
     public static LenskitRecommenderEngine build(LenskitConfiguration config) throws RecommenderBuildException {
-        DAGNode<CachedSatisfaction, DesireChain> graph = RecommenderInstantiator.forConfig(config).instantiate();
-        return new LenskitRecommenderEngine(graph, config.getSPI());
+        return newBuilder().addConfiguration(config).build();
+    }
+
+    /**
+     * Create a new recommender engine builder.
+     * @return A new recommender engine builder.
+     */
+    public static LenskitRecommenderEngineBuilder newBuilder() {
+        return new LenskitRecommenderEngineBuilder();
     }
 }
