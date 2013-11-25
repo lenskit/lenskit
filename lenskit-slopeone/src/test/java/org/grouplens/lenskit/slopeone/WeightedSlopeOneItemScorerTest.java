@@ -31,7 +31,7 @@ import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.pref.PreferenceDomainBuilder;
-import org.grouplens.lenskit.knn.item.model.ItemItemBuildContextFactory;
+import org.grouplens.lenskit.knn.item.model.ItemItemBuildContextProvider;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.junit.Test;
 
@@ -48,9 +48,9 @@ public class WeightedSlopeOneItemScorerTest {
         UserEventDAO uedao = new PrefetchingUserEventDAO(dao);
         ItemDAO idao = new PrefetchingItemDAO(dao);
         UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
-        ItemItemBuildContextFactory contextFactory = new ItemItemBuildContextFactory(
+        ItemItemBuildContextProvider contextFactory = new ItemItemBuildContextProvider(
                 uedao, new DefaultUserVectorNormalizer(), summarizer);
-        SlopeOneModelBuilder provider = new SlopeOneModelBuilder(idao, contextFactory, 0);
+        SlopeOneModelBuilder provider = new SlopeOneModelBuilder(idao, contextFactory.get(), 0);
         return provider.get();
     }
 

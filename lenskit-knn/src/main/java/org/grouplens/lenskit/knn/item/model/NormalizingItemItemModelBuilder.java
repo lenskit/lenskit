@@ -50,17 +50,17 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
     private static final Logger logger = LoggerFactory.getLogger(NormalizingItemItemModelBuilder.class);
 
     private final ItemSimilarity similarity;
-    private final ItemItemBuildContextFactory contextFactory;
+    private final ItemItemBuildContext buildContext;
     private final ItemVectorNormalizer rowNormalizer;
     private final VectorTruncator truncator;
 
     @Inject
     public NormalizingItemItemModelBuilder(@Transient ItemSimilarity similarity,
-                                           @Transient ItemItemBuildContextFactory ctxFactory,
+                                           @Transient ItemItemBuildContext context,
                                            @Transient ItemVectorNormalizer rowNormalizer,
                                            @Transient VectorTruncator truncator) {
         this.similarity = similarity;
-        contextFactory = ctxFactory;
+        buildContext = context;
         this.rowNormalizer = rowNormalizer;
         this.truncator = truncator;
     }
@@ -70,20 +70,19 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
     public SimilarityMatrixModel get() {
         logger.debug("building item-item model");
 
-        ItemItemBuildContext context = contextFactory.buildContext();
-        MutableSparseVector currentRow = MutableSparseVector.create(context.getItems());
+        MutableSparseVector currentRow = MutableSparseVector.create(buildContext.getItems());
 
-        LongSortedSet itemUniverse = context.getItems();
+        LongSortedSet itemUniverse = buildContext.getItems();
         Long2ObjectMap<List<ScoredId>> matrix =
                 new Long2ObjectOpenHashMap<List<ScoredId>>(itemUniverse.size());
 
-        LongIterator outer = context.getItems().iterator();
+        LongIterator outer = buildContext.getItems().iterator();
         while (outer.hasNext()) {
             final long rowItem = outer.nextLong();
-            final SparseVector vec1 = context.itemVector(rowItem);
+            final SparseVector vec1 = buildContext.itemVector(rowItem);
             for (VectorEntry e: currentRow.fast(VectorEntry.State.EITHER)) {
                 final long colItem = e.getKey();
-                final SparseVector vec2 = context.itemVector(colItem);
+                final SparseVector vec2 = buildContext.itemVector(colItem);
                 currentRow.set(e, similarity.similarity(rowItem, vec1, colItem, vec2));
             }
             MutableSparseVector normalized = rowNormalizer.normalize(rowItem, currentRow, null);

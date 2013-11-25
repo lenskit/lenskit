@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.grouplens.grapht.annotation.DefaultProvider;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,6 +38,7 @@ import java.util.Iterator;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see ItemItemModelBuilder
  */
+@DefaultProvider(ItemItemBuildContextProvider.class)
 public class ItemItemBuildContext {
     @Nonnull
     private
@@ -92,19 +94,18 @@ public class ItemItemBuildContext {
     }
 
     /**
-     * Get the union of all items rated by the provided set of users.
-     *
-     * @param users The users to accumulate
-     * @return The item candidates for {@code item}.
+     * Get the items rated by a particular user.
+     * 
+     * @param user The user to query for.
+     * @return The items rated by {@code user}.
      */
     @Nonnull
-    public LongSortedSet getUserItems(LongSet users) {
-        LongSortedSet union = new LongRBTreeSet();
-        LongIterator it = users.iterator();
-        while (it.hasNext()) {
-            union.addAll(userItems.get(it.nextLong()));
+    public LongSortedSet getUserItems(long user) {
+        LongSortedSet items = userItems.get(user);
+        if (items == null) {
+            items = LongSortedSets.EMPTY_SET;
         }
-        return union;
+        return items;
     }
 
     /**
