@@ -273,6 +273,33 @@ public class LenskitRecommenderEngineTest {
         }
     }
 
+    /**
+     * Test anchoring to the root (#344).
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testAnchoredRoot() throws RecommenderBuildException {
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(dao);
+        config.bind(ItemScorer.class)
+              .to(ConstantItemScorer.class);
+        config.set(ConstantItemScorer.Value.class)
+              .to(3.5);
+        config.at(null)
+              .bind(ItemScorer.class)
+              .to(FallbackItemScorer.class);
+        config.bind(BaselineScorer.class, ItemScorer.class)
+              .to(GlobalMeanRatingItemScorer.class);
+        LenskitRecommender rec = LenskitRecommender.build(config);
+        assertThat(rec.getItemScorer(), instanceOf(FallbackItemScorer.class));
+        SimpleRatingPredictor rp = (SimpleRatingPredictor) rec.getRatingPredictor();
+        assertThat(rp, notNullValue());
+        assert rp != null;
+        assertThat(rp.getScorer(), instanceOf(ConstantItemScorer.class));
+        assertThat(((FallbackItemScorer) rec.getItemScorer()).getPrimaryScorer(),
+                   sameInstance(rp.getScorer()));
+    }
+
     //region Test shareable providers
     @Test
     public void testShareableProvider() throws RecommenderBuildException {
