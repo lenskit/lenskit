@@ -1,0 +1,20 @@
+#parse("relnotes.vm")
+#header("2.0.2")
+
+This is the second bugfix release in the 2.0 series.
+
+#pmIntro("2.0.2", 21)
+
+-   Fix null pointer exception when scoring for nonexistent users (#issue(363)).
+
+-   Fix zombie thread keeping evaluator from terminating (#issue(360)).
+
+-   Improve error reporting when `eval.groovy` is missing (#issue(352)).
+
+-   Improve `CSVDataSource` documentation (#issue(364)).
+
+-   Added `forUser(long)` method to `History` to make it easy to create empty
+    user histories.
+
+-   Resolved inconsistency between docs and code for `SparseVector.immutable()` (#issue(368)).
+

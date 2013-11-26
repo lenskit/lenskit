@@ -1,0 +1,174 @@
+#parse("relnotes.vm")
+#stdHeader("1.1", 16)
+
+This release requires some recommender configuration changes, as
+well as changes to any custom components depending on LensKit
+parameter annotations; see
+[Upgrading to LensKit 1.1](http://bitbucket.org/grouplens/lenskit/wiki/UpgradingTo11) for details on how to do this.
+
+There are quite a few changes in LensKit 1.1; this list is not
+exhaustive, but tries to capture highlights and things that will
+affect current users.
+
+-   Made `Recommender` extend `Closeable` (#issue 315).
+
+-   Added side channel support to sparse vectors (#issue(185)).
+
+-   Added support for **at** context matchers (via Grapht), to make it easier to configure
+    complex configurations. See the [manual](http://bitbucket.org/grouplens/lenskit/wiki/Configuration)
+    for more details.
+
+-   Made `SparseVector` constructors package-private.  Sparse vectors shouldn't be
+    subclassed by any additional classes.
+
+-   **Config change**: introduced `predict` methods to
+    `RatingPredictor`, deprecating the fact that it extends
+    `ItemScorer` (#issue(164)).  As a result, all algorithm item
+    scorers now implement `ItemScorer`, <not>
+    `RatingPredictor`, and new rating predictors fill in the old
+    jobs.  The
+    {{{http://bitbucket.org/grouplens/lenskit/wiki/UpgradingTo11}upgrading
+    guide}}, #issue(164), and #issue(311) contain more details.
+
+-   **Incompatible change**: moved abstract and simple/score-based implementations of basic
+    recommender components to the new package `o.g.l.basic`.  This should only be incompatible
+    for people implementing new LensKit components.
+
+-   **Config change**: Removed dedicated `params` packages, moving
+    parameters to saner locations (#issue(294)).  See the
+    {{{http://bitbucket.org/grouplens/lenskit/wiki/UpgradingTo11}upgrading
+    guide}} for details.
+
+-   Many little cleanups and bug-fixes.
+
+-   Lots more automatic testing support.
+
+
+## Algorithms
+
+-   Item-item scorers now report the number of neighbors used for each score as
+    a side channel.
+
+-   Deprecated algorithm-specific item recommenders in favor of using
+    `ScoreBasedItemRecommender` directly.
+
+-   Added `LeastSquaresPredictor`, a baseline predictor that uses gradient descent to
+    train per-item and per-user baseline values (à la Koren et al.).
+
+
+### k-NN Recommenders
+
+-   **Default change**: changed default `ModelSize` to 0 (all neighbors retained); by
+    default, item-item models now retain all neighbors with nonnegative similarities.
+
+-   **Default change**: Changed the default value for `ModelSize` to 20 (was 30).
+
+-   Refactored the item-item recommender to get rid of
+    `ItemItemModelBackedScorer`, simplifying the class hierarchy
+    and configuration.
+
+-   Replaced `LongScoredList` with a list of `ScoredId` objects in Item-Item
+    model construction to support side channels (#issue(219)).
+
+
+### Funk-SVD
+
+-   **Incompatible change**: moved iterative support code to `o.g.l.iterative` and
+    changed parameters. The `StoppingCondition` interface and implementations now live
+    in this package; common iterative method parameters are now defined by annotations in
+    `o.g.l.iterative`.
+
+    * `IterationCount` is moved to the new package.
+
+    * `MinimumIterations` is moved to the new package.
+
+    * Threshold stopping conditions now use `StoppingThreshold` in this package instead
+      of `ThresholdValue`.  If you configure the threshold value, update your configuration
+      accordingly.
+
+    * The FunkSVD `LearningRate` and `RegularizationTerm` have been moved to
+      the new iterative parameters package.
+
+    * **Config change**: Changed the default value for `MinimumIterations` to 10.
+
+
+-   Added several new configuration points to the Funk-SVD model builder
+
+
+## Evaluator
+
+-   `TrainTestEvalCommand` now returns `Table`, not `TableImpl`.
+
+-   Eval configuration changes
+
+    * Force and thread count are now runtime parameters, not script parameters. Specify
+      them with `--force` and `--thread-count` command line options, or the
+      corresponding eval mojo options.
+
+    * Commands receive the eval configuration via the `setConfig` method.
+
+
+-   Added a `trainModel` command that trains a model and applies
+    arbitrary functions to it.
+
+-   Table changes:
+
+    - Tables now live in `o.g.l.util.table`.
+
+    - `TableImpl` is now package-private and immutable; use `TableBuilder` to
+      build a table.
+
+    - `InMemoryWriter` is replaced with `TableBuilder`, which implements `TableWriter`.
+
+    - Table layouts now live directly in the table package.
+
+    - Table writers now live in `o.g.l.util.table.writer`.
+
+-   Many improvements to the `dumpGraph` command (#issue(264)).
+
+-   `AbstractCommand` now allows for the name to be null, although
+    null names can never be exposed to callers.
+
+-   Added
+    [`run-r`](../lenskit-eval-maven-plugin/run-r-mojo.html) goal
+    to the Maven plugin to run R.
+
+-   Added the `lenskit-publish` phase to the LensKit evaluation
+    lifecycle as a place to hook in and generate reports that use the
+    output of `lenskit-analyze`.
+
+-   Added the `subsample` command to subsample a data set.
+
+### Train-Test Evaluator
+
+-   Train-test evaluator always runs, even if output is up-to-date
+    with respect to input; use the `lenskit.eval.skip` Maven
+    property to disable the evaluator when running it via Maven and
+    you only want to run post-eval analysis phases.
+
+-   Train-test evaluator now has `predictionChannel` directive to
+    write side channel values out to the prediction output file.
+
+-   Added `retain` directive to the `trainTest` command to retain a fixed number
+    of items per user.
+
+-   Deprecated the `holdout` directive on `trainTest` that takes a fraction in favor
+    of the clearer `holdoutFraction` directive.
+
+-   Add the ability for `metric` to take an arbitrary function to
+    compute metrics over an algorithm, and `multiMetric` to
+    compute multiple metrics per algorithm.
+
+-   Added the `externalAlgorithm` directive to allow algorithms
+    implemented in external processes to be evaluated.
+
+
+## Archetypes
+
+-   Added
+    [lenskit-archetype-fancy-analysis](../lenskit-archetype-fancy-analysis/)
+    archetype to provide a template for more sophisticated LensKit
+    experimental setups.
+
+-   Improved the simple archetype to use the new R mojo.
+
