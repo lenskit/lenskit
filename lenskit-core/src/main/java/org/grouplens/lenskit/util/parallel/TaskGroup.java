@@ -20,14 +20,11 @@
  */
 package org.grouplens.lenskit.util.parallel;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.List;
 import java.util.concurrent.*;
@@ -109,17 +106,12 @@ public class TaskGroup {
      * @param tasks The tasks to add.
      * @throws IllegalStateException if the group is already executing.
      */
+    @SuppressWarnings("unchecked")
     public synchronized void addAll(Iterable<? extends Callable<?>> tasks) {
         Preconditions.checkState(!started, "task group already started");
-        FluentIterable.from(tasks)
-                      .transform(new Function<Callable<?>, FutureTask<Void>>() {
-                          @SuppressWarnings("unchecked")
-                          @Nullable
-                          @Override
-                          public FutureTask<Void> apply(@Nullable Callable<?> input) {
-                              return new GroupMemberFuture(input);
-                          }
-                      }).copyInto(futures);
+        for (Callable<?> task: tasks) {
+            addTask(task);
+        }
     }
 
     /**
