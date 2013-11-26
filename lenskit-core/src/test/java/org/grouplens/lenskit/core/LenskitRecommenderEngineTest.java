@@ -54,6 +54,7 @@ import java.util.Collections;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -89,9 +90,17 @@ public class LenskitRecommenderEngineTest {
         config.bind(ItemRecommender.class)
               .to(TopNItemRecommender.class);
         if (includeData) {
-            config.bind(EventDAO.class)
-                  .to(dao);
+            makeDAOConfig(config);
         }
+        return config;
+    }
+
+    private LenskitConfiguration makeDAOConfig(LenskitConfiguration config) {
+        if (config == null) {
+            config = new LenskitConfiguration();
+        }
+        config.bind(EventDAO.class)
+              .to(dao);
         return config;
     }
 
@@ -199,12 +208,16 @@ public class LenskitRecommenderEngineTest {
     /**
      * Test that no instance satisfaction contains an event collection DAO reference.
      */
-    @Ignore("broken until 2.1 brings back serialization")
     @Test
     public void testBasicNoInstance() throws RecommenderBuildException, IOException, ClassNotFoundException {
-        LenskitConfiguration config = configureBasicRecommender(true);
+        LenskitConfiguration config = configureBasicRecommender(false);
+        LenskitConfiguration daoConfig = makeDAOConfig(null);
 
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
+        LenskitRecommenderEngine engine =
+                LenskitRecommenderEngine.newBuilder()
+                                        .addConfiguration(config)
+                                        .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
+                                        .build();
 
         DAGNode<CachedSatisfaction,DesireChain> g = engine.getGraph();
         // make sure we have no record of an instance dao
@@ -213,19 +226,55 @@ public class LenskitRecommenderEngineTest {
         }
     }
 
-    @Ignore("broken until 2.1 brings back serialization")
     @Test
     public void testSerialize() throws RecommenderBuildException, IOException, ClassNotFoundException {
-        LenskitConfiguration config = configureBasicRecommender(true);
+        LenskitConfiguration config = configureBasicRecommender(false);
+        LenskitConfiguration daoConfig = makeDAOConfig(null);
 
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
+        LenskitRecommenderEngine engine =
+                LenskitRecommenderEngine.newBuilder()
+                                        .addConfiguration(config)
+                                        .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
+                                        .build();
+
         // engine.setSymbolMapping(null);
         File tfile = File.createTempFile("lenskit", "engine");
         try {
             engine.write(tfile);
-            LenskitRecommenderEngine e2 = LenskitRecommenderEngine.load(tfile);
+            LenskitRecommenderEngine e2 =
+                    LenskitRecommenderEngine.newLoader()
+                                            .addConfiguration(daoConfig)
+                                            .load(tfile);
             // e2.setSymbolMapping(mapping);
             verifyBasicRecommender(e2.createRecommender());
+        } finally {
+            tfile.delete();
+        }
+    }
+
+    @Test
+    public void testDeserializeValidate() throws RecommenderBuildException, IOException, ClassNotFoundException {
+        LenskitConfiguration config = configureBasicRecommender(false);
+        LenskitConfiguration daoConfig = makeDAOConfig(null);
+
+        LenskitRecommenderEngine engine =
+                LenskitRecommenderEngine.newBuilder()
+                                        .addConfiguration(config)
+                                        .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
+                                        .build();
+
+        // engine.setSymbolMapping(null);
+        File tfile = File.createTempFile("lenskit", "engine");
+        try {
+            engine.write(tfile);
+            try {
+                LenskitRecommenderEngine e2 =
+                        LenskitRecommenderEngine.newLoader()
+                                                .load(tfile);
+                fail("loading without DAO config should fail");
+            } catch (RecommenderConfigurationException e) {
+                /* expected */
+            }
         } finally {
             tfile.delete();
         }

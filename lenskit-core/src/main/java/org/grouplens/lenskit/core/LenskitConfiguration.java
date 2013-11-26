@@ -158,7 +158,7 @@ public class LenskitConfiguration extends AbstractConfigContext {
         rgb.addBindings(bindings);
         rgb.addRoots(roots);
         try {
-            return rgb.build();
+            return rgb.buildGraph();
         } catch (SolverException e) {
             throw new RecommenderConfigurationException("Cannot resolve configuration graph", e);
         }

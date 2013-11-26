@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.core;
 
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -46,10 +48,21 @@ class RecommenderGraphBuilder {
     private List<BindingFunctionBuilder> configs = Lists.newArrayList();
     private Set<Class<?>> roots = Sets.newHashSet();
     private InjectSPI spi;
+    private Function<BindingFunction, BindingFunction> bindingTransform = Functions.identity();
 
     public InjectSPI getSPI() {
         Preconditions.checkNotNull(spi, "SPI cannot be null");
         return spi;
+    }
+
+    /**
+     * Set a function to transform the bind rules used to build the dependency solver.
+     * @param func The transform function.
+     * @return The builder (for chaining).
+     */
+    public RecommenderGraphBuilder setBindingTransform(Function<BindingFunction,BindingFunction> func) {
+        bindingTransform = func;
+        return this;
     }
 
     /**
@@ -87,9 +100,9 @@ class RecommenderGraphBuilder {
     public DependencySolver buildDependencySolver() {
         DependencySolverBuilder dsb = DependencySolver.newBuilder();
         for (BindingFunctionBuilder cfg: Lists.reverse(configs)) {
-            dsb.addBindingFunction(cfg.build(BindingFunctionBuilder.RuleSet.EXPLICIT));
-            dsb.addBindingFunction(cfg.build(BindingFunctionBuilder.RuleSet.INTERMEDIATE_TYPES));
-            dsb.addBindingFunction(cfg.build(BindingFunctionBuilder.RuleSet.SUPER_TYPES));
+            dsb.addBindingFunction(bindingTransform.apply(cfg.build(BindingFunctionBuilder.RuleSet.EXPLICIT)));
+            dsb.addBindingFunction(bindingTransform.apply(cfg.build(BindingFunctionBuilder.RuleSet.INTERMEDIATE_TYPES)));
+            dsb.addBindingFunction(bindingTransform.apply(cfg.build(BindingFunctionBuilder.RuleSet.SUPER_TYPES)));
         }
         // default desire function cannot trigger rewrites
         dsb.addBindingFunction(new DefaultDesireBindingFunction(spi), false);
@@ -98,7 +111,7 @@ class RecommenderGraphBuilder {
         return dsb.build();
     }
 
-    public DAGNode<CachedSatisfaction,DesireChain> build() throws SolverException {
+    public DAGNode<CachedSatisfaction,DesireChain> buildGraph() throws SolverException {
         DependencySolver solver = buildDependencySolver();
         for (Class<?> root: roots) {
             solver.resolve(spi.desire(null, root, true));

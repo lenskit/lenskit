@@ -20,14 +20,22 @@
  */
 package org.grouplens.lenskit.core;
 
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimaps;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.solver.DesireChain;
-import org.grouplens.grapht.solver.SolverException;
+import org.grouplens.grapht.solver.*;
 import org.grouplens.grapht.spi.CachedSatisfaction;
+import org.grouplens.grapht.spi.ContextMatcher;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -46,6 +54,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class LenskitRecommenderEngineBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngineBuilder.class);
     private List<Pair<LenskitConfiguration,ModelDisposition>> configurations = Lists.newArrayList();
 
     /**
@@ -77,6 +86,8 @@ public class LenskitRecommenderEngineBuilder {
      * @throws RecommenderBuildException
      */
     public LenskitRecommenderEngine build() throws RecommenderBuildException {
+        // Build the initial graph
+        logger.debug("building graph from {} configurations", configurations.size());
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
         for (Pair<LenskitConfiguration,ModelDisposition> cfg: configurations) {
             rgb.addBindings(cfg.getLeft().getBindings());
@@ -84,11 +95,74 @@ public class LenskitRecommenderEngineBuilder {
         }
         RecommenderInstantiator inst;
         try {
-            inst = RecommenderInstantiator.create(rgb.getSPI(), rgb.build());
+            inst = RecommenderInstantiator.create(rgb.getSPI(), rgb.buildGraph());
         } catch (SolverException e) {
             throw new RecommenderBuildException("Cannot resolve recommender graph", e);
         }
         DAGNode<CachedSatisfaction, DesireChain> graph = inst.instantiate();
+
+        graph = rewriteGraph(graph);
+
         return new LenskitRecommenderEngine(graph, rgb.getSPI());
+    }
+
+    private DAGNode<CachedSatisfaction, DesireChain> rewriteGraph(DAGNode<CachedSatisfaction, DesireChain> graph) throws RecommenderConfigurationException {
+        RecommenderGraphBuilder rewriteBuilder = new RecommenderGraphBuilder();
+        rewriteBuilder.setBindingTransform(ReverseBindingTransform.INSTANCE);
+        boolean rewrite = false;
+        for (Pair<LenskitConfiguration,ModelDisposition> cfg: configurations) {
+            switch (cfg.getRight()) {
+            case EXCLUDED:
+                rewriteBuilder.addBindings(cfg.getLeft().getBindings());
+                rewriteBuilder.addRoots(cfg.getLeft().getRoots());
+                rewrite = true;
+                break;
+            }
+        }
+
+        if (rewrite) {
+            logger.debug("rewriting graph");
+            DependencySolver rewriter = rewriteBuilder.buildDependencySolver();
+            try {
+                graph = rewriter.rewrite(graph);
+            } catch (SolverException e) {
+                throw new RecommenderConfigurationException("Resolution error while rewriting graph", e);
+            }
+        }
+        return graph;
+    }
+
+    private static enum ReverseBindingTransform implements Function<BindingFunction,BindingFunction> {
+        INSTANCE;
+
+        @Nonnull
+        @Override
+        public BindingFunction apply(@Nullable BindingFunction bindFunction) {
+            Preconditions.checkNotNull(bindFunction, "cannot apply to null binding function");
+            if (bindFunction instanceof RuleBasedBindingFunction) {
+                RuleBasedBindingFunction rbf = (RuleBasedBindingFunction) bindFunction;
+                ListMultimap<ContextMatcher, BindRule> bindings = rbf.getRules();
+                ListMultimap<ContextMatcher, BindRule> newBindings;
+                newBindings = Multimaps.transformValues(bindings, new Function<BindRule, BindRule>() {
+                    @Nullable
+                    @Override
+                    public BindRule apply(@Nullable BindRule rule) {
+                        Preconditions.checkNotNull(rule, "cannot apply to null binding function");
+                        assert rule != null;
+                        BindRuleBuilder builder = rule.newCopyBuilder();
+                        Class<?> type = builder.getImplementation();
+                        if (builder.getSatisfaction() != null) {
+                            type = builder.getSatisfaction().getErasedType();
+                        }
+                        return builder.setSatisfaction(new PlaceholderSatisfaction(type))
+                                      .build();
+                    }
+                });
+                return new RuleBasedBindingFunction(newBindings);
+            } else {
+                throw new IllegalArgumentException("cannot transform bind function " + bindFunction);
+            }
+        }
+
     }
 }
