@@ -375,6 +375,11 @@
               <artifactId>velocity</artifactId>
               <version>1.6</version>
             </dependency>
+            <dependency>
+              <groupId>org.apache.maven.doxia</groupId>
+              <artifactId>doxia-module-markdown</artifactId>
+              <version>1.5</version>
+            </dependency>
           </dependencies>
         </plugin>
       </plugins>
