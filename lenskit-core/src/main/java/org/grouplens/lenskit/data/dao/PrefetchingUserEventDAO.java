@@ -20,14 +20,16 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.History;
+import org.grouplens.lenskit.data.history.UserHistory;
 
 import javax.inject.Inject;
 
@@ -39,22 +41,37 @@ import javax.inject.Inject;
  */
 public final class PrefetchingUserEventDAO implements UserEventDAO {
     private final EventDAO eventDAO;
-    private transient volatile Long2ObjectMap<UserHistory<Event>> userEvents;
+    private final Supplier<Long2ObjectMap<UserHistory<Event>>> cache;
 
     @Inject
     public PrefetchingUserEventDAO(EventDAO dao) {
         eventDAO = dao;
+        cache = Suppliers.memoize(new UserProfileScanner());
     }
 
-    private void loadEvents() {
-        if (userEvents != null) {
-            return;
-        }
+    @Override
+    public Cursor<UserHistory<Event>> streamEventsByUser() {
+        return Cursors.wrap(cache.get().values());
+    }
 
-        synchronized (this) {
-            if (userEvents != null) {
-                return;
-            }
+    @Override
+    public UserHistory<Event> getEventsForUser(long user) {
+        return cache.get().get(user);
+    }
+
+    @Override
+    public <E extends Event> UserHistory<E> getEventsForUser(long user, Class<E> type) {
+        UserHistory<Event> events = getEventsForUser(user);
+        if (events == null) {
+            return null;
+        } else {
+            return events.filter(type);
+        }
+    }
+
+    private class UserProfileScanner implements Supplier<Long2ObjectMap<UserHistory<Event>>> {
+        @Override
+        public Long2ObjectMap<UserHistory<Event>> get() {
             Long2ObjectMap<ImmutableList.Builder<Event>> table =
                     new Long2ObjectOpenHashMap<ImmutableList.Builder<Event>>();
             Cursor<Event> events = eventDAO.streamEvents();
@@ -77,29 +94,7 @@ public final class PrefetchingUserEventDAO implements UserEventDAO {
                 result.put(user, History.forUser(user, evt.getValue().build()));
                 evt.setValue(null);
             }
-            userEvents = result;
-        }
-    }
-
-    @Override
-    public Cursor<UserHistory<Event>> streamEventsByUser() {
-        loadEvents();
-        return Cursors.wrap(userEvents.values());
-    }
-
-    @Override
-    public UserHistory<Event> getEventsForUser(long user) {
-        loadEvents();
-        return userEvents.get(user);
-    }
-
-    @Override
-    public <E extends Event> UserHistory<E> getEventsForUser(long user, Class<E> type) {
-        UserHistory<Event> events = getEventsForUser(user);
-        if (events == null) {
-            return null;
-        } else {
-            return events.filter(type);
+            return result;
         }
     }
 }

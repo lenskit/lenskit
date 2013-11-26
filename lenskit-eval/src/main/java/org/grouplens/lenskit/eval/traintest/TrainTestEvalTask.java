@@ -27,6 +27,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
+import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
@@ -41,7 +42,7 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.symbols.Symbol;
-import org.grouplens.lenskit.util.parallel.TaskGroupRunner;
+import org.grouplens.lenskit.util.parallel.TaskGroup;
 import org.grouplens.lenskit.util.table.Table;
 import org.grouplens.lenskit.util.table.TableBuilder;
 import org.grouplens.lenskit.util.table.TableLayout;
@@ -311,38 +312,27 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
     private void runEvaluations(List<List<TrainTestEvalJob>> jobGroups) throws TaskExecutionException {
         int nthreads = getProject().getConfig().getThreadCount();
+        ExecutorService exec;
         logger.info("Running evaluator with {} threads", nthreads);
         if (nthreads == 1) {
-            for (TrainTestEvalJob job: Iterables.concat(jobGroups)) {
-                try {
-                    job.run();
-                } catch (TrainTestJobException ex) {
-                    throw new TaskExecutionException(ex.getCause());
-                } catch (RuntimeException e) {
-                    throw new TaskExecutionException(e);
-                }
-            }
+            exec = MoreExecutors.sameThreadExecutor();
         } else {
-            ExecutorService exec = Executors.newFixedThreadPool(nthreads);
-            try {
-                for (List<TrainTestEvalJob> group: jobGroups) {
-                    TaskGroupRunner runner = TaskGroupRunner.create(exec);
-                    runner.submitAll(group);
-                    try {
-                        runner.waitForAll();
-                    } catch (ExecutionException e) {
-                        Throwable cause = e.getCause();
-                        if (cause instanceof TrainTestJobException) {
-                            cause = cause.getCause();
-                        }
-                        throw new TaskExecutionException(cause);
-                    } catch (TrainTestJobException e) {
-                        throw new TaskExecutionException(e);
-                    }
+            exec = Executors.newFixedThreadPool(nthreads);
+        }
+
+        try {
+            for (List<TrainTestEvalJob> group: jobGroups) {
+                TaskGroup tasks = new TaskGroup();
+                tasks.addAll(group);
+                try {
+                    tasks.execute(exec);
+                } catch (ExecutionException e) {
+                    Throwable cause = e.getCause();
+                    throw new TaskExecutionException(cause);
                 }
-            } finally {
-                exec.shutdown();
             }
+        } finally {
+            exec.shutdown();
         }
     }
 
