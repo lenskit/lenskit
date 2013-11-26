@@ -44,9 +44,6 @@ import static org.junit.Assert.assertThat
 public class FunkSVDBuildSerializeTest extends ML100KTestSuite {
     @Test
     void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
-        def daoConfig = ConfigHelpers.load {
-            bind EventDAO to dao
-        }
         def config = ConfigHelpers.load {
             bind ItemScorer to FunkSVDItemScorer
             bind (BaselineScorer, ItemScorer) to UserMeanItemScorer

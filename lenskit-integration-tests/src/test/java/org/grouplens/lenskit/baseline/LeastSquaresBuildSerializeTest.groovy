@@ -46,9 +46,6 @@ public class LeastSquaresBuildSerializeTest extends ML100KTestSuite {
         LenskitConfiguration config = ConfigHelpers.load {
             bind ItemScorer to LeastSquaresItemScorer
         }
-        LenskitConfiguration daoConfig = ConfigHelpers.load {
-            bind EventDAO to dao
-        }
 
         LenskitRecommenderEngine engine =
             LenskitRecommenderEngine.newBuilder()

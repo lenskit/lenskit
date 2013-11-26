@@ -62,9 +62,6 @@ public class UserUserBuildSerializeTest extends ML100KTestSuite {
             bind (BaselineScorer,ItemScorer) to UserMeanItemScorer
             bind (UserMeanBaseline, ItemMeanRatingItemScorer) to ItemMeanRatingItemScorer
         }
-        def daoConfig = ConfigHelpers.load {
-            bind EventDAO to dao
-        }
 
         LenskitRecommenderEngine engine =
             LenskitRecommenderEngine.newBuilder()
