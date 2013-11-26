@@ -21,7 +21,8 @@
 package org.grouplens.lenskit.mf.funksvd;
 
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.baseline.*;
+import org.grouplens.lenskit.baseline.*
+import org.grouplens.lenskit.config.ConfigHelpers;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.test.CrossfoldTestSuite;
@@ -39,24 +40,23 @@ public class FunkSVDAccuracyTest extends CrossfoldTestSuite {
     @SuppressWarnings("unchecked")
     @Override
     protected void configureAlgorithm(LenskitConfiguration config) {
-        config.bind(ItemScorer.class)
-              .to(FunkSVDItemScorer.class);
-        config.bind(BaselineScorer.class, ItemScorer.class)
-              .to(UserMeanItemScorer.class);
-        config.bind(UserMeanBaseline.class, ItemScorer.class)
-              .to(ItemMeanRatingItemScorer.class);
-        config.within(BaselineScorer.class, ItemScorer.class)
-              .set(MeanDamping.class)
-              .to(10);
-        config.set(FeatureCount.class).to(25);
-        config.set(IterationCount.class).to(125);
+        ConfigHelpers.configure(config) {
+            bind ItemScorer to FunkSVDItemScorer
+            bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
+            bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
+            within (BaselineScorer, ItemScorer) {
+                set MeanDamping to 10
+            }
+            set FeatureCount to 25
+            set IterationCount to 125
+        }
     }
 
     @Override
     protected void checkResults(Table table) {
         assertThat(table.column("MAE").average(),
-                   closeTo(0.74, 0.025));
+                   closeTo(0.74d, 0.025d))
         assertThat(table.column("RMSE.ByUser").average(),
-                   closeTo(0.92 , 0.05));
+                   closeTo(0.92d, 0.05d))
     }
 }
