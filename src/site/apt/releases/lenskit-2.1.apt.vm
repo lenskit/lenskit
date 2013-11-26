@@ -3,13 +3,6 @@
 
 * General Changes
 
-  * RNG now configured via dependency injection.
-
-  * <<<Rating>>> class now has <<<hasValue()>>> and <<<getValue()>>> methods for convenience.
-
-  * Recommender engines can now be deserialized with arbitrary class loaders (fixes bugs using
-    LensKit in Play, see #issue(434)).
-
   * Added <<<lenskit-all>>> module so you can easily depend on all of LensKit with a single
     dependency.
 
@@ -18,6 +11,30 @@
 * Data Access
 
   * New methods to more easily construct DAOs (#issue(346))
+
+  * <<<Rating>>> class now has <<<hasValue()>>> and <<<getValue()>>> methods for convenience.
+
+  []
+
+* Configuration
+
+  * Added <<<LenskitRecommenderEngineBuilder>>> and <<<LenskitRecommenderEngineLoader>>>.
+
+    * Better interface for configuring build & load of recommender engines.
+
+    * Allow multiple configurations to contribute to an engine.
+
+    * Allow configurations to be removed (to remove e.g. DAOs from the model graph) and re-added
+      to support building & serializing a model with one data access config and loading it with
+      a different one.
+
+    []
+
+  * Added <<<addComponent>>> methods to configuration contexts (#issue(457))
+
+  * RNG now configured via dependency injection.
+
+  * Fixed class loader problems with deserializing recommender models (#issue(434)).
 
   []
 
