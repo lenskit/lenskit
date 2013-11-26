@@ -65,6 +65,19 @@ public interface LenskitConfigContext extends Context {
      * @param obj The object to register.
      */
     void addComponent(@Nonnull Object obj);
+
+    /**
+     * Add a component type to the injector.  This is the equivalent of:
+     * <pre>{@code
+     * this.bind(type).to(type);
+     * }</pre>
+     * <p>It has the result of making {@code type} available satisfy dependencies on itself or,
+     * via supertype binding generation, any of its supertypes.  Explicit bindings for those
+     * supertypes will override this binding.</p>
+     *
+     * @param type The type to register.
+     */
+    void addComponent(@Nonnull Class<?> type);
     
     @Override
     @Deprecated

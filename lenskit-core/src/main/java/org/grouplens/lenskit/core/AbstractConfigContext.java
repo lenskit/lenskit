@@ -61,7 +61,13 @@ public abstract class AbstractConfigContext extends AbstractContext implements L
     public void addComponent(@Nonnull Object obj) {
         bind((Class) obj.getClass()).toInstance(obj);
     }
-    
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void addComponent(@Nonnull Class<?> type) {
+        bind((Class) type).to(type);
+    }
+
     @Override @Deprecated
     public LenskitConfigContext in(Class<?> type) {
         return within(type);

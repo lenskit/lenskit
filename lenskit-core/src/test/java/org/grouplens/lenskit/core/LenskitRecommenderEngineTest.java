@@ -40,7 +40,6 @@ import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.util.test.MockItemScorer;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.inject.Inject;
@@ -120,6 +119,16 @@ public class LenskitRecommenderEngineTest {
     public void testAddComponentInstance() throws RecommenderBuildException {
         LenskitConfiguration config = configureBasicRecommender(false);
         config.addComponent(dao);
+
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
+        verifyBasicRecommender(engine.createRecommender());
+    }
+
+    @Test
+    public void testAddComponentClass() throws RecommenderBuildException {
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.addComponent(ConstantItemScorer.class);
+        makeDAOConfig(config);
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         verifyBasicRecommender(engine.createRecommender());
