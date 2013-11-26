@@ -10,6 +10,12 @@
   <artifactId>lenskit-eval-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
   <name>LensKit Evaluation Maven Plugin</name>
+  <description>
+    This Maven plugin facilitates running offline evaluations of LensKit
+    recommenders within Maven.  This is useful to allow Maven's
+    repositories and dependency management facilities to be used to
+    locate recommender implementations and their dependencies.
+  </description>
 
   <properties>
     <!-- Build against an old Maven version, to avoid Guava problems. -->
