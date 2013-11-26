@@ -150,10 +150,7 @@ public class LenskitRecommenderEngineBuilder {
                         Preconditions.checkNotNull(rule, "cannot apply to null binding function");
                         assert rule != null;
                         BindRuleBuilder builder = rule.newCopyBuilder();
-                        Class<?> type = builder.getImplementation();
-                        if (builder.getSatisfaction() != null) {
-                            type = builder.getSatisfaction().getErasedType();
-                        }
+                        Class<?> type = builder.getDependencyType();
                         return builder.setSatisfaction(new PlaceholderSatisfaction(type))
                                       .build();
                     }
