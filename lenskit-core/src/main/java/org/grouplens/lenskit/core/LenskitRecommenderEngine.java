@@ -73,7 +73,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      *                     If the configuration cannot be used.
      */
     public static LenskitRecommenderEngine load(File file) throws IOException, RecommenderConfigurationException {
-        return load(file, null);
+        return newLoader().load(file);
     }
 
     /**
@@ -87,15 +87,11 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @throws IOException If there is an error reading from the file.
      * @throws RecommenderConfigurationException
      *                     If the configuration cannot be used.
+     * @deprecated Use {@link LenskitRecommenderEngineLoader} for sophisticated loading.
      */
+    @Deprecated
     public static LenskitRecommenderEngine load(File file, ClassLoader loader) throws IOException, RecommenderConfigurationException {
-        logger.info("Loading recommender engine from {}", file);
-        FileInputStream input = new FileInputStream(file);
-        try {
-            return load(input, loader);
-        } finally {
-            input.close();
-        }
+        return newLoader().setClassLoader(loader).load(file);
     }
 
     /**
@@ -111,7 +107,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      *                     If the configuration cannot be used.
      */
     public static LenskitRecommenderEngine load(InputStream input) throws IOException, RecommenderConfigurationException {
-        return load(input, null);
+        return newLoader().load(input);
     }
 
     /**
@@ -125,34 +121,10 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @throws IOException If there is an error reading from the file.
      * @throws RecommenderConfigurationException
      *                     If the configuration cannot be used.
+     * @deprecated Use {@link LenskitRecommenderEngineLoader} for sophisticated loading.
      */
     public static LenskitRecommenderEngine load(InputStream input, ClassLoader loader) throws IOException, RecommenderConfigurationException {
-        logger.debug("using classloader {}", loader);
-        InjectSPI spi = new ReflectionInjectSPI();
-        ObjectInputStream in = new CustomClassLoaderObjectInputStream(input, loader);
-        try {
-            Thread current = Thread.currentThread();
-            // save the old class loader
-            ClassLoader oldLoader = current.getContextClassLoader();
-            if (loader != null) {
-                // set the new class loader
-                // Grapht will automatically use the context class loader
-                current.setContextClassLoader(loader);
-            }
-            try {
-                DAGNode<CachedSatisfaction, DesireChain> dependencies = (DAGNode) in.readObject();
-                return new LenskitRecommenderEngine(dependencies, spi);
-            } finally {
-                if (loader != null) {
-                    // restore the old class loader if needed
-                    current.setContextClassLoader(oldLoader);
-                }
-            }
-        } catch (ClassNotFoundException e) {
-            throw new RecommenderConfigurationException(e);
-        } finally {
-            in.close();
-        }
+        return newLoader().setClassLoader(loader).load(input);
     }
 
     /**
@@ -217,7 +189,22 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @return The recommender engine.
      */
     public static LenskitRecommenderEngine build(LenskitConfiguration config) throws RecommenderBuildException {
-        DAGNode<CachedSatisfaction, DesireChain> graph = RecommenderInstantiator.forConfig(config).instantiate();
-        return new LenskitRecommenderEngine(graph, config.getSPI());
+        return newBuilder().addConfiguration(config).build();
+    }
+
+    /**
+     * Create a new recommender engine builder.
+     * @return A new recommender engine builder.
+     */
+    public static LenskitRecommenderEngineBuilder newBuilder() {
+        return new LenskitRecommenderEngineBuilder();
+    }
+
+    /**
+     * Create a new recommender engine loader.
+     * @return A new recommender engine loader.
+     */
+    public static LenskitRecommenderEngineLoader newLoader() {
+        return new LenskitRecommenderEngineLoader();
     }
 }

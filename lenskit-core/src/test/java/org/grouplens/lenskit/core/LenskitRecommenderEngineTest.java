@@ -40,7 +40,6 @@ import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.util.test.MockItemScorer;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.inject.Inject;
@@ -54,6 +53,7 @@ import java.util.Collections;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -68,7 +68,7 @@ public class LenskitRecommenderEngineTest {
 
     @Test
     public void testBasicRec() throws RecommenderBuildException {
-        LenskitConfiguration config = configureBasicRecommender();
+        LenskitConfiguration config = configureBasicRecommender(true);
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         verifyBasicRecommender(engine.createRecommender());
@@ -76,18 +76,28 @@ public class LenskitRecommenderEngineTest {
 
     @Test
     public void testBasicNoEngine() throws RecommenderBuildException {
-        LenskitConfiguration config = configureBasicRecommender();
+        LenskitConfiguration config = configureBasicRecommender(true);
 
         LenskitRecommender rec = LenskitRecommender.build(config);
         verifyBasicRecommender(rec);
     }
 
-    private LenskitConfiguration configureBasicRecommender() {
+    private LenskitConfiguration configureBasicRecommender(boolean includeData) {
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(ItemScorer.class)
               .to(ConstantItemScorer.class);
         config.bind(ItemRecommender.class)
               .to(TopNItemRecommender.class);
+        if (includeData) {
+            makeDAOConfig(config);
+        }
+        return config;
+    }
+
+    private LenskitConfiguration makeDAOConfig(LenskitConfiguration config) {
+        if (config == null) {
+            config = new LenskitConfiguration();
+        }
         config.bind(EventDAO.class)
               .to(dao);
         return config;
@@ -103,6 +113,25 @@ public class LenskitRecommenderEngineTest {
         // Since we have an item scorer, we should have a recommender too
         assertThat(rec.getItemRecommender(),
                    instanceOf(TopNItemRecommender.class));
+    }
+
+    @Test
+    public void testAddComponentInstance() throws RecommenderBuildException {
+        LenskitConfiguration config = configureBasicRecommender(false);
+        config.addComponent(dao);
+
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
+        verifyBasicRecommender(engine.createRecommender());
+    }
+
+    @Test
+    public void testAddComponentClass() throws RecommenderBuildException {
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.addComponent(ConstantItemScorer.class);
+        makeDAOConfig(config);
+
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
+        verifyBasicRecommender(engine.createRecommender());
     }
 
     @Test
@@ -180,14 +209,33 @@ public class LenskitRecommenderEngineTest {
     }
 
     /**
+     * Test that we can configure data separately.
+     */
+    @Test
+    public void testSeparateBuild() throws RecommenderBuildException {
+        LenskitRecommenderEngineBuilder reb = LenskitRecommenderEngine.newBuilder();
+        reb.addConfiguration(configureBasicRecommender(false));
+        LenskitConfiguration daoConfig = new LenskitConfiguration();
+        daoConfig.bind(EventDAO.class).to(dao);
+        reb.addConfiguration(daoConfig);
+        LenskitRecommenderEngine engine = reb.build();
+        LenskitRecommender rec = engine.createRecommender();
+        verifyBasicRecommender(rec);
+    }
+
+    /**
      * Test that no instance satisfaction contains an event collection DAO reference.
      */
-    @Ignore("broken until 2.1 brings back serialization")
     @Test
     public void testBasicNoInstance() throws RecommenderBuildException, IOException, ClassNotFoundException {
-        LenskitConfiguration config = configureBasicRecommender();
+        LenskitConfiguration config = configureBasicRecommender(false);
+        LenskitConfiguration daoConfig = makeDAOConfig(null);
 
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
+        LenskitRecommenderEngine engine =
+                LenskitRecommenderEngine.newBuilder()
+                                        .addConfiguration(config)
+                                        .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
+                                        .build();
 
         DAGNode<CachedSatisfaction,DesireChain> g = engine.getGraph();
         // make sure we have no record of an instance dao
@@ -196,19 +244,55 @@ public class LenskitRecommenderEngineTest {
         }
     }
 
-    @Ignore("broken until 2.1 brings back serialization")
     @Test
     public void testSerialize() throws RecommenderBuildException, IOException, ClassNotFoundException {
-        LenskitConfiguration config = configureBasicRecommender();
+        LenskitConfiguration config = configureBasicRecommender(false);
+        LenskitConfiguration daoConfig = makeDAOConfig(null);
 
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
+        LenskitRecommenderEngine engine =
+                LenskitRecommenderEngine.newBuilder()
+                                        .addConfiguration(config)
+                                        .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
+                                        .build();
+
         // engine.setSymbolMapping(null);
         File tfile = File.createTempFile("lenskit", "engine");
         try {
             engine.write(tfile);
-            LenskitRecommenderEngine e2 = LenskitRecommenderEngine.load(tfile);
+            LenskitRecommenderEngine e2 =
+                    LenskitRecommenderEngine.newLoader()
+                                            .addConfiguration(daoConfig)
+                                            .load(tfile);
             // e2.setSymbolMapping(mapping);
             verifyBasicRecommender(e2.createRecommender());
+        } finally {
+            tfile.delete();
+        }
+    }
+
+    @Test
+    public void testDeserializeValidate() throws RecommenderBuildException, IOException, ClassNotFoundException {
+        LenskitConfiguration config = configureBasicRecommender(false);
+        LenskitConfiguration daoConfig = makeDAOConfig(null);
+
+        LenskitRecommenderEngine engine =
+                LenskitRecommenderEngine.newBuilder()
+                                        .addConfiguration(config)
+                                        .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
+                                        .build();
+
+        // engine.setSymbolMapping(null);
+        File tfile = File.createTempFile("lenskit", "engine");
+        try {
+            engine.write(tfile);
+            try {
+                LenskitRecommenderEngine e2 =
+                        LenskitRecommenderEngine.newLoader()
+                                                .load(tfile);
+                fail("loading without DAO config should fail");
+            } catch (RecommenderConfigurationException e) {
+                /* expected */
+            }
         } finally {
             tfile.delete();
         }
@@ -271,6 +355,33 @@ public class LenskitRecommenderEngineTest {
         public SubclassedDAODepComponent(EventCollectionDAO dao) {
             this.dao = dao;
         }
+    }
+
+    /**
+     * Test anchoring to the root (#344).
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testAnchoredRoot() throws RecommenderBuildException {
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(dao);
+        config.bind(ItemScorer.class)
+              .to(ConstantItemScorer.class);
+        config.set(ConstantItemScorer.Value.class)
+              .to(3.5);
+        config.at(null)
+              .bind(ItemScorer.class)
+              .to(FallbackItemScorer.class);
+        config.bind(BaselineScorer.class, ItemScorer.class)
+              .to(GlobalMeanRatingItemScorer.class);
+        LenskitRecommender rec = LenskitRecommender.build(config);
+        assertThat(rec.getItemScorer(), instanceOf(FallbackItemScorer.class));
+        SimpleRatingPredictor rp = (SimpleRatingPredictor) rec.getRatingPredictor();
+        assertThat(rp, notNullValue());
+        assert rp != null;
+        assertThat(rp.getScorer(), instanceOf(ConstantItemScorer.class));
+        assertThat(((FallbackItemScorer) rec.getItemScorer()).getPrimaryScorer(),
+                   sameInstance(rp.getScorer()));
     }
 
     //region Test shareable providers

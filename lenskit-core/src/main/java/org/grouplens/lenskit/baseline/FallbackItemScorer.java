@@ -55,4 +55,24 @@ public class FallbackItemScorer extends AbstractItemScorer {
             output.set(blpreds);
         }
     }
+
+    /**
+     * Get the primary scorer from this item scorer.
+     * @return The scorer's primary scorer.
+     * @see PrimaryScorer
+     */
+    @Nonnull
+    public ItemScorer getPrimaryScorer() {
+        return primaryScorer;
+    }
+
+    /**
+     * Get the baseline scorer from this item scorer.
+     * @return The scorer's baseline scorer.
+     * @see BaselineScorer
+     */
+    @Nonnull
+    public ItemScorer getBaselineScorer() {
+        return baselineScorer;
+    }
 }

@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.test;
 
+import org.grouplens.lenskit.core.LenskitConfigContext;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
@@ -45,6 +47,12 @@ public class ML100KTestSuite {
     protected final String INPUT_FILE_NAME = "u.data";
 
     protected EventDAO dao;
+
+    protected LenskitConfiguration getDaoConfig() {
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(dao);
+        return config;
+    }
 
     @Before
     public void createDAOFactory() throws FileNotFoundException {
