@@ -18,48 +18,24 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
-
-import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
-import org.grouplens.lenskit.vectors.SparseVector;
-
-import javax.inject.Inject;
-import java.io.Serializable;
+package org.grouplens.lenskit.core;
 
 /**
- * Implementation of {@link ItemSimilarity} that delegates to a vector similarity.
+ * The way components should be handled when building a LensKit recommender.
  *
+ * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@Shareable
-public class ItemVectorSimilarity implements ItemSimilarity, Serializable {
-    private static final long serialVersionUID = 1L;
-
-    private VectorSimilarity delegate;
-
-    @Inject
-    public ItemVectorSimilarity(VectorSimilarity sim) {
-        delegate = sim;
-    }
-
-    @Override
-    public double similarity(long i1, SparseVector v1, long i2, SparseVector v2) {
-        return delegate.similarity(v1, v2);
-    }
-
-    @Override
-    public boolean isSparse() {
-        return delegate.isSparse();
-    }
-
-    @Override
-    public boolean isSymmetric() {
-        return delegate.isSymmetric();
-    }
-
-    @Override
-    public String toString() {
-        return "{item similarity: " + delegate.toString() + "}";
-    }
+public enum ModelDisposition {
+    /**
+     * Include components in the model.  When applied to a configuration, components set up by
+     * that configuration will be included in the model (recommender engine).
+     */
+    INCLUDED,
+    /**
+     * Exclude components in the model.  When applied to configuration, components set up by that
+     * configuration will be removed from the model.  The resulting model will not work unless
+     * the required components are re-supplied.
+     */
+    EXCLUDED
 }

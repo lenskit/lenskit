@@ -18,48 +18,41 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.knn.item.model;
 
-import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.core.Transient;
+import org.grouplens.lenskit.knn.item.ItemSimilarity;
 
 import javax.inject.Inject;
-import java.io.Serializable;
+import javax.inject.Provider;
 
 /**
- * Implementation of {@link ItemSimilarity} that delegates to a vector similarity.
+ * Provider to auto-select an appropriate neighbor iteration strategy.  It uses the similarity
+ * function to decide which to use, using {@link SparseNeighborIterationStrategy} if the function
+ * is sparse and {@link BasicNeighborIterationStrategy} otherwise.
  *
+ * @see org.grouplens.lenskit.knn.item.ItemSimilarity#isSparse()
+ * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@Shareable
-public class ItemVectorSimilarity implements ItemSimilarity, Serializable {
-    private static final long serialVersionUID = 1L;
+public class DefaultNeighborIterationStrategyProvider implements Provider<NeighborIterationStrategy> {
+    private final ItemSimilarity similarity;
 
-    private VectorSimilarity delegate;
-
+    /**
+     * Construct a new provider.
+     * @param sim The item similarity function to use.
+     */
     @Inject
-    public ItemVectorSimilarity(VectorSimilarity sim) {
-        delegate = sim;
+    public DefaultNeighborIterationStrategyProvider(@Transient ItemSimilarity sim) {
+        similarity = sim;
     }
 
     @Override
-    public double similarity(long i1, SparseVector v1, long i2, SparseVector v2) {
-        return delegate.similarity(v1, v2);
-    }
-
-    @Override
-    public boolean isSparse() {
-        return delegate.isSparse();
-    }
-
-    @Override
-    public boolean isSymmetric() {
-        return delegate.isSymmetric();
-    }
-
-    @Override
-    public String toString() {
-        return "{item similarity: " + delegate.toString() + "}";
+    public NeighborIterationStrategy get() {
+        if (similarity.isSparse()) {
+            return new SparseNeighborIterationStrategy();
+        } else {
+            return new BasicNeighborIterationStrategy();
+        }
     }
 }

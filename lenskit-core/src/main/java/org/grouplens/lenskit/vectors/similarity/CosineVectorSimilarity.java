@@ -75,4 +75,9 @@ public class CosineVectorSimilarity implements VectorSimilarity, Serializable {
     public boolean isSymmetric() {
         return true;
     }
+
+    @Override
+    public String toString() {
+        return String.format("cosine[d=%s]", dampingFactor);
+    }
 }

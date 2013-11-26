@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.core;
 
 import org.grouplens.grapht.Binding;
+import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import javax.annotation.Nonnull;
@@ -122,5 +123,10 @@ class LenskitBindingImpl<T> implements LenskitBinding<T> {
     @Override
     public void toNull(Class<? extends T> type) {
         binding.toNull(type);
+    }
+
+    @Override
+    public void toSatisfaction(@Nonnull Satisfaction sat) {
+        binding.toSatisfaction(sat);
     }
 }

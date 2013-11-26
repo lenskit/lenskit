@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.knn.item.model;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -41,6 +42,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Build an item-item CF model from rating data.
@@ -54,45 +56,51 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
     private static final Logger logger = LoggerFactory.getLogger(ItemItemModelBuilder.class);
 
     private final ItemSimilarity itemSimilarity;
-    private final ItemItemBuildContextFactory contextFactory;
+    private final ItemItemBuildContext buildContext;
     private final Threshold threshold;
+    private final NeighborIterationStrategy neighborStrategy;
     private final int modelSize;
 
     @Inject
     public ItemItemModelBuilder(@Transient ItemSimilarity similarity,
-                                @Transient ItemItemBuildContextFactory ctxFactory,
+                                @Transient ItemItemBuildContext context,
                                 @Transient Threshold thresh,
+                                @Transient NeighborIterationStrategy nbrStrat,
                                 @ModelSize int size) {
         itemSimilarity = similarity;
-        contextFactory = ctxFactory;
+        buildContext = context;
         threshold = thresh;
+        neighborStrategy = nbrStrat;
         modelSize = size;
     }
 
     @Override
     public SimilarityMatrixModel get() {
         logger.debug("building item-item model");
+        logger.debug("using similarity function {}", itemSimilarity);
+        logger.debug("similarity function is {}",
+                     itemSimilarity.isSparse() ? "sparse" : "non-sparse");
+        logger.debug("similarity function is {}",
+                     itemSimilarity.isSymmetric() ? "symmetric" : "non-symmetric");
 
-        ItemItemBuildContext buildContext = contextFactory.buildContext();
         Accumulator accumulator = new Accumulator(buildContext.getItems(), threshold, modelSize);
 
-        for (long itemId1 : buildContext.getItems()) {
+        LongSortedSet allItems = buildContext.getItems();
+        final int nitems = allItems.size();
+        LongIterator outer = allItems.iterator();
+
+        Stopwatch timer = new Stopwatch();
+        timer.start();
+        int ndone = 0;
+        while (outer.hasNext()) {
+            ndone += 1;
+            final long itemId1 = outer.nextLong();
+            logger.trace("computing similarities for item {} ({} of {})",
+                         itemId1, ndone, nitems);
             SparseVector vec1 = buildContext.itemVector(itemId1);
 
-            LongIterator itemIter;
-            if (itemSimilarity.isSparse()) {
-                if (itemSimilarity.isSymmetric()) {
-                    itemIter = buildContext.getUserItems(vec1.keySet()).iterator(itemId1);
-                } else {
-                    itemIter = buildContext.getUserItems(vec1.keySet()).iterator();
-                }
-            } else {
-                if (itemSimilarity.isSymmetric()) {
-                    itemIter = buildContext.getItems().iterator(itemId1);
-                } else {
-                    itemIter = buildContext.getItems().iterator();
-                }
-            }
+            LongIterator itemIter = neighborStrategy.neighborIterator(buildContext, itemId1,
+                                                                      itemSimilarity.isSymmetric());
 
             while (itemIter.hasNext()) {
                 long itemId2 = itemIter.nextLong();
@@ -105,7 +113,15 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
                     }
                 }
             }
+
+            if (ndone % 100 == 0) {
+                logger.debug("computed {} of {} model rows ({}s/row)",
+                             ndone, nitems,
+                             String.format("%.3f", timer.elapsed(TimeUnit.MILLISECONDS) * 0.001 / ndone));
+            }
         }
+        timer.stop();
+        logger.info("built model for {} items in {}", ndone, timer);
 
         return accumulator.build();
     }
@@ -153,4 +169,5 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
             return model;
         }
     }
+
 }

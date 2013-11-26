@@ -18,48 +18,39 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.core;
 
-import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.apache.commons.lang3.ClassUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
-import java.io.Serializable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
 
 /**
- * Implementation of {@link ItemSimilarity} that delegates to a vector similarity.
+ * Object input stream that uses a custom class loader.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@Shareable
-public class ItemVectorSimilarity implements ItemSimilarity, Serializable {
-    private static final long serialVersionUID = 1L;
+class CustomClassLoaderObjectInputStream extends ObjectInputStream {
+    private static final Logger logger = LoggerFactory.getLogger(CustomClassLoaderObjectInputStream.class);
+    private final ClassLoader classLoader;
 
-    private VectorSimilarity delegate;
-
-    @Inject
-    public ItemVectorSimilarity(VectorSimilarity sim) {
-        delegate = sim;
+    CustomClassLoaderObjectInputStream(InputStream in, ClassLoader loader) throws IOException {
+        super(in);
+        classLoader = loader;
     }
 
     @Override
-    public double similarity(long i1, SparseVector v1, long i2, SparseVector v2) {
-        return delegate.similarity(v1, v2);
-    }
-
-    @Override
-    public boolean isSparse() {
-        return delegate.isSparse();
-    }
-
-    @Override
-    public boolean isSymmetric() {
-        return delegate.isSymmetric();
-    }
-
-    @Override
-    public String toString() {
-        return "{item similarity: " + delegate.toString() + "}";
+    protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+        if (classLoader == null) {
+            return super.resolveClass(desc);
+        } else {
+            String name = desc.getName();
+            logger.debug("resolving class {}", name);
+            return ClassUtils.getClass(classLoader, name);
+        }
     }
 }

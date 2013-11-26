@@ -20,13 +20,12 @@
  */
 package org.grouplens.lenskit.core;
 
+import com.google.common.collect.ImmutableSet;
 import org.grouplens.grapht.BindingFunctionBuilder;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.solver.DefaultDesireBindingFunction;
 import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.solver.SolverException;
-import org.grouplens.grapht.spi.CachePolicy;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.lenskit.*;
@@ -49,7 +48,6 @@ import static org.grouplens.lenskit.core.ContextWrapper.coerce;
  * @compat Public
  */
 public class LenskitConfiguration extends AbstractConfigContext {
-    private static final int RESOLVE_DEPTH_LIMIT = 100;
     private static final Class<?>[] INITIAL_ROOTS = {
             RatingPredictor.class,
             ItemScorer.class,
@@ -139,26 +137,12 @@ public class LenskitConfiguration extends AbstractConfigContext {
         solver.resolve(bindings.getSPI().desire(null, type, true));
     }
 
-    private DAGNode<CachedSatisfaction, DesireChain> resolveGraph(BindingFunctionBuilder cfg) throws SolverException {
-        DependencySolver solver =
-                DependencySolver.newBuilder()
-                                .addBindingFunction(cfg.build(BindingFunctionBuilder.RuleSet.EXPLICIT))
-                                .addBindingFunction(cfg.build(BindingFunctionBuilder.RuleSet.INTERMEDIATE_TYPES))
-                                .addBindingFunction(cfg.build(BindingFunctionBuilder.RuleSet.SUPER_TYPES))
-                                .addBindingFunction(new DefaultDesireBindingFunction(cfg.getSPI()))
-                                .setDefaultPolicy(CachePolicy.MEMOIZE)
-                                .setMaxDepth(RESOLVE_DEPTH_LIMIT)
-                                .build();
+    BindingFunctionBuilder getBindings() {
+        return bindings;
+    }
 
-        // Resolve all required types to complete a Recommender
-        for (Class<?> root : roots) {
-            resolve(root, solver);
-        }
-
-        // At this point the graph contains the dependency state to build a
-        // recommender with the current DAO. Any extra bind rules don't matter
-        // because they could not have created any Nodes.
-        return solver.getGraph();
+    Set<Class<?>> getRoots() {
+        return ImmutableSet.copyOf(roots);
     }
 
     /**
@@ -166,10 +150,15 @@ public class LenskitConfiguration extends AbstractConfigContext {
      * it can be analyzed, but does not create any objects.
      *
      * @return The full graph.
+     * @deprecated This shouldn't be used anymore.
      */
+    @Deprecated
     public DAGNode<CachedSatisfaction, DesireChain> buildGraph() throws RecommenderConfigurationException {
+        RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
+        rgb.addBindings(bindings);
+        rgb.addRoots(roots);
         try {
-            return resolveGraph(bindings);
+            return rgb.buildGraph();
         } catch (SolverException e) {
             throw new RecommenderConfigurationException("Cannot resolve configuration graph", e);
         }

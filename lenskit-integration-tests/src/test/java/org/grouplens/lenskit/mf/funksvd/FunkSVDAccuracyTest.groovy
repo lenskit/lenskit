@@ -18,57 +18,45 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.knn.item;
+package org.grouplens.lenskit.mf.funksvd;
 
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.baseline.BaselineScorer;
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer;
-import org.grouplens.lenskit.baseline.UserMeanBaseline;
-import org.grouplens.lenskit.baseline.UserMeanItemScorer;
+import org.grouplens.lenskit.baseline.*
+import org.grouplens.lenskit.config.ConfigHelpers;
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.knn.NeighborhoodSize;
+import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.test.CrossfoldTestSuite;
-import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer;
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.util.table.Table;
-import org.grouplens.lenskit.vectors.similarity.CosineVectorSimilarity;
-import org.grouplens.lenskit.vectors.similarity.SimilarityDamping;
-import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
 
 import static org.hamcrest.Matchers.closeTo;
 import static org.junit.Assert.assertThat;
 
 /**
- * Do major tests on the item-item recommender.
+ * Do major tests on the FunkSVD recommender.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class ItemItemAccuracyTest extends CrossfoldTestSuite {
+public class FunkSVDAccuracyTest extends CrossfoldTestSuite {
     @SuppressWarnings("unchecked")
     @Override
     protected void configureAlgorithm(LenskitConfiguration config) {
-        config.bind(ItemScorer.class)
-              .to(ItemItemScorer.class);
-        config.bind(BaselineScorer.class, ItemScorer.class)
-              .to(UserMeanItemScorer.class);
-        config.bind(UserMeanBaseline.class, ItemScorer.class)
-              .to(ItemMeanRatingItemScorer.class);
-        config.bind(UserVectorNormalizer.class)
-              .to(BaselineSubtractingUserVectorNormalizer.class);
-        config.within(ItemSimilarity.class)
-              .bind(VectorSimilarity.class)
-              .to(CosineVectorSimilarity.class);
-        config.within(ItemSimilarity.class)
-              .set(SimilarityDamping.class)
-              .to(100.0);
-        config.set(NeighborhoodSize.class).to(30);
+        ConfigHelpers.configure(config) {
+            bind ItemScorer to FunkSVDItemScorer
+            bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
+            bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
+            within (BaselineScorer, ItemScorer) {
+                set MeanDamping to 10
+            }
+            set FeatureCount to 25
+            set IterationCount to 125
+        }
     }
 
     @Override
     protected void checkResults(Table table) {
         assertThat(table.column("MAE").average(),
-                   closeTo(0.70, 0.025));
+                   closeTo(0.74d, 0.025d))
         assertThat(table.column("RMSE.ByUser").average(),
-                   closeTo(0.90 , 0.05));
+                   closeTo(0.92d, 0.05d))
     }
 }

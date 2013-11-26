@@ -1,7 +1,11 @@
 language: java
 jdk:
 - oraclejdk7
+- oraclejdk8
 - openjdk6
+matrix:
+  allow_failures:
+  - jdk: oraclejdk8
 branches:
   except:
   - www

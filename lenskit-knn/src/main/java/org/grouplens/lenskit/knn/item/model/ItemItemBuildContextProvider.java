@@ -22,6 +22,7 @@ package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.collections.LongUtils;
+import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Event;
@@ -36,21 +37,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
- * Factory wrapping initialization logic necessary for instantiating an {@link ItemItemBuildContext}.
+ * Provider that sets up an {@link ItemItemBuildContext}.
+ * 
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class ItemItemBuildContextFactory {
+public class ItemItemBuildContextProvider implements Provider<ItemItemBuildContext> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ItemItemBuildContextFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(ItemItemBuildContextProvider.class);
 
     private final UserEventDAO userEventDAO;
     private final UserVectorNormalizer normalizer;
     private final UserHistorySummarizer userSummarizer;
 
     @Inject
-    public ItemItemBuildContextFactory(UserEventDAO edao, UserVectorNormalizer normalizer,
-                                       UserHistorySummarizer userSummarizer) {
+    public ItemItemBuildContextProvider(@Transient UserEventDAO edao, 
+                                        @Transient UserVectorNormalizer normalizer,
+                                        @Transient UserHistorySummarizer userSummarizer) {
         userEventDAO = edao;
         this.normalizer = normalizer;
         this.userSummarizer = userSummarizer;
@@ -61,7 +66,8 @@ public class ItemItemBuildContextFactory {
      *
      * @return a new ItemItemBuildContext.
      */
-    public ItemItemBuildContext buildContext() {
+    @Override
+    public ItemItemBuildContext get() {
         logger.info("constructing build context");
         logger.debug("using normalizer {}", normalizer);
         logger.debug("using summarizer {}", userSummarizer);
