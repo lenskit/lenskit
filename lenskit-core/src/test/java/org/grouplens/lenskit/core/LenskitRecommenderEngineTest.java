@@ -117,6 +117,15 @@ public class LenskitRecommenderEngineTest {
     }
 
     @Test
+    public void testAddComponentInstance() throws RecommenderBuildException {
+        LenskitConfiguration config = configureBasicRecommender(false);
+        config.addComponent(dao);
+
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
+        verifyBasicRecommender(engine.createRecommender());
+    }
+
+    @Test
     public void testArbitraryRoot() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).to(dao);

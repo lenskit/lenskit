@@ -23,6 +23,7 @@ package org.grouplens.lenskit.core;
 import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.Context;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 
@@ -51,6 +52,19 @@ public interface LenskitConfigContext extends Context {
      */
     @SuppressWarnings("rawtypes")
     Binding set(Class<? extends Annotation> param);
+
+    /**
+     * Add a component object to the injector.  This is the equivalent of:
+     * <pre>{@code
+     * this.bind(obj.getClass()).to(obj);
+     * }</pre>
+     * <p>It has the result of making {@code obj} available satisfy dependencies on its class or,
+     * via supertype binding generation, any of its supertypes.  Explicit bindings for those
+     * supertypes will override this binding.</p>
+     *
+     * @param obj The object to register.
+     */
+    void addComponent(@Nonnull Object obj);
     
     @Override
     @Deprecated
