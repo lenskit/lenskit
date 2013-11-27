@@ -6,6 +6,10 @@
 -   Added `lenskit-all` module so you can easily depend on all of LensKit with a single
     dependency.
 
+-   Added `LenskitInfo` class, providing access to information about LensKit.  Currently, it
+    provides access to the Git revisions that are included in the build.  This works with released
+    binaries of LensKit, and versions built from Git sources; it will not work from tarball builds.
+
 ## Data Access
 
 -   New methods to more easily construct DAOs (#issue(346))
