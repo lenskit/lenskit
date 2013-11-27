@@ -50,14 +50,16 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngine.class);
 
     private final DAGNode<CachedSatisfaction, DesireChain> graph;
-
     private final InjectSPI spi;
+    private final boolean instantiable;
 
-    LenskitRecommenderEngine(DAGNode<CachedSatisfaction, DesireChain> dependencies, InjectSPI spi) {
+    LenskitRecommenderEngine(DAGNode<CachedSatisfaction, DesireChain> dependencies,
+                             InjectSPI spi, boolean instantiable) {
         Preconditions.checkArgument(spi instanceof ReflectionInjectSPI,
                                     "SPI must be a reflection SPI");
         this.graph = dependencies;
         this.spi = spi;
+        this.instantiable = instantiable;
     }
 
     /**
@@ -167,8 +169,18 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
 
     @Override
     public LenskitRecommender createRecommender() {
+        Preconditions.checkState(instantiable, "recommender engine does not have instantiable graph");
         StaticInjector inj = new StaticInjector(spi, graph);
         return new LenskitRecommender(inj);
+    }
+
+    /**
+     * Query whether this engine is instantiable.  Instantiable recommenders have all their
+     * placeholders removed and are ready to instantiate.
+     * @return {@code true} if the recommender is instantiable.
+     */
+    public boolean isInstantiable() {
+        return instantiable;
     }
 
     /**

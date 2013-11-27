@@ -103,7 +103,8 @@ public class LenskitRecommenderEngineBuilder {
 
         graph = rewriteGraph(graph);
 
-        return new LenskitRecommenderEngine(graph, rgb.getSPI());
+        boolean instantiable = GraphtUtils.getPlaceholderNodes(graph).isEmpty();
+        return new LenskitRecommenderEngine(graph, rgb.getSPI(), instantiable);
     }
 
     private DAGNode<CachedSatisfaction, DesireChain> rewriteGraph(DAGNode<CachedSatisfaction, DesireChain> graph) throws RecommenderConfigurationException {

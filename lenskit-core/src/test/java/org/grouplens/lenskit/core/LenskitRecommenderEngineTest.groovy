@@ -225,11 +225,10 @@ public class LenskitRecommenderEngineTest {
         LenskitConfiguration config = configureBasicRecommender(false)
         LenskitConfiguration daoConfig = makeDAOConfig(null)
 
-        LenskitRecommenderEngine engine =
-                LenskitRecommenderEngine.newBuilder()
-                                        .addConfiguration(config)
-                                        .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
-                                        .build()
+        def engine = LenskitRecommenderEngine.newBuilder()
+                                             .addConfiguration(config)
+                                             .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
+                                             .build()
 
         DAGNode<CachedSatisfaction,DesireChain> g = engine.getGraph()
         // make sure we have no record of an instance dao
@@ -243,20 +242,18 @@ public class LenskitRecommenderEngineTest {
         LenskitConfiguration config = configureBasicRecommender(false)
         LenskitConfiguration daoConfig = makeDAOConfig(null)
 
-        LenskitRecommenderEngine engine =
-                LenskitRecommenderEngine.newBuilder()
-                                        .addConfiguration(config)
-                                        .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
-                                        .build()
+        def engine = LenskitRecommenderEngine.newBuilder()
+                                             .addConfiguration(config)
+                                             .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
+                                             .build()
 
         // engine.setSymbolMapping(null)
         File tfile = File.createTempFile("lenskit", "engine")
         try {
             engine.write(tfile)
-            LenskitRecommenderEngine e2 =
-                    LenskitRecommenderEngine.newLoader()
-                                            .addConfiguration(daoConfig)
-                                            .load(tfile)
+            def e2 = LenskitRecommenderEngine.newLoader()
+                                             .addConfiguration(daoConfig)
+                                             .load(tfile)
             // e2.setSymbolMapping(mapping)
             verifyBasicRecommender(e2.createRecommender())
         } finally {
@@ -280,9 +277,35 @@ public class LenskitRecommenderEngineTest {
         try {
             engine.write(tfile)
             shouldFail(RecommenderConfigurationException) {
-                LenskitRecommenderEngine e2 =
-                    LenskitRecommenderEngine.newLoader()
-                                            .load(tfile)
+                def e2 = LenskitRecommenderEngine.newLoader().load(tfile)
+            }
+        } finally {
+            tfile.delete()
+        }
+    }
+
+    @Test
+    public void testDeserializeDeferredValidate() throws RecommenderBuildException, IOException, ClassNotFoundException {
+        LenskitConfiguration config = configureBasicRecommender(false)
+        LenskitConfiguration daoConfig = makeDAOConfig(null)
+
+        LenskitRecommenderEngine engine =
+            LenskitRecommenderEngine.newBuilder()
+                                    .addConfiguration(config)
+                                    .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
+                                    .build()
+
+        // engine.setSymbolMapping(null)
+        File tfile = File.createTempFile("lenskit", "engine")
+        try {
+            engine.write(tfile)
+            // loading should succeed
+            def e2 = LenskitRecommenderEngine.newLoader()
+                                             .setValidationMode(EngineValidationMode.DEFERRED)
+                                             .load(tfile)
+            shouldFail(IllegalStateException) {
+                // creating the recommender should fail
+                e2.createRecommender()
             }
         } finally {
             tfile.delete()
@@ -373,6 +396,23 @@ public class LenskitRecommenderEngineTest {
         assertThat(rp.getScorer(), instanceOf(ConstantItemScorer.class))
         assertThat(((FallbackItemScorer) rec.getItemScorer()).getPrimaryScorer(),
                    sameInstance(rp.getScorer()))
+    }
+
+    /**
+     * Test that recommender engines verify that they are instantiable.
+     */
+    @Test
+    public void testEngineChecksInstantiable() {
+        def config = configureBasicRecommender(false)
+        def daoConfig = new LenskitConfiguration()
+        makeDAOConfig(daoConfig)
+        def engine = LenskitRecommenderEngine.newBuilder()
+                                             .addConfiguration(config)
+                                             .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
+                                             .build()
+        shouldFail(IllegalStateException) {
+            engine.createRecommender()
+        }
     }
 
     //region Test shareable providers

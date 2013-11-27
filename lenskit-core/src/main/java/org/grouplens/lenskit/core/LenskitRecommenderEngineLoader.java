@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.core;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.DependencySolver;
@@ -27,7 +28,6 @@ import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.InjectSPI;
-import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.grapht.spi.reflect.ReflectionInjectSPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +45,7 @@ public class LenskitRecommenderEngineLoader {
     private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngineLoader.class);
     private ClassLoader classLoader;
     private List<LenskitConfiguration> configurations = Lists.newArrayList();
+    private EngineValidationMode validationMode = EngineValidationMode.IMMEDIATE;
 
     /**
      * Get the configured class loader.
@@ -76,6 +77,18 @@ public class LenskitRecommenderEngineLoader {
      */
     public LenskitRecommenderEngineLoader addConfiguration(LenskitConfiguration config) {
         configurations.add(config);
+        return this;
+    }
+
+    /**
+     * Set the validation mode for loading the recommender engine.  The default mode is
+     * {@link EngineValidationMode#IMMEDIATE}.
+     * @param mode The validation mode.
+     * @return The loader (for chaining).
+     */
+    public LenskitRecommenderEngineLoader setValidationMode(EngineValidationMode mode) {
+        Preconditions.checkNotNull(mode, "validation mode");
+        validationMode = mode;
         return this;
     }
 
@@ -122,14 +135,19 @@ public class LenskitRecommenderEngineLoader {
             }
         }
 
-        for (DAGNode<CachedSatisfaction,DesireChain> node: graph.getReachableNodes()) {
-            Satisfaction sat = node.getLabel().getSatisfaction();
-            if (sat instanceof PlaceholderSatisfaction) {
-                throw new RecommenderConfigurationException("placeholder " + sat + " not removed");
-            }
+        boolean instantiable = true;
+        switch (validationMode) {
+        case IMMEDIATE:
+            GraphtUtils.checkForPlaceholders(graph, logger);
+            break;
+        case DEFERRED:
+            instantiable = GraphtUtils.getPlaceholderNodes(graph).isEmpty();
+            break;
+        case NONE:
+            break; /* do nothing, mark it as instantiable. */
         }
 
-        return new LenskitRecommenderEngine(graph, spi);
+        return new LenskitRecommenderEngine(graph, spi, instantiable);
     }
 
     public LenskitRecommenderEngine load(File file) throws IOException, RecommenderConfigurationException {
