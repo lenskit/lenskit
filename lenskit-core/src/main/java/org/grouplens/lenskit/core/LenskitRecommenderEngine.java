@@ -22,7 +22,9 @@ package org.grouplens.lenskit.core;
 
 import com.google.common.base.Preconditions;
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.solver.DesireChain;
+import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.grapht.spi.reflect.ReflectionInjectSPI;
@@ -171,6 +173,31 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     public LenskitRecommender createRecommender() {
         Preconditions.checkState(instantiable, "recommender engine does not have instantiable graph");
         StaticInjector inj = new StaticInjector(spi, graph);
+        return new LenskitRecommender(inj);
+    }
+
+    /**
+     * Construct a recommender with some additional configuration.  This can be used to do things
+     * like add data source configuration on a per-recommender, rather than per-engine, basis.
+     *
+     * @param config The configuration to adjust the recommender.
+     * @return The constructed recommender.
+     * @throws RecommenderConfigurationException if there is an error configuring the recommender.
+     */
+    public LenskitRecommender createRecommender(LenskitConfiguration config) throws RecommenderConfigurationException {
+        Preconditions.checkNotNull(config, "extra configuration");
+        final DAGNode<CachedSatisfaction, DesireChain> toBuild;
+        RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
+        rgb.addBindings(config.getBindings());
+        DependencySolver solver = rgb.buildDependencySolver();
+        try {
+            toBuild = solver.rewrite(graph);
+        } catch (SolverException ex) {
+            throw new RecommenderConfigurationException("error reconfiguring recommender", ex);
+        }
+        GraphtUtils.checkForPlaceholders(toBuild, logger);
+
+        StaticInjector inj = new StaticInjector(spi, toBuild);
         return new LenskitRecommender(inj);
     }
 

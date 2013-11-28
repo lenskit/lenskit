@@ -415,6 +415,19 @@ public class LenskitRecommenderEngineTest {
         }
     }
 
+    @Test
+    public void testEngineRewriting() {
+        def config = configureBasicRecommender(false)
+        def daoConfig = new LenskitConfiguration()
+        makeDAOConfig(daoConfig)
+        def engine = LenskitRecommenderEngine.newBuilder()
+                                             .addConfiguration(config)
+                                             .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
+                                             .build()
+        def rec = engine.createRecommender(daoConfig)
+        verifyBasicRecommender(rec)
+    }
+
     //region Test shareable providers
     @Test
     public void testShareableProvider() throws RecommenderBuildException {
