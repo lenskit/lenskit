@@ -21,16 +21,19 @@
 package org.grouplens.lenskit.core;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.spi.*;
+import org.slf4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.lang.reflect.Method;
+import java.util.Set;
 
 /**
  * Helper utilities for Grapht integration.
@@ -65,6 +68,43 @@ public final class GraphtUtils {
 //
 //        return placeholder;
 //    }
+
+    /**
+     * Check a graph for placeholder satisfactions.
+     * @param graph The graph to check.
+     * @throws RecommenderConfigurationException if the graph has a placeholder satisfaction.
+     */
+    public static void checkForPlaceholders(DAGNode<CachedSatisfaction, DesireChain> graph, Logger logger) throws RecommenderConfigurationException {
+        Set<DAGNode<CachedSatisfaction, DesireChain>> placeholders = getPlaceholderNodes(graph);
+        Satisfaction sat = null;
+        for (DAGNode<CachedSatisfaction,DesireChain> node: placeholders) {
+            CachedSatisfaction csat = node.getLabel();
+            if (sat == null) {
+                sat = csat.getSatisfaction();
+            }
+            logger.error("placeholder {} not removed", csat.getSatisfaction());
+        }
+        if (sat != null) {
+            throw new RecommenderConfigurationException("placeholder " + sat + " not removed");
+        }
+    }
+
+    /**
+     * Get the placeholder nodes from a graph.
+     * @param graph The graph.
+     * @return The set of nodes that have placeholder satisfactions.
+     */
+    public static Set<DAGNode<CachedSatisfaction, DesireChain>> getPlaceholderNodes(DAGNode<CachedSatisfaction, DesireChain> graph) {
+        Predicate<CachedSatisfaction> isPlaceholder = new Predicate<CachedSatisfaction>() {
+            @Override
+            public boolean apply(@Nullable CachedSatisfaction input) {
+                return input != null && input.getSatisfaction() instanceof PlaceholderSatisfaction;
+            }
+        };
+        return FluentIterable.from(graph.getReachableNodes())
+                             .filter(DAGNode.labelMatches(isPlaceholder))
+                             .toSet();
+    }
 
     /**
      * Determine if a node is a shareable component.
