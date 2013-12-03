@@ -1,10 +1,6 @@
 #parse("relnotes.vm")
 #stdHeader("1.0.2", 15)
 
-The [Mercurial changelog](https://bitbucket.org/grouplens/lenskit) and the
-[list of closed tickets](http://bitbucket.org/grouplens/lenskit/issues?milestone=1.0.2&status=resolved)
-provide more information on what has happened, including bugs that have been fixed.
-
 This release contains bug fixes against 1.0.1.
 
 -   Fix graph pruning so transient dependencies aren't serialized.

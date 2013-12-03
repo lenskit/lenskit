@@ -1,17 +1,19 @@
 #parse("relnotes.vm")
-#stdHeader("0.11", 6)
+#header("0.11")
 
-  The primary focus of this release is making LensKit use {{{http://bitbucket.org/grouplens/grapht}Grapht}}
-  rather than PicoContainer, with additional refactorings of components to more
-  effectively take advantage of Grapht. We also made significant improvements to how
-  the evaluator works to allow evaluation scripts to be more flexible, and made a number
-  of other improvements and bug fixes.
+[Grapht]: http://bitbucket.org/grouplens/grapht
 
-  There are a number of backwards-incompatible changes in this release. Configurations and
-  algorithm implementations will definitely need to be updated; other client code may need
-  updates as well.
+The primary focus of this release is making LensKit use [Grapht][]
+rather than PicoContainer, with additional refactorings of components to more
+effectively take advantage of Grapht. We also made significant improvements to how
+the evaluator works to allow evaluation scripts to be more flexible, and made a number
+of other improvements and bug fixes.
 
-  #pmIntro("0.11")
+There are a number of backwards-incompatible changes in this release. Configurations and
+algorithm implementations will definitely need to be updated; other client code may need
+updates as well.
+
+#pmIntro("0.11", 6)
 
 ## General Changes
 
@@ -22,7 +24,7 @@
 -   Added methods to `ItemScorer` and `GlobalItemScorer` to output scores to sparse
     vectors.
 
--   Begun documenting {{{./versioning.html}API stability}} (#issue(103)).
+-   Begun documenting [API stability](../versioning.html) (#issue(103)).
 
 -   Events are no longer `Cloneable`, and the `clone` method is now a deprecated
     alias for `copy()`.
@@ -64,7 +66,7 @@
         `BaselineSubtractingNormalizer`.
 
     -   `@PredictNormalizer`: use context-sensitive bindings. Usually this will require using
-        context-sensitive bindings to bind the <other> normalizers.
+        context-sensitive bindings to bind the other normalizers.
 
     -   `@UserHistorySummary`: was redundant with the component interface.
 
