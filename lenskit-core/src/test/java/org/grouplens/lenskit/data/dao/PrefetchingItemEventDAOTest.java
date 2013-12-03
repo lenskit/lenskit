@@ -39,7 +39,7 @@ public class PrefetchingItemEventDAOTest {
                 Ratings.make(1, 3, 4),
                 Ratings.make(2, 2, 3)
         );
-        EventDAO dao = new EventCollectionDAO(ratings);
+        EventDAO dao = EventCollectionDAO.create(ratings);
         PrefetchingItemEventDAO iedao = new PrefetchingItemEventDAO(dao);
         assertThat(iedao.getEventsForItem(2), hasSize(2));
         assertThat(iedao.getEventsForItem(3), hasSize(1));
@@ -53,7 +53,7 @@ public class PrefetchingItemEventDAOTest {
                 Ratings.make(1, 3, 4),
                 Ratings.make(2, 2, 3)
         );
-        EventDAO dao = new EventCollectionDAO(ratings);
+        EventDAO dao = EventCollectionDAO.create(ratings);
         PrefetchingItemEventDAO iedao = new PrefetchingItemEventDAO(dao);
         assertThat(iedao.getUsersForItem(2), hasSize(2));
         assertThat(iedao.getUsersForItem(3), hasSize(1));

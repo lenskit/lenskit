@@ -23,6 +23,7 @@ package org.grouplens.lenskit.data.snapshot;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
@@ -80,7 +81,7 @@ public class PackedPreferenceSnapshotTest {
         rs.add(rating(1, 11, 5, 1));
         rs.add(rating(3, 11, 5, 2));
         rs.add(rating(4, 11, 5, 1));
-        EventCollectionDAO dao = new EventCollectionDAO(rs);
+        EventDAO dao = EventCollectionDAO.create(rs);
         snap = new PackedPreferenceSnapshot.Builder(dao, new Random()).get();
     }
 

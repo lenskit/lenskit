@@ -73,8 +73,8 @@ public class ML100KTestSuite {
             throw new FileNotFoundException("ML data set at " + inputFile + ". " +
                                             "See <http://lenskit.grouplens.org/ML100K>.");
         }
-        EventDAO fileDao = new SimpleFileRatingDAO(inputFile, "\t", CompressionMode.NONE);
+        EventDAO fileDao = SimpleFileRatingDAO.create(inputFile, "\t", CompressionMode.NONE);
         List<Event> events = Cursors.makeList(fileDao.streamEvents());
-        dao = new EventCollectionDAO(events);
+        dao = EventCollectionDAO.create(events);
     }
 }

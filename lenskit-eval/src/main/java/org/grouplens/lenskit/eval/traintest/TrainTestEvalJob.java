@@ -224,7 +224,7 @@ class TrainTestEvalJob implements Callable<Void> {
 
     private void writePredictions(TableWriter predictTable, long uid, SparseVector ratings, SparseVector predictions) throws IOException {
         final int ncols = predictTable.getLayout().getColumnCount();
-        final String[] row = new String[ncols];
+        final Object[] row = new String[ncols];
         row[0] = Long.toString(uid);
         for (VectorEntry e : ratings.fast()) {
             long iid = e.getKey();
