@@ -921,6 +921,43 @@
           </plugin>
 
           <plugin>
+            <inherited>false</inherited>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-changes-plugin</artifactId>
+            <version>2.9</version>
+            <reportSets>
+              <reportSet>
+                <reports>
+                  <report>github-report</report>
+                </reports>
+                <configuration>
+                  <includeOpenIssues>false</includeOpenIssues>
+                  <onlyCurrentVersion>true</onlyCurrentVersion>
+                  <columnNames>Id,Summary,Status,Created,Updated,Fix Version</columnNames>
+                </configuration>
+              </reportSet>
+            </reportSets>
+          </plugin>
+
+          <plugin>
+            <inherited>false</inherited>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-changelog-plugin</artifactId>
+            <version>2.2</version>
+            <reportSets>
+              <reportSet>
+                <reports>
+                  <report>changelog</report>
+                </reports>
+                <configuration>
+                  <issueIDRegexPattern>(?&lt;=#)\d+\b</issueIDRegexPattern>
+                  <issueLinkUrl>https://github.com/grouplens/lenskit/issues/</issueLinkUrl>
+                </configuration>
+              </reportSet>
+            </reportSets>
+          </plugin>
+
+          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>clirr-maven-plugin</artifactId>
             <version>2.6.1</version>
