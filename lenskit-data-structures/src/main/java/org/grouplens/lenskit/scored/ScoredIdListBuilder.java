@@ -220,7 +220,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
                     chan.values[idx] = (Double) v;
                 }
             } else {
-                TypedChannelStorage<?> chan = typedChannels.get(sv.getSymbol());
+                TypedChannelStorage chan = typedChannels.get(sv.getSymbol());
                 if (chan != null) {
                     chan.values[idx] = sv.getValue();
                 }
