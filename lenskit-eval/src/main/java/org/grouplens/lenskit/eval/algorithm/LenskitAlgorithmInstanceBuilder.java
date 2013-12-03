@@ -179,6 +179,8 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
 
     @Override
     public LenskitAlgorithmInstance build() {
-        return new LenskitAlgorithmInstance(getName(), config, attributes, preload);
+        LenskitAlgorithmInstance instance = new LenskitAlgorithmInstance(getName(), config, attributes, preload);
+        instance.setRandom(project.getRandom());
+        return instance;
     }
 }
