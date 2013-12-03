@@ -46,11 +46,9 @@ import static org.junit.Assert.assertThat;
  */
 public class OrdRecRatingPredictorTest {
 
-    private OrdRecRatingPredictor ordrec;
     private EventDAO dao;
     private UserEventDAO userDAO;
     private Quantizer qtz;
-    ItemScorer scorer, scorer1, scorer2;
 
     @SuppressWarnings("deprecation")
     @Before
@@ -71,8 +69,18 @@ public class OrdRecRatingPredictorTest {
         dao = new EventCollectionDAO(rs);
         userDAO = new PrefetchingUserEventDAO(dao);
         qtz = new ValueArrayQuantizer(new double[]{1.0, 2.0, 3.0});
-//      build scorers
-        scorer = MockItemScorer.newBuilder()
+
+    }
+
+    /**
+     * This test is to test the basic performance of OrdRecRatingPredictor,
+     * The rating value is 1, 2, 3. The score for rating 1 is around 2, for rating 2
+     * is around 5, for rating 8 is around 3. So for the Ordrec predictor, given a specific
+     * score value, and test if it can return a matched rating.
+     */
+    @Test
+    public void testOrdRecPrediction1() {
+        ItemScorer scorer = MockItemScorer.newBuilder()
                 .addScore(42, 1, 5)
                 .addScore(42, 2, 2)
                 .addScore(42, 3, 8)
@@ -86,7 +94,22 @@ public class OrdRecRatingPredictorTest {
                 .addScore(42, 11, 4.8)
                 .addScore(42, 12, 8.2)
                 .build();
-        scorer1 = MockItemScorer.newBuilder()
+
+        OrdRecRatingPredictor ordrec = new OrdRecRatingPredictor(scorer, userDAO, qtz);
+        assertThat(ordrec.predict(42, 10), equalTo(1.0));
+        assertThat(ordrec.predict(42, 11), equalTo(2.0));
+        assertThat(ordrec.predict(42, 12), equalTo(3.0));
+    }
+
+    /**
+     * This test is to test the basic performance of OrdRecRatingPredictor,
+     * The rating value is 1, 2, 3. The score for rating 1 is around 1, for rating 2
+     * is around 2, for rating 3 is around 3. So for the Ordrec predictor, given a specific
+     * score value, and test if it can return a matched rating.
+     */
+    @Test
+    public void testOrdRecPrediction2() {
+        ItemScorer scorer = MockItemScorer.newBuilder()
                 .addScore(42, 1, 2)
                 .addScore(42, 2, 1)
                 .addScore(42, 3, 3)
@@ -101,7 +124,21 @@ public class OrdRecRatingPredictorTest {
                 .addScore(42, 12, 3.1)
                 .build();
 
-        scorer2 = MockItemScorer.newBuilder()
+        OrdRecRatingPredictor ordrec = new OrdRecRatingPredictor(scorer, userDAO, qtz);
+        assertThat(ordrec.predict(42, 10), equalTo(1.0));
+        assertThat(ordrec.predict(42, 11), equalTo(2.0));
+        assertThat(ordrec.predict(42, 12), equalTo(3.0));
+    }
+
+    /**
+     * This test is to test the basic performance of OrdRecRatingPredictor,
+     * The rating value is 1, 2, 3. The score for rating 1 is around 0.2, for rating 2
+     * is around 1, for rating 3 is around 1.8. So for the Ordrec predictor, given a specific
+     * score value, and test if it can return a matched rating.
+     */
+    @Test
+    public void testOrdRecPrediction3() {
+        ItemScorer scorer = MockItemScorer.newBuilder()
                 .addScore(42, 1, 1)
                 .addScore(42, 2, 0.2)
                 .addScore(42, 3, 1.8)
@@ -117,24 +154,9 @@ public class OrdRecRatingPredictorTest {
                 .build();
 
 
-    }
-
-    @Test
-    public void testOrdRecPrediction() {
-        ordrec = new OrdRecRatingPredictor(scorer, userDAO, qtz);
-        assertThat(ordrec.prediction(42, 10), equalTo(1.0));
-        assertThat(ordrec.prediction(42, 11), equalTo(2.0));
-        assertThat(ordrec.prediction(42, 12), equalTo(3.0));
-
-        ordrec = new OrdRecRatingPredictor(scorer1, userDAO, qtz);
-        assertThat(ordrec.prediction(42, 10), equalTo(1.0));
-        assertThat(ordrec.prediction(42, 11), equalTo(2.0));
-        assertThat(ordrec.prediction(42, 12), equalTo(3.0));
-
-        ordrec = new OrdRecRatingPredictor(scorer2, userDAO, qtz);
-        assertThat(ordrec.prediction(42, 10), equalTo(1.0));
-        assertThat(ordrec.prediction(42, 11), equalTo(2.0));
-        assertThat(ordrec.prediction(42, 12), equalTo(3.0));
-
+        OrdRecRatingPredictor ordrec = new OrdRecRatingPredictor(scorer, userDAO, qtz);
+        assertThat(ordrec.predict(42, 10), equalTo(1.0));
+        assertThat(ordrec.predict(42, 11), equalTo(2.0));
+        assertThat(ordrec.predict(42, 12), equalTo(3.0));
     }
 }

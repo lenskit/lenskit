@@ -23,6 +23,7 @@ package org.grouplens.lenskit.transform.quantize;
 import org.grouplens.lenskit.core.Shareable;
 
 import com.google.common.base.Preconditions;
+import org.grouplens.lenskit.vectors.ImmutableVec;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -54,8 +55,8 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
     }
 
     @Override
-    public double[] getValues() {
-        return Arrays.copyOf(values, values.length);
+    public ImmutableVec getValues() {
+        return ImmutableVec.create(Arrays.copyOf(values, values.length));
     }
 
     @Override

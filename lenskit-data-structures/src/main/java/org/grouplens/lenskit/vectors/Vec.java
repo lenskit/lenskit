@@ -68,6 +68,21 @@ public abstract class Vec implements Serializable {
     }
 
     /**
+     * Get the first index of a value in data. If value is not exist, return -1.
+     *
+     * @param d The value
+     * @return The first index of value
+     */
+    public final int getFirstIndex(double d) {
+        int index = -1;
+        for(int i = 0; i < size(); i++) {
+            if(d == data[i]) {
+                index = i;
+            }
+        }
+        return index;
+    }
+    /**
      * Get the L2 (Euclidean) norm of this vector.
      *
      * @return The Euclidean length of the vector.
@@ -119,6 +134,20 @@ public abstract class Vec implements Serializable {
         return s;
     }
 
+    /**
+     * Get the largest element of the vector.
+     *
+     * @return The largest element of the vector.
+     */
+    public double largestDimension() {
+        double largest = data[0];
+        for(double d : data) {
+            if(d > largest) {
+                largest = d;
+            }
+        }
+        return largest;
+    }
     /**
      * Get an immutable vector with this vector's contents.  If the vector is already immutable,
      * it is not changed.
