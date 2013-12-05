@@ -166,7 +166,7 @@ public class TaskGroup {
             }
         }
 
-        if (error == null && cancelled == 0) {
+        if (error == null && cancelled != 0) {
             logger.warn("{} tasks cancelled but no errors", cancelled);
         }
 
