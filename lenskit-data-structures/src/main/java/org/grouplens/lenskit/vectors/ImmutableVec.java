@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.vectors;
 
+import com.google.common.base.Preconditions;
+
 import javax.annotation.concurrent.Immutable;
 import java.util.Arrays;
 
@@ -41,19 +43,8 @@ public final class ImmutableVec extends Vec {
      * Construct a new immutable vector.
      * @param v The vector's contents.
      */
-    private ImmutableVec(double[] v) {
-        super(v);
-    }
-
-    /**
-     * Create a new immutable vector backed by an array.
-     *
-     * @param data The data array.
-     * @return A new vector wrapping the specified array. It is the caller's responsibility to make
-     *         sure that this cannot be modified anymore!
-     */
-    static ImmutableVec wrap(double[] data) {
-        return new ImmutableVec(data);
+    ImmutableVec(double[] v, int offset, int size, int stride) {
+        super(v, offset, size, stride);
     }
 
     /**
@@ -63,12 +54,29 @@ public final class ImmutableVec extends Vec {
      * @return A vector containing the data in {@code data}.
      */
     public static ImmutableVec create(double... data) {
-        return new ImmutableVec(Arrays.copyOf(data, data.length));
+        return new ImmutableVec(Arrays.copyOf(data, data.length), 0, data.length, 1);
     }
 
     @Override
     public ImmutableVec immutable() {
         return this;
+    }
+
+    @Override
+    public ImmutableVec subVector(int offset, int size) {
+        return subVector(offset, size, 1);
+    }
+
+    @Override
+    public ImmutableVec subVector(int voff, int vsize, int vstride) {
+        Preconditions.checkPositionIndex(voff, size, "offset");
+        Preconditions.checkArgument(vstride >= 1, "stride is not positive");
+        if (vsize > 0) {
+            Preconditions.checkPositionIndex(voff + (vsize - 1) * vstride, size, "upper bound");
+        }
+        int noff = offset + voff * stride;
+        int nstride = vstride * stride;
+        return new ImmutableVec(data, noff, vsize, nstride);
     }
 
     @Override

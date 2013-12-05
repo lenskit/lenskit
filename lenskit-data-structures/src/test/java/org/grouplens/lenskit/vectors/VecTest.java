@@ -29,11 +29,13 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 public class VecTest {
-    final Vec empty = ImmutableVec.create(new double[0]);
-    final Vec single = ImmutableVec.create(new double[]{3.5});
-    final Vec v1 = ImmutableVec.create(new double[]{1, 3, 5});
-    final Vec v1c = ImmutableVec.create(new double[]{1, 3, 5});
-    final Vec v2 = ImmutableVec.create(new double[]{2, 3, 4});
+    final Vec empty = ImmutableVec.create();
+    final Vec single = ImmutableVec.create(3.5);
+    final Vec v1 = ImmutableVec.create(1, 3, 5);
+    final Vec v1c = ImmutableVec.create(1, 3, 5);
+    final Vec v2 = ImmutableVec.create(2, 3, 4);
+    final MutableVec strided = MutableVec.wrap(new double[] {0, 1, 0, 3, 0, 5, 0, 0, 0})
+                                         .subVector(1, 3, 2);
 
     @Test
     public void testDim() {
@@ -191,7 +193,7 @@ public class VecTest {
     @Test
     public void testSetArray() {
         MutableVec mv = v1.mutableCopy();
-        mv.set(new double[] {101, 102, 103});
+        mv.set(101, 102, 103);
         assertThat(mv.get(0), closeTo(101));
         assertThat(mv.get(1), closeTo(102));
         assertThat(mv.get(2), closeTo(103));
@@ -206,5 +208,87 @@ public class VecTest {
         } catch (IllegalArgumentException e) {
             /* expected */
         }
+    }
+
+    @Test
+    public void testFreeze() {
+        MutableVec mv = v1.mutableCopy();
+        ImmutableVec frozen = mv.freeze();
+        assertThat(frozen, equalTo(v1));
+        try {
+            mv.set(0, 5);
+            fail("set on frozen vector should fail");
+        } catch (IllegalStateException ex) {
+            /* expected */
+        }
+
+        try {
+            mv.set(0.5, 5.2, 0.3);
+            fail("set on frozen vector should fail");
+        } catch (IllegalStateException ex) {
+            /* expected */
+        }
+
+        try {
+            mv.add(ImmutableVec.create(0.2, 3.9, 1.7));
+            fail("set on frozen vector should fail");
+        } catch (IllegalStateException ex) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testStridedEquals() {
+        assertThat(strided, equalTo(v1));
+    }
+
+    @Test
+    public void testStridedAdd() {
+        MutableVec mv = v2.mutableCopy();
+        mv.add(strided);
+        strided.add(v2);
+
+        Vec result = ImmutableVec.create(3, 6, 9);
+        assertThat(mv, equalTo(result));
+        assertThat(strided, equalTo(result));
+    }
+
+    @Test
+    public void testStridedSet() {
+        MutableVec mv = v2.mutableCopy();
+        mv.set(strided);
+        strided.set(v2);
+
+        assertThat(mv, equalTo(v1));
+        assertThat(strided, equalTo(v2));
+    }
+
+    @Test
+    public void testCopyStride() {
+        MutableVec mv = strided.mutableCopy();
+        ImmutableVec imv = strided.immutable();
+        assertThat(mv, equalTo(strided));
+        assertThat(mv, equalTo(v1));
+        assertThat(imv, equalTo(v1));
+        mv.add(v2);
+        assertThat(mv.get(0), equalTo(3.0));
+        assertThat(mv.get(1), equalTo(6.0));
+        assertThat(mv.get(2), equalTo(9.0));
+    }
+
+    @Test
+    public void testSubStride() {
+        MutableVec ssv = strided.subVector(0, 2, 2);
+        assertThat(ssv.size(), equalTo(2));
+        assertThat(ssv.get(0), equalTo(1.0));
+        assertThat(ssv.get(1), equalTo(5.0));
+        try {
+            ssv.get(2);
+            fail("out-of-bounds get should throw");
+        } catch (IndexOutOfBoundsException e) {
+            /* expected */
+        }
+        ssv.set(1, Math.PI);
+        assertThat(strided.get(2), equalTo(Math.PI));
     }
 }

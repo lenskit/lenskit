@@ -21,7 +21,8 @@
 package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.doubles.DoubleArrays;
+
+import javax.annotation.Nullable;
 
 /**
  * Mutable {@link Vec}.  This vector can be modified and is not
@@ -31,14 +32,31 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays;
  * @compat Public
  */
 public final class MutableVec extends Vec {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
+    private final MutableVec rootVector;
+    private boolean frozen = false;
 
     /**
      * Construct a new vector. The array is <b>not</b> copied.
      * @param v The backing array.
+     * @param offset The offset into the array
+     * @param size The size of the resulting vector
+     * @param root The root/owning vector that this vector is a subview of.
      */
-    private MutableVec(double[] v) {
-        super(v);
+    private MutableVec(double[] v, int offset, int size, int stride,
+                       @Nullable MutableVec root) {
+        super(v, offset, size, stride);
+        if (root == null) {
+            rootVector = this;
+        } else {
+            rootVector = root;
+        }
+    }
+
+    private void checkFrozen() {
+        if (rootVector.frozen) {
+            throw new IllegalStateException("vector is frozen");
+        }
     }
 
     /**
@@ -46,7 +64,7 @@ public final class MutableVec extends Vec {
      * @param dim The size of the new vector.
      */
     public static MutableVec create(int dim) {
-        return new MutableVec(new double[dim]);
+        return new MutableVec(new double[dim], 0, dim, 1, null);
     }
 
     /**
@@ -56,7 +74,7 @@ public final class MutableVec extends Vec {
      * @return A vector backed by {@code data}.
      */
     public static MutableVec wrap(double[] data) {
-        return new MutableVec(data);
+        return new MutableVec(data, 0, data.length, 1, null);
     }
 
     /**
@@ -67,9 +85,10 @@ public final class MutableVec extends Vec {
      * @throws IllegalArgumentException if {@code i} is not a valid index in this vector.
      */
     public double set(int i, double v) {
-        Preconditions.checkElementIndex(i, size());
-        final double old = data[i];
-        data[i] = v;
+        checkFrozen();
+        int idx = arrayIndex(i);
+        final double old = data[idx];
+        data[idx] = v;
         return old;
     }
 
@@ -82,9 +101,10 @@ public final class MutableVec extends Vec {
      * @throws IllegalArgumentException if {@code i} is not a valid index in this vector.
      */
     public double add(int i, double v) {
-        Preconditions.checkElementIndex(i, size());
-        final double old = data[i];
-        data[i] = v + old;
+        checkFrozen();
+        int idx = arrayIndex(i);
+        final double old = data[idx];
+        data[idx] = v + old;
         return old;
     }
 
@@ -94,7 +114,10 @@ public final class MutableVec extends Vec {
      * @param v The value with which to fill the vector.
      */
     public void fill(double v) {
-        DoubleArrays.fill(data, v);
+        checkFrozen();
+        for (int i = offset; i < dataBound; i += stride) {
+            data[i] = v;
+        }
     }
 
     /**
@@ -103,8 +126,17 @@ public final class MutableVec extends Vec {
      * @param v The vector to copy in.
      */
     public void set(Vec v) {
+        checkFrozen();
         Preconditions.checkArgument(v.size() == size(), "incompatible vector dimensions");
-        System.arraycopy(v.data, 0, data, 0, v.size());
+        if (stride == 1 && v.stride == 1) {
+            System.arraycopy(v.data, v.offset, data, offset, size);
+        } else {
+            for (int i = offset, j = v.offset; i < dataBound;
+                 i += stride, j += v.stride) {
+                assert j < v.dataBound;
+                data[i] = v.data[j];
+            }
+        }
     }
 
     /**
@@ -112,9 +144,8 @@ public final class MutableVec extends Vec {
      *
      * @param v The array to copy in.
      */
-    public void set(double[] v) {
-        Preconditions.checkArgument(v.length == size(), "incompatible vector dimensions");
-        System.arraycopy(v, 0, data, 0, v.length);
+    public void set(double... v) {
+        set(MutableVec.wrap(v));
     }
 
     /**
@@ -123,10 +154,12 @@ public final class MutableVec extends Vec {
      * @throws IllegalArgumentException if {@code v} has a different dimension than this vector.
      */
     public void add(Vec v) {
+        checkFrozen();
         Preconditions.checkArgument(v.size() == size(), "incompatible vector dimensions");
-        final int sz = size();
-        for (int i = 0; i < sz; i++) {
-            data[i] += v.data[i];
+        for (int i = offset, j = v.offset; i < dataBound;
+             i += stride, j += v.stride) {
+            assert j < v.dataBound;
+            data[i] += v.data[j];
         }
     }
 
@@ -135,9 +168,37 @@ public final class MutableVec extends Vec {
      * @param s The scalar to multiply this vector by.
      */
     public void scale(double s) {
-        final int sz = size();
-        for (int i = 0; i < sz; i++) {
+        checkFrozen();
+        for (int i = offset; i < dataBound; i += stride) {
             data[i] *= s;
         }
+    }
+
+    @Override
+    public MutableVec subVector(int offset, int size) {
+        return subVector(offset, size, 1);
+    }
+
+    @Override
+    public MutableVec subVector(int voff, int vsize, int vstride) {
+        Preconditions.checkPositionIndex(voff, size, "offset");
+        Preconditions.checkArgument(vstride >= 1, "stride is not positive");
+        if (vsize > 0) {
+            Preconditions.checkPositionIndex(voff + (vsize - 1) * vstride, size, "upper bound");
+        }
+        int noff = offset + voff * stride;
+        int nstride = vstride * stride;
+        return new MutableVec(data, noff, vsize, nstride, rootVector);
+    }
+
+    /**
+     * Convert this vector to an immutable vector.  The storage is reused, if possible; this vector
+     * cannot be modified once it is frozen.
+     *
+     * @return An immutable vector created from this vector.
+     */
+    public ImmutableVec freeze() {
+        rootVector.frozen = true;
+        return new ImmutableVec(data, offset, size, stride);
     }
 }
