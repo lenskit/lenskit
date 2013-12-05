@@ -5,8 +5,9 @@
 
 import pandas as pd
 import numpy as np
+import matplotlib
+matplotlib.use('svg')
 import matplotlib.pyplot as plt
-plt.switch_backend('svg')
 
 # Import data
 frame = pd.read_csv('eval-results.csv')
