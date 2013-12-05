@@ -18,7 +18,7 @@ The key user files that you are likely to want to edit are:
 * src/eval/eval.groovy: to change the lenskit evaluation that is run,
   perhaps by configuring different recommenders.  This also downloads the
   data set and runs the R script for post-analysis.
-* src/eval/chart.R: to change the analysis of the output data in target/analysis,  
+* src/eval/chart.py: to change the analysis of the output data in target/analysis,
   perhaps including the charts that are generated.
 
 This structure fits the Maven model: all input files are in the src

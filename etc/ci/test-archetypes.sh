@@ -27,7 +27,6 @@ execute()
 {
     cd test-"$1" || exit 1
     cmd mvn -B -e -Dlenskit.eval.threadCount=2 \
-        -Drscript.executable=Rscript \
         lenskit-publish
     cd "$TEST_ROOT" || exit 1
 }
@@ -51,11 +50,6 @@ if git log --format=medium -n1 HEAD |fgrep -q "[skip archetypes]"; then
     skip "Skipping archetype tests"
 fi
 
-travis_begin_section "archetype.setup"
-cmd time sudo apt-get install --no-install-recommends r-base r-base-dev texlive-latex-base
-cmd time sudo Rscript "etc/ci/setup-R-deps.R"
-travis_end_section
-
 cmd mkdir -p target/test-archetypes
 cd target/test-archetypes || exit 1
 TEST_ROOT="$PWD"
@@ -64,7 +58,8 @@ travis_begin_section "archetype.simple"
 generate simple-analysis
 cmd cp "$MLDATA_ZIP" test-simple-analysis/ml100k.zip
 execute simple-analysis
-require_files test-simple-analysis/accuracy.pdf test-simple-analysis/speed.pdf
+require_files test-simple-analysis/rmse.svg test-simple-analysis/ndcg.svg
+require_files test-simple-analysis/build-time.svg test-simple-analysis/test-time.svg
 travis_end_section
 
 travis_begin_section "archetype.fancy"
@@ -72,7 +67,6 @@ generate fancy-analysis
 cmd mkdir -p test-fancy-analysis/target/data
 cmd cp "$MLDATA_ZIP" test-fancy-analysis/target/data/ml100k.zip
 execute fancy-analysis
-require_files test-fancy-analysis/target/paper.pdf \
-    test-fancy-analysis/target/analysis/speed.pdf \
-    test-fancy-analysis/target/analysis/accuracy.pdf
+require_files test-simple-analysis/rmse.pdf test-simple-analysis/ndcg.pdf
+require_files test-simple-analysis/build-time.pdf test-simple-analysis/test-time.pdf
 travis_end_section

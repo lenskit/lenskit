@@ -27,7 +27,7 @@
       <includes>
         <include>src/eval/*.xml</include>
         <include>src/eval/*.groovy</include>
-        <include>src/eval/*.R</include>
+        <include>src/eval/*.py</include>
         <include>src/main/latex/*/*.tex</include>
         <include>src/main/latex/*/*.bib</include>
       </includes>

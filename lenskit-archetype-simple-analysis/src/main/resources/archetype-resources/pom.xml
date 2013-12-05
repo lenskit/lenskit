@@ -80,7 +80,6 @@
 
         <configuration>
           <script>eval-simple.groovy</script>
-          <analysisScript>chart.R</analysisScript>
         </configuration>
       </plugin>
 

@@ -92,7 +92,6 @@
 
         <configuration>
           <script>${lenskit.eval.scriptDir}/eval.groovy</script>
-          <analysisScript>${lenskit.eval.scriptDir}/chart.R</analysisScript>
           <targets>
             <target>draw</target>
             <target>analyze</target>
