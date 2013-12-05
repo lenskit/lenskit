@@ -58,6 +58,7 @@ public final class RecommenderInstantiator {
         return new RecommenderInstantiator(spi, g);
     }
 
+    @SuppressWarnings("deprecation")
     public static RecommenderInstantiator forConfig(LenskitConfiguration config) throws RecommenderConfigurationException {
         return new RecommenderInstantiator(config.getSPI(), config.buildGraph());
     }

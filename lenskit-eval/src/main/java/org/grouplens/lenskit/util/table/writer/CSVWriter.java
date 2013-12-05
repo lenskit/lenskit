@@ -61,7 +61,7 @@ public class CSVWriter extends AbstractTableWriter {
         layout = l;
         writer = w;
         if (layout != null) {
-            writeRow(layout.getColumns().toArray(new String[l.getColumnCount()]));
+            writeRow(layout.getColumns().toArray(new Object[l.getColumnCount()]));
         }
     }
 

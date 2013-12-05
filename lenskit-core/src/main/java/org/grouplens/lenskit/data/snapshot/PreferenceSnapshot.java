@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
+import org.grouplens.lenskit.indexes.IdIndexMapping;
 import org.grouplens.lenskit.util.Index;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -77,14 +78,14 @@ public interface PreferenceSnapshot extends Closeable {
      *
      * @return The index mapping between user IDs and user indices.
      */
-    Index userIndex();
+    IdIndexMapping userIndex();
 
     /**
      * Get the item ID index.
      *
      * @return The index mapping between user IDs and user indices.
      */
-    Index itemIndex();
+    IdIndexMapping itemIndex();
 
     /**
      * Get the collection of ratings in the snapshot. The ratings are returned

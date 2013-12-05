@@ -55,7 +55,7 @@ public class CSVDataSource extends AbstractDataSource {
         domain = pdom;
         delimiter = delim;
 
-        final EventDAO fileDao = new SimpleFileRatingDAO(file, delim, CompressionMode.AUTO);
+        final EventDAO fileDao = SimpleFileRatingDAO.create(file, delim, CompressionMode.AUTO);
 
         if (cache) {
             provider = new SoftMemoizingProvider<EventDAO>() {
@@ -63,7 +63,7 @@ public class CSVDataSource extends AbstractDataSource {
                 @Override
                 protected EventDAO newValue() {
                     List<Rating> ratings = Cursors.makeList(fileDao.streamEvents(Rating.class));
-                    return new EventCollectionDAO(ratings);
+                    return EventCollectionDAO.create(ratings);
                 }
             };
         } else {

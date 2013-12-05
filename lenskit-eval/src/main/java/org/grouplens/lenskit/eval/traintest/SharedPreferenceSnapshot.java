@@ -29,7 +29,7 @@ import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.util.Index;
+import org.grouplens.lenskit.indexes.IdIndexMapping;
 import org.grouplens.lenskit.util.SoftMemoizingProvider;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -61,12 +61,12 @@ public class SharedPreferenceSnapshot implements PreferenceSnapshot, Serializabl
     }
 
     @Override
-    public Index userIndex() {
+    public IdIndexMapping userIndex() {
         return snapshot.userIndex();
     }
 
     @Override
-    public Index itemIndex() {
+    public IdIndexMapping itemIndex() {
         return snapshot.itemIndex();
     }
 

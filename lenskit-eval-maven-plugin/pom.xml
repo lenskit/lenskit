@@ -74,13 +74,6 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
     </dependency>
-
-    <dependency>
-      <groupId>org.grouplens.lenskit</groupId>
-      <artifactId>lenskit-test</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>

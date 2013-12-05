@@ -20,9 +20,13 @@
  */
 package org.grouplens.lenskit.baseline;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -49,10 +53,23 @@ public class FallbackItemScorer extends AbstractItemScorer {
     @Override
     public void score(long user, @Nonnull MutableSparseVector output) {
         primaryScorer.score(user, output);
+        LongSet fallbackKeys = LongSets.EMPTY_SET;
         if (output.size() != output.keyDomain().size()) {
-            MutableSparseVector blpreds = MutableSparseVector.create(output.unsetKeySet());
+            fallbackKeys = output.unsetKeySet();
+            MutableSparseVector blpreds = MutableSparseVector.create(fallbackKeys);
             baselineScorer.score(user, blpreds);
             output.set(blpreds);
+        }
+
+        // FIXME Make this faster
+        Long2ObjectMap<ScoreSource> chan = output.addChannel(ScoreSource.SYMBOL);
+        for (VectorEntry e: output.fast()) {
+            long key = e.getKey();
+            ScoreSource source = ScoreSource.PRIMARY;
+            if (fallbackKeys.contains(key)) {
+                source = ScoreSource.BASELINE;
+            }
+            chan.put(key, source);
         }
     }
 

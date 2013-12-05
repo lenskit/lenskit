@@ -24,7 +24,7 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.util.Indexer;
+import org.grouplens.lenskit.indexes.MutableIdIndexMapping;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -45,14 +45,14 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
     private double[][] values;
     private int nprefs = 0;
 
-    private Indexer itemIndex;
-    private Indexer userIndex;
+    private MutableIdIndexMapping itemIndex;
+    private MutableIdIndexMapping userIndex;
     
     private IntHeapPriorityQueue freeList;
 
     public PackedPreferenceDataBuilder() {
-        itemIndex = new Indexer();
-        userIndex = new Indexer();
+        itemIndex = new MutableIdIndexMapping();
+        userIndex = new MutableIdIndexMapping();
         freeList = new IntHeapPriorityQueue();
         allocate(INITIAL_CHUNK_COUNT);
     }
@@ -168,8 +168,9 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
     }
 
     private PackedPreferenceData internalBuild() {
-        return new PackedPreferenceData(users, items, values,
-                                        nprefs, userIndex, itemIndex);
+        return new PackedPreferenceData(users, items, values, nprefs,
+                                        userIndex.immutableCopy(),
+                                        itemIndex.immutableCopy());
     }
 
     private void repack() {
@@ -252,15 +253,16 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
      * Shuffle the data. This uses a Fischer-Yates shuffle to uniformly permute
      * (subject to limitations of the PRNG) the data. The arrays are repacked
      * to eliminate free slots prior to shuffling.
+     *
+     * @param rng The random number generator to use.
      */
-    public void shuffle() {
+    public void shuffle(Random rng) {
         repack();
         // do a reverse Fisher-Yates shuffle on the arrays
-        Random rnd = new Random();
         final int np = nprefs;
         for (int i = 0; i < np - 1; i++) {
             // swap w/ j s.t. i <= j < end
-            int j = i + rnd.nextInt(np - i);
+            int j = i + rng.nextInt(np - i);
             assert j >= i;
             assert j < np;
             swap(i, j);

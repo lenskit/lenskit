@@ -28,6 +28,8 @@ import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.script.ConfigDelegate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -42,6 +44,7 @@ import java.util.Map;
  */
 @ConfigDelegate(AlgorithmInstanceBuilderDelegate.class)
 public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithmInstance> {
+    private static final Logger logger = LoggerFactory.getLogger(LenskitAlgorithmInstanceBuilder.class);
     private final LenskitConfiguration config;
     private String name;
     private Map<String, Object> attributes = new HashMap<String, Object>();
@@ -179,6 +182,11 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
 
     @Override
     public LenskitAlgorithmInstance build() {
-        return new LenskitAlgorithmInstance(getName(), config, attributes, preload);
+        LenskitAlgorithmInstance instance = new LenskitAlgorithmInstance(getName(), config, attributes, preload);
+        if (project != null) {
+            logger.warn("no project set");
+            instance.setRandom(project.getRandom());
+        }
+        return instance;
     }
 }

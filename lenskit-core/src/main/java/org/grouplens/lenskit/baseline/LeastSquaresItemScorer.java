@@ -36,6 +36,7 @@ import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.grouplens.lenskit.vectors.VectorEntry.State;
+import org.grouplens.lenskit.vectors.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -146,9 +147,9 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
             logger.info("trained baseline on {} ratings in {} iterations (final rmse={})", ratings.size(), trainingController.getIterationCount(), rmse);
 
             // Convert the uoff array to a SparseVector
-            MutableSparseVector svuoff = snapshot.userIndex().convertArrayToVector(uoff);
+            MutableSparseVector svuoff = Vectors.fromArray(snapshot.userIndex(), uoff);
             // Convert the ioff array to a SparseVector
-            MutableSparseVector svioff = snapshot.itemIndex().convertArrayToVector(ioff);
+            MutableSparseVector svioff = Vectors.fromArray(snapshot.itemIndex(), ioff);
             return new LeastSquaresItemScorer(svuoff.freeze(), svioff.freeze(), mean);
         }
     }

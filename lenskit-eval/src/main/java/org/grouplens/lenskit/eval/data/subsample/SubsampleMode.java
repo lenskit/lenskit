@@ -25,7 +25,10 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongLists;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.dao.*;
+import org.grouplens.lenskit.data.dao.ItemDAO;
+import org.grouplens.lenskit.data.dao.ItemEventDAO;
+import org.grouplens.lenskit.data.dao.UserDAO;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.eval.data.DataSource;
@@ -116,12 +119,13 @@ public enum SubsampleMode {
      * @throws IOException The output IO error
      */
     private static void writeRating(TableWriter output, Rating rating) throws IOException {
-        String[] row = new String[4];
-        row[0] = Long.toString(rating.getUserId());
-        row[1] = Long.toString(rating.getItemId());
         Preference pref = rating.getPreference();
-        row[2] = pref != null ? Double.toString(pref.getValue()) : "NaN";
-        row[3] = Long.toString(rating.getTimestamp());
+        Object[] row = {
+                Long.toString(rating.getUserId()),
+                Long.toString(rating.getItemId()),
+                pref != null ? Double.toString(pref.getValue()) : "NaN",
+                Long.toString(rating.getTimestamp())
+        };
         output.writeRow(row);
     }
 }

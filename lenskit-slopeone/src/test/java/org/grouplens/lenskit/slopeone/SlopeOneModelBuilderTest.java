@@ -39,7 +39,7 @@ public class SlopeOneModelBuilderTest {
     public static final double EPSILON = 1.0e-6;
 
     private SlopeOneModel getModel(List<Rating> ratings) {
-        EventDAO dao = new EventCollectionDAO(ratings);
+        EventDAO dao = EventCollectionDAO.create(ratings);
         UserEventDAO udao = new PrefetchingUserEventDAO(dao);
         ItemDAO idao = new PrefetchingItemDAO(dao);
         UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();

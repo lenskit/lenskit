@@ -18,34 +18,27 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.dao;
+package org.grouplens.lenskit.baseline;
 
-import com.google.common.collect.Lists;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
-import org.junit.Test;
-
-import java.util.List;
-
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 
 /**
+ * Enum expressing where a score came from in recommender that uses a baseline fallback.
+ *
+ * @since 2.1
+ * @see FallbackItemScorer
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class PrefetchingItemDAOTest {
-    @Test
-    public void testGetItems() {
-        List<Rating> ratings = Lists.newArrayList(
-                Ratings.make(1, 2, 3.5),
-                Ratings.make(1, 3, 4),
-                Ratings.make(2, 4, 3),
-                Ratings.make(2, 3, 2)
-        );
-        EventDAO dao = EventCollectionDAO.create(ratings);
-        ItemDAO idao = new PrefetchingItemDAO(dao);
-        assertThat(idao.getItemIds(), hasSize(3));
-        assertThat(idao.getItemIds(), containsInAnyOrder(2L, 3L, 4L));
-    }
+public enum ScoreSource {
+    /**
+     * The score came from the primary item scorer.
+     */
+    PRIMARY,
+    /**
+     * The score came from the baseline item scorer.
+     */
+    BASELINE;
+
+    public static final TypedSymbol<ScoreSource> SYMBOL =
+            TypedSymbol.of(ScoreSource.class, "org.grouplens.lenskit.baseline.ScoreSource");
 }

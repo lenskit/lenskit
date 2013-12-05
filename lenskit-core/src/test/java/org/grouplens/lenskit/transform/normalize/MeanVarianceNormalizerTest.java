@@ -70,7 +70,7 @@ public class MeanVarianceNormalizerTest {
         addRating(ratings, 1, 4, 3);
         addRating(ratings, 1, 5, 3);
         addRating(ratings, 1, 6, 3);
-        dao = new EventCollectionDAO(ratings);
+        dao = EventCollectionDAO.create(ratings);
     }
 
     @Test

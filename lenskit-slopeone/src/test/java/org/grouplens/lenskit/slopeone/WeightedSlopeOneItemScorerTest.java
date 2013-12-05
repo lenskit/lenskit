@@ -74,7 +74,7 @@ public class WeightedSlopeOneItemScorerTest {
         rs.add(Ratings.make(3, 9, 4));
 
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).to(new EventCollectionDAO(rs));
+        config.bind(EventDAO.class).to(EventCollectionDAO.create(rs));
         config.bind(ItemScorer.class).to(WeightedSlopeOneItemScorer.class);
         config.bind(PreferenceDomain.class).to(new PreferenceDomainBuilder(1, 5)
                                                        .setPrecision(1)
@@ -107,7 +107,7 @@ public class WeightedSlopeOneItemScorerTest {
         rs.add(Ratings.make(3, 7, 1.5));
 
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).to(new EventCollectionDAO(rs));
+        config.bind(EventDAO.class).to(EventCollectionDAO.create(rs));
         config.bind(ItemScorer.class).to(WeightedSlopeOneItemScorer.class);
         config.bind(PreferenceDomain.class).to(new PreferenceDomainBuilder(1, 5)
                                                        .setPrecision(1)

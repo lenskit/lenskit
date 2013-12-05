@@ -42,7 +42,7 @@ public class PrefetchingUserDAOTest {
                 Ratings.make(1, 3, 4),
                 Ratings.make(2, 4, 3)
         );
-        EventDAO dao = new EventCollectionDAO(ratings);
+        EventDAO dao = EventCollectionDAO.create(ratings);
         UserDAO udao = new PrefetchingUserDAO(dao);
         assertThat(udao.getUserIds(), hasSize(2));
         assertThat(udao.getUserIds(), containsInAnyOrder(1L, 2L));

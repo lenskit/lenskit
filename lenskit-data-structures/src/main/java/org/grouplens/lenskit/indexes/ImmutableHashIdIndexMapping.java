@@ -21,35 +21,39 @@
 package org.grouplens.lenskit.indexes;
 
 import it.unimi.dsi.fastutil.longs.*;
+import org.grouplens.lenskit.collections.CollectionUtils;
 
 /**
- * Mutable index mapping. Use this when you need to have indexes before you've seen all the IDs.
+ * Immutable hash-based implementation index mapping implementation.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class MutableIdIndexMapping extends IdIndexMapping {
+final class ImmutableHashIdIndexMapping extends IdIndexMapping {
     private static final long serialVersionUID = 1L;
 
-    private Long2IntMap indexes;
-    private LongArrayList ids;
+    private final Long2IntMap indexes;
+    private final long[] ids;
 
     /**
      * Construct a new empty indexer.  The first interned ID will have index 0.
      */
-    public MutableIdIndexMapping() {
-        indexes = new Long2IntOpenHashMap();
+    public ImmutableHashIdIndexMapping(Long2IntMap map) {
+        indexes = new Long2IntOpenHashMap(map);
         indexes.defaultReturnValue(-1);
-        ids = new LongArrayList();
+        ids = new long[indexes.size()];
+        for (Long2IntMap.Entry e: CollectionUtils.fast(map.long2IntEntrySet())) {
+            ids[e.getIntValue()] = e.getLongKey();
+        }
     }
 
     @Override
     public long getId(int idx) {
-        return ids.getLong(idx);
+        return ids[idx];
     }
 
     @Override
     public LongList getIdList() {
-        return LongLists.unmodifiable(ids);
+        return LongLists.unmodifiable(LongArrayList.wrap(ids));
     }
 
     @Override
@@ -59,32 +63,6 @@ public final class MutableIdIndexMapping extends IdIndexMapping {
 
     @Override
     public int size() {
-        return ids.size();
-    }
-
-    /**
-     * Get an index for an ID, generating a new one if necessary.
-     *
-     * @param id The ID.
-     * @return The index for {@var id}. If the ID has already been added to the index,
-     *         the old index is returned; otherwise, a new index is generated and returned.
-     */
-    public int internId(long id) {
-        int idx = tryGetIndex(id);
-        if (idx < 0) {
-            idx = ids.size();
-            ids.add(id);
-            indexes.put(id, idx);
-        }
-        return idx;
-    }
-
-    /**
-     * Make an immutable copy of this index mapping.
-     *
-     * @return An immutable copy of the index mapping.
-     */
-    public IdIndexMapping immutableCopy() {
-        return new ImmutableHashIdIndexMapping(indexes);
+        return ids.length;
     }
 }

@@ -20,13 +20,18 @@
  */
 package org.grouplens.lenskit.basic;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselineScorer;
 import org.grouplens.lenskit.baseline.PrimaryScorer;
+import org.grouplens.lenskit.baseline.ScoreSource;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -94,11 +99,26 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
     @Override
     public void predict(long user, @Nonnull MutableSparseVector scores) {
         scorer.score(user, scores);
+        LongSet fallbackKeys = LongSets.EMPTY_SET;
+
         if (baselineScorer != null) {
-            MutableSparseVector unpred = MutableSparseVector.create(scores.unsetKeySet());
+            fallbackKeys = scores.unsetKeySet();
+            MutableSparseVector unpred = MutableSparseVector.create(fallbackKeys);
             baselineScorer.score(user, unpred);
             scores.set(unpred);
         }
+
+        // FIXME Make this faster
+        Long2ObjectMap<ScoreSource> chan = scores.addChannel(ScoreSource.SYMBOL);
+        for (VectorEntry e: scores.fast()) {
+            long key = e.getKey();
+            ScoreSource source = ScoreSource.PRIMARY;
+            if (fallbackKeys.contains(key)) {
+                source = ScoreSource.BASELINE;
+            }
+            chan.put(key, source);
+        }
+
         if (preferenceDomain != null) {
             preferenceDomain.clampVector(scores);
         }

@@ -1,8 +1,9 @@
 language: java
 jdk:
 - oraclejdk7
-- oraclejdk8
 - openjdk6
+# Java 8 builds disabled pending JaCoCo fix (#466)
+# - oraclejdk8
 matrix:
   allow_failures:
   - jdk: oraclejdk8
@@ -11,7 +12,7 @@ branches:
   - www
 before_install:
 - sudo apt-get update
-- sudo apt-get install --no-install-recommends time graphviz r-base-core python-requests
+- sudo apt-get install --no-install-recommends time graphviz r-base-core python-requests python-matplotlib python-pandas texlive-latex-base
 install: mvn dependency:resolve-plugins
 script:
 - ./etc/ci/in-fold.sh build mvn install
