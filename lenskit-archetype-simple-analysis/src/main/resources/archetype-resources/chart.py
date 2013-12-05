@@ -6,6 +6,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+plt.switch_backend('svg')
 
 # Import data
 frame = pd.read_csv('eval-results.csv')
@@ -24,7 +25,7 @@ plt.xlim(-0.5, len(means) - 0.5)
 plt.xticks(xvals, means.index)
 plt.xlabel('Algorithm')
 plt.ylabel('RMSE')
-plt.savefig('rmse.pdf')
+plt.savefig('rmse.svg')
 
 # Plot the nDCG
 plt.clf()
@@ -33,13 +34,13 @@ plt.xlim(-0.5, len(means) - 0.5)
 plt.xticks(xvals, means.index)
 plt.xlabel('Algorithm')
 plt.ylabel('nDCG')
-plt.savefig('ndcg.pdf')
+plt.savefig('ndcg.svg')
 
 # Plot the build and test time
 plt.clf()
 frame.boxplot('BuildTime', 'Algorithm')
-plt.savefig('build-time.pdf')
+plt.savefig('build-time.svg')
 
 plt.clf()
 frame.boxplot('TestTime', 'Algorithm')
-plt.savefig('test-time.pdf')
+plt.savefig('test-time.svg')
