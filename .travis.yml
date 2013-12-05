@@ -12,7 +12,7 @@ branches:
   - www
 before_install:
 - sudo apt-get update
-- sudo apt-get install --no-install-recommends time graphviz r-base-core python-requests python-matplotlib python-pandas
+- sudo apt-get install --no-install-recommends time graphviz r-base-core python-requests python-matplotlib python-pandas python-tk
 install: mvn dependency:resolve-plugins
 script:
 - ./etc/ci/in-fold.sh build mvn install
