@@ -567,6 +567,14 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
         }
         return count;
     }
+
+    /** Combine this vector with another vector by taking the union of the key domains of two vectors.
+     *  If two vectors have values for common keys, use the values of the other vector.
+     *
+     * @param o The other vector
+     * @return The combined vector
+     */
+    public abstract SparseVector combine(SparseVector o );
     //endregion
 
     //region Object support

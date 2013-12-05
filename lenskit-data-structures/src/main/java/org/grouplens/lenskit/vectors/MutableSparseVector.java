@@ -30,6 +30,7 @@ import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import org.grouplens.lenskit.collections.LongKeyDomain;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.collections.MoreArrays;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
@@ -1031,6 +1032,16 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     @Override
     public Set<TypedSymbol<?>> getChannelSymbols() {
         return Collections.unmodifiableSet(channels.keySet());
+    }
+
+    @Override
+    public MutableSparseVector combine(SparseVector o) {
+        LongSortedSet key = this.keyDomain();
+        LongSortedSet newKey = o.keyDomain();
+        MutableSparseVector result = MutableSparseVector.create(LongUtils.setUnion(key, newKey));
+        result.set(this);
+        result.set(o);
+        return result;
     }
 
     private static class IdComparator extends AbstractIntComparator {
