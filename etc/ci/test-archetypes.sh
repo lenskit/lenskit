@@ -67,6 +67,9 @@ generate fancy-analysis
 cmd mkdir -p test-fancy-analysis/target/data
 cmd cp "$MLDATA_ZIP" test-fancy-analysis/target/data/ml100k.zip
 execute fancy-analysis
-require_files test-simple-analysis/rmse.pdf test-simple-analysis/ndcg.pdf
-require_files test-simple-analysis/build-time.pdf test-simple-analysis/test-time.pdf
+require_files test-fancy-analysis/target/analysis/rmse.pdf
+require_files test-fancy-analysis/target/analysis/ndcg.pdf
+require_files test-fancy-analysis/target/analysis/build-time.pdf
+require_files test-fancy-analysis/target/analysis/test-time.pdf
+require_files test-fancy-analysis/target/paper.pdf
 travis_end_section
