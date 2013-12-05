@@ -62,7 +62,7 @@ public final class ImmutableVec extends Vec {
      * @param data The data array.
      * @return A vector containing the data in {@code data}.
      */
-    public static ImmutableVec create(double[] data) {
+    public static ImmutableVec create(double... data) {
         return new ImmutableVec(Arrays.copyOf(data, data.length));
     }
 
