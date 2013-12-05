@@ -273,12 +273,12 @@ class TrainTestEvalJob implements Runnable {
         }
     }
 
-    private void writeRecommendations(TableWriter recommendTable, long uid, List<ScoredId> predictions) throws IOException {
+    private void writeRecommendations(TableWriter recommendTable, long uid, List<ScoredId> recs) throws IOException {
         final int ncols = recommendTable.getLayout().getColumnCount();
         final String[] row = new String[ncols];
         row[0] = Long.toString(uid);
         int counter = 1;
-        for (ScoredId p : CollectionUtils.fast(predictions)) {
+        for (ScoredId p : CollectionUtils.fast(recs)) {
             long iid = p.getId();
             row[1] = Long.toString(iid);
             row[2] = String.valueOf(counter);

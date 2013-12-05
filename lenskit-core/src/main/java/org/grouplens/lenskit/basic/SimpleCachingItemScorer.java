@@ -20,13 +20,16 @@
  */
 package org.grouplens.lenskit.basic;
 
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.collections.LongUtils;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
-import java.util.Collection;
+import java.util.HashMap;
 
 /**
  * A simple cached item scorer that remembers the result for the last user id it scored.
@@ -35,39 +38,36 @@ import java.util.Collection;
  */
 
 public class SimpleCachingItemScorer extends AbstractItemScorer{
-    protected long cachedId = -1;
-    protected SparseVector cachedScores = null;
-    protected ItemScorer scorer;
+    private long cachedId = -1;
+    private ImmutableSparseVector cachedScores = null;
+    private final ItemScorer scorer;
 
     @Inject
-    public SimpleCachingItemScorer(@Nonnull ItemScorer sc) {
+    public SimpleCachingItemScorer(ItemScorer sc) {
         scorer = sc;
     }
 
     /**
-     * For each input, check with the cached user id. If the id is the same, directly return the cached
-     * result. Otherwise, call the scorer.
-     * {@inheritDoc}
-     * <p>Delegates to {@link #score(long, org.grouplens.lenskit.vectors.MutableSparseVector)}.
+     * For each input, check with the cached user id. If the requested items
+     * is a subset of the cached items, use the cache; otherwise score the
+     * new items and update the cached scores.
      */
-    @Nonnull
-    @Override
-    public SparseVector score(long user, @Nonnull Collection<Long> items) {
-        if(user == cachedId & cachedScores != null) {
-            return cachedScores;
-        } else {
-            MutableSparseVector scores = MutableSparseVector.create(items);
-            score(user, scores);
-            cachedId = user;
-            cachedScores = scores.freeze();
-            // FIXME Create a more efficient way of "releasing" mutable sparse vectors
-            return cachedScores;
-        }
-    }
-
     @Override
     public void score(long user, @Nonnull MutableSparseVector scores){
-        scorer.score(user, scores);
+        LongSortedSet reqItems = scores.keyDomain();
+        if(cachedId == user && cachedScores != null) {
+            LongSortedSet cachedItems = cachedScores.keyDomain();
+            if(!cachedItems.containsAll(reqItems)) {
+                LongSortedSet diffItems = LongUtils.setDifference(reqItems, cachedItems);
+                SparseVector newCache = scorer.score(user, diffItems);
+                cachedScores = cachedScores.combine(newCache);
+            }
+            scores.set(cachedScores);
+        } else {
+            scorer.score(user, scores);
+            cachedScores = scores.copy().freeze();
+            cachedId = user;
+        }
     }
 
     public long getId() {

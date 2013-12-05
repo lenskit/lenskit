@@ -21,7 +21,9 @@
 package org.grouplens.lenskit.basic;
 
 
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.util.test.MockItemScorer;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,6 +42,10 @@ public class SimpleCachingItemScorerTest {
                                     .addScore(1, 3, 3.5)
                                     .addScore(2, 4, 5)
                                     .addScore(2, 6, 3)
+                                    .addScore(3, 1, 5)
+                                    .addScore(3, 2, 4.5)
+                                    .addScore(3, 3, 2.5)
+                                    .addScore(3, 4, 1)
                                     .build();
         cachedScorer = new SimpleCachingItemScorer(mockScorer);
     }
@@ -50,10 +56,20 @@ public class SimpleCachingItemScorerTest {
     }
 
     @Test
-    public void testCache() {
+    public void testCacheUser() {
         assertThat(cachedScorer.score(1, 3), equalTo(3.5));
         assertThat(cachedScorer.getId(), equalTo(1L));
         assertThat(cachedScorer.score(2, 6), equalTo(3.0));
         assertThat(cachedScorer.getId(), equalTo(2L));
+    }
+
+    @Test
+    public void testCachedScores() {
+        Long user = 3L;
+        LongSortedSet items = LongUtils.packedSet(1, 2);
+        cachedScorer.score(user, items);
+        assertThat(cachedScorer.getCache().keyDomain(), equalTo(items));
+        cachedScorer.score(user, 4);
+        assertThat(cachedScorer.getCache().keyDomain(), equalTo(LongUtils.packedSet(1, 2, 4)));
     }
 }
