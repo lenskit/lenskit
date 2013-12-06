@@ -141,7 +141,7 @@ public abstract class Vec implements Serializable {
         for (int i = offset, j = other.offset; i < dataBound;
              i += stride, j += other.stride) {
             assert j < other.dataBound;
-            s += data[i] * other.data[i];
+            s += data[i] * other.data[j];
         }
         return s;
     }
