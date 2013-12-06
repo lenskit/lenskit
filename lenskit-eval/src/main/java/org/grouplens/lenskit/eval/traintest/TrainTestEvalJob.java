@@ -144,14 +144,14 @@ class TrainTestEvalJob implements Callable<Void> {
 
             ExecutionInfo execInfo = buildExecInfo();
 
-            logger.info("Building {}", algorithm.getName());
+            logger.info("Building {} on {}", algorithm.getName(), data.getName());
             StopWatch buildTimer = new StopWatch();
             buildTimer.start();
             RecommenderInstance rec = algorithm.makeTestableRecommender(data, snapshot, execInfo);
             buildTimer.stop();
             logger.info("Built {} in {}", algorithm.getName(), buildTimer);
 
-            logger.info("Measuring {}", algorithm.getName());
+            logger.info("Measuring {} on {}", algorithm.getName(), data.getName());
             for (ModelMetric metric: modelMetrics) {
                 outputRow.addAll(metric.measureAlgorithm(algorithm, data, rec.getRecommender()));
             }
