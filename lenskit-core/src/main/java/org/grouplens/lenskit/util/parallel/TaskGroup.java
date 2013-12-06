@@ -132,7 +132,7 @@ public class TaskGroup {
         }
         // now we can run, any other thread will detect that started is in progress
 
-        logger.info("running {} tasks in group {}", futures, name);
+        logger.info("running {} tasks in group {}", futures.size(), name);
         // queue up all the tasks
         for (FutureTask<?> task: futures) {
             exec.submit(task);
