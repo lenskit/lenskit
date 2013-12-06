@@ -22,6 +22,8 @@ package org.grouplens.lenskit.mf.funksvd;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import mikera.vectorz.AVector;
+import mikera.vectorz.Vector;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.baseline.BaselineScorer;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
@@ -31,9 +33,14 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
-import org.grouplens.lenskit.transform.clamp.ClampingFunction;
-import org.grouplens.lenskit.vectors.*;
+import org.grouplens.lenskit.mf.svd.BiasedMFKernel;
+import org.grouplens.lenskit.mf.svd.DomainClampingKernel;
+import org.grouplens.lenskit.mf.svd.DotProductKernel;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -52,10 +59,10 @@ import javax.inject.Inject;
 public class FunkSVDItemScorer extends AbstractItemScorer {
 
     protected final FunkSVDModel model;
+    protected final BiasedMFKernel kernel;
     private UserEventDAO dao;
     private final ItemScorer baselineScorer;
     private final int featureCount;
-    private final ClampingFunction clamp;
 
     @Nullable
     private final FunkSVDUpdateRule rule;
@@ -75,6 +82,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
     @Inject
     public FunkSVDItemScorer(UserEventDAO dao, FunkSVDModel model,
                              @BaselineScorer ItemScorer baseline,
+                             @Nullable PreferenceDomain dom,
                              @Nullable @RuntimeUpdate FunkSVDUpdateRule rule) {
         // FIXME Unify requirement on update rule and DAO
         this.dao = dao;
@@ -82,8 +90,13 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         baselineScorer = baseline;
         this.rule = rule;
 
+        if (dom == null) {
+            kernel = new DotProductKernel();
+        } else {
+            kernel = new DomainClampingKernel(dom);
+        }
+
         featureCount = model.getFeatureCount();
-        clamp = model.getClampingFunction();
     }
 
     @Nullable
@@ -99,20 +112,15 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
      * @param output The output vector, whose key domain is the items to predict for. It must
      *               be initialized to the user's baseline predictions.
      */
-    private void computeScores(long user, Vec uprefs, MutableSparseVector output) {
+    private void computeScores(long user, AVector uprefs, MutableSparseVector output) {
         for (VectorEntry e : output.fast()) {
             final long item = e.getKey();
-            final int iidx = model.getItemIndex().tryGetIndex(item);
-
-            if (iidx < 0) {
+            AVector ivec = model.getItemVector(item);
+            if (ivec == null) {
                 continue;
             }
 
-            double score = e.getValue();
-            for (int f = 0; f < featureCount; f++) {
-                score += uprefs.get(f) * model.getItemFeatures()[f][iidx];
-                score = clamp.apply(user, item, score);
-            }
+            double score = kernel.apply(e.getValue(), uprefs, ivec);
             output.set(e, score);
         }
     }
@@ -145,7 +153,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         // propagate estimates to the output scores
         scores.set(estimates);
 
-        Vec uprefs = model.getUserVector(user);
+        AVector uprefs = model.getUserVector(user);
         if (uprefs == null) {
             if (ratings.isEmpty()) {
                 // no real work to do, stop with baseline predictions
@@ -155,7 +163,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         }
 
         if (!ratings.isEmpty() && rule != null) {
-            MutableVec updated = uprefs.mutableCopy();
+            AVector updated = Vector.create(uprefs);
             for (int f = 0; f < featureCount; f++) {
                 trainUserFeature(user, updated, ratings, estimates, f);
             }
@@ -166,47 +174,51 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         computeScores(user, uprefs, scores);
     }
 
-    private void trainUserFeature(long user, MutableVec uprefs, SparseVector ratings,
+    private void trainUserFeature(long user, AVector uprefs, SparseVector ratings,
                                   MutableSparseVector estimates, int feature) {
         assert rule != null;
+        assert uprefs.length() == featureCount;
+        assert feature >= 0 && feature < featureCount;
+
+        int tailStart = feature + 1;
+        int tailSize = featureCount - feature - 1;
+        AVector utail = uprefs.subVector(tailStart, tailSize);
+        MutableSparseVector tails = MutableSparseVector.create(ratings.keySet());
+        for (VectorEntry e: tails.fast(VectorEntry.State.EITHER)) {
+            AVector ivec = model.getItemVector(e.getKey());
+            if (ivec == null) {
+                // FIXME Do this properly
+                tails.set(e, 0);
+            } else {
+                ivec = ivec.subVector(tailStart, tailSize);
+                tails.set(e, utail.dotProduct(ivec));
+            }
+        }
 
         double rmse = Double.MAX_VALUE;
         TrainingLoopController controller = rule.getTrainingLoopController();
         while (controller.keepTraining(rmse)) {
-            rmse = doFeatureIteration(user, uprefs, ratings, estimates, feature);
-        }
-
-        // After training this feature, we need to update each rating's cached
-        // value to accommodate it.
-        for (VectorEntry itemId : ratings.fast()) {
-            final long iid = itemId.getKey();
-            double est = estimates.get(iid);
-            double offset = uprefs.get(feature) * model.getItemFeature(iid, feature);
-            est = clamp.apply(user, iid, est + offset);
-            estimates.set(iid, est);
+            rmse = doFeatureIteration(user, uprefs, ratings, estimates, feature, tails);
         }
     }
 
-    private double doFeatureIteration(long user, MutableVec uprefs,
+    private double doFeatureIteration(long user, AVector uprefs,
                                       SparseVector ratings, MutableSparseVector estimates,
-                                      int feature) {
+                                      int feature, SparseVector itemTails) {
         assert rule != null;
+
         FunkSVDUpdater updater = rule.createUpdater();
         for (VectorEntry e: ratings.fast()) {
             final long iid = e.getKey();
-            final int iidx = model.getItemIndex().getIndex(iid);
-
-            // Step 1: Compute the trailing value for this item-feature pair
-            double trailingValue = 0.0;
-            for (int f = feature + 1; f < featureCount; f++) {
-                trailingValue += uprefs.get(f) * model.getItemFeatures()[f][iidx];
+            final AVector ivec = model.getItemVector(iid);
+            if (ivec == null) {
+                continue;
             }
 
-            updater.prepare(user, iid, trailingValue, estimates.get(iid), e.getValue(),
-                            uprefs.get(feature), model.getItemFeatures()[feature][iidx]);
-
+            updater.prepare(feature, e.getValue(), estimates.get(iid),
+                            uprefs.get(feature), ivec.get(feature), itemTails.get(iid));
             // Step 4: update user preferences
-            uprefs.add(feature, updater.getUserFeatureUpdate());
+            uprefs.addAt(feature, updater.getUserFeatureUpdate());
         }
         return updater.getRMSE();
     }

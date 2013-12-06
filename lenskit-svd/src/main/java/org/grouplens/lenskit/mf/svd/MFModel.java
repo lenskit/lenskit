@@ -20,11 +20,15 @@
  */
 package org.grouplens.lenskit.mf.svd;
 
+import com.google.common.base.Preconditions;
+import mikera.matrixx.IMatrix;
+import mikera.matrixx.Matrix;
+import mikera.matrixx.impl.ImmutableMatrix;
+import mikera.vectorz.AVector;
 import org.grouplens.lenskit.indexes.IdIndexMapping;
-import org.grouplens.lenskit.vectors.MutableVec;
-import org.grouplens.lenskit.vectors.Vec;
 
-import java.io.Serializable;
+import javax.annotation.Nullable;
+import java.io.*;
 
 /**
  * Common model for matrix factorization (SVD) recommendation.
@@ -33,25 +37,97 @@ import java.io.Serializable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class MFModel implements Serializable {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
-    protected final int featureCount;
-    protected final int numUser;
-    protected final int numItem;
-    protected final double[][] itemFeatures;
-    protected final double[][] userFeatures;
-    protected final IdIndexMapping itemIndex;
-    protected final IdIndexMapping userIndex;
+    // FIXME Make these final again
+    protected int featureCount;
+    protected int userCount;
+    protected int itemCount;
 
-    public MFModel(int nfeatures, double[][] ifeats, double[][] ufeats,
-                   IdIndexMapping iidx, IdIndexMapping uidx) {
-        featureCount = nfeatures;
-        numUser = uidx.size();
-        numItem = iidx.size();
-        itemFeatures = ifeats;
-        userFeatures = ufeats;
-        itemIndex = iidx;
+    protected ImmutableMatrix userMatrix;
+    protected ImmutableMatrix itemMatrix;
+    protected IdIndexMapping userIndex;
+    protected IdIndexMapping itemIndex;
+
+    /**
+     * Construct a matrix factorization model.  The matrices are not copied, so the caller should
+     * make sure they won't be modified by anyone else.
+     *
+     * @param umat The user feature matrix (users x features).
+     * @param imat The item feature matrix (items x features).
+     * @param uidx The user index mapping.
+     * @param iidx The item index mapping.
+     */
+    public MFModel(ImmutableMatrix umat, ImmutableMatrix imat,
+                   IdIndexMapping uidx, IdIndexMapping iidx) {
+        Preconditions.checkArgument(umat.columnCount() == imat.columnCount(),
+                                    "mismatched matrix sizes");
+        featureCount = umat.columnCount();
+        userCount = uidx.size();
+        itemCount = iidx.size();
+        Preconditions.checkArgument(umat.rowCount() == userCount,
+                                    "user matrix has %s rows, expected %s",
+                                    umat.rowCount(), userCount);
+        Preconditions.checkArgument(imat.rowCount() == itemCount,
+                                    "item matrix has %s rows, expected %s",
+                                    imat.rowCount(), itemCount);
+        userMatrix = umat;
+        itemMatrix = imat;
         userIndex = uidx;
+        itemIndex = iidx;
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeInt(featureCount);
+        out.writeInt(userCount);
+        out.writeInt(itemCount);
+
+        for (int i = 0; i < userCount; i++) {
+            for (int j = 0; j < featureCount; j++) {
+                out.writeDouble(userMatrix.get(i, j));
+            }
+        }
+
+        for (int i = 0; i < itemCount; i++) {
+            for (int j = 0; j < featureCount; j++) {
+                out.writeDouble(itemMatrix.get(i, j));
+            }
+        }
+
+        out.writeObject(userIndex);
+        out.writeObject(itemIndex);
+    }
+
+    private void readObject(ObjectInputStream input) throws IOException, ClassNotFoundException {
+        featureCount = input.readInt();
+        userCount = input.readInt();
+        itemCount = input.readInt();
+
+        Matrix umat = Matrix.create(userCount, featureCount);
+        for (int i = 0; i < userCount; i++) {
+            for (int j = 0; j < featureCount; j++) {
+                umat.set(i, j, input.readDouble());
+            }
+        }
+        userMatrix = ImmutableMatrix.wrap(umat);
+
+        Matrix imat = Matrix.create(itemCount, featureCount);
+        for (int i = 0; i < itemCount; i++) {
+            for (int j = 0; j < featureCount; j++) {
+                imat.set(i, j, input.readDouble());
+            }
+        }
+        itemMatrix = ImmutableMatrix.wrap(imat);
+
+        userIndex = (IdIndexMapping) input.readObject();
+        itemIndex = (IdIndexMapping) input.readObject();
+
+        if (userIndex.size() != userMatrix.rowCount()) {
+            throw new InvalidObjectException("user matrix and index have different row counts");
+        }
+        if (itemIndex.size() != itemMatrix.rowCount()) {
+            throw new InvalidObjectException("item matrix and index have different row counts");
+        }
     }
 
     /**
@@ -67,14 +143,14 @@ public class MFModel implements Serializable {
      * The number of users.
      */
     public int getUserCount() {
-        return numUser;
+        return userCount;
     }
 
     /**
      * The number of items.
      */
     public int getItemCount() {
-        return numItem;
+        return itemCount;
     }
 
     /**
@@ -92,46 +168,38 @@ public class MFModel implements Serializable {
     }
 
     /**
-     * The item-feature matrix (features, then items).  Do not modify this array.
+     * Get the user matrix.
+     * @return The user matrix (users x features).
      */
-    @Deprecated
-    public double[][] getItemFeatures() {
-        return itemFeatures;
+    public IMatrix getUserMatrix() {
+        return userMatrix;
     }
 
     /**
-     * The user-feature matrix (features, then users).  Do not modify this array.
+     * Get the item matrix.
+     * @return The item matrix (items x features).
      */
-    @Deprecated
-    public double[][] getUserFeatures() {
-        return userFeatures;
+    public IMatrix getItemMatrix() {
+        return itemMatrix;
     }
 
-    public Vec getUserVector(long user) {
+    @Nullable
+    public AVector getUserVector(long user) {
         int uidx = userIndex.tryGetIndex(user);
         if (uidx < 0) {
             return null;
+        } else {
+            return userMatrix.getRow(uidx);
         }
-
-        MutableVec vec = MutableVec.create(featureCount);
-        for (int f = featureCount - 1; f >= 0; f--) {
-            vec.set(f, userFeatures[f][uidx]);
-        }
-        return vec;
     }
 
-    /**
-     * Get a particular feature value for an item.
-     * @param iid The item ID.
-     * @param feature The feature.
-     * @return The item-feature value, or 0 if the item was not in the training set.
-     */
-    public double getItemFeature(long iid, int feature) {
-        int iidx = itemIndex.tryGetIndex(iid);
+    @Nullable
+    public AVector getItemVector(long item) {
+        int iidx = itemIndex.tryGetIndex(item);
         if (iidx < 0) {
-            return 0;
+            return null;
         } else {
-            return itemFeatures[feature][iidx];
+            return itemMatrix.getRow(iidx);
         }
     }
 
@@ -146,7 +214,22 @@ public class MFModel implements Serializable {
         if (uidx < 0) {
             return 0;
         } else {
-            return userFeatures[feature][uidx];
+            return userMatrix.get(uidx, feature);
+        }
+    }
+
+    /**
+     * Get a particular feature value for an item.
+     * @param iid The item ID.
+     * @param feature The feature.
+     * @return The item-feature value, or 0 if the item was not in the training set.
+     */
+    public double getItemFeature(long iid, int feature) {
+        int iidx = itemIndex.tryGetIndex(iid);
+        if (iidx < 0) {
+            return 0;
+        } else {
+            return itemMatrix.get(iidx, feature);
         }
     }
 }

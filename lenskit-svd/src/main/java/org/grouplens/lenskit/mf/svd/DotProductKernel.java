@@ -20,9 +20,10 @@
  */
 package org.grouplens.lenskit.mf.svd;
 
+import mikera.vectorz.AVector;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.vectors.Vec;
 
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
 
@@ -38,7 +39,22 @@ public class DotProductKernel implements BiasedMFKernel, Serializable {
     private static final long serialVersionUID = 1L;
 
     @Override
-    public double apply(double bias, Vec user, Vec item) {
-        return bias + user.dot(item);
+    public double apply(double bias, @Nonnull AVector user, @Nonnull AVector item) {
+        return bias + user.dotProduct(item);
+    }
+
+    @Override
+    public int hashCode() {
+        return DotProductKernel.class.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o != null && o.getClass().equals(getClass());
+    }
+
+    @Override
+    public String toString() {
+        return "DotProductKernel()";
     }
 }

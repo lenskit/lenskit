@@ -21,10 +21,11 @@
 package org.grouplens.lenskit.mf.svd;
 
 import com.google.common.base.Preconditions;
+import mikera.vectorz.AVector;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.vectors.Vec;
 
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;
 import java.io.Serializable;
@@ -48,14 +49,34 @@ public class DomainClampingKernel implements BiasedMFKernel, Serializable {
     }
 
     @Override
-    public double apply(double bias, Vec user, Vec item) {
-        final int n = user.size();
-        Preconditions.checkArgument(item.size() == n, "vectors have different lengths");
+    public double apply(double bias, @Nonnull AVector user, @Nonnull AVector item) {
+        final int n = user.length();
+        Preconditions.checkArgument(item.length() == n, "vectors have different lengths");
 
         double result = bias;
         for (int i = 0; i < n; i++) {
             result = domain.clampValue(result + user.get(i) * item.get(i));
         }
         return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DomainClampingKernel that = (DomainClampingKernel) o;
+
+        return domain.equals(that.domain);
+    }
+
+    @Override
+    public int hashCode() {
+        return domain.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "ClampKernel(" + domain + ")";
     }
 }

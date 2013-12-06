@@ -20,10 +20,8 @@
  */
 package org.grouplens.lenskit.mf.svd;
 
+import mikera.vectorz.Vector;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.vectors.ImmutableVec;
-import org.grouplens.lenskit.vectors.MutableVec;
-import org.grouplens.lenskit.vectors.Vec;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.closeTo;
@@ -38,22 +36,22 @@ public class DomainClampingKernelTest {
 
     @Test
     public void testEmptyVectors() throws Exception {
-        assertThat(kernel.apply(Math.PI, MutableVec.create(0), MutableVec.create(0)),
+        assertThat(kernel.apply(Math.PI, Vector.createLength(0), Vector.createLength(0)),
                    equalTo(Math.PI));
     }
 
     @Test
     public void testBasicVectors() throws Exception {
-        Vec uv = ImmutableVec.create(0.1, 0.2);
-        Vec iv = ImmutableVec.create(0.1, -0.5);
+        Vector uv = Vector.create(new double[]{0.1, 0.2});
+        Vector iv = Vector.create(new double[]{0.1, -0.5});
         assertThat(kernel.apply(Math.PI, uv, iv),
                    closeTo(Math.PI + 0.01 - 0.1, 1.0e-5));
     }
 
     @Test
     public void testClamping() throws Exception {
-        Vec uv = ImmutableVec.create(2, 0.2);
-        Vec iv = ImmutableVec.create(2, -0.5);
+        Vector uv = Vector.create(new double[]{2, 0.2});
+        Vector iv = Vector.create(new double[]{2, -0.5});
         assertThat(kernel.apply(3, uv, iv),
                    closeTo(4.9, 1.0e-5));
     }
