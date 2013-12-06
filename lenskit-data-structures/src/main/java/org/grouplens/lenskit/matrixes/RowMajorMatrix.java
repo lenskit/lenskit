@@ -23,6 +23,7 @@ package org.grouplens.lenskit.matrixes;
 import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.vectors.Vec;
 
+import java.io.Serializable;
 import java.util.AbstractList;
 import java.util.List;
 
@@ -32,7 +33,8 @@ import java.util.List;
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-abstract class RowMajorMatrix implements Matrix {
+abstract class RowMajorMatrix implements Matrix, Serializable {
+    private static final long serialVersionUID = 1L;
     protected final int rowDim, colDim;
 
     RowMajorMatrix(int rowDim, int colDim) {

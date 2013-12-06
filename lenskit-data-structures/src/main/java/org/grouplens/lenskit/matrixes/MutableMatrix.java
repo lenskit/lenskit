@@ -52,6 +52,12 @@ public interface MutableMatrix extends Matrix {
     void set(int r, int c, double v);
 
     /**
+     * Fill the matrix with a value.
+     * @double v The value to fill the matrix with.
+     */
+    void fill(double v);
+
+    /**
      * Convert this matrix into an immutable matrix.  The matrix cannot be used after it is frozen.
      * @return An immutable matrix containing this matrix's contents, reusing the underlying storage.
      */

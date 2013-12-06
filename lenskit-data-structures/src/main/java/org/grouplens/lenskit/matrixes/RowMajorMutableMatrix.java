@@ -41,11 +41,13 @@ class RowMajorMutableMatrix extends RowMajorMatrix implements MutableMatrix {
 
     @Override
     public MutableVec row(int r) {
+        Preconditions.checkPositionIndex(r, rowDim, "row");
         return data.subVector(r * colDim, colDim);
     }
 
     @Override
     public MutableVec column(int c) {
+        Preconditions.checkPositionIndex(c, colDim, "column");
         return data.subVector(c, rowDim, colDim);
     }
 
@@ -57,6 +59,11 @@ class RowMajorMutableMatrix extends RowMajorMatrix implements MutableMatrix {
     @Override
     public void set(int r, int c, double v) {
         data.set(addressToIndex(r, c), v);
+    }
+
+    @Override
+    public void fill(double v) {
+        data.fill(v);
     }
 
     @Override

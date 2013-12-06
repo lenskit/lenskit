@@ -39,11 +39,13 @@ class RowMajorImmutableMatrix extends RowMajorMatrix implements ImmutableMatrix 
 
     @Override
     public ImmutableVec row(int r) {
+        Preconditions.checkPositionIndex(r, rowDim, "row");
         return data.subVector(r * colDim, colDim);
     }
 
     @Override
     public ImmutableVec column(int c) {
+        Preconditions.checkPositionIndex(c, colDim, "column");
         return data.subVector(c, rowDim, colDim);
     }
 
