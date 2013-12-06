@@ -32,6 +32,7 @@ import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.transform.quantize.Quantizer;
 import org.grouplens.lenskit.transform.quantize.ValueArrayQuantizer;
 import org.grouplens.lenskit.util.test.MockItemScorer;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -96,9 +97,12 @@ public class OrdRecRatingPredictorTest {
                 .build();
 
         OrdRecRatingPredictor ordrec = new OrdRecRatingPredictor(scorer, userDAO, qtz);
-        assertThat(ordrec.predict(42, 10), equalTo(1.0));
-        assertThat(ordrec.predict(42, 11), equalTo(2.0));
-        assertThat(ordrec.predict(42, 12), equalTo(3.0));
+        MutableSparseVector predictItem = MutableSparseVector.create(10, 11, 12);
+        ordrec.predict(42, predictItem);
+        assertThat(predictItem.get(10), equalTo(1.0));
+        assertThat(predictItem.get(11), equalTo(2.0));
+        assertThat(predictItem.get(12), equalTo(3.0));
+
     }
 
     /**
@@ -125,9 +129,12 @@ public class OrdRecRatingPredictorTest {
                 .build();
 
         OrdRecRatingPredictor ordrec = new OrdRecRatingPredictor(scorer, userDAO, qtz);
-        assertThat(ordrec.predict(42, 10), equalTo(1.0));
-        assertThat(ordrec.predict(42, 11), equalTo(2.0));
-        assertThat(ordrec.predict(42, 12), equalTo(3.0));
+        MutableSparseVector predictItem = MutableSparseVector.create(10, 11, 12);
+        ordrec.predict(42, predictItem);
+        assertThat(predictItem.get(10), equalTo(1.0));
+        assertThat(predictItem.get(11), equalTo(2.0));
+        assertThat(predictItem.get(12), equalTo(3.0));
+
     }
 
     /**
@@ -155,8 +162,11 @@ public class OrdRecRatingPredictorTest {
 
 
         OrdRecRatingPredictor ordrec = new OrdRecRatingPredictor(scorer, userDAO, qtz);
-        assertThat(ordrec.predict(42, 10), equalTo(1.0));
-        assertThat(ordrec.predict(42, 11), equalTo(2.0));
-        assertThat(ordrec.predict(42, 12), equalTo(3.0));
+        MutableSparseVector predictItem = MutableSparseVector.create(10, 11, 12);
+        ordrec.predict(42, predictItem);
+        assertThat(predictItem.get(10), equalTo(1.0));
+        assertThat(predictItem.get(11), equalTo(2.0));
+        assertThat(predictItem.get(12), equalTo(3.0));
+
     }
 }

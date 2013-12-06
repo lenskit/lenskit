@@ -42,7 +42,7 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
      * The values to quantize to.  Subclasses must not modify this array after the object
      * has been constructed.
      */
-    protected final double[] values;
+    protected final ImmutableVec values;
 
     /**
      * Construct a new quantizer using the specified array of values.
@@ -51,23 +51,28 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
      */
     public ValueArrayQuantizer(double[] vs) {
         Preconditions.checkArgument(vs.length > 0, "must have at least one value");
+        values = ImmutableVec.create(vs);
+    }
+
+    public ValueArrayQuantizer(ImmutableVec vs) {
+        Preconditions.checkArgument(vs.size() > 0, "must have at least one value");
         values = vs;
     }
 
     @Override
     public ImmutableVec getValues() {
-        return ImmutableVec.create(Arrays.copyOf(values, values.length));
+        return values;
     }
 
     @Override
     public int getCount() {
-        return values.length;
+        return values.size();
     }
 
     @Override
     public double getIndexValue(int i) {
         try {
-            return values[i];
+            return values.get(i);
         } catch (IndexOutOfBoundsException e) { // have to catch and rethrow to avoid RuntimeException
             throw new IllegalArgumentException("invalid discrete value", e);
         }
@@ -75,12 +80,12 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
 
     @Override
     public int index(double val) {
-        final int n = values.length;
+        final int n = values.size();
         assert n > 0;
         int closest = -1;
         double closev = Double.MAX_VALUE;
         for (int i = 0; i < n; i++) {
-            double diff = Math.abs(val - values[i]);
+            double diff = Math.abs(val - values.get(i));
             if (diff <= closev) { // <= to round up
                 closev = diff;
                 closest = i;

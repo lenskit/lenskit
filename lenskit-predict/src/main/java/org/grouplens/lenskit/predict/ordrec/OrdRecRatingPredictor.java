@@ -27,6 +27,7 @@ import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.transform.quantize.Quantizer;
@@ -50,6 +51,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
     private Quantizer quantizer;
     private final double learningRate;
     private final double regTerm;
+    private final int iterationCount;
 
     /**
      * This is a helper class contains all parameters the Ordrec need:
@@ -58,7 +60,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
      *
      */
     private class OrdRecModel {
-        private long user;
+
         private int levelCount;
         private double t1;
         private double[] beta;
@@ -73,14 +75,20 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
          * thresholds will be 1.
          * @param qtz The quantizer for ratings
          */
-        private OrdRecModel (long uid, Quantizer qtz) {
-            user = uid;
+        private OrdRecModel (Quantizer qtz) {
             qtzValues = qtz.getValues();
             levelCount = qtzValues.size();
             t1 = (qtzValues.get(0) + qtzValues.get(1))/2;
             beta = new double[levelCount-2];
+            /*
+//            I comment this part so that you can double check the correction of it
             for(int i = 1; i <= beta.length; i++ ) {
                 beta[i-1] = Math.log((qtzValues.get(i+1)-qtzValues.get(i-1))/2);
+            }
+            */
+            beta[0] = Math.log((qtzValues.get(1) + qtzValues.get(2)) / 2 - t1);
+            for(int i = 2; i<= beta.length; i++) {
+                beta[i-1] = Math.log((qtzValues.get(i) + qtzValues.get(i+1)) / 2 - beta[i-2]);
             }
         }
 
@@ -158,9 +166,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         /**
          * This is a helper function to calculate derivative of parameters.
          * this function computes $\frac{d}{dx} (t_r - y_{ui})$, and that r specifies
-         * what t_r is used, and k speficies x (with k<0, $x = t_1$; for k >= 0, it is $x = β_k$).
-         * Here the k is the index of beta array, so we use negative k to indicate the t1,
-         * and positive k indicate the index of beta[].
+         * what t_r is used, and k speficies x (with k=0, $x = t_1$; for k > 0, it is $x = β_k$).
          *
          * @param r The index of rth threshold
          * @param k The index of kth parameters need to derivative
@@ -168,65 +174,44 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
          * @return The derivative of beta
          */
         private double derivateOfBeta(int r, int k, double beta) {
-            if(r >= 0 && k < 0) {
+            if(r >= 0 && k == 0) {
                 return 1.0;
-            } else if (k >= 0 && r > k) {
+            } else if (k > 0 && r >= k) {
                 return Math.exp(beta);
             } else {
                 return 0;
             }
         }
 
-        /**
-         * It is used to generate rating list from UserEventDAO.
-         *
-         * @param uid The user ID.
-         * @param dao The UserEventDAO.
-         *
-         * @return The VectorEntry list of rating.
-         */
-        private SparseVector makeUserVector(long uid, UserEventDAO dao) {
-            UserHistory<Rating> history = dao.getEventsForUser(uid, Rating.class);
-            SparseVector vector = null;
-            if (history != null) {
-                vector = RatingVectorUserHistorySummarizer.makeRatingVector(history);
-            }
-            
-            return vector;
-        }
 
         /**
-         * The update function of OrdRec. Get all parameters after learning process.
+         * The train function of OrdRec. Get all parameters after learning process.
          */
         @SuppressWarnings("ConstantConditions")
-        private void update() {
+        private void train(SparseVector ratings, MutableSparseVector scores) {
 
-            int n = 1000;
-            SparseVector ratings = makeUserVector(user, userEventDao);
-            LongSet keySet = userEventDao.getEventsForUser(user).itemSet();
-            MutableSparseVector msv = MutableSparseVector.create(keySet);
-            itemScorer.score(user, msv);
+
             double[] dbeta = new double[beta.length];
             double dt1;
             // n is the number of iteration;
-            for (int j = 0; j < n; j++ ) {
+            for (int j = 0; j < iterationCount; j++ ) {
                 for(VectorEntry rating : ratings) {
                     long iid = rating.getKey();
-                    double score = msv.get(iid);
+                    double score = scores.get(iid);
                     int r = quantizer.index(rating.getValue());
 
                     //this is the first parameter and threshold, the gradient is different from any others:
                     dt1 = learningRate / getProbEQ(score,r) *
-                            ( getProbLE(score,r) * (1 - getProbLE(score,r)) * derivateOfBeta(r, -1, t1) -
-                                    getProbLE(score, r-1)*(1 - getProbLE(score, r-1)) * derivateOfBeta(r-1, -1, t1)
+                            ( getProbLE(score,r) * (1 - getProbLE(score,r)) * derivateOfBeta(r, 0, t1) -
+                                    getProbLE(score, r-1)*(1 - getProbLE(score, r-1)) * derivateOfBeta(r-1, 0, t1)
                                     - regTerm*t1);
 
                     for(int k = 0; k < beta.length; k++) {
 
                         dbeta[k] = learningRate / getProbEQ(score,r) *
-                                ( getProbLE(score,r) * (1 - getProbLE(score,r)) * derivateOfBeta(r, k, beta[k]) -
+                                ( getProbLE(score,r) * (1 - getProbLE(score,r)) * derivateOfBeta(r, k+1, beta[k]) -
                                         getProbLE(score, r-1)*(1 - getProbLE(score, r-1)) *
-                                                derivateOfBeta(r-1, k, beta[k]) - regTerm*beta[k]);
+                                                derivateOfBeta(r-1, k+1, beta[k]) - regTerm*beta[k]);
 
                     }
                     t1 = t1 + dt1;
@@ -248,14 +233,14 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
      * @param reg The Regularization
      */
     @Inject
-    public OrdRecRatingPredictor(ItemScorer scorer, UserEventDAO dao, Quantizer quantizer,
-                                 @LearningRate double rate, @RegularizationTerm double reg) {
+    public OrdRecRatingPredictor(ItemScorer scorer, UserEventDAO dao, Quantizer quantizer, @LearningRate double rate,
+                                 @RegularizationTerm double reg, @IterationCount int niters) {
         this.userEventDao = dao;
         this.itemScorer = scorer;
         this.quantizer = quantizer;
         this.learningRate = rate;
         this.regTerm = reg;
-//        this.stopCond = stop;
+        this.iterationCount = niters;
 
     }
 
@@ -267,9 +252,27 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         this.quantizer = q;
         this.learningRate = 1e-3;
         this.regTerm = 0.015;
+        this.iterationCount = 1000;
     }
 
- 
+    /**
+     * It is used to generate rating list from UserEventDAO.
+     *
+     * @param uid The user ID.
+     * @param dao The UserEventDAO.
+     *
+     * @return The VectorEntry list of rating.
+     */
+    private SparseVector makeUserVector(long uid, UserEventDAO dao) {
+        UserHistory<Rating> history = dao.getEventsForUser(uid, Rating.class);
+        SparseVector vector = null;
+        if (history != null) {
+            vector = RatingVectorUserHistorySummarizer.makeRatingVector(history);
+        }
+
+        return vector;
+    }
+
 
     /**
      * Get the probability distribution according to score and thresholds
@@ -277,7 +280,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
      * @param p The OrdRecParameters contains all parameter of OrdRec, used to get probability.
      * @return The double array of probability distribution.
      */
-    public double[] getProbDistribution(double score, OrdRecModel p) {
+    public Vec getProbDistribution(double score, OrdRecModel p) {
         double[] distribution = new double[p.getLevelCount()];
         distribution[0] = p.getProbLE(score, 0);
         double pre = distribution[0];
@@ -289,35 +292,26 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         for(double d : distribution)
             System.out.print(d + ", ");
         System.out.println();
-        return distribution;
+        return ImmutableVec.create(distribution);
     }
 
-    /**
-     * The prediction function. Use the user id and item id to get predicted rating
-     * with the highest probability. it call update function to learn and get all parameters.
-     *
-     * @param uid The userID
-     * @param iid The ItemID
-     * @return The predicated rating.
-     */
-    @Override
-    public double predict(long uid, long iid) {
-
-        OrdRecModel para = new OrdRecModel(uid, quantizer);
-        para.update();
-        double score = itemScorer.score(uid, iid);
-        Vec probabilities = ImmutableVec.create(getProbDistribution(score, para));
-        double highestProbability = probabilities.largestDimension();
-        int ratingIndex = probabilities.getFirstIndex(highestProbability);
-
-        return quantizer.getIndexValue(ratingIndex);
-    }
 
     @Override
-    public void predict(long user, @Nonnull MutableSparseVector predictions) {
-        LongSet items = predictions.keyDomain();
-        for(Long iid : items) {
-            predictions.set(iid, predict(user,iid));
+    public void predict(long uid, @Nonnull MutableSparseVector predictions) {
+        OrdRecModel para = new OrdRecModel(quantizer);
+        SparseVector ratings = makeUserVector(uid, userEventDao);
+        LongSet keySet = userEventDao.getEventsForUser(uid).itemSet();
+        MutableSparseVector scores = MutableSparseVector.create(keySet);
+        itemScorer.score(uid, scores);
+        para.train(ratings, scores);
+
+        for (VectorEntry e: predictions.fast(VectorEntry.State.EITHER)) {
+            long iid = e.getKey();
+            double score = itemScorer.score(uid, iid);
+            Vec probabilities = getProbDistribution(score, para);
+            int ratingIndex = probabilities.largestDimension();
+
+            predictions.set(e, quantizer.getIndexValue(ratingIndex));
         }
     }
 }
