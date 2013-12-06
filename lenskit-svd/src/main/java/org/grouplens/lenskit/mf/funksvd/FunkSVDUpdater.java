@@ -98,7 +98,7 @@ public final class FunkSVDUpdater {
         // Compute the err and store this value
         error = rating - pred;
         userFeatureValue = uvec.get(feature);
-        itemFeatureValue = uvec.get(feature);
+        itemFeatureValue = ivec.get(feature);
 
         // Update statistics
         n += 1;
