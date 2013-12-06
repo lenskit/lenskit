@@ -275,4 +275,9 @@ class TrainTestEvalJob implements Callable<Void> {
             output.close();
         }
     }
+
+    @Override
+    public String toString() {
+        return String.format("test %s on %s", algorithm, data);
+    }
 }
