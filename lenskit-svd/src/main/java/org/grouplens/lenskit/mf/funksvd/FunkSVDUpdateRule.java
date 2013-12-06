@@ -28,6 +28,7 @@ import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
+import org.grouplens.lenskit.mf.svd.BiasedMFKernel;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 
 import javax.inject.Inject;
@@ -46,7 +47,7 @@ public final class FunkSVDUpdateRule implements Serializable {
     private final double trainingRegularization;
     private final boolean useTrailingEstimate;
     private final ItemScorer baseline;
-    private final ClampingFunction clampingFunction;
+    private final BiasedMFKernel kernel;
     private final StoppingCondition stoppingCondition;
 
     /**
@@ -54,7 +55,7 @@ public final class FunkSVDUpdateRule implements Serializable {
      *
      * @param lrate The learning rate.
      * @param reg   The regularization term.
-     * @param clamp The clamping function.
+     * @param kern  The kernel function.
      * @param stop  The stopping condition
      */
     @Inject
@@ -62,12 +63,12 @@ public final class FunkSVDUpdateRule implements Serializable {
                              @RegularizationTerm double reg,
                              @UseTrailingEstimate boolean trail,
                              @BaselineScorer ItemScorer bl,
-                             ClampingFunction clamp,
+                             BiasedMFKernel kern,
                              StoppingCondition stop) {
         learningRate = lrate;
         trainingRegularization = reg;
         baseline = bl;
-        clampingFunction = clamp;
+        kernel = kern;
         stoppingCondition = stop;
         useTrailingEstimate = trail;
     }
@@ -78,7 +79,7 @@ public final class FunkSVDUpdateRule implements Serializable {
      * @return The estimator to use.
      */
     public TrainingEstimator makeEstimator(PreferenceSnapshot snapshot) {
-        return new TrainingEstimator(snapshot, baseline, clampingFunction);
+        return new TrainingEstimator(snapshot, baseline, kernel);
     }
 
     public double getLearningRate() {
@@ -89,8 +90,8 @@ public final class FunkSVDUpdateRule implements Serializable {
         return trainingRegularization;
     }
 
-    public ClampingFunction getClampingFunction() {
-        return clampingFunction;
+    public BiasedMFKernel getKernel() {
+        return kernel;
     }
 
     public StoppingCondition getStoppingCondition() {

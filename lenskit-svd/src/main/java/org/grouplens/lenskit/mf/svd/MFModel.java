@@ -20,11 +20,14 @@
  */
 package org.grouplens.lenskit.mf.svd;
 
+import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.indexes.IdIndexMapping;
-import org.grouplens.lenskit.vectors.MutableVec;
+import org.grouplens.lenskit.matrixes.ImmutableMatrix;
+import org.grouplens.lenskit.matrixes.Matrix;
 import org.grouplens.lenskit.vectors.Vec;
 
-import java.io.Serializable;
+import javax.annotation.Nullable;
+import java.io.*;
 
 /**
  * Common model for matrix factorization (SVD) recommendation.
@@ -36,22 +39,54 @@ public class MFModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
     protected final int featureCount;
-    protected final int numUser;
-    protected final int numItem;
-    protected final double[][] itemFeatures;
-    protected final double[][] userFeatures;
-    protected final IdIndexMapping itemIndex;
-    protected final IdIndexMapping userIndex;
+    protected final int userCount;
+    protected final int itemCount;
 
-    public MFModel(int nfeatures, double[][] ifeats, double[][] ufeats,
-                   IdIndexMapping iidx, IdIndexMapping uidx) {
-        featureCount = nfeatures;
-        numUser = uidx.size();
-        numItem = iidx.size();
-        itemFeatures = ifeats;
-        userFeatures = ufeats;
-        itemIndex = iidx;
+    protected final ImmutableMatrix userMatrix;
+    protected final ImmutableMatrix itemMatrix;
+    protected final IdIndexMapping userIndex;
+    protected final IdIndexMapping itemIndex;
+
+    /**
+     * Construct a matrix factorization model.
+     * @param umat The user feature matrix (users x features).
+     * @param imat The item feature matrix (items x features).
+     * @param uidx The user index mapping.
+     * @param iidx The item index mapping.
+     */
+    public MFModel(Matrix umat, Matrix imat,
+                   IdIndexMapping uidx, IdIndexMapping iidx) {
+        Preconditions.checkArgument(umat.getColumnCount() == imat.getColumnCount(),
+                                    "mismatched matrix sizes");
+        featureCount = umat.getColumnCount();
+        userCount = uidx.size();
+        itemCount = iidx.size();
+        Preconditions.checkArgument(umat.getRowCount() == userCount,
+                                    "user matrix has %s rows, expected %s",
+                                    umat.getRowCount(), userCount);
+        Preconditions.checkArgument(imat.getRowCount() == itemCount,
+                                    "item matrix has %s rows, expected %s",
+                                    imat.getRowCount(), itemCount);
+        userMatrix = umat.immutable();
+        itemMatrix = imat.immutable();
         userIndex = uidx;
+        itemIndex = iidx;
+    }
+
+    private void readObject(ObjectInputStream input) throws IOException, ClassNotFoundException {
+        input.defaultReadObject();
+        if (userMatrix.getColumnCount() != featureCount) {
+            throw new InvalidObjectException("user matrix has wrong column count");
+        }
+        if (userIndex.size() != userMatrix.getRowCount()) {
+            throw new InvalidObjectException("user matrix and index have different row counts");
+        }
+        if (itemMatrix.getColumnCount() != featureCount) {
+            throw new InvalidObjectException("item matrix has wrong column count");
+        }
+        if (itemIndex.size() != itemMatrix.getRowCount()) {
+            throw new InvalidObjectException("item matrix and index have different row counts");
+        }
     }
 
     /**
@@ -67,14 +102,14 @@ public class MFModel implements Serializable {
      * The number of users.
      */
     public int getUserCount() {
-        return numUser;
+        return userCount;
     }
 
     /**
      * The number of items.
      */
     public int getItemCount() {
-        return numItem;
+        return itemCount;
     }
 
     /**
@@ -92,46 +127,38 @@ public class MFModel implements Serializable {
     }
 
     /**
-     * The item-feature matrix (features, then items).  Do not modify this array.
+     * Get the user matrix.
+     * @return The user matrix (users x features).
      */
-    @Deprecated
-    public double[][] getItemFeatures() {
-        return itemFeatures;
+    public ImmutableMatrix getUserMatrix() {
+        return userMatrix;
     }
 
     /**
-     * The user-feature matrix (features, then users).  Do not modify this array.
+     * Get the item matrix.
+     * @return The item matrix (items x features).
      */
-    @Deprecated
-    public double[][] getUserFeatures() {
-        return userFeatures;
+    public ImmutableMatrix getItemMatrix() {
+        return itemMatrix;
     }
 
+    @Nullable
     public Vec getUserVector(long user) {
         int uidx = userIndex.tryGetIndex(user);
         if (uidx < 0) {
             return null;
+        } else {
+            return userMatrix.row(uidx);
         }
-
-        MutableVec vec = MutableVec.create(featureCount);
-        for (int f = featureCount - 1; f >= 0; f--) {
-            vec.set(f, userFeatures[f][uidx]);
-        }
-        return vec;
     }
 
-    /**
-     * Get a particular feature value for an item.
-     * @param iid The item ID.
-     * @param feature The feature.
-     * @return The item-feature value, or 0 if the item was not in the training set.
-     */
-    public double getItemFeature(long iid, int feature) {
-        int iidx = itemIndex.tryGetIndex(iid);
+    @Nullable
+    public Vec getItemVector(long item) {
+        int iidx = itemIndex.tryGetIndex(item);
         if (iidx < 0) {
-            return 0;
+            return null;
         } else {
-            return itemFeatures[feature][iidx];
+            return itemMatrix.row(iidx);
         }
     }
 
@@ -146,7 +173,22 @@ public class MFModel implements Serializable {
         if (uidx < 0) {
             return 0;
         } else {
-            return userFeatures[feature][uidx];
+            return userMatrix.get(uidx, feature);
+        }
+    }
+
+    /**
+     * Get a particular feature value for an item.
+     * @param iid The item ID.
+     * @param feature The feature.
+     * @return The item-feature value, or 0 if the item was not in the training set.
+     */
+    public double getItemFeature(long iid, int feature) {
+        int iidx = itemIndex.tryGetIndex(iid);
+        if (iidx < 0) {
+            return 0;
+        } else {
+            return itemMatrix.get(iidx, feature);
         }
     }
 }

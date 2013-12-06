@@ -20,7 +20,10 @@
  */
 package org.grouplens.lenskit.mf.svd;
 
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.vectors.Vec;
+
+import javax.annotation.Nonnull;
 
 /**
  * A kernel for biased matrix factorization.  This function combines a user-item bias (baseline
@@ -33,6 +36,7 @@ import org.grouplens.lenskit.vectors.Vec;
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@DefaultImplementation(DotProductKernel.class)
 public interface BiasedMFKernel {
     /**
      * Apply the kernel function.
@@ -43,5 +47,5 @@ public interface BiasedMFKernel {
      * @return The kernel function value (combined score).
      * @throws IllegalArgumentException if the user and item vectors have different lengths.
      */
-    double apply(double bias, Vec user, Vec item);
+    double apply(double bias, @Nonnull Vec user, @Nonnull Vec item);
 }

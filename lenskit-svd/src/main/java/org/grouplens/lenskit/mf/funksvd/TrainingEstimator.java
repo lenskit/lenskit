@@ -27,9 +27,11 @@ import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.transform.clamp.ClampingFunction;
+import org.grouplens.lenskit.mf.svd.BiasedMFKernel;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableVec;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.Vec;
 
 /**
  * Rating estimates used while training the predictor.  An estimator can be constructed
@@ -40,19 +42,19 @@ import org.grouplens.lenskit.vectors.SparseVector;
  */
 public final class TrainingEstimator {
     private final FastCollection<IndexedPreference> ratings;
-    private final ClampingFunction clamp;
     private final double[] estimates;
+    private final BiasedMFKernel kernel;
 
     /**
      * Initialize the training estimator.
      *
      * @param snap     The preference snapshot.
      * @param baseline The baseline predictor.
-     * @param cf       The clamping function.
+     * @param kf       The kernel function.
      */
-    TrainingEstimator(PreferenceSnapshot snap, ItemScorer baseline, ClampingFunction cf) {
+    TrainingEstimator(PreferenceSnapshot snap, ItemScorer baseline, BiasedMFKernel kf) {
         ratings = snap.getRatings();
-        clamp = cf;
+        kernel = kf;
         estimates = new double[ratings.size()];
 
         final LongCollection userIds = snap.getUserIds();
@@ -83,11 +85,14 @@ public final class TrainingEstimator {
      * @param ufvs The user feature values.
      * @param ifvs The item feature values.
      */
-    public void update(double[] ufvs, double[] ifvs) {
+    public void update(Vec ufvs, Vec ifvs) {
+        MutableVec uv = MutableVec.create(1);
+        MutableVec iv = MutableVec.create(1);
         for (IndexedPreference r : CollectionUtils.fast(ratings)) {
             double est = estimates[r.getIndex()];
-            double offset = ufvs[r.getUserIndex()] * ifvs[r.getItemIndex()];
-            estimates[r.getIndex()] = clamp.apply(r.getUserId(), r.getItemId(), est + offset);
+            uv.set(0, ufvs.get(r.getUserIndex()));
+            iv.set(0, ifvs.get(r.getItemIndex()));
+            estimates[r.getIndex()] = kernel.apply(est, uv, iv);
         }
     }
 }

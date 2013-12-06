@@ -24,10 +24,9 @@ import com.google.common.collect.ImmutableList;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.indexes.IdIndexMapping;
+import org.grouplens.lenskit.matrixes.Matrix;
 import org.grouplens.lenskit.mf.svd.MFModel;
-import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.vectors.ImmutableVec;
-import org.grouplens.lenskit.vectors.MutableVec;
 import org.grouplens.lenskit.vectors.Vec;
 
 import java.util.List;
@@ -43,16 +42,13 @@ import java.util.List;
 public final class FunkSVDModel extends MFModel {
     private static final long serialVersionUID = 3L;
 
-    private final ClampingFunction clampingFunction;
-
     private final List<FeatureInfo> featureInfo;
     private final ImmutableVec averageUser;
 
-    public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
-                        ClampingFunction clamp, IdIndexMapping iidx, IdIndexMapping uidx,
+    public FunkSVDModel(Matrix umat, Matrix imat,
+                        IdIndexMapping uidx, IdIndexMapping iidx,
                         List<FeatureInfo> features) {
-        super(nfeatures, ifeats, ufeats, iidx, uidx);
-        clampingFunction = clamp;
+        super(umat, imat, uidx, iidx);
 
         featureInfo = ImmutableList.copyOf(features);
 
@@ -78,13 +74,6 @@ public final class FunkSVDModel extends MFModel {
      */
     public List<FeatureInfo> getFeatureInfo() {
         return featureInfo;
-    }
-
-    /**
-     * The clamping function used to build this model.
-     */
-    public ClampingFunction getClampingFunction() {
-        return clampingFunction;
     }
 
     public Vec getAverageUserVector() {

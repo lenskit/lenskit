@@ -20,13 +20,13 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.transform.clamp.ClampingFunction;
+import org.grouplens.lenskit.vectors.Vec;
 
 /**
  * Encapsulation of the FunkSVD update process.  Using this class takes a two-step process:
  *
  * <ol>
- *     <li>Call {@link #prepare(long, long, double, double, double, double, double)} to prepare
+ *     <li>Call {@link #prepare(int, double, double, org.grouplens.lenskit.vectors.Vec, org.grouplens.lenskit.vectors.Vec)} to prepare
  *     an update.</li>
  *     <li>Call {@link #getItemFeatureUpdate()} and {@link #getUserFeatureUpdate()} to get the
  *     deltas to apply to the item-feature and user-feature values, respectively.</li>
@@ -84,34 +84,21 @@ public final class FunkSVDUpdater {
 
     /**
      * Prepare the updater for updating the feature values for a particular user/item ID.
-     * @param uid The user ID.
-     * @param iid The item ID.
-     * @param trail The trailing value (contribution of remaining features).
+     *
+     * @param feature  The feature we are training.
+     * @param rating   The rating value.
      * @param estimate The estimate through the previous feature.
-     * @param rating The rating value.
-     * @param ufv The user feature value.
-     * @param ifv The item feature value.
+     * @param uvec     The item feature vector for remaining features.
+     * @param ivec     The user feature vector for remaining features.
      */
-    public void prepare(long uid, long iid, double trail,
-                        double estimate, double rating,
-                        double ufv, double ifv) {
+    public void prepare(int feature, double rating, double estimate, Vec uvec, Vec ivec) {
         // Compute prediction
-        double pred = estimate + ufv * ifv;
-
-        ClampingFunction clamp = updateRule.getClampingFunction();
-
-        // Clamp the prediction first
-        pred = clamp.apply(uid, iid, pred);
-
-        if (updateRule.useTrailingEstimate()) {
-            // Add the trailing value, then clamp the result again
-            pred = clamp.apply(uid, iid, pred + trail);
-        }
+        double pred = updateRule.getKernel().apply(estimate, uvec, ivec);
 
         // Compute the err and store this value
         error = rating - pred;
-        userFeatureValue = ufv;
-        itemFeatureValue = ifv;
+        userFeatureValue = uvec.get(feature);
+        itemFeatureValue = uvec.get(feature);
 
         // Update statistics
         n += 1;
