@@ -89,10 +89,11 @@ public final class TrainingEstimator {
         MutableVec uv = MutableVec.create(1);
         MutableVec iv = MutableVec.create(1);
         for (IndexedPreference r : CollectionUtils.fast(ratings)) {
-            double est = estimates[r.getIndex()];
+            int idx = r.getIndex();
+            double est = estimates[idx];
             uv.set(0, ufvs.get(r.getUserIndex()));
             iv.set(0, ifvs.get(r.getItemIndex()));
-            estimates[r.getIndex()] = kernel.apply(est, uv, iv);
+            estimates[idx] = kernel.apply(est, uv, iv);
         }
     }
 }
