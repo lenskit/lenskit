@@ -70,45 +70,35 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>dist-package</id>
+            <phase>package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <chmod perm="a+x">
+                  <fileset dir="${project.build.directory}/dist/lenskit">
+                    <include name="bin/*" />
+                  </fileset>
+                </chmod>
+                <tar destfile="${project.build.directory}/lenskit-${project.version}.tar.gz" compression="gzip">
+                  <tarfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
+                </tar>
+                <zip destfile="${project.build.directory}/lenskit-${project.version}.zip">
+                  <zipfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
+                </zip>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>release</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>dist-package</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <configuration>
-                  <target>
-                    <chmod perm="a+x">
-                      <fileset dir="${project.build.directory}/dist/lenskit">
-                        <include name="bin/*" />
-                      </fileset>
-                    </chmod>
-                    <tar destfile="${project.build.directory}/lenskit-${project.version}.tar.gz" compression="gzip">
-                      <tarfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
-                    </tar>
-                    <zip destfile="${project.build.directory}/lenskit-${project.version}.zip">
-                      <zipfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
-                    </zip>
-                  </target>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
-
 </project>
