@@ -64,7 +64,7 @@ public class SimpleCachingItemScorer extends AbstractItemScorer{
             scores.set(cachedScores);
         } else {
             scorer.score(user, scores);
-            cachedScores = scores.copy().freeze();
+            cachedScores = scores.immutable();
             cachedId = user;
         }
     }
