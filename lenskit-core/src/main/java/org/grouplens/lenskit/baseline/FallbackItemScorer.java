@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
@@ -40,6 +41,8 @@ import javax.inject.Inject;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class FallbackItemScorer extends AbstractItemScorer {
+    public static final TypedSymbol<ScoreSource> SCORE_SOURCE_SYMBOL =
+            TypedSymbol.of(ScoreSource.class, "org.grouplens.lenskit.baseline.ScoreSource");
     private final ItemScorer primaryScorer;
     private final ItemScorer baselineScorer;
 
@@ -62,7 +65,7 @@ public class FallbackItemScorer extends AbstractItemScorer {
         }
 
         // FIXME Make this faster
-        Long2ObjectMap<ScoreSource> chan = output.addChannel(ScoreSource.SYMBOL);
+        Long2ObjectMap<ScoreSource> chan = output.getOrAddChannel(SCORE_SOURCE_SYMBOL);
         for (VectorEntry e: output.fast()) {
             long key = e.getKey();
             ScoreSource source = ScoreSource.PRIMARY;

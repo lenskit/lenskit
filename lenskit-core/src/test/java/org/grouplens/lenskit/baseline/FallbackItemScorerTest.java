@@ -75,10 +75,10 @@ public class FallbackItemScorerTest {
         scorer.score(42, msv);
         assertThat(msv.size(), equalTo(2));
         assertThat(msv.get(39), equalTo(3.5));
-        assertThat(msv.getChannel(ScoreSource.SYMBOL).get(39),
+        assertThat(msv.getChannel(FallbackItemScorer.SCORE_SOURCE_SYMBOL).get(39),
                    equalTo(ScoreSource.PRIMARY));
         assertThat(msv.get(30), equalTo(4.0));
-        assertThat(msv.getChannel(ScoreSource.SYMBOL).get(30),
+        assertThat(msv.getChannel(FallbackItemScorer.SCORE_SOURCE_SYMBOL).get(30),
                    equalTo(ScoreSource.BASELINE));
         assertThat(msv.unsetKeySet(), contains(10L));
     }

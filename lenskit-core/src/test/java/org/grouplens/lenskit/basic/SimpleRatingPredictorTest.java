@@ -24,18 +24,17 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.baseline.FallbackItemScorer;
 import org.grouplens.lenskit.baseline.ScoreSource;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.util.test.MockItemScorer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
-
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class SimpleRatingPredictorTest {
@@ -108,7 +107,47 @@ public class SimpleRatingPredictorTest {
         assertThat(v.get(3),
                    closeTo(1.0, EPSILON));
         assertThat(v.get(4, 0.0), closeTo(0.0, EPSILON));
-        assertThat(v.getChannel(ScoreSource.SYMBOL).get(1),
+        assertThat(v.getChannel(SimpleRatingPredictor.PREDICTION_SOURCE_SYMBOL).get(1),
                    equalTo(ScoreSource.PRIMARY));
+    }
+
+    /**
+     * Make sure that score sources are routed properly through the rating predictor and
+     * fallback scorer.
+     */
+    @Test
+    public void testDoubleFallback() {
+        ItemScorer primary = MockItemScorer.newBuilder()
+                                           .addScore(42, 1, 3.5)
+                                           .build();
+        ItemScorer base1 = MockItemScorer.newBuilder()
+                                         .addScore(42, 1, 2.5)
+                                         .addScore(42, 2, 2.5)
+                                         .build();
+        ItemScorer base2 = MockItemScorer.newBuilder()
+                                         .addScore(42, 1, 3.0)
+                                         .addScore(42, 2, 3.0)
+                                         .addScore(42, 3, 3.0)
+                                         .build();
+        ItemScorer scorer = new FallbackItemScorer(primary, base1);
+        RatingPredictor pred = new SimpleRatingPredictor(scorer, base2, null);
+        MutableSparseVector vec = MutableSparseVector.create(1, 2, 3);
+        pred.predict(42, vec);
+        assertThat(vec.size(), equalTo(3));
+        assertThat(vec.get(1), equalTo(3.5));
+        assertThat(vec.get(2), equalTo(2.5));
+        assertThat(vec.get(3), equalTo(3.0));
+        assertThat(vec.getChannel(FallbackItemScorer.SCORE_SOURCE_SYMBOL).get(1),
+                   equalTo(ScoreSource.PRIMARY));
+        assertThat(vec.getChannel(FallbackItemScorer.SCORE_SOURCE_SYMBOL).get(2),
+                   equalTo(ScoreSource.BASELINE));
+        assertThat(vec.getChannel(FallbackItemScorer.SCORE_SOURCE_SYMBOL).get(3),
+                   nullValue());
+        assertThat(vec.getChannel(SimpleRatingPredictor.PREDICTION_SOURCE_SYMBOL).get(1),
+                   equalTo(ScoreSource.PRIMARY));
+        assertThat(vec.getChannel(SimpleRatingPredictor.PREDICTION_SOURCE_SYMBOL).get(2),
+                   equalTo(ScoreSource.PRIMARY));
+        assertThat(vec.getChannel(SimpleRatingPredictor.PREDICTION_SOURCE_SYMBOL).get(3),
+                   equalTo(ScoreSource.BASELINE));
     }
 }

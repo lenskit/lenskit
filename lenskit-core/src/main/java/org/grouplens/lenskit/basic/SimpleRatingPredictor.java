@@ -30,6 +30,7 @@ import org.grouplens.lenskit.baseline.PrimaryScorer;
 import org.grouplens.lenskit.baseline.ScoreSource;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
@@ -52,6 +53,9 @@ import javax.inject.Inject;
  * @since 1.1
  */
 public final class SimpleRatingPredictor extends AbstractRatingPredictor {
+    public static final TypedSymbol<ScoreSource> PREDICTION_SOURCE_SYMBOL =
+            TypedSymbol.of(ScoreSource.class, "org.grouplens.lenskit.basic.PredictionSource");
+
     private final ItemScorer scorer;
     @Nullable
     private final ItemScorer baselineScorer;
@@ -109,7 +113,7 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
         }
 
         // FIXME Make this faster
-        Long2ObjectMap<ScoreSource> chan = scores.addChannel(ScoreSource.SYMBOL);
+        Long2ObjectMap<ScoreSource> chan = scores.getOrAddChannel(PREDICTION_SOURCE_SYMBOL);
         for (VectorEntry e: scores.fast()) {
             long key = e.getKey();
             ScoreSource source = ScoreSource.PRIMARY;
