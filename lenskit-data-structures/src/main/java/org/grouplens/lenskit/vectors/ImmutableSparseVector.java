@@ -24,7 +24,9 @@ import com.google.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.LongKeyDomain;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
@@ -170,6 +172,17 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     public Set<TypedSymbol<?>> getChannelSymbols() {
         return channels.keySet();
     }
+
+    @Override
+    public ImmutableSparseVector combineWith(SparseVector o) {
+        LongSortedSet key = this.keyDomain();
+        LongSortedSet newKey = o.keyDomain();
+        MutableSparseVector result = MutableSparseVector.create(LongUtils.setUnion(key, newKey));
+        result.set(this);
+        result.set(o);
+        return result.freeze();
+    }
+
 
     // We override these three functions in the case that this vector is Immutable,
     // so we can avoid computing them more than once.
