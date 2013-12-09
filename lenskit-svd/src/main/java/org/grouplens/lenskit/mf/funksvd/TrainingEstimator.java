@@ -26,10 +26,9 @@ import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.mf.svd.BiasedMFKernel;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.MutableVec;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.Vec;
 
@@ -43,18 +42,18 @@ import org.grouplens.lenskit.vectors.Vec;
 public final class TrainingEstimator {
     private final FastCollection<IndexedPreference> ratings;
     private final double[] estimates;
-    private final BiasedMFKernel kernel;
+    private final PreferenceDomain domain;
 
     /**
      * Initialize the training estimator.
      *
      * @param snap     The preference snapshot.
      * @param baseline The baseline predictor.
-     * @param kf       The kernel function.
+     * @param dom      The preference domain (for clamping).
      */
-    TrainingEstimator(PreferenceSnapshot snap, ItemScorer baseline, BiasedMFKernel kf) {
+    TrainingEstimator(PreferenceSnapshot snap, ItemScorer baseline, PreferenceDomain dom) {
         ratings = snap.getRatings();
-        kernel = kf;
+        domain = dom;
         estimates = new double[ratings.size()];
 
         final LongCollection userIds = snap.getUserIds();
@@ -86,14 +85,14 @@ public final class TrainingEstimator {
      * @param ifvs The item feature values.
      */
     public void update(Vec ufvs, Vec ifvs) {
-        MutableVec uv = MutableVec.create(1);
-        MutableVec iv = MutableVec.create(1);
         for (IndexedPreference r : CollectionUtils.fast(ratings)) {
             int idx = r.getIndex();
             double est = estimates[idx];
-            uv.set(0, ufvs.get(r.getUserIndex()));
-            iv.set(0, ifvs.get(r.getItemIndex()));
-            estimates[idx] = kernel.apply(est, uv, iv);
+            est += ufvs.get(r.getUserIndex()) * ifvs.get(r.getItemIndex());
+            if (domain != null) {
+                est = domain.clampValue(est);
+            }
+            estimates[idx] = est;
         }
     }
 }

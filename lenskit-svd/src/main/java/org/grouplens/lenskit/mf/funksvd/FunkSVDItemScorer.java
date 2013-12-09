@@ -31,8 +31,11 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.grouplens.lenskit.mf.svd.BiasedMFKernel;
+import org.grouplens.lenskit.mf.svd.DomainClampingKernel;
+import org.grouplens.lenskit.mf.svd.DotProductKernel;
 import org.grouplens.lenskit.vectors.*;
 
 import javax.annotation.Nonnull;
@@ -75,17 +78,18 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
     @Inject
     public FunkSVDItemScorer(UserEventDAO dao, FunkSVDModel model,
                              @BaselineScorer ItemScorer baseline,
-                             BiasedMFKernel kern,
+                             @Nullable PreferenceDomain dom,
                              @Nullable @RuntimeUpdate FunkSVDUpdateRule rule) {
         // FIXME Unify requirement on update rule and DAO
         this.dao = dao;
         this.model = model;
         baselineScorer = baseline;
         this.rule = rule;
-        kernel = kern;
-        if (rule != null && !rule.getKernel().equals(kernel)) {
-            // FIXME Do this more intelligently
-            throw new IllegalArgumentException("update rule and scorer have different kernels");
+
+        if (dom == null) {
+            kernel = new DotProductKernel();
+        } else {
+            kernel = new DomainClampingKernel(dom);
         }
 
         featureCount = model.getFeatureCount();
@@ -172,17 +176,33 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         assert uprefs.size() == featureCount;
         assert feature >= 0 && feature < featureCount;
 
+        int tailStart = feature + 1;
+        int tailSize = featureCount - feature - 1;
+        Vec utail = uprefs.subVector(tailStart, tailSize);
+        MutableSparseVector tails = MutableSparseVector.create(ratings.keySet());
+        for (VectorEntry e: tails.fast(VectorEntry.State.EITHER)) {
+            Vec ivec = model.getItemVector(e.getKey());
+            if (ivec == null) {
+                // FIXME Do this properly
+                tails.set(e, 0);
+            } else {
+                ivec = ivec.subVector(tailStart, tailSize);
+                tails.set(e, utail.dot(ivec));
+            }
+        }
+
         double rmse = Double.MAX_VALUE;
         TrainingLoopController controller = rule.getTrainingLoopController();
         while (controller.keepTraining(rmse)) {
-            rmse = doFeatureIteration(user, uprefs, ratings, estimates, feature);
+            rmse = doFeatureIteration(user, uprefs, ratings, estimates, feature, tails);
         }
     }
 
     private double doFeatureIteration(long user, MutableVec uprefs,
                                       SparseVector ratings, MutableSparseVector estimates,
-                                      int feature) {
+                                      int feature, SparseVector itemTails) {
         assert rule != null;
+
         FunkSVDUpdater updater = rule.createUpdater();
         for (VectorEntry e: ratings.fast()) {
             final long iid = e.getKey();
@@ -191,7 +211,8 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
                 continue;
             }
 
-            updater.prepare(feature, e.getValue(), estimates.get(iid), uprefs, ivec);
+            updater.prepare(feature, e.getValue(), estimates.get(iid),
+                            uprefs.get(feature), ivec.get(feature), itemTails.get(iid));
             // Step 4: update user preferences
             uprefs.add(feature, updater.getUserFeatureUpdate());
         }

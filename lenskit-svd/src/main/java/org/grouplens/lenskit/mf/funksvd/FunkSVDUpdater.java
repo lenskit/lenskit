@@ -20,13 +20,13 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.vectors.Vec;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 
 /**
  * Encapsulation of the FunkSVD update process.  Using this class takes a two-step process:
  *
  * <ol>
- *     <li>Call {@link #prepare(int, double, double, org.grouplens.lenskit.vectors.Vec, org.grouplens.lenskit.vectors.Vec)} to prepare
+ *     <li>Call {@link #prepare(int, double, double, double, double, double)} to prepare
  *     an update.</li>
  *     <li>Call {@link #getItemFeatureUpdate()} and {@link #getUserFeatureUpdate()} to get the
  *     deltas to apply to the item-feature and user-feature values, respectively.</li>
@@ -88,17 +88,24 @@ public final class FunkSVDUpdater {
      * @param feature  The feature we are training.
      * @param rating   The rating value.
      * @param estimate The estimate through the previous feature.
-     * @param uvec     The item feature vector for remaining features.
-     * @param ivec     The user feature vector for remaining features.
+     * @param uv       The user feature value.
+     * @param iv       The item feature value.
+     * @param trail    The sum of the trailing feature value products.
      */
-    public void prepare(int feature, double rating, double estimate, Vec uvec, Vec ivec) {
+    public void prepare(int feature, double rating, double estimate,
+                        double uv, double iv, double trail) {
         // Compute prediction
-        double pred = updateRule.getKernel().apply(estimate, uvec, ivec);
+        double pred = estimate + uv * iv;
+        PreferenceDomain dom = updateRule.getDomain();
+        if (dom != null) {
+            pred = dom.clampValue(pred);
+        }
+        pred += trail;
 
         // Compute the err and store this value
         error = rating - pred;
-        userFeatureValue = uvec.get(feature);
-        itemFeatureValue = ivec.get(feature);
+        userFeatureValue = uv;
+        itemFeatureValue = iv;
 
         // Update statistics
         n += 1;
