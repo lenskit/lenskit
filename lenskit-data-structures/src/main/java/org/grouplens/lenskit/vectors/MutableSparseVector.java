@@ -1035,7 +1035,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     @Override
-    public MutableSparseVector combine(SparseVector o) {
+    public MutableSparseVector combineWith(SparseVector o) {
         LongSortedSet key = this.keyDomain();
         LongSortedSet newKey = o.keyDomain();
         MutableSparseVector result = MutableSparseVector.create(LongUtils.setUnion(key, newKey));

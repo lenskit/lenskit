@@ -174,7 +174,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
     }
 
     @Override
-    public ImmutableSparseVector combine(SparseVector o) {
+    public ImmutableSparseVector combineWith(SparseVector o) {
         LongSortedSet key = this.keyDomain();
         LongSortedSet newKey = o.keyDomain();
         MutableSparseVector result = MutableSparseVector.create(LongUtils.setUnion(key, newKey));
