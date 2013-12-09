@@ -28,6 +28,7 @@ import org.grouplens.lenskit.vectors.Vec;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -55,11 +56,23 @@ public class BiasedMFItemScorer extends AbstractItemScorer {
         baseline = bl;
     }
 
+    /**
+     * Get a user's preference vector.
+     *
+     * @param user The user ID.
+     * @return The user's preference vector, or {@code null} if no preferences are available for the
+     *         user.
+     */
+    @Nullable
+    protected Vec getUserPreferenceVector(long user) {
+        return model.getUserVector(user);
+    }
+
     @Override
     public void score(long user, @Nonnull MutableSparseVector scores) {
         baseline.score(user, scores);
 
-        Vec uvec = model.getUserVector(user);
+        Vec uvec = getUserPreferenceVector(user);
         if (uvec == null) {
             return;
         }
