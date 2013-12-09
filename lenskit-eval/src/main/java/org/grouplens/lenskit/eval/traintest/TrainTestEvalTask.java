@@ -80,6 +80,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private File outputFile;
     private File userOutputFile;
     private File predictOutputFile;
+    private File recommendOutputFile;
     // default value for recommendation set size
     private int numRecs = 5;
 
@@ -87,11 +88,13 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private TableLayout outputLayout;
     private TableLayout userLayout;
     private TableLayout predictLayout;
+    private TableLayout recommendLayout;
 
     private TableWriter output;
     private TableBuilder outputInMemory;
     private TableWriter userOutput;
     private TableWriter predictOutput;
+    private TableWriter recommendOutput;
 
     private Map<String, Integer> dataColumns;
     private Map<String, Integer> algoColumns;
@@ -227,6 +230,17 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return setPredictOutput(new File(fn));
     }
 
+    public TrainTestEvalTask setRecommendOutput(File file) {
+        recommendOutputFile = file;
+        return this;
+    }
+
+    public TrainTestEvalTask setRecommendOutput(String fn) {
+        return setRecommendOutput(new File(fn));
+    }
+
+
+
     /**
      * Control whether the train-test evaluator will isolate data sets.  If set to {@code true},
      * then each data set will be run in turn, with no inter-data-set parallelism.  This can
@@ -264,6 +278,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
     File getPredictOutput() {
         return predictOutputFile;
+    }
+
+    File getRecommendOutput() {
+        return recommendOutputFile;
     }
 
     public int getNumRecs() {
@@ -361,6 +379,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                     Suppliers.compose(prefix, outputTableSupplier()),
                     Suppliers.compose(prefix, userTableSupplier()),
                     Suppliers.compose(prefix, predictTableSupplier()),
+                    Suppliers.compose(prefix, recommendTableSupplier()),
                     numRecs);
             jobs.add(job);
         }
@@ -377,6 +396,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         outputLayout = layoutAggregateOutput(master);
         userLayout = layoutUserTable(master);
         predictLayout = layoutPredictionTable(master);
+        recommendLayout = layoutRecommendTable(master);
 
         // FIXME This doesn't seem right in the face of top-N metrics
         predictMetrics = metrics;
@@ -466,6 +486,16 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return eachPred.build();
     }
 
+    private TableLayout layoutRecommendTable(TableLayoutBuilder master) {
+        TableLayoutBuilder eachReco = master.clone();
+        eachReco.addColumn("User");
+        eachReco.addColumn("Item");
+        eachReco.addColumn("Ranking");
+        eachReco.addColumn("Prediction");
+
+        return eachReco.build();
+    }
+
     /**
      * Prepare the evaluation by opening all outputs and initializing metrics.
      */
@@ -483,6 +513,9 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         }
         if (predictOutputFile != null) {
             predictOutput = closer.register(CSVWriter.open(predictOutputFile, predictLayout));
+        }
+        if (recommendOutputFile != null) {
+            recommendOutput = closer.register(CSVWriter.open(recommendOutputFile, recommendLayout));
         }
         for (Metric<TrainTestEvalTask> metric : Iterables.concat(predictMetrics, modelMetrics)) {
             metric.startEvaluation(this);
@@ -503,6 +536,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         output = null;
         userOutput = null;
         predictOutput = null;
+        recommendOutput = null;
     }
 
     /**
@@ -550,6 +584,16 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             @Override
             public TableWriter get() {
                 return userOutput;
+            }
+        };
+    }
+
+    @Nonnull
+    Supplier<TableWriter> recommendTableSupplier() {
+        return new Supplier<TableWriter>() {
+            @Override
+            public TableWriter get() {
+                return recommendOutput;
             }
         };
     }
