@@ -20,15 +20,13 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
+import com.google.common.base.*;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
-import com.google.common.util.concurrent.MoreExecutors;
 import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.graph.DAGNodeBuilder;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
@@ -42,7 +40,7 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.symbols.Symbol;
-import org.grouplens.lenskit.util.parallel.TaskGroup;
+import org.grouplens.lenskit.util.parallel.TaskGraphExecutor;
 import org.grouplens.lenskit.util.table.Table;
 import org.grouplens.lenskit.util.table.TableBuilder;
 import org.grouplens.lenskit.util.table.TableLayout;
@@ -61,8 +59,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * The command that run the algorithm instance and output the prediction result file and the evaluation result file
@@ -303,7 +299,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     @Override
     @SuppressWarnings("PMD.AvoidCatchingThrowable")
     public Table perform() throws TaskExecutionException {
-        List<List<TrainTestEvalJob>> jobGroups = makeJobGroups();
+        DAGNode<TaskGraph.Node,TaskGraph.Edge> jobGraph = makeJobGraph();
         setupTableLayouts();
 
         logger.info("Starting evaluation");
@@ -312,7 +308,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             try {
                 this.prepareEval(closer);
                 try {
-                    runEvaluations(jobGroups);
+                    runEvaluations(jobGraph);
                 } finally {
                     cleanUp();
                 }
@@ -328,44 +324,49 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return outputInMemory.build();
     }
 
-    private void runEvaluations(List<List<TrainTestEvalJob>> jobGroups) throws TaskExecutionException {
+    private void runEvaluations(DAGNode<TaskGraph.Node, TaskGraph.Edge> graph) throws TaskExecutionException {
         int nthreads = getProject().getConfig().getThreadCount();
-        ExecutorService exec;
+        TaskGraphExecutor exec;
         logger.info("Running evaluator with {} threads", nthreads);
         if (nthreads == 1) {
-            exec = MoreExecutors.sameThreadExecutor();
+            exec = TaskGraphExecutor.singleThreaded();
         } else {
-            exec = Executors.newFixedThreadPool(nthreads);
+            exec = TaskGraphExecutor.create(nthreads);
         }
 
         try {
-            for (List<TrainTestEvalJob> group: jobGroups) {
-                TaskGroup tasks = new TaskGroup();
-                tasks.addAll(group);
-                try {
-                    tasks.execute(exec);
-                } catch (ExecutionException e) {
-                    Throwable cause = e.getCause();
-                    throw new TaskExecutionException(cause);
-                }
-            }
-        } finally {
-            exec.shutdown();
+            exec.execute(graph);
+        } catch (ExecutionException e) {
+            Throwables.propagateIfInstanceOf(e.getCause(), TaskExecutionException.class);
+            throw new TaskExecutionException("error in evaluation job task", e.getCause());
         }
     }
 
-    List<List<TrainTestEvalJob>> makeJobGroups() {
-        List<List<TrainTestEvalJob>> jobGroups = Lists.newArrayList();
+    DAGNode<TaskGraph.Node,TaskGraph.Edge> makeJobGraph() {
+        DAGNode<TaskGraph.Node,TaskGraph.Edge> graph = null;
+        DAGNodeBuilder<TaskGraph.Node,TaskGraph.Edge> builder =
+                DAGNode.newBuilder(TaskGraph.groupNode());
         for (TTDataSet dataset : dataSets) {
-            List<TrainTestEvalJob> jobs = makeJobs(dataset);
-            jobGroups.add(jobs);
+            for (TrainTestEvalJob job: makeJobs(dataset)) {
+                DAGNodeBuilder<TaskGraph.Node, TaskGraph.Edge> nb = DAGNode.newBuilder();
+                nb.setLabel(TaskGraph.jobNode(job));
+                if (graph != null) {
+                    nb.addEdge(graph, TaskGraph.edge());
+                }
+                builder.addEdge(nb.build(), TaskGraph.edge());
+            }
+            if (isolate) {
+                // set up so the next things will all depend on this
+                graph = builder.build();
+                builder = DAGNode.newBuilder();
+                builder.setLabel(TaskGraph.groupNode());
+            }
         }
-        if (!isolate) {
-            return Collections.singletonList(
-                    (List<TrainTestEvalJob>) Lists.newArrayList(Iterables.concat(jobGroups)));
-        } else {
-            return jobGroups;
+        if (graph == null) {
+            assert !isolate;
+            graph = builder.build();
         }
+        return graph;
     }
 
     private List<TrainTestEvalJob> makeJobs(TTDataSet data) {
