@@ -69,7 +69,7 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] evaluate(TestUser user) {
+        public List<Object> evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
             if (predictions == null) {
@@ -100,7 +100,7 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] finalResults() {
+        public List<Object> finalResults() {
             if (nratings > 0) {
                 double v = sqrt(sse / nratings);
                 logger.info("RMSE: {}", v);

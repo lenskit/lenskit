@@ -69,11 +69,11 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] evaluate(TestUser user) {
+        public List<Object> evaluate(TestUser user) {
             List<ScoredId> recs;
             recs = user.getRecommendations(listSize, candidates, exclude);
             if (recs == null) {
-                return new Object[1];
+                return userRow();
             }
             int n = recs.size();
             total += n;
@@ -83,7 +83,7 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] finalResults() {
+        public List<Object> finalResults() {
             if (nusers > 0) {
                 return finalRow(total / nusers);
             } else {

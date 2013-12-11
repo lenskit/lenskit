@@ -109,7 +109,7 @@ public class NDCGTopNMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] evaluate(TestUser user) {
+        public List<Object> evaluate(TestUser user) {
             List<ScoredId> recommendations;
             recommendations = user.getRecommendations(listSize, candidates, exclude);
             if (recommendations == null) {
@@ -118,7 +118,7 @@ public class NDCGTopNMetric extends AbstractTestUserMetric {
             return evaluateRecommendations(user.getTestRatings(), recommendations);
         }
 
-        Object[] evaluateRecommendations(SparseVector ratings, List<ScoredId> recommendations) {
+        List<Object> evaluateRecommendations(SparseVector ratings, List<ScoredId> recommendations) {
             LongList ideal = ratings.keysByValue(true);
             if (ideal.size() > listSize) {
                 ideal = ideal.subList(0, listSize);
@@ -139,7 +139,7 @@ public class NDCGTopNMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] finalResults() {
+        public List<Object> finalResults() {
             if (nusers > 0) {
                 double v = total / nusers;
                 logger.info("Top-N nDCG: {}", v);

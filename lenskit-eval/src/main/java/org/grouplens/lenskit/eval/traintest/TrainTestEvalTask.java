@@ -69,7 +69,8 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalTask.class);
 
     private List<TTDataSet> dataSets;
-    private List<AlgorithmInstance> algorithms;
+    private List<LenskitAlgorithmInstance> algorithms;
+    private List<ExternalAlgorithmInstance> externalAlgorithms;
     private List<TestUserMetric> metrics;
     private List<Pair<Symbol,String>> predictChannels;
     private boolean isolate;
@@ -77,8 +78,6 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private File userOutputFile;
     private File predictOutputFile;
     private File recommendOutputFile;
-    // default value for recommendation set size
-    private int numRecs = 5;
 
     private int commonColumnCount;
     private TableLayout outputLayout;
@@ -105,11 +104,12 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
     public TrainTestEvalTask(String name) {
         super(name);
-        dataSets = new LinkedList<TTDataSet>();
-        algorithms = new LinkedList<AlgorithmInstance>();
-        metrics = new LinkedList<TestUserMetric>();
-        modelMetrics = new LinkedList<ModelMetric>();
-        predictChannels = new LinkedList<Pair<Symbol, String>>();
+        dataSets = Lists.newArrayList();
+        algorithms = Lists.newArrayList();
+        externalAlgorithms = Lists.newArrayList();
+        metrics = Lists.newArrayList();
+        modelMetrics = Lists.newArrayList();
+        predictChannels = Lists.newArrayList();
         outputFile = new File("train-test-results.csv");
         isolate = false;
     }
@@ -131,7 +131,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     public TrainTestEvalTask addExternalAlgorithm(ExternalAlgorithmInstance algorithm) {
-        algorithms.add(algorithm);
+        externalAlgorithms.add(algorithm);
         return this;
     }
 
@@ -256,8 +256,12 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return dataSets;
     }
 
-    List<AlgorithmInstance> getAlgorithms() {
+    List<LenskitAlgorithmInstance> getAlgorithms() {
         return algorithms;
+    }
+
+    List<ExternalAlgorithmInstance> getExternalAlgorithms() {
+        return externalAlgorithms;
     }
 
     List<TestUserMetric> getMetrics() {
@@ -278,15 +282,6 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
     File getRecommendOutput() {
         return recommendOutputFile;
-    }
-
-    public int getNumRecs() {
-        return numRecs;
-    }
-
-    public TrainTestEvalTask setNumRecs(int numRecs) {
-        this.numRecs = numRecs;
-        return this;
     }
 
     /**
@@ -370,18 +365,17 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     private List<TrainTestEvalJob> makeJobs(TTDataSet data) {
-        List<TrainTestEvalJob> jobs = Lists.newArrayListWithCapacity(algorithms.size());
+        List<TrainTestEvalJob> jobs = Lists.newArrayList();
         final Provider<PreferenceSnapshot> snap = SharedPreferenceSnapshot.provider(data);
 
-        for (AlgorithmInstance algo: algorithms) {
+        for (AlgorithmInstance algo: Iterables.concat(algorithms, externalAlgorithms)) {
             Function<TableWriter, TableWriter> prefix = prefixFunction(algo, data);
             TrainTestEvalJob job = new TrainTestEvalJob(
                     algo, metrics, modelMetrics, predictChannels, data, snap,
                     Suppliers.compose(prefix, outputTableSupplier()),
                     Suppliers.compose(prefix, userTableSupplier()),
                     Suppliers.compose(prefix, predictTableSupplier()),
-                    Suppliers.compose(prefix, recommendTableSupplier()),
-                    numRecs);
+                    Suppliers.compose(prefix, recommendTableSupplier()));
             jobs.add(job);
         }
         return jobs;

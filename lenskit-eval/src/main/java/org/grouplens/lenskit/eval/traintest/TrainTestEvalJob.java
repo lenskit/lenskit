@@ -39,7 +39,6 @@ import org.grouplens.lenskit.eval.algorithm.RecommenderInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
-import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelectors;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -53,7 +52,6 @@ import javax.annotation.Nonnull;
 import javax.inject.Provider;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -65,8 +63,6 @@ import java.util.concurrent.Callable;
  */
 class TrainTestEvalJob implements Callable<Void> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalJob.class);
-
-    private final int numRecs;
 
     @Nonnull
     private final AlgorithmInstance algorithm;
@@ -104,7 +100,6 @@ class TrainTestEvalJob implements Callable<Void> {
      *                {@code null}.
      * @param predOut The table writer to receive prediction output. The supplier may
      *                return {@code null}.
-     * @param nrecs The number of recommendations to compute.
      */
     public TrainTestEvalJob(@Nonnull AlgorithmInstance algo,
                             @Nonnull List<TestUserMetric> evals,
@@ -114,8 +109,7 @@ class TrainTestEvalJob implements Callable<Void> {
                             @Nonnull Supplier<TableWriter> out,
                             @Nonnull Supplier<TableWriter> userOut,
                             @Nonnull Supplier<TableWriter> predOut,
-                            @Nonnull Supplier<TableWriter> recoOut,
-                            int nrecs) {
+                            @Nonnull Supplier<TableWriter> recoOut) {
         algorithm = algo;
         evaluators = evals;
         modelMetrics = mMetrics;
@@ -126,7 +120,6 @@ class TrainTestEvalJob implements Callable<Void> {
         userOutputSupplier = userOut;
         predictOutputSupplier = predOut;
         recommendOutputSupplier = recoOut;
-        numRecs = nrecs;
     }
 
     @Override
@@ -192,9 +185,9 @@ class TrainTestEvalJob implements Callable<Void> {
                 TestUser test = rec.getUserResults(uid);
 
                 for (TestUserMetricAccumulator accum : evalAccums) {
-                    Object[] ures = accum.evaluate(test);
+                    List<Object> ures = accum.evaluate(test);
                     if (ures != null) {
-                        userRow.addAll(Arrays.asList(ures));
+                        userRow.addAll(ures);
                     }
                 }
                 if (userTable != null) {
@@ -227,7 +220,7 @@ class TrainTestEvalJob implements Callable<Void> {
             testTimer.stop();
             logger.info("Tested {} in {}", algorithm.getName(), testTimer);
 
-            writeOutput(buildTimer, testTimer, outputRow, evalAccums);
+            writeMetricValues(buildTimer, testTimer, outputRow, evalAccums);
         } catch (Throwable th) {
             throw closer.rethrow(th, RecommenderBuildException.class);
         } finally {
@@ -286,26 +279,16 @@ class TrainTestEvalJob implements Callable<Void> {
         }
     }
 
-    private void writeOutput(StopWatch build, StopWatch test, List<Object> measures, List<TestUserMetricAccumulator> accums) throws IOException {
+    private void writeMetricValues(StopWatch build, StopWatch test, List<Object> measures, List<TestUserMetricAccumulator> accums) throws IOException {
         TableWriter output = outputSupplier.get();
 
         try {
-            Object[] row = new Object[output.getLayout().getColumnCount()];
-            row[0] = build.getTime();
-            row[1] = test.getTime();
-            int col = 2;
-            for (Object o: measures) {
-                row[col] = o;
-                col += 1;
-            }
+            List<Object> row = Lists.newArrayListWithCapacity(output.getLayout().getColumnCount());
+            row.add(build.getTime());
+            row.add(test.getTime());
+            row.addAll(measures);
             for (TestUserMetricAccumulator acc : accums) {
-                Object[] ar = acc.finalResults();
-                if (ar != null) {
-                    // no aggregated output is generated
-                    int n = ar.length;
-                    System.arraycopy(ar, 0, row, col, n);
-                    col += n;
-                }
+                row.addAll(acc.finalResults());
             }
             output.writeRow(row);
         } finally {
