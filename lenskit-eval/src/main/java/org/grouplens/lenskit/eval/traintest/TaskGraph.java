@@ -9,7 +9,7 @@ public class TaskGraph {
     public static Node groupNode() {
         return new NoopNode();
     }
-    public static Node jobNode(TrainTestEvalJob job) {
+    public static Node jobNode(TrainTestJob job) {
         return new JobNode(job);
     }
     public static Edge edge() {
@@ -31,9 +31,9 @@ public class TaskGraph {
     }
 
     static class JobNode implements Node {
-        TrainTestEvalJob job;
+        TrainTestJob job;
 
-        JobNode(TrainTestEvalJob job) {
+        JobNode(TrainTestJob job) {
             this.job = job;
         }
 

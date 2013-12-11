@@ -342,7 +342,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         DAGNodeBuilder<TaskGraph.Node,TaskGraph.Edge> builder =
                 DAGNode.newBuilder(TaskGraph.groupNode());
         for (TTDataSet dataset : dataSets) {
-            for (TrainTestEvalJob job: makeJobs(dataset)) {
+            for (TrainTestJob job: makeJobs(dataset)) {
                 DAGNodeBuilder<TaskGraph.Node, TaskGraph.Edge> nb = DAGNode.newBuilder();
                 nb.setLabel(TaskGraph.jobNode(job));
                 if (graph != null) {
@@ -364,13 +364,13 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return graph;
     }
 
-    private List<TrainTestEvalJob> makeJobs(TTDataSet data) {
-        List<TrainTestEvalJob> jobs = Lists.newArrayList();
+    private List<TrainTestJob> makeJobs(TTDataSet data) {
+        List<TrainTestJob> jobs = Lists.newArrayList();
         final Provider<PreferenceSnapshot> snap = SharedPreferenceSnapshot.provider(data);
 
         for (AlgorithmInstance algo: Iterables.concat(algorithms, externalAlgorithms)) {
             Function<TableWriter, TableWriter> prefix = prefixFunction(algo, data);
-            TrainTestEvalJob job = new TrainTestEvalJob(
+            TrainTestJob job = new TrainTestJob(
                     algo, metrics, modelMetrics, predictChannels, data, snap,
                     Suppliers.compose(prefix, outputTableSupplier()),
                     Suppliers.compose(prefix, userTableSupplier()),

@@ -61,8 +61,8 @@ import java.util.concurrent.Callable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
-class TrainTestEvalJob implements Callable<Void> {
-    private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalJob.class);
+class TrainTestJob implements Callable<Void> {
+    private static final Logger logger = LoggerFactory.getLogger(TrainTestJob.class);
 
     @Nonnull
     private final AlgorithmInstance algorithm;
@@ -101,15 +101,15 @@ class TrainTestEvalJob implements Callable<Void> {
      * @param predOut The table writer to receive prediction output. The supplier may
      *                return {@code null}.
      */
-    public TrainTestEvalJob(@Nonnull AlgorithmInstance algo,
-                            @Nonnull List<TestUserMetric> evals,
-                            @Nonnull List<ModelMetric> mMetrics,
-                            @Nonnull List<Pair<Symbol,String>> chans,
-                            @Nonnull TTDataSet ds, Provider<PreferenceSnapshot> snap,
-                            @Nonnull Supplier<TableWriter> out,
-                            @Nonnull Supplier<TableWriter> userOut,
-                            @Nonnull Supplier<TableWriter> predOut,
-                            @Nonnull Supplier<TableWriter> recoOut) {
+    public TrainTestJob(@Nonnull AlgorithmInstance algo,
+                        @Nonnull List<TestUserMetric> evals,
+                        @Nonnull List<ModelMetric> mMetrics,
+                        @Nonnull List<Pair<Symbol, String>> chans,
+                        @Nonnull TTDataSet ds, Provider<PreferenceSnapshot> snap,
+                        @Nonnull Supplier<TableWriter> out,
+                        @Nonnull Supplier<TableWriter> userOut,
+                        @Nonnull Supplier<TableWriter> predOut,
+                        @Nonnull Supplier<TableWriter> recoOut) {
         algorithm = algo;
         evaluators = evals;
         modelMetrics = mMetrics;
