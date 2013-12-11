@@ -20,8 +20,9 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.base.*;
-import com.google.common.collect.Iterables;
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
 import org.apache.commons.lang3.tuple.Pair;
@@ -48,7 +49,6 @@ import org.grouplens.lenskit.util.table.TableLayoutBuilder;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.MultiplexedTableWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
-import org.grouplens.lenskit.util.table.writer.TableWriters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +57,9 @@ import javax.annotation.Nullable;
 import javax.inject.Provider;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -72,6 +74,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private List<LenskitAlgorithmInstance> algorithms;
     private List<ExternalAlgorithmInstance> externalAlgorithms;
     private List<TestUserMetric> metrics;
+    private List<ModelMetric> modelMetrics;
     private List<Pair<Symbol,String>> predictChannels;
     private boolean isolate;
     private File outputFile;
@@ -79,24 +82,9 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private File predictOutputFile;
     private File recommendOutputFile;
 
-    private int commonColumnCount;
-    private TableLayout outputLayout;
-    private TableLayout userLayout;
-    private TableLayout predictLayout;
-    private TableLayout recommendLayout;
-
-    private TableWriter output;
-    private TableBuilder outputInMemory;
-    private TableWriter userOutput;
-    private TableWriter predictOutput;
-    private TableWriter recommendOutput;
-
-    private Map<String, Integer> dataColumns;
-    private Map<String, Integer> algoColumns;
-    private List<TestUserMetric> predictMetrics;
-    private TableLayout masterLayout;
-    private List<ModelMetric> modelMetrics;
-
+    private ExperimentSuite experiments;
+    private MeasurementSuite measurements;
+    private ExperimentOutputLayout layout;
 
     public TrainTestEvalTask() {
         this("train-test");
@@ -294,29 +282,67 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     @Override
     @SuppressWarnings("PMD.AvoidCatchingThrowable")
     public Table perform() throws TaskExecutionException {
-        DAGNode<TaskGraph.Node,TaskGraph.Edge> jobGraph = makeJobGraph();
-        setupTableLayouts();
-
-        logger.info("Starting evaluation");
-        Closer closer = Closer.create();
         try {
+            experiments = createExperimentSuite();
+            measurements = createMeasurementSuite();
+            layout = ExperimentOutputLayout.create(experiments, measurements);
+            TableBuilder resultsBuilder = new TableBuilder(layout.getResultsLayout());
+
+            logger.info("Starting evaluation");
+            Closer closer = Closer.create();
+
             try {
-                this.prepareEval(closer);
+                ExperimentOutputs outputs = openExperimentOutputs(layout, resultsBuilder, closer);
+                DAGNode<TaskGraph.Node,TaskGraph.Edge> jobGraph =
+                        makeJobGraph(experiments, measurements, outputs);
+                // tell all metrics to get started
+                for (Metric<TrainTestEvalTask> metric : measurements.getAllMetrics()) {
+                    metric.startEvaluation(this);
+                }
                 try {
                     runEvaluations(jobGraph);
                 } finally {
-                    cleanUp();
+                    for (Metric<TrainTestEvalTask> metric : measurements.getAllMetrics()) {
+                        metric.finishEvaluation();
+                    }
                 }
             } catch (Throwable th) {
                 throw closer.rethrow(th, TaskExecutionException.class);
             } finally {
                 closer.close();
             }
+
+            return resultsBuilder.build();
         } catch (IOException e) {
             throw new TaskExecutionException("I/O error", e);
+        } finally {
+            experiments = null;
+            measurements = null;
+            layout = null;
         }
+    }
 
-        return outputInMemory.build();
+    public ExperimentSuite getExperiments() {
+        Preconditions.checkState(experiments != null, "evaluation not in progress");
+        return experiments;
+    }
+
+    public MeasurementSuite getMeasurements() {
+        Preconditions.checkState(measurements != null, "evaluation not in progress");
+        return measurements;
+    }
+
+    public ExperimentOutputLayout getOutputLayout() {
+        Preconditions.checkState(layout != null, "evaluation not in progress");
+        return layout;
+    }
+
+    private ExperimentSuite createExperimentSuite() {
+        return new ExperimentSuite(algorithms, externalAlgorithms, dataSets);
+    }
+
+    private MeasurementSuite createMeasurementSuite() {
+        return new MeasurementSuite(metrics, modelMetrics, predictChannels);
     }
 
     private void runEvaluations(DAGNode<TaskGraph.Node, TaskGraph.Edge> graph) throws TaskExecutionException {
@@ -337,12 +363,15 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         }
     }
 
-    DAGNode<TaskGraph.Node,TaskGraph.Edge> makeJobGraph() {
+    DAGNode<TaskGraph.Node,TaskGraph.Edge> makeJobGraph(ExperimentSuite experiments, MeasurementSuite measurements, ExperimentOutputs outputs) {
         DAGNode<TaskGraph.Node,TaskGraph.Edge> graph = null;
         DAGNodeBuilder<TaskGraph.Node,TaskGraph.Edge> builder =
                 DAGNode.newBuilder(TaskGraph.groupNode());
-        for (TTDataSet dataset : dataSets) {
-            for (TrainTestJob job: makeJobs(dataset)) {
+        for (TTDataSet dataset : experiments.getDataSets()) {
+            final Provider<PreferenceSnapshot> snap = SharedPreferenceSnapshot.provider(dataset);
+            for (AlgorithmInstance algo: experiments.getAllAlgorithms()) {
+                TrainTestJob job = new TrainTestJob(algo, dataset, snap, measurements,
+                                                    outputs.getPrefixed(algo, dataset));
                 DAGNodeBuilder<TaskGraph.Node, TaskGraph.Edge> nb = DAGNode.newBuilder();
                 nb.setLabel(TaskGraph.jobNode(job));
                 if (graph != null) {
@@ -364,275 +393,29 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return graph;
     }
 
-    private List<TrainTestJob> makeJobs(TTDataSet data) {
-        List<TrainTestJob> jobs = Lists.newArrayList();
-        final Provider<PreferenceSnapshot> snap = SharedPreferenceSnapshot.provider(data);
-
-        for (AlgorithmInstance algo: Iterables.concat(algorithms, externalAlgorithms)) {
-            Function<TableWriter, TableWriter> prefix = prefixFunction(algo, data);
-            TrainTestJob job = new TrainTestJob(
-                    algo, metrics, modelMetrics, predictChannels, data, snap,
-                    Suppliers.compose(prefix, outputTableSupplier()),
-                    Suppliers.compose(prefix, userTableSupplier()),
-                    Suppliers.compose(prefix, predictTableSupplier()),
-                    Suppliers.compose(prefix, recommendTableSupplier()));
-            jobs.add(job);
-        }
-        return jobs;
-    }
-
-    private void setupTableLayouts() {
-        TableLayoutBuilder master = new TableLayoutBuilder();
-        layoutCommonColumns(master);
-        masterLayout = master.build();
-
-        commonColumnCount = master.getColumnCount();
-
-        outputLayout = layoutAggregateOutput(master);
-        userLayout = layoutUserTable(master);
-        predictLayout = layoutPredictionTable(master);
-        recommendLayout = layoutRecommendTable(master);
-
-        // FIXME This doesn't seem right in the face of top-N metrics
-        predictMetrics = metrics;
-    }
-
-    /**
-     * Get the master table layout.  This can be used by metrics to prefix their own tables.
-     *
-     * @return The master table layout. This layout must not be modified.
-     */
-    public TableLayout getMasterLayout() {
-        return masterLayout;
-    }
-
-    private void layoutCommonColumns(TableLayoutBuilder master) {
-        master.addColumn("Algorithm");
-        dataColumns = new HashMap<String, Integer>();
-        for (TTDataSet ds : dataSets) {
-            for (String attr : ds.getAttributes().keySet()) {
-                if (!dataColumns.containsKey(attr)) {
-                    dataColumns.put(attr, master.getColumnCount());
-                    master.addColumn(attr);
-                }
-            }
-        }
-
-        algoColumns = new HashMap<String, Integer>();
-        for (AlgorithmInstance algo : algorithms) {
-            for (String attr : algo.getAttributes().keySet()) {
-                if (!algoColumns.containsKey(attr)) {
-                    algoColumns.put(attr, master.getColumnCount());
-                    master.addColumn(attr);
-                }
-            }
-        }
-    }
-
-    private TableLayout layoutAggregateOutput(TableLayoutBuilder master) {
-        TableLayoutBuilder output = master.clone();
-        output.addColumn("BuildTime");
-        output.addColumn("TestTime");
-
-        for (ModelMetric ev: modelMetrics) {
-            for (String c: ev.getColumnLabels()) {
-                output.addColumn(c);
-            }
-        }
-
-        for (TestUserMetric ev : metrics) {
-            List<String> columnLabels = ev.getColumnLabels();
-            if (columnLabels != null) {
-                for (String c : columnLabels) {
-                    output.addColumn(c);
-                }
-            }
-        }
-
-        return output.build();
-    }
-
-    private TableLayout layoutUserTable(TableLayoutBuilder master) {
-        TableLayoutBuilder perUser = master.clone();
-        perUser.addColumn("User");
-
-        for (TestUserMetric ev : metrics) {
-            List<String> userColumnLabels = ev.getUserColumnLabels();
-            if (userColumnLabels != null) {
-                for (String c : userColumnLabels) {
-                    perUser.addColumn(c);
-                }
-            }
-        }
-
-        return perUser.build();
-    }
-
-    private TableLayout layoutPredictionTable(TableLayoutBuilder master) {
-        TableLayoutBuilder eachPred = master.clone();
-        eachPred.addColumn("User");
-        eachPred.addColumn("Item");
-        eachPred.addColumn("Rating");
-        eachPred.addColumn("Prediction");
-        for (Pair<Symbol,String> pair: predictChannels) {
-            eachPred.addColumn(pair.getRight());
-        }
-
-        return eachPred.build();
-    }
-
-    private TableLayout layoutRecommendTable(TableLayoutBuilder master) {
-        TableLayoutBuilder eachReco = master.clone();
-        eachReco.addColumn("User");
-        eachReco.addColumn("Item");
-        eachReco.addColumn("Ranking");
-        eachReco.addColumn("Prediction");
-
-        return eachReco.build();
-    }
-
     /**
      * Prepare the evaluation by opening all outputs and initializing metrics.
      */
-    private void prepareEval(Closer closer) throws IOException {
+    private ExperimentOutputs openExperimentOutputs(ExperimentOutputLayout layouts, TableWriter results, Closer closer) throws IOException {
         logger.info("Starting evaluation");
-        List<TableWriter> tableWriters = new ArrayList<TableWriter>();
-        outputInMemory = new TableBuilder(outputLayout);
-        tableWriters.add(outputInMemory);
+        TableLayout resultLayout = layouts.getResultsLayout();
+        TableWriter allResults = results;
         if (outputFile != null) {
-            tableWriters.add(closer.register(CSVWriter.open(outputFile, outputLayout)));
+            TableWriter disk = closer.register(CSVWriter.open(outputFile, resultLayout));
+            allResults = new MultiplexedTableWriter(resultLayout, allResults, disk);
         }
-        output = new MultiplexedTableWriter(outputLayout, tableWriters);
+        TableWriter user = null;
         if (userOutputFile != null) {
-            userOutput = closer.register(CSVWriter.open(userOutputFile, userLayout));
+            user = closer.register(CSVWriter.open(userOutputFile, layouts.getUserLayout()));
         }
+        TableWriter predict = null;
         if (predictOutputFile != null) {
-            predictOutput = closer.register(CSVWriter.open(predictOutputFile, predictLayout));
+            predict = closer.register(CSVWriter.open(predictOutputFile, layouts.getPredictLayout()));
         }
+        TableWriter recommend = null;
         if (recommendOutputFile != null) {
-            recommendOutput = closer.register(CSVWriter.open(recommendOutputFile, recommendLayout));
+            recommend = closer.register(CSVWriter.open(recommendOutputFile, layouts.getRecommendLayout()));
         }
-        for (Metric<TrainTestEvalTask> metric : Iterables.concat(predictMetrics, modelMetrics)) {
-            metric.startEvaluation(this);
-        }
-    }
-
-    /**
-     * Finalize metrics and close output files.
-     */
-    private void cleanUp() throws IOException {
-        for (Metric<TrainTestEvalTask> metric : Iterables.concat(predictMetrics, modelMetrics)) {
-            metric.finishEvaluation();
-        }
-        if (output == null) {
-            throw new IllegalStateException("evaluation not running");
-        }
-        logger.info("Evaluation finished");
-        output = null;
-        userOutput = null;
-        predictOutput = null;
-        recommendOutput = null;
-    }
-
-    /**
-     * Get the evaluation's output table. Used by job groups to set up the
-     * output for their jobs.
-     *
-     * @return A supplier for the table writer for this evaluation.
-     * @throws IllegalStateException if the job has not been started or is
-     *                               finished.
-     */
-    @Nonnull
-    Supplier<TableWriter> outputTableSupplier() {
-        return new Supplier<TableWriter>() {
-            @Override
-            public TableWriter get() {
-                Preconditions.checkState(output != null, "evaluation not running");
-                return output;
-            }
-        };
-    }
-
-    /**
-     * Get the prediction output table.
-     *
-     * @return The table writer for the prediction output.
-     */
-    @Nonnull
-    Supplier<TableWriter> predictTableSupplier() {
-        return new Supplier<TableWriter>() {
-            @Override
-            public TableWriter get() {
-                return predictOutput;
-            }
-        };
-    }
-
-    /**
-     * Get the user output table.
-     *
-     * @return The table writer for the prediction output.
-     */
-    @Nonnull
-    Supplier<TableWriter> userTableSupplier() {
-        return new Supplier<TableWriter>() {
-            @Override
-            public TableWriter get() {
-                return userOutput;
-            }
-        };
-    }
-
-    @Nonnull
-    Supplier<TableWriter> recommendTableSupplier() {
-        return new Supplier<TableWriter>() {
-            @Override
-            public TableWriter get() {
-                return recommendOutput;
-            }
-        };
-    }
-
-    /**
-     * Function version of {@link #prefixTable(TableWriter, org.grouplens.lenskit.eval.algorithm.AlgorithmInstance, TTDataSet)}. Intended
-     * for use with {@link com.google.common.base.Suppliers#compose(com.google.common.base.Function, Supplier)}.
-     */
-    public Function<TableWriter, TableWriter> prefixFunction(
-            final AlgorithmInstance algorithm,
-            final TTDataSet dataSet) {
-        return new Function<TableWriter, TableWriter>() {
-            @Override
-            public TableWriter apply(TableWriter base) {
-                return prefixTable(base, algorithm, dataSet);
-            }
-        };
-    }
-
-    /**
-     * Prefix a table for a particular algorithm and data set.
-     *
-     * @param base      The table to prefix.
-     * @param algorithm The algorithm to prefix for.
-     * @param dataSet   The data set to prefix for.
-     * @return A prefixed table, suitable for outputting the results of evaluating
-     *         {@code algorithm} on {@code dataSet}, or {@code null} if {@code base} is null.
-     */
-    public TableWriter prefixTable(TableWriter base,
-                                   AlgorithmInstance algorithm, TTDataSet dataSet) {
-        if (base == null) {
-            return null;
-        }
-
-        Object[] prefix = new Object[commonColumnCount];
-        prefix[0] = algorithm.getName();
-        for (Map.Entry<String, Object> attr : dataSet.getAttributes().entrySet()) {
-            int idx = dataColumns.get(attr.getKey());
-            prefix[idx] = attr.getValue();
-        }
-        for (Map.Entry<String, Object> attr : algorithm.getAttributes().entrySet()) {
-            int idx = algoColumns.get(attr.getKey());
-            prefix[idx] = attr.getValue();
-        }
-        return TableWriters.prefixed(base, prefix);
+        return new ExperimentOutputs(layouts, allResults, user, predict, recommend);
     }
 }

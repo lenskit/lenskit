@@ -247,8 +247,6 @@ class TrainTestTaskTest {
             }
             output null
         }
-        assertThat(command.makeJobGroups(), hasSize(1));
-        assertThat(command.makeJobGroups()[0], hasSize(2));
         command.execute()
         assertThat(command.isDone(), equalTo(true))
         assertThat(command.get(), notNullValue())
@@ -278,8 +276,6 @@ class TrainTestTaskTest {
         }
         assertThat(command.project.config.threadCount, equalTo(2))
         assertThat(command.dataSources(), hasSize(3))
-        assertThat(command.makeJobGroups(), hasSize(1));
-        assertThat(command.makeJobGroups()[0], hasSize(6));
         try {
             command.execute()
             fail("command with bad ratings should fail");

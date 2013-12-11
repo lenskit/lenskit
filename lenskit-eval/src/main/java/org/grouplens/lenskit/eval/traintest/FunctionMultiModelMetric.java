@@ -46,7 +46,7 @@ public class FunctionMultiModelMetric implements ModelMetric {
     private final List<String> columnHeaders;
     private final Function<Recommender, List<List<Object>>> function;
     private TableWriter writer;
-    private TrainTestEvalTask currentEval;
+    private ExperimentOutputLayout evalLayout;
 
     public FunctionMultiModelMetric(File file, List<String> columns,
                                     Function<Recommender, List<List<Object>>> func) {
@@ -62,8 +62,8 @@ public class FunctionMultiModelMetric implements ModelMetric {
 
     @Override
     public List<Object> measureAlgorithm(AlgorithmInstance instance, TTDataSet data, Recommender recommender) {
-        Preconditions.checkState(currentEval != null, "evaluation not in progress");
-        TableWriter w = currentEval.prefixTable(writer, instance, data);
+        Preconditions.checkState(evalLayout != null, "evaluation not in progress");
+        TableWriter w = evalLayout.prefixTable(writer, instance, data);
         for (List<Object> row: function.apply(recommender)) {
             try {
                 w.writeRow(row.toArray());
@@ -76,7 +76,9 @@ public class FunctionMultiModelMetric implements ModelMetric {
 
     @Override
     public void startEvaluation(TrainTestEvalTask eval) {
-        TableLayoutBuilder builder = TableLayoutBuilder.copy(eval.getMasterLayout());
+        evalLayout = eval.getOutputLayout();
+
+        TableLayoutBuilder builder = TableLayoutBuilder.copy(eval.getOutputLayout().getCommonLayout());
         for (String col: columnHeaders) {
             builder.addColumn(col);
         }
@@ -85,12 +87,11 @@ public class FunctionMultiModelMetric implements ModelMetric {
         } catch (IOException e) {
             throw new RuntimeException("error opening output file", e);
         }
-        currentEval = eval;
     }
 
     @Override
     public void finishEvaluation() {
-        currentEval = null;
+        evalLayout = null;
         try {
             writer.close();
         } catch (IOException e) {
