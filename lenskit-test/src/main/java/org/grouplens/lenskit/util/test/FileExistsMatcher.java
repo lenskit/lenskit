@@ -20,35 +20,26 @@
  */
 package org.grouplens.lenskit.util.test;
 
-import org.hamcrest.Matcher;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
 
 import java.io.File;
 
-import static org.hamcrest.Matchers.equalTo;
-
 /**
- * Entry point for extra matchers used by LensKit tests.
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class ExtraMatchers {
-    private ExtraMatchers() {}
-
-    /**
-     * Match {@link Double#NaN}.
-     * @return A matcher that accepts {@link Double#NaN}.
-     */
-    public static Matcher<Double> notANumber() {
-        return new NotANumberMatcher();
+public class FileExistsMatcher extends BaseMatcher<File> {
+    @Override
+    public boolean matches(Object o) {
+        if (o instanceof File) {
+            return ((File) o).exists();
+        } else {
+            return false;
+        }
     }
 
-    public static Matcher<File> existingFile() {
-        return new FileExistsMatcher();
-    }
-
-    public static Matcher<File> lineCount(int n) {
-        return hasLineCount(equalTo(n));
-    }
-
-    public static Matcher<File> hasLineCount(Matcher<? extends Integer> m) {
-        return new LineCountMatcher(m);
+    @Override
+    public void describeTo(Description description) {
+        description.appendText("existing file");
     }
 }

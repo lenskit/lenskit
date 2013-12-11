@@ -18,37 +18,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.test;
 
-import org.hamcrest.Matcher;
+import static org.grouplens.lenskit.util.test.ExtraMatchers.existingFile
+import static org.grouplens.lenskit.util.test.ExtraMatchers.hasLineCount
+import static org.hamcrest.MatcherAssert.assertThat
+import static org.hamcrest.Matchers.*
 
-import java.io.File;
+File resultsFile = new File(basedir, "results.csv")
+File userFile = new File(basedir, "users.csv")
+File predictFile = new File(basedir, "predictions.csv")
+File recommendFile = new File(basedir, "recommendations.csv")
 
-import static org.hamcrest.Matchers.equalTo;
-
-/**
- * Entry point for extra matchers used by LensKit tests.
- */
-public final class ExtraMatchers {
-    private ExtraMatchers() {}
-
-    /**
-     * Match {@link Double#NaN}.
-     * @return A matcher that accepts {@link Double#NaN}.
-     */
-    public static Matcher<Double> notANumber() {
-        return new NotANumberMatcher();
-    }
-
-    public static Matcher<File> existingFile() {
-        return new FileExistsMatcher();
-    }
-
-    public static Matcher<File> lineCount(int n) {
-        return hasLineCount(equalTo(n));
-    }
-
-    public static Matcher<File> hasLineCount(Matcher<? extends Integer> m) {
-        return new LineCountMatcher(m);
-    }
-}
+assertThat("output file existence",
+           resultsFile, allOf(existingFile(),
+                              hasLineCount(equalTo(11))));
+assertThat("output file existence",
+           userFile, existingFile());
+assertThat("output file existence",
+           predictFile, existingFile());
+assertThat("output file existence",
+           recommendFile, existingFile());
