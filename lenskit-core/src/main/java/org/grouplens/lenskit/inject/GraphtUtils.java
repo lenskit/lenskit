@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
+package org.grouplens.lenskit.inject;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
@@ -26,6 +26,9 @@ import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.spi.*;
+import org.grouplens.lenskit.core.RecommenderConfigurationException;
+import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.core.Transient;
 import org.slf4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -72,7 +75,7 @@ public final class GraphtUtils {
     /**
      * Check a graph for placeholder satisfactions.
      * @param graph The graph to check.
-     * @throws RecommenderConfigurationException if the graph has a placeholder satisfaction.
+     * @throws org.grouplens.lenskit.core.RecommenderConfigurationException if the graph has a placeholder satisfaction.
      */
     public static void checkForPlaceholders(DAGNode<CachedSatisfaction, DesireChain> graph, Logger logger) throws RecommenderConfigurationException {
         Set<DAGNode<CachedSatisfaction, DesireChain>> placeholders = getPlaceholderNodes(graph);

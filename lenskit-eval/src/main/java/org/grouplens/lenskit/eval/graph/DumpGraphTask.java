@@ -31,7 +31,7 @@ import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.grapht.util.Providers;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
-import org.grouplens.lenskit.core.RecommenderInstantiator;
+import org.grouplens.lenskit.inject.RecommenderInstantiator;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractTask;

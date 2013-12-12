@@ -20,8 +20,8 @@
  */
 package org.grouplens.lenskit.core;
 
-import org.grouplens.grapht.Injector;
 import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.inject.StaticInjector;
 
 import java.lang.annotation.Annotation;
 

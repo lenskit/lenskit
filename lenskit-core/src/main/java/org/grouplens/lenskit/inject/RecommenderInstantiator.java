@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
+package org.grouplens.lenskit.inject;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -33,6 +33,8 @@ import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +56,7 @@ public final class RecommenderInstantiator {
     private final InjectSPI spi = LenskitConfiguration.LENSKIT_SPI;
     private final DAGNode<CachedSatisfaction, DesireChain> graph;
 
-    static RecommenderInstantiator create(DAGNode<CachedSatisfaction,DesireChain> g) {
+    public static RecommenderInstantiator create(DAGNode<CachedSatisfaction,DesireChain> g) {
         return new RecommenderInstantiator(g);
     }
 

@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
+package org.grouplens.lenskit.inject;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
@@ -28,6 +28,7 @@ import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.spi.*;
 import org.grouplens.grapht.util.MemoizingProvider;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 
 import javax.annotation.Nullable;
 import javax.inject.Provider;
@@ -39,7 +40,7 @@ import java.util.Map;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class StaticInjector implements Injector {
+public class StaticInjector implements Injector {
     private InjectSPI spi;
     private DAGNode<CachedSatisfaction, DesireChain> graph;
     private Map<DAGNode<CachedSatisfaction,DesireChain>, Provider<?>> providerCache;

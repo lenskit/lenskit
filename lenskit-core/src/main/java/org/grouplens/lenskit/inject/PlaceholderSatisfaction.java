@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
+package org.grouplens.lenskit.inject;
 
 import org.grouplens.grapht.spi.*;
 import org.grouplens.grapht.util.ClassProxy;
@@ -37,7 +37,7 @@ import java.util.List;
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class PlaceholderSatisfaction implements Satisfaction, Serializable {
+public class PlaceholderSatisfaction implements Satisfaction, Serializable {
     private static final long serialVersionUID = -1L;
 
     private final Class<?> removedType;

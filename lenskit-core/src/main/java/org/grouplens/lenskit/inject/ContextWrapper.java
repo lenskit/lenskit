@@ -18,9 +18,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
+package org.grouplens.lenskit.inject;
 
 import org.grouplens.grapht.Context;
+import org.grouplens.lenskit.core.LenskitBinding;
+import org.grouplens.lenskit.core.LenskitConfigContext;
 
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
@@ -42,20 +44,6 @@ class ContextWrapper extends AbstractConfigContext {
         base = ctx;
     }
 
-    /**
-     * Coerce a Grapht context to a LensKit context.
-     *
-     * @param ctx The context.
-     * @return A LensKit context, as a wrapper if necessary.
-     */
-    static LenskitConfigContext coerce(Context ctx) {
-        if (ctx instanceof LenskitConfigContext) {
-            return (LenskitConfigContext) ctx;
-        } else {
-            return new ContextWrapper(ctx);
-        }
-    }
-
     @Override
     public <T> LenskitBinding<T> bind(Class<T> type) {
         return LenskitBindingImpl.wrap(base.bind(type));
@@ -63,31 +51,31 @@ class ContextWrapper extends AbstractConfigContext {
 
     @Override
     public LenskitConfigContext within(Class<?> type) {
-        return coerce(base.within(type));
+        return wrapContext(base.within(type));
     }
 
     @Override
     public LenskitConfigContext within(@Nullable Class<? extends Annotation> qualifier, Class<?> type) {
-        return coerce(base.within(qualifier, type));
+        return wrapContext(base.within(qualifier, type));
     }
 
     @Override
     public LenskitConfigContext within(@Nullable Annotation qualifier, Class<?> type) {
-        return coerce(base.within(qualifier, type));
+        return wrapContext(base.within(qualifier, type));
     }
 
     @Override
     public LenskitConfigContext at(Class<?> type) {
-        return coerce(base.at(type));
+        return wrapContext(base.at(type));
     }
 
     @Override
     public LenskitConfigContext at(@Nullable Class<? extends Annotation> qualifier, Class<?> type) {
-        return coerce(base.at(qualifier, type));
+        return wrapContext(base.at(qualifier, type));
     }
 
     @Override
     public LenskitConfigContext at(@Nullable Annotation qualifier, Class<?> type) {
-        return coerce(base.at(qualifier, type));
+        return wrapContext(base.at(qualifier, type));
     }
 }

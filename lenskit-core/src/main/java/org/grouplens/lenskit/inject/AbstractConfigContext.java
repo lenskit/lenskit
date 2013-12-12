@@ -18,11 +18,15 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
+package org.grouplens.lenskit.inject;
 
 import com.google.common.base.Preconditions;
-import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.AbstractContext;
+import org.grouplens.grapht.Binding;
+import org.grouplens.grapht.Context;
+import org.grouplens.lenskit.core.LenskitBinding;
+import org.grouplens.lenskit.core.LenskitConfigContext;
+import org.grouplens.lenskit.core.Parameter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,6 +39,20 @@ import java.lang.annotation.Annotation;
  * @since 1.0
  */
 public abstract class AbstractConfigContext extends AbstractContext implements LenskitConfigContext {
+    /**
+     * Coerce a Grapht context to a LensKit context.
+     *
+     * @param ctx The context.
+     * @return A LensKit context, as a wrapper if necessary.
+     */
+    protected static LenskitConfigContext wrapContext(Context ctx) {
+        if (ctx instanceof LenskitConfigContext) {
+            return (LenskitConfigContext) ctx;
+        } else {
+            return new ContextWrapper(ctx);
+        }
+    }
+
     @Override
     public <T> LenskitBinding<T> bind(Class<? extends Annotation> qual, Class<T> type) {
         return LenskitBindingImpl.wrap(super.bind(qual, type));

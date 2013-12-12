@@ -30,13 +30,13 @@ import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.grapht.spi.reflect.ReflectionInjectSPI;
 import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.inject.AbstractConfigContext;
+import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import static org.grouplens.lenskit.core.ContextWrapper.coerce;
 
 /**
  * A LensKit algorithm configuration.  Once you have a configuration, you can pass it to
@@ -102,37 +102,37 @@ public class LenskitConfiguration extends AbstractConfigContext {
 
     @Override
     public <T> LenskitBinding<T> bind(Class<T> type) {
-        return ContextWrapper.coerce(bindings.getRootContext()).bind(type);
+        return wrapContext(bindings.getRootContext()).bind(type);
     }
 
     @Override
     public LenskitConfigContext within(Class<?> type) {
-        return coerce(bindings.getRootContext().within(type));
+        return wrapContext(bindings.getRootContext().within(type));
     }
 
     @Override
     public LenskitConfigContext within(Class<? extends Annotation> qualifier, Class<?> type) {
-        return coerce(bindings.getRootContext().within(qualifier, type));
+        return wrapContext(bindings.getRootContext().within(qualifier, type));
     }
 
     @Override
     public LenskitConfigContext within(Annotation qualifier, Class<?> type) {
-        return coerce(bindings.getRootContext().within(qualifier, type));
+        return wrapContext(bindings.getRootContext().within(qualifier, type));
     }
 
     @Override
     public LenskitConfigContext at(Class<?> type) {
-        return coerce(bindings.getRootContext().at(type));
+        return wrapContext(bindings.getRootContext().at(type));
     }
 
     @Override
     public LenskitConfigContext at(Class<? extends Annotation> qualifier, Class<?> type) {
-        return coerce(bindings.getRootContext().at(qualifier, type));
+        return wrapContext(bindings.getRootContext().at(qualifier, type));
     }
 
     @Override
     public LenskitConfigContext at(Annotation qualifier, Class<?> type) {
-        return coerce(bindings.getRootContext().at(qualifier, type));
+        return wrapContext(bindings.getRootContext().at(qualifier, type));
     }
 
     private void resolve(Class<?> type, DependencySolver solver) throws SolverException {
