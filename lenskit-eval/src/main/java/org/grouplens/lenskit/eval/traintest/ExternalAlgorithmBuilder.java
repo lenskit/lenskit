@@ -18,10 +18,17 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.algorithm;
+package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -30,53 +37,53 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Command to get a algorithm instances.
+ * Command to get a algorithmInfo instances.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class ExternalAlgorithmInstanceBuilder implements Builder<ExternalAlgorithmInstance> {
+public class ExternalAlgorithmBuilder implements Builder<ExternalAlgorithm> {
     private String name;
     private Map<String, Object> attributes = new HashMap<String, Object>();
     private File workDir = new File(".");
     private String outputDelimiter = "\t";
     private List<String> command;
 
-    public ExternalAlgorithmInstanceBuilder() {
+    public ExternalAlgorithmBuilder() {
         this("Unnamed");
     }
 
-    public ExternalAlgorithmInstanceBuilder(String name) {
+    public ExternalAlgorithmBuilder(String name) {
         this.name = name;
     }
 
     /**
-     * Set the algorithm name.
+     * Set the algorithmInfo name.
      *
-     * @param n The name for this algorithm instance.
+     * @param n The name for this algorithmInfo instance.
      * @return The command for chaining.
      */
-    public ExternalAlgorithmInstanceBuilder setName(String n) {
+    public ExternalAlgorithmBuilder setName(String n) {
         name = n;
         return this;
     }
 
     /**
-     * Get the algorithm name.
-     * @return The algorithm's name.
+     * Get the algorithmInfo name.
+     * @return The algorithmInfo's name.
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Set an attribute for this algorithm instance. Used for distinguishing similar
-     * instances in an algorithm family.
+     * Set an attribute for this algorithmInfo instance. Used for distinguishing similar
+     * instances in an algorithmInfo family.
      *
      * @param attr  The attribute name.
      * @param value The attribute value.
      * @return The command for chaining.
      */
-    public ExternalAlgorithmInstanceBuilder setAttribute(@Nonnull String attr, @Nonnull Object value) {
+    public ExternalAlgorithmBuilder setAttribute(@Nonnull String attr, @Nonnull Object value) {
         Preconditions.checkNotNull(attr, "attribute names cannot be null");
         Preconditions.checkNotNull(value, "attribute values cannot be null");
         attributes.put(attr, value);
@@ -84,9 +91,9 @@ public class ExternalAlgorithmInstanceBuilder implements Builder<ExternalAlgorit
     }
 
     /**
-     * Get the attributes of this algorithm instance.
+     * Get the attributes of this algorithmInfo instance.
      *
-     * @return A map of user-defined attributes for this algorithm instance.
+     * @return A map of user-defined attributes for this algorithmInfo instance.
      */
     public Map<String, Object> getAttributes() {
         return attributes;
@@ -105,7 +112,7 @@ public class ExternalAlgorithmInstanceBuilder implements Builder<ExternalAlgorit
      * @param cmd The command to run (name and arguments).
      * @return The command (for chaining)
      */
-    public ExternalAlgorithmInstanceBuilder setCommand(List<String> cmd) {
+    public ExternalAlgorithmBuilder setCommand(List<String> cmd) {
         command = cmd;
         return this;
     }
@@ -115,7 +122,7 @@ public class ExternalAlgorithmInstanceBuilder implements Builder<ExternalAlgorit
      * @param dir The working directory.
      * @return The working directory.
      */
-    public ExternalAlgorithmInstanceBuilder setWorkDir(File dir) {
+    public ExternalAlgorithmBuilder setWorkDir(File dir) {
         workDir = dir;
         return this;
     }
@@ -125,17 +132,16 @@ public class ExternalAlgorithmInstanceBuilder implements Builder<ExternalAlgorit
      * @param delim The output delimiter.
      * @return The input delimiter.
      */
-    public ExternalAlgorithmInstanceBuilder setOutputDelimiter(String delim) {
+    public ExternalAlgorithmBuilder setOutputDelimiter(String delim) {
         outputDelimiter = delim;
         return this;
     }
 
     @Override
-    public ExternalAlgorithmInstance build() {
+    public ExternalAlgorithm build() {
         if (command == null) {
             throw new IllegalStateException("no command specified");
         }
-        return new ExternalAlgorithmInstance(getName(), attributes, command, workDir, outputDelimiter);
+        return new ExternalAlgorithm(getName(), attributes, command, workDir, outputDelimiter);
     }
-
 }

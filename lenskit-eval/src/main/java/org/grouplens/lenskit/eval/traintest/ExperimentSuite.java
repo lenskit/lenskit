@@ -22,9 +22,8 @@ package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
-import org.grouplens.lenskit.eval.algorithm.ExternalAlgorithmInstance;
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 
 import java.util.List;
@@ -35,12 +34,12 @@ import java.util.Set;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ExperimentSuite {
-    private final List<LenskitAlgorithmInstance> algorithms;
-    private final List<ExternalAlgorithmInstance> externalAlgorithms;
+    private final List<AlgorithmInstance> algorithms;
+    private final List<ExternalAlgorithm> externalAlgorithms;
     private final List<TTDataSet> dataSets;
 
-    public ExperimentSuite(List<LenskitAlgorithmInstance> algos,
-                           List<ExternalAlgorithmInstance> externalAlgos,
+    public ExperimentSuite(List<AlgorithmInstance> algos,
+                           List<ExternalAlgorithm> externalAlgos,
                            List<TTDataSet> data) {
         algorithms = algos;
         externalAlgorithms = externalAlgos;
@@ -51,7 +50,7 @@ public class ExperimentSuite {
      * Get the list of algorithms to be tested.
      * @return The list of algorithms.
      */
-    public List<LenskitAlgorithmInstance> getAlgorithms() {
+    public List<AlgorithmInstance> getAlgorithms() {
         return algorithms;
     }
 
@@ -59,11 +58,11 @@ public class ExperimentSuite {
      * Get the list of external algorithms to be tested.
      * @return The list of external algorithms.
      */
-    public List<ExternalAlgorithmInstance> getExternalAlgorithms() {
+    public List<ExternalAlgorithm> getExternalAlgorithms() {
         return externalAlgorithms;
     }
 
-    public Iterable<AlgorithmInstance> getAllAlgorithms() {
+    public Iterable<Attributed> getAllAlgorithms() {
         return Iterables.concat(algorithms, externalAlgorithms);
     }
 
@@ -76,12 +75,12 @@ public class ExperimentSuite {
     }
 
     /**
-     * Get the set of all algorithm attribute names.
-     * @return The set of all algorithm attribute names.
+     * Get the set of all algorithmInfo attribute names.
+     * @return The set of all algorithmInfo attribute names.
      */
     public Set<String> getAlgorithmAttributes() {
         Set<String> attrs = Sets.newLinkedHashSet();
-        for (AlgorithmInstance algo: getAllAlgorithms()) {
+        for (Attributed algo: getAllAlgorithms()) {
             attrs.addAll(algo.getAttributes().keySet());
         }
         return attrs;

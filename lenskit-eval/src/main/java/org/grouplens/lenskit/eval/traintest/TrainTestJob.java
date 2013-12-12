@@ -20,20 +20,16 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.dao.UserEventDAO;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.eval.ExecutionInfo;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
-import org.grouplens.lenskit.eval.algorithm.RecommenderInstance;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -47,47 +43,42 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.inject.Provider;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
- * Run a single train-test evaluation of a single algorithm.
+ * Run a single train-test evaluation of a single algorithmInfo.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
  */
-class TrainTestJob implements Callable<Void> {
+abstract class TrainTestJob implements Callable<Void> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestJob.class);
 
-    private final AlgorithmInstance algorithm;
-    private final TTDataSet data;
-    private final Provider<PreferenceSnapshot> snapshot;
-    private final MeasurementSuite measurements;
+    protected final Attributed algorithmInfo;
+    protected final TTDataSet dataSet;
+
+    protected final MeasurementSuite measurements;
     private final ExperimentOutputs output;
 
     /**
      * Create a new train-test eval job.
      *
-     * @param algo     The algorithm to test.
+     * @param algo     The algorithmInfo to test.
      * @param ds       The data set to use.
-     * @param snap     Supplier providing access to a shared rating snapshot to use in the build
-     *                 process.
      * @param out      The table writer to receive output. This writer is expected to be prefixed
-     *                 with algorithm and group ID data, so only the times and eval outputProvider
+     *                 with algorithmInfo and group ID data, so only the times and eval outputProvider
      *                 needs to be written.
      * @param measures The measurements to take.
      * @param out      The evaluator outputs.
      */
-    public TrainTestJob(@Nonnull AlgorithmInstance algo,
+    public TrainTestJob(@Nonnull Attributed algo,
                         @Nonnull TTDataSet ds,
-                        Provider<PreferenceSnapshot> snap,
                         @Nonnull MeasurementSuite measures,
                         @Nonnull ExperimentOutputs out) {
-        algorithm = algo;
-        data = ds;
-        snapshot = snap;
+        algorithmInfo = algo;
+        dataSet = ds;
         measurements = measures;
         output = out;
     }
@@ -104,41 +95,42 @@ class TrainTestJob implements Callable<Void> {
         try {
             TableWriter userResults = output.getUserWriter();
             List<Object> outputRow = Lists.newArrayList();
-            ExecutionInfo execInfo = buildExecInfo();
 
-            logger.info("Building {} on {}", algorithm.getName(), data.getName());
+            logger.info("Building {} on {}", algorithmInfo.getName(), dataSet.getName());
             StopWatch buildTimer = new StopWatch();
             buildTimer.start();
-            RecommenderInstance rec = algorithm.makeTestableRecommender(data, snapshot, execInfo);
+            buildRecommender();
             buildTimer.stop();
-            logger.info("Built {} in {}", algorithm.getName(), buildTimer);
+            logger.info("Built {} in {}", algorithmInfo.getName(), buildTimer);
 
-            logger.info("Measuring {} on {}", algorithm.getName(), data.getName());
-            for (ModelMetric metric: measurements.getModelMetrics()) {
-                outputRow.addAll(metric.measureAlgorithm(algorithm, data, rec.getRecommender()));
+            logger.info("Measuring {} on {}", algorithmInfo.getName(), dataSet.getName());
+            List<Object> modelMeasures = getModelMeasurements();
+            if (modelMeasures != null) {
+                assert modelMeasures.size() == measurements.getModelColumnCount();
+                outputRow.addAll(modelMeasures);
+            } else {
+                Iterators.addAll(outputRow, Iterators.limit(Iterators.cycle((Object) null),
+                                                            measurements.getModelColumnCount()));
             }
 
-            logger.info("Testing {}", algorithm.getName());
+            logger.info("Testing {}", algorithmInfo.getName());
             StopWatch testTimer = new StopWatch();
             testTimer.start();
             List<TestUserMetricAccumulator> evalAccums = Lists.newArrayList();
 
             List<Object> userRow = Lists.newArrayList();
 
-            UserEventDAO testUsers = data.getTestData().getUserEventDAO();
             for (TestUserMetric eval: measurements.getTestUserMetrics()) {
-                TestUserMetricAccumulator accum = eval.makeAccumulator(algorithm, data);
+                TestUserMetricAccumulator accum = eval.makeAccumulator(algorithmInfo, dataSet);
                 evalAccums.add(accum);
             }
 
-            Cursor<UserHistory<Event>> userProfiles = closer.register(testUsers.streamEventsByUser());
-            for (UserHistory<Event> user: userProfiles) {
-                assert userRow.isEmpty();
-                userRow.add(user.getUserId());
+            LongSet testUsers = dataSet.getTestData().getUserDAO().getUserIds();
+            for (LongIterator iter = testUsers.iterator(); iter.hasNext();) {
+                long uid = iter.nextLong();
+                userRow.add(uid);
 
-                long uid = user.getUserId();
-
-                TestUser test = rec.getUserResults(uid);
+                TestUser test = getUserResults(uid);
 
                 for (TestUserMetricAccumulator accum : evalAccums) {
                     List<Object> ures = accum.evaluate(test);
@@ -159,24 +151,43 @@ class TrainTestJob implements Callable<Void> {
                 writeRecommendations(test);
             }
             testTimer.stop();
-            logger.info("Tested {} in {}", algorithm.getName(), testTimer);
+            logger.info("Tested {} in {}", algorithmInfo.getName(), testTimer);
 
             writeMetricValues(buildTimer, testTimer, outputRow, evalAccums);
         } catch (Throwable th) {
             throw closer.rethrow(th, RecommenderBuildException.class);
         } finally {
+            cleanup();
             closer.close();
         }
     }
 
-    private ExecutionInfo buildExecInfo() {
-        ExecutionInfo.Builder bld = new ExecutionInfo.Builder();
-        bld.setAlgoName(algorithm.getName())
-           .setAlgoAttributes(algorithm.getAttributes())
-           .setDataName(data.getName())
-           .setDataAttributes(data.getAttributes());
-        return bld.build();
-    }
+    /**
+     * Build the recommender.
+     * @throws RecommenderBuildException if there is an error building the recommender.
+     * @throws IllegalStateException if the recommender has already been built.
+     */
+    protected abstract void buildRecommender() throws RecommenderBuildException;
+
+    /**
+     * Get the measurements of the built recommender model.
+     * @return The model measurements, or {@code null} if there are none.
+     */
+    protected abstract List<Object> getModelMeasurements();
+
+    /**
+     * Get the results for a particular user.
+     * @param uid The user id.
+     * @return The user's results.
+     * @throws IllegalArgumentException if the user is not a valid test user.
+     * @throws IllegalStateException if the recommender has not yet been built.
+     */
+    protected abstract TestUser getUserResults(long uid);
+
+    /**
+     * Clean up the job after it is finished (freeing memory, etc.).
+     */
+    protected abstract void cleanup();
 
     private void writePredictions(TestUser user) throws IOException {
         TableWriter predictTable = output.getPredictionWriter();
@@ -249,6 +260,6 @@ class TrainTestJob implements Callable<Void> {
 
     @Override
     public String toString() {
-        return String.format("test %s on %s", algorithm, data);
+        return String.format("test %s on %s", algorithmInfo, dataSet);
     }
 }

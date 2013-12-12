@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.eval.metrics.topn;
 
 import com.google.common.collect.ImmutableList;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -49,7 +49,7 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
     }
 
     @Override
-    public Accum makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
+    public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
         return new Accum();
     }
 

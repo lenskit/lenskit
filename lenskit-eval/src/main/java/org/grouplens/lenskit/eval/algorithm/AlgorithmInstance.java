@@ -20,49 +20,216 @@
  */
 package org.grouplens.lenskit.eval.algorithm;
 
-import com.google.common.base.Supplier;
+import com.google.common.base.Joiner;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.lenskit.ItemRecommender;
+import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.LenskitRecommender;
+import org.grouplens.lenskit.core.LenskitRecommenderEngine;
+import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.ExecutionInfo;
-import org.grouplens.lenskit.eval.traintest.SharedPreferenceSnapshot;
+import org.grouplens.lenskit.eval.data.DataSource;
+import org.grouplens.lenskit.eval.data.traintest.QueryData;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.script.BuiltBy;
+import org.grouplens.lenskit.eval.traintest.LenskitTestUser;
+import org.grouplens.lenskit.eval.traintest.TestUser;
+import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.vectors.SparseVector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Provider;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
- * An algorithm instance. On its own, this doesn't do much; it exists to share some
- * metadata between {@link LenskitAlgorithmInstance} and {@link ExternalAlgorithmInstance}.
+ * An instance of a recommender algorithmInfo to be benchmarked.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public interface AlgorithmInstance {
-    /**
-     * Get the name of this algorithm instance.
-     * @return The instance's name.
-     */
-    String getName();
-
-    /**
-     * Get the attributes associated with this algorithm instance.
-     * @return The algorithm instance's attributes.
-     */
+@BuiltBy(AlgorithmInstanceBuilder.class)
+public class AlgorithmInstance implements Attributed {
+    private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
+    @Nullable
+    private final String algoName;
     @Nonnull
-    Map<String, Object> getAttributes();
+    private final LenskitConfiguration config;
+    @Nonnull
+    private final Map<String, Object> attributes;
+    private final boolean preload;
+    private Random random;
+
+    public AlgorithmInstance(String name, LenskitConfiguration config) {
+        this(name, config, Collections.<String, Object>emptyMap(), false);
+    }
+
+    public AlgorithmInstance(String name, LenskitConfiguration cfg, Map<String, Object> attrs, boolean preload) {
+        algoName = name;
+        config = cfg;
+        attributes = attrs;
+        this.preload = preload;
+    }
 
     /**
-     * Create a testable recommender instance from this algorithm.
+     * Get the name of this algorithmInfo.  This returns a short name which is
+     * used to identify the algorithmInfo or instance.
      *
-     *
-     * @param data     The data set. The test data should only be used if the recommender needs to
-     *                 capture the test data (e.g. an external program that will produce predictions
-     *                 en mass).
-     * @param snapshot The (cached) shared preference snapshot.
-     * @param info     The execution info for this execution.
-     * @return A recommender instance for testing this algorithm.
+     * @return The algorithmInfo's name
      */
-    RecommenderInstance makeTestableRecommender(TTDataSet data,
-                                                Provider<? extends PreferenceSnapshot> snapshot,
-                                                ExecutionInfo info) throws RecommenderBuildException;
+    @Override
+    public String getName() {
+        return algoName;
+    }
+
+    /**
+     * Query whether this algorithmInfo is to operate on in-memory data.
+     *
+     * @return {@code true} if the ratings database should be loaded in-memory
+     *         prior to running.
+     */
+    public boolean getPreload() {
+        return preload;
+    }
+
+    @Override
+    @Nonnull
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    @Nonnull
+    public LenskitConfiguration getConfig() {
+        return config;
+    }
+
+    /**
+     * Let AlgorithmInstanceBuilder to pass random number generator to algorithmInfo instance
+     * 
+     * @param rng The random number generator.
+     * @return The new algorithmInfo instance
+     */
+    public AlgorithmInstance setRandom(Random rng) {
+        random = rng;
+        return this;
+    }
+    
+    public LenskitRecommender buildRecommender(DataSource data,
+                                               @Nullable final Provider<? extends PreferenceSnapshot> sharedSnapshot,
+                                               @Nullable ExecutionInfo info) throws RecommenderBuildException {
+        return buildRecommender(data, null, sharedSnapshot, info);
+    }
+
+    public LenskitRecommender buildRecommender(DataSource data,
+                                               @Nullable DataSource queryData,
+                                               @Nullable final Provider<? extends PreferenceSnapshot> sharedSnapshot,
+                                               @Nullable ExecutionInfo info) throws RecommenderBuildException {
+        // Copy the config & set up a shared rating snapshot
+        LenskitConfiguration cfg = new LenskitConfiguration(config);
+
+        PreferenceDomain dom = data.getPreferenceDomain();
+        if (dom != null) {
+            cfg.bind(PreferenceDomain.class).to(dom);
+        }
+
+        if (sharedSnapshot != null) {
+            cfg.bind(PreferenceSnapshot.class).toProvider(sharedSnapshot);
+        }
+
+        if (info != null) {
+            cfg.bind(ExecutionInfo.class).to(info);
+        }
+
+        if (random != null) {
+            cfg.bind(Random.class).to(random);
+        }
+        
+        cfg.bind(EventDAO.class).toProvider(data.getEventDAOProvider());
+
+        if (queryData != null) {
+            cfg.bind(QueryData.class, EventDAO.class).toProvider(queryData.getEventDAOProvider());
+        }
+
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(cfg);
+
+        return engine.createRecommender();
+    }
+
+    public RecommenderInstance makeTestableRecommender(TTDataSet data,
+                                                       Provider<? extends PreferenceSnapshot> snapshot,
+                                                       ExecutionInfo info) throws RecommenderBuildException {
+        return new RecInstance(buildRecommender(data.getTrainingData(),
+                                                data.getQueryData(),
+                                                snapshot, info),
+                               data.getTestData());
+    }
+
+    private static class RecInstance implements RecommenderInstance {
+        private final LenskitRecommender recommender;
+        private final DataSource testData;
+
+        public RecInstance(LenskitRecommender rec, DataSource test) {
+            recommender = rec;
+            testData = test;
+        }
+
+        @Override
+        public UserEventDAO getUserEventDAO() {
+            return recommender.get(UserEventDAO.class);
+        }
+
+        @Override
+        public TestUser getUserResults(long uid) {
+            return new LenskitTestUser(recommender, testData.getUserEventDAO().getEventsForUser(uid));
+        }
+
+        @Override
+        public SparseVector getPredictions(long uid, LongSet testItems) {
+            RatingPredictor rp = recommender.getRatingPredictor();
+            if (rp == null) return null;
+
+            return rp.predict(uid, testItems);
+        }
+
+        @Override
+        public List<ScoredId> getRecommendations(long uid, LongSet testItems, int n) {
+            ItemRecommender irec = recommender.getItemRecommender();
+            if (irec == null) {
+                return null;
+            }
+
+            return irec.recommend(uid, n, testItems, null);
+        }
+
+        @Override
+        public LenskitRecommender getRecommender() {
+            return recommender;
+        }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("LenskitAlgorithm(")
+          .append(getName())
+          .append(")");
+        if (!attributes.isEmpty()) {
+            sb.append("[");
+            Joiner.on(", ")
+                  .withKeyValueSeparator("=")
+                  .appendTo(sb, attributes);
+            sb.append("]");
+        }
+        return sb.toString();
+    }
 }

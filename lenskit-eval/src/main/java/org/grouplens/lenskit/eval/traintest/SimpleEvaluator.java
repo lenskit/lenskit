@@ -25,8 +25,8 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.EvalConfig;
 import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.TaskExecutionException;
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceBuilder;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceBuilder;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.GenericDataSource;
 import org.grouplens.lenskit.eval.data.crossfold.CrossfoldTask;
@@ -67,24 +67,24 @@ public class SimpleEvaluator implements Callable<Table> {
     }
 
     /**
-     * Adds an algorithm to the {@code TrainTestEvalCommand} being built.
+     * Adds an algorithmInfo to the {@code TrainTestEvalCommand} being built.
      *
      * If any exception is thrown while the command is called it is rethrown as a runtime error.
-     * @param algo The algorithm added to the {@code TrainTestEvalCommand}
+     * @param algo The algorithmInfo added to the {@code TrainTestEvalCommand}
      * @return Itself to allow  chaining
      */
-    public SimpleEvaluator addAlgorithm(LenskitAlgorithmInstance algo){
+    public SimpleEvaluator addAlgorithm(AlgorithmInstance algo){
         result.addAlgorithm(algo);
         return this;
     }
 
     /**
-     * Adds a fully configured algorithm command to the {@code TrainTestEvalCommand} being built.
+     * Adds a fully configured algorithmInfo command to the {@code TrainTestEvalCommand} being built.
      *
-     * @param algo The algorithm added to the {@code TrainTestEvalCommand}
+     * @param algo The algorithmInfo added to the {@code TrainTestEvalCommand}
      * @return Itself to allow  chaining
      */
-    public SimpleEvaluator addAlgorithm(LenskitAlgorithmInstanceBuilder algo){
+    public SimpleEvaluator addAlgorithm(AlgorithmInstanceBuilder algo){
         result.addAlgorithm(algo.build());
         return this;
     }

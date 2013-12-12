@@ -38,41 +38,41 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Command to get a algorithm instances.
+ * Command to get a algorithmInfo instances.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @ConfigDelegate(AlgorithmInstanceBuilderDelegate.class)
-public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithmInstance> {
-    private static final Logger logger = LoggerFactory.getLogger(LenskitAlgorithmInstanceBuilder.class);
+public class AlgorithmInstanceBuilder implements Builder<AlgorithmInstance> {
+    private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstanceBuilder.class);
     private final LenskitConfiguration config;
     private String name;
     private Map<String, Object> attributes = new HashMap<String, Object>();
     private boolean preload;
     private EvalProject project;
 
-    public LenskitAlgorithmInstanceBuilder() {
+    public AlgorithmInstanceBuilder() {
         this("Unnamed Algorithm");
     }
 
-    public LenskitAlgorithmInstanceBuilder(String name) {
+    public AlgorithmInstanceBuilder(String name) {
         this.name = name;
         config = new LenskitConfiguration();
     }
 
     /**
-     * Set the algorithm name.
+     * Set the algorithmInfo name.
      *
-     * @param n The name for this algorithm instance.
+     * @param n The name for this algorithmInfo instance.
      * @return The command for chaining.
      */
-    public LenskitAlgorithmInstanceBuilder setName(String n) {
+    public AlgorithmInstanceBuilder setName(String n) {
         name = n;
         return this;
     }
 
     /**
-     * Get the algorithm name.
+     * Get the algorithmInfo name.
      *
      * @return The algortihm name.
      */
@@ -81,16 +81,16 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
     }
 
     /**
-     * Get whether this algorithm will require ratings to be pre-loaded.
+     * Get whether this algorithmInfo will require ratings to be pre-loaded.
      *
-     * @return {@code true} if the algorithm should have ratings pre-loaded into memory.
+     * @return {@code true} if the algorithmInfo should have ratings pre-loaded into memory.
      */
     public Boolean getPreload() {
         return preload;
     }
 
     /**
-     * Get the project of this algorithm
+     * Get the project of this algorithmInfo
      * 
      * @return The project
      */
@@ -99,26 +99,26 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
     }
     
     /**
-     * Set whether the algorithm wants ratings pre-loaded. Use this for algorithms that
+     * Set whether the algorithmInfo wants ratings pre-loaded. Use this for algorithms that
      * are too slow reading on a CSV file if you have enough memory to load them all.
      *
-     * @param pl {@code true} to pre-load input data when running this algorithm.
+     * @param pl {@code true} to pre-load input data when running this algorithmInfo.
      * @return The command for chaining.
      */
-    public LenskitAlgorithmInstanceBuilder setPreload(boolean pl) {
+    public AlgorithmInstanceBuilder setPreload(boolean pl) {
         preload = pl;
         return this;
     }
 
     /**
-     * Set an attribute for this algorithm instance. Used for distinguishing similar
-     * instances in an algorithm family.
+     * Set an attribute for this algorithmInfo instance. Used for distinguishing similar
+     * instances in an algorithmInfo family.
      *
      * @param attr  The attribute name.
      * @param value The attribute value.
      * @return The command for chaining.
      */
-    public LenskitAlgorithmInstanceBuilder setAttribute(@Nonnull String attr, @Nonnull Object value) {
+    public AlgorithmInstanceBuilder setAttribute(@Nonnull String attr, @Nonnull Object value) {
         Preconditions.checkNotNull(attr, "attribute names cannot be null");
         Preconditions.checkNotNull(value, "attribute values cannot be null");
         attributes.put(attr, value);
@@ -128,18 +128,18 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
     /**
      * Set the project of Algorithm.
      * 
-     * @param prj The project for this algorithm.
+     * @param prj The project for this algorithmInfo.
      * @return The command for chaining.
      */
-    public LenskitAlgorithmInstanceBuilder setProject(EvalProject prj) {
+    public AlgorithmInstanceBuilder setProject(EvalProject prj) {
         project = prj;
         return this;        
     }
 
     /**
-     * Get the attributes of this algorithm instance.
+     * Get the attributes of this algorithmInfo instance.
      *
-     * @return A map of user-defined attributes for this algorithm instance.
+     * @return A map of user-defined attributes for this algorithmInfo instance.
      */
     public Map<String, Object> getAttributes() {
         return attributes;
@@ -150,7 +150,7 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
     }
 
     /**
-     * Configure the algorithm instance builder from a file.
+     * Configure the algorithmInfo instance builder from a file.
      * @param attributes The attributes.  Attributes 'name' and 'preload' are mapped to their
      *                   corresponding real properties.
      * @param file The file.
@@ -158,7 +158,7 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
      * @throws RecommenderConfigurationException If there is an error running the script.
      * @throws IOException If there is an error loading the script.
      */
-    public LenskitAlgorithmInstanceBuilder configureFromFile(Map<String,Object> attributes, File file) throws RecommenderConfigurationException, IOException {
+    public AlgorithmInstanceBuilder configureFromFile(Map<String,Object> attributes, File file) throws RecommenderConfigurationException, IOException {
         if (attributes.containsKey("name")) {
             setName(attributes.get("name").toString());
         } else {
@@ -181,8 +181,8 @@ public class LenskitAlgorithmInstanceBuilder implements Builder<LenskitAlgorithm
     }
 
     @Override
-    public LenskitAlgorithmInstance build() {
-        LenskitAlgorithmInstance instance = new LenskitAlgorithmInstance(getName(), config, attributes, preload);
+    public AlgorithmInstance build() {
+        AlgorithmInstance instance = new AlgorithmInstance(getName(), config, attributes, preload);
         if (project != null) {
             logger.warn("no project set");
             instance.setRandom(project.getRandom());

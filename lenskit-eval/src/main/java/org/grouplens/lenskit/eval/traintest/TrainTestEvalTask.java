@@ -34,9 +34,7 @@ import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
-import org.grouplens.lenskit.eval.algorithm.ExternalAlgorithmInstance;
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceBuilder;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
@@ -45,7 +43,6 @@ import org.grouplens.lenskit.util.parallel.TaskGraphExecutor;
 import org.grouplens.lenskit.util.table.Table;
 import org.grouplens.lenskit.util.table.TableBuilder;
 import org.grouplens.lenskit.util.table.TableLayout;
-import org.grouplens.lenskit.util.table.TableLayoutBuilder;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.MultiplexedTableWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
@@ -57,13 +54,12 @@ import javax.annotation.Nullable;
 import javax.inject.Provider;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
- * The command that run the algorithm instance and output the prediction result file and the evaluation result file
+ * The command that run the algorithmInfo instance and output the prediction result file and the evaluation result file
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -71,8 +67,8 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private static final Logger logger = LoggerFactory.getLogger(TrainTestEvalTask.class);
 
     private List<TTDataSet> dataSets;
-    private List<LenskitAlgorithmInstance> algorithms;
-    private List<ExternalAlgorithmInstance> externalAlgorithms;
+    private List<AlgorithmInstance> algorithms;
+    private List<ExternalAlgorithm> externalAlgorithms;
     private List<TestUserMetric> metrics;
     private List<ModelMetric> modelMetrics;
     private List<Pair<Symbol,String>> predictChannels;
@@ -107,18 +103,18 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return this;
     }
 
-    public TrainTestEvalTask addAlgorithm(LenskitAlgorithmInstance algorithm) {
+    public TrainTestEvalTask addAlgorithm(AlgorithmInstance algorithm) {
         algorithms.add(algorithm);
         return this;
     }
 
     public TrainTestEvalTask setAlgorithm(Map<String,Object> attrs, String file) throws IOException, RecommenderConfigurationException {
-        algorithms.add(new LenskitAlgorithmInstanceBuilder().configureFromFile(attrs, new File(file))
+        algorithms.add(new AlgorithmInstanceBuilder().configureFromFile(attrs, new File(file))
                                                             .build());
         return this;
     }
 
-    public TrainTestEvalTask addExternalAlgorithm(ExternalAlgorithmInstance algorithm) {
+    public TrainTestEvalTask addExternalAlgorithm(ExternalAlgorithm algorithm) {
         externalAlgorithms.add(algorithm);
         return this;
     }
@@ -133,7 +129,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     /**
-     * Add a metric that may write multiple columns per algorithm.
+     * Add a metric that may write multiple columns per algorithmInfo.
      * @param file The output file.
      * @param columns The column headers.
      * @param metric The metric function. It should return a list of table rows, each of which has
@@ -146,7 +142,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     /**
-     * Add a metric that takes some metric of an algorithm.
+     * Add a metric that takes some metric of an algorithmInfo.
      * @param columns The column headers.
      * @param metric The metric function. It should return a list of table rows, each of which has
      *               entries corresponding to each column.
@@ -229,7 +225,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      * Control whether the train-test evaluator will isolate data sets.  If set to {@code true},
      * then each data set will be run in turn, with no inter-data-set parallelism.  This can
      * reduce memory usage for some large runs, keeping the data from only a single data set in
-     * memory at a time.  Otherwise (the default), individual algorithm/data-set runs may be freely
+     * memory at a time.  Otherwise (the default), individual algorithmInfo/data-set runs may be freely
      * intermingled.
      *
      * @param iso Whether to isolate data sets.
@@ -244,11 +240,11 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return dataSets;
     }
 
-    List<LenskitAlgorithmInstance> getAlgorithms() {
+    List<AlgorithmInstance> getAlgorithms() {
         return algorithms;
     }
 
-    List<ExternalAlgorithmInstance> getExternalAlgorithms() {
+    List<ExternalAlgorithm> getExternalAlgorithms() {
         return externalAlgorithms;
     }
 
@@ -369,9 +365,11 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                 DAGNode.newBuilder(TaskGraph.groupNode());
         for (TTDataSet dataset : experiments.getDataSets()) {
             final Provider<PreferenceSnapshot> snap = SharedPreferenceSnapshot.provider(dataset);
-            for (AlgorithmInstance algo: experiments.getAllAlgorithms()) {
-                TrainTestJob job = new TrainTestJob(algo, dataset, snap, measurements,
-                                                    outputs.getPrefixed(algo, dataset));
+            // Add LensKit algorithms
+            for (AlgorithmInstance algo: experiments.getAlgorithms()) {
+                TrainTestJob job = new LenskitEvalJob(algo, dataset, measurements,
+                                                      outputs.getPrefixed(algo, dataset),
+                                                      snap);
                 DAGNodeBuilder<TaskGraph.Node, TaskGraph.Edge> nb = DAGNode.newBuilder();
                 nb.setLabel(TaskGraph.jobNode(job));
                 if (graph != null) {
@@ -379,8 +377,18 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                 }
                 builder.addEdge(nb.build(), TaskGraph.edge());
             }
+
+            // Add external algorithms
+            for (ExternalAlgorithm algo: experiments.getExternalAlgorithms()) {
+                TrainTestJob job = new ExternalEvalJob(algo, dataset, measurements,
+                                                       outputs.getPrefixed(algo, dataset));
+                DAGNode<TaskGraph.Node, TaskGraph.Edge> node =
+                        DAGNode.singleton(TaskGraph.jobNode(job));
+                builder.addEdge(node, TaskGraph.edge());
+            }
+
+            // Use dependencies to encode data set isolation
             if (isolate) {
-                // set up so the next things will all depend on this
                 graph = builder.build();
                 builder = DAGNode.newBuilder();
                 builder.setLabel(TaskGraph.groupNode());

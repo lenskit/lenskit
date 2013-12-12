@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -105,16 +105,17 @@ public class ExperimentOutputLayout {
     }
 
     /**
-     * Prefix a table for a particular algorithm and data set.
+     * Prefix a table for a particular algorithmInfo and data set.
+     *
      *
      *
      * @param base      The table to prefix.
-     * @param algorithm The algorithm to prefix for.
+     * @param algorithm The algorithmInfo to prefix for.
      * @param dataSet   The data set to prefix for.
      * @return A prefixed table, suitable for outputting the results of evaluating
-     *         {@code algorithm} on {@code dataSet}, or {@code null} if {@code base} is null.
+     *         {@code algorithmInfo} on {@code dataSet}, or {@code null} if {@code base} is null.
      */
-    public TableWriter prefixTable(TableWriter base, AlgorithmInstance algorithm, TTDataSet dataSet) {
+    public TableWriter prefixTable(TableWriter base, Attributed algorithm, TTDataSet dataSet) {
         if (base == null) {
             return null;
         }

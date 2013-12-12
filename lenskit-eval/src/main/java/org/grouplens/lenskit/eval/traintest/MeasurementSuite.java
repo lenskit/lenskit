@@ -55,6 +55,42 @@ public class MeasurementSuite {
         return modelMetrics;
     }
 
+    /**
+     * Get the number of columns used for aggregates of user metrics.
+     * @return The number of aggregate user metric columns.
+     */
+    public int getAggregateUserColumnCount() {
+        int n = 0;
+        for (TestUserMetric m: testUserMetrics) {
+            n += m.getColumnLabels().size();
+        }
+        return n;
+    }
+
+    /**
+     * Get the number of columns used for per-user metrics.
+     * @return The number of per-user metric columns.
+     */
+    public int getUserColumnCount() {
+        int n = 0;
+        for (TestUserMetric m: testUserMetrics) {
+            n += m.getUserColumnLabels().size();
+        }
+        return n;
+    }
+
+    /**
+     * Get the number of columns used for model metrics.
+     * @return The model metric column count.
+     */
+    public int getModelColumnCount() {
+        int n = 0;
+        for (ModelMetric m: modelMetrics) {
+            n += m.getColumnLabels().size();
+        }
+        return n;
+    }
+
     public Iterable<Metric<TrainTestEvalTask>> getAllMetrics() {
         return Iterables.concat(testUserMetrics, modelMetrics);
     }

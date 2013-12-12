@@ -25,6 +25,7 @@ import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.eval.data.GenericDataSource
 import org.grouplens.lenskit.eval.script.ConfigTestBase
+import org.grouplens.lenskit.eval.traintest.ExternalAlgorithm
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
 import org.grouplens.lenskit.iterative.MinimumIterations
 import org.grouplens.lenskit.iterative.StoppingThreshold
@@ -49,8 +50,8 @@ class AlgorithmInstanceConfigTest extends ConfigTestBase {
                 attributes["wombat"] = "global"
             }
         }
-        assertThat(obj, instanceOf(LenskitAlgorithmInstance))
-        def algo = obj as LenskitAlgorithmInstance
+        assertThat(obj, instanceOf(AlgorithmInstance))
+        def algo = obj as AlgorithmInstance
         assertThat(algo.name, equalTo("GlobalMean"))
         assertThat(algo.attributes["wombat"] as String, equalTo("global"))
     }
@@ -74,7 +75,7 @@ class AlgorithmInstanceConfigTest extends ConfigTestBase {
                 }
             }
         }
-        def algo = obj as LenskitAlgorithmInstance
+        def algo = obj as AlgorithmInstance
         def rec = algo.buildRecommender(new GenericDataSource("data", new EventCollectionDAO([])),
                                         null, null);
         def stop = rec.get(ThresholdStoppingCondition)
@@ -108,7 +109,7 @@ class AlgorithmInstanceConfigTest extends ConfigTestBase {
                 }
             }
         }
-        def algo = obj as LenskitAlgorithmInstance
+        def algo = obj as AlgorithmInstance
         def rec = algo.buildRecommender(new GenericDataSource("data", new EventCollectionDAO([])),
                                         null, null);
         def stop = rec.get(ThresholdStoppingCondition)
@@ -132,8 +133,8 @@ class AlgorithmInstanceConfigTest extends ConfigTestBase {
                 attributes["wombat"] = "global"
             }
         }
-        assertThat(obj, instanceOf(ExternalAlgorithmInstance))
-        def algo = obj as ExternalAlgorithmInstance
+        assertThat(obj, instanceOf(ExternalAlgorithm))
+        def algo = obj as ExternalAlgorithm
         assertThat(algo.name, equalTo("Cheater"))
         assertThat(algo.attributes["wombat"] as String, equalTo("global"))
         assertThat(algo.command, equalTo(["cat", "{TEST_DATA}"].toList()))

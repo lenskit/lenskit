@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval.data.crossfold;
 import java.util.List;
 
 /**
- * Partitioning algorithm for an ordered sequence of stuff. Partition
+ * Partitioning algorithmInfo for an ordered sequence of stuff. Partition
  * algorithms are typically used to hold out some items by putting
  * them into the second partition.
  *

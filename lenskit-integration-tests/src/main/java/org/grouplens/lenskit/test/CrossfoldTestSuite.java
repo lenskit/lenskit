@@ -23,7 +23,7 @@ package org.grouplens.lenskit.test;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.eval.EvalConfig;
 import org.grouplens.lenskit.eval.TaskExecutionException;
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstanceBuilder;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceBuilder;
 import org.grouplens.lenskit.eval.data.GenericDataSource;
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric;
@@ -41,7 +41,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
- * A test suite that does cross-validation of an algorithm.
+ * A test suite that does cross-validation of an algorithmInfo.
  */
 public abstract class CrossfoldTestSuite extends ML100KTestSuite {
     @Rule
@@ -56,7 +56,7 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
         Properties props =  new Properties();
         props.setProperty(EvalConfig.DATA_DIR_PROPERTY, workDir.newFolder("data").getAbsolutePath());
         SimpleEvaluator evalCommand = new SimpleEvaluator(props);
-        LenskitAlgorithmInstanceBuilder algo = new LenskitAlgorithmInstanceBuilder();
+        AlgorithmInstanceBuilder algo = new AlgorithmInstanceBuilder();
         configureAlgorithm(algo.getConfig());
         evalCommand.addAlgorithm(algo);
 

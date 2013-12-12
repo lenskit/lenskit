@@ -122,7 +122,7 @@ public final class ItemSelectors {
                     if (initial.contains(item)) {
                         continue;
                     }
-                    // algorithm adapted from Wikipedia coverage of Fisher-Yates shuffle
+                    // algorithmInfo adapted from Wikipedia coverage of Fisher-Yates shuffle
                     // https://en.wikipedia.org/wiki/Fisher-Yates_shuffle
                     int j = rng.nextInt(n + 1);
                     if (j < nRandom) {

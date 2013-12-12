@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 
@@ -74,7 +74,7 @@ public class ExperimentOutputs {
         return recommendationWriter;
     }
 
-    public ExperimentOutputs getPrefixed(AlgorithmInstance algo, TTDataSet data) {
+    public ExperimentOutputs getPrefixed(Attributed algo, TTDataSet data) {
         TableWriter results = layouts.prefixTable(resultsWriter, algo, data);
         TableWriter user = layouts.prefixTable(userWriter, algo, data);
         TableWriter predict = layouts.prefixTable(predictionWriter, algo, data);

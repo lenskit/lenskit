@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
 
@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * A metric that evaluates an algorithm model.
+ * A metric that evaluates an algorithmInfo model.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
@@ -42,12 +42,12 @@ public interface ModelMetric extends Metric<TrainTestEvalTask> {
     List<String> getColumnLabels();
 
     /**
-     * Measure a model built by an algorithm.
+     * Measure a model built by an algorithmInfo.
      *
-     * @param instance The algorithm instance.
+     * @param algorithm The algorithm that the measurement comes from.
      * @param data The data set built on.
-     * @param recommender The recommender built from this algorithm.
+     * @param recommender The recommender built from this algorithm and data set.
      */
-    List<Object> measureAlgorithm(AlgorithmInstance instance, TTDataSet data,
+    List<Object> measureAlgorithm(Attributed algorithm, TTDataSet data,
                                   @Nullable Recommender recommender);
 }

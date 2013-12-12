@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -65,7 +65,7 @@ public class NDCGTopNMetric extends AbstractTestUserMetric {
     }
 
     @Override
-    public Accum makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
+    public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
         return new Accum();
     }
 

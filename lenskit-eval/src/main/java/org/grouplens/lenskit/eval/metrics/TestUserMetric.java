@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.eval.metrics;
 
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.traintest.TrainTestEvalTask;
 
@@ -41,18 +41,19 @@ public interface TestUserMetric extends Metric<TrainTestEvalTask> {
      * will be passed the predictions for each user in turn, then asked for the results
      * from the evaluation to insert into the results table.
      * <p/>
-     * One accumulator is created and used per evaluation (data set × algorithm).
+     * One accumulator is created and used per evaluation (data set × algorithmInfo).
      * <p/>
      * Individual accumulators do not need to be thread-safe, but it must
      * be possible to have multiple accumulators in separate threads in use concurrently.
      *
-     * @param algorithm The algorithm to be evaluated.
+     *
+     * @param algorithm The algorithmInfo to be evaluated.
      * @param dataSet   The data set being evaluated — used if the evaluator needs something
      *                  from it (such as the preference domain).
      * @return The result accumulator for aggregating prediction results over a single
      *         evaluation.
      */
-    TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algorithm, TTDataSet dataSet);
+    TestUserMetricAccumulator makeAccumulator(Attributed algorithm, TTDataSet dataSet);
 
     /**
      * Get labels for the aggregate columns output by this evaluator.

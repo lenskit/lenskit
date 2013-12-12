@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.eval.metrics.predict;
 
 import com.google.common.collect.ImmutableList;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -53,7 +53,7 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
     private static final ImmutableList<String> USER_COLUMNS = ImmutableList.of("MAE");
 
     @Override
-    public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
+    public TestUserMetricAccumulator makeAccumulator(Attributed algo, TTDataSet ds) {
         return new Accum();
     }
 

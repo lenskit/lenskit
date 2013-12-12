@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.algorithm;
+package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
@@ -49,7 +49,7 @@ import java.util.concurrent.ExecutionException;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class LenskitTestUser extends AbstractTestUser {
+public class LenskitTestUser extends AbstractTestUser {
     private final LenskitRecommender recommender;
     private final UserHistory<Event> userHistory;
     private final LoadingCache<RecommendRequest,Optional<List<ScoredId>>> recommendCache =

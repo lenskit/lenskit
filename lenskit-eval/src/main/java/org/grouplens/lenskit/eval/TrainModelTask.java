@@ -25,7 +25,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitRecommender;
-import org.grouplens.lenskit.eval.algorithm.LenskitAlgorithmInstance;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.util.LogContext;
 import org.slf4j.Logger;
@@ -34,12 +34,12 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 
 /**
- * Train a recommender algorithm and process it with a function.
+ * Train a recommender algorithmInfo and process it with a function.
  */
 public class TrainModelTask<T> extends AbstractTask<T> {
     private static final Logger logger = LoggerFactory.getLogger(TrainModelTask.class);
 
-    private LenskitAlgorithmInstance algorithm;
+    private AlgorithmInstance algorithm;
     private File writeFile;
     private DataSource inputData;
     private Function<LenskitRecommender, T> action;
@@ -52,7 +52,7 @@ public class TrainModelTask<T> extends AbstractTask<T> {
         super(name);
     }
 
-    public LenskitAlgorithmInstance getAlgorithm() {
+    public AlgorithmInstance getAlgorithm() {
         return algorithm;
     }
 
@@ -69,17 +69,17 @@ public class TrainModelTask<T> extends AbstractTask<T> {
     }
 
     /**
-     * Configure the algorithm.
-     * @param algo The algorithm to configure.
+     * Configure the algorithmInfo.
+     * @param algo The algorithmInfo to configure.
      * @return The command (for chaining).
      */
-    public TrainModelTask setAlgorithm(LenskitAlgorithmInstance algo) {
+    public TrainModelTask setAlgorithm(AlgorithmInstance algo) {
         algorithm = algo;
         return this;
     }
 
     /**
-     * Specify a file to write. The trained recommender algorithm will be written
+     * Specify a file to write. The trained recommender algorithmInfo will be written
      * to this file.
      * @param file The file name.
      * @return The command (for chaining).
