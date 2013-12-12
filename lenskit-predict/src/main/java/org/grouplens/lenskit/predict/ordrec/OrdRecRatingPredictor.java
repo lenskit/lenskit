@@ -23,6 +23,7 @@ package org.grouplens.lenskit.predict.ordrec;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.basic.AbstractRatingPredictor;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
@@ -63,7 +64,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
 
         private int levelCount;
         private double t1;
-        private double[] beta;
+        private MutableVec beta;
         ImmutableVec qtzValues;
 
         /**
@@ -79,16 +80,18 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
             qtzValues = qtz.getValues();
             levelCount = qtzValues.size();
             t1 = (qtzValues.get(0) + qtzValues.get(1))/2;
-            beta = new double[levelCount-2];
+            beta = MutableVec.create(levelCount-2);
             /*
 //            I comment this part so that you can double check the correction of it
             for(int i = 1; i <= beta.length; i++ ) {
                 beta[i-1] = Math.log((qtzValues.get(i+1)-qtzValues.get(i-1))/2);
             }
             */
-            beta[0] = Math.log((qtzValues.get(1) + qtzValues.get(2)) / 2 - t1);
-            for(int i = 2; i<= beta.length; i++) {
-                beta[i-1] = Math.log((qtzValues.get(i) + qtzValues.get(i+1)) / 2 - beta[i-2]);
+            double tr = t1;
+            for (int i = 1; i <= beta.size(); i++) {
+                double trnext = (qtzValues.get(i) + qtzValues.get(i+1)) / 2;
+                beta.set(i-1, Math.log(trnext - tr));
+                tr = trnext;
             }
         }
 
@@ -106,7 +109,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
          *
          * @return beta set.
          */
-        public double[] getBeta() {
+        public MutableVec getBeta() {
             return beta;
         }
 
@@ -131,11 +134,11 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
                 return Double.NEGATIVE_INFINITY;
             } else if(thresholdIndex == 0){
                 return tr;
-            } else if(thresholdIndex > beta.length) {
+            } else if(thresholdIndex > beta.size()) {
                 return Double.POSITIVE_INFINITY;
             } else {
                 for(int k = 0; k < thresholdIndex; k++)
-                    tr += Math.exp(beta[k]);
+                    tr += Math.exp(beta.get(k));
                 return tr;
             }
         }
@@ -191,7 +194,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         private void train(SparseVector ratings, MutableSparseVector scores) {
 
 
-            double[] dbeta = new double[beta.length];
+            MutableVec dbeta = MutableVec.create(beta.size());
             double dt1;
             // n is the number of iteration;
             for (int j = 0; j < iterationCount; j++ ) {
@@ -200,26 +203,44 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
                     double score = scores.get(iid);
                     int r = quantizer.index(rating.getValue());
 
-                    //this is the first parameter and threshold, the gradient is different from any others:
-                    dt1 = learningRate / getProbEQ(score,r) *
-                            ( getProbLE(score,r) * (1 - getProbLE(score,r)) * derivateOfBeta(r, 0, t1) -
-                                    getProbLE(score, r-1)*(1 - getProbLE(score, r-1)) * derivateOfBeta(r-1, 0, t1)
-                                    - regTerm*t1);
+                    double probEqualR = getProbEQ(score,r);
+                    double probLessR = getProbLE(score,r);
+                    double probLessR_1 = getProbLE(score, r-1);
 
-                    for(int k = 0; k < beta.length; k++) {
+                    dt1 = learningRate / probEqualR * ( probLessR * (1 - probLessR) * derivateOfBeta(r, 0, t1)
+                            - probLessR_1 * (1 - probLessR_1) * derivateOfBeta(r-1, 0, t1) - regTerm*t1);
 
-                        dbeta[k] = learningRate / getProbEQ(score,r) *
-                                ( getProbLE(score,r) * (1 - getProbLE(score,r)) * derivateOfBeta(r, k+1, beta[k]) -
-                                        getProbLE(score, r-1)*(1 - getProbLE(score, r-1)) *
-                                                derivateOfBeta(r-1, k+1, beta[k]) - regTerm*beta[k]);
+                    double dbetaK;
+                    for(int k = 0; k < beta.size(); k++) {
+
+                        dbetaK = learningRate / probEqualR * ( probLessR * (1 - probLessR) *
+                                derivateOfBeta(r, k+1, beta.get(k)) - probLessR_1 * (1 - probLessR_1) *
+                                derivateOfBeta(r-1, k+1, beta.get(k)) - regTerm*beta.get(k));
+                        dbeta.set(k, dbetaK);
 
                     }
                     t1 = t1 + dt1;
-                    for(int k = 0; k < beta.length; k++) {
-                        beta[k] = beta[k] + dbeta[k];
-                    }
+                    beta.add(dbeta);
                 }
             }
+        }
+
+        /**
+         * Get the probability distribution according to score and thresholds
+         * @param score The score
+         * @param vec The MutableVec to be filled in.
+         */
+        public void getProbDistribution(double score, MutableVec vec) {
+            double[] distribution = new double[getLevelCount()];
+            distribution[0] = getProbLE(score, 0);
+            double pre = distribution[0];
+            for(int i = 1; i < getLevelCount(); i++) {
+                double pro = getProbLE(score, i);
+                distribution[i] = pro - pre;
+                pre = pro;
+            }
+
+            vec.set(distribution);
         }
     }
 
@@ -273,42 +294,20 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         return vector;
     }
 
-
-    /**
-     * Get the probability distribution according to score and thresholds
-     * @param score The score
-     * @param p The OrdRecParameters contains all parameter of OrdRec, used to get probability.
-     * @return The double array of probability distribution.
-     */
-    public Vec getProbDistribution(double score, OrdRecModel p) {
-        double[] distribution = new double[p.getLevelCount()];
-        distribution[0] = p.getProbLE(score, 0);
-        double pre = distribution[0];
-        for(int i = 1; i < p.getLevelCount(); i++) {
-            double pro = p.getProbLE(score, i);
-            distribution[i] = pro - pre;
-            pre = pro;
-        }
-        for(double d : distribution)
-            System.out.print(d + ", ");
-        System.out.println();
-        return ImmutableVec.create(distribution);
-    }
-
-
     @Override
     public void predict(long uid, @Nonnull MutableSparseVector predictions) {
         OrdRecModel para = new OrdRecModel(quantizer);
         SparseVector ratings = makeUserVector(uid, userEventDao);
-        LongSet keySet = userEventDao.getEventsForUser(uid).itemSet();
+        LongSet keySet = LongUtils.setUnion(ratings.keySet(), predictions.keyDomain());
         MutableSparseVector scores = MutableSparseVector.create(keySet);
         itemScorer.score(uid, scores);
         para.train(ratings, scores);
 
         for (VectorEntry e: predictions.fast(VectorEntry.State.EITHER)) {
             long iid = e.getKey();
-            double score = itemScorer.score(uid, iid);
-            Vec probabilities = getProbDistribution(score, para);
+            double score = scores.get(iid);
+            MutableVec probabilities = MutableVec.create(para.getLevelCount());
+            para.getProbDistribution(score, probabilities);
             int ratingIndex = probabilities.largestDimension();
 
             predictions.set(e, quantizer.getIndexValue(ratingIndex));
