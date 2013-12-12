@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.algorithm
 import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
+import org.grouplens.lenskit.data.dao.EventDAO
 import org.grouplens.lenskit.eval.data.GenericDataSource
 import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.grouplens.lenskit.eval.traintest.ExternalAlgorithm
@@ -73,11 +74,11 @@ class AlgorithmInstanceConfigTest extends ConfigTestBase {
                     set StoppingThreshold to 0.001d
                     set MinimumIterations to 42
                 }
+                bind EventDAO to new EventCollectionDAO([])
             }
         }
         def algo = obj as AlgorithmInstance
-        def rec = algo.buildRecommender(new GenericDataSource("data", new EventCollectionDAO([])),
-                                        null, null);
+        def rec = algo.buildRecommender(null);
         def stop = rec.get(ThresholdStoppingCondition)
         assertThat(stop.threshold,
                    closeTo(0.001d, 1.0e-6d))
@@ -107,11 +108,11 @@ class AlgorithmInstanceConfigTest extends ConfigTestBase {
                     set StoppingThreshold to 0.001d
                     set MinimumIterations to 42
                 }
+                bind EventDAO to new EventCollectionDAO([])
             }
         }
         def algo = obj as AlgorithmInstance
-        def rec = algo.buildRecommender(new GenericDataSource("data", new EventCollectionDAO([])),
-                                        null, null);
+        def rec = algo.buildRecommender(null);
         def stop = rec.get(ThresholdStoppingCondition)
         assertThat(stop.threshold,
                    closeTo(0.001d, 1.0e-5d))

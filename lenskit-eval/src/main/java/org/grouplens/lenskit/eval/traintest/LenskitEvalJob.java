@@ -3,10 +3,14 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.LenskitRecommender;
+import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
-import org.grouplens.lenskit.eval.algorithm.RecommenderInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 
 import javax.annotation.Nonnull;
@@ -20,7 +24,7 @@ class LenskitEvalJob extends TrainTestJob {
     private final Provider<PreferenceSnapshot> snapshot;
     private final AlgorithmInstance algorithm;
 
-    private RecommenderInstance recommender;
+    private LenskitRecommender recommender;
 
     LenskitEvalJob(@Nonnull AlgorithmInstance algo,
                    @Nonnull TTDataSet ds,
@@ -36,7 +40,16 @@ class LenskitEvalJob extends TrainTestJob {
     protected void buildRecommender() throws RecommenderBuildException {
         Preconditions.checkState(recommender == null, "recommender already built");
         ExecutionInfo execInfo = buildExecInfo();
-        recommender = algorithm.makeTestableRecommender(dataSet, snapshot, execInfo);
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.addComponent(execInfo);
+        PreferenceDomain domain = dataSet.getPreferenceDomain();
+        if (domain != null) {
+            config.addComponent(domain);
+        }
+        config.addComponent(dataSet.getTrainingDAO());
+        config.bind(PreferenceSnapshot.class).toProvider(snapshot);
+        // FIXME Add the RNG
+        recommender = algorithm.buildRecommender(config);
     }
 
     private ExecutionInfo buildExecInfo() {
@@ -52,7 +65,7 @@ class LenskitEvalJob extends TrainTestJob {
     protected List<Object> getModelMeasurements() {
         List<Object> row = Lists.newArrayList();
         for (ModelMetric metric: measurements.getModelMetrics()) {
-            row.addAll(metric.measureAlgorithm(algorithmInfo, dataSet, recommender.getRecommender()));
+            row.addAll(metric.measureAlgorithm(algorithmInfo, dataSet, recommender));
         }
         return row;
     }
@@ -60,7 +73,8 @@ class LenskitEvalJob extends TrainTestJob {
     @Override
     protected TestUser getUserResults(long uid) {
         Preconditions.checkState(recommender != null, "recommender not built");
-        return recommender.getUserResults(uid);
+        UserHistory<Event> userData = dataSet.getTestData().getUserEventDAO().getEventsForUser(uid);
+        return new LenskitTestUser(recommender, userData);
     }
 
     @Override

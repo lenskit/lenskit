@@ -37,12 +37,12 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Build recommender graphs.
+ * Build recommender graphs.  You probably don't want to use this class.
  *
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class RecommenderGraphBuilder {
+public class RecommenderGraphBuilder {
     private static final int RESOLVE_DEPTH_LIMIT = 100;
 
     private List<BindingFunctionBuilder> configs = Lists.newArrayList();

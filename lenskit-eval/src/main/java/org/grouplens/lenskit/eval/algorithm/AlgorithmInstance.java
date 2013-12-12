@@ -22,12 +22,14 @@ package org.grouplens.lenskit.eval.algorithm;
 
 import com.google.common.base.Joiner;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
+import org.grouplens.lenskit.core.LenskitRecommenderEngineBuilder;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
@@ -123,98 +125,21 @@ public class AlgorithmInstance implements Attributed {
         random = rng;
         return this;
     }
-    
-    public LenskitRecommender buildRecommender(DataSource data,
-                                               @Nullable final Provider<? extends PreferenceSnapshot> sharedSnapshot,
-                                               @Nullable ExecutionInfo info) throws RecommenderBuildException {
-        return buildRecommender(data, null, sharedSnapshot, info);
-    }
 
-    public LenskitRecommender buildRecommender(DataSource data,
-                                               @Nullable DataSource queryData,
-                                               @Nullable final Provider<? extends PreferenceSnapshot> sharedSnapshot,
-                                               @Nullable ExecutionInfo info) throws RecommenderBuildException {
-        // Copy the config & set up a shared rating snapshot
-        LenskitConfiguration cfg = new LenskitConfiguration(config);
-
-        PreferenceDomain dom = data.getPreferenceDomain();
-        if (dom != null) {
-            cfg.bind(PreferenceDomain.class).to(dom);
+    /**
+     * Build a recommender.
+     * @param defaults Additional configuration.  This configuration comes <em>before</em> the
+     *                 algorithm's configuration, so it is overridden if appropriate.
+     * @return
+     * @throws RecommenderBuildException
+     */
+    public LenskitRecommender buildRecommender(LenskitConfiguration defaults) throws RecommenderBuildException {
+        LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
+        if (defaults != null) {
+            builder.addConfiguration(defaults);
         }
-
-        if (sharedSnapshot != null) {
-            cfg.bind(PreferenceSnapshot.class).toProvider(sharedSnapshot);
-        }
-
-        if (info != null) {
-            cfg.bind(ExecutionInfo.class).to(info);
-        }
-
-        if (random != null) {
-            cfg.bind(Random.class).to(random);
-        }
-        
-        cfg.bind(EventDAO.class).toProvider(data.getEventDAOProvider());
-
-        if (queryData != null) {
-            cfg.bind(QueryData.class, EventDAO.class).toProvider(queryData.getEventDAOProvider());
-        }
-
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(cfg);
-
-        return engine.createRecommender();
-    }
-
-    public RecommenderInstance makeTestableRecommender(TTDataSet data,
-                                                       Provider<? extends PreferenceSnapshot> snapshot,
-                                                       ExecutionInfo info) throws RecommenderBuildException {
-        return new RecInstance(buildRecommender(data.getTrainingData(),
-                                                data.getQueryData(),
-                                                snapshot, info),
-                               data.getTestData());
-    }
-
-    private static class RecInstance implements RecommenderInstance {
-        private final LenskitRecommender recommender;
-        private final DataSource testData;
-
-        public RecInstance(LenskitRecommender rec, DataSource test) {
-            recommender = rec;
-            testData = test;
-        }
-
-        @Override
-        public UserEventDAO getUserEventDAO() {
-            return recommender.get(UserEventDAO.class);
-        }
-
-        @Override
-        public TestUser getUserResults(long uid) {
-            return new LenskitTestUser(recommender, testData.getUserEventDAO().getEventsForUser(uid));
-        }
-
-        @Override
-        public SparseVector getPredictions(long uid, LongSet testItems) {
-            RatingPredictor rp = recommender.getRatingPredictor();
-            if (rp == null) return null;
-
-            return rp.predict(uid, testItems);
-        }
-
-        @Override
-        public List<ScoredId> getRecommendations(long uid, LongSet testItems, int n) {
-            ItemRecommender irec = recommender.getItemRecommender();
-            if (irec == null) {
-                return null;
-            }
-
-            return irec.recommend(uid, n, testItems, null);
-        }
-
-        @Override
-        public LenskitRecommender getRecommender() {
-            return recommender;
-        }
+        builder.addConfiguration(config);
+        return builder.build().createRecommender();
     }
 
     @Override

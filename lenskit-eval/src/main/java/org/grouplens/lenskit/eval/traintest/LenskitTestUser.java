@@ -37,7 +37,6 @@ import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
-import org.grouplens.lenskit.eval.traintest.AbstractTestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -51,7 +50,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class LenskitTestUser extends AbstractTestUser {
     private final LenskitRecommender recommender;
-    private final UserHistory<Event> userHistory;
+    private final UserHistory<Event> testHistory;
     private final LoadingCache<RecommendRequest,Optional<List<ScoredId>>> recommendCache =
             CacheBuilder.newBuilder().build(new RecommendLoader());
     private transient SparseVector predictionCache = null;
@@ -60,11 +59,11 @@ public class LenskitTestUser extends AbstractTestUser {
      * Construct a new test user.
      *
      * @param rec The LensKit recommender.
-     * @param uh The user history to test.
+     * @param testData The user history to test.
      */
-    public LenskitTestUser(LenskitRecommender rec, UserHistory<Event> uh) {
+    public LenskitTestUser(LenskitRecommender rec, UserHistory<Event> testData) {
         recommender = rec;
-        userHistory = uh;
+        testHistory = testData;
     }
 
     @Override
@@ -78,7 +77,7 @@ public class LenskitTestUser extends AbstractTestUser {
   
     @Override
     public UserHistory<Event> getTestHistory() {
-        return userHistory;
+        return testHistory;
     }
 
     @Override
