@@ -55,18 +55,26 @@ public final class RecommenderInstantiator {
     private static final Logger logger = LoggerFactory.getLogger(RecommenderInstantiator.class);
     private final InjectSPI spi = LenskitConfiguration.LENSKIT_SPI;
     private final DAGNode<CachedSatisfaction, DesireChain> graph;
+    private final Function<? super DAGNode<CachedSatisfaction, DesireChain>, Object> instantiator;
+
 
     public static RecommenderInstantiator create(DAGNode<CachedSatisfaction,DesireChain> g) {
-        return new RecommenderInstantiator(g);
+        return new RecommenderInstantiator(g, new StaticInjector(g));
+    }
+
+    public static RecommenderInstantiator create(DAGNode<CachedSatisfaction,DesireChain> g,
+                                                 Function<? super DAGNode<CachedSatisfaction,DesireChain>, Object> instantiator) {
+        return new RecommenderInstantiator(g, instantiator);
     }
 
     @Deprecated
     public static RecommenderInstantiator forConfig(LenskitConfiguration config) throws RecommenderConfigurationException {
-        return new RecommenderInstantiator(config.buildGraph());
+        return create(config.buildGraph());
     }
 
-    private RecommenderInstantiator(DAGNode<CachedSatisfaction, DesireChain> g) {
+    private RecommenderInstantiator(DAGNode<CachedSatisfaction, DesireChain> g, Function<? super DAGNode<CachedSatisfaction, DesireChain>, Object> inst) {
         graph = g;
+        instantiator = inst;
     }
 
     /**
@@ -89,7 +97,6 @@ public final class RecommenderInstantiator {
      * @throws RecommenderBuildException If there is an error instantiating the graph.
      */
     public DAGNode<CachedSatisfaction,DesireChain> instantiate() throws RecommenderBuildException {
-        final StaticInjector injector = new StaticInjector(graph);
         return replaceShareableNodes(new Function<DAGNode<CachedSatisfaction,DesireChain>, DAGNode<CachedSatisfaction,DesireChain>>() {
             @Nullable
             @Override
@@ -100,7 +107,7 @@ public final class RecommenderInstantiator {
                 if (node.getLabel().getSatisfaction().hasInstance()) {
                     return node;
                 }
-                Object obj = injector.instantiate(node);
+                Object obj = instantiator.apply(node);
                 CachedSatisfaction label = node.getLabel();
                 Satisfaction instanceSat;
                 if (obj == null) {

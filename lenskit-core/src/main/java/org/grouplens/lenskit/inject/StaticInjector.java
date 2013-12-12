@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.inject;
 
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 import org.grouplens.grapht.Injector;
@@ -30,6 +32,7 @@ import org.grouplens.grapht.spi.*;
 import org.grouplens.grapht.util.MemoizingProvider;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
@@ -40,7 +43,7 @@ import java.util.Map;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class StaticInjector implements Injector {
+public class StaticInjector implements Injector, Function<DAGNode<CachedSatisfaction,DesireChain>,Object> {
     private InjectSPI spi;
     private DAGNode<CachedSatisfaction, DesireChain> graph;
     private Map<DAGNode<CachedSatisfaction,DesireChain>, Provider<?>> providerCache;
@@ -126,6 +129,13 @@ public class StaticInjector implements Injector {
         Provider<?> p = getProvider(node);
 
         return p.get();
+    }
+
+    @Nonnull
+    @Override
+    public Object apply(@Nullable DAGNode<CachedSatisfaction, DesireChain> input) {
+        Preconditions.checkNotNull(input, "input node");
+        return instantiate(input);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
