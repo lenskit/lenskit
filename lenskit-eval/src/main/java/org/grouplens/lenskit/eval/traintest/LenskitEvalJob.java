@@ -7,7 +7,6 @@ import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
@@ -40,13 +39,8 @@ class LenskitEvalJob extends TrainTestJob {
     protected void buildRecommender() throws RecommenderBuildException {
         Preconditions.checkState(recommender == null, "recommender already built");
         ExecutionInfo execInfo = buildExecInfo();
-        LenskitConfiguration config = new LenskitConfiguration();
+        LenskitConfiguration config = dataSet.getTrainingData().getConfiguration().copy();
         config.addComponent(execInfo);
-        PreferenceDomain domain = dataSet.getPreferenceDomain();
-        if (domain != null) {
-            config.addComponent(domain);
-        }
-        config.addComponent(dataSet.getTrainingDAO());
         config.bind(PreferenceSnapshot.class).toProvider(snapshot);
         // FIXME Add the RNG
         recommender = algorithm.buildRecommender(config);

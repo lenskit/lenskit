@@ -130,13 +130,7 @@ public class TrainModelTask<T> extends AbstractTask<T> {
             timer.start();
             try {
                 logger.info("{}: building recommender {}", getName(), algorithm.getName());
-                LenskitConfiguration config = new LenskitConfiguration();
-                config.addComponent(inputData.getEventDAO());
-                PreferenceDomain dom = inputData.getPreferenceDomain();
-                if (dom != null) {
-                    config.addComponent(dom);
-                }
-                rec = algorithm.buildRecommender(config);
+                rec = algorithm.buildRecommender(inputData.getConfiguration());
             } catch (RecommenderBuildException e) {
                 throw new TaskExecutionException(getName() + ": error building recommender", e);
             }

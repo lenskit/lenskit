@@ -31,7 +31,7 @@ import javax.inject.Provider;
  */
 public class GenericDataSource extends AbstractDataSource {
     private String name;
-    private Provider<EventDAO> daoProvider;
+    private EventDAO dao;
     private PreferenceDomain domain;
 
     public GenericDataSource(String name, EventDAO dao) {
@@ -40,17 +40,7 @@ public class GenericDataSource extends AbstractDataSource {
 
     public GenericDataSource(String name, EventDAO dao, PreferenceDomain dom) {
         this.name = name;
-        daoProvider = Providers.of(dao);
-        domain = dom;
-    }
-
-    public GenericDataSource(String name, Provider<EventDAO> dao) {
-        this(name, dao, null);
-    }
-
-    public GenericDataSource(String name, Provider<EventDAO> dao, PreferenceDomain dom) {
-        this.name = name;
-        daoProvider = dao;
+        this.dao = dao;
         domain = dom;
     }
 
@@ -65,8 +55,8 @@ public class GenericDataSource extends AbstractDataSource {
     }
 
     @Override
-    public Provider<EventDAO> getEventDAOProvider() {
-        return daoProvider;
+    public EventDAO getEventDAO() {
+        return dao;
     }
 
     @Override

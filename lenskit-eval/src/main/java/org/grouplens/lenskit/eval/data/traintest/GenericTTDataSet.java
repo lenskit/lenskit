@@ -29,7 +29,6 @@ import org.grouplens.lenskit.eval.data.GenericDataSource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.inject.Provider;
 import java.util.Collections;
 import java.util.Map;
 
@@ -80,9 +79,9 @@ public class GenericTTDataSet implements TTDataSet {
      * @param domain The preference domain.
      */
     public GenericTTDataSet(@Nonnull String name,
-                            @Nonnull Provider<EventDAO> train,
-                            @Nullable Provider<EventDAO> query,
-                            @Nonnull Provider<EventDAO> test,
+                            @Nonnull EventDAO train,
+                            @Nullable EventDAO query,
+                            @Nonnull EventDAO test,
                             @Nullable PreferenceDomain domain) {
         Preconditions.checkNotNull(name);
         Preconditions.checkNotNull(train);

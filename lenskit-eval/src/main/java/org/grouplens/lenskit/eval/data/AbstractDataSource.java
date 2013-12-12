@@ -20,7 +20,9 @@
  */
 package org.grouplens.lenskit.eval.data;
 
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 
 /**
  * Base class to help implement data sources.
@@ -33,15 +35,6 @@ public abstract class AbstractDataSource implements DataSource {
     private transient volatile UserEventDAO userEventDAO;
     private transient volatile ItemDAO itemDAO;
     private transient volatile ItemEventDAO itemEventDAO;
-
-    /**
-     * Get an event DAO from the provider.
-     * @return The event DAO.
-     */
-    @Override
-    public EventDAO getEventDAO() {
-        return getEventDAOProvider().get();
-    }
 
     /**
      * Default user-event DAO implementation.  If the {@linkplain #getEventDAO() event DAO}
@@ -137,5 +130,16 @@ public abstract class AbstractDataSource implements DataSource {
             }
         }
         return userDAO;
+    }
+
+    @Override
+    public LenskitConfiguration getConfiguration() {
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.addComponent(getEventDAO());
+        PreferenceDomain dom = getPreferenceDomain();
+        if (dom != null) {
+            config.addComponent(dom);
+        }
+        return config;
     }
 }
