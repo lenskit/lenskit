@@ -60,7 +60,7 @@ public final class RecommenderInstantiator {
         return new RecommenderInstantiator(g);
     }
 
-    @SuppressWarnings("deprecation")
+    @Deprecated
     public static RecommenderInstantiator forConfig(LenskitConfiguration config) throws RecommenderConfigurationException {
         return new RecommenderInstantiator(config.buildGraph());
     }
