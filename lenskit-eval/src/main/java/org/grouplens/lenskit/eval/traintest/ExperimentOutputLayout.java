@@ -39,7 +39,7 @@ import java.util.Map;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class ExperimentOutputLayout {
+class ExperimentOutputLayout {
     private final TableLayout commonLayout;
     private Map<String, Integer> dataColumns;
     private Map<String, Integer> algoColumns;

@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
  * The outputs for an experiment.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class ExperimentOutputs {
+class ExperimentOutputs {
     private final ExperimentOutputLayout layouts;
     @Nonnull
     private final TableWriter resultsWriter;

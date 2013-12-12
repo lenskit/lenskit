@@ -34,7 +34,7 @@ import java.util.List;
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class MeasurementSuite {
+class MeasurementSuite {
     private final List<TestUserMetric> testUserMetrics;
     private final List<ModelMetric> modelMetrics;
     private final List<Pair<Symbol, String>> predictionChannels;

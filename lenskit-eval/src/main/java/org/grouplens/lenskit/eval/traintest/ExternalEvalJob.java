@@ -37,9 +37,10 @@ import java.util.List;
 import java.util.UUID;
 
 /**
+ * Job implementation for exeternal algorithms.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class ExternalEvalJob extends TrainTestJob {
+class ExternalEvalJob extends TrainTestJob {
     private static final Logger logger = LoggerFactory.getLogger(ExternalEvalJob.class);
     private final ExternalAlgorithm algorithm;
     private final UUID key;

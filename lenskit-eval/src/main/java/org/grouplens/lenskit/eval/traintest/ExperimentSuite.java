@@ -33,7 +33,7 @@ import java.util.Set;
  * A suite of experiments (algorithms and data sets).
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class ExperimentSuite {
+class ExperimentSuite {
     private final List<AlgorithmInstance> algorithms;
     private final List<ExternalAlgorithm> externalAlgorithms;
     private final List<TTDataSet> dataSets;
