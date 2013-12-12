@@ -26,8 +26,6 @@ import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.spi.CachedSatisfaction;
-import org.grouplens.grapht.spi.InjectSPI;
-import org.grouplens.grapht.spi.reflect.ReflectionInjectSPI;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.slf4j.Logger;
@@ -52,15 +50,11 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngine.class);
 
     private final DAGNode<CachedSatisfaction, DesireChain> graph;
-    private final InjectSPI spi;
     private final boolean instantiable;
 
     LenskitRecommenderEngine(DAGNode<CachedSatisfaction, DesireChain> dependencies,
-                             InjectSPI spi, boolean instantiable) {
-        Preconditions.checkArgument(spi instanceof ReflectionInjectSPI,
-                                    "SPI must be a reflection SPI");
+                             boolean instantiable) {
         this.graph = dependencies;
-        this.spi = spi;
         this.instantiable = instantiable;
     }
 
@@ -172,7 +166,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     @Override
     public LenskitRecommender createRecommender() {
         Preconditions.checkState(instantiable, "recommender engine does not have instantiable graph");
-        StaticInjector inj = new StaticInjector(spi, graph);
+        StaticInjector inj = new StaticInjector(graph);
         return new LenskitRecommender(inj);
     }
 
@@ -197,7 +191,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
         }
         GraphtUtils.checkForPlaceholders(toBuild, logger);
 
-        StaticInjector inj = new StaticInjector(spi, toBuild);
+        StaticInjector inj = new StaticInjector(toBuild);
         return new LenskitRecommender(inj);
     }
 

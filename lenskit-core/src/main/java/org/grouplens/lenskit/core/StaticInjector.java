@@ -47,11 +47,10 @@ class StaticInjector implements Injector {
     /**
      * Create a new static injector.
      *
-     * @param spi The inject SPI.
      * @param g   The object graph.
      */
-    public StaticInjector(InjectSPI spi, DAGNode<CachedSatisfaction, DesireChain> g) {
-        this.spi = spi;
+    public StaticInjector(DAGNode<CachedSatisfaction, DesireChain> g) {
+        spi = LenskitConfiguration.LENSKIT_SPI;
         graph = g;
         providerCache = Maps.newHashMap();
     }

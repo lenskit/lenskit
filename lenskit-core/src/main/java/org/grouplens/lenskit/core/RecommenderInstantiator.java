@@ -51,20 +51,19 @@ import java.util.Set;
  */
 public final class RecommenderInstantiator {
     private static final Logger logger = LoggerFactory.getLogger(RecommenderInstantiator.class);
-    private final InjectSPI spi;
+    private final InjectSPI spi = LenskitConfiguration.LENSKIT_SPI;
     private final DAGNode<CachedSatisfaction, DesireChain> graph;
 
-    static RecommenderInstantiator create(InjectSPI spi, DAGNode<CachedSatisfaction,DesireChain> g) {
-        return new RecommenderInstantiator(spi, g);
+    static RecommenderInstantiator create(DAGNode<CachedSatisfaction,DesireChain> g) {
+        return new RecommenderInstantiator(g);
     }
 
     @SuppressWarnings("deprecation")
     public static RecommenderInstantiator forConfig(LenskitConfiguration config) throws RecommenderConfigurationException {
-        return new RecommenderInstantiator(config.getSPI(), config.buildGraph());
+        return new RecommenderInstantiator(config.buildGraph());
     }
 
-    private RecommenderInstantiator(InjectSPI spi, DAGNode<CachedSatisfaction, DesireChain> g) {
-        this.spi = spi;
+    private RecommenderInstantiator(DAGNode<CachedSatisfaction, DesireChain> g) {
         graph = g;
     }
 
@@ -88,7 +87,7 @@ public final class RecommenderInstantiator {
      * @throws RecommenderBuildException If there is an error instantiating the graph.
      */
     public DAGNode<CachedSatisfaction,DesireChain> instantiate() throws RecommenderBuildException {
-        final StaticInjector injector = new StaticInjector(spi, graph);
+        final StaticInjector injector = new StaticInjector(graph);
         return replaceShareableNodes(new Function<DAGNode<CachedSatisfaction,DesireChain>, DAGNode<CachedSatisfaction,DesireChain>>() {
             @Nullable
             @Override

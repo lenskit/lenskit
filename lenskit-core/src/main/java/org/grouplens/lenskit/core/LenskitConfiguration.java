@@ -28,6 +28,7 @@ import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.InjectSPI;
+import org.grouplens.grapht.spi.reflect.ReflectionInjectSPI;
 import org.grouplens.lenskit.*;
 
 import java.lang.annotation.Annotation;
@@ -55,12 +56,13 @@ public class LenskitConfiguration extends AbstractConfigContext {
             ItemRecommender.class,
             GlobalItemRecommender.class
     };
+    public static final InjectSPI LENSKIT_SPI = new ReflectionInjectSPI();
 
     private final BindingFunctionBuilder bindings;
     private final Set<Class<?>> roots;
 
     public LenskitConfiguration() {
-        bindings = new BindingFunctionBuilder();
+        bindings = new BindingFunctionBuilder(LENSKIT_SPI, true);
         roots = new HashSet<Class<?>>();
         Collections.addAll(roots, INITIAL_ROOTS);
     }

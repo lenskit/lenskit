@@ -147,7 +147,7 @@ public class LenskitRecommenderEngineLoader {
             break; /* do nothing, mark it as instantiable. */
         }
 
-        return new LenskitRecommenderEngine(graph, spi, instantiable);
+        return new LenskitRecommenderEngine(graph, instantiable);
     }
 
     public LenskitRecommenderEngine load(File file) throws IOException, RecommenderConfigurationException {

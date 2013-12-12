@@ -22,7 +22,6 @@ package org.grouplens.lenskit.core;
 
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -47,13 +46,7 @@ public class RecommenderGraphBuilder {
 
     private List<BindingFunctionBuilder> configs = Lists.newArrayList();
     private Set<Class<?>> roots = Sets.newHashSet();
-    private InjectSPI spi;
     private Function<BindingFunction, BindingFunction> bindingTransform = Functions.identity();
-
-    public InjectSPI getSPI() {
-        Preconditions.checkNotNull(spi, "SPI cannot be null");
-        return spi;
-    }
 
     /**
      * Set a function to transform the bind rules used to build the dependency solver.
@@ -75,10 +68,6 @@ public class RecommenderGraphBuilder {
      */
     public RecommenderGraphBuilder addBindings(BindingFunctionBuilder bld) {
         configs.add(bld);
-        if (spi == null) {
-            // FIXME SPI should be routed more sanely
-            spi = bld.getSPI();
-        }
         return this;
     }
 
@@ -105,13 +94,14 @@ public class RecommenderGraphBuilder {
             dsb.addBindingFunction(bindingTransform.apply(cfg.build(BindingFunctionBuilder.RuleSet.SUPER_TYPES)));
         }
         // default desire function cannot trigger rewrites
-        dsb.addBindingFunction(new DefaultDesireBindingFunction(spi), false);
+        dsb.addBindingFunction(new DefaultDesireBindingFunction(LenskitConfiguration.LENSKIT_SPI), false);
         dsb.setDefaultPolicy(CachePolicy.MEMOIZE);
         dsb.setMaxDepth(RESOLVE_DEPTH_LIMIT);
         return dsb.build();
     }
 
     public DAGNode<CachedSatisfaction,DesireChain> buildGraph() throws SolverException {
+        InjectSPI spi = LenskitConfiguration.LENSKIT_SPI;
         DependencySolver solver = buildDependencySolver();
         for (Class<?> root: roots) {
             solver.resolve(spi.desire(null, root, true));

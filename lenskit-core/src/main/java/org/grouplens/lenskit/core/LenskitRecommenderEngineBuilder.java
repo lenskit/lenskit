@@ -95,7 +95,7 @@ public class LenskitRecommenderEngineBuilder {
         }
         RecommenderInstantiator inst;
         try {
-            inst = RecommenderInstantiator.create(rgb.getSPI(), rgb.buildGraph());
+            inst = RecommenderInstantiator.create(rgb.buildGraph());
         } catch (SolverException e) {
             throw new RecommenderBuildException("Cannot resolve recommender graph", e);
         }
@@ -104,7 +104,7 @@ public class LenskitRecommenderEngineBuilder {
         graph = rewriteGraph(graph);
 
         boolean instantiable = GraphtUtils.getPlaceholderNodes(graph).isEmpty();
-        return new LenskitRecommenderEngine(graph, rgb.getSPI(), instantiable);
+        return new LenskitRecommenderEngine(graph, instantiable);
     }
 
     private DAGNode<CachedSatisfaction, DesireChain> rewriteGraph(DAGNode<CachedSatisfaction, DesireChain> graph) throws RecommenderConfigurationException {
