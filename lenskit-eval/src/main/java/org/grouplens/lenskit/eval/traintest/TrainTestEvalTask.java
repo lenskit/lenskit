@@ -24,13 +24,16 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.graph.DAGNodeBuilder;
+import org.grouplens.grapht.graph.MergePool;
+import org.grouplens.grapht.solver.DesireChain;
+import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
@@ -51,11 +54,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.inject.Provider;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -73,6 +76,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private List<ModelMetric> modelMetrics;
     private List<Pair<Symbol,String>> predictChannels;
     private boolean isolate;
+    private boolean separateAlgorithms;
     private File outputFile;
     private File userOutputFile;
     private File predictOutputFile;
@@ -219,8 +223,6 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return setRecommendOutput(new File(fn));
     }
 
-
-
     /**
      * Control whether the train-test evaluator will isolate data sets.  If set to {@code true},
      * then each data set will be run in turn, with no inter-data-set parallelism.  This can
@@ -233,6 +235,20 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      */
     public TrainTestEvalTask setIsolate(boolean iso) {
         isolate = iso;
+        return this;
+    }
+
+    /**
+     * Control whether the evaluator separates or combines algorithms.  If set to {@code true}, each
+     * algorithm instance is built without reusing components from other algorithm instances.
+     * By default, LensKit will try to reuse common components between algorithm configurations
+     * (one downside of this is that it makes build timings meaningless).
+     *
+     * @param sep If {@code true}, separate algorithms.
+     * @return The task (for chaining).
+     */
+    public TrainTestEvalTask setSeparateAlgorithms(boolean sep) {
+        separateAlgorithms = sep;
         return this;
     }
 
@@ -333,11 +349,11 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return layout;
     }
 
-    private ExperimentSuite createExperimentSuite() {
+    ExperimentSuite createExperimentSuite() {
         return new ExperimentSuite(algorithms, externalAlgorithms, dataSets);
     }
 
-    private MeasurementSuite createMeasurementSuite() {
+    MeasurementSuite createMeasurementSuite() {
         return new MeasurementSuite(metrics, modelMetrics, predictChannels);
     }
 
@@ -359,23 +375,14 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         }
     }
 
-    DAGNode<TaskGraph.Node,TaskGraph.Edge> makeJobGraph(ExperimentSuite experiments, MeasurementSuite measurements, ExperimentOutputs outputs) {
+    DAGNode<TaskGraph.Node,TaskGraph.Edge> makeJobGraph(ExperimentSuite experiments, MeasurementSuite measurements, ExperimentOutputs outputs) throws TaskExecutionException {
         DAGNode<TaskGraph.Node,TaskGraph.Edge> graph = null;
         DAGNodeBuilder<TaskGraph.Node,TaskGraph.Edge> builder =
                 DAGNode.newBuilder(TaskGraph.groupNode());
         for (TTDataSet dataset : experiments.getDataSets()) {
-            final Provider<PreferenceSnapshot> snap = SharedPreferenceSnapshot.provider(dataset);
             // Add LensKit algorithms
-            for (AlgorithmInstance algo: experiments.getAlgorithms()) {
-                TrainTestJob job = new LenskitEvalJob(algo, dataset, measurements,
-                                                      outputs.getPrefixed(algo, dataset),
-                                                      snap);
-                DAGNodeBuilder<TaskGraph.Node, TaskGraph.Edge> nb = DAGNode.newBuilder();
-                nb.setLabel(TaskGraph.jobNode(job));
-                if (graph != null) {
-                    nb.addEdge(graph, TaskGraph.edge());
-                }
-                builder.addEdge(nb.build(), TaskGraph.edge());
+            for (DAGNode<TaskGraph.Node, TaskGraph.Edge> node: makeAlgorithmNodes(experiments, measurements, dataset, outputs, graph)) {
+                builder.addEdge(node, TaskGraph.edge());
             }
 
             // Add external algorithms
@@ -401,10 +408,98 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return graph;
     }
 
+    public List<DAGNode<TaskGraph.Node,TaskGraph.Edge>>
+    makeAlgorithmNodes(ExperimentSuite experiments, MeasurementSuite measurements,
+                       TTDataSet dataset, ExperimentOutputs outputs,
+                       DAGNode<TaskGraph.Node, TaskGraph.Edge> commonDep) throws TaskExecutionException {
+        try {
+            if (separateAlgorithms) {
+                return makeSeparateAlgoNodes(experiments, measurements, dataset, outputs, commonDep);
+            } else {
+                return makeMergedAlgoNodes(experiments, measurements, dataset, outputs, commonDep);
+            }
+        } catch (RecommenderConfigurationException ex) {
+            throw new TaskExecutionException("error configuring recommender", ex);
+        }
+    }
+
+    private List<DAGNode<TaskGraph.Node, TaskGraph.Edge>>
+    makeSeparateAlgoNodes(ExperimentSuite experiments, MeasurementSuite measurements, TTDataSet dataset, ExperimentOutputs outputs,
+                          DAGNode<TaskGraph.Node, TaskGraph.Edge> commonDep) throws RecommenderConfigurationException {
+        List<DAGNode<TaskGraph.Node, TaskGraph.Edge>> nodes = Lists.newArrayList();
+        for (AlgorithmInstance algo: experiments.getAlgorithms()) {
+            DAGNode<CachedSatisfaction, DesireChain> graph =
+                    algo.buildRecommenderGraph(dataset.getTrainingData().getConfiguration());
+            TrainTestJob job = new LenskitEvalJob(algo, dataset, measurements,
+                                                  outputs.getPrefixed(algo, dataset), graph);
+            DAGNodeBuilder<TaskGraph.Node, TaskGraph.Edge> nb = DAGNode.newBuilder();
+            nb.setLabel(TaskGraph.jobNode(job));
+            if (commonDep != null) {
+                nb.addEdge(commonDep, TaskGraph.edge());
+            }
+            nodes.add(nb.build());
+        }
+        return nodes;
+    }
+
+    private List<DAGNode<TaskGraph.Node, TaskGraph.Edge>>
+    makeMergedAlgoNodes(ExperimentSuite experiments, MeasurementSuite measurements, TTDataSet dataset, ExperimentOutputs outputs,
+                        DAGNode<TaskGraph.Node, TaskGraph.Edge> commonDep) throws RecommenderConfigurationException {
+        List<DAGNode<TaskGraph.Node, TaskGraph.Edge>> nodes = Lists.newArrayList();
+        MergePool<CachedSatisfaction,DesireChain> mergePool = MergePool.create();
+        List<DAGNode<CachedSatisfaction,DesireChain>> graphs = Lists.newArrayList();
+        Set<DAGNode<CachedSatisfaction,DesireChain>> allNodes = Sets.newHashSet();
+        for (AlgorithmInstance algo: experiments.getAlgorithms()) {
+            logger.debug("building graph for algorithm {}", algo);
+            // Build the graph
+            DAGNode<CachedSatisfaction, DesireChain> graph =
+                    algo.buildRecommenderGraph(dataset.getTrainingData().getConfiguration());
+            // Merge it with all previously-seen graphs
+            graph = mergePool.merge(graph);
+            logger.debug("algorithm {} has {} new configuration nodes", algo,
+                         Sets.difference(allNodes, graph.getReachableNodes()).size());
+            allNodes.addAll(graph.getReachableNodes());
+
+            // Create the job
+            LenskitEvalJob job = new LenskitEvalJob(algo, dataset, measurements,
+                                                    outputs.getPrefixed(algo, dataset),
+                                                    graph);
+
+            DAGNodeBuilder<TaskGraph.Node, TaskGraph.Edge> nb = DAGNode.newBuilder();
+            nb.setLabel(TaskGraph.jobNode(job));
+            if (commonDep != null) {
+                nb.addEdge(commonDep, TaskGraph.edge());
+            }
+
+            // Scan for all nodes we depend on. The first to introduce a node gets it.
+            assert nodes.size() == graphs.size();
+            Set<DAGNode<CachedSatisfaction,DesireChain>> seen = Sets.newHashSet();
+            logger.debug("finding dependencies of {}", job);
+            for (int i = 0; i < nodes.size(); i++) {
+                DAGNode<CachedSatisfaction, DesireChain> other = graphs.get(i);
+                Set<DAGNode<CachedSatisfaction,DesireChain>> freshCommon = Sets.newHashSet();
+                freshCommon.addAll(other.getReachableNodes());
+                freshCommon.addAll(graph.getReachableNodes());
+                freshCommon.removeAll(seen);
+                if (!freshCommon.isEmpty()) {
+                    // new nodes, make a dependency
+                    logger.debug("{} depends on {}", job, nodes.get(i).getLabel());
+                    nb.addEdge(nodes.get(i), TaskGraph.edge());
+                }
+                seen.addAll(freshCommon);
+            }
+            graphs.add(graph);
+            DAGNode<TaskGraph.Node, TaskGraph.Edge> jobNode = nb.build();
+            logger.debug("{} has {} dependencies", job, jobNode.getAdjacentNodes().size());
+            nodes.add(jobNode);
+        }
+        return nodes;
+    }
+
     /**
      * Prepare the evaluation by opening all outputs and initializing metrics.
      */
-    private ExperimentOutputs openExperimentOutputs(ExperimentOutputLayout layouts, TableWriter results, Closer closer) throws IOException {
+    ExperimentOutputs openExperimentOutputs(ExperimentOutputLayout layouts, TableWriter results, Closer closer) throws IOException {
         logger.info("Starting evaluation");
         TableLayout resultLayout = layouts.getResultsLayout();
         TableWriter allResults = results;

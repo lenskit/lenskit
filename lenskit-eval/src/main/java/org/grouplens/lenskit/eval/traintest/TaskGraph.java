@@ -36,7 +36,9 @@ class TaskGraph {
         return Edge.NONE;
     }
 
-    public abstract static interface Node extends Callable<Void> {}
+    public abstract static interface Node extends Callable<Void> {
+        TrainTestJob getJob();
+    }
 
     static class NoopNode implements Node {
         @Override
@@ -48,6 +50,11 @@ class TaskGraph {
         public String toString() {
             return "no-op";
         }
+
+        @Override
+        public TrainTestJob getJob() {
+            return null;
+        }
     }
 
     static class JobNode implements Node {
@@ -55,6 +62,11 @@ class TaskGraph {
 
         JobNode(TrainTestJob job) {
             this.job = job;
+        }
+
+        @Override
+        public TrainTestJob getJob() {
+            return job;
         }
 
         @Override

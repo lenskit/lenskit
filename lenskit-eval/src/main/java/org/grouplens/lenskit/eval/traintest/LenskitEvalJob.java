@@ -2,26 +2,25 @@ package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.solver.DesireChain;
+import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.inject.RecommenderInstantiator;
 
 import javax.annotation.Nonnull;
-import javax.inject.Provider;
 import java.util.List;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class LenskitEvalJob extends TrainTestJob {
-    private final Provider<PreferenceSnapshot> snapshot;
-    private final AlgorithmInstance algorithm;
+    private final DAGNode<CachedSatisfaction, DesireChain> recommenderGraph;
 
     private LenskitRecommender recommender;
 
@@ -29,30 +28,17 @@ class LenskitEvalJob extends TrainTestJob {
                    @Nonnull TTDataSet ds,
                    @Nonnull MeasurementSuite measures,
                    @Nonnull ExperimentOutputs out,
-                   Provider<PreferenceSnapshot> snap) {
+                   DAGNode<CachedSatisfaction, DesireChain> graph) {
         super(algo, ds, measures, out);
-        algorithm = algo;
-        snapshot = snap;
+        recommenderGraph = graph;
     }
 
     @Override
     protected void buildRecommender() throws RecommenderBuildException {
         Preconditions.checkState(recommender == null, "recommender already built");
-        ExecutionInfo execInfo = buildExecInfo();
-        LenskitConfiguration config = dataSet.getTrainingData().getConfiguration().copy();
-        config.addComponent(execInfo);
-        config.bind(PreferenceSnapshot.class).toProvider(snapshot);
-        // FIXME Add the RNG
-        recommender = algorithm.buildRecommender(config);
-    }
-
-    private ExecutionInfo buildExecInfo() {
-        ExecutionInfo.Builder bld = new ExecutionInfo.Builder();
-        bld.setAlgoName(algorithmInfo.getName())
-           .setAlgoAttributes(algorithmInfo.getAttributes())
-           .setDataName(dataSet.getName())
-           .setDataAttributes(dataSet.getAttributes());
-        return bld.build();
+        RecommenderInstantiator ri = RecommenderInstantiator.create(recommenderGraph);
+        DAGNode<CachedSatisfaction, DesireChain> graph = ri.instantiate();
+        recommender = new LenskitRecommender(graph);
     }
 
     @Override

@@ -94,8 +94,7 @@ public class LenskitRecommenderEngineBuilder {
         logger.debug("building graph from {} configurations", configurations.size());
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
         for (Pair<LenskitConfiguration,ModelDisposition> cfg: configurations) {
-            rgb.addBindings(cfg.getLeft().getBindings());
-            rgb.addRoots(cfg.getLeft().getRoots());
+            rgb.addConfiguration(cfg.getLeft());
         }
         RecommenderInstantiator inst;
         try {

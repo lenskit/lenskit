@@ -139,11 +139,11 @@ public class LenskitConfiguration extends AbstractConfigContext {
         solver.resolve(bindings.getSPI().desire(null, type, true));
     }
 
-    BindingFunctionBuilder getBindings() {
+    public BindingFunctionBuilder getBindings() {
         return bindings;
     }
 
-    Set<Class<?>> getRoots() {
+    public Set<Class<?>> getRoots() {
         return ImmutableSet.copyOf(roots);
     }
 

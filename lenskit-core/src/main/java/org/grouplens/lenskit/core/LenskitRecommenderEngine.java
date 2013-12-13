@@ -30,7 +30,6 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
-import org.grouplens.lenskit.inject.StaticInjector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,8 +168,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     @Override
     public LenskitRecommender createRecommender() {
         Preconditions.checkState(instantiable, "recommender engine does not have instantiable graph");
-        StaticInjector inj = new StaticInjector(graph);
-        return new LenskitRecommender(inj);
+        return new LenskitRecommender(graph);
     }
 
     /**
@@ -194,8 +192,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
         }
         GraphtUtils.checkForPlaceholders(toBuild, logger);
 
-        StaticInjector inj = new StaticInjector(toBuild);
-        return new LenskitRecommender(inj);
+        return new LenskitRecommender(toBuild);
     }
 
     /**

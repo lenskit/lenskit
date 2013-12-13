@@ -83,6 +83,17 @@ public class RecommenderGraphBuilder {
     }
 
     /**
+     * Add a recommender configuration.
+     * @param config The configuration.
+     * @return The graph builder (for chaining).
+     */
+    public RecommenderGraphBuilder addConfiguration(LenskitConfiguration config) {
+        addBindings(config.getBindings());
+        addRoots(config.getRoots());
+        return this;
+    }
+
+    /**
      * Build a dependency solver from the provided bindings.
      *
      * @return The dependency solver.

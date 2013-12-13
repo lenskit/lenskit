@@ -21,37 +21,21 @@
 package org.grouplens.lenskit.eval.algorithm;
 
 import com.google.common.base.Joiner;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.lenskit.ItemRecommender;
-import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.grapht.solver.DesireChain;
+import org.grouplens.grapht.solver.SolverException;
+import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.LenskitRecommender;
-import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineBuilder;
-import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.dao.UserEventDAO;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.grouplens.lenskit.core.*;
 import org.grouplens.lenskit.eval.Attributed;
-import org.grouplens.lenskit.eval.ExecutionInfo;
-import org.grouplens.lenskit.eval.data.DataSource;
-import org.grouplens.lenskit.eval.data.traintest.QueryData;
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.script.BuiltBy;
-import org.grouplens.lenskit.eval.traintest.LenskitTestUser;
-import org.grouplens.lenskit.eval.traintest.TestUser;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.inject.Provider;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -140,6 +124,30 @@ public class AlgorithmInstance implements Attributed {
         }
         builder.addConfiguration(config);
         return builder.build().createRecommender();
+    }
+
+    /**
+     * Build a recommender graph (but don't instantiate any objects).
+     *
+     * @param defaults Additional configuration.  This configuration comes <em>before</em> the
+     *                 algorithm's configuration, so it is overridden if appropriate.
+     * @return The recommender graph.
+     * @throws RecommenderBuildException if there is an error configuring the recommender.
+     */
+    public DAGNode<CachedSatisfaction,DesireChain> buildRecommenderGraph(LenskitConfiguration defaults) throws RecommenderConfigurationException {
+        LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
+        if (defaults != null) {
+            builder.addConfiguration(defaults);
+        }
+        builder.addConfiguration(config);
+        RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
+        rgb.addConfiguration(defaults);
+        rgb.addConfiguration(config);
+        try {
+            return rgb.buildGraph();
+        } catch (SolverException e) {
+            throw new RecommenderConfigurationException("error configuring recommender", e);
+        }
     }
 
     @Override

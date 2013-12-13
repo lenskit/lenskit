@@ -20,9 +20,12 @@
  */
 package org.grouplens.lenskit.eval.traintest
 
+import com.google.common.collect.Sets
+import com.google.common.io.Closer
 import org.apache.commons.lang3.tuple.Pair
 import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
+import org.grouplens.lenskit.baseline.UserMeanBaseline
 import org.grouplens.lenskit.baseline.UserMeanItemScorer
 import org.grouplens.lenskit.data.dao.DataAccessException
 import org.grouplens.lenskit.eval.EvalConfig
@@ -38,15 +41,14 @@ import org.grouplens.lenskit.eval.script.DefaultConfigDelegate
 import org.grouplens.lenskit.eval.script.EvalScript
 import org.grouplens.lenskit.eval.script.EvalScriptEngine
 import org.grouplens.lenskit.symbols.Symbol
+import org.grouplens.lenskit.util.table.TableBuilder
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
 import static org.hamcrest.Matchers.*
-import static org.junit.Assert.assertThat
-import static org.junit.Assert.assertTrue
-import static org.junit.Assert.fail
+import static org.junit.Assert.*
 
 /**
  * Tests for train-test configurations; they also serve to test the command delegate
@@ -76,6 +78,9 @@ class TrainTestTaskTest {
         file.append('5,2,3,881250949\n')
         file.append('5,1,3,881250949\n')
         file.append('5,5,3,881250949\n')
+        file = folder.newFile("global-test.csv")
+        file.append('1,4,3.0\n')
+        file.append('3,3,4.5\n')
     }
 
     @Before
@@ -283,5 +288,96 @@ class TrainTestTaskTest {
             assertThat(e.cause, anyOf(instanceOf(DataAccessException),
                                       instanceOf(IOException)))
         }
+    }
+
+    @Test
+    public void testMergedGraph() {
+        eval {
+            dataset {
+                train "$folder.root.absolutePath/ratings.csv"
+                test "$folder.root/absolutePath/global-test.csv"
+            }
+            algorithm("PersMean") {
+                bind ItemScorer to UserMeanItemScorer
+                bind (UserMeanBaseline, ItemMeanRatingItemScorer)
+            }
+            algorithm("UserMean") {
+                bind ItemScorer to UserMeanItemScorer
+            }
+            algorithm("ItemMean") {
+                bind ItemScorer to ItemMeanRatingItemScorer
+            }
+            output null
+        }
+        // FIXME Encapsulate more of this
+        def exp = command.createExperimentSuite()
+        def measures = command.createMeasurementSuite()
+        def layout = ExperimentOutputLayout.create(exp, measures)
+        def table = new TableBuilder(layout.resultsLayout)
+        def out = command.openExperimentOutputs(layout, table, Closer.create())
+        def jobGraph = command.makeJobGraph(exp, measures, out)
+        assertThat jobGraph.adjacentNodes, hasSize(3)
+
+        // We should have some dependencies
+        def sorted = jobGraph.sortedNodes
+        assertThat sorted[1].adjacentNodes, contains(sorted[0])
+        assertThat sorted[2].adjacentNodes, anyOf(hasItem(sorted[0]), hasItem(sorted[1]))
+
+        def jobs = jobGraph.adjacentNodes.toList().collect {
+            it.getLabel().job as LenskitEvalJob
+        }
+        def common = jobs.collect({
+            it.recommenderGraph.reachableNodes
+        }).inject({ j1, j2 ->
+            Sets.intersection(j1, j2)
+        })
+        assertThat common, hasSize(greaterThan(0))
+    }
+
+    @Test
+    public void testSeparatedGraph() {
+        eval {
+            dataset {
+                train "$folder.root.absolutePath/ratings.csv"
+                test "$folder.root/absolutePath/global-test.csv"
+            }
+            algorithm("PersMean") {
+                bind ItemScorer to UserMeanItemScorer
+                bind (UserMeanBaseline, ItemMeanRatingItemScorer)
+            }
+            algorithm("UserMean") {
+                bind ItemScorer to UserMeanItemScorer
+            }
+            algorithm("ItemMean") {
+                bind ItemScorer to ItemMeanRatingItemScorer
+            }
+            output null
+            separateAlgorithms true
+        }
+        // FIXME Encapsulate more of this
+        def exp = command.createExperimentSuite()
+        def measures = command.createMeasurementSuite()
+        def layout = ExperimentOutputLayout.create(exp, measures)
+        def table = new TableBuilder(layout.resultsLayout)
+        def out = command.openExperimentOutputs(layout, table, Closer.create())
+        def jobGraph = command.makeJobGraph(exp, measures, out)
+        assertThat jobGraph.adjacentNodes, hasSize(3)
+
+        // We should have no dependencies
+        for (node in jobGraph.adjacentNodes) {
+            assertThat node.adjacentNodes, hasSize(0)
+        }
+
+        def jobs = jobGraph.adjacentNodes.toList().collect {
+            it.getLabel().job as LenskitEvalJob
+        }
+        def common = jobs.collect({
+            it.recommenderGraph.reachableNodes
+        }).inject({ j1, j2 ->
+            def isect = Sets.intersection(j1, j2)
+            assertThat isect, hasSize(0)
+            isect
+        })
+        assertThat common, hasSize(0)
     }
 }
