@@ -513,7 +513,9 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                 freshCommon.removeAll(seen);
                 if (!freshCommon.isEmpty()) {
                     // new nodes, make a dependency
-                    logger.debug("{} depends on {}", job, nodes.get(i).getLabel());
+                    logger.debug("{} depends on {} for {} nodes",
+                                 job, nodes.get(i).getLabel(),
+                                 freshCommon.size());
                     nb.addEdge(nodes.get(i), TaskGraph.edge());
                 }
                 seen.addAll(freshCommon);
