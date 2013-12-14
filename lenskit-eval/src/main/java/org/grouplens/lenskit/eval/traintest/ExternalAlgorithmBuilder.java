@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
@@ -115,6 +116,10 @@ public class ExternalAlgorithmBuilder implements Builder<ExternalAlgorithm> {
     public ExternalAlgorithmBuilder setCommand(List<String> cmd) {
         command = cmd;
         return this;
+    }
+
+    public ExternalAlgorithmBuilder setCommand(String... cmd) {
+        return setCommand(ImmutableList.copyOf(cmd));
     }
 
     /**
