@@ -29,6 +29,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.Serializable;
 import java.util.Iterator;
 
 /**
@@ -44,7 +45,9 @@ import java.util.Iterator;
  */
 @DefaultProvider(ItemItemBuildContextProvider.class)
 @Shareable
-public class ItemItemBuildContext {
+public class ItemItemBuildContext implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Nonnull
     private
     LongSortedSet items;
