@@ -133,7 +133,9 @@ class ExternalEvalJob extends TrainTestJob {
                 result = proc.waitFor();
                 done = true;
             } catch (InterruptedException e) {
-                /* try again */
+                logger.info("thread interrupted, killing subprocess");
+                proc.destroy();
+                throw new RecommenderBuildException("recommender build interrupted", e);
             }
         }
 
