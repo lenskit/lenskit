@@ -132,6 +132,15 @@ public class ExternalAlgorithmBuilder implements Builder<ExternalAlgorithm> {
         return this;
     }
 
+    /**
+     * Set the working directory for the external recommender.
+     * @param dir The working directory.
+     * @return The working directory.
+     */
+    public ExternalAlgorithmBuilder setWorkDir(String dir) {
+        return setWorkDir(new File(dir));
+    }
+
     /***
      * Set the delimiter of the recommender's output file.
      * @param delim The output delimiter.
