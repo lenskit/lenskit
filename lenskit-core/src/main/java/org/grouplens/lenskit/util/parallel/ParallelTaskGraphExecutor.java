@@ -44,12 +44,13 @@ class ParallelTaskGraphExecutor extends TaskGraphExecutor {
     }
 
     @Override
-    public <T extends Callable<?>,E> void execute(DAGNode<T, E> graph) throws ExecutionException {
+    public <T extends Callable<?>,E> void execute(DAGNode<T, E> graph) throws ExecutionException, InterruptedException {
         logger.info("{}: executing {} tasks on {} threads", name,
                     graph.getReachableNodes().size(), threadCount);
-        TaskGraphManager manager = new TaskGraphManager<T,E>(name, graph);
+        TaskGraphManager<T,E> manager = new TaskGraphManager<T,E>(name, graph);
         for (int i = 1; i <= threadCount; i++) {
             Thread thread = new TaskGraphThread<T,E>(manager, String.format("%s-%d", name, i));
+            manager.addThread(thread);
             thread.start();
         }
         manager.waitForFinished();

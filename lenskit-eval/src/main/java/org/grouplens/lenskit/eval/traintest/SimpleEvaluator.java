@@ -309,7 +309,11 @@ public class SimpleEvaluator implements Callable<Table> {
     @Override
     public Table call() throws TaskExecutionException {
         result.setProject(project);
-        return result.perform();
+        try {
+            return result.perform();
+        } catch (InterruptedException e) {
+            throw new TaskExecutionException("execution interrupted", e);
+        }
     }
 }
 

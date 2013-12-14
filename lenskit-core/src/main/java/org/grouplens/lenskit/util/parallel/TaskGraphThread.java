@@ -41,7 +41,13 @@ class TaskGraphThread<T extends Callable<?>,E> extends Thread {
     }
 
     public void run() {
-        DAGNode<T,E> task = manager.getRunnableTask();
+        DAGNode<T,E> task = null;
+        try {
+            task = manager.getRunnableTask();
+        } catch (InterruptedException e) {
+            logger.debug("thread {} interrupted", getName());
+            task = null;
+        }
         while (task != null) {
             try {
                 logger.info("executing task {}", task.getLabel());
@@ -51,7 +57,13 @@ class TaskGraphThread<T extends Callable<?>,E> extends Thread {
                 logger.error("error in task " + task.getLabel(), th);
                 manager.taskFinished(task, th);
             }
-            task = manager.getRunnableTask();
+            try {
+                task = manager.getRunnableTask();
+            } catch (InterruptedException e) {
+                logger.debug("thread {} interrupted", getName());
+                task = null;
+            }
         }
+        manager.threadTerminating();
     }
 }

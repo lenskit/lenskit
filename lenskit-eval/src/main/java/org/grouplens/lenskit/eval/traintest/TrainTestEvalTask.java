@@ -370,7 +370,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      */
     @Override
     @SuppressWarnings("PMD.AvoidCatchingThrowable")
-    public Table perform() throws TaskExecutionException {
+    public Table perform() throws TaskExecutionException, InterruptedException {
         try {
             experiments = createExperimentSuite();
             measurements = createMeasurementSuite();
@@ -402,7 +402,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                     }
                 }
             } catch (Throwable th) {
-                throw closer.rethrow(th, TaskExecutionException.class);
+                throw closer.rethrow(th, TaskExecutionException.class, InterruptedException.class);
             } finally {
                 closer.close();
             }
@@ -454,7 +454,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return new MeasurementSuite(metrics, modelMetrics, predictChannels);
     }
 
-    private void runEvaluations(DAGNode<JobGraph.Node, JobGraph.Edge> graph) throws TaskExecutionException {
+    private void runEvaluations(DAGNode<JobGraph.Node, JobGraph.Edge> graph) throws TaskExecutionException, InterruptedException {
         int nthreads = getProject().getConfig().getThreadCount();
         TaskGraphExecutor exec;
         logger.info("Running evaluator with {} threads", nthreads);

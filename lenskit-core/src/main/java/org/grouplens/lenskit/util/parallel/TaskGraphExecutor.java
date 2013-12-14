@@ -67,5 +67,13 @@ public abstract class TaskGraphExecutor {
         return new SequentialTaskGraphExecutor();
     }
 
-    public abstract <T extends Callable<?>,E> void execute(DAGNode<T,E> graph) throws ExecutionException;
+    /**
+     * Execute a task graph.
+     * @param graph The graph to execute.
+     * @param <T> The task type.
+     * @param <E> The edge type.
+     * @throws ExecutionException If there is an error executing one or more tasks.
+     * @throws InterruptedException If task execution is interrupted.
+     */
+    public abstract <T extends Callable<?>,E> void execute(DAGNode<T,E> graph) throws ExecutionException, InterruptedException;
 }
