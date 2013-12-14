@@ -18,18 +18,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-statusListener(OnConsoleStatusListener)
+import ch.qos.logback.classic.filter.ThresholdFilter
+
+if (System.getProperty("log.debugConfig")?.toLowerCase() == "true") {
+    statusListener(OnConsoleStatusListener)
+}
 
 def logFile = System.getProperty("log.file")
 def appenders = ["CONSOLE"]
 
 appender("CONSOLE", ConsoleAppender) {
-    target = System.err
+    def filt = new ThresholdFilter()
     filter(ThresholdFilter) {
-        level = System.getProperty("log.level", "INFO")
+        level = "INFO"
     }
     encoder(PatternLayoutEncoder) {
-        pattern = "%highlight([%-5level]) %date{HH:mm:ss.SSS} {%yellow(%thread)} %cyan(%logger{24}) %msg%n"
+        pattern = "%highlight(%-5level) %white(%date{HH:mm:ss.SSS}) [%yellow(%thread)] %cyan(%logger{24}) %msg%n"
     }
 }
 
@@ -37,11 +41,11 @@ if (logFile != null) {
     appender("LOGFILE", FileAppender) {
         file = logFile
         encoder(PatternLayoutEncoder) {
-            pattern = "%date{HH:mm:ss.SSS} %-5level {%thread} %logger{24}: %msg%n"
+            pattern = "%date{HH:mm:ss.SSS} %level [%thread] %logger: %msg%n"
         }
     }
     appenders << "LOGFILE"
 }
 
-logger("org.grouplens.graph", WARN)
+logger("org.grouplens.grapht", WARN)
 root(DEBUG, appenders)
