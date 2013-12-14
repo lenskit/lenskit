@@ -41,6 +41,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import java.io.*;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -75,7 +76,7 @@ class ComponentCache {
      */
     public ComponentCache(@Nullable File dir) {
         cacheDir = dir;
-        keyMap = Maps.newHashMap();
+        keyMap = new WeakHashMap<DAGNode<CachedSatisfaction,DesireChain>,UUID>();
         objectCache = CacheBuilder.newBuilder()
                                   .softValues()
                                   .build();

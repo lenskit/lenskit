@@ -41,7 +41,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class LenskitEvalJob extends TrainTestJob {
-    private final DAGNode<CachedSatisfaction, DesireChain> recommenderGraph;
+    private DAGNode<CachedSatisfaction, DesireChain> recommenderGraph;
     @Nullable
     private final ComponentCache cache;
 
@@ -91,5 +91,6 @@ class LenskitEvalJob extends TrainTestJob {
     @Override
     protected void cleanup() {
         recommender = null;
+        recommenderGraph = null;
     }
 }

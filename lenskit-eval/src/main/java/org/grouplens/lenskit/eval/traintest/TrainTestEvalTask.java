@@ -516,6 +516,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                     logger.debug("{} depends on {} for {} nodes",
                                  job, nodes.get(i).getLabel(),
                                  freshCommon.size());
+                    for (DAGNode<CachedSatisfaction,DesireChain> shared: freshCommon) {
+                        logger.debug("it will reuse {}",
+                                     shared.getLabel().getSatisfaction());
+                    }
                     nb.addEdge(nodes.get(i), TaskGraph.edge());
                 }
                 seen.addAll(freshCommon);
