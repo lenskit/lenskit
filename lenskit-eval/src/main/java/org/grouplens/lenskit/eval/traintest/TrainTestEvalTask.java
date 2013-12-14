@@ -81,6 +81,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private File userOutputFile;
     private File predictOutputFile;
     private File recommendOutputFile;
+    private File cacheDir;
 
     private ExperimentSuite experiments;
     private MeasurementSuite measurements;
@@ -114,7 +115,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
     public TrainTestEvalTask setAlgorithm(Map<String,Object> attrs, String file) throws IOException, RecommenderConfigurationException {
         algorithms.add(new AlgorithmInstanceBuilder().configureFromFile(attrs, new File(file))
-                                                            .build());
+                                                     .build());
         return this;
     }
 
@@ -221,6 +222,33 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
     public TrainTestEvalTask setRecommendOutput(String fn) {
         return setRecommendOutput(new File(fn));
+    }
+
+    /**
+     * Set the component cache directory.  This directory is used for caching components that
+     * might take a lot of memory but are shared between runs.  Only meaningful if algorithms
+     * are not separated.
+     *
+     * @param file The cache directory.
+     * @return The task (for chaining)
+     * @see #setSeparateAlgorithms(boolean)
+     */
+    public TrainTestEvalTask setComponentCacheDirectory(File file) {
+        cacheDir = file;
+        return this;
+    }
+
+    /**
+     * Set the component cache directory by name.
+     *
+     * @see #setComponentCacheDirectory(java.io.File)
+     */
+    public TrainTestEvalTask setComponentCacheDirectory(String fn) {
+        return setComponentCacheDirectory(new File(fn));
+    }
+
+    public File getComponentCacheDirectory() {
+        return cacheDir;
     }
 
     /**
@@ -431,7 +459,8 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             DAGNode<CachedSatisfaction, DesireChain> graph =
                     algo.buildRecommenderGraph(dataset.getTrainingData().getConfiguration());
             TrainTestJob job = new LenskitEvalJob(algo, dataset, measurements,
-                                                  outputs.getPrefixed(algo, dataset), graph);
+                                                  outputs.getPrefixed(algo, dataset),
+                                                  graph, null);
             DAGNodeBuilder<TaskGraph.Node, TaskGraph.Edge> nb = DAGNode.newBuilder();
             nb.setLabel(TaskGraph.jobNode(job));
             if (commonDep != null) {
@@ -449,6 +478,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         MergePool<CachedSatisfaction,DesireChain> mergePool = MergePool.create();
         List<DAGNode<CachedSatisfaction,DesireChain>> graphs = Lists.newArrayList();
         Set<DAGNode<CachedSatisfaction,DesireChain>> allNodes = Sets.newHashSet();
+        ComponentCache cache = new ComponentCache(cacheDir);
         for (AlgorithmInstance algo: experiments.getAlgorithms()) {
             logger.debug("building graph for algorithm {}", algo);
             // Build the graph
@@ -463,7 +493,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             // Create the job
             LenskitEvalJob job = new LenskitEvalJob(algo, dataset, measurements,
                                                     outputs.getPrefixed(algo, dataset),
-                                                    graph);
+                                                    graph, cache);
 
             DAGNodeBuilder<TaskGraph.Node, TaskGraph.Edge> nb = DAGNode.newBuilder();
             nb.setLabel(TaskGraph.jobNode(job));

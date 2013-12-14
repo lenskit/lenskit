@@ -27,6 +27,7 @@ import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.baseline.UserMeanBaseline
 import org.grouplens.lenskit.baseline.UserMeanItemScorer
+import org.grouplens.lenskit.core.LenskitRecommender
 import org.grouplens.lenskit.data.dao.DataAccessException
 import org.grouplens.lenskit.eval.EvalConfig
 import org.grouplens.lenskit.eval.TaskExecutionException
@@ -292,14 +293,17 @@ class TrainTestTaskTest {
 
     @Test
     public void testMergedGraph() {
+        def scorers = Sets.newIdentityHashSet()
+        def itemMeanScorers = Sets.newIdentityHashSet()
+        def userMeanScorers = Sets.newIdentityHashSet()
         eval {
             dataset {
                 train "$folder.root.absolutePath/ratings.csv"
-                test "$folder.root/absolutePath/global-test.csv"
+                test "$folder.root.absolutePath/global-test.csv"
             }
             algorithm("PersMean") {
                 bind ItemScorer to UserMeanItemScorer
-                bind (UserMeanBaseline, ItemMeanRatingItemScorer)
+                bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
             }
             algorithm("UserMean") {
                 bind ItemScorer to UserMeanItemScorer
@@ -308,6 +312,23 @@ class TrainTestTaskTest {
                 bind ItemScorer to ItemMeanRatingItemScorer
             }
             output null
+            componentCacheDirectory folder.newFolder("cache")
+            metric([]) { LenskitRecommender rec ->
+                def score = rec.itemScorer
+                scorers << score
+                command.logger.debug("got scorer {}", score)
+                def imean = rec.get(ItemMeanRatingItemScorer) ?: rec.get(UserMeanBaseline,ItemMeanRatingItemScorer)
+                if (imean != null) {
+                    command.logger.debug("got item mean scorer {}", imean)
+                    itemMeanScorers << imean
+                }
+                def umean = rec.get UserMeanItemScorer
+                if (umean != null) {
+                    command.logger.debug("got user mean scorer {}", umean)
+                    userMeanScorers << umean
+                }
+                []
+            }
         }
         // FIXME Encapsulate more of this
         def exp = command.createExperimentSuite()
@@ -332,18 +353,30 @@ class TrainTestTaskTest {
             Sets.intersection(j1, j2)
         })
         assertThat common, hasSize(greaterThan(0))
+
+        // finally, run and verify that they enjoy the results of merging
+        command.execute()
+        // 3 distinct scorers
+        assertThat scorers, hasSize(3)
+        // 2 distinct user mean scorers (separate deps)
+        assertThat userMeanScorers, hasSize(2)
+        // 1 item mean scorer (shared between 2 algos using it)
+        assertThat itemMeanScorers, hasSize(1)
     }
 
     @Test
     public void testSeparatedGraph() {
+        def scorers = Sets.newIdentityHashSet()
+        def itemMeanScorers = Sets.newIdentityHashSet()
+        def userMeanScorers = Sets.newIdentityHashSet()
         eval {
             dataset {
                 train "$folder.root.absolutePath/ratings.csv"
-                test "$folder.root/absolutePath/global-test.csv"
+                test "$folder.root.absolutePath/global-test.csv"
             }
             algorithm("PersMean") {
                 bind ItemScorer to UserMeanItemScorer
-                bind (UserMeanBaseline, ItemMeanRatingItemScorer)
+                bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
             }
             algorithm("UserMean") {
                 bind ItemScorer to UserMeanItemScorer
@@ -353,6 +386,22 @@ class TrainTestTaskTest {
             }
             output null
             separateAlgorithms true
+            metric([]) { LenskitRecommender rec ->
+                def score = rec.itemScorer
+                scorers << score
+                command.logger.debug("got scorer {}", score)
+                def imean = rec.get(ItemMeanRatingItemScorer) ?: rec.get(UserMeanBaseline,ItemMeanRatingItemScorer)
+                if (imean != null) {
+                    command.logger.debug("got item mean scorer {}", imean)
+                    itemMeanScorers << imean
+                }
+                def umean = rec.get UserMeanItemScorer
+                if (umean != null) {
+                    command.logger.debug("got user mean scorer {}", umean)
+                    userMeanScorers << umean
+                }
+                []
+            }
         }
         // FIXME Encapsulate more of this
         def exp = command.createExperimentSuite()
@@ -379,5 +428,14 @@ class TrainTestTaskTest {
             isect
         })
         assertThat common, hasSize(0)
+
+        // finally, run and verify that they enjoy the results of merging
+        command.execute()
+        // 3 distinct scorers
+        assertThat scorers, hasSize(3)
+        // 2 distinct user mean scorers (separate deps)
+        assertThat userMeanScorers, hasSize(2)
+        // 2 item mean scorer (since there is no merging)
+        assertThat itemMeanScorers, hasSize(2)
     }
 }
