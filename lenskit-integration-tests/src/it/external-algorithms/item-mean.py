@@ -1,6 +1,6 @@
 import sys
 
-trainfile, testfile, outfile = sys.argv[1:3]
+trainfile, testfile, outfile = sys.argv[1:4]
 
 global_sum = 0
 global_count = 0
@@ -8,7 +8,7 @@ item_sums = {}
 item_counts = {}
 with open(trainfile) as f:
     for line in f:
-        user, item, rating = line.split(',')[:3]
+        user, item, rating = line.strip.split(',')[:3]
         rating = float(rating)
         global_sum += rating
         global_count += 1
