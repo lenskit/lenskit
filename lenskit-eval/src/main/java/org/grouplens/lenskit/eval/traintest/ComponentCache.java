@@ -164,9 +164,11 @@ class ComponentCache {
             }
 
             // now save it to disk, if possible and non-null
-            if (obj instanceof Serializable && cacheFile != null) {
-                writeCompressedObject(cacheFile, obj);
-            } else if (obj != null) {
+            if (obj instanceof Serializable) {
+                if (cacheFile != null) {
+                    writeCompressedObject(cacheFile, obj);
+                }
+            } else {
                 logger.warn("unserializable object {} instantiated", obj);
             }
 
