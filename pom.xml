@@ -302,6 +302,9 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-invoker-plugin</artifactId>
           <version>1.8</version>
+          <configuration>
+            <cloneClean>true</cloneClean>
+          </configuration>
           <dependencies>
             <dependency>
               <groupId>org.codehaus.groovy</groupId>

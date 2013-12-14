@@ -46,7 +46,7 @@ public class ExternalAlgorithmBuilder implements Builder<ExternalAlgorithm> {
     private String name;
     private Map<String, Object> attributes = new HashMap<String, Object>();
     private File workDir = new File(".");
-    private String outputDelimiter = "\t";
+    private String outputDelimiter = ",";
     private List<String> command;
 
     public ExternalAlgorithmBuilder() {
@@ -143,7 +143,7 @@ public class ExternalAlgorithmBuilder implements Builder<ExternalAlgorithm> {
 
     /***
      * Set the delimiter of the recommender's output file.
-     * @param delim The output delimiter.
+     * @param delim The output delimiter.  The default delimiter is ','.
      * @return The input delimiter.
      */
     public ExternalAlgorithmBuilder setOutputDelimiter(String delim) {

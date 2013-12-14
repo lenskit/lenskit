@@ -8,7 +8,7 @@ item_sums = {}
 item_counts = {}
 with open(trainfile) as f:
     for line in f:
-        user, item, rating = line.strip.split(',')[:3]
+        user, item, rating = line.strip().split(',')[:3]
         rating = float(rating)
         global_sum += rating
         global_count += 1
@@ -28,7 +28,7 @@ for item in item_sums.iterkeys():
 with open(outfile, 'w') as outf:
     with open(testfile) as testf:
         for line in testf:
-            user, item = line.split(',')[:2]
+            user, item = line.strip().split(',')[:2]
             pred = global_mean
             if item in item_means:
                 pred += item_means[item]

@@ -231,6 +231,8 @@ abstract class TrainTestJob implements Callable<Void> {
         // FIXME: for now, the recommend ouput default to predict on all items excluding rated items
         List<ScoredId> recs = user.getRecommendations(-1, ItemSelectors.allItems(),
                                                       ItemSelectors.trainingItems());
+        if (recs == null) return;
+
         final int ncols = recommendTable.getLayout().getColumnCount();
         final String[] row = new String[ncols];
         row[0] = Long.toString(user.getUserId());

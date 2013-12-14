@@ -78,8 +78,8 @@ class ExternalEvalJob extends TrainTestJob {
     @Override
     protected void buildRecommender() throws RecommenderBuildException {
         Preconditions.checkState(userPredictions == null, "recommender already built");
-        File dir = getWorkDir();
-        logger.info("running external recommender in {}", dir);
+        File dir = getStagingDir();
+        logger.info("using output/staging directory {}", dir);
         if (!dir.exists()) {
             logger.info("creating directory {}", dir);
             dir.mkdirs();
@@ -117,7 +117,7 @@ class ExternalEvalJob extends TrainTestJob {
         Process proc;
         try {
             proc = new ProcessBuilder().command(args)
-                                       .directory(getWorkDir())
+                                       .directory(algorithm.getWorkDir())
                                        .start();
         } catch (IOException e) {
             throw new RecommenderBuildException("error creating process", e);
@@ -168,7 +168,7 @@ class ExternalEvalJob extends TrainTestJob {
         userPredictions = null;
     }
 
-    private File getWorkDir() {
+    private File getStagingDir() {
         String dirName = String.format("%s-%s", algorithm.getName(), key);
         return new File(algorithm.getWorkDir(), dirName);
     }
@@ -179,7 +179,7 @@ class ExternalEvalJob extends TrainTestJob {
      * @return A file in the working directory.
      */
     private File getFile(String fn) {
-        return new File(getWorkDir(), fn);
+        return new File(getStagingDir(), fn);
     }
 
     private File trainingFile(TTDataSet data) throws IOException {
@@ -236,8 +236,15 @@ class ExternalEvalJob extends TrainTestJob {
         Long2ObjectMap<Long2DoubleMap> data = new Long2ObjectOpenHashMap<Long2DoubleMap>();
         Cursor<String[]> cursor = new DelimitedTextCursor(predFile, algorithm.getOutputDelimiter());
         try {
+            int n = 0;
             for (String[] row: cursor) {
+                n++;
+                if (row.length == 0 || row.length == 1 && row[0].equals("")) {
+                    continue;
+                }
                 if (row.length < 3) {
+                    logger.error("predictions line {}: invalid row {}", n,
+                                 StringUtils.join(row, ","));
                     throw new RecommenderBuildException("invalid prediction row");
                 }
                 long uid = Long.parseLong(row[0]);
@@ -256,7 +263,6 @@ class ExternalEvalJob extends TrainTestJob {
         Long2ObjectMap<SparseVector> vectors = new Long2ObjectOpenHashMap<SparseVector>(data.size());
         for (Long2ObjectMap.Entry<Long2DoubleMap> entry: CollectionUtils.fast(data.long2ObjectEntrySet())) {
             vectors.put(entry.getLongKey(), ImmutableSparseVector.create(entry.getValue()));
-            entry.setValue(null);
         }
         return vectors;
     }
@@ -312,7 +318,7 @@ class ExternalEvalJob extends TrainTestJob {
             String line;
             try {
                 while ((line = error.readLine()) != null) {
-                    logger.debug("external: " + line);
+                    logger.info("external: " + line);
                 }
             } catch (IOException e) {
                 logger.error("IO error reading error stream", e);
