@@ -101,7 +101,7 @@
         <artifactId>maven-invoker-plugin</artifactId>
         <configuration>
           <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
-          <postBuildHookScript>verify.groovy</postBuildHookScript>
+          <postBuildHookScript>verify</postBuildHookScript>
           <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
           <settingsFile>src/it/settings.xml</settingsFile>
           <mergeUserSettings>true</mergeUserSettings>
