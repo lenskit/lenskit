@@ -45,7 +45,7 @@ trainTest {
     }
 
     externalAlgorithm("item-mean") {
-        command "python", "item-mean.py", "{TRAIN_DATA}", "{TEST_DATA}", "{OUTPUT}"
+        command ["python", "item-mean.py", "{TRAIN_DATA}", "{TEST_DATA}", "{OUTPUT}"]
     }
     algorithm("Baseline") {
         bind ItemScorer to ItemMeanRatingItemScorer
