@@ -44,7 +44,7 @@ class TaskGraphThread<T extends Callable<?>,E> extends Thread {
         DAGNode<T,E> task = manager.getRunnableTask();
         while (task != null) {
             try {
-                logger.debug("executing task {}", task.getLabel());
+                logger.info("executing task {}", task.getLabel());
                 task.getLabel().call();
                 manager.taskFinished(task, null);
             } catch (Throwable th) {

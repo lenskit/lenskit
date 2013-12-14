@@ -153,11 +153,14 @@ class ComponentCache {
                 UUID key = getKey(node);
                 cacheFile = new File(cacheDir, key.toString() + ".dat.gz");
                 if (cacheFile.exists()) {
+                    logger.debug("reading object for {} from cache (UUID {})",
+                                 node.getLabel().getSatisfaction(), key);
                     return readCompressedObject(cacheFile, node.getLabel().getSatisfaction().getErasedType());
                 }
             }
 
             // No object from the serialization stream, let's try to make one
+            logger.debug("instantiating object for {}", node.getLabel().getSatisfaction());
             Object obj = delegate.apply(node);
             if (obj == null) {
                 throw new NullComponentException();
@@ -166,6 +169,8 @@ class ComponentCache {
             // now save it to disk, if possible and non-null
             if (obj instanceof Serializable) {
                 if (cacheFile != null) {
+                    logger.debug("writing object {} to cache (UUID {})",
+                                 obj, getKey(node));
                     writeCompressedObject(cacheFile, obj);
                 }
             } else {

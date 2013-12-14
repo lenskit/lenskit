@@ -23,6 +23,8 @@ package org.grouplens.lenskit.util.parallel;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.grouplens.grapht.graph.DAGNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -35,6 +37,7 @@ import java.util.concurrent.ExecutionException;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class TaskGraphManager<T extends Callable<?>,E> {
+    private static final Logger logger = LoggerFactory.getLogger(TaskGraphManager.class);
     private volatile boolean finished = false;
     private volatile Throwable error = null;
     private final String name;
@@ -128,8 +131,12 @@ class TaskGraphManager<T extends Callable<?>,E> {
     @Nullable
     private DAGNode<T,E>  findRunnableTask() {
         for (DAGNode<T,E> task: tasksToRun) {
-            if (finishedTasks.containsAll(task.getAdjacentNodes())) {
+            int nleft = Sets.difference(task.getAdjacentNodes(), finishedTasks).size();
+            if (nleft == 0) {
                 return task;
+            } else {
+                logger.debug("deferring task {}, has {} unfinished dependencies",
+                             task.getLabel(), nleft);
             }
         }
         return null;
