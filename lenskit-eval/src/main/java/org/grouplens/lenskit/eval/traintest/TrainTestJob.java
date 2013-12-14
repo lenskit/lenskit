@@ -96,7 +96,7 @@ abstract class TrainTestJob implements Callable<Void> {
             TableWriter userResults = output.getUserWriter();
             List<Object> outputRow = Lists.newArrayList();
 
-            logger.info("Building {} on {}", algorithmInfo.getName(), dataSet.getName());
+            logger.info("Building {} on {}", algorithmInfo, dataSet);
             StopWatch buildTimer = new StopWatch();
             buildTimer.start();
             buildRecommender();
