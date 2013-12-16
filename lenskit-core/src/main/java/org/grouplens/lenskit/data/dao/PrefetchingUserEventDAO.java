@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.dao;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -32,6 +32,7 @@ import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 
 import javax.inject.Inject;
+import java.util.List;
 
 /**
  * User event DAO that pre-loads all events from an event DAO.
@@ -72,15 +73,15 @@ public final class PrefetchingUserEventDAO implements UserEventDAO {
     private class UserProfileScanner implements Supplier<Long2ObjectMap<UserHistory<Event>>> {
         @Override
         public Long2ObjectMap<UserHistory<Event>> get() {
-            Long2ObjectMap<ImmutableList.Builder<Event>> table =
-                    new Long2ObjectOpenHashMap<ImmutableList.Builder<Event>>();
+            Long2ObjectMap<List<Event>> table =
+                    new Long2ObjectOpenHashMap<List<Event>>();
             Cursor<Event> events = eventDAO.streamEvents();
             try {
                 for (Event evt: events) {
                     final long iid = evt.getUserId();
-                    ImmutableList.Builder<Event> list = table.get(iid);
+                    List<Event> list = table.get(iid);
                     if (list == null) {
-                        list = new ImmutableList.Builder<Event>();
+                        list = Lists.newArrayList();
                         table.put(iid, list);
                     }
                     list.add(evt);
@@ -89,9 +90,9 @@ public final class PrefetchingUserEventDAO implements UserEventDAO {
                 events.close();
             }
             Long2ObjectMap<UserHistory<Event>> result = new Long2ObjectOpenHashMap<UserHistory<Event>>(table.size());
-            for (Long2ObjectMap.Entry<ImmutableList.Builder<Event>> evt: table.long2ObjectEntrySet()) {
+            for (Long2ObjectMap.Entry<List<Event>> evt: table.long2ObjectEntrySet()) {
                 long user = evt.getLongKey();
-                result.put(user, History.forUser(user, evt.getValue().build()));
+                result.put(user, History.forUser(user, evt.getValue()));
                 evt.setValue(null);
             }
             return result;
