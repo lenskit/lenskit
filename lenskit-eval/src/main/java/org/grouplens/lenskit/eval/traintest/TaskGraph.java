@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
+import com.google.common.io.Files;
 import org.grouplens.grapht.graph.DAGNode;
 
 import java.io.File;
@@ -43,6 +44,7 @@ class TaskGraph {
     }
 
     public static void writeGraphDescription(DAGNode<Node, Edge> jobGraph, File taskGraphFile) throws IOException {
+        Files.createParentDirs(taskGraphFile);
         PrintWriter print = new PrintWriter(taskGraphFile);
         try {
             for (DAGNode<Node,Edge> node: jobGraph.getSortedNodes()) {
