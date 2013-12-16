@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
@@ -83,6 +84,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private File recommendOutputFile;
     private File cacheDir;
     private File taskGraphFile;
+    private File taskStatusFile;
 
     private ExperimentSuite experiments;
     private MeasurementSuite measurements;
@@ -337,6 +339,29 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     /**
+     * Set an output file for task status updates.
+     * @param f The output file.
+     * @return The task (for chaining).
+     */
+    public TrainTestEvalTask setTaskStatusFile(File f) {
+        taskStatusFile = f;
+        return this;
+    }
+
+    /**
+     * Set an output file for task status updates.
+     * @param f The output file name
+     * @return The task (for chaining).
+     */
+    public TrainTestEvalTask setTaskStatusFile(String f) {
+        return setTaskStatusFile(new File(f));
+    }
+
+    public File getTaskStatusFile() {
+        return taskStatusFile;
+    }
+
+    /**
      * Run the evaluation on the train test data source files
      *
      * @return The summary output table.
@@ -363,6 +388,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                     logger.info("writing task graph to {}", taskGraphFile);
                     JobGraph.writeGraphDescription(jobGraph, taskGraphFile);
                 }
+                registerTaskListener(jobGraph);
 
                 // tell all metrics to get started
                 for (Metric<TrainTestEvalTask> metric : measurements.getAllMetrics()) {
@@ -388,6 +414,20 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             experiments = null;
             measurements = null;
             layout = null;
+        }
+    }
+
+    private void registerTaskListener(DAGNode<JobGraph.Node, JobGraph.Edge> jobGraph) {
+        if (taskStatusFile != null) {
+            ImmutableSet.Builder<TrainTestJob> jobs = ImmutableSet.builder();
+            for (DAGNode<JobGraph.Node, JobGraph.Edge> node: jobGraph.getReachableNodes()) {
+                TrainTestJob job = node.getLabel().getJob();
+                if (job != null) {
+                    jobs.add(job);
+                }
+            }
+            JobStatusWriter monitor = new JobStatusWriter(this, jobs.build(), taskStatusFile);
+            getProject().getEventBus().register(monitor);
         }
     }
 
@@ -443,7 +483,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
             // Add external algorithms
             for (ExternalAlgorithm algo: experiments.getExternalAlgorithms()) {
-                TrainTestJob job = new ExternalEvalJob(algo, dataset, measurements,
+                TrainTestJob job = new ExternalEvalJob(this, algo, dataset, measurements,
                                                        outputs.getPrefixed(algo, dataset));
                 DAGNode<JobGraph.Node, JobGraph.Edge> node =
                         DAGNode.singleton(JobGraph.jobNode(job));
@@ -487,7 +527,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         for (AlgorithmInstance algo: experiments.getAlgorithms()) {
             DAGNode<CachedSatisfaction, DesireChain> graph =
                     algo.buildRecommenderGraph(dataset.getTrainingData().getConfiguration());
-            TrainTestJob job = new LenskitEvalJob(algo, dataset, measurements,
+            TrainTestJob job = new LenskitEvalJob(this, algo, dataset, measurements,
                                                   outputs.getPrefixed(algo, dataset),
                                                   graph, null);
             DAGNodeBuilder<JobGraph.Node, JobGraph.Edge> nb = DAGNode.newBuilder();
@@ -520,7 +560,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             allNodes.addAll(graph.getReachableNodes());
 
             // Create the job
-            LenskitEvalJob job = new LenskitEvalJob(algo, dataset, measurements,
+            LenskitEvalJob job = new LenskitEvalJob(this, algo, dataset, measurements,
                                                     outputs.getPrefixed(algo, dataset),
                                                     graph, cache);
 

@@ -22,6 +22,7 @@ package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.eventbus.EventBus;
 import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -61,6 +62,7 @@ abstract class TrainTestJob implements Callable<Void> {
 
     protected final MeasurementSuite measurements;
     private final ExperimentOutputs output;
+    private final TrainTestEvalTask task;
 
     /**
      * Create a new train-test eval job.
@@ -73,14 +75,25 @@ abstract class TrainTestJob implements Callable<Void> {
      * @param measures The measurements to take.
      * @param out      The evaluator outputs.
      */
-    public TrainTestJob(@Nonnull Attributed algo,
+    public TrainTestJob(TrainTestEvalTask task,
+                        @Nonnull Attributed algo,
                         @Nonnull TTDataSet ds,
                         @Nonnull MeasurementSuite measures,
                         @Nonnull ExperimentOutputs out) {
+        this.task = task;
         algorithmInfo = algo;
         dataSet = ds;
         measurements = measures;
         output = out;
+    }
+
+    /**
+     * Get the eval task associated with this event.
+     *
+     * @return The task.
+     */
+    public TrainTestEvalTask getTask() {
+        return task;
     }
 
     @Override
@@ -91,6 +104,8 @@ abstract class TrainTestJob implements Callable<Void> {
 
     @SuppressWarnings("PMD.AvoidCatchingThrowable")
     private void runEvaluation() throws IOException, RecommenderBuildException {
+        EventBus bus = task.getProject().getEventBus();
+        bus.post(JobEvents.started(this));
         Closer closer = Closer.create();
         try {
             TableWriter userResults = output.getUserWriter();
@@ -154,7 +169,9 @@ abstract class TrainTestJob implements Callable<Void> {
             logger.info("Tested {} in {}", algorithmInfo.getName(), testTimer);
 
             writeMetricValues(buildTimer, testTimer, outputRow, evalAccums);
+            bus.post(JobEvents.finished(this));
         } catch (Throwable th) {
+            bus.post(JobEvents.failed(this, th));
             throw closer.rethrow(th, RecommenderBuildException.class);
         } finally {
             cleanup();

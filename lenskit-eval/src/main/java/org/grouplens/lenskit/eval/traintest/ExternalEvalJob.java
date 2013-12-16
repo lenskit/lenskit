@@ -66,11 +66,12 @@ class ExternalEvalJob extends TrainTestJob {
     private final UUID key;
     private Long2ObjectMap<SparseVector> userPredictions;
 
-    public ExternalEvalJob(@Nonnull ExternalAlgorithm algo,
+    public ExternalEvalJob(TrainTestEvalTask task,
+                           @Nonnull ExternalAlgorithm algo,
                            @Nonnull TTDataSet ds,
                            @Nonnull MeasurementSuite measures,
                            @Nonnull ExperimentOutputs out) {
-        super(algo, ds, measures, out);
+        super(task, algo, ds, measures, out);
         algorithm = algo;
         key = UUID.randomUUID();
     }
