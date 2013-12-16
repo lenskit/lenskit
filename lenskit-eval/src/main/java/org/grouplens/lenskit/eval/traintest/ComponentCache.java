@@ -117,10 +117,12 @@ class ComponentCache {
             // shortcut - if it has an instance, don't bother caching
             Satisfaction sat = node.getLabel().getSatisfaction();
             if (sat.hasInstance()) {
+                logger.debug("{} already instantiated", sat);
                 return injector.apply(node);
             }
 
             try {
+                logger.debug("satisfying instantiation request for {}", sat);
                 return objectCache.get(node, new NodeInstantiator(injector, node));
             } catch (ExecutionException e) {
                 if (e.getCause() instanceof NullComponentException) {
