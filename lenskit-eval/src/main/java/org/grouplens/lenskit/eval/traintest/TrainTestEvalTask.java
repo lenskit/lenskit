@@ -434,8 +434,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
     DAGNode<TaskGraph.Node,TaskGraph.Edge> makeJobGraph(ExperimentSuite experiments, MeasurementSuite measurements, ExperimentOutputs outputs) throws TaskExecutionException {
         DAGNode<TaskGraph.Node,TaskGraph.Edge> graph = null;
-        DAGNodeBuilder<TaskGraph.Node,TaskGraph.Edge> builder =
-                DAGNode.newBuilder(TaskGraph.groupNode());
+        DAGNodeBuilder<TaskGraph.Node,TaskGraph.Edge> builder = DAGNode.newBuilder();
         for (TTDataSet dataset : experiments.getDataSets()) {
             // Add LensKit algorithms
             for (DAGNode<TaskGraph.Node, TaskGraph.Edge> node: makeAlgorithmNodes(experiments, measurements, dataset, outputs, graph)) {
@@ -453,13 +452,14 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
             // Use dependencies to encode data set isolation
             if (isolate) {
+                builder.setLabel(TaskGraph.noopNode("group " + dataset.toString()));
                 graph = builder.build();
                 builder = DAGNode.newBuilder();
-                builder.setLabel(TaskGraph.groupNode());
             }
         }
         if (graph == null) {
             assert !isolate;
+            builder.setLabel(TaskGraph.noopNode("root"));
             graph = builder.build();
         }
         return graph;
@@ -549,7 +549,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                         logger.debug("it will reuse {}",
                                      shared.getLabel().getSatisfaction());
                     }
-                    nb.addEdge(nodes.get(i), TaskGraph.edge());
+                    nb.addEdge(nodes.get(i), TaskGraph.edge(freshCommon));
                 }
                 seen.addAll(freshCommon);
             }

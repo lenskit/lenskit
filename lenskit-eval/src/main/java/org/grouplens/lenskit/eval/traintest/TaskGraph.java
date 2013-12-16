@@ -20,12 +20,17 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.solver.DesireChain;
+import org.grouplens.grapht.spi.CachedSatisfaction;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -33,14 +38,17 @@ import java.util.concurrent.Callable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class TaskGraph {
-    public static Node groupNode() {
-        return new NoopNode();
+    public static Node noopNode(String label) {
+        return new NoopNode(label);
     }
     public static Node jobNode(TrainTestJob job) {
         return new JobNode(job);
     }
     public static Edge edge() {
-        return Edge.NONE;
+        return edge(ImmutableSet.<DAGNode<CachedSatisfaction, DesireChain>>of());
+    }
+    public static Edge edge(Set<DAGNode<CachedSatisfaction, DesireChain>> deps) {
+        return new Edge(deps);
     }
 
     public static void writeGraphDescription(DAGNode<Node, Edge> jobGraph, File taskGraphFile) throws IOException {
@@ -69,6 +77,12 @@ class TaskGraph {
     }
 
     static class NoopNode implements Node {
+        private final String label;
+
+        public NoopNode(String lbl) {
+            label = lbl;
+        }
+
         @Override
         public Void call() throws Exception {
             return null;
@@ -76,7 +90,7 @@ class TaskGraph {
 
         @Override
         public String toString() {
-            return "no-op";
+            return label;
         }
 
         @Override
@@ -106,9 +120,105 @@ class TaskGraph {
         public String toString() {
             return job.toString();
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            JobNode jobNode = (JobNode) o;
+
+            if (job != null ? !job.equals(jobNode.job) : jobNode.job != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return job != null ? job.hashCode() : 0;
+        }
     }
 
-    public static enum Edge {
-        NONE
+    public static class Edge implements Set<DAGNode<CachedSatisfaction,DesireChain>> {
+        private final Set<DAGNode<CachedSatisfaction,DesireChain>> dependencies;
+
+        public Edge(Set<DAGNode<CachedSatisfaction, DesireChain>> deps) {
+            this.dependencies = ImmutableSet.copyOf(deps);
+        }
+
+        @Override
+        public int size() {
+            return dependencies.size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return dependencies.isEmpty();
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            return dependencies.contains(o);
+        }
+
+        @Override
+        public Iterator<DAGNode<CachedSatisfaction, DesireChain>> iterator() {
+            return dependencies.iterator();
+        }
+
+        @Override
+        public Object[] toArray() {
+            return dependencies.toArray();
+        }
+
+        @Override
+        public <T> T[] toArray(T[] a) {
+            return dependencies.toArray(a);
+        }
+
+        @Override
+        public boolean add(DAGNode<CachedSatisfaction, DesireChain> cachedSatisfactionDesireChainDAGNode) {
+            return dependencies.add(cachedSatisfactionDesireChainDAGNode);
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            return dependencies.remove(o);
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> c) {
+            return dependencies.containsAll(c);
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends DAGNode<CachedSatisfaction, DesireChain>> c) {
+            return dependencies.addAll(c);
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> c) {
+            return dependencies.retainAll(c);
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> c) {
+            return dependencies.removeAll(c);
+        }
+
+        @Override
+        public void clear() {
+            dependencies.clear();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return dependencies.equals(o);
+        }
+
+        @Override
+        public int hashCode() {
+            return dependencies.hashCode();
+        }
     }
 }
