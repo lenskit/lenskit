@@ -360,6 +360,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                 DAGNode<TaskGraph.Node,TaskGraph.Edge> jobGraph =
                         makeJobGraph(experiments, measurements, outputs);
                 if (taskGraphFile != null) {
+                    logger.info("writing task graph to {}", taskGraphFile);
                     TaskGraph.writeGraphDescription(jobGraph, taskGraphFile);
                 }
 
@@ -564,7 +565,6 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      * Prepare the evaluation by opening all outputs and initializing metrics.
      */
     ExperimentOutputs openExperimentOutputs(ExperimentOutputLayout layouts, TableWriter results, Closer closer) throws IOException {
-        logger.info("Starting evaluation");
         TableLayout resultLayout = layouts.getResultsLayout();
         TableWriter allResults = results;
         if (outputFile != null) {
