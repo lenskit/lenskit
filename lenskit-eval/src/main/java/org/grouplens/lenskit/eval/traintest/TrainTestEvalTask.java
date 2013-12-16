@@ -516,7 +516,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             // Merge it with all previously-seen graphs
             graph = mergePool.merge(graph);
             logger.debug("algorithm {} has {} new configuration nodes", algo,
-                         Sets.difference(allNodes, graph.getReachableNodes()).size());
+                         Sets.difference(graph.getReachableNodes(), allNodes).size());
             allNodes.addAll(graph.getReachableNodes());
 
             // Create the job
@@ -537,8 +537,8 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             for (int i = 0; i < nodes.size(); i++) {
                 DAGNode<CachedSatisfaction, DesireChain> other = graphs.get(i);
                 Set<DAGNode<CachedSatisfaction,DesireChain>> freshCommon = Sets.newHashSet();
-                freshCommon.addAll(other.getReachableNodes());
                 freshCommon.addAll(graph.getReachableNodes());
+                freshCommon.retainAll(other.getReachableNodes());
                 freshCommon.removeAll(seen);
                 if (!freshCommon.isEmpty()) {
                     // new nodes, make a dependency
