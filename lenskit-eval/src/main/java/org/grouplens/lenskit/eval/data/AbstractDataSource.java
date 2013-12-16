@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.data;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.eval.traintest.CachingDAOProvider;
 
 /**
  * Base class to help implement data sources.
@@ -140,6 +141,14 @@ public abstract class AbstractDataSource implements DataSource {
         if (dom != null) {
             config.addComponent(dom);
         }
+        config.bind(PrefetchingUserDAO.class)
+              .toProvider(CachingDAOProvider.User.class);
+        config.bind(PrefetchingUserEventDAO.class)
+              .toProvider(CachingDAOProvider.UserEvent.class);
+        config.bind(PrefetchingItemDAO.class)
+              .toProvider(CachingDAOProvider.Item.class);
+        config.bind(PrefetchingItemEventDAO.class)
+              .toProvider(CachingDAOProvider.ItemEvent.class);
         return config;
     }
 }
