@@ -82,6 +82,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private File predictOutputFile;
     private File recommendOutputFile;
     private File cacheDir;
+    private File taskGraphFile;
 
     private ExperimentSuite experiments;
     private MeasurementSuite measurements;
@@ -313,6 +314,29 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     /**
+     * Set an output file for a description of the task graph.
+     * @param f The output file.
+     * @return The task (for chaining).
+     */
+    public TrainTestEvalTask setTaskGraphFile(File f) {
+        taskGraphFile = f;
+        return this;
+    }
+
+    /**
+     * Set an output file for a description of the task graph.
+     * @param f The output file name
+     * @return The task (for chaining).
+     */
+    public TrainTestEvalTask setTaskGraphFile(String f) {
+        return setTaskGraphFile(new File(f));
+    }
+
+    public File getTaskGraphFile() {
+        return taskGraphFile;
+    }
+
+    /**
      * Run the evaluation on the train test data source files
      *
      * @return The summary output table.
@@ -335,6 +359,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                 ExperimentOutputs outputs = openExperimentOutputs(layout, resultsBuilder, closer);
                 DAGNode<TaskGraph.Node,TaskGraph.Edge> jobGraph =
                         makeJobGraph(experiments, measurements, outputs);
+                if (taskGraphFile != null) {
+                    TaskGraph.writeGraphDescription(jobGraph, taskGraphFile);
+                }
+
                 // tell all metrics to get started
                 for (Metric<TrainTestEvalTask> metric : measurements.getAllMetrics()) {
                     metric.startEvaluation(this);

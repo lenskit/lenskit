@@ -20,6 +20,12 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
+import org.grouplens.grapht.graph.DAGNode;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 /**
@@ -34,6 +40,26 @@ class TaskGraph {
     }
     public static Edge edge() {
         return Edge.NONE;
+    }
+
+    public static void writeGraphDescription(DAGNode<Node, Edge> jobGraph, File taskGraphFile) throws IOException {
+        PrintWriter print = new PrintWriter(taskGraphFile);
+        try {
+            for (DAGNode<Node,Edge> node: jobGraph.getSortedNodes()) {
+                print.print("- ");
+                print.println(node.getLabel());
+                Set<DAGNode<Node,Edge>> deps = node.getAdjacentNodes();
+                if (!deps.isEmpty()) {
+                    print.println("  dependencies:");
+                    for (DAGNode<Node,Edge> dep: deps) {
+                        print.print("  - ");
+                        print.println(dep.getLabel());
+                    }
+                }
+            }
+        } finally {
+            print.close();
+        }
     }
 
     public abstract static interface Node extends Callable<Void> {
