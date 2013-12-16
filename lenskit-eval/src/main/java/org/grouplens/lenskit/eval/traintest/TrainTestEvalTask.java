@@ -357,11 +357,11 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
             try {
                 ExperimentOutputs outputs = openExperimentOutputs(layout, resultsBuilder, closer);
-                DAGNode<TaskGraph.Node,TaskGraph.Edge> jobGraph =
+                DAGNode<JobGraph.Node,JobGraph.Edge> jobGraph =
                         makeJobGraph(experiments, measurements, outputs);
                 if (taskGraphFile != null) {
                     logger.info("writing task graph to {}", taskGraphFile);
-                    TaskGraph.writeGraphDescription(jobGraph, taskGraphFile);
+                    JobGraph.writeGraphDescription(jobGraph, taskGraphFile);
                 }
 
                 // tell all metrics to get started
@@ -414,7 +414,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return new MeasurementSuite(metrics, modelMetrics, predictChannels);
     }
 
-    private void runEvaluations(DAGNode<TaskGraph.Node, TaskGraph.Edge> graph) throws TaskExecutionException {
+    private void runEvaluations(DAGNode<JobGraph.Node, JobGraph.Edge> graph) throws TaskExecutionException {
         int nthreads = getProject().getConfig().getThreadCount();
         TaskGraphExecutor exec;
         logger.info("Running evaluator with {} threads", nthreads);
@@ -432,43 +432,43 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         }
     }
 
-    DAGNode<TaskGraph.Node,TaskGraph.Edge> makeJobGraph(ExperimentSuite experiments, MeasurementSuite measurements, ExperimentOutputs outputs) throws TaskExecutionException {
-        DAGNode<TaskGraph.Node,TaskGraph.Edge> graph = null;
-        DAGNodeBuilder<TaskGraph.Node,TaskGraph.Edge> builder = DAGNode.newBuilder();
+    DAGNode<JobGraph.Node,JobGraph.Edge> makeJobGraph(ExperimentSuite experiments, MeasurementSuite measurements, ExperimentOutputs outputs) throws TaskExecutionException {
+        DAGNode<JobGraph.Node,JobGraph.Edge> graph = null;
+        DAGNodeBuilder<JobGraph.Node,JobGraph.Edge> builder = DAGNode.newBuilder();
         for (TTDataSet dataset : experiments.getDataSets()) {
             // Add LensKit algorithms
-            for (DAGNode<TaskGraph.Node, TaskGraph.Edge> node: makeAlgorithmNodes(experiments, measurements, dataset, outputs, graph)) {
-                builder.addEdge(node, TaskGraph.edge());
+            for (DAGNode<JobGraph.Node, JobGraph.Edge> node: makeAlgorithmNodes(experiments, measurements, dataset, outputs, graph)) {
+                builder.addEdge(node, JobGraph.edge());
             }
 
             // Add external algorithms
             for (ExternalAlgorithm algo: experiments.getExternalAlgorithms()) {
                 TrainTestJob job = new ExternalEvalJob(algo, dataset, measurements,
                                                        outputs.getPrefixed(algo, dataset));
-                DAGNode<TaskGraph.Node, TaskGraph.Edge> node =
-                        DAGNode.singleton(TaskGraph.jobNode(job));
-                builder.addEdge(node, TaskGraph.edge());
+                DAGNode<JobGraph.Node, JobGraph.Edge> node =
+                        DAGNode.singleton(JobGraph.jobNode(job));
+                builder.addEdge(node, JobGraph.edge());
             }
 
             // Use dependencies to encode data set isolation
             if (isolate) {
-                builder.setLabel(TaskGraph.noopNode("group " + dataset.toString()));
+                builder.setLabel(JobGraph.noopNode("group " + dataset.toString()));
                 graph = builder.build();
                 builder = DAGNode.newBuilder();
             }
         }
         if (graph == null) {
             assert !isolate;
-            builder.setLabel(TaskGraph.noopNode("root"));
+            builder.setLabel(JobGraph.noopNode("root"));
             graph = builder.build();
         }
         return graph;
     }
 
-    public List<DAGNode<TaskGraph.Node,TaskGraph.Edge>>
+    public List<DAGNode<JobGraph.Node,JobGraph.Edge>>
     makeAlgorithmNodes(ExperimentSuite experiments, MeasurementSuite measurements,
                        TTDataSet dataset, ExperimentOutputs outputs,
-                       DAGNode<TaskGraph.Node, TaskGraph.Edge> commonDep) throws TaskExecutionException {
+                       DAGNode<JobGraph.Node, JobGraph.Edge> commonDep) throws TaskExecutionException {
         try {
             if (separateAlgorithms) {
                 return makeSeparateAlgoNodes(experiments, measurements, dataset, outputs, commonDep);
@@ -480,30 +480,30 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         }
     }
 
-    private List<DAGNode<TaskGraph.Node, TaskGraph.Edge>>
+    private List<DAGNode<JobGraph.Node, JobGraph.Edge>>
     makeSeparateAlgoNodes(ExperimentSuite experiments, MeasurementSuite measurements, TTDataSet dataset, ExperimentOutputs outputs,
-                          DAGNode<TaskGraph.Node, TaskGraph.Edge> commonDep) throws RecommenderConfigurationException {
-        List<DAGNode<TaskGraph.Node, TaskGraph.Edge>> nodes = Lists.newArrayList();
+                          DAGNode<JobGraph.Node, JobGraph.Edge> commonDep) throws RecommenderConfigurationException {
+        List<DAGNode<JobGraph.Node, JobGraph.Edge>> nodes = Lists.newArrayList();
         for (AlgorithmInstance algo: experiments.getAlgorithms()) {
             DAGNode<CachedSatisfaction, DesireChain> graph =
                     algo.buildRecommenderGraph(dataset.getTrainingData().getConfiguration());
             TrainTestJob job = new LenskitEvalJob(algo, dataset, measurements,
                                                   outputs.getPrefixed(algo, dataset),
                                                   graph, null);
-            DAGNodeBuilder<TaskGraph.Node, TaskGraph.Edge> nb = DAGNode.newBuilder();
-            nb.setLabel(TaskGraph.jobNode(job));
+            DAGNodeBuilder<JobGraph.Node, JobGraph.Edge> nb = DAGNode.newBuilder();
+            nb.setLabel(JobGraph.jobNode(job));
             if (commonDep != null) {
-                nb.addEdge(commonDep, TaskGraph.edge());
+                nb.addEdge(commonDep, JobGraph.edge());
             }
             nodes.add(nb.build());
         }
         return nodes;
     }
 
-    private List<DAGNode<TaskGraph.Node, TaskGraph.Edge>>
+    private List<DAGNode<JobGraph.Node, JobGraph.Edge>>
     makeMergedAlgoNodes(ExperimentSuite experiments, MeasurementSuite measurements, TTDataSet dataset, ExperimentOutputs outputs,
-                        DAGNode<TaskGraph.Node, TaskGraph.Edge> commonDep) throws RecommenderConfigurationException {
-        List<DAGNode<TaskGraph.Node, TaskGraph.Edge>> nodes = Lists.newArrayList();
+                        DAGNode<JobGraph.Node, JobGraph.Edge> commonDep) throws RecommenderConfigurationException {
+        List<DAGNode<JobGraph.Node, JobGraph.Edge>> nodes = Lists.newArrayList();
         MergePool<CachedSatisfaction,DesireChain> mergePool = MergePool.create();
         List<DAGNode<CachedSatisfaction,DesireChain>> graphs = Lists.newArrayList();
         Set<DAGNode<CachedSatisfaction,DesireChain>> allNodes = Sets.newHashSet();
@@ -524,10 +524,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                                                     outputs.getPrefixed(algo, dataset),
                                                     graph, cache);
 
-            DAGNodeBuilder<TaskGraph.Node, TaskGraph.Edge> nb = DAGNode.newBuilder();
-            nb.setLabel(TaskGraph.jobNode(job));
+            DAGNodeBuilder<JobGraph.Node, JobGraph.Edge> nb = DAGNode.newBuilder();
+            nb.setLabel(JobGraph.jobNode(job));
             if (commonDep != null) {
-                nb.addEdge(commonDep, TaskGraph.edge());
+                nb.addEdge(commonDep, JobGraph.edge());
             }
 
             // Scan for all nodes we depend on. The first to introduce a node gets it.
@@ -549,12 +549,12 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                         logger.debug("it will reuse {}",
                                      shared.getLabel().getSatisfaction());
                     }
-                    nb.addEdge(nodes.get(i), TaskGraph.edge(freshCommon));
+                    nb.addEdge(nodes.get(i), JobGraph.edge(freshCommon));
                 }
                 seen.addAll(freshCommon);
             }
             graphs.add(graph);
-            DAGNode<TaskGraph.Node, TaskGraph.Edge> jobNode = nb.build();
+            DAGNode<JobGraph.Node, JobGraph.Edge> jobNode = nb.build();
             logger.debug("{} has {} dependencies", job, jobNode.getAdjacentNodes().size());
             nodes.add(jobNode);
         }

@@ -37,7 +37,7 @@ import java.util.concurrent.Callable;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class TaskGraph {
+class JobGraph {
     public static Node noopNode(String label) {
         return new NoopNode(label);
     }
