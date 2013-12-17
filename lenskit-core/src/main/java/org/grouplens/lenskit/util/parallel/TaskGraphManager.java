@@ -113,7 +113,6 @@ class TaskGraphManager<T extends Callable<?>,E> {
         tasksToRun.remove(task);
         if (err != null) {
             errors.add(Pair.of(task, err));
-            // FIXME Interrupt all running threads when one fails
         }
         // wake up anyone looking for a runnable task
         notifyAll();
@@ -131,9 +130,6 @@ class TaskGraphManager<T extends Callable<?>,E> {
             try {
                 wait();
             } catch (InterruptedException ex) {
-                for (Thread th: threads) {
-                    th.interrupt();
-                }
                 for (Thread th: threads) {
                     try {
                         th.join();

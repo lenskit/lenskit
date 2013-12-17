@@ -142,6 +142,9 @@ abstract class TrainTestJob implements Callable<Void> {
 
             LongSet testUsers = dataSet.getTestData().getUserDAO().getUserIds();
             for (LongIterator iter = testUsers.iterator(); iter.hasNext();) {
+                if (Thread.interrupted()) {
+                    throw new InterruptedException("eval job interrupted");
+                }
                 long uid = iter.nextLong();
                 userRow.add(uid);
 

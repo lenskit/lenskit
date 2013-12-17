@@ -21,10 +21,13 @@
 package org.grouplens.lenskit.util.parallel;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import org.grouplens.grapht.graph.DAGNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -48,11 +51,21 @@ class ParallelTaskGraphExecutor extends TaskGraphExecutor {
         logger.info("{}: executing {} tasks on {} threads", name,
                     graph.getReachableNodes().size(), threadCount);
         TaskGraphManager<T,E> manager = new TaskGraphManager<T,E>(name, graph);
+        List<Thread> threads = Lists.newArrayListWithCapacity(threadCount);
         for (int i = 1; i <= threadCount; i++) {
             Thread thread = new TaskGraphThread<T,E>(manager, String.format("%s-%d", name, i));
+            threads.add(thread);
             manager.addThread(thread);
             thread.start();
         }
-        manager.waitForFinished();
+        try {
+            manager.waitForFinished();
+        } catch (Exception ex) {
+            for (Thread th: threads) {
+                th.interrupt();
+            }
+            Throwables.propagateIfPossible(ex, ExecutionException.class, InterruptedException.class);
+            throw new RuntimeException(ex);
+        }
     }
 }
