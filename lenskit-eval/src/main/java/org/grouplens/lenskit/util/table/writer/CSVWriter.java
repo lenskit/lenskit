@@ -73,6 +73,7 @@ public class CSVWriter extends AbstractTableWriter {
 
     @Override
     public synchronized void writeRow(List<?> row) throws IOException {
+        Preconditions.checkState(writer != null, "writer has been closed");
         if (layout != null) {
             checkRowWidth(row.size());
         }
