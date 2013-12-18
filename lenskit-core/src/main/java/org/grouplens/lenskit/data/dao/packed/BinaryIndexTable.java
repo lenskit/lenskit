@@ -1,16 +1,19 @@
 package org.grouplens.lenskit.data.dao.packed;
 
 import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.lenskit.collections.CopyingFastCollection;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.concurrent.ThreadSafe;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.logging.ErrorManager;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * An index table from a byte buffer.
@@ -20,11 +23,13 @@ import java.util.logging.ErrorManager;
 @ThreadSafe
 public class BinaryIndexTable {
     private static final Logger logger = LoggerFactory.getLogger(BinaryIndexTable.class);
-    private final Long2IntMap offsets;
-    private final Long2IntMap sizes;
+    private final LongKeyDomain keys;
+    private final int[] offsets;
+    private final int[] sizes;
     private final IntBuffer buffer;
 
-    private BinaryIndexTable(Long2IntMap offtbl, Long2IntMap sztbl, IntBuffer buf) {
+    private BinaryIndexTable(LongKeyDomain keytbl, int[] offtbl, int[] sztbl, IntBuffer buf) {
+        keys = keytbl;
         offsets = offtbl;
         sizes = sztbl;
         buffer = buf;
@@ -38,21 +43,23 @@ public class BinaryIndexTable {
      */
     public static BinaryIndexTable create(int nentries, ByteBuffer buffer) {
         logger.debug("reading table of {} entries", nentries);
-        Long2IntMap offsets = new Long2IntOpenHashMap(nentries);
-        offsets.defaultReturnValue(-1);
-        Long2IntMap sizes = new Long2IntOpenHashMap(nentries);
+        long[] keys = new long[nentries];
+        int[] offsets = new int[nentries];
+        int[] sizes = new int[nentries];
         int nextExpectedOffset = 0;
         for (int i = 0; i < nentries; i++) {
-            long key = buffer.getLong();
-            int off = buffer.getInt();
-            int size = buffer.getInt();
-            if (off != nextExpectedOffset) {
-                logger.error("expected offset {}, got {}", nextExpectedOffset, off);
+            keys[i] = buffer.getLong();
+            if (i > 0 && keys[i-1] >= keys[i]) {
+                logger.error("key {} is not greater than previous key {}", keys[i], keys[i-1]);
                 throw new IllegalArgumentException("corrupted index table");
             }
-            offsets.put(key, off);
-            sizes.put(key, size);
-            nextExpectedOffset += size;
+            offsets[i] = buffer.getInt();
+            sizes[i] = buffer.getInt();
+            if (offsets[i] != nextExpectedOffset) {
+                logger.error("expected offset {}, got {}", nextExpectedOffset, offsets[i]);
+                throw new IllegalArgumentException("corrupted index table");
+            }
+            nextExpectedOffset += sizes[i];
         }
         if (buffer.remaining() < nextExpectedOffset) {
             throw new IllegalArgumentException("buffer not large enough");
@@ -61,19 +68,12 @@ public class BinaryIndexTable {
         ByteBuffer dup = buffer.duplicate();
         dup.limit(end);
         buffer.position(end);
-        return new BinaryIndexTable(offsets, sizes, dup.asIntBuffer());
-    }
-
-    /**
-     * Return the space taken by this buffer, in bytes.
-     * @return The space (in bytes) taken by this buffer.
-     */
-    public int getTableSize() {
-        return offsets.size() * (8 + 4 + 4) + buffer.capacity() * 4;
+        LongKeyDomain dom = LongKeyDomain.wrap(keys, keys.length, true);
+        return new BinaryIndexTable(dom, offsets, sizes, dup.asIntBuffer());
     }
 
     public LongSet getKeys() {
-        return offsets.keySet();
+        return keys.activeSetView();
     }
 
     /**
@@ -82,13 +82,64 @@ public class BinaryIndexTable {
      * @return The position list.
      */
     public IntList getEntry(long key) {
-        int off = offsets.get(key);
-        if (off < 0) {
+        int idx = keys.getIndex(key);
+        if (idx < 0) {
             return null;
         }
 
+        return getEntryInternal(idx);
+    }
+
+    private IntList getEntryInternal(int idx) {
+        int offset = offsets[idx];
+        int size = sizes[idx];
         IntBuffer buf = buffer.duplicate();
-        buf.position(off).limit(off + sizes.get(key));
+        buf.position(offset).limit(offset + size);
         return BufferBackedIntList.create(buf);
+    }
+
+    public Collection<Pair<Long,IntList>> entries() {
+        return new EntryCollection();
+    }
+
+    private class EntryCollection extends CopyingFastCollection<Pair<Long,IntList>> {
+        @Override
+        public int size() {
+            return keys.domainSize();
+        }
+
+        @Override
+        public Iterator<Pair<Long, IntList>> fastIterator() {
+            return new FastIterImpl();
+        }
+
+        @Override
+        protected Pair<Long, IntList> copy(Pair<Long, IntList> elt) {
+            return Pair.of(elt.getLeft(), elt.getRight());
+        }
+    }
+
+    private class FastIterImpl implements Iterator<Pair<Long,IntList>> {
+        int pos = 0;
+        MutablePair<Long,IntList> pair = new MutablePair<Long, IntList>();
+
+        @Override
+        public boolean hasNext() {
+            return pos < keys.domainSize();
+        }
+
+        @Override
+        public Pair<Long, IntList> next() {
+            int i = pos;
+            pos += 1;
+            pair.setLeft(keys.getKey(i));
+            pair.setRight(getEntryInternal(i));
+            return pair;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("remove");
+        }
     }
 }

@@ -1,14 +1,18 @@
 package org.grouplens.lenskit.data.dao.packed;
 
 import org.grouplens.lenskit.cursors.Cursors;
+import org.grouplens.lenskit.data.dao.SortOrder;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
@@ -64,5 +68,23 @@ public class BinaryRatingDAOTest {
                                       Ratings.make(42, 120, 2.5)));
         assertThat(dao.getEventsForItem(42), nullValue());
         assertThat(dao.getEventsForUser(105), nullValue());
+
+        List<UserHistory<Event>> histories = Cursors.makeList(dao.streamEventsByUser());
+        assertThat(histories, hasSize(2));
+        assertThat(histories.get(0).getUserId(), equalTo(39L));
+        assertThat(histories.get(0),
+                   equalTo(dao.getEventsForUser(39)));
+        assertThat(histories.get(1).getUserId(), equalTo(42L));
+        assertThat(histories.get(1),
+                   equalTo(dao.getEventsForUser(42)));
+
+        List<Rating> events = Cursors.makeList(dao.streamEvents(Rating.class, SortOrder.USER));
+        assertThat(events, hasSize(3));
+        assertThat(events.get(0).getUserId(), equalTo(39L));
+
+        events = Cursors.makeList(dao.streamEvents(Rating.class, SortOrder.ITEM));
+        assertThat(events, hasSize(3));
+        assertThat(events.get(0).getUserId(), equalTo(42L));
+        assertThat(events.get(0).getItemId(), equalTo(105L));
     }
 }

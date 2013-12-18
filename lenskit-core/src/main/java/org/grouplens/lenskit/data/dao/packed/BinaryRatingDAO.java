@@ -1,9 +1,13 @@
 package org.grouplens.lenskit.data.dao.packed;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
@@ -86,15 +90,26 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             return Cursors.empty();
         }
 
+        final Cursor<Rating> cursor;
+
         switch (order) {
         case ANY:
         case TIMESTAMP:
+            cursor = getRatingList().cursor();
+            break;
+        case USER:
+            cursor = Cursors.concat(Iterables.transform(userTable.entries(),
+                                                        new EntryToCursorTransformer()));
+            break;
+        case ITEM:
+            cursor = Cursors.concat(Iterables.transform(itemTable.entries(),
+                                                        new EntryToCursorTransformer()));
             break;
         default:
-            throw new UnsupportedOperationException("sorting not supported");
+            throw new IllegalArgumentException("unexpected sort order");
         }
 
-        return (Cursor<E>) getRatingList().cursor();
+        return (Cursor<E>) cursor;
     }
 
     @Override
@@ -145,7 +160,8 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
 
     @Override
     public Cursor<UserHistory<Event>> streamEventsByUser() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return Cursors.wrap(Collections2.transform(userTable.entries(),
+                                                   new UserEntryTransformer()));
     }
 
     @Nullable
@@ -168,5 +184,21 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         }
 
         return (UserHistory<E>) new BinaryUserHistory(user, getRatingList(indx));
+    }
+
+    private class EntryToCursorTransformer implements Function<Pair<Long, IntList>, Cursor<Rating>> {
+        @Nullable
+        @Override
+        public Cursor<Rating> apply(@Nullable Pair<Long, IntList> input) {
+            return Cursors.wrap(getRatingList(input.getRight()));
+        }
+    }
+
+    private class UserEntryTransformer implements Function<Pair<Long, IntList>, UserHistory<Event>> {
+        @Nullable
+        @Override
+        public UserHistory<Event> apply(@Nullable Pair<Long, IntList> input) {
+            return History.<Event>forUser(input.getLeft(), getRatingList(input.getRight()));
+        }
     }
 }
