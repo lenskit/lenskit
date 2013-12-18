@@ -136,8 +136,9 @@ public class PackTask extends AbstractTask<List<Object>> {
             logger.info("{} is up to date", outFile);
         } else {
             logger.info("packing {} to {}", data, outFile);
+            File tmpFile = new File(outFile.getParentFile(), outFile.getName() + ".tmp");
             try {
-                BinaryRatingPacker packer = BinaryRatingPacker.open(outFile, binaryFlags);
+                BinaryRatingPacker packer = BinaryRatingPacker.open(tmpFile, binaryFlags);
                 try {
                     Cursor<Rating> ratings = data.getEventDAO().streamEvents(Rating.class);
                     try {
@@ -150,8 +151,10 @@ public class PackTask extends AbstractTask<List<Object>> {
                 }
             } catch (IOException ex) {
                 logger.error("error packing {}: {}", outFile, ex);
+                tmpFile.delete();
                 throw new TaskExecutionException("error packing " + outFile, ex);
             }
+            tmpFile.renameTo(outFile);
         }
 
         return source;
