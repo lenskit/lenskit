@@ -23,6 +23,8 @@ package org.grouplens.lenskit.data.event;
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
 
+import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.data.pref.Preferences;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Test;
 
@@ -46,15 +48,33 @@ public class RatingsTest {
         SimpleNullRating rating = new SimpleNullRating(1, 3, 5);
         assertThat(rating.hasValue(), equalTo(false));
     }
-    
+
     @Test
     public void testGetValueOfMR() {
         MutableRating rating = new MutableRating();
         assertThat(rating.hasValue(), equalTo(true));
         rating.setRating(2.0);
         assertThat(rating.getValue(), equalTo(2.0));
-
     }
+
+    @Test
+    public void testSimpleEquality() {
+        Rating r1 = Ratings.make(1, 2, 3.0, 0);
+        Rating r1a = Ratings.make(1, 2, 3.0, 0);
+        Rating r2 = Ratings.make(1, 3, 2.5, 1);
+        Rating rn = new SimpleNullRating(1, 2, 0);
+        assertThat(r1, equalTo(r1));
+        assertThat(r1a, equalTo(r1));
+        assertThat(r2, not(equalTo(r1)));
+        assertThat(r1, not(equalTo(r2)));
+        assertThat(rn, not(equalTo(r1)));
+        assertThat(r1, not(equalTo(rn)));
+
+        Preference p = Preferences.make(1, 2, 3.0);
+        assertThat((Preference) r1, equalTo(p));
+        assertThat(p, equalTo((Preference) r1));
+    }
+
     @Test
     public void testEmptyURV() {
         List<Rating> ratings = Collections.emptyList();

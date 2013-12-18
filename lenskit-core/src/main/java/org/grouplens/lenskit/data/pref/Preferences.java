@@ -21,7 +21,10 @@
 package org.grouplens.lenskit.data.pref;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 import java.util.Collection;
@@ -80,5 +83,40 @@ public final class Preferences {
         }
 
         return MutableSparseVector.create(prefMap);
+    }
+
+    /**
+     * Compute the hash code of a preference.  Used to implement {@link #hashCode()} in preference
+     * implementations.
+     * @param preference The preference.
+     * @return The preference's hash code.
+     */
+    public static int hashPreference(Preference preference) {
+        HashCodeBuilder hcb = new HashCodeBuilder();
+        return hcb.append(preference.getUserId())
+                  .append(preference.getItemId())
+                  .append(preference.getValue())
+                  .toHashCode();
+    }
+
+    /**
+     * Compare two preferences for equality.  Used to implement {@link #equals(Object)} in preference
+     * implementations.
+     * @param p1 The first preference.
+     * @param p2 The second preference.
+     * @return Whether the two preferences are equal.
+     */
+    public static boolean equals(Preference p1, Preference p2) {
+        if (p1 == p2) {
+            return true;
+        } else if (p1 == null || p2 == null) {
+            return false;
+        }
+
+        EqualsBuilder eqb = new EqualsBuilder();
+        return eqb.append(p1.getUserId(), p2.getUserId())
+                  .append(p1.getItemId(), p2.getItemId())
+                  .append(p1.getValue(), p2.getValue())
+                  .isEquals();
     }
 }

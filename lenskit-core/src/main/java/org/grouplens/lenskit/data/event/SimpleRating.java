@@ -23,6 +23,7 @@ package org.grouplens.lenskit.data.event;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.data.pref.Preferences;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
@@ -94,23 +95,9 @@ final class SimpleRating implements Rating, Preference {
     @Override
     public boolean equals(Object o) {
         if (o instanceof Rating) {
-            Rating ro = (Rating) o;
-            Preference op = ro.getPreference();
-            if (op != null) {
-                return new EqualsBuilder().append(user, ro.getUserId())
-                                          .append(item, ro.getItemId())
-                                          .append(value, op.getValue())
-                                          .append(timestamp,  ro.getTimestamp())
-                                          .isEquals();
-            } else {
-                return false;
-            }
+            return Ratings.equals(this, (Rating) o);
         } else if (o instanceof Preference) {
-            Preference op = (Preference) o;
-            return new EqualsBuilder().append(user, op.getUserId())
-                                      .append(item, op.getItemId())
-                                      .append(value, op.getValue())
-                                      .isEquals();
+            return Preferences.equals(this, (Preference) o);
         } else {
             return false;
         }
@@ -118,9 +105,11 @@ final class SimpleRating implements Rating, Preference {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(user)
-                                    .append(item)
-                                    .append(value)
-                                    .toHashCode();
+        return Ratings.hashRating(this);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Rating(u=%d, i=%d, v=%f, ts=%d", user, item, value, timestamp);
     }
 }
