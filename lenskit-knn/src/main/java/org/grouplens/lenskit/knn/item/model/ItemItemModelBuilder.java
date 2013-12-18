@@ -95,8 +95,10 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
         while (outer.hasNext()) {
             ndone += 1;
             final long itemId1 = outer.nextLong();
-            logger.trace("computing similarities for item {} ({} of {})",
-                         itemId1, ndone, nitems);
+            if (logger.isTraceEnabled()) {
+                logger.trace("computing similarities for item {} ({} of {})",
+                             itemId1, ndone, nitems);
+            }
             SparseVector vec1 = buildContext.itemVector(itemId1);
 
             LongIterator itemIter = neighborStrategy.neighborIterator(buildContext, itemId1,
@@ -114,7 +116,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
                 }
             }
 
-            if (ndone % 100 == 0) {
+            if (logger.isDebugEnabled() && ndone % 100 == 0) {
                 logger.debug("computed {} of {} model rows ({}s/row)",
                              ndone, nitems,
                              String.format("%.3f", timer.elapsed(TimeUnit.MILLISECONDS) * 0.001 / ndone));

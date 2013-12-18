@@ -26,6 +26,7 @@ if (System.getProperty("log.debugConfig")?.toLowerCase() == "true") {
 
 def logFile = System.getProperty("log.file")
 def appenders = ["CONSOLE"]
+def level = INFO
 
 appender("CONSOLE", ConsoleAppender) {
     def filt = new ThresholdFilter()
@@ -45,7 +46,8 @@ if (logFile != null) {
         }
     }
     appenders << "LOGFILE"
+    level = DEBUG
 }
 
 logger("org.grouplens.grapht", WARN)
-root(DEBUG, appenders)
+root(level, appenders)
