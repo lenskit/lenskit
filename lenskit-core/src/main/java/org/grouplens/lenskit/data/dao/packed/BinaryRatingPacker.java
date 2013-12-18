@@ -1,5 +1,26 @@
+/*
+ * LensKit, an open source recommender systems toolkit.
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 package org.grouplens.lenskit.data.dao.packed;
 
+import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -8,6 +29,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.LongUtils;
+import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.event.Rating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +89,11 @@ public class BinaryRatingPacker implements Closeable {
     }
 
     public static BinaryRatingPacker open(File file, BinaryFormatFlag... flags) throws IOException {
-        return new BinaryRatingPacker(file, BinaryFormatFlag.makeSet(flags));
+        return open(file, BinaryFormatFlag.makeSet(flags));
+    }
+
+    public static BinaryRatingPacker open(File file, EnumSet<BinaryFormatFlag> flags) throws IOException {
+        return new BinaryRatingPacker(file, flags);
     }
 
     public void writeRating(Rating rating) throws IOException {
@@ -93,6 +119,12 @@ public class BinaryRatingPacker implements Closeable {
                 needsSorting = true;
             }
             lastTimestamp = ts;
+        }
+    }
+
+    public void writeRatings(Iterable<? extends Rating> ratings) throws IOException {
+        for (Rating r: ratings) {
+            writeRating(r);
         }
     }
 

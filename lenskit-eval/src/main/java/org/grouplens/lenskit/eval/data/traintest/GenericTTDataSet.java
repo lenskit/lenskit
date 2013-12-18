@@ -185,11 +185,19 @@ public class GenericTTDataSet implements TTDataSet {
      * @return A new builder initialized to make a copy of this data set definition.
      */
     public GenericTTDataBuilder copyBuilder() {
-        GenericTTDataBuilder builder = newBuilder(getName());
-        builder.setTest(getTestData())
-               .setQuery(getQueryData())
-               .setTrain(getTrainingData());
-        for (Map.Entry<String,Object> attr: getAttributes().entrySet()) {
+        return copyBuilder(this);
+    }
+
+    /**
+     * Create a new builder initialized with this data set's values.
+     * @return A new builder initialized to make a copy of this data set definition.
+     */
+    public static GenericTTDataBuilder copyBuilder(TTDataSet data) {
+        GenericTTDataBuilder builder = newBuilder(data.getName());
+        builder.setTest(data.getTestData())
+               .setQuery(data.getQueryData())
+               .setTrain(data.getTrainingData());
+        for (Map.Entry<String,Object> attr: data.getAttributes().entrySet()) {
             builder.setAttribute(attr.getKey(), attr.getValue());
         }
         return builder;
