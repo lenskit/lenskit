@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.pref.Preference;
@@ -201,5 +202,49 @@ public final class Ratings {
             rb.setRating(pref.getValue());
         }
         return rb;
+    }
+
+    /**
+     * Compute the hash code of a rating.  Used to implement {@link #hashCode()} in rating
+     * implementations.
+     * @param rating The rating.
+     * @return The rating's hash code.
+     */
+    public static int hashRating(Rating rating) {
+        HashCodeBuilder hcb = new HashCodeBuilder();
+        hcb.append(rating.getUserId())
+           .append(rating.getItemId());
+        if (rating.hasValue()) {
+            hcb.append(rating.getValue());
+        }
+        return hcb.toHashCode();
+    }
+
+    /**
+     * Compare two ratings for equality.  Used to implement {@link #equals(Object)} in rating
+     * implementations.
+     * @param r1 The first rating.
+     * @param r2 The second rating.
+     * @return Whether the two ratings are equal.
+     */
+    public static boolean equals(Rating r1, Rating r2) {
+        if (r1 == r2) {
+            return true;
+        } else if (r1 == null || r2 == null) {
+            return false;
+        }
+
+        Preference p1 = r1.getPreference();
+        Preference p2 = r2.getPreference();
+        if (p1 != null && p2 != null) {
+            return r1.getUserId() == r2.getUserId()
+                    && r1.getItemId() == r2.getItemId()
+                    && r1.getTimestamp() == r2.getTimestamp();
+        } else if (p1 != null) {
+            return p1.equals(p2);
+        } else {
+            // p1 is null, check p2
+            return p2 == null;
+        }
     }
 }

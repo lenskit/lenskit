@@ -20,9 +20,6 @@
  */
 package org.grouplens.lenskit.data.pref;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 /**
  * Helper class providing equality over preferences.
  *
@@ -32,25 +29,12 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 public abstract class AbstractPreference implements Preference {
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Preference) {
-            Preference op = (Preference) o;
-            return new EqualsBuilder()
-                    .append(getUserId(), op.getUserId())
-                    .append(getItemId(), op.getItemId())
-                    .append(getValue(), op.getValue())
-                    .isEquals();
-        } else {
-            return false;
-        }
+        return o instanceof Preference && Preferences.equals(this, (Preference) o);
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(getUserId())
-                .append(getItemId())
-                .append(getValue())
-                .toHashCode();
+        return Preferences.hashPreference(this);
     }
 
     @Override
