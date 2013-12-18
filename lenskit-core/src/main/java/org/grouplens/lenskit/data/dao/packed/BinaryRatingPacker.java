@@ -28,6 +28,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.event.Rating;
@@ -123,7 +124,7 @@ public class BinaryRatingPacker implements Closeable {
     }
 
     public void writeRatings(Iterable<? extends Rating> ratings) throws IOException {
-        for (Rating r: ratings) {
+        for (Rating r: CollectionUtils.fast(ratings)) {
             writeRating(r);
         }
     }

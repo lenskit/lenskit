@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
@@ -139,7 +140,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
             return LongSets.EMPTY_SET;
         }
         LongSet excludes = new LongOpenHashSet();
-        for (Rating r : Iterables.filter(user, Rating.class)) {
+        for (Rating r: CollectionUtils.fast(user.filter(Rating.class))) {
             excludes.add(r.getItemId());
         }
         return excludes;

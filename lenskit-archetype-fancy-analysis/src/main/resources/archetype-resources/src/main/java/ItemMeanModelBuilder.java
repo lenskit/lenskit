@@ -63,7 +63,7 @@ public class ItemMeanModelBuilder implements Provider<ItemMeanModel> {
 
         Cursor<Rating> ratings = dao.streamEvents(Rating.class);
         try {
-            for (Rating rating: ratings) {
+            for (Rating rating: ratings.fast()) {
                 Preference pref = rating.getPreference();
                 if (pref == null) {
                     continue; // skip unrates

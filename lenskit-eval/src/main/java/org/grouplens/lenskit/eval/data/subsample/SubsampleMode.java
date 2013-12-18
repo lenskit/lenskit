@@ -24,6 +24,7 @@ package org.grouplens.lenskit.eval.data.subsample;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongLists;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.ItemEventDAO;
@@ -73,7 +74,7 @@ public enum SubsampleMode {
             while (iter.hasNext()) {
                 final long item = iter.nextLong();
                 List<Rating> events = edao.getEventsForItem(item, Rating.class);
-                for (Rating rating: events) {
+                for (Rating rating: CollectionUtils.fast(events)) {
                     writeRating(output, rating);
                 }
             }
@@ -92,7 +93,7 @@ public enum SubsampleMode {
             while (iter.hasNext()) {
                 final long user = iter.nextLong();
                 List<Rating> events = edao.getEventsForUser(user, Rating.class);
-                for (Rating rating: events) {
+                for (Rating rating: CollectionUtils.fast(events)) {
                     writeRating(output, rating);
                 }
             }
