@@ -338,6 +338,15 @@ public final class LongKeyDomain implements Serializable {
     }
 
     /**
+     * Query whether this domain is completely set (has no unset keys).
+     * @return {@code true} if the domain is completely set.
+     */
+    public boolean isCompletelySet() {
+        int nb = mask.nextClearBit(0);
+        return nb < 0 || nb >= domainSize;
+    }
+
+    /**
      * Get an iterator over active indexes.
      * @param mayBeModified Whether the set's active/inactive flags may be modified during iteration.
      *                      If {@code false}, this method is slightly more efficient; if {@code true},
