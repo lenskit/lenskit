@@ -23,7 +23,8 @@ package org.grouplens.lenskit.data.event;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongKeyDomain;
@@ -75,24 +76,8 @@ public final class Ratings {
      * @param ratings Some ratings (they should all be for the same item)
      * @return A sparse vector mapping user IDs to ratings.
      */
-    public static MutableSparseVector itemRatingVector(Collection<? extends Rating> ratings) {
-        Long2DoubleMap v = new Long2DoubleOpenHashMap(ratings.size());
-        Long2LongMap tsMap = new Long2LongOpenHashMap(ratings.size());
-        tsMap.defaultReturnValue(Long.MIN_VALUE);
-        for (Rating r : CollectionUtils.fast(ratings)) {
-            long uid = r.getUserId();
-            long ts = r.getTimestamp();
-            if (ts >= tsMap.get(uid)) {
-                Preference p = r.getPreference();
-                if (p != null) {
-                    v.put(uid, p.getValue());
-                } else {
-                    v.remove(uid);
-                }
-                tsMap.put(uid, ts);
-            }
-        }
-        return MutableSparseVector.create(v);
+    public static MutableSparseVector itemRatingVector(@Nonnull Collection<? extends Rating> ratings) {
+        return extractVector(ratings, IdExtractor.USER);
     }
 
     /**
@@ -106,15 +91,20 @@ public final class Ratings {
      * @param ratings A collection of ratings (should all be by the same user)
      * @return A sparse vector mapping item IDs to ratings
      */
-    public static MutableSparseVector userRatingVector(Collection<? extends Rating> ratings) {
-        // collect the list of unique item IDs
+    public static MutableSparseVector userRatingVector(@Nonnull Collection<? extends Rating> ratings) {
+        return extractVector(ratings, IdExtractor.ITEM);
+
+    }
+
+    private static MutableSparseVector extractVector(Collection<? extends Rating> ratings, IdExtractor dimension) {
+        // collect the list of unique IDs
         // use a list since we'll be sorting anyway
-        LongList itemIds = new LongArrayList(ratings.size());
+        LongList ids = new LongArrayList(ratings.size());
         for (Rating r: CollectionUtils.fast(ratings)) {
-            itemIds.add(r.getItemId());
+            ids.add(dimension.getId(r));
         }
 
-        LongKeyDomain keys = LongKeyDomain.fromCollection(itemIds, false);
+        LongKeyDomain keys = LongKeyDomain.fromCollection(ids, false);
         MutableSparseVector msv = MutableSparseVector.create(keys.domain());
         long[] timestamps = null;
         // check for fast-path, where each item has one rating
@@ -123,9 +113,9 @@ public final class Ratings {
         }
 
         for (Rating r: CollectionUtils.fast(ratings)) {
-            long iid = r.getItemId();
+            long id = dimension.getId(r);
             if (timestamps != null) {
-                int idx = keys.getIndex(iid);
+                int idx = keys.getIndex(id);
                 if (keys.indexIsActive(idx) && timestamps[idx] >= r.getTimestamp()) {
                     continue;  // we have seen a newer event - skip this.
                 } else {
@@ -137,9 +127,9 @@ public final class Ratings {
             Preference p = r.getPreference();
             if (p != null) {
                 // save the preference
-                msv.set(iid, p.getValue());
+                msv.set(id, p.getValue());
             } else {
-                msv.unset(iid);
+                msv.unset(id);
             }
         }
 
@@ -155,6 +145,22 @@ public final class Ratings {
      */
     public static MutableSparseVector userRatingVector(@WillClose Cursor<? extends Rating> ratings) {
         return userRatingVector(Cursors.makeList(ratings));
+    }
+
+    private static enum IdExtractor {
+        ITEM {
+            @Override
+            long getId(Event evt) {
+                return evt.getItemId();
+            }
+        },
+        USER {
+            @Override
+            long getId(Event evt) {
+                return evt.getUserId();
+            }
+        };
+        abstract long getId(Event evt);
     }
 
     /**
