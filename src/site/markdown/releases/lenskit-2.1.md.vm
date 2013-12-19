@@ -59,6 +59,8 @@
 
 -   In single-threaded mode, run eval tasks on the same thread as the evaluator (#issue(426)).
 
+-   The evaluator now detects when two or more algorithm configurations have the same shared components, and only builds those components once.  A cache directory can be used to cache these objects on disk; specify this with the `cache` directive in `trainTest`.  One consequence of this is that build times are now meaningless.  This behavior can be disabled, and build times restored to meaning, by writing `separateAlgorithms true` in your `trainTest` block.
+
 ## Utilities
 
 -   Remove `TaskGroupRunner` in favor of new `TaskGroup` class.
