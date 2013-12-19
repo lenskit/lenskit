@@ -50,7 +50,7 @@ public final class TrainingEstimator {
      * @param baseline The baseline predictor.
      * @param cf       The clamping function.
      */
-    TrainingEstimator(PreferenceSnapshot snap, ItemScorer baseline, ClampingFunction cf) {
+    public TrainingEstimator(PreferenceSnapshot snap, ItemScorer baseline, ClampingFunction cf) {
         ratings = snap.getRatings();
         clamp = cf;
         estimates = new double[ratings.size()];
