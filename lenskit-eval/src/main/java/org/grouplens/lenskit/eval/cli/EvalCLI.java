@@ -95,6 +95,7 @@ public class EvalCLI {
                                  targets);
                     System.exit(2);
                 }
+                project.executeTarget(dft);
             } else {
                 project.executeTargets(options.getArgs());
             }

@@ -38,3 +38,6 @@ assertThat("output file existence",
            predictFile, existingFile());
 assertThat("output file existence",
            recommendFile, existingFile());
+
+assertThat(new File(basedir, 'train.1.csv.pack'),
+           existingFile())

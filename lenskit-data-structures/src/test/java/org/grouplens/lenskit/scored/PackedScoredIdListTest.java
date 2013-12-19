@@ -203,7 +203,7 @@ public class PackedScoredIdListTest {
         PackedScoredIdList list = builder.build();
         assertThat(list, hasSize(25));
         for (int i = 0; i < 25; i++) {
-            ScoredId id = new ScoredIdBuilder(i, vals.get(i)).build();
+            ScoredId id = new ScoredIdBuilder(i, vals.getDouble(i)).build();
             assertThat(list.get(i), equalTo(id));
         }
     }

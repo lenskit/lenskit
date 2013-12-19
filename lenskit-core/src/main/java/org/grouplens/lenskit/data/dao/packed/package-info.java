@@ -18,27 +18,10 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.test;
-
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-
 /**
- * Matcher for {@link Double#NaN}.
+ * Binary-packed rating DAOs.  These DAOs provide efficient access to binary rating data using
+ * memory-mapped files.
+ *
+ * @since 2.1
  */
-class NotANumberMatcher extends BaseMatcher<Double> {
-
-    @Override
-    public boolean matches(Object item) {
-        if (item instanceof Double) {
-            return ((Double) item).isNaN();
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public void describeTo(Description description) {
-        description.appendText("NaN");
-    }
-}
+package org.grouplens.lenskit.data.dao.packed;

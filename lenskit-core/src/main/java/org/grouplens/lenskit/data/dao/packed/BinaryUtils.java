@@ -18,28 +18,39 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.collections;
+package org.grouplens.lenskit.data.dao.packed;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
- * Collection supporting fast iteration.
- *
- * <p>A fast collection is a collection that may support <em>fast iteration</em>
- * — iteration where the same object is returned each time, having been mutated
- * to represent the next state.  It can save greatly in object allocation
- * overhead in some circumstances.  Using a fast iterator is only possible if
- * the looping code doesn't allow objects returned by the iterator to escape the
- * loop (e.g. it doesn't save them away in other objects or something), but many
- * loops only observe the object and then discard it before the next iteration.
- * Those loops benefit from fast iterators.
- *
- * @param <E> The type of value in the fast collection.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @compat Public
- * @deprecated Just implement {@link FastIterable}.
  */
-@Deprecated
-public interface FastCollection<E> extends Collection<E>, FastIterable<E> {
+public final class BinaryUtils {
+    private BinaryUtils() {}
+
+    /**
+     * Read a buffer completely from a channel.
+     * @param chan The channel.
+     * @param buf The buffer.
+     * @throws java.io.IOException If an error occurs while read the buffer.
+     */
+    public static void readBuffer(ReadableByteChannel chan, ByteBuffer buf) throws IOException {
+        while (buf.hasRemaining()) {
+            chan.read(buf);
+        }
+    }
+
+    /**
+     * Write a buffer completely to the channel.
+     * @param buf The buffer.
+     * @throws java.io.IOException If an error occurs while writing the buffer.
+     */
+    public static void writeBuffer(WritableByteChannel chan, ByteBuffer buf) throws IOException {
+        while (buf.hasRemaining()) {
+            chan.write(buf);
+        }
+    }
 }

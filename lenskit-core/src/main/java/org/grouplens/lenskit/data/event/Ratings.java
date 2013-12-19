@@ -21,12 +21,13 @@
 package org.grouplens.lenskit.data.event;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2LongMap;
-import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.pref.Preference;
@@ -34,9 +35,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillClose;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -51,7 +50,7 @@ public final class Ratings {
      */
     static final AtomicLong nextEventId = new AtomicLong();
 
-    public static final Comparator<Rating> ITEM_TIME_COMPARATOR = new Comparator<Rating>() {
+    public static final Ordering<Rating> ITEM_TIME_COMPARATOR = new Ordering<Rating>() {
         @Override
         public int compare(Rating r1, Rating r2) {
             long i1 = r1.getItemId();
@@ -77,24 +76,8 @@ public final class Ratings {
      * @param ratings Some ratings (they should all be for the same item)
      * @return A sparse vector mapping user IDs to ratings.
      */
-    public static MutableSparseVector itemRatingVector(Collection<? extends Rating> ratings) {
-        Long2DoubleMap v = new Long2DoubleOpenHashMap(ratings.size());
-        Long2LongMap tsMap = new Long2LongOpenHashMap(ratings.size());
-        tsMap.defaultReturnValue(Long.MIN_VALUE);
-        for (Rating r : ratings) {
-            long uid = r.getUserId();
-            long ts = r.getTimestamp();
-            if (ts >= tsMap.get(uid)) {
-                Preference p = r.getPreference();
-                if (p != null) {
-                    v.put(uid, p.getValue());
-                } else {
-                    v.remove(uid);
-                }
-                tsMap.put(uid, ts);
-            }
-        }
-        return MutableSparseVector.create(v);
+    public static MutableSparseVector itemRatingVector(@Nonnull Collection<? extends Rating> ratings) {
+        return extractVector(ratings, IdExtractor.USER);
     }
 
     /**
@@ -108,35 +91,49 @@ public final class Ratings {
      * @param ratings A collection of ratings (should all be by the same user)
      * @return A sparse vector mapping item IDs to ratings
      */
-    public static MutableSparseVector userRatingVector(Collection<? extends Rating> ratings) {
-        // sort ratings by item, then time, so we can overwrite previous ratings
-        // since Java 1.7, this uses TimSort, so it is fast on pre-sorted lists
-        Rating[] sortedRatings = ratings.toArray(new Rating[ratings.size()]);
-        Arrays.sort(sortedRatings, ITEM_TIME_COMPARATOR);
+    public static MutableSparseVector userRatingVector(@Nonnull Collection<? extends Rating> ratings) {
+        return extractVector(ratings, IdExtractor.ITEM);
 
-        // collect the list of unique item IDs
-        long[] items = new long[sortedRatings.length];
-        double[] values = new double[sortedRatings.length];
-        int li = -1;
-        for (Rating r : sortedRatings) {
-            long iid = r.getItemId();
-            // is this an unseen item?
-            if (li < 0 || items[li] != iid) {
-                li++;
-                items[li] = iid;
+    }
+
+    private static MutableSparseVector extractVector(Collection<? extends Rating> ratings, IdExtractor dimension) {
+        // collect the list of unique IDs
+        // use a list since we'll be sorting anyway
+        LongList ids = new LongArrayList(ratings.size());
+        for (Rating r: CollectionUtils.fast(ratings)) {
+            ids.add(dimension.getId(r));
+        }
+
+        LongKeyDomain keys = LongKeyDomain.fromCollection(ids, false);
+        MutableSparseVector msv = MutableSparseVector.create(keys.domain());
+        long[] timestamps = null;
+        // check for fast-path, where each item has one rating
+        if (keys.domainSize() < ratings.size()) {
+            timestamps = new long[keys.domainSize()];
+        }
+
+        for (Rating r: CollectionUtils.fast(ratings)) {
+            long id = dimension.getId(r);
+            if (timestamps != null) {
+                int idx = keys.getIndex(id);
+                if (keys.indexIsActive(idx) && timestamps[idx] >= r.getTimestamp()) {
+                    continue;  // we have seen a newer event - skip this.
+                } else {
+                    timestamps[idx] = r.getTimestamp();
+                    keys.setActive(idx, true);
+                }
             }
 
             Preference p = r.getPreference();
             if (p != null) {
                 // save the preference
-                values[li] = p.getValue();
+                msv.set(id, p.getValue());
             } else {
-                // pretend we haven't seen the last item
-                li--;
+                msv.unset(id);
             }
         }
 
-        return MutableSparseVector.wrap(items, values, li + 1);
+        return msv;
     }
 
     /**
@@ -148,6 +145,22 @@ public final class Ratings {
      */
     public static MutableSparseVector userRatingVector(@WillClose Cursor<? extends Rating> ratings) {
         return userRatingVector(Cursors.makeList(ratings));
+    }
+
+    private static enum IdExtractor {
+        ITEM {
+            @Override
+            long getId(Event evt) {
+                return evt.getItemId();
+            }
+        },
+        USER {
+            @Override
+            long getId(Event evt) {
+                return evt.getUserId();
+            }
+        };
+        abstract long getId(Event evt);
     }
 
     /**

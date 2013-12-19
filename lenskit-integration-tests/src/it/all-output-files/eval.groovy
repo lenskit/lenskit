@@ -34,14 +34,17 @@ import org.grouplens.lenskit.knn.item.ItemItemScorer
 def dataDir = config['lenskit.movielens.100k']
 
 trainTest {
-    dataset crossfold("ML100K") {
-        source csvfile("$dataDir/u.data") {
-            delimiter "\t"
+    dataset pack {
+        dataset crossfold("ML100K") {
+            source csvfile("$dataDir/u.data") {
+                delimiter "\t"
+            }
+            partitions 5
+            holdout 5
+            train 'train.%d.csv'
+            test 'test.%d.csv'
         }
-        partitions 5
-        holdout 5
-        train 'train.%d.csv'
-        test 'test.%d.csv'
+        includeTimestamps false
     }
 
     algorithm("Baseline") {

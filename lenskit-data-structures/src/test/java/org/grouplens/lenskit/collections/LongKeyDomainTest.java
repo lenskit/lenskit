@@ -49,6 +49,7 @@ public class LongKeyDomainTest {
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.domain(), hasSize(0));
         assertThat(keys.keyList(), hasSize(0));
+        assertThat(keys.isCompletelySet(), equalTo(true));
     }
 
     @Test
@@ -69,6 +70,7 @@ public class LongKeyDomainTest {
         assertThat(keys.indexIsActive(0), equalTo(true));
         assertThat(keys.keyIsActive(42), equalTo(true));
         assertThat(keys.keyList(), contains(42L));
+        assertThat(keys.isCompletelySet(), equalTo(true));
     }
 
     @Test
@@ -87,6 +89,7 @@ public class LongKeyDomainTest {
         assertThat(keys.indexIsActive(0), equalTo(false));
         assertThat(keys.keyIsActive(42), equalTo(false));
         assertThat(keys.keyList(), contains(42L));
+        assertThat(keys.isCompletelySet(), equalTo(false));
     }
 
     @Test
@@ -113,6 +116,7 @@ public class LongKeyDomainTest {
         assertThat(keys.getIndex(80), lessThan(0));
 
         assertThat(keys.keyIsActive(42), equalTo(true));
+        assertThat(keys.isCompletelySet(), equalTo(true));
     }
 
     @Test
@@ -137,6 +141,7 @@ public class LongKeyDomainTest {
         assertThat(keys.getIndex(80), lessThan(0));
 
         assertThat(keys.keyIsActive(42), equalTo(false));
+        assertThat(keys.isCompletelySet(), equalTo(false));
     }
 
     @Test
@@ -165,6 +170,8 @@ public class LongKeyDomainTest {
         assertThat(keys.getIndex(80), lessThan(0));
 
         assertThat(keys.keyIsActive(42), equalTo(true));
+
+        assertThat(keys.isCompletelySet(), equalTo(true));
     }
 
     @Test
@@ -194,6 +201,7 @@ public class LongKeyDomainTest {
         assertThat(keys.getIndex(80), lessThan(0));
 
         assertThat(keys.keyIsActive(42), equalTo(false));
+        assertThat(keys.isCompletelySet(), equalTo(false));
     }
 
     @Test
@@ -211,6 +219,7 @@ public class LongKeyDomainTest {
         assertThat(keys.indexIsActive(1), equalTo(false));
         assertThat(keys.indexIsActive(2), equalTo(false));
         assertThat(keys.getIndexIfActive(42), lessThan(0));
+        assertThat(keys.isCompletelySet(), equalTo(false));
     }
 
     @Test

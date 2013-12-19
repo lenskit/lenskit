@@ -57,7 +57,7 @@ public final class PrefetchingUserDAO implements UserDAO {
             LongSet us = new LongOpenHashSet();
             Cursor<Event> events = eventDAO.streamEvents();
             try {
-                for (Event e: events) {
+                for (Event e: events.fast()) {
                     us.add(e.getUserId());
                 }
             } finally {

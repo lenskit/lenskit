@@ -18,39 +18,24 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util;
+package org.grouplens.lenskit.data.dao.packed;
 
-import javax.annotation.Nonnull;
-import javax.inject.Provider;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
+import org.grouplens.lenskit.core.Parameter;
+
+import javax.inject.Qualifier;
+import java.io.File;
+import java.lang.annotation.*;
 
 /**
- * Base class for providers with soft memoization behavior.
+ * Parameter for the backing file for the rating DAO.
  *
- * @since 2.0
+ * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public abstract class SoftMemoizingProvider<T> implements Provider<T> {
-    private volatile Reference<T> value;
-
-    @Override
-    public synchronized T get() {
-        T val = (value == null) ? null : value.get();
-        if (val == null) {
-            val = newValue();
-            value = new SoftReference<T>(val);
-        }
-
-        return val;
-    }
-
-    /**
-     * Create or retrieve a new value.  This is called by {@link #get()} when a cached value is not
-     * available.  It may not return {@code null}.
-     *
-     * @return The new value.
-     */
-    @Nonnull
-    protected abstract T newValue();
+@Parameter(File.class)
+@Qualifier
+@Documented
+@Target({ElementType.METHOD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface BinaryRatingFile {
 }

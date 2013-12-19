@@ -41,7 +41,7 @@ public class CSVDataSource extends AbstractDataSource {
     final PreferenceDomain domain;
     final String delimiter;
 
-    CSVDataSource(String name, File file, String delim, boolean cache, PreferenceDomain pdom) {
+    CSVDataSource(String name, File file, String delim, PreferenceDomain pdom) {
         this.name = name;
         sourceFile = file;
         domain = pdom;

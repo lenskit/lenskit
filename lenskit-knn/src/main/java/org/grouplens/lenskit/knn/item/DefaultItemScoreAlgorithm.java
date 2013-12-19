@@ -21,7 +21,8 @@
 package org.grouplens.lenskit.knn.item;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
@@ -35,7 +36,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * Default item scoring algorithm. It uses up to {@link NeighborhoodSize} neighbors to
@@ -68,19 +68,15 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
             final long item = e.getKey();
 
             // find all potential neighbors
-            // we will use the fast iterator - that seems to work
-            FluentIterable<ScoredId> neighborIter =
-                    FluentIterable.from(model.getNeighbors(item))
-                                  .filter(usable);
-            if (neighborhoodSize > 0) {
-                neighborIter = neighborIter.limit(neighborhoodSize);
-            }
-            List<ScoredId> neighbors = neighborIter.toList();
+            int limit = neighborhoodSize > 0 ? neighborhoodSize : -1;
+            Iterable<ScoredId> neighbors =
+                    CollectionUtils.fastFilterAndLimit(model.getNeighbors(item), usable, limit);
+            int size = Iterables.size(CollectionUtils.fast(neighbors));
 
             // compute score & place in vector
             final double score = scorer.score(neighbors, userData);
-            scores.getChannelVector(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL).
-                    set(e.getKey(), neighbors.size()); // set size even if no score
+            scores.getChannelVector(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL)
+                  .set(e.getKey(), size); // set size even if no score
             if (!Double.isNaN(score)) {
                 scores.set(e, score);
             }

@@ -514,8 +514,39 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @return The dot (inner) product between this vector and {@var o}.
      */
     public double dot(SparseVector o) {
+        if (keys.isCompletelySet() && o.keys.isCompletelySet()) {
+            return fastDotProduct(o);
+        } else {
+            return slowDotProduct(o);
+        }
+    }
+
+    private double fastDotProduct(SparseVector o) {
         double dot = 0;
 
+        int sz1 = keys.domainSize();
+        int sz2 = o.keys.domainSize();
+
+        int i1 = 0, i2 = 0;
+        while (i1 < sz1 && i2 < sz2) {
+            final long k1 = keys.getKey(i1);
+            final long k2 = o.keys.getKey(i2);
+            if (k1 < k2) {
+                i1++;
+            } else if (k2 < k1) {
+                i2++;
+            } else {
+                dot += values[i1] * o.values[i2];
+                i1++;
+                i2++;
+            }
+        }
+        return dot;
+    }
+
+    private double slowDotProduct(SparseVector o) {
+        // FIXME This code was tested, but no longer is.  Add relevant tests.
+        double dot = 0;
         Iterator<VectorEntry> i1 = fastIterator();
         Iterator<VectorEntry> i2 = o.fastIterator();
 

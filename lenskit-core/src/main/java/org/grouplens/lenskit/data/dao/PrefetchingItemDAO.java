@@ -57,7 +57,7 @@ public final class PrefetchingItemDAO implements ItemDAO {
             LongSet items = new LongOpenHashSet();
             Cursor<Event> events = eventDAO.streamEvents();
             try {
-                for (Event e: events) {
+                for (Event e: events.fast()) {
                     items.add(e.getItemId());
                 }
             } finally {

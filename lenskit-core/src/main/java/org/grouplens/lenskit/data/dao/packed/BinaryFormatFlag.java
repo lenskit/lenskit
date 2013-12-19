@@ -18,28 +18,21 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.collections;
+package org.grouplens.lenskit.data.dao.packed;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.EnumSet;
 
 /**
- * Collection supporting fast iteration.
- *
- * <p>A fast collection is a collection that may support <em>fast iteration</em>
- * — iteration where the same object is returned each time, having been mutated
- * to represent the next state.  It can save greatly in object allocation
- * overhead in some circumstances.  Using a fast iterator is only possible if
- * the looping code doesn't allow objects returned by the iterator to escape the
- * loop (e.g. it doesn't save them away in other objects or something), but many
- * loops only observe the object and then discard it before the next iteration.
- * Those loops benefit from fast iterators.
- *
- * @param <E> The type of value in the fast collection.
+ * Flags for the binary output format.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @compat Public
- * @deprecated Just implement {@link FastIterable}.
  */
-@Deprecated
-public interface FastCollection<E> extends Collection<E>, FastIterable<E> {
+public enum BinaryFormatFlag {
+    TIMESTAMPS;
+
+    public static EnumSet<BinaryFormatFlag> makeSet(BinaryFormatFlag... flags) {
+        EnumSet<BinaryFormatFlag> flagSet = EnumSet.noneOf(BinaryFormatFlag.class);
+        flagSet.addAll(Arrays.asList(flags));
+        return flagSet;
+    }
 }

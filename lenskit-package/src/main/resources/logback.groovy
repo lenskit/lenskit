@@ -26,6 +26,20 @@ if (System.getProperty("log.debugConfig")?.toLowerCase() == "true") {
 
 def logFile = System.getProperty("log.file")
 def appenders = ["CONSOLE"]
+def rootLevel = INFO
+def useColor = false
+switch (System.getProperty("log.color", "auto").toLowerCase()) {
+    case "yes":
+    case "true":
+        useColor=true
+        break
+    case "no":
+    case "false":
+        useColor=false
+        break
+    case "auto":
+        useColor = System.console() != null
+}
 
 appender("CONSOLE", ConsoleAppender) {
     def filt = new ThresholdFilter()
@@ -33,7 +47,11 @@ appender("CONSOLE", ConsoleAppender) {
         level = "INFO"
     }
     encoder(PatternLayoutEncoder) {
-        pattern = "%highlight(%-5level) %white(%date{HH:mm:ss.SSS}) [%yellow(%thread)] %cyan(%logger{24}) %msg%n"
+        if (useColor) {
+            pattern = "%highlight(%-5level) %white(%date{HH:mm:ss.SSS}) [%yellow(%thread)] %cyan(%logger{24}) %msg%n"
+        } else {
+            pattern = "%-5level %date{HH:mm:ss.SSS} [%thread] %logger{24} %msg%n"
+        }
     }
 }
 
@@ -45,7 +63,8 @@ if (logFile != null) {
         }
     }
     appenders << "LOGFILE"
+    rootLevel = DEBUG
 }
 
 logger("org.grouplens.grapht", WARN)
-root(DEBUG, appenders)
+root(rootLevel, appenders)

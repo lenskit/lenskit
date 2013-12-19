@@ -22,6 +22,7 @@ package org.grouplens.lenskit.eval.metrics.topn;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.*;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
@@ -129,7 +130,7 @@ public final class ItemSelectors {
                         if (offset + j == selected.size()) {
                             selected.add(item);
                         } else {
-                            long old = selected.get(offset + j);
+                            long old = selected.getLong(offset + j);
                             if (selected.size() == offset + nRandom) {
                                 selected.set(offset + nRandom - 1, old);
                             } else {
@@ -155,7 +156,7 @@ public final class ItemSelectors {
             @Override
             public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
                 LongSet items = new LongOpenHashSet(testData.size());
-                for (Event e: testData) {
+                for (Event e: CollectionUtils.fast(testData)) {
                     items.add(e.getItemId());
                 }
                 return items;
@@ -165,7 +166,7 @@ public final class ItemSelectors {
             @Override
             public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
                 LongSet items = new LongOpenHashSet(testData.size());
-                for (Event e: trainingData) {
+                for (Event e: CollectionUtils.fast(trainingData)) {
                     items.add(e.getItemId());
                 }
                 return items;

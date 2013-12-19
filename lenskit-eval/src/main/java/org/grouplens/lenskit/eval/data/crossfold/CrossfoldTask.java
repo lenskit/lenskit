@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.data.crossfold;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.*;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Event;
@@ -388,7 +389,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
                             writeRating(testWriters[f], ratings.get(j));
                         }
                     } else {
-                        for (Rating rating : ratings) {
+                        for (Rating rating : CollectionUtils.fast(ratings)) {
                             writeRating(trainWriters[f], rating);
                         }
                     }
