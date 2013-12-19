@@ -23,13 +23,14 @@ package org.grouplens.lenskit.config;
 import groovy.lang.Closure;
 import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.Module;
-import org.grouplens.lenskit.core.AbstractConfigContext;
+import org.grouplens.lenskit.inject.AbstractConfigContext;
 import org.grouplens.lenskit.core.LenskitBinding;
 import org.grouplens.lenskit.core.LenskitConfigContext;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.pref.PreferenceDomainBuilder;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
@@ -130,6 +131,11 @@ public class BindingDSL extends AbstractConfigContext {
     @SuppressWarnings("rawtypes")
     public Binding set(Class<? extends Annotation> param) {
         return context.set(param);
+    }
+
+    @Override
+    public void addComponent(@Nonnull Object obj) {
+        context.addComponent(obj);
     }
 
     private LenskitConfigContext configure(LenskitConfigContext ctx, Closure<?> block) {

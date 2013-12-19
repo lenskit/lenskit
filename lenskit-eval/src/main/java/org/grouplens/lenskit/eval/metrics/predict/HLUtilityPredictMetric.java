@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval.metrics.predict;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -50,7 +50,7 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
     }
 
     @Override
-    public Accum makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
+    public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
         return new Accum();
     }
 
@@ -83,7 +83,7 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] evaluate(TestUser user) {
+        public List<Object> evaluate(TestUser user) {
             SparseVector predictions = user.getPredictions();
             if (predictions == null) {
                 return userRow();
@@ -92,7 +92,7 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
         }
 
         @Nonnull
-        Object[] evaluatePredictions(SparseVector ratings, SparseVector predictions) {
+        List<Object> evaluatePredictions(SparseVector ratings, SparseVector predictions) {
             LongList ideal = ratings.keysByValue(true);
             LongList actual = predictions.keysByValue(true);
             double idealUtility = computeHLU(ideal, ratings);
@@ -105,7 +105,7 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] finalResults() {
+        public List<Object> finalResults() {
             if (nusers > 0) {
                 double v = total / nusers;
                 logger.info("HLU: {}", v);

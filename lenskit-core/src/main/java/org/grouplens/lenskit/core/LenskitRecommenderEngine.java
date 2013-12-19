@@ -22,12 +22,14 @@ package org.grouplens.lenskit.core;
 
 import com.google.common.base.Preconditions;
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.solver.DesireChain;
+import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.spi.CachedSatisfaction;
-import org.grouplens.grapht.spi.InjectSPI;
-import org.grouplens.grapht.spi.reflect.ReflectionInjectSPI;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.RecommenderEngine;
+import org.grouplens.lenskit.inject.GraphtUtils;
+import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,14 +52,12 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngine.class);
 
     private final DAGNode<CachedSatisfaction, DesireChain> graph;
+    private final boolean instantiable;
 
-    private final InjectSPI spi;
-
-    LenskitRecommenderEngine(DAGNode<CachedSatisfaction, DesireChain> dependencies, InjectSPI spi) {
-        Preconditions.checkArgument(spi instanceof ReflectionInjectSPI,
-                                    "SPI must be a reflection SPI");
+    LenskitRecommenderEngine(DAGNode<CachedSatisfaction, DesireChain> dependencies,
+                             boolean instantiable) {
         this.graph = dependencies;
-        this.spi = spi;
+        this.instantiable = instantiable;
     }
 
     /**
@@ -73,7 +73,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      *                     If the configuration cannot be used.
      */
     public static LenskitRecommenderEngine load(File file) throws IOException, RecommenderConfigurationException {
-        return load(file, null);
+        return newLoader().load(file);
     }
 
     /**
@@ -87,15 +87,11 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @throws IOException If there is an error reading from the file.
      * @throws RecommenderConfigurationException
      *                     If the configuration cannot be used.
+     * @deprecated Use {@link LenskitRecommenderEngineLoader} for sophisticated loading.
      */
+    @Deprecated
     public static LenskitRecommenderEngine load(File file, ClassLoader loader) throws IOException, RecommenderConfigurationException {
-        logger.info("Loading recommender engine from {}", file);
-        FileInputStream input = new FileInputStream(file);
-        try {
-            return load(input, loader);
-        } finally {
-            input.close();
-        }
+        return newLoader().setClassLoader(loader).load(file);
     }
 
     /**
@@ -111,7 +107,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      *                     If the configuration cannot be used.
      */
     public static LenskitRecommenderEngine load(InputStream input) throws IOException, RecommenderConfigurationException {
-        return load(input, null);
+        return newLoader().load(input);
     }
 
     /**
@@ -125,34 +121,10 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @throws IOException If there is an error reading from the file.
      * @throws RecommenderConfigurationException
      *                     If the configuration cannot be used.
+     * @deprecated Use {@link LenskitRecommenderEngineLoader} for sophisticated loading.
      */
     public static LenskitRecommenderEngine load(InputStream input, ClassLoader loader) throws IOException, RecommenderConfigurationException {
-        logger.debug("using classloader {}", loader);
-        InjectSPI spi = new ReflectionInjectSPI();
-        ObjectInputStream in = new CustomClassLoaderObjectInputStream(input, loader);
-        try {
-            Thread current = Thread.currentThread();
-            // save the old class loader
-            ClassLoader oldLoader = current.getContextClassLoader();
-            if (loader != null) {
-                // set the new class loader
-                // Grapht will automatically use the context class loader
-                current.setContextClassLoader(loader);
-            }
-            try {
-                DAGNode<CachedSatisfaction, DesireChain> dependencies = (DAGNode) in.readObject();
-                return new LenskitRecommenderEngine(dependencies, spi);
-            } finally {
-                if (loader != null) {
-                    // restore the old class loader if needed
-                    current.setContextClassLoader(oldLoader);
-                }
-            }
-        } catch (ClassNotFoundException e) {
-            throw new RecommenderConfigurationException(e);
-        } finally {
-            in.close();
-        }
+        return newLoader().setClassLoader(loader).load(input);
     }
 
     /**
@@ -195,8 +167,41 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
 
     @Override
     public LenskitRecommender createRecommender() {
-        StaticInjector inj = new StaticInjector(spi, graph);
-        return new LenskitRecommender(inj);
+        Preconditions.checkState(instantiable, "recommender engine does not have instantiable graph");
+        return new LenskitRecommender(graph);
+    }
+
+    /**
+     * Construct a recommender with some additional configuration.  This can be used to do things
+     * like add data source configuration on a per-recommender, rather than per-engine, basis.
+     *
+     * @param config The configuration to adjust the recommender.
+     * @return The constructed recommender.
+     * @throws RecommenderConfigurationException if there is an error configuring the recommender.
+     */
+    public LenskitRecommender createRecommender(LenskitConfiguration config) throws RecommenderConfigurationException {
+        Preconditions.checkNotNull(config, "extra configuration");
+        final DAGNode<CachedSatisfaction, DesireChain> toBuild;
+        RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
+        rgb.addBindings(config.getBindings());
+        DependencySolver solver = rgb.buildDependencySolver();
+        try {
+            toBuild = solver.rewrite(graph);
+        } catch (SolverException ex) {
+            throw new RecommenderConfigurationException("error reconfiguring recommender", ex);
+        }
+        GraphtUtils.checkForPlaceholders(toBuild, logger);
+
+        return new LenskitRecommender(toBuild);
+    }
+
+    /**
+     * Query whether this engine is instantiable.  Instantiable recommenders have all their
+     * placeholders removed and are ready to instantiate.
+     * @return {@code true} if the recommender is instantiable.
+     */
+    public boolean isInstantiable() {
+        return instantiable;
     }
 
     /**
@@ -217,7 +222,22 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @return The recommender engine.
      */
     public static LenskitRecommenderEngine build(LenskitConfiguration config) throws RecommenderBuildException {
-        DAGNode<CachedSatisfaction, DesireChain> graph = RecommenderInstantiator.forConfig(config).instantiate();
-        return new LenskitRecommenderEngine(graph, config.getSPI());
+        return newBuilder().addConfiguration(config).build();
+    }
+
+    /**
+     * Create a new recommender engine builder.
+     * @return A new recommender engine builder.
+     */
+    public static LenskitRecommenderEngineBuilder newBuilder() {
+        return new LenskitRecommenderEngineBuilder();
+    }
+
+    /**
+     * Create a new recommender engine loader.
+     * @return A new recommender engine loader.
+     */
+    public static LenskitRecommenderEngineLoader newLoader() {
+        return new LenskitRecommenderEngineLoader();
     }
 }

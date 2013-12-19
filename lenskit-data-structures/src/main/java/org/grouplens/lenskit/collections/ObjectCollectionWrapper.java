@@ -48,7 +48,7 @@ class ObjectCollectionWrapper<E> implements ObjectCollection<E>, Serializable {
         return ObjectIterators.asObjectIterator(delegate.iterator());
     }
 
-    @Override
+    @Override @Deprecated
     public ObjectIterator<E> objectIterator() {
         return iterator();
     }

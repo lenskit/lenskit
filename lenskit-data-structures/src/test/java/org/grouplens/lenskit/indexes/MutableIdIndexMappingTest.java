@@ -27,11 +27,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
 
-/**
- * 
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- *
- */
 public class MutableIdIndexMappingTest {
     @Test
     public void testInternId() {
@@ -49,5 +44,16 @@ public class MutableIdIndexMappingTest {
         assertThat(idx.internId(42), equalTo(0));
         assertThat(idx.internId(39), equalTo(1));
         assertThat(idx.internId(42), equalTo(0));
+    }
+
+    @Test
+    public void testImmutableCopy() {
+        MutableIdIndexMapping idx = new MutableIdIndexMapping();
+        assertThat(idx.internId(42), equalTo(0));
+        assertThat(idx.internId(39), equalTo(1));
+        IdIndexMapping imm = idx.immutableCopy();
+        assertThat(imm.getId(0), equalTo(42L));
+        assertThat(imm.getId(1), equalTo(39L));
+        assertThat(imm.getIndex(42), equalTo(0));
     }
 }

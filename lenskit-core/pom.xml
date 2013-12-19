@@ -58,4 +58,66 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>git-build</id>
+      <activation>
+        <file>
+          <exists>${basedir}/../.git/index</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>git-log</id>
+                <goals><goal>run</goal></goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <target>
+                    <script src="${basedir}/src/build/git-log.groovy" language="groovy"/>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+            <dependencies>
+              <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy-all</artifactId>
+                <version>${groovy.version}</version>
+              </dependency>
+              <dependency>
+                <groupId>org.eclipse.jgit</groupId>
+                <artifactId>org.eclipse.jgit</artifactId>
+                <version>3.1.0.201310021548-r</version>
+              </dependency>
+            </dependencies>
+          </plugin>
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>add-generated-resources</id>
+                <goals><goal>add-resource</goal></goals>
+                <configuration>
+                  <resources>
+                    <resource>
+                      <directory>${project.build.directory}/generated-resources/build-info</directory>
+                      <targetPath>META-INF/lenskit</targetPath>
+                    </resource>
+                  </resources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

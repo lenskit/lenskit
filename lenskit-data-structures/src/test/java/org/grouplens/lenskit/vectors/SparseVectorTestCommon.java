@@ -347,7 +347,28 @@ public abstract class SparseVectorTestCommon {
         assertFalse(simpleVector2().equals(simpleVector()));
         assertFalse(emptyVector().equals(singleton()));
     }
-    
+
+    @Test
+    public void testCombine() {
+        long[] keys1 = {1, 2, 3};
+        double[] values1 = {1.5, 3.5, 2};
+        ImmutableSparseVector v1 = MutableSparseVector.wrap(keys1, values1).freeze();
+        long[] keys2 = {4};
+        double[] values2 = {5};
+        ImmutableSparseVector v2 = MutableSparseVector.wrap(keys2, values2).freeze();
+        ImmutableSparseVector v = v1.combineWith(v2);
+        assertThat(v.size(), equalTo(4));
+        assertThat(v.containsKey(4), equalTo(true));
+        assertThat(v.get(4), equalTo(5.0));
+        long[] keys3 = {2, 6, 7};
+        double[] values3 = {5, 5, 2.5};
+        MutableSparseVector v3 = MutableSparseVector.wrap(keys3, values3);
+        MutableSparseVector mv = v3.combineWith(v1);
+        assertThat(mv.size(), equalTo(5));
+        assertThat(mv.containsKey(1), equalTo(true));
+        assertThat(mv.get(2), equalTo(3.5));
+    }
+
     @Test
     public void testVectorEntryMethods() {
         SparseVector simple = simpleVector();

@@ -111,5 +111,5 @@ public abstract class AbstractTask<T> extends AbstractFuture<T> implements EvalT
         set(result);
     }
 
-    protected abstract T perform() throws TaskExecutionException;
+    protected abstract T perform() throws TaskExecutionException, InterruptedException;
 }

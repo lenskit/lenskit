@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval.metrics.predict;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -57,7 +57,7 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
     private static final ImmutableList<String> COLUMNS = ImmutableList.of("nDCG");
 
     @Override
-    public Accum makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
+    public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
         return new Accum();
     }
 
@@ -101,7 +101,7 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] evaluate(TestUser user) {
+        public List<Object> evaluate(TestUser user) {
             SparseVector predictions = user.getPredictions();
             if (predictions == null) {
                 return userRow();
@@ -109,7 +109,7 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
             return evaluatePredictions(user.getTestRatings(), predictions);
         }
 
-        Object[] evaluatePredictions(SparseVector ratings, SparseVector predictions) {
+        List<Object> evaluatePredictions(SparseVector ratings, SparseVector predictions) {
             LongList ideal = ratings.keysByValue(true);
             LongList actual = predictions.keysByValue(true);
             double idealGain = computeDCG(ideal, ratings);
@@ -122,7 +122,7 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] finalResults() {
+        public List<Object> finalResults() {
             if (nusers > 0) {
                 double v = total / nusers;
                 logger.info("nDCG: {}", v);

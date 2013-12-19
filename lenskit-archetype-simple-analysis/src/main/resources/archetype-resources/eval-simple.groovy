@@ -118,8 +118,8 @@ target('analyze') {
     requires 'evaluate'
     // Run R. Note that the script is run in the analysis directory; you might want to
     // copy all R scripts there instead of running them from the source dir.
-    ant.exec(executable: config["rscript.executable"]) {
-        arg value: "chart.R"
+    ant.exec(executable: "python") {
+        arg value: "chart.py"
     }
 }
 

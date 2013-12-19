@@ -23,7 +23,7 @@ package org.grouplens.lenskit.indexes;
 import it.unimi.dsi.fastutil.longs.*;
 
 /**
- * Build contiguous 0-based indexes for long IDs.
+ * Mutable index mapping. Use this when you need to have indexes before you've seen all the IDs.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -77,5 +77,14 @@ public final class MutableIdIndexMapping extends IdIndexMapping {
             indexes.put(id, idx);
         }
         return idx;
+    }
+
+    /**
+     * Make an immutable copy of this index mapping.
+     *
+     * @return An immutable copy of the index mapping.
+     */
+    public IdIndexMapping immutableCopy() {
+        return new ImmutableHashIdIndexMapping(indexes);
     }
 }

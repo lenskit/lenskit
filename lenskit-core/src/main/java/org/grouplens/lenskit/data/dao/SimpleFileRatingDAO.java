@@ -32,6 +32,7 @@ import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -86,10 +87,9 @@ public class SimpleFileRatingDAO implements EventDAO {
      *
      * @param file      The file.
      * @param delim     The delimiter to look for in the file.
-     * @deprecated      use {@link #create(File file, String delim)} instead.
      */
-    @Deprecated
-    public SimpleFileRatingDAO(File file, String delim) {
+    @Inject
+    public SimpleFileRatingDAO(@RatingFile File file, @FieldSeparator String delim) {
         this(file, delim, CompressionMode.AUTO);
     }
 
@@ -102,8 +102,7 @@ public class SimpleFileRatingDAO implements EventDAO {
      * @return          A SimpleFileRatingDao Object
      */
     public static SimpleFileRatingDAO create(File file, String delim){
-        SimpleFileRatingDAO sfrd = new SimpleFileRatingDAO(file,delim, CompressionMode.AUTO);
-        return sfrd;
+        return create(file, delim, CompressionMode.AUTO);
     }
 
     public File getSourceFile() {

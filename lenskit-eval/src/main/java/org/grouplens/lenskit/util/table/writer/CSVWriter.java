@@ -61,7 +61,7 @@ public class CSVWriter extends AbstractTableWriter {
         layout = l;
         writer = w;
         if (layout != null) {
-            writeRow(layout.getColumns().toArray(new String[l.getColumnCount()]));
+            writeRow(layout.getColumns().toArray(new Object[l.getColumnCount()]));
         }
     }
 
@@ -73,6 +73,7 @@ public class CSVWriter extends AbstractTableWriter {
 
     @Override
     public synchronized void writeRow(List<?> row) throws IOException {
+        Preconditions.checkState(writer != null, "writer has been closed");
         if (layout != null) {
             checkRowWidth(row.size());
         }

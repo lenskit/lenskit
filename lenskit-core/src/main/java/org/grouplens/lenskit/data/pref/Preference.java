@@ -28,6 +28,10 @@ package org.grouplens.lenskit.data.pref;
  * <p> Instances of this class are immutable. All exceptions to this rule must be clearly
  * documented, and only arise in limited contexts such as fast iteration.
  *
+ * <p>Preferences are equal iff they have the same user ID, item ID, and value.  The hash code
+ * of a preference is computed by passing those three values, in order, to
+ * {@link org.apache.commons.lang3.builder.HashCodeBuilder} with default parameters.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */

@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval.metrics.predict;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -53,7 +53,7 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
             ImmutableList.of("Entropy.ofRating.ByUser", "Entropy.ofPredictions.byUser", "Information.ByUser");
 
     @Override
-    public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algorithm, TTDataSet dataSet) {
+    public TestUserMetricAccumulator makeAccumulator(Attributed algorithm, TTDataSet dataSet) {
         return new Accum(dataSet.getPreferenceDomain());
     }
 
@@ -81,7 +81,7 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] evaluate(TestUser user) {
+        public List<Object> evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
             if (predictions == null) {
@@ -114,7 +114,7 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] finalResults() {
+        public List<Object> finalResults() {
             if (nusers <= 0) {
                 return finalRow();
             }

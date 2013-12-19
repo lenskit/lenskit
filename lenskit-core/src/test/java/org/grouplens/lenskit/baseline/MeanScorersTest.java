@@ -28,6 +28,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.PrefetchingUserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
@@ -51,7 +52,7 @@ import static org.junit.Assert.assertThat;
  */
 public class MeanScorersTest {
     private static final double RATINGS_DAT_MEAN = 3.75;
-    private EventCollectionDAO dao;
+    private EventDAO dao;
 
     @Before
     public void createRatingSource() {
@@ -61,7 +62,7 @@ public class MeanScorersTest {
         rs.add(Ratings.make(8, 4, 5));
         rs.add(Ratings.make(8, 5, 4));
 
-        dao = new EventCollectionDAO(rs);
+        dao = EventCollectionDAO.create(rs);
     }
 
     LongSortedSet itemSet(long item) {

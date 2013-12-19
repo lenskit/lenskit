@@ -8,10 +8,22 @@
     </encoder>
   </appender>
 
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+      <level>${console.log.level:-WARN}</level>
+      <onMatch>ACCEPT</onMatch>
+      <onMismatch>DENY</onMismatch>
+    </filter>
+    <encoder>
+      <pattern>%-5level %logger{24} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
   <logger name="org.grouplens.grapht"
           level="INFO"/>
 
-  <root level="DEBUG">
+  <root level="${log.level:-DEBUG}">
     <appender-ref ref="TESTFILE"/>
+    <appender-ref ref="CONSOLE"/>
   </root>
 </configuration>

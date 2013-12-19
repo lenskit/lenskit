@@ -32,7 +32,7 @@ import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.spi.*;
 import org.grouplens.grapht.spi.reflect.*;
-import org.grouplens.lenskit.core.GraphtUtils;
+import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.core.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

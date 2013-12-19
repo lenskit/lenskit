@@ -73,17 +73,19 @@ public final class ImmutableVec extends Vec {
 
     @Override
     public double sum() {
-        if (sum == null) {
-            sum = super.sum();
+        Double s = sum;
+        if (s == null) {
+            sum = s = super.sum();
         }
-        return sum;
+        return s;
     }
 
     @Override
     public double norm() {
-        if (norm == null) {
-            norm = super.norm();
+        Double n = norm;
+        if (n == null) {
+            norm = n = super.norm();
         }
-        return norm;
+        return n;
     }
 }

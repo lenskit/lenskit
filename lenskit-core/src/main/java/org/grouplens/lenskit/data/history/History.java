@@ -20,11 +20,12 @@
  */
 package org.grouplens.lenskit.data.history;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Ordering;
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.event.Events;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -46,7 +47,12 @@ public final class History {
     @SuppressWarnings("deprecation")
     @Nonnull
     public static <E extends Event> UserHistory<E> forUser(long id, List<? extends E> events) {
-        return new BasicUserHistory<E>(id, events);
+        Ordering<Event> ord = Ordering.from(Events.TIMESTAMP_COMPARATOR);
+        if (ord.isOrdered(events)) {
+            return new BasicUserHistory<E>(id, events);
+        } else {
+            return new BasicUserHistory<E>(id, ord.immutableSortedCopy(events));
+        }
     }
 
     /**
@@ -57,7 +63,7 @@ public final class History {
      */
     @Nonnull
     public static <E extends Event> UserHistory<E> forUser(long id) {
-        List<E> list = Collections.emptyList();
+        List<E> list = ImmutableList.of();
         return new BasicUserHistory<E>(id, list);
     }
 }

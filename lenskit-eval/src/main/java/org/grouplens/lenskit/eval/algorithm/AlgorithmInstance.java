@@ -20,49 +20,149 @@
  */
 package org.grouplens.lenskit.eval.algorithm;
 
-import com.google.common.base.Supplier;
+import com.google.common.base.Joiner;
+import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.solver.DesireChain;
+import org.grouplens.grapht.solver.SolverException;
+import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.eval.ExecutionInfo;
-import org.grouplens.lenskit.eval.traintest.SharedPreferenceSnapshot;
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.core.*;
+import org.grouplens.lenskit.eval.Attributed;
+import org.grouplens.lenskit.eval.script.BuiltBy;
+import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.inject.Provider;
+import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Random;
 
 /**
- * An algorithm instance. On its own, this doesn't do much; it exists to share some
- * metadata between {@link LenskitAlgorithmInstance} and {@link ExternalAlgorithmInstance}.
+ * An instance of a recommender algorithmInfo to be benchmarked.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public interface AlgorithmInstance {
-    /**
-     * Get the name of this algorithm instance.
-     * @return The instance's name.
-     */
-    String getName();
-
-    /**
-     * Get the attributes associated with this algorithm instance.
-     * @return The algorithm instance's attributes.
-     */
+@BuiltBy(AlgorithmInstanceBuilder.class)
+public class AlgorithmInstance implements Attributed {
+    private static final Logger logger = LoggerFactory.getLogger(AlgorithmInstance.class);
+    @Nullable
+    private final String algoName;
     @Nonnull
-    Map<String, Object> getAttributes();
+    private final LenskitConfiguration config;
+    @Nonnull
+    private final Map<String, Object> attributes;
+    private final boolean preload;
+    private Random random;
+
+    public AlgorithmInstance(String name, LenskitConfiguration config) {
+        this(name, config, Collections.<String, Object>emptyMap(), false);
+    }
+
+    public AlgorithmInstance(String name, LenskitConfiguration cfg, Map<String, Object> attrs, boolean preload) {
+        algoName = name;
+        config = cfg;
+        attributes = attrs;
+        this.preload = preload;
+    }
 
     /**
-     * Create a testable recommender instance from this algorithm.
+     * Get the name of this algorithmInfo.  This returns a short name which is
+     * used to identify the algorithmInfo or instance.
      *
-     *
-     * @param data     The data set. The test data should only be used if the recommender needs to
-     *                 capture the test data (e.g. an external program that will produce predictions
-     *                 en mass).
-     * @param snapshot The (cached) shared preference snapshot.
-     * @param info     The execution info for this execution.
-     * @return A recommender instance for testing this algorithm.
+     * @return The algorithmInfo's name
      */
-    RecommenderInstance makeTestableRecommender(TTDataSet data,
-                                                Provider<? extends PreferenceSnapshot> snapshot,
-                                                ExecutionInfo info) throws RecommenderBuildException;
+    @Override
+    public String getName() {
+        return algoName;
+    }
+
+    /**
+     * Query whether this algorithmInfo is to operate on in-memory data.
+     *
+     * @return {@code true} if the ratings database should be loaded in-memory
+     *         prior to running.
+     */
+    public boolean getPreload() {
+        return preload;
+    }
+
+    @Override
+    @Nonnull
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    @Nonnull
+    public LenskitConfiguration getConfig() {
+        return config;
+    }
+
+    /**
+     * Let AlgorithmInstanceBuilder to pass random number generator to algorithmInfo instance
+     * 
+     * @param rng The random number generator.
+     * @return The new algorithmInfo instance
+     */
+    public AlgorithmInstance setRandom(Random rng) {
+        random = rng;
+        return this;
+    }
+
+    /**
+     * Build a recommender.
+     * @param defaults Additional configuration.  This configuration comes <em>before</em> the
+     *                 algorithm's configuration, so it is overridden if appropriate.
+     * @return
+     * @throws RecommenderBuildException
+     */
+    public LenskitRecommender buildRecommender(LenskitConfiguration defaults) throws RecommenderBuildException {
+        LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
+        if (defaults != null) {
+            builder.addConfiguration(defaults);
+        }
+        builder.addConfiguration(config);
+        return builder.build().createRecommender();
+    }
+
+    /**
+     * Build a recommender graph (but don't instantiate any objects).
+     *
+     * @param defaults Additional configuration.  This configuration comes <em>before</em> the
+     *                 algorithm's configuration, so it is overridden if appropriate.
+     * @return The recommender graph.
+     * @throws RecommenderBuildException if there is an error configuring the recommender.
+     */
+    public DAGNode<CachedSatisfaction,DesireChain> buildRecommenderGraph(LenskitConfiguration defaults) throws RecommenderConfigurationException {
+        LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
+        if (defaults != null) {
+            builder.addConfiguration(defaults);
+        }
+        builder.addConfiguration(config);
+        RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
+        rgb.addConfiguration(defaults);
+        rgb.addConfiguration(config);
+        try {
+            return rgb.buildGraph();
+        } catch (SolverException e) {
+            throw new RecommenderConfigurationException("error configuring recommender", e);
+        }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("LenskitAlgorithm(")
+          .append(getName())
+          .append(")");
+        if (!attributes.isEmpty()) {
+            sb.append("[");
+            Joiner.on(", ")
+                  .withKeyValueSeparator("=")
+                  .appendTo(sb, attributes);
+            sb.append("]");
+        }
+        return sb.toString();
+    }
 }

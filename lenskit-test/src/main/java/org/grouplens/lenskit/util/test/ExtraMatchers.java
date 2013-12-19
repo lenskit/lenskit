@@ -22,6 +22,10 @@ package org.grouplens.lenskit.util.test;
 
 import org.hamcrest.Matcher;
 
+import java.io.File;
+
+import static org.hamcrest.Matchers.equalTo;
+
 /**
  * Entry point for extra matchers used by LensKit tests.
  */
@@ -34,5 +38,17 @@ public final class ExtraMatchers {
      */
     public static Matcher<Double> notANumber() {
         return new NotANumberMatcher();
+    }
+
+    public static Matcher<File> existingFile() {
+        return new FileExistsMatcher();
+    }
+
+    public static Matcher<File> lineCount(int n) {
+        return hasLineCount(equalTo(n));
+    }
+
+    public static Matcher<File> hasLineCount(Matcher<? extends Integer> m) {
+        return new LineCountMatcher(m);
     }
 }

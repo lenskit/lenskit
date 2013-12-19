@@ -1,0 +1,46 @@
+#macro( issue $num )##
+[#$num](https://github.com/grouplens/lenskit/issues/$num)##
+#end
+#macro( user $name)##
+[@$name](https://github.com/$name)##
+#end
+
+#macro( makeHeader $ver $tail )##
+Title: Release $ver $tail
+
+
+# Release $ver $tail
+#end
+
+#macro( header $ver )##
+#if( $project.version == "${ver}-SNAPSHOT" )##
+#makeHeader($ver, "(in progress)")
+#else
+#makeHeader($ver, "")
+#end
+#end
+
+#macro( pmIntro $ver $ms )
+
+#if( $project.version == "${ver}-SNAPSHOT" )
+[changelog]: https://github.com/grouplens/lenskit/commits
+#else
+[changelog]: https://github.com/grouplens/lenskit/commits/lenskit-$ver
+#end
+
+#if($ms)
+[issues]: https://github.com/grouplens/lenskit/issues?milestone=$ms&amp;state=closed
+
+The [Git changelog][changelog] and the [list of closed tickets and pull requests][issues]
+provide more information on what has happened, including bugs that have been fixed.
+#else
+The [Git changelog][changelog] provides more
+information on what has happened.
+#end
+#end
+
+#macro( stdHeader $ver $ms )
+#header($ver)
+
+#pmIntro($ver, $ms)
+#end

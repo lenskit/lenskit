@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -29,6 +30,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.indexes.IdIndexMapping;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
@@ -73,6 +75,24 @@ public final class Vectors {
             }
         }
         return vec;
+    }
+
+    /**
+     * Create a mutable sparse vector from an array and index mapping.
+     *
+     * @param map The index mapping specifying the keys.
+     * @param values The array of values.
+     * @return A sparse vector mapping the IDs in {@code map} to the values in {@code values}.
+     * @throws IllegalArgumentException if {@code values} not the same size as {@code map}.
+     */
+    public static MutableSparseVector fromArray(IdIndexMapping map, double[] values) {
+        Preconditions.checkArgument(values.length == map.size(),
+                                    "values array longer than id mapping");
+        MutableSparseVector msv = MutableSparseVector.create(map.getIdList());
+        for (VectorEntry e: msv.fast(VectorEntry.State.EITHER)) {
+            msv.set(e, values[map.getIndex(e.getKey())]);
+        }
+        return msv;
     }
 
     //region Paired iteration

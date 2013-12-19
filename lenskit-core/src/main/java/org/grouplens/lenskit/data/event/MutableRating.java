@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.event;
 
+import org.grouplens.lenskit.data.pref.AbstractPreference;
 import org.grouplens.lenskit.data.pref.Preference;
 
 /**
@@ -35,7 +36,7 @@ public class MutableRating implements Rating {
     private long timestamp;
 
     // preference object mirroring this value.
-    private final Preference preference = new Preference() {
+    private final Preference preference = new AbstractPreference() {
         @Override
         public long getUserId() {
             return uid;
@@ -129,5 +130,24 @@ public class MutableRating implements Rating {
      */
     public void setTimestamp(long ts) {
         timestamp = ts;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Rating && Ratings.equals(this, (Rating) o);
+    }
+
+    @Override
+    public int hashCode() {
+        return Ratings.hashRating(this);
+    }
+
+    @Override
+    public String toString() {
+        if (Double.isNaN(value)) {
+            return String.format("Rating(u=%d, i=%d, v=null, ts=%d", uid, iid, timestamp);
+        } else {
+            return String.format("Rating(u=%d, i=%d, v=%f, ts=%d", uid, iid, value, timestamp);
+        }
     }
 }

@@ -14,17 +14,17 @@
     <fileSet filtered="true" packaged="true">
       <directory>src/main/java</directory>
       <includes>
-	<include>**/*.java</include>
+        <include>**/*.java</include>
       </includes>
     </fileSet>
 
     <!-- These are the files we want at the top-level that actually do
-	 the script work for running the eval and analysis. -->
+         the script work for running the eval and analysis. -->
     <fileSet filtered="true">
       <directory></directory>
       <includes>
-	<include>chart.R</include>
-	<include>eval-simple.groovy</include>
+        <include>chart.py</include>
+        <include>eval-simple.groovy</include>
       </includes>
     </fileSet>
   </fileSets>

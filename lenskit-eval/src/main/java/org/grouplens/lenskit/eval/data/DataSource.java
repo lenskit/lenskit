@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.data;
 
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.script.BuiltBy;
@@ -57,13 +58,6 @@ public interface DataSource {
     EventDAO getEventDAO();
 
     /**
-     * Get an event DAO provider.
-     *
-     * @return A provider of event DAOs.
-     */
-    Provider<EventDAO> getEventDAOProvider();
-
-    /**
      * Get a user-event DAO for this data source.  This implementation will probably not be used
      * for model training at present.
      *
@@ -94,6 +88,12 @@ public interface DataSource {
      * @return An user DAO.
      */
     UserDAO getUserDAO();
+
+    /**
+     * Get a LensKit configuration for this data source.
+     * @return A LensKit configuration with this data source (and, if appropriate, preference domain).
+     */
+    LenskitConfiguration getConfiguration();
 
     long lastModified();
 }

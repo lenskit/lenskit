@@ -23,8 +23,8 @@ package org.grouplens.lenskit.mf.funksvd;
 import com.google.common.collect.ImmutableList;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.indexes.IdIndexMapping;
 import org.grouplens.lenskit.transform.clamp.ClampingFunction;
-import org.grouplens.lenskit.util.Index;
 
 import java.io.Serializable;
 import java.util.List;
@@ -51,11 +51,11 @@ public final class FunkSVDModel implements Serializable {
 
     private final List<FeatureInfo> featureInfo;
 
-    private final Index itemIndex;
-    private final Index userIndex;
+    private final IdIndexMapping itemIndex;
+    private final IdIndexMapping userIndex;
 
     public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
-                        ClampingFunction clamp, Index iidx, Index uidx,
+                        ClampingFunction clamp, IdIndexMapping iidx, IdIndexMapping uidx,
                         List<FeatureInfo> features) {
         featureCount = nfeatures;
         clampingFunction = clamp;
@@ -66,8 +66,8 @@ public final class FunkSVDModel implements Serializable {
         itemIndex = iidx;
         userIndex = uidx;
 
-        numItem = iidx.getIds().size();
-        numUser = uidx.getIds().size();
+        numItem = iidx.size();
+        numUser = uidx.size();
 
         featureInfo = ImmutableList.copyOf(features);
     }
@@ -138,14 +138,14 @@ public final class FunkSVDModel implements Serializable {
     /**
      * The item index.
      */
-    public Index getItemIndex() {
+    public IdIndexMapping getItemIndex() {
         return itemIndex;
     }
 
     /**
      * The user index.
      */
-    public Index getUserIndex() {
+    public IdIndexMapping getUserIndex() {
         return userIndex;
     }
 
@@ -156,7 +156,7 @@ public final class FunkSVDModel implements Serializable {
      * @return The item-feature value, or 0 if the item was not in the training set.
      */
     public double getItemFeature(long iid, int feature) {
-        int iidx = itemIndex.getIndex(iid);
+        int iidx = itemIndex.tryGetIndex(iid);
         if (iidx < 0) {
             return 0;
         } else {
@@ -171,7 +171,7 @@ public final class FunkSVDModel implements Serializable {
      * @return The user-feature value, or 0 if the user was not in the training set.
      */
     public double getUserFeature(long uid, int feature) {
-        int uidx = userIndex.getIndex(uid);
+        int uidx = userIndex.tryGetIndex(uid);
         if (uidx < 0) {
             return 0;
         } else {

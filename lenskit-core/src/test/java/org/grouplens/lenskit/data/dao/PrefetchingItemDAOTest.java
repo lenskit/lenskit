@@ -43,7 +43,7 @@ public class PrefetchingItemDAOTest {
                 Ratings.make(2, 4, 3),
                 Ratings.make(2, 3, 2)
         );
-        EventDAO dao = new EventCollectionDAO(ratings);
+        EventDAO dao = EventCollectionDAO.create(ratings);
         ItemDAO idao = new PrefetchingItemDAO(dao);
         assertThat(idao.getItemIds(), hasSize(3));
         assertThat(idao.getItemIds(), containsInAnyOrder(2L, 3L, 4L));
