@@ -22,16 +22,19 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.AbstractUserHistory;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 
+import java.util.Iterator;
+
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class BinaryUserHistory<E extends Event> extends AbstractUserHistory<Rating> {
+public class BinaryUserHistory<E extends Event> extends AbstractUserHistory<Rating> implements FastCollection<Rating> {
     private final long userId;
     private final BinaryRatingList ratings;
 
@@ -53,6 +56,16 @@ public class BinaryUserHistory<E extends Event> extends AbstractUserHistory<Rati
     @Override
     public long getUserId() {
         return userId;
+    }
+
+    @Override
+    public Iterator<Rating> fastIterator() {
+        return ratings.fastIterator();
+    }
+
+    @Override
+    public Iterator<Rating> iterator() {
+        return ratings.iterator();
     }
 
     @Override
