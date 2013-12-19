@@ -85,7 +85,7 @@ public class AlgorithmInstanceBuilder implements Builder<AlgorithmInstance> {
      *
      * @return {@code true} if the algorithmInfo should have ratings pre-loaded into memory.
      */
-    public Boolean getPreload() {
+    public boolean getPreload() {
         return preload;
     }
 

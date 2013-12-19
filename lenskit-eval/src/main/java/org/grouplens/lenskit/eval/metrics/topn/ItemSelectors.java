@@ -130,7 +130,7 @@ public final class ItemSelectors {
                         if (offset + j == selected.size()) {
                             selected.add(item);
                         } else {
-                            long old = selected.get(offset + j);
+                            long old = selected.getLong(offset + j);
                             if (selected.size() == offset + nRandom) {
                                 selected.set(offset + nRandom - 1, old);
                             } else {

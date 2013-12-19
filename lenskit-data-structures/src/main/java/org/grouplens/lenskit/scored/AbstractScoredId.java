@@ -82,7 +82,7 @@ public abstract class AbstractScoredId implements ScoredId {
             }
             builder.append(sum);
             
-            hashCode = builder.build();
+            hashCode = builder.toHashCode();
         }
         return hashCode;
     }

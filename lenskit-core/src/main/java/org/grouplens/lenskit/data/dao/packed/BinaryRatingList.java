@@ -58,7 +58,7 @@ public class BinaryRatingList extends AbstractList<Rating> implements FastCollec
 
     @Override
     public Rating get(int index) {
-        int position = positions.get(index);
+        int position = positions.getInt(index);
         return getRating(position);
     }
 

@@ -146,8 +146,8 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     @Nullable
     @Override
     public <E extends Event> List<E> getEventsForItem(long item, Class<E> type) {
-        IntList indx = itemTable.getEntry(item);
-        if (indx == null) {
+        IntList index = itemTable.getEntry(item);
+        if (index == null) {
             return null;
         }
 
@@ -155,7 +155,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             return ImmutableList.of();
         }
 
-        return (List<E>) getRatingList(indx);
+        return (List<E>) getRatingList(index);
     }
 
     @Nullable
@@ -194,8 +194,8 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     @Nullable
     @Override
     public <E extends Event> UserHistory<E> getEventsForUser(long user, Class<E> type) {
-        IntList indx = userTable.getEntry(user);
-        if (indx == null) {
+        IntList index = userTable.getEntry(user);
+        if (index == null) {
             return null;
         }
 
@@ -203,7 +203,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             return History.forUser(user);
         }
 
-        return (UserHistory<E>) new BinaryUserHistory(user, getRatingList(indx));
+        return (UserHistory<E>) new BinaryUserHistory(user, getRatingList(index));
     }
 
     private class EntryToCursorTransformer implements Function<Pair<Long, IntList>, Cursor<Rating>> {
@@ -217,8 +217,8 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     private class UserEntryTransformer implements Function<Pair<Long, IntList>, UserHistory<Event>> {
         @Nullable
         @Override
-        public UserHistory<Event> apply(@Nullable Pair<Long, IntList> input) {
-            return History.<Event>forUser(input.getLeft(), getRatingList(input.getRight()));
+        public UserHistory apply(@Nullable Pair<Long, IntList> input) {
+            return new BinaryUserHistory(input.getLeft(), getRatingList(input.getRight()));
         }
     }
 }

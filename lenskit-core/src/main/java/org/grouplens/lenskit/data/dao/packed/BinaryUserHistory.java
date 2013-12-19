@@ -31,7 +31,7 @@ import org.grouplens.lenskit.data.history.UserHistory;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class BinaryUserHistory extends AbstractUserHistory<Rating> {
+public class BinaryUserHistory<E extends Event> extends AbstractUserHistory<Rating> {
     private final long userId;
     private final BinaryRatingList ratings;
 
