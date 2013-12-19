@@ -87,6 +87,7 @@
     <module>lenskit-eval-maven-plugin</module>
     <module>lenskit-test</module>
     <module>lenskit-all</module>
+      <module>lenskit-predict</module>
   </modules>
 
   <dependencyManagement>

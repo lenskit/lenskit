@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.test;
 
 import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.EvalConfig;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceBuilder;
@@ -60,7 +61,7 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
         configureAlgorithm(algo.getConfig());
         evalCommand.addAlgorithm(algo);
 
-        evalCommand.addDataset(new GenericDataSource("ml-100k", dao), 5, 0.2);
+        evalCommand.addDataset(new GenericDataSource("ml-100k", dao, PreferenceDomain.fromString("[1,5]/1")), 5, 0.2);
 
         evalCommand.addMetric(new CoveragePredictMetric())
                    .addMetric(new RMSEPredictMetric())

@@ -120,6 +120,22 @@ public abstract class Vec implements Serializable {
     }
 
     /**
+     * Get the largest element of the vector.
+     *
+     * @return The index of largest element of the vector.
+     */
+    public int largestDimension() {
+        double largest = data[0];
+        int index = 0;
+        for(int i = 1; i < data.length; i++) {
+            if(data[i] > largest) {
+                largest = data[i];
+                index = i;
+            }
+        }
+        return index;
+    }
+    /**
      * Get an immutable vector with this vector's contents.  If the vector is already immutable,
      * it is not changed.
      * @return The immutable vector.
