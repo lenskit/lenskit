@@ -23,7 +23,7 @@ package org.grouplens.lenskit.config;
 import groovy.lang.Closure;
 import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.Module;
-import org.grouplens.lenskit.core.AbstractConfigContext;
+import org.grouplens.lenskit.inject.AbstractConfigContext;
 import org.grouplens.lenskit.core.LenskitBinding;
 import org.grouplens.lenskit.core.LenskitConfigContext;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;

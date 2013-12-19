@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 
 import java.util.List;
@@ -49,7 +49,7 @@ public class FunctionModelMetric implements ModelMetric {
     }
 
     @Override
-    public List<Object> measureAlgorithm(AlgorithmInstance instance, TTDataSet data, Recommender recommender) {
+    public List<Object> measureAlgorithm(Attributed algorithm, TTDataSet data, Recommender recommender) {
         return function.apply(recommender);
     }
 

@@ -20,20 +20,12 @@
  */
 package org.grouplens.lenskit.eval.data;
 
-import org.grouplens.grapht.util.Providers;
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
-import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.util.SoftMemoizingProvider;
 import org.grouplens.lenskit.util.io.CompressionMode;
 
-import javax.annotation.Nonnull;
-import javax.inject.Provider;
 import java.io.File;
-import java.util.List;
 
 /**
  * Data source backed by a CSV file.  Use {@link CSVDataSourceBuilder} to configure and build one
@@ -44,7 +36,7 @@ import java.util.List;
  */
 public class CSVDataSource extends AbstractDataSource {
     final String name;
-    final Provider<EventDAO> provider;
+    final EventDAO dao;
     final File sourceFile;
     final PreferenceDomain domain;
     final String delimiter;
@@ -55,20 +47,7 @@ public class CSVDataSource extends AbstractDataSource {
         domain = pdom;
         delimiter = delim;
 
-        final EventDAO fileDao = SimpleFileRatingDAO.create(file, delim, CompressionMode.AUTO);
-
-        if (cache) {
-            provider = new SoftMemoizingProvider<EventDAO>() {
-                @Nonnull
-                @Override
-                protected EventDAO newValue() {
-                    List<Rating> ratings = Cursors.makeList(fileDao.streamEvents(Rating.class));
-                    return EventCollectionDAO.create(ratings);
-                }
-            };
-        } else {
-            provider = Providers.of(fileDao);
-        }
+        dao = SimpleFileRatingDAO.create(file, delim, CompressionMode.AUTO);
     }
 
     @Override
@@ -95,7 +74,7 @@ public class CSVDataSource extends AbstractDataSource {
     }
 
     @Override
-    public Provider<EventDAO> getEventDAOProvider() {
-        return provider;
+    public EventDAO getEventDAO() {
+        return dao;
     }
 }

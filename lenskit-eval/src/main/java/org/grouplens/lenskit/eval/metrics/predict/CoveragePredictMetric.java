@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.eval.metrics.predict;
 
 import com.google.common.collect.ImmutableList;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -48,7 +48,7 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
             ImmutableList.of("NAttempted", "NGood", "Coverage");
 
     @Override
-    public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
+    public TestUserMetricAccumulator makeAccumulator(Attributed algo, TTDataSet ds) {
         return new Accum();
     }
 
@@ -69,11 +69,11 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] evaluate(TestUser user) {
+        public List<Object> evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
             if (predictions == null) {
-                return new Object[USER_COLUMNS.size()];
+                userRow();
             }
             int n = 0;
             int good = 0;
@@ -92,7 +92,7 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] finalResults() {
+        public List<Object> finalResults() {
             Double coverage = null;
             if (npreds > 0) {
                 coverage = (double) ngood / npreds;

@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.eval;
 
 import com.google.common.collect.Iterables;
+import com.google.common.eventbus.EventBus;
 import org.apache.tools.ant.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,7 @@ public class EvalProject {
     private Project antProject;
     private Random random = new Random();
     private String defaultTarget;
+    private final EventBus eventBus;
 
     /**
      * Construct a new eval project.
@@ -58,6 +60,7 @@ public class EvalProject {
                 ph.setProperty(prop.getKey().toString(), prop.getValue().toString(), false);
             }
         }
+        eventBus = new EventBus();
     }
 
     /**
@@ -67,6 +70,16 @@ public class EvalProject {
      */
     public Project getAntProject() {
         return antProject;
+    }
+
+    /**
+     * Get this project's event bus.  The event bus is used for things like monitoring
+     * instrumentation.
+     *
+     * @return The event bus.
+     */
+    public EventBus getEventBus() {
+        return eventBus;
     }
 
     /**

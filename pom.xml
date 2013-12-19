@@ -298,6 +298,26 @@
             </properties>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-invoker-plugin</artifactId>
+          <version>1.8</version>
+          <configuration>
+            <cloneClean>true</cloneClean>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy-all</artifactId>
+              <version>${groovy.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>org.hamcrest</groupId>
+              <artifactId>hamcrest-library</artifactId>
+              <version>1.3</version>
+            </dependency>
+          </dependencies>
+        </plugin>
 
         <!-- Packaging and build assistance -->
         <plugin>

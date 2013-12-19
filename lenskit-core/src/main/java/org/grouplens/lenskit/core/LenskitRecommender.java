@@ -20,8 +20,11 @@
  */
 package org.grouplens.lenskit.core;
 
-import org.grouplens.grapht.Injector;
+import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.solver.DesireChain;
+import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.inject.StaticInjector;
 
 import java.lang.annotation.Annotation;
 
@@ -42,12 +45,13 @@ public class LenskitRecommender implements Recommender {
     private final StaticInjector injector;
 
     /**
-     * Create a new LensKit recommender.
+     * Create a new LensKit recommender.  Most code does not need to call this constructor, but
+     * rather use {@link #build(LenskitConfiguration)} or a {@link LenskitRecommenderEngine}.
      *
-     * @param injector The injector housing this recommender's configuration.
+     * @param graph This recommender's configuration graph.
      */
-    public LenskitRecommender(StaticInjector injector) {
-        this.injector = injector;
+    public LenskitRecommender(DAGNode<CachedSatisfaction,DesireChain> graph) {
+        injector = new StaticInjector(graph);
     }
 
     /**

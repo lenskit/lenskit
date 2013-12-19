@@ -69,7 +69,7 @@ public interface TestUser {
     /**
      * Get the user's predictions.
      *
-     * @return The predictions of the user's preference for items, or {@code null} if the algorithm
+     * @return The predictions of the user's preference for items, or {@code null} if the algorithmInfo
      *         does not support rating prediction.
      */
     @Nullable

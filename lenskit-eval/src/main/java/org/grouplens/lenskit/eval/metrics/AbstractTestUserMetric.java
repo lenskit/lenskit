@@ -21,9 +21,12 @@
 package org.grouplens.lenskit.eval.metrics;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import org.grouplens.lenskit.eval.traintest.TrainTestEvalTask;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Abstract base implementation of {@link TestUserMetric}.
@@ -39,10 +42,15 @@ public abstract class AbstractTestUserMetric
      * {@code null}s as needed.
      * @return The result row, the same length as {@link #getUserColumnLabels()}.
      */
-    protected Object[] userRow(Object... results) {
+    protected List<Object> userRow(Object... results) {
         int len = getUserColumnLabels().size();
         Preconditions.checkArgument(results.length <= len, "too many results");;
-        return Arrays.copyOf(results, len);
+        List<Object> row = Lists.newArrayListWithCapacity(len);
+        Collections.addAll(row, results);
+        while (row.size() < len) {
+            row.add(null);
+        }
+        return row;
     }
 
     /**
@@ -50,9 +58,14 @@ public abstract class AbstractTestUserMetric
      * {@code null}s as needed.
      * @return The result row, the same length as {@link #getColumnLabels()}.
      */
-    protected Object[] finalRow(Object... results) {
+    protected List<Object> finalRow(Object... results) {
         int len = getColumnLabels().size();
         Preconditions.checkArgument(results.length <= len, "too many results");;
-        return Arrays.copyOf(results, len);
+        List<Object> row = Lists.newArrayListWithCapacity(len);
+        Collections.addAll(row, results);
+        while (row.size() < len) {
+            row.add(null);
+        }
+        return row;
     }
 }

@@ -99,10 +99,9 @@
 
       <plugin>
         <artifactId>maven-invoker-plugin</artifactId>
-        <version>1.8</version>
         <configuration>
           <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
-          <postBuildHookScript>verify.groovy</postBuildHookScript>
+          <postBuildHookScript>verify</postBuildHookScript>
           <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
           <settingsFile>src/it/settings.xml</settingsFile>
           <mergeUserSettings>true</mergeUserSettings>
@@ -119,13 +118,6 @@
             </goals>
           </execution>
         </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-library</artifactId>
-            <version>1.3</version>
-          </dependency>
-        </dependencies>
       </plugin>
     </plugins>
   </build>

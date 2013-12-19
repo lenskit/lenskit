@@ -32,9 +32,9 @@ import java.util.Map;
  * @since 0.10
  */
 public class AlgorithmInstanceBuilderDelegate extends LenskitConfigDSL {
-    private LenskitAlgorithmInstanceBuilder builder;
+    private AlgorithmInstanceBuilder builder;
 
-    public AlgorithmInstanceBuilderDelegate(LenskitAlgorithmInstanceBuilder builder) {
+    public AlgorithmInstanceBuilderDelegate(AlgorithmInstanceBuilder builder) {
         // FIXME Use the correct classpath
         super(new ConfigurationLoader(), builder.getConfig());
         this.builder = builder;

@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.*;
+import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -28,6 +29,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.Serializable;
 import java.util.Iterator;
 
 /**
@@ -35,11 +37,17 @@ import java.util.Iterator;
  * provides access to item vectors and the item universe for use in  building
  * up the model in the accumulator.
  *
+ * <p>This is shareable to make it more usable in the evaluator.  Typical built models
+ * will not include it, and any dependencies on it should be {@link org.grouplens.lenskit.core.Transient}.</p>
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see ItemItemModelBuilder
  */
 @DefaultProvider(ItemItemBuildContextProvider.class)
-public class ItemItemBuildContext {
+@Shareable
+public class ItemItemBuildContext implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Nonnull
     private
     LongSortedSet items;

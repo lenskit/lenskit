@@ -50,8 +50,9 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
      * @param es The list of events in this user's history.  All events must
      *           be for the user.  The list is defensively copied to preserve
      *           immutability (using {@link ImmutableList#copyOf(java.util.Collection)},
-     *           so immutable lists are used as-is).
+     *           so immutable lists are used as-is).  The list must already be sorted.
      */
+    @SuppressWarnings("unchecked")
     BasicUserHistory(long u, List<? extends E> es) {
         user = u;
         events = ImmutableList.copyOf(es);

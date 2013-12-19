@@ -51,12 +51,18 @@
       <artifactId>lenskit-eval</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-eval-maven-plugin</artifactId>
+      <version>${project.version}</version>
+      <type>maven-plugin</type>
+    </dependency>
 
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>
       <artifactId>lenskit-test</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 
@@ -117,6 +123,31 @@
         <executions>
           <execution>
             <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Run Maven-based tests. -->
+      <plugin>
+        <artifactId>maven-invoker-plugin</artifactId>
+        <configuration>
+          <addTestClassPath>true</addTestClassPath>
+          <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+          <postBuildHookScript>verify</postBuildHookScript>
+          <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+          <settingsFile>src/it/settings.xml</settingsFile>
+          <mergeUserSettings>true</mergeUserSettings>
+          <goals>
+            <goal>lenskit-publish</goal>
+          </goals>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>install</goal>
               <goal>integration-test</goal>
               <goal>verify</goal>
             </goals>

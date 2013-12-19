@@ -31,6 +31,10 @@ import org.grouplens.grapht.solver.*;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.ContextMatcher;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.inject.GraphtUtils;
+import org.grouplens.lenskit.inject.PlaceholderSatisfaction;
+import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
+import org.grouplens.lenskit.inject.RecommenderInstantiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,12 +94,11 @@ public class LenskitRecommenderEngineBuilder {
         logger.debug("building graph from {} configurations", configurations.size());
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
         for (Pair<LenskitConfiguration,ModelDisposition> cfg: configurations) {
-            rgb.addBindings(cfg.getLeft().getBindings());
-            rgb.addRoots(cfg.getLeft().getRoots());
+            rgb.addConfiguration(cfg.getLeft());
         }
         RecommenderInstantiator inst;
         try {
-            inst = RecommenderInstantiator.create(rgb.getSPI(), rgb.buildGraph());
+            inst = RecommenderInstantiator.create(rgb.buildGraph());
         } catch (SolverException e) {
             throw new RecommenderBuildException("Cannot resolve recommender graph", e);
         }
@@ -104,7 +107,7 @@ public class LenskitRecommenderEngineBuilder {
         graph = rewriteGraph(graph);
 
         boolean instantiable = GraphtUtils.getPlaceholderNodes(graph).isEmpty();
-        return new LenskitRecommenderEngine(graph, rgb.getSPI(), instantiable);
+        return new LenskitRecommenderEngine(graph, instantiable);
     }
 
     private DAGNode<CachedSatisfaction, DesireChain> rewriteGraph(DAGNode<CachedSatisfaction, DesireChain> graph) throws RecommenderConfigurationException {

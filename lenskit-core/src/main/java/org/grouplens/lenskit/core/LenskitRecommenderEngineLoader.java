@@ -29,6 +29,8 @@ import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.grapht.spi.reflect.ReflectionInjectSPI;
+import org.grouplens.lenskit.inject.GraphtUtils;
+import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,7 +149,7 @@ public class LenskitRecommenderEngineLoader {
             break; /* do nothing, mark it as instantiable. */
         }
 
-        return new LenskitRecommenderEngine(graph, spi, instantiable);
+        return new LenskitRecommenderEngine(graph, instantiable);
     }
 
     public LenskitRecommenderEngine load(File file) throws IOException, RecommenderConfigurationException {

@@ -7,7 +7,7 @@
     <relativePath>..</relativePath>
   </parent>
   <artifactId>lenskit-package</artifactId>
-  <name>LensKit Packaging</name>
+  <name>LensKit Binary Packaging</name>
   <packaging>jar</packaging>
   <description>
     Project to prepare LensKit binary distributions.
@@ -26,7 +26,7 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <scope>runtime</scope>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.fusesource.jansi</groupId>
