@@ -71,7 +71,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             FileChannel channel = input.getChannel();
             header = BinaryHeader.read(channel);
             logger.info("Loading DAO with {} ratings of {} items from {} users",
-                        header.getRatingCount(), header.getItemCount(), header.getItemCount());
+                        header.getRatingCount(), header.getItemCount(), header.getUserCount());
 
             data = channel.map(FileChannel.MapMode.READ_ONLY,
                                channel.position(), channel.size() - channel.position());
