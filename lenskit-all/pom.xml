@@ -40,6 +40,11 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>lenskit-predict</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>lenskit-slopeone</artifactId>
       <version>${project.version}</version>
     </dependency>
