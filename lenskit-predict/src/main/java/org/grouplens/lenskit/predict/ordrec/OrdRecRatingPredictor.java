@@ -231,16 +231,14 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
          * @param vec The MutableVec to be filled in.
          */
         public void getProbDistribution(double score, MutableVec vec) {
-            double[] distribution = new double[getLevelCount()];
-            distribution[0] = getProbLE(score, 0);
-            double pre = distribution[0];
+            double pre = getProbLE(score, 0);
+            vec.set(0, pre);
             for(int i = 1; i < getLevelCount(); i++) {
                 double pro = getProbLE(score, i);
-                distribution[i] = pro - pre;
+                vec.set(i, pro - pre);
                 pre = pro;
             }
 
-            vec.set(distribution);
         }
     }
 
@@ -302,11 +300,11 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         MutableSparseVector scores = MutableSparseVector.create(keySet);
         itemScorer.score(uid, scores);
         para.train(ratings, scores);
+        MutableVec probabilities = MutableVec.create(para.getLevelCount());
 
         for (VectorEntry e: predictions.fast(VectorEntry.State.EITHER)) {
             long iid = e.getKey();
             double score = scores.get(iid);
-            MutableVec probabilities = MutableVec.create(para.getLevelCount());
             para.getProbDistribution(score, probabilities);
             int ratingIndex = probabilities.largestDimension();
 
