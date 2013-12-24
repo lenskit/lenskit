@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
-import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -30,7 +29,6 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongUtils;
-import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.event.Rating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
