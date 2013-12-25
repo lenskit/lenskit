@@ -20,7 +20,9 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.*;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -50,10 +52,10 @@ public class ItemItemBuildContext implements Serializable {
 
     @Nonnull
     private
-    LongSortedSet items;
+    LongKeyDomain items;
     @Nonnull
     private
-    Long2ObjectMap<SparseVector> itemVectors;
+    SparseVector[] itemVectors;
 
     @Nonnull
     private Long2ObjectMap<LongSortedSet> userItems;
@@ -65,8 +67,8 @@ public class ItemItemBuildContext implements Serializable {
      * @param vectors  Map of item IDs to item rating vectors.
      * @param userItems Map of user IDs to candidate items
      */
-    ItemItemBuildContext(@Nonnull LongSortedSet universe,
-                         @Nonnull Long2ObjectMap<SparseVector> vectors,
+    ItemItemBuildContext(@Nonnull LongKeyDomain universe,
+                         @Nonnull SparseVector[] vectors,
                          @Nonnull Long2ObjectMap<LongSortedSet> userItems) {
         this.userItems = userItems;
         items = universe;
@@ -80,7 +82,7 @@ public class ItemItemBuildContext implements Serializable {
      */
     @Nonnull
     public LongSortedSet getItems() {
-        return items;
+        return items.activeSetView();
     }
 
     /**
@@ -93,12 +95,9 @@ public class ItemItemBuildContext implements Serializable {
      */
     @Nonnull
     public SparseVector itemVector(long item) {
-        SparseVector v = itemVectors.get(item);
-        if (v == null) {
-            throw new IllegalArgumentException("unknown item");
-        } else {
-            return v;
-        }
+        int idx = items.getIndex(item);
+        Preconditions.checkArgument(idx >= 0, "unknown item");
+        return itemVectors[idx];
     }
 
     /**
@@ -139,7 +138,7 @@ public class ItemItemBuildContext implements Serializable {
      *         corresponding vectors.
      */
     public Iterator<ItemVecPair> getItemPairIterator() {
-        return new FastIteratorImpl(items, items);
+        return new FastIteratorImpl(items.activeSetView(), items.activeSetView());
     }
 
     /**

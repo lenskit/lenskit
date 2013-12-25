@@ -20,10 +20,9 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.knn.item.model.ItemItemBuildContext.ItemVecPair;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -38,11 +37,7 @@ public class ItemItemBuildContextTest {
      */
     @Test
     public void testAllItemsData() {
-        LongLinkedOpenHashSet items = new LongLinkedOpenHashSet();
-        items.add(1);
-        items.add(2);
-        items.add(3);
-        items.add(4);
+        LongKeyDomain items = LongKeyDomain.create(1,2,3,4);
 
         long[] userIds = {101, 102, 103, 104};
         double[] ratings1 = {4.0, 3.0, 2.5, 2.0};
@@ -54,15 +49,11 @@ public class ItemItemBuildContextTest {
         SparseVector v3 = MutableSparseVector.wrap(userIds, ratings3);
         SparseVector v4 = MutableSparseVector.wrap(userIds, ratings4);
 
-        Long2ObjectOpenHashMap<SparseVector> ratingMap = new Long2ObjectOpenHashMap<SparseVector>();
-        ratingMap.put(1, v1);
-        ratingMap.put(2, v2);
-        ratingMap.put(3, v3);
-        ratingMap.put(4, v4);
-        ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap,
+        SparseVector[] ratings = { v1, v2, v3, v4 };
+        ItemItemBuildContext context = new ItemItemBuildContext(items, ratings,
                                                                 new Long2ObjectOpenHashMap<LongSortedSet>());
 
-        testRatingIntegrity(ratingMap, context);
+        testRatingIntegrity(items, ratings, context);
     }
 
     /**
@@ -70,11 +61,7 @@ public class ItemItemBuildContextTest {
      */
     @Test
     public void testSomeItemsData() {
-        LongLinkedOpenHashSet items = new LongLinkedOpenHashSet();
-        items.add(1);
-        items.add(2);
-        items.add(3);
-        items.add(4);
+        LongKeyDomain items = LongKeyDomain.create(1,2,3,4);
 
         long[] userIds = {101, 102, 103, 104};
         double[] ratings1 = {4.0, 3.0, 2.5, 2.0};
@@ -82,15 +69,16 @@ public class ItemItemBuildContextTest {
         SparseVector v1 = MutableSparseVector.wrap(userIds, ratings1);
         SparseVector v4 = MutableSparseVector.wrap(userIds, ratings4);
 
-        Long2ObjectOpenHashMap<SparseVector> ratingMap = new Long2ObjectOpenHashMap<SparseVector>();
-        ratingMap.put(1, v1);
-        ratingMap.put(2, MutableSparseVector.create());
-        ratingMap.put(3, MutableSparseVector.create());
-        ratingMap.put(4, v4);
+        SparseVector[] ratingMap = {
+                v1,
+                MutableSparseVector.create(),
+                MutableSparseVector.create(),
+                v4
+        };
         ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap,
                                                                 new Long2ObjectOpenHashMap<LongSortedSet>());
 
-        testRatingIntegrity(ratingMap, context);
+        testRatingIntegrity(items, ratingMap, context);
     }
 
     /**
@@ -98,20 +86,18 @@ public class ItemItemBuildContextTest {
      */
     @Test
     public void testNoItemsData() {
-        LongLinkedOpenHashSet items = new LongLinkedOpenHashSet();
-        items.add(1);
-        items.add(2);
-        items.add(3);
-        items.add(4);
+        LongKeyDomain items = LongKeyDomain.create(1,2,3,4);
 
-        Long2ObjectOpenHashMap<SparseVector> ratingMap = new Long2ObjectOpenHashMap<SparseVector>();
-        for (long item : items) {
-            ratingMap.put(item, MutableSparseVector.create());
-        }
+        SparseVector[] ratingMap = {
+                MutableSparseVector.create(),
+                MutableSparseVector.create(),
+                MutableSparseVector.create(),
+                MutableSparseVector.create()
+        };
         ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap,
                                                                 new Long2ObjectOpenHashMap<LongSortedSet>());
 
-        testRatingIntegrity(ratingMap, context);
+        testRatingIntegrity(items, ratingMap, context);
     }
 
     /**
@@ -119,22 +105,22 @@ public class ItemItemBuildContextTest {
      */
     @Test
     public void testEmpty() {
-        LongLinkedOpenHashSet items = new LongLinkedOpenHashSet();
-        Long2ObjectOpenHashMap<SparseVector> ratingMap = new Long2ObjectOpenHashMap<SparseVector>();
+        LongKeyDomain items = LongKeyDomain.create();
+        SparseVector[] ratingMap = new SparseVector[] {};
         ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap,
                                                                 new Long2ObjectOpenHashMap<LongSortedSet>());
 
-        testRatingIntegrity(ratingMap, context);
+        testRatingIntegrity(items, ratingMap, context);
     }
 
-    private void testRatingIntegrity(Long2ObjectMap<SparseVector> trueRatings, ItemItemBuildContext context) {
+    private void testRatingIntegrity(LongKeyDomain items, SparseVector[] trueRatings, ItemItemBuildContext context) {
         for (long itemId : context.getItems()) {
-            assertEquals(trueRatings.get(itemId), context.itemVector(itemId));
+            assertEquals(trueRatings[items.getIndex(itemId)], context.itemVector(itemId));
         }
 
         for (ItemVecPair pair : context.getItemPairs()) {
-            assertEquals(trueRatings.get(pair.itemId1), pair.vec1);
-            assertEquals(trueRatings.get(pair.itemId2), pair.vec2);
+            assertEquals(trueRatings[items.getIndex(pair.itemId1)], pair.vec1);
+            assertEquals(trueRatings[items.getIndex(pair.itemId2)], pair.vec2);
         }
     }
 }

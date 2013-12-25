@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.collections.LongUtils;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
@@ -77,20 +77,21 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
         Long2ObjectMap<LongSortedSet> candidateData = new Long2ObjectOpenHashMap<LongSortedSet>(1000);
         buildItemRatings(itemData, candidateData);
 
-        LongSortedSet items = LongUtils.packedSet(itemData.keySet());
+        LongKeyDomain items = LongKeyDomain.fromCollection(itemData.keySet(), true);
+        final int n = items.domainSize();
+        assert n == itemData.size();
         // finalize the item data into vectors
-        Long2ObjectMap<SparseVector> itemRatings = new Long2ObjectOpenHashMap<SparseVector>(itemData.size());
-        LongIterator iter = items.iterator();
-        while (iter.hasNext()) {
-            final long item = iter.nextLong();
+        SparseVector[] itemRatings = new SparseVector[n];
+
+        for (int i = 0; i < n; i++) {
+            final long item = items.getKey(i);
             Long2DoubleMap ratings = itemData.get(item);
             SparseVector v = ImmutableSparseVector.create(ratings);
             assert v.size() == ratings.size();
-            itemRatings.put(item, v);
+            itemRatings[i] = v;
             // clear the array so GC can free
             itemData.put(item, null);
         }
-        assert itemRatings.size() == itemData.size();
 
         logger.debug("item data completed");
         return new ItemItemBuildContext(items, itemRatings, candidateData);
