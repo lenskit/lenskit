@@ -83,7 +83,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
         logger.debug("similarity function is {}",
                      itemSimilarity.isSymmetric() ? "symmetric" : "non-symmetric");
 
-        Accumulator accumulator = new Accumulator(buildContext.getItems(), threshold, modelSize);
+        Accumulator accumulator = new Accumulator(buildContext.getItems(), modelSize);
 
         LongSortedSet allItems = buildContext.getItems();
         final int nitems = allItems.size();
@@ -104,14 +104,17 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
             LongIterator itemIter = neighborStrategy.neighborIterator(buildContext, itemId1,
                                                                       itemSimilarity.isSymmetric());
 
+            ScoredItemAccumulator row = accumulator.rowAccumulator(itemId1);
             while (itemIter.hasNext()) {
                 long itemId2 = itemIter.nextLong();
                 if (itemId1 != itemId2) {
                     SparseVector vec2 = buildContext.itemVector(itemId2);
                     double sim = itemSimilarity.similarity(itemId1, vec1, itemId2, vec2);
-                    accumulator.put(itemId1, itemId2, sim);
-                    if (itemSimilarity.isSymmetric()) {
-                        accumulator.put(itemId2, itemId1, sim);
+                    if (threshold.retain(sim)) {
+                        row.put(itemId2, sim);
+                        if (itemSimilarity.isSymmetric()) {
+                            accumulator.rowAccumulator(itemId2).put(itemId1, sim);
+                        }
                     }
                 }
             }
@@ -130,13 +133,11 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
 
     static class Accumulator {
 
-        private final Threshold threshold;
         private Long2ObjectMap<ScoredItemAccumulator> rows;
         private final LongSortedSet itemUniverse;
 
-        public Accumulator(LongSortedSet entities, Threshold threshold, int modelSize) {
+        public Accumulator(LongSortedSet entities, int modelSize) {
             logger.debug("Using simple accumulator with modelSize {} for {} items", modelSize, entities.size());
-            this.threshold = threshold;
             itemUniverse = entities;
             rows = new Long2ObjectOpenHashMap<ScoredItemAccumulator>(entities.size());
 
@@ -149,15 +150,9 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
             }
         }
 
-        public void put(long i, long j, double sim) {
+        public ScoredItemAccumulator rowAccumulator(long i) {
             Preconditions.checkState(rows != null, "model already built");
-
-            if (!threshold.retain(sim)) {
-                return;
-            }
-
-            ScoredItemAccumulator q = rows.get(i);
-            q.put(j, sim);
+            return rows.get(i);
         }
 
         public SimilarityMatrixModel build() {
