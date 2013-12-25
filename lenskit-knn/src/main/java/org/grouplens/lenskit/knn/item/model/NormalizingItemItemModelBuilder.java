@@ -20,10 +20,9 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
 import org.grouplens.lenskit.scored.ScoredId;
@@ -73,12 +72,15 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
         MutableSparseVector currentRow = MutableSparseVector.create(buildContext.getItems());
 
         LongSortedSet itemUniverse = buildContext.getItems();
-        Long2ObjectMap<List<ScoredId>> matrix =
-                new Long2ObjectOpenHashMap<List<ScoredId>>(itemUniverse.size());
+        final int nitems = itemUniverse.size();
+        LongKeyDomain itemDomain = LongKeyDomain.fromCollection(itemUniverse, true);
+        assert itemDomain.size() == itemDomain.domainSize();
+        assert itemDomain.domainSize() == nitems;
+        List<List<ScoredId>> matrix = Lists.newArrayListWithCapacity(itemDomain.domainSize());
 
-        LongIterator outer = buildContext.getItems().iterator();
-        while (outer.hasNext()) {
-            final long rowItem = outer.nextLong();
+        for (int i = 0; i < nitems; i++) {
+            assert matrix.size() == i;
+            final long rowItem = itemDomain.getKey(i);
             final SparseVector vec1 = buildContext.itemVector(rowItem);
             for (VectorEntry e: currentRow.fast(VectorEntry.State.EITHER)) {
                 final long colItem = e.getKey();
@@ -94,9 +96,9 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
                                     .addAll(ScoredIds.collectionFromVector(normalized))
                                     .sort(ScoredIds.scoreOrder().reverse())
                                     .finish();
-            matrix.put(rowItem, row);
+            matrix.add(row);
         }
 
-        return new SimilarityMatrixModel(itemUniverse, matrix);
+        return new SimilarityMatrixModel(itemDomain, matrix);
     }
 }

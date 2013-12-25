@@ -22,10 +22,10 @@ package org.grouplens.lenskit.knn.item.model;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
 import org.grouplens.lenskit.knn.item.ModelSize;
@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -132,38 +133,41 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
     }
 
     static class Accumulator {
-
-        private Long2ObjectMap<ScoredItemAccumulator> rows;
-        private final LongSortedSet itemUniverse;
+        private final LongKeyDomain items;
+        private final ScoredItemAccumulator[] rows;
 
         public Accumulator(LongSortedSet entities, int modelSize) {
             logger.debug("Using simple accumulator with modelSize {} for {} items", modelSize, entities.size());
-            itemUniverse = entities;
-            rows = new Long2ObjectOpenHashMap<ScoredItemAccumulator>(entities.size());
+            items = LongKeyDomain.fromCollection(entities, true);
+            assert items.size() == items.domainSize();
+            assert items.size() == entities.size();
 
-            for (long itemId : itemUniverse) {
-               if (modelSize == 0) {
-                   rows.put(itemId, new UnlimitedScoredItemAccumulator());
-               } else {
-                   rows.put(itemId, new TopNScoredItemAccumulator(modelSize));
-               }
+            rows = new ScoredItemAccumulator[items.domainSize()];
+
+            final int n = rows.length;
+            for (int i = 0; i < n; i++) {
+                if (modelSize == 0) {
+                    rows[i] = new UnlimitedScoredItemAccumulator();
+                } else {
+                    rows[i] = new TopNScoredItemAccumulator(modelSize);
+                }
             }
         }
 
-        public ScoredItemAccumulator rowAccumulator(long i) {
-            Preconditions.checkState(rows != null, "model already built");
-            return rows.get(i);
+        public ScoredItemAccumulator rowAccumulator(long item) {
+            int idx = items.getIndex(item);
+            Preconditions.checkArgument(idx >= 0, "invalid item");
+            return rows[idx];
         }
 
         public SimilarityMatrixModel build() {
-            Long2ObjectMap<List<ScoredId>> data = new Long2ObjectOpenHashMap<List<ScoredId>>(rows.size());
-            for (Long2ObjectMap.Entry<ScoredItemAccumulator> row : rows.long2ObjectEntrySet()) {
-                List<ScoredId> similarities = row.getValue().finish();
-                data.put(row.getLongKey(), similarities);
+            ArrayList<List<ScoredId>> dataBuilder = Lists.newArrayListWithCapacity(rows.length);
+            for (int i = 0; i < rows.length; i++) {
+                assert dataBuilder.size() == i;
+                dataBuilder.add(rows[i].finish());
+                rows[i] = null;
             }
-            SimilarityMatrixModel model = new SimilarityMatrixModel(itemUniverse, data);
-            rows = null;  // Mark that this model has already been built.
-            return model;
+            return new SimilarityMatrixModel(items, dataBuilder);
         }
     }
 
