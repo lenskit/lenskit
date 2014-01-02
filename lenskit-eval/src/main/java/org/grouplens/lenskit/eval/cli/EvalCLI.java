@@ -23,17 +23,15 @@ package org.grouplens.lenskit.eval.cli;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
-import org.apache.tools.ant.Target;
 import org.codehaus.groovy.runtime.StackTraceUtils;
-import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.EvalProject;
+import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.script.EvalScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
@@ -42,7 +40,9 @@ import java.util.concurrent.ExecutionException;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.8
+ * @deprecated Use {@code lenskit eval} from the {@code lenskit-cli} package.
  */
+@Deprecated
 public class EvalCLI {
     private static final Logger logger = LoggerFactory.getLogger(EvalCLI.class);
 
