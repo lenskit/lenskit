@@ -65,9 +65,10 @@ public class Main {
         Subparsers subparsers = parser.addSubparsers()
                                       .metavar("COMMAND")
                                       .title("commands");
+        registerClass(subparsers, Version.class);
         registerClass(subparsers, Eval.class);
         registerClass(subparsers, PackRatings.class);
-        registerClass(subparsers, Version.class);
+        registerClass(subparsers, TrainModel.class);
 
         try {
             Namespace options = parser.parseArgs(args);

@@ -18,8 +18,9 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval;
+package org.grouplens.lenskit.util;
 
+import org.grouplens.lenskit.util.ClassDirectory;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -43,6 +44,6 @@ public class ClassDirectoryTest {
         assertThat(dir.getPackages("ClassDirectory"),
                    hasSize(1));
         assertThat(dir.getPackages("ClassDirectory"),
-                   contains("org.grouplens.lenskit.eval"));
+                   contains("org.grouplens.lenskit.util"));
     }
 }
