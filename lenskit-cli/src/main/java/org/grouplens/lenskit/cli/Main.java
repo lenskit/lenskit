@@ -52,6 +52,7 @@ public class Main {
                                       .metavar("COMMAND")
                                       .title("commands");
         registerClass(subparsers, Eval.class);
+        registerClass(subparsers, PackRatings.class);
 
         try {
             Namespace options = parser.parseArgs(args);
