@@ -37,21 +37,23 @@ import java.util.Properties;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ScriptEnvironment {
-    public static void configureArguments(Subparser parser) {
-        parser.addArgument("-C", "--classpath")
-              .dest("classpath")
-              .type(URL.class)
-              .action(Arguments.append())
-              .setDefault()
-              .metavar("URL")
-              .help("add URL (jar or dir) to script classpath");
-        parser.addArgument("-D", "--define")
-              .dest("properties")
-              .setDefault()
-              .type(new PropertyDef())
-              .action(Arguments.append())
-              .metavar("PROP=VALUE")
-              .help("set property PROP");
+    public static void configureArguments(ArgumentParser parser) {
+        ArgumentGroup group = parser.addArgumentGroup("script environment")
+                                    .description("Options for interpreting Groovy scripts.");
+        group.addArgument("-C", "--classpath")
+             .dest("classpath")
+             .type(URL.class)
+             .action(Arguments.append())
+             .setDefault()
+             .metavar("URL")
+             .help("add URL (jar or dir) to script classpath");
+        group.addArgument("-D", "--define")
+             .dest("properties")
+             .setDefault()
+             .type(new PropertyDef())
+             .action(Arguments.append())
+             .metavar("PROP=VALUE")
+             .help("set property PROP");
     }
 
     private static class PropertyDef implements ArgumentType<Pair<String,String>> {

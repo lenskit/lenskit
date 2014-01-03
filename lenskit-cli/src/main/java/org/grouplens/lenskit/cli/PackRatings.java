@@ -25,6 +25,7 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
@@ -44,44 +45,17 @@ import java.util.EnumSet;
  */
 @CommandSpec(name = "pack-ratings", help = "pack ratings data into a binary file")
 public class PackRatings implements Command {
-    public static void configureArguments(Subparser parser) {
-        parser.addArgument("-o", "--output-file")
-              .type(File.class)
-              .metavar("FILE")
-              .help("pack to FILE");
-        parser.addArgument("-d", "--delimiter")
-              .setDefault(",")
-              .metavar("DELIM")
-              .help("data is separated with DELIM");
-        parser.addArgument("--no-timestamps")
-              .action(Arguments.storeFalse())
-              .dest("use_timestamps")
-              .help("don't include or use timestamps");
-        parser.addArgument("input")
-              .type(File.class)
-              .metavar("FILE")
-              .help("read ratings from FILE");
-    }
-
     private final Logger logger = LoggerFactory.getLogger(PackRatings.class);
     private final Namespace options;
+    private final InputData input;
 
     public PackRatings(Namespace opts) {
         options = opts;
+        input = new InputData(opts);
     }
 
     public File getOutputFile() {
-        File out = options.get("output_file");
-        if (out == null) {
-            File input = getInputFile();
-            String outName = input.getName().replaceFirst("(\\.\\w+(?:\\.gz)?)?$", ".bin");
-            out = new File(input.getParentFile(), outName);
-        }
-        return out;
-    }
-
-    public File getInputFile() {
-        return options.get("input");
+        return options.get("output_file");
     }
 
     public String getDelimiter() {
@@ -94,9 +68,9 @@ public class PackRatings implements Command {
 
     @Override
     public void execute() throws IOException {
-        logger.info("packing ratings from {}", getInputFile());
+        logger.info("packing ratings from {}", input);
         logger.debug("using delimiter {}", getDelimiter());
-        SimpleFileRatingDAO dao = SimpleFileRatingDAO.create(getInputFile(), getDelimiter());
+        EventDAO dao = input.getEventDAO();
         EnumSet<BinaryFormatFlag> flags = EnumSet.noneOf(BinaryFormatFlag.class);
         if (useTimestamps()) {
             flags.add(BinaryFormatFlag.TIMESTAMPS);
@@ -107,10 +81,24 @@ public class PackRatings implements Command {
             BinaryRatingPacker packer = closer.register(BinaryRatingPacker.open(getOutputFile(), flags));
             Cursor<Rating> ratings = closer.register(dao.streamEvents(Rating.class));
             packer.writeRatings(ratings);
+            logger.info("packed {} ratings", packer.getRatingCount());
         } catch (Throwable th) {
             throw closer.rethrow(th);
         } finally {
             closer.close();
         }
+    }
+
+    public static void configureArguments(Subparser parser) {
+        parser.addArgument("-o", "--output-file")
+              .type(File.class)
+              .metavar("FILE")
+              .setDefault(new File("ratings.pack"))
+              .help("pack to FILE");
+        parser.addArgument("--no-timestamps")
+              .action(Arguments.storeFalse())
+              .dest("use_timestamps")
+              .help("don't include or use timestamps");
+        InputData.configureArguments(parser);
     }
 }
