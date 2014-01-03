@@ -47,7 +47,8 @@ import java.util.concurrent.Callable;
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class Eval implements Callable<Void> {
+@CommandSpec(name ="eval", help="run an evaluation script")
+public class Eval implements Command {
     private final Logger logger = LoggerFactory.getLogger(Eval.class);
 
     public static void configureArguments(Subparser parser) {
@@ -94,7 +95,7 @@ public class Eval implements Callable<Void> {
     }
 
     @Override
-    public Void call() throws IOException, TaskExecutionException {
+    public void execute() throws IOException, TaskExecutionException {
         System.out.println(options);
         File file = getFile();
         if (!file.exists()) {
@@ -128,8 +129,6 @@ public class Eval implements Callable<Void> {
         } else {
             project.executeTargets(getTargets());
         }
-
-        return null;
     }
 
     public boolean getForce() {

@@ -28,7 +28,6 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.Callable;
 
 /**
  * Main entry point for lenskit-cli.
@@ -52,13 +51,13 @@ public class Main {
         Subparsers subparsers = parser.addSubparsers()
                                       .metavar("COMMAND")
                                       .title("commands");
-        registerClass(subparsers, "eval", Eval.class, "run an evaluation script");
+        registerClass(subparsers, Eval.class);
 
         try {
             Namespace options = parser.parseArgs(args);
             // FIXME Set up and use logging
-            Callable<Void> cmd = getCommand(options);
-            cmd.call();
+            Command cmd = getCommand(options);
+            cmd.execute();
         } catch (ArgumentParserException e) {
             parser.handleError(e);
         } catch (Exception e) {
@@ -67,10 +66,13 @@ public class Main {
         }
     }
 
-    private static void registerClass(Subparsers subparsers, String name,
-                                      Class<? extends Callable<Void>> cls, String help) {
-        Subparser parser = subparsers.addParser(name)
-                                     .help(help)
+    private static void registerClass(Subparsers subparsers, Class<? extends Command> cls) {
+        CommandSpec spec = cls.getAnnotation(CommandSpec.class);
+        if (spec == null) {
+            throw new IllegalArgumentException(cls + " has no @CommandSpec annotation");
+        }
+        Subparser parser = subparsers.addParser(spec.name())
+                                     .help(spec.help())
                                      .setDefault("command", cls);
         try {
             MethodUtils.invokeStaticMethod(cls, "configureArguments", parser);
@@ -83,8 +85,8 @@ public class Main {
         }
     }
 
-    public static Callable<Void> getCommand(Namespace options) {
-        Class<? extends Callable<Void>> command = options.get("command");
+    public static Command getCommand(Namespace options) {
+        Class<? extends Command> command = options.get("command");
         try {
             return ConstructorUtils.invokeConstructor(command, options);
         } catch (NoSuchMethodException e) {
