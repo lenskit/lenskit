@@ -69,6 +69,7 @@ public class Main {
         registerClass(subparsers, Eval.class);
         registerClass(subparsers, PackRatings.class);
         registerClass(subparsers, TrainModel.class);
+        registerClass(subparsers, Recommend.class);
 
         try {
             Namespace options = parser.parseArgs(args);
