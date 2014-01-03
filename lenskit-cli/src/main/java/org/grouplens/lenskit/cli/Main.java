@@ -53,6 +53,7 @@ public class Main {
                                       .title("commands");
         registerClass(subparsers, Eval.class);
         registerClass(subparsers, PackRatings.class);
+        registerClass(subparsers, Version.class);
 
         try {
             Namespace options = parser.parseArgs(args);
