@@ -66,7 +66,6 @@ public class Eval implements Callable<Void> {
               .metavar("SCRIPT")
               .help("run eval SCRIPT");
         parser.addArgument("target")
-              .action(Arguments.append())
               .metavar("TARGET")
               .nargs("*")
               .help("run TARGET");
@@ -96,6 +95,7 @@ public class Eval implements Callable<Void> {
 
     @Override
     public Void call() throws IOException, TaskExecutionException {
+        System.out.println(options);
         File file = getFile();
         if (!file.exists()) {
             logger.error("script file {} does not exist", file);
@@ -137,7 +137,7 @@ public class Eval implements Callable<Void> {
     }
 
     public int getThreadCount() {
-        return options.getInt("nthreads");
+        return options.getInt("thread_count");
     }
 
     public File getFile() {

@@ -58,6 +58,11 @@
     </dependency>
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-cli</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
       <artifactId>lenskit-eval-maven-plugin</artifactId>
       <version>${project.version}</version>
       <type>maven-plugin</type>
@@ -145,9 +150,6 @@
           <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
           <settingsFile>src/it/settings.xml</settingsFile>
           <mergeUserSettings>true</mergeUserSettings>
-          <goals>
-            <goal>lenskit-publish</goal>
-          </goals>
         </configuration>
         <executions>
           <execution>
