@@ -31,6 +31,22 @@
       <artifactId>lenskit-eval</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+      <version>1.8</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+      <scope>runtime</scope>
+    </dependency>
 
     <dependency>
       <groupId>org.grouplens.lenskit</groupId>
