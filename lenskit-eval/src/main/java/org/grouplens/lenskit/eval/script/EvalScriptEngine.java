@@ -30,7 +30,7 @@ import groovy.lang.MissingPropertyException;
 import org.apache.commons.lang3.builder.Builder;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.grouplens.lenskit.eval.ClassDirectory;
+import org.grouplens.lenskit.util.ClassDirectory;
 import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.EvalTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;

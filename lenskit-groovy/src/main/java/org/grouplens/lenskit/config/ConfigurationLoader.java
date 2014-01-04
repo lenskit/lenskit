@@ -26,6 +26,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
+import org.grouplens.lenskit.util.ClassDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +46,7 @@ public class ConfigurationLoader {
     private final ClassLoader classLoader;
     private final GroovyShell shell;
     private final Binding binding;
+    private final ClassDirectory directory;
     private int scriptNumber;
 
     /**
@@ -68,6 +70,11 @@ public class ConfigurationLoader {
         imports.addStarImports("org.grouplens.lenskit");
         config.addCompilationCustomizers(imports);
         shell = new GroovyShell(loader, binding, config);
+        directory = ClassDirectory.forClassLoader(loader);
+    }
+
+    public ClassDirectory getDirectory() {
+        return directory;
     }
 
     private LenskitConfigScript loadScript(GroovyCodeSource source) throws RecommenderConfigurationException {

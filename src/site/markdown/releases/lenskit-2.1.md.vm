@@ -38,6 +38,14 @@
 
 -   Fixed class loader problems with deserializing recommender models (#issue(434)).
 
+## CLI
+
+LensKit now has a command-line tool, `lenskit`, included in the binary distribution.  This provides
+a lot of utilities for working with LensKit data and configurations, and is the new entry point for
+running the evaluator (`lenskit-eval` is now deprecated).
+
+This is in the `lenskit-cli` package, replacing `lenskit-package` as the source of the binary
+distribution of LensKit.
 
 ## Algorithms
 

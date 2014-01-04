@@ -127,6 +127,10 @@ public class BinaryRatingPacker implements Closeable {
         }
     }
 
+    public int getRatingCount() {
+        return index;
+    }
+
     private void saveIndex(Long2ObjectMap<IntList> map, long key, int index) {
         IntList list = map.get(key);
         if (list == null) {

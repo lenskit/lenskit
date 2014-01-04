@@ -1,0 +1,31 @@
+<project>
+  <target name="fix-perms">
+    <chmod perm="a+x">
+      <fileset dir="${packageDir}">
+        <include name="bin/*" />
+      </fileset>
+    </chmod>
+  </target>
+
+  <target name="collect-notices">
+    <script src="${packageScripts}/groovy/prepare-notice.groovy"
+            language="groovy"/>
+  </target>
+
+  <target name="copy-licenses">
+    <copy todir="${packageDir}">
+      <fileset dir="${packageScripts}/text">
+        <include name="*.txt"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="package" depends="fix-perms,collect-notices,copy-licenses">
+    <tar destfile="${outputDir}/lenskit-${project.version}.tar.gz" compression="gzip">
+      <tarfileset dir="${packageDir}" prefix="lenskit-${project.version}/" />
+    </tar>
+    <zip destfile="${outputDir}/lenskit-${project.version}.zip">
+      <zipfileset dir="${packageDir}" prefix="lenskit-${project.version}/" />
+    </zip>
+  </target>
+</project>

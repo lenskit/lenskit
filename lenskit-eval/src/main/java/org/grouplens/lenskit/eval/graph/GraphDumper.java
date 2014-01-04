@@ -26,19 +26,23 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
+import com.google.common.io.Closer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.spi.*;
 import org.grouplens.grapht.spi.reflect.*;
-import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.core.Parameter;
+import org.grouplens.lenskit.inject.GraphtUtils;
+import org.grouplens.lenskit.inject.RecommenderInstantiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.inject.Provider;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -46,8 +50,11 @@ import java.util.*;
 /**
  * Class to manage traversing nodes. It is not used to handle the root node, but rather handles
  * the rest of them.
+ *
+ * @since 2.1
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
 */
-class GraphDumper {
+public class GraphDumper {
     private static final Logger logger = LoggerFactory.getLogger(GraphDumper.class);
     private static final String ROOT_ID = "root";
 
@@ -58,7 +65,7 @@ class GraphDumper {
     private final Map<String, String> nodeTargets;
     private final Queue<GVEdge> edgeQueue;
 
-    public GraphDumper(DAGNode<CachedSatisfaction,DesireChain> g, Set<DAGNode<CachedSatisfaction,DesireChain>> unshared, GraphWriter gw) {
+    GraphDumper(DAGNode<CachedSatisfaction,DesireChain> g, Set<DAGNode<CachedSatisfaction,DesireChain>> unshared, GraphWriter gw) {
         writer = gw;
         graph = g;
         unsharedNodes = Sets.newHashSet(unshared);
@@ -74,7 +81,7 @@ class GraphDumper {
      * @param root The root node.
      * @return The ID of the root node.
      */
-    public String setRoot(DAGNode<CachedSatisfaction,DesireChain> root) throws IOException {
+    String setRoot(DAGNode<CachedSatisfaction,DesireChain> root) throws IOException {
         if (!nodeTargets.isEmpty()) {
             throw new IllegalStateException("root node already specificied");
         }
@@ -93,7 +100,7 @@ class GraphDumper {
      * @param node The node to process
      * @return The node's target descriptor (ID, possibly with port).
      */
-    public String process(DAGNode<CachedSatisfaction,DesireChain> node) throws IOException {
+    String process(DAGNode<CachedSatisfaction,DesireChain> node) throws IOException {
         Preconditions.checkNotNull(node, "node must not be null");
         if (nodeTargets.isEmpty()) {
             throw new IllegalStateException("root node has not been set");
@@ -130,7 +137,7 @@ class GraphDumper {
     /**
      * Finish the graph, writing the edges.
      */
-    public void finish() throws IOException {
+    void finish() throws IOException {
         while (!edgeQueue.isEmpty()) {
             GVEdge e = edgeQueue.remove();
             String newTarget = nodeTargets.get(e.getTarget());
@@ -350,4 +357,54 @@ class GraphDumper {
     private static Ordering<DAGEdge<CachedSatisfaction,DesireChain>> EDGE_ORDER = Ordering.<String>natural()
                                                        .lexicographical()
                                                        .onResultOf(ORDER_KEY);
+
+    /**
+     * Render a graph to a file.
+     * @param graph The graph to render.
+     * @param graphvizFile The file to write the graph to.
+     * @throws IOException
+     */
+    public static void renderGraph(DAGNode<CachedSatisfaction,DesireChain> graph,
+                                   File graphvizFile) throws IOException {
+        logger.debug("graph has {} nodes", graph.getReachableNodes().size());
+        logger.debug("simulating instantiation");
+        RecommenderInstantiator instantiator = RecommenderInstantiator.create(graph);
+        DAGNode<CachedSatisfaction,DesireChain> unshared = instantiator.simulate();
+        logger.debug("unshared graph has {} nodes", unshared.getReachableNodes().size());
+        Closer close = Closer.create();
+        try {
+            FileWriter writer = close.register(new FileWriter(graphvizFile));
+            GraphWriter gw = close.register(new GraphWriter(writer));
+            GraphDumper dumper = new GraphDumper(graph, unshared.getReachableNodes(), gw);
+            logger.debug("writing root node");
+            String rid = dumper.setRoot(graph);
+            // process each other node & add an edge
+            for (DAGEdge<CachedSatisfaction,DesireChain> e: graph.getOutgoingEdges()) {
+                DAGNode<CachedSatisfaction,DesireChain> target = e.getTail();
+                CachedSatisfaction csat = target.getLabel();
+                if (!satIsNull(csat.getSatisfaction())) {
+                    logger.debug("processing node {}", csat.getSatisfaction());
+                    String id = dumper.process(target);
+                    gw.putEdge(EdgeBuilder.create(rid, id)
+                                          .set("arrowhead", "vee")
+                                          .build());
+                }
+            }
+            // and we're done
+            dumper.finish();
+        } catch (Throwable th) {
+            throw close.rethrow(th);
+        } finally {
+            close.close();
+        }
+    }
+
+    private static boolean satIsNull(Satisfaction sat) {
+        return sat.visit(new AbstractSatisfactionVisitor<Boolean>(false) {
+            @Override
+            public Boolean visitNull() {
+                return true;
+            }
+        });
+    }
 }

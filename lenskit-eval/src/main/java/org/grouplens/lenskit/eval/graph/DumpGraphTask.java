@@ -20,33 +20,28 @@
  */
 package org.grouplens.lenskit.eval.graph;
 
-import com.google.common.io.Closer;
 import com.google.common.io.Files;
-import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.DesireChain;
-import org.grouplens.grapht.spi.AbstractSatisfactionVisitor;
+import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.spi.CachedSatisfaction;
-import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.grapht.util.Providers;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
-import org.grouplens.lenskit.inject.RecommenderInstantiator;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceBuilder;
+import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Command to dump a graph.
@@ -131,76 +126,32 @@ public class DumpGraphTask extends AbstractTask<File> {
             logger.error("no output file specified");
             throw new IllegalStateException("no graph output file specified");
         }
-        LenskitConfiguration config = algorithm.getConfig().copy();
-        // FIXME This is an ugly DAO-type kludge
-        config.bind(EventDAO.class).toProvider(Providers.<EventDAO>of(null, EventDAO.class));
+        LenskitConfiguration daoConfig = new LenskitConfiguration();
+        daoConfig.bind(EventDAO.class).toProvider(Providers.<EventDAO>of(null, EventDAO.class));
         if (domain != null) {
-            config.bind(PreferenceDomain.class).to(domain);
+            daoConfig.bind(PreferenceDomain.class).to(domain);
         }
+
+        RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
+        rgb.addConfiguration(daoConfig);
+        rgb.addConfiguration(algorithm.getConfig());
+        DAGNode<CachedSatisfaction, DesireChain> graph = null;
+        try {
+            graph = rgb.buildGraph();
+        } catch (SolverException e) {
+            throw new TaskExecutionException("Cannot resolve graph", e);
+        }
+
         logger.info("dumping graph {}", getName());
-        RecommenderInstantiator instantiator;
         try {
-            instantiator = RecommenderInstantiator.forConfig(config);
-        } catch (RecommenderConfigurationException e) {
-            throw new TaskExecutionException("error resolving algorithm configuration", e);
-        }
-        DAGNode<CachedSatisfaction,DesireChain> initial = instantiator.getGraph();
-        logger.debug("graph has {} nodes", initial.getReachableNodes().size());
-        DAGNode<CachedSatisfaction,DesireChain> unshared = instantiator.simulate();
-        logger.debug("unshared graph has {} nodes", unshared.getReachableNodes().size());
-        try {
-            writeGraph(initial, unshared.getReachableNodes(), output);
+            Files.createParentDirs(output);
+            GraphDumper.renderGraph(graph, output);
         } catch (IOException e) {
             throw new TaskExecutionException("error writing graph", e);
         }
+
         // TODO Support dumping the instantiated graph again
         return output;
-    }
-
-    @SuppressWarnings("PMD.AvoidCatchingThrowable")
-    private void writeGraph(DAGNode<CachedSatisfaction,DesireChain> g, Set<DAGNode<CachedSatisfaction,DesireChain>> unshared, File file) throws IOException, TaskExecutionException {
-        Files.createParentDirs(output);
-        Closer close = Closer.create();
-        try {
-            FileWriter writer = close.register(new FileWriter(file));
-            GraphWriter gw = close.register(new GraphWriter(writer));
-            renderGraph(g, unshared, gw);
-        } catch (Throwable th) {
-            throw close.rethrow(th, TaskExecutionException.class);
-        } finally {
-            close.close();
-        }
-    }
-
-    private void renderGraph(final DAGNode<CachedSatisfaction,DesireChain> graph, Set<DAGNode<CachedSatisfaction,DesireChain>> unshared, final GraphWriter gw) throws TaskExecutionException {
-        // Handle the root node
-        GraphDumper dumper = new GraphDumper(graph, unshared, gw);
-        try {
-            String rid = dumper.setRoot(graph);
-
-            for (DAGEdge<CachedSatisfaction,DesireChain> e: graph.getOutgoingEdges()) {
-                DAGNode<CachedSatisfaction,DesireChain> target = e.getTail();
-                CachedSatisfaction csat = target.getLabel();
-                if (!satIsNull(csat.getSatisfaction())) {
-                    String id = dumper.process(target);
-                    gw.putEdge(EdgeBuilder.create(rid, id)
-                                          .set("arrowhead", "vee")
-                                          .build());
-                }
-            }
-            dumper.finish();
-        } catch (IOException e) {
-            throw new TaskExecutionException("error writing graph", e);
-        }
-    }
-
-    private boolean satIsNull(Satisfaction sat) {
-        return sat.visit(new AbstractSatisfactionVisitor<Boolean>(false) {
-            @Override
-            public Boolean visitNull() {
-                return true;
-            }
-        });
     }
 
 }
