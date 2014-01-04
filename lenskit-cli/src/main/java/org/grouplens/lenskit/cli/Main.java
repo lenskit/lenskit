@@ -70,6 +70,7 @@ public class Main {
         registerClass(subparsers, PackRatings.class);
         registerClass(subparsers, TrainModel.class);
         registerClass(subparsers, Recommend.class);
+        registerClass(subparsers, Graph.class);
 
         try {
             Namespace options = parser.parseArgs(args);
