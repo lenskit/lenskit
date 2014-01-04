@@ -490,9 +490,15 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public double sum() {
         double result = 0;
-        DoubleIterator iter = values().iterator();
-        while (iter.hasNext()) {
-            result += iter.nextDouble();
+        if (keys.isCompletelySet()) {
+            for (int i = keys.domainSize() - 1; i >= 0; i--) {
+                result += values[i];
+            }
+        } else {
+            DoubleIterator iter = values().iterator();
+            while (iter.hasNext()) {
+                result += iter.nextDouble();
+            }
         }
         return result;
     }
