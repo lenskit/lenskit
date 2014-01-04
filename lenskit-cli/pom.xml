@@ -92,6 +92,10 @@
               <mainClass>org.grouplens.lenskit.cli.Main</mainClass>
               <name>lenskit</name>
             </program>
+            <program>
+              <mainClass>org.grouplens.lenskit.eval.cli.EvalCLI</mainClass>
+              <name>lenskit-eval</name>
+            </program>
           </programs>
         </configuration>
 
@@ -111,21 +115,6 @@
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
-            <id>fix-perms</id>
-            <phase>package</phase>
-            <goals><goal>run</goal></goals>
-            <configuration>
-              <target>
-                <echo message="fixing script permissions"/>
-                <chmod perm="a+x">
-                  <fileset dir="${project.build.directory}/dist/lenskit">
-                    <include name="bin/*" />
-                  </fileset>
-                </chmod>
-              </target>
-            </configuration>
-          </execution>
-          <execution>
             <id>dist-package</id>
             <phase>package</phase>
             <goals>
@@ -133,22 +122,22 @@
             </goals>
             <configuration>
               <target>
-                <echo message="packaging binary distribution"/>
-                <chmod perm="a+x">
-                  <fileset dir="${project.build.directory}/dist/lenskit">
-                    <include name="bin/*" />
-                  </fileset>
-                </chmod>
-                <tar destfile="${project.build.directory}/lenskit-${project.version}.tar.gz" compression="gzip">
-                  <tarfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
-                </tar>
-                <zip destfile="${project.build.directory}/lenskit-${project.version}.zip">
-                  <zipfileset dir="${project.build.directory}/dist/lenskit" prefix="lenskit-${project.version}/" />
-                </zip>
+                <property name="packageDir" value="${project.build.directory}/dist/lenskit"/>
+                <property name="outputDir" value="${project.build.directory}"/>
+                <property name="packageScripts" value="${project.basedir}/src/package"/>
+                <ant antfile="${project.basedir}/src/package/bin-package.ant"
+                     target="package"/>
               </target>
             </configuration>
           </execution>
         </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>${groovy.version}</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>

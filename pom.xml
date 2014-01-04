@@ -87,7 +87,7 @@
     <module>lenskit-eval-maven-plugin</module>
     <module>lenskit-test</module>
     <module>lenskit-all</module>
-      <module>lenskit-predict</module>
+    <module>lenskit-predict</module>
     <module>lenskit-cli</module>
   </modules>
 
@@ -672,22 +672,12 @@
     </profile>
 
     <profile>
-      <id>package</id>
-      <modules>
-        <module>lenskit-package</module>
-      </modules>
-    </profile>
-
-    <profile>
       <id>release</id>
       <activation>
         <property>
           <name>prepareUpload</name>
         </property>
       </activation>
-      <modules>
-        <module>lenskit-package</module>
-      </modules>
       <build>
         <plugins>
           <!-- Prepare source archive -->

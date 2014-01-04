@@ -64,6 +64,7 @@ public class EvalCLI {
     }
 
     public void run() {
+        logger.warn("lenskit-eval is deprecated, use lenskit eval instead");
         ClassLoader loader = options.getClassLoader();
         EvalScriptEngine engine = new EvalScriptEngine(loader, options.getProperties());
 

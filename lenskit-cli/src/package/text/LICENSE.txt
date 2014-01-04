@@ -18,8 +18,7 @@ this program; if not, write to the Free Software Foundation, Inc., 51
 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 LensKit uses several libraries covered by the Apache Public License, version 2;
-this license is in the file APL.txt.  A full list of licenses for third-paty
-software is in the file THIRD-PARTY.txt.
+this license is in the file APL.txt.
 
 SLF4J carries the following copyright:
 
