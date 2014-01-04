@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
@@ -35,7 +36,7 @@ import static org.junit.Assert.assertThat;
 public class BufferBackedIntListTest {
     @Test
     public void testEmptyBuffer() {
-        IntList list = BufferBackedIntList.create(ByteBuffer.allocate(0));
+        IntList list = BufferBackedIntList.create(IntBuffer.allocate(0));
         assertThat(list, hasSize(0));
     }
 
@@ -44,7 +45,7 @@ public class BufferBackedIntListTest {
         ByteBuffer buf = ByteBuffer.allocate(4);
         buf.putInt(42);
         buf.flip();
-        IntList list = BufferBackedIntList.create(buf);
+        IntList list = BufferBackedIntList.create(buf.asIntBuffer());
         assertThat(list, hasSize(1));
         assertThat(list, contains(42));
     }
@@ -56,7 +57,7 @@ public class BufferBackedIntListTest {
             buf.putInt(i);
         }
         buf.flip();
-        IntList list = BufferBackedIntList.create(buf);
+        IntList list = BufferBackedIntList.create(buf.asIntBuffer());
         assertThat(list, hasSize(5));
         assertThat(list, contains(0, 1, 2, 3, 4));
     }

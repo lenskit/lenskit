@@ -60,6 +60,8 @@ distribution of LensKit.
 
     - Better logging of the item-item model build process.
 
+-   Significantly sped up user-user CF.
+
 ## Evaluator
 
 -   The evaluator now supports loading algorithms from config files in both train-test

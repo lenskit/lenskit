@@ -23,48 +23,55 @@ package org.grouplens.lenskit.data.dao.packed;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.AbstractIntList;
 
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 /**
  * A list of integers in a buffer.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class BufferBackedIntList extends AbstractIntList {
+class BufferBackedIntList extends AbstractIntList {
     private final IntBuffer buffer;
+    private final int offset;
+    private final int size;
 
-    private BufferBackedIntList(IntBuffer buf) {
+    private BufferBackedIntList(IntBuffer buf, int off, int sz) {
         buffer = buf;
+        offset = off;
+        size = sz;
     }
 
     /**
      * Create a new buffer-backed int list.  The list contains the integers from the position
      * to the limit of the list.
-     * @param buf The buffer.  It is duplicated, so you can modify its position and limit later (but
-     *            modifying its content will change the content of the list!)
+     * @param buf The buffer.
+     * @param offset The offset into the buffer to start at.
+     * @param size The number of items to use from the buffer.
      */
-    public static BufferBackedIntList create(ByteBuffer buf) {
-        return new BufferBackedIntList(buf.asIntBuffer());
+    public static BufferBackedIntList create(IntBuffer buf, int offset, int size) {
+        assert offset >= 0;
+        assert size >= 0;
+        assert offset + size <= buf.limit();
+        return new BufferBackedIntList(buf, offset, size);
     }
+
 
     /**
      * Create a new buffer-backed int list.  The list contains the integers from the position
      * to the limit of the list.
-     * @param buf The buffer.  It is duplicated, so you can modify its position and limit later (but
-     *            modifying its content will change the content of the list!)
+     * @param buf The buffer.
      */
     public static BufferBackedIntList create(IntBuffer buf) {
-        return new BufferBackedIntList(buf.slice());
+        return create(buf, buf.position(), buf.limit() - buf.position());
     }
 
     @Override
     public int size() {
-        return buffer.limit();
+        return size;
     }
 
     @Override
     public int getInt(int i) {
         Preconditions.checkElementIndex(i, size());
-        return buffer.get(i);
+        return buffer.get(offset + i);
     }
 }
