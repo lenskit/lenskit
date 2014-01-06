@@ -22,6 +22,7 @@ package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.dao.ItemDAO;
@@ -82,11 +83,11 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
 
         logger.debug("Building item data");
         Long2ObjectMap<LongList> userItems = new Long2ObjectOpenHashMap<LongList>(1000);
-        Long2ObjectMap<SparseVector> itemData = new Long2ObjectOpenHashMap<SparseVector>(1000);
-        LongSortedSet items = LongUtils.packedSet(itemDAO.getItemIds());
-        LongIterator iter = items.iterator();
-        while (iter.hasNext()) {
-            final long item = iter.nextLong();
+        LongKeyDomain items = LongKeyDomain.fromCollection(itemDAO.getItemIds(), true);
+        final int n = items.domainSize();
+        SparseVector[] itemData = new SparseVector[n];
+        for (int i = 0; i < n; i++) {
+            final long item = items.getKey(i);
             List<Rating> events = itemEventDAO.getEventsForItem(item, Rating.class);
             if (events == null) {
                 logger.warn("no events found for item {}", item);
@@ -107,7 +108,7 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
                 }
                 uis.add(item);
             }
-            itemData.put(item, vector.freeze());
+            itemData[i] = vector.freeze();
         }
 
         Long2ObjectMap<LongSortedSet> userItemSets = new Long2ObjectOpenHashMap<LongSortedSet>();

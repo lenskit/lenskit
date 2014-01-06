@@ -20,9 +20,11 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
+import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.scored.ScoredId;
 
@@ -45,36 +47,35 @@ import java.util.List;
 @DefaultProvider(ItemItemModelBuilder.class)
 @Shareable
 public class SimilarityMatrixModel implements Serializable, ItemItemModel {
-    private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 3L;
 
-    private final Long2ObjectMap<List<ScoredId>> similarityMatrix;
-    private final LongSortedSet itemUniverse;
+    private final LongKeyDomain itemDomain;
+    private final List<List<ScoredId>> neighborhoods;
 
     /**
      * Construct a new item-item model.
      *
-     * @param universe The set of item IDs. This should be equal to the key set
-     *                 of the matrix.
-     * @param matrix   The similarity matrix columns (maps item ID to column)
+     * @param items The item domain.
+     * @param nbrs  The item neighborhoods.
      */
-    public SimilarityMatrixModel(LongSortedSet universe, Long2ObjectMap<List<ScoredId>> matrix) {
-        itemUniverse = universe;
-        similarityMatrix = matrix;
+    public SimilarityMatrixModel(LongKeyDomain items, List<List<ScoredId>> nbrs) {
+        itemDomain = items.clone();
+        neighborhoods = ImmutableList.copyOf(nbrs);
     }
 
     @Override
     public LongSortedSet getItemUniverse() {
-        return itemUniverse;
+        return itemDomain.activeSetView();
     }
 
     @Override
     @Nonnull
     public List<ScoredId> getNeighbors(long item) {
-        List<ScoredId> v = similarityMatrix.get(item);
-        if (v == null) {
+        int idx = itemDomain.getIndex(item);
+        if (idx < 0) {
             return Collections.emptyList();
         } else {
-            return v;
+            return neighborhoods.get(idx);
         }
     }
 }

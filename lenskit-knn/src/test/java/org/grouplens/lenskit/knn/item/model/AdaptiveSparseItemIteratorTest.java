@@ -21,7 +21,9 @@
 package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.*;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.collections.LongUtils;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,7 +42,8 @@ public class AdaptiveSparseItemIteratorTest {
         userItems.put(42, LongUtils.packedSet(2, 5, 9));
         userItems.put(39, LongUtils.packedSet(2, 7, 9, 13));
         userItems.put(12, universe.subSet(2, 97));
-        context = new ItemItemBuildContext(universe, null, userItems);
+        context = new ItemItemBuildContext(LongKeyDomain.fromCollection(universe),
+                                           null, userItems);
     }
 
     @Test
