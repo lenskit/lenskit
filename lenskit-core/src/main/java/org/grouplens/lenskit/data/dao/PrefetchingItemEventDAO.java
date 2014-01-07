@@ -20,20 +20,27 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.History;
+import org.grouplens.lenskit.data.history.ItemEventCollection;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Item event DAO that pre-loads all events from an event DAO.
@@ -49,6 +56,13 @@ public final class PrefetchingItemEventDAO implements ItemEventDAO {
     public PrefetchingItemEventDAO(EventDAO dao) {
         eventDAO = dao;
         cache = Suppliers.memoize(new ItemProfileScanner());
+    }
+
+    @Override
+    public Cursor<ItemEventCollection<Event>> streamEventsByItem() {
+        Long2ObjectMap<List<Event>> map = cache.get();
+        return Cursors.wrap(Iterators.transform(map.entrySet().iterator(),
+                                                ItemEventTransform.INSTANCE));
     }
 
     @Override
@@ -105,6 +119,20 @@ public final class PrefetchingItemEventDAO implements ItemEventDAO {
                 evt.setValue(null);
             }
             return result;
+        }
+    }
+
+    private static enum ItemEventTransform implements Function<Map.Entry<Long,List<Event>>, ItemEventCollection<Event>> {
+        INSTANCE {
+            @Nullable
+            @Override
+            public ItemEventCollection<Event> apply(@Nullable Map.Entry<Long, List<Event>> input) {
+                if (input == null) {
+                    return null;
+                } else {
+                    return History.forItem(input.getKey(), input.getValue());
+                }
+            }
         }
     }
 }

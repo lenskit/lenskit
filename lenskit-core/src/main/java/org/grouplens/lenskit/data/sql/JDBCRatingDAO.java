@@ -33,6 +33,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.event.Rating;
@@ -291,5 +292,10 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
     @Override
     public Cursor<UserHistory<Event>> streamEventsByUser() {
         return new UserHistoryCursor<Event>(streamEvents(Event.class, SortOrder.USER));
+    }
+
+    @Override
+    public Cursor<ItemEventCollection<Event>> streamEventsByItem() {
+        return new ItemCollectionCursor<Event>(streamEvents(Event.class, SortOrder.USER));
     }
 }

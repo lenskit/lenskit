@@ -22,7 +22,9 @@ package org.grouplens.lenskit.data.dao;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.annotation.DefaultImplementation;
+import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.ItemEventCollection;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -35,6 +37,12 @@ import java.util.List;
  */
 @DefaultImplementation(PrefetchingItemEventDAO.class)
 public interface ItemEventDAO {
+    /**
+     * Stream events grouped by item.
+     * @return A cursor iterating over the events from all users.
+     */
+    Cursor<ItemEventCollection<Event>> streamEventsByItem();
+
     /**
      * Get the events for a specific item.
      * @param item The item ID.
