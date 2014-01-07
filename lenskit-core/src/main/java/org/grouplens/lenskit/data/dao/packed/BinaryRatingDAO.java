@@ -35,6 +35,7 @@ import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.History;
+import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,6 +138,12 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         return itemTable.getKeys();
     }
 
+    @Override
+    public Cursor<ItemEventCollection<Event>> streamEventsByItem() {
+        return Cursors.wrap(Collections2.transform(userTable.entries(),
+                                                   new ItemEntryTransformer()));
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public List<Event> getEventsForItem(long item) {
@@ -211,6 +218,14 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         @Override
         public Cursor<Rating> apply(@Nullable Pair<Long, IntList> input) {
             return Cursors.wrap(getRatingList(input.getRight()));
+        }
+    }
+
+    private class ItemEntryTransformer implements Function<Pair<Long, IntList>, ItemEventCollection<Event>> {
+        @Nullable
+        @Override
+        public ItemEventCollection<Event> apply(@Nullable Pair<Long, IntList> input) {
+            return new BinaryItemCollection(input.getLeft(), getRatingList(input.getRight()));
         }
     }
 

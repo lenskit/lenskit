@@ -18,6 +18,9 @@
 
 -   `Rating` class now has `hasValue()` and `getValue()` methods for convenience.
 
+-   **Incompatible change:** `ItemEventDAO` now has a `streamEventsByItem` method, corresponding
+    to the orthogonal methods on `UserEventDAO`.  Custom DAO implementations will need to provide
+    this new method.
 
 ## Configuration
 

@@ -21,18 +21,15 @@
 package org.grouplens.lenskit.data.sql;
 
 import com.google.common.collect.ImmutableList;
-import org.grouplens.lenskit.cursors.AbstractCursor;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.GroupingCursor;
 import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.History;
+import org.grouplens.lenskit.data.history.ItemEventCollection;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillCloseWhenClosed;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 /**
  * Cursor that processes (user,timestamp)-sorted cursor of events and groups
@@ -40,11 +37,11 @@ import java.util.NoSuchElementException;
  *
  * @param <E> The event type.
  */
-class UserHistoryCursor<E extends Event> extends GroupingCursor<UserHistory<E>,E> {
+class ItemCollectionCursor<E extends Event> extends GroupingCursor<ItemEventCollection<E>,E> {
     private ImmutableList.Builder<E> builder;
-    private long userId;
+    private long itemId;
 
-    public UserHistoryCursor(@WillCloseWhenClosed Cursor<? extends E> cur) {
+    public ItemCollectionCursor(@WillCloseWhenClosed Cursor<? extends E> cur) {
         super(cur);
     }
 
@@ -56,23 +53,23 @@ class UserHistoryCursor<E extends Event> extends GroupingCursor<UserHistory<E>,E
     @Override
     protected boolean handleItem(E event) {
         if (builder == null) {
-            userId = event.getUserId();
+            itemId = event.getItemId();
             builder = ImmutableList.builder();
         }
 
-         if (userId == event.getUserId()) {
+        if (itemId == event.getItemId()) {
             builder.add(event);
             return true;
-         } else {
-             return false;
-         }
+        } else {
+            return false;
+        }
     }
 
     @Nonnull
     @Override
-    protected UserHistory<E> finishGroup() {
+    protected ItemEventCollection<E> finishGroup() {
         List<E> events = builder.build();
         builder = null;
-        return History.forUser(userId, events);
+        return History.forItem(itemId, events);
     }
 }
