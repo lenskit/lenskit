@@ -126,6 +126,9 @@ public class Main {
             "%date{HH:mm:ss.SSS} %level [%thread] %logger: %msg%n";
 
     public static void configureLogging(Namespace options) {
+        if (System.getProperty("logback.configurationFile") != null) {
+            return;
+        }
         boolean debug = options.getBoolean("debug");
         boolean debugGrapht = options.getBoolean("debug_grapht");
         File logFile = options.get("log_file");

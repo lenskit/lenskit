@@ -27,6 +27,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
+import java.util.Collections;
 import java.util.Properties;
 
 /**
@@ -44,12 +45,10 @@ public class ScriptEnvironment {
              .dest("classpath")
              .type(URL.class)
              .action(Arguments.append())
-             .setDefault()
              .metavar("URL")
              .help("add URL (jar or dir) to script classpath");
         group.addArgument("-D", "--define")
              .dest("properties")
-             .setDefault()
              .type(new PropertyDef())
              .action(Arguments.append())
              .metavar("PROP=VALUE")
@@ -72,11 +71,19 @@ public class ScriptEnvironment {
 
     public ScriptEnvironment(Namespace ns) {
         properties = new Properties();
-        for (Pair<String,String> arg: ns.<Pair<String,String>>getList("properties")) {
-            properties.setProperty(arg.getKey(), arg.getValue());
+        List<Pair<String,String>> props = ns.getList("properties");
+        if (props != null) {
+            for (Pair<String,String> arg: props) {
+                properties.setProperty(arg.getKey(), arg.getValue());
+            }
         }
 
-        classpath = ns.getList("classpath");
+        List<URL> cp = ns.getList("classpath");
+        if (cp != null) {
+            classpath = cp;
+        } else {
+            classpath = Collections.emptyList();
+        }
     }
 
     /**

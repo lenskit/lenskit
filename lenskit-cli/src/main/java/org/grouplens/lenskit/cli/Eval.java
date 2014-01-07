@@ -144,6 +144,6 @@ public class Eval implements Command {
     }
 
     public List<String> getTargets() {
-        return options.getList("target");
+        return options.get("target");
     }
 }

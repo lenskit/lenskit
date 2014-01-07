@@ -29,6 +29,7 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.inject.RecommenderInstantiator;
@@ -46,6 +47,7 @@ class LenskitEvalJob extends TrainTestJob {
     private final ComponentCache cache;
 
     private LenskitRecommender recommender;
+    private UserEventDAO userEvents;
 
     LenskitEvalJob(TrainTestEvalTask task,
                    @Nonnull AlgorithmInstance algo,
@@ -71,6 +73,8 @@ class LenskitEvalJob extends TrainTestJob {
         }
         DAGNode<CachedSatisfaction, DesireChain> graph = ri.instantiate();
         recommender = new LenskitRecommender(graph);
+        // pre-fetch the test DAO
+        userEvents = dataSet.getTestData().getUserEventDAO();
     }
 
     @Override
@@ -85,7 +89,7 @@ class LenskitEvalJob extends TrainTestJob {
     @Override
     protected TestUser getUserResults(long uid) {
         Preconditions.checkState(recommender != null, "recommender not built");
-        UserHistory<Event> userData = dataSet.getTestData().getUserEventDAO().getEventsForUser(uid);
+        UserHistory<Event> userData = userEvents.getEventsForUser(uid);
         return new LenskitTestUser(recommender, userData);
     }
 
@@ -93,5 +97,6 @@ class LenskitEvalJob extends TrainTestJob {
     protected void cleanup() {
         recommender = null;
         recommenderGraph = null;
+        userEvents = null;
     }
 }
