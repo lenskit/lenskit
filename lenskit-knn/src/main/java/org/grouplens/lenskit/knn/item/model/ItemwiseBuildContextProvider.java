@@ -20,15 +20,19 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
+import com.google.common.collect.FluentIterable;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Transient;
+import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.ItemEventDAO;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -83,37 +87,44 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
 
         logger.debug("Building item data");
         Long2ObjectMap<LongList> userItems = new Long2ObjectOpenHashMap<LongList>(1000);
-        LongKeyDomain items = LongKeyDomain.fromCollection(itemDAO.getItemIds(), true);
-        final int n = items.domainSize();
-        SparseVector[] itemData = new SparseVector[n];
-        for (int i = 0; i < n; i++) {
-            final long item = items.getKey(i);
-            List<Rating> events = itemEventDAO.getEventsForItem(item, Rating.class);
-            if (events == null) {
-                logger.warn("no events found for item {}", item);
-                continue;
-            }
-            if (logger.isTraceEnabled()) {
-                logger.trace("processing {} ratings for item {}", events.size(), item);
-            }
-            MutableSparseVector vector = Ratings.itemRatingVector(events);
-            normalizer.normalize(item, vector, vector);
-            for (VectorEntry e: vector.fast()) {
-                long user = e.getKey();
-                LongList uis = userItems.get(user);
-                if (uis == null) {
-                    // lists are nice and fast, we only see each item once
-                    uis = new LongArrayList();
-                    userItems.put(user, uis);
+        Long2ObjectMap<SparseVector> itemVectors = new Long2ObjectOpenHashMap<SparseVector>(1000);
+        Cursor<ItemEventCollection<Event>> itemCursor = itemEventDAO.streamEventsByItem();
+        try {
+            for (ItemEventCollection<Event> item: itemCursor.fast()) {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("processing {} ratings for item {}", item.size(), item);
                 }
-                uis.add(item);
+                List<Rating> ratings = FluentIterable.from(item)
+                                                     .filter(Rating.class)
+                                                     .toList();
+                MutableSparseVector vector = Ratings.itemRatingVector(ratings);
+                normalizer.normalize(item.getItemId(), vector, vector);
+                for (VectorEntry e: vector.fast()) {
+                    long user = e.getKey();
+                    LongList uis = userItems.get(user);
+                    if (uis == null) {
+                        // lists are nice and fast, we only see each item once
+                        uis = new LongArrayList();
+                        userItems.put(user, uis);
+                    }
+                    uis.add(item.getItemId());
+                }
+                itemVectors.put(item.getItemId(), vector.freeze());
             }
-            itemData[i] = vector.freeze();
+        } finally {
+            itemCursor.close();
         }
 
         Long2ObjectMap<LongSortedSet> userItemSets = new Long2ObjectOpenHashMap<LongSortedSet>();
         for (Long2ObjectMap.Entry<LongList> entry: CollectionUtils.fast(userItems.long2ObjectEntrySet())) {
             userItemSets.put(entry.getLongKey(), LongUtils.packedSet(entry.getValue()));
+        }
+
+        LongKeyDomain items = LongKeyDomain.fromCollection(itemVectors.keySet(), true);
+        SparseVector[] itemData = new SparseVector[items.domainSize()];
+        for (int i = 0; i < itemData.length; i++) {
+            long itemId = items.getKey(i);
+            itemData[i] = itemVectors.get(itemId);
         }
 
         logger.debug("item data completed");
