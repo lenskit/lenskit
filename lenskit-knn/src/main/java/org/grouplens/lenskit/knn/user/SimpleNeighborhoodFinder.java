@@ -89,6 +89,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         neighborhoodSize = nnbrs;
         similarity = sim;
         normalizer = norm;
+        Preconditions.checkArgument(sim.isSparse(), "user similarity function is not sparse");
     }
 
     /**
@@ -119,12 +120,8 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         ImmutableSparseVector nratings = normalizer.normalize(user.getUserId(), urs, null)
                                                    .freeze();
 
-        /* Find candidate neighbors. To reduce scanning, we limit users to those
-         * rating target items. If the similarity is sparse and the user has
-         * fewer items than target items, then we use the user's rated items to
-         * attempt to minimize the number of users considered.
-         */
-        LongSet users = findRatingUsers(user.getUserId(), items);
+        // Find candidate neighbors
+        LongSet users = findCandidateNeighbors(user.getUserId(), nratings.keySet(), items);
 
         logger.trace("Found {} candidate neighbors", users.size());
 
@@ -159,16 +156,25 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     }
 
     /**
-     * Find all users who have rated any of a set of items.
+     * Find users who may have rated items both in the user's rated item set and a target item
+     * set.  It will only query based on one set, so the users may or may not have rated both a
+     * target item and a source item.  This method tries to be efficient, so it uses the shorter
+     * list of items to find users.
      *
      * @param user    The current user's ID (excluded from the returned set).
+     * @param userItems The items the user has rated.
      * @param itemSet The set of items to look for.
-     * @return The set of all users who have rated at least one item in {@var itemSet}.
+     * @return The set of candidate neighbors.
      */
-    private LongSet findRatingUsers(long user, LongCollection itemSet) {
+    protected LongSet findCandidateNeighbors(long user, LongSet userItems, LongCollection itemSet) {
         LongSet users = new LongOpenHashSet(100);
 
-        LongIterator items = itemSet.iterator();
+        LongIterator items;
+        if (userItems.size() < itemSet.size()) {
+            items = userItems.iterator();
+        } else {
+            items = itemSet.iterator();
+        }
         while (items.hasNext()) {
             LongSet iusers = itemDAO.getUsersForItem(items.nextLong());
             if (iusers != null) {
