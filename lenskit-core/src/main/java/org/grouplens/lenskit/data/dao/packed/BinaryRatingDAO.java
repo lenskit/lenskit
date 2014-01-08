@@ -140,8 +140,19 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
 
     @Override
     public Cursor<ItemEventCollection<Event>> streamEventsByItem() {
-        return Cursors.wrap(Collections2.transform(userTable.entries(),
-                                                   new ItemEntryTransformer()));
+        return streamEventsByItem(Event.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <E extends Event> Cursor<ItemEventCollection<E>> streamEventsByItem(Class<E> type) {
+        if (type.isAssignableFrom(Rating.class)) {
+            // cast is safe, Rating extends E
+            return (Cursor) Cursors.wrap(Collections2.transform(userTable.entries(),
+                                                                new ItemEntryTransformer()));
+        } else {
+            return Cursors.empty();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -187,8 +198,19 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
 
     @Override
     public Cursor<UserHistory<Event>> streamEventsByUser() {
-        return Cursors.wrap(Collections2.transform(userTable.entries(),
-                                                   new UserEntryTransformer()));
+        return streamEventsByUser(Event.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <E extends Event> Cursor<UserHistory<E>> streamEventsByUser(Class<E> type) {
+        if (type.isAssignableFrom(Rating.class)) {
+            // cast is safe, E super Rating
+            return (Cursor) Cursors.wrap(Collections2.transform(userTable.entries(),
+                                                                new UserEntryTransformer()));
+        } else {
+            return Cursors.empty();
+        }
     }
 
     @Nullable
@@ -221,18 +243,18 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         }
     }
 
-    private class ItemEntryTransformer implements Function<Pair<Long, IntList>, ItemEventCollection<Event>> {
+    private class ItemEntryTransformer implements Function<Pair<Long, IntList>, ItemEventCollection<Rating>> {
         @Nullable
         @Override
-        public ItemEventCollection<Event> apply(@Nullable Pair<Long, IntList> input) {
+        public ItemEventCollection<Rating> apply(@Nullable Pair<Long, IntList> input) {
             return new BinaryItemCollection(input.getLeft(), getRatingList(input.getRight()));
         }
     }
 
-    private class UserEntryTransformer implements Function<Pair<Long, IntList>, UserHistory<Event>> {
+    private class UserEntryTransformer implements Function<Pair<Long, IntList>, UserHistory<Rating>> {
         @Nullable
         @Override
-        public UserHistory apply(@Nullable Pair<Long, IntList> input) {
+        public UserHistory<Rating> apply(@Nullable Pair<Long, IntList> input) {
             return new BinaryUserHistory(input.getLeft(), getRatingList(input.getRight()));
         }
     }

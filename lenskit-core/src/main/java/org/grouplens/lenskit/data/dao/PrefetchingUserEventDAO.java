@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
@@ -31,6 +32,7 @@ import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.List;
 
@@ -53,6 +55,17 @@ public final class PrefetchingUserEventDAO implements UserEventDAO {
     @Override
     public Cursor<UserHistory<Event>> streamEventsByUser() {
         return Cursors.wrap(cache.get().values());
+    }
+
+    @Override
+    public <E extends Event> Cursor<UserHistory<E>> streamEventsByUser(final Class<E> type) {
+        return Cursors.transform(streamEventsByUser(), new Function<UserHistory<Event>, UserHistory<E>>() {
+            @Nullable
+            @Override
+            public UserHistory<E> apply(@Nullable UserHistory<Event> input) {
+                return input == null ? null : input.filter(type);
+            }
+        });
     }
 
     @Override

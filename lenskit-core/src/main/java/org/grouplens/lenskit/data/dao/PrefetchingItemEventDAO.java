@@ -36,6 +36,7 @@ import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
+import org.grouplens.lenskit.data.history.UserHistory;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -63,6 +64,21 @@ public final class PrefetchingItemEventDAO implements ItemEventDAO {
         Long2ObjectMap<List<Event>> map = cache.get();
         return Cursors.wrap(Iterators.transform(map.entrySet().iterator(),
                                                 ItemEventTransform.INSTANCE));
+    }
+
+    @Override
+    public <E extends Event> Cursor<ItemEventCollection<E>> streamEventsByItem(final Class<E> type) {
+        return Cursors.transform(streamEventsByItem(), new Function<ItemEventCollection<Event>, ItemEventCollection<E>>() {
+            @Nullable
+            @Override
+            public ItemEventCollection<E> apply(@Nullable ItemEventCollection<Event> input) {
+                if (input == null) {
+                    return null;
+                } else {
+                    return History.forItem(input.getItemId(), Iterables.filter(input, type));
+                }
+            }
+        });
     }
 
     @Override
