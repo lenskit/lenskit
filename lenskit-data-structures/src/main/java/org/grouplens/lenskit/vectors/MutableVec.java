@@ -29,7 +29,9 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrays;
  *
  * @since 1.3
  * @compat Public
+ * @deprecated Use vectorz instead.
  */
+@Deprecated
 public final class MutableVec extends Vec {
     private static final long serialVersionUID = 1L;
 

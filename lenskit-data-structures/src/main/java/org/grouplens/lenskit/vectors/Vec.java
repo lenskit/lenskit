@@ -33,7 +33,9 @@ import static java.lang.Math.sqrt;
  *
  * @since 1.3
  * @compat Public
+ * @deprecated Use vectorz instead.
  */
+@Deprecated
 public abstract class Vec implements Serializable {
     private static final long serialVersionUID = 1L;
 

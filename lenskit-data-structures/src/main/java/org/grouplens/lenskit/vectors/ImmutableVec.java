@@ -28,8 +28,9 @@ import java.util.Arrays;
  * create one using {@link #create(double[])} or {@link #immutable()}.
  *
  * @since 1.3
- * @compat
+ * @deprecated Use vectorz instead.
  */
+@Deprecated
 @Immutable
 public final class ImmutableVec extends Vec {
     private static final long serialVersionUID = 1L;
