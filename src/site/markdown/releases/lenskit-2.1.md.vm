@@ -22,6 +22,10 @@
     to the orthogonal methods on `UserEventDAO`.  Custom DAO implementations will need to provide
     this new method.
 
+-   **Incompatible change:** The `UserEventDAO` and `ItemEventDAO` classes now have type-filtered
+    versions of their `streamEventsByUser` and `streamEventsByItem` methods.  Implementers will need
+    to implement these new methods.
+
 ## Configuration
 
 -   Added `LenskitRecommenderEngineBuilder` and `LenskitRecommenderEngineLoader`.

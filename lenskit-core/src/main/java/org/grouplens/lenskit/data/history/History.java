@@ -76,7 +76,7 @@ public final class History {
      */
     @SuppressWarnings("deprecation")
     @Nonnull
-    public static <E extends Event> ItemEventCollection<E> forItem(long id, List<? extends E> events) {
+    public static <E extends Event> ItemEventCollection<E> forItem(long id, Iterable<? extends E> events) {
         return new BasicItemEventList<E>(id, events);
     }
 

@@ -43,7 +43,7 @@ public class BasicItemEventList<E extends Event> implements ItemEventCollection<
      * @param item The item ID.
      * @param evts The events (will be defensively copied with {@link ImmutableList#copyOf(Collection)}).
      */
-    public BasicItemEventList(long item, Collection<? extends E> evts) {
+    public BasicItemEventList(long item, Iterable<? extends E> evts) {
         itemId = item;
         events = ImmutableList.copyOf(evts);
     }

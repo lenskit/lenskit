@@ -39,9 +39,21 @@ import java.util.List;
 public interface ItemEventDAO {
     /**
      * Stream events grouped by item.
-     * @return A cursor iterating over the events from all users.
+     *
+     * @return A cursor iterating over the events from all items.  If an item exists but does not
+     *         have any events, it may or may not be included depending on the DAO implementation.
      */
     Cursor<ItemEventCollection<Event>> streamEventsByItem();
+
+    /**
+     * Stream events grouped by item.
+     *
+     * @param type The type of item to look for.
+     * @return A cursor iterating over the events of type {@code type} from all items.  If an item
+     *         exists but does not have any events, it may or may not be included depending on the
+     *         DAO implementation.
+     */
+    <E extends Event> Cursor<ItemEventCollection<E>> streamEventsByItem(Class<E> type);
 
     /**
      * Get the events for a specific item.
