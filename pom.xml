@@ -672,6 +672,13 @@
     </profile>
 
     <profile>
+      <id>package</id>
+      <modules>
+        <module>lenskit-package</module>
+      </modules>
+    </profile>
+
+    <profile>
       <id>release</id>
       <activation>
         <property>

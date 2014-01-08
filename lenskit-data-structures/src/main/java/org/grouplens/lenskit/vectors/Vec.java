@@ -21,9 +21,10 @@
 package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 import static java.lang.Math.sqrt;
 
@@ -38,25 +39,48 @@ public abstract class Vec implements Serializable {
     private static final long serialVersionUID = 1L;
 
     final double[] data;
+    final int offset;
+    final int size;
+    final int stride;
+    final int dataBound;
 
     /**
      * Construct a vector from a backing array. The array is not copied.
      * @param d The backing array.
+     * @param off The offset into the array.
+     * @param sz The size of the vector.
+     * @param str The stride of the vector (distance between elements).
      */
     @SuppressWarnings("PMD.ArrayIsStoredDirectly") // that's the point
-    Vec(double[] d) {
+    Vec(double[] d, int off, int sz, int str) {
+        assert off >= 0;
+        assert str >= 1;
+        assert sz == 0 || off + (sz - 1) * str < d.length;
         data = d;
+        offset = off;
+        size = sz;
+        stride = str;
+        dataBound = offset + size * stride;
+    }
+
+    /**
+     * Convert a vector index into an array index.
+     * @param i The index in the vector.
+     * @return The index in the underlying array.
+     */
+    int arrayIndex(int i) {
+        Preconditions.checkElementIndex(i, size);
+        return offset + i * stride;
     }
 
     /**
      * Get the value from the vector at the specified position.
      * @param i The index into the vector.
      * @return The value at index {@code i}.
-     * @throws IllegalArgumentException if {@code i} is not in the range [0,{@link #size()}).
+     * @throws IndexOutOfBoundsException if {@code i} is not in the range [0,{@link #size()}).
      */
     public final double get(int i) {
-        Preconditions.checkElementIndex(i, data.length);
-        return data[i];
+        return data[arrayIndex(i)];
     }
 
     /**
@@ -64,7 +88,7 @@ public abstract class Vec implements Serializable {
      * @return The number of elements in the vector.
      */
     public final int size() {
-        return data.length;
+        return size;
     }
 
     /**
@@ -74,7 +98,8 @@ public abstract class Vec implements Serializable {
      */
     public double norm() {
         double ssq = 0;
-        for (double v: data) {
+        for (int i = offset; i < dataBound; i += stride) {
+            double v = data[i];
             ssq += v * v;
         }
         return sqrt(ssq);
@@ -87,7 +112,8 @@ public abstract class Vec implements Serializable {
      */
     public double sum() {
         double s = 0;
-        for (double v : data) {
+        for (int i = offset; i < dataBound; i += stride) {
+            double v = data[i];
             s += v;
         }
         return s;
@@ -110,11 +136,12 @@ public abstract class Vec implements Serializable {
      * @throws IllegalArgumentException if {@code other.size() != this.size()}.
      */
     public final double dot(Vec other) {
-        final int sz = data.length;
-        Preconditions.checkArgument(sz == other.size(), "incompatible vector dimensions");
+        Preconditions.checkArgument(size == other.size(), "incompatible vector dimensions");
         double s = 0;
-        for (int i = 0; i < sz; i++) {
-            s += data[i] * other.data[i];
+        for (int i = offset, j = other.offset; i < dataBound;
+             i += stride, j += other.stride) {
+            assert j < other.dataBound;
+            s += data[i] * other.data[j];
         }
         return s;
     }
@@ -135,13 +162,32 @@ public abstract class Vec implements Serializable {
         }
         return index;
     }
+    
+    /**
+     * Make a copy of this vector as an array.
+     * @return An array containing the contents of this vector.
+     */
+    public double[] toArray() {
+        double[] newData = new double[size];
+        if (stride == 1) {
+            System.arraycopy(data, offset, newData, 0, size);
+        } else {
+            for (int i = 0, j = offset; i < size; i++, j += stride) {
+                assert j < dataBound;
+                newData[i] = data[j];
+            }
+        }
+        return newData;
+    }
+
+
     /**
      * Get an immutable vector with this vector's contents.  If the vector is already immutable,
      * it is not changed.
      * @return The immutable vector.
      */
     public ImmutableVec immutable() {
-        return ImmutableVec.create(data);
+        return new ImmutableVec(toArray(), 0, size, 1);
     }
 
     /**
@@ -149,20 +195,68 @@ public abstract class Vec implements Serializable {
      * @return A mutable copy of this vector.
      */
     public MutableVec mutableCopy() {
-        return MutableVec.wrap(Arrays.copyOf(data, data.length));
+        return MutableVec.wrap(toArray());
     }
+
+    /**
+     * Create a new strided subvector of this vector.  The returned vector is a view of the original
+     * vector; if it is modifiable, modifying it will propagate to the original (and all views).
+     *
+     * @param offset The offset of the subvector.
+     * @param size The size (dimension) of the desired vector.
+     * @param stride The stride of the vector.
+     * @return A vector representing a potentially-strided view of this vector.
+     * @throws IllegalArgumentException if the specified vector does not fit in this one.
+     */
+    public abstract Vec subVector(int offset, int size, int stride);
+
+    /**
+     * Create a new subvector of this vector.  The returned vector is a view of the original vector;
+     * if it is modifiable, modifying it will propagate to the original (and all views).
+     *
+     * @param offset The offset of the subvector.
+     * @param size The size (dimension) of this vector.
+     * @return A vector representing a view of this vector.
+     */
+    public abstract Vec subVector(int offset, int size);
 
     @Override
     public boolean equals(Object o) {
         if (o == this) {
             return true;
+        } else if (o instanceof Vec) {
+            Vec ov = (Vec) o;
+            EqualsBuilder eqb = new EqualsBuilder();
+            eqb.append(size, ov.size);
+            for (int i = 0; i < size && eqb.isEquals(); i++) {
+                eqb.append(get(i), ov.get(i));
+            }
+            return eqb.isEquals();
         } else {
-            return o instanceof Vec && Arrays.equals(data, ((Vec) o).data);
+            return false;
         }
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(data);
+        HashCodeBuilder hcb = new HashCodeBuilder();
+        for (int i = offset; i < dataBound; i += stride) {
+            hcb.append(data[i]);
+        }
+        return hcb.toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName())
+          .append("<");
+        for (int i = offset; i < dataBound; i += stride) {
+            if (i > offset) {
+                sb.append(",");
+            }
+            sb.append(data[i]);
+        }
+        return sb.append(">").toString();
     }
 }

@@ -23,13 +23,15 @@ package org.grouplens.lenskit.mf.funksvd;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.baseline.BaselineScorer;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
-import org.grouplens.lenskit.transform.clamp.ClampingFunction;
+import org.grouplens.lenskit.mf.svd.BiasedMFKernel;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.Serializable;
 
@@ -44,32 +46,29 @@ public final class FunkSVDUpdateRule implements Serializable {
 
     private final double learningRate;
     private final double trainingRegularization;
-    private final boolean useTrailingEstimate;
     private final ItemScorer baseline;
-    private final ClampingFunction clampingFunction;
     private final StoppingCondition stoppingCondition;
+    @Nullable
+    private final PreferenceDomain domain;
 
     /**
      * Construct a new FunkSVD configuration.
      *
      * @param lrate The learning rate.
      * @param reg   The regularization term.
-     * @param clamp The clamping function.
      * @param stop  The stopping condition
      */
     @Inject
     public FunkSVDUpdateRule(@LearningRate double lrate,
                              @RegularizationTerm double reg,
-                             @UseTrailingEstimate boolean trail,
                              @BaselineScorer ItemScorer bl,
-                             ClampingFunction clamp,
+                             @Nullable PreferenceDomain dom,
                              StoppingCondition stop) {
         learningRate = lrate;
         trainingRegularization = reg;
         baseline = bl;
-        clampingFunction = clamp;
+        domain = dom;
         stoppingCondition = stop;
-        useTrailingEstimate = trail;
     }
 
     /**
@@ -78,7 +77,7 @@ public final class FunkSVDUpdateRule implements Serializable {
      * @return The estimator to use.
      */
     public TrainingEstimator makeEstimator(PreferenceSnapshot snapshot) {
-        return new TrainingEstimator(snapshot, baseline, clampingFunction);
+        return new TrainingEstimator(snapshot, baseline, domain);
     }
 
     public double getLearningRate() {
@@ -89,16 +88,13 @@ public final class FunkSVDUpdateRule implements Serializable {
         return trainingRegularization;
     }
 
-    public ClampingFunction getClampingFunction() {
-        return clampingFunction;
-    }
-
     public StoppingCondition getStoppingCondition() {
         return stoppingCondition;
     }
 
-    public boolean useTrailingEstimate() {
-        return useTrailingEstimate;
+    @Nullable
+    public PreferenceDomain getDomain() {
+        return domain;
     }
 
     public TrainingLoopController getTrainingLoopController() {

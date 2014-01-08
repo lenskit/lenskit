@@ -31,11 +31,12 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
-import org.grouplens.lenskit.transform.clamp.ClampingFunction;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
+import org.grouplens.lenskit.mf.svd.BiasedMFKernel;
+import org.grouplens.lenskit.mf.svd.DomainClampingKernel;
+import org.grouplens.lenskit.mf.svd.DotProductKernel;
+import org.grouplens.lenskit.vectors.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -54,10 +55,10 @@ import javax.inject.Inject;
 public class FunkSVDItemScorer extends AbstractItemScorer {
 
     protected final FunkSVDModel model;
+    protected final BiasedMFKernel kernel;
     private UserEventDAO dao;
     private final ItemScorer baselineScorer;
     private final int featureCount;
-    private final ClampingFunction clamp;
 
     @Nullable
     private final FunkSVDUpdateRule rule;
@@ -77,6 +78,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
     @Inject
     public FunkSVDItemScorer(UserEventDAO dao, FunkSVDModel model,
                              @BaselineScorer ItemScorer baseline,
+                             @Nullable PreferenceDomain dom,
                              @Nullable @RuntimeUpdate FunkSVDUpdateRule rule) {
         // FIXME Unify requirement on update rule and DAO
         this.dao = dao;
@@ -84,8 +86,13 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         baselineScorer = baseline;
         this.rule = rule;
 
+        if (dom == null) {
+            kernel = new DotProductKernel();
+        } else {
+            kernel = new DomainClampingKernel(dom);
+        }
+
         featureCount = model.getFeatureCount();
-        clamp = model.getClampingFunction();
     }
 
     @Nullable
@@ -97,24 +104,19 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
      * Predict for a user using their preference array and history vector.
      *
      * @param user   The user's ID
-     * @param uprefs The user's preference array from the model.
+     * @param uprefs The user's preference vector.
      * @param output The output vector, whose key domain is the items to predict for. It must
      *               be initialized to the user's baseline predictions.
      */
-    private void predict(long user, double[] uprefs, MutableSparseVector output) {
+    private void computeScores(long user, Vec uprefs, MutableSparseVector output) {
         for (VectorEntry e : output.fast()) {
             final long item = e.getKey();
-            final int iidx = model.getItemIndex().tryGetIndex(item);
-
-            if (iidx < 0) {
+            Vec ivec = model.getItemVector(item);
+            if (ivec == null) {
                 continue;
             }
 
-            double score = e.getValue();
-            for (int f = 0; f < featureCount; f++) {
-                score += uprefs[f] * model.getItemFeatures()[f][iidx];
-                score = clamp.apply(user, item, score);
-            }
+            double score = kernel.apply(e.getValue(), uprefs, ivec);
             output.set(e, score);
         }
     }
@@ -137,7 +139,6 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
 
     @Override
     public void score(long user, @Nonnull MutableSparseVector scores) {
-        int uidx = model.getUserIndex().tryGetIndex(user);
         UserHistory<Rating> history = dao.getEventsForUser(user, Rating.class);
         if (history == null) {
             history = History.forUser(user);
@@ -147,77 +148,73 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         MutableSparseVector estimates = initialEstimates(user, ratings, scores.keyDomain());
         // propagate estimates to the output scores
         scores.set(estimates);
-        if (uidx < 0 && ratings.isEmpty()) {
-            // no real work to do, stop with baseline predictions
-            return;
-        }
 
-        double[] uprefs;
-        if (uidx < 0) {
-            uprefs = new double[model.getFeatureCount()];
-            for (int i = 0; i < model.getFeatureCount(); i++) {
-                uprefs[i] = model.getFeatureInfo(i).getUserAverage();
+        Vec uprefs = model.getUserVector(user);
+        if (uprefs == null) {
+            if (ratings.isEmpty()) {
+                // no real work to do, stop with baseline predictions
+                return;
             }
-        } else {
-            uprefs = new double[featureCount];
-            for (int i = 0; i < featureCount; i++) {
-                uprefs[i] = model.getUserFeatures()[i][uidx];
-            }
+            uprefs = model.getAverageUserVector();
         }
 
         if (!ratings.isEmpty() && rule != null) {
+            MutableVec updated = uprefs.mutableCopy();
             for (int f = 0; f < featureCount; f++) {
-                trainUserFeature(user, uprefs, ratings, estimates, f);
+                trainUserFeature(user, updated, ratings, estimates, f);
             }
+            uprefs = updated;
         }
 
         // scores are the estimates, uprefs are trained up.
-        predict(user, uprefs, scores);
+        computeScores(user, uprefs, scores);
     }
 
-    private void trainUserFeature(long user, double[] uprefs, SparseVector ratings,
+    private void trainUserFeature(long user, MutableVec uprefs, SparseVector ratings,
                                   MutableSparseVector estimates, int feature) {
         assert rule != null;
+        assert uprefs.size() == featureCount;
+        assert feature >= 0 && feature < featureCount;
+
+        int tailStart = feature + 1;
+        int tailSize = featureCount - feature - 1;
+        Vec utail = uprefs.subVector(tailStart, tailSize);
+        MutableSparseVector tails = MutableSparseVector.create(ratings.keySet());
+        for (VectorEntry e: tails.fast(VectorEntry.State.EITHER)) {
+            Vec ivec = model.getItemVector(e.getKey());
+            if (ivec == null) {
+                // FIXME Do this properly
+                tails.set(e, 0);
+            } else {
+                ivec = ivec.subVector(tailStart, tailSize);
+                tails.set(e, utail.dot(ivec));
+            }
+        }
 
         double rmse = Double.MAX_VALUE;
         TrainingLoopController controller = rule.getTrainingLoopController();
         while (controller.keepTraining(rmse)) {
-            rmse = doFeatureIteration(user, uprefs, ratings, estimates, feature);
-        }
-
-        // After training this feature, we need to update each rating's cached
-        // value to accommodate it.
-        for (VectorEntry itemId : ratings.fast()) {
-            final long iid = itemId.getKey();
-            double est = estimates.get(iid);
-            double offset = uprefs[feature] * model.getItemFeature(iid, feature);
-            est = clamp.apply(user, iid, est + offset);
-            estimates.set(iid, est);
+            rmse = doFeatureIteration(user, uprefs, ratings, estimates, feature, tails);
         }
     }
 
-    private double doFeatureIteration(long user, double[] uprefs,
+    private double doFeatureIteration(long user, MutableVec uprefs,
                                       SparseVector ratings, MutableSparseVector estimates,
-                                      int feature) {
+                                      int feature, SparseVector itemTails) {
         assert rule != null;
+
         FunkSVDUpdater updater = rule.createUpdater();
-        double sse = 0;
-        int n = 0;
         for (VectorEntry e: ratings.fast()) {
             final long iid = e.getKey();
-            final int iidx = model.getItemIndex().getIndex(iid);
-
-            // Step 1: Compute the trailing value for this item-feature pair
-            double trailingValue = 0.0;
-            for (int f = feature + 1; f < featureCount; f++) {
-                trailingValue += uprefs[f] * model.getItemFeatures()[f][iidx];
+            final Vec ivec = model.getItemVector(iid);
+            if (ivec == null) {
+                continue;
             }
 
-            updater.prepare(user, iid, trailingValue, estimates.get(iid), e.getValue(),
-                            uprefs[feature], model.getItemFeatures()[feature][iidx]);
-
+            updater.prepare(feature, e.getValue(), estimates.get(iid),
+                            uprefs.get(feature), ivec.get(feature), itemTails.get(iid));
             // Step 4: update user preferences
-            uprefs[feature] += updater.getUserFeatureUpdate();
+            uprefs.add(feature, updater.getUserFeatureUpdate());
         }
         return updater.getRMSE();
     }
