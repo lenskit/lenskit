@@ -482,11 +482,9 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
         for (int i = 0; i < partitionCount; i++) {
             CSVDataSourceBuilder trainBuilder = new CSVDataSourceBuilder()
                     .setDomain(source.getPreferenceDomain())
-                    .setCache(cacheOutput)
                     .setFile(trainFiles[i]);
             CSVDataSourceBuilder testBuilder = new CSVDataSourceBuilder()
                     .setDomain(source.getPreferenceDomain())
-                    .setCache(cacheOutput)
                     .setFile(testFiles[i]);
             GenericTTDataBuilder ttBuilder = new GenericTTDataBuilder(getName() + "." + i);
 
