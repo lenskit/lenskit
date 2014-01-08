@@ -18,23 +18,43 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.mf.funksvd;
+package org.grouplens.lenskit.mf.svd;
 
-import org.grouplens.grapht.annotation.DefaultBoolean;
-import org.grouplens.lenskit.core.Parameter;
+import mikera.vectorz.AVector;
+import org.grouplens.lenskit.core.Shareable;
 
-import javax.inject.Qualifier;
-import java.lang.annotation.*;
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
+import java.io.Serializable;
 
 /**
- * Whether to use a "trailing" estimate (estimate contribution from unprocessed features)
- * of 0 or the {@linkplain InitialFeatureValue initial feature value}.
+ * Kernel function that uses the dot product of the user and item vectors.
+ *
+ * @since 2.1
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@Documented
-@DefaultBoolean(true)
-@Parameter(boolean.class)
-@Qualifier
-@Target({ElementType.METHOD, ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface UseTrailingEstimate {
+@Shareable
+@Immutable
+public class DotProductKernel implements BiasedMFKernel, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public double apply(double bias, @Nonnull AVector user, @Nonnull AVector item) {
+        return bias + user.dotProduct(item);
+    }
+
+    @Override
+    public int hashCode() {
+        return DotProductKernel.class.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o != null && o.getClass().equals(getClass());
+    }
+
+    @Override
+    public String toString() {
+        return "DotProductKernel()";
+    }
 }

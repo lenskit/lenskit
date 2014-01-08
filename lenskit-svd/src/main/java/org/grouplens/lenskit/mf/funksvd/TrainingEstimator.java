@@ -22,12 +22,13 @@ package org.grouplens.lenskit.mf.funksvd;
 
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import mikera.vectorz.AVector;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
+import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.transform.clamp.ClampingFunction;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -40,19 +41,19 @@ import org.grouplens.lenskit.vectors.SparseVector;
  */
 public final class TrainingEstimator {
     private final FastCollection<IndexedPreference> ratings;
-    private final ClampingFunction clamp;
     private final double[] estimates;
+    private final PreferenceDomain domain;
 
     /**
      * Initialize the training estimator.
      *
      * @param snap     The preference snapshot.
      * @param baseline The baseline predictor.
-     * @param cf       The clamping function.
+     * @param dom      The preference domain (for clamping).
      */
-    TrainingEstimator(PreferenceSnapshot snap, ItemScorer baseline, ClampingFunction cf) {
+    TrainingEstimator(PreferenceSnapshot snap, ItemScorer baseline, PreferenceDomain dom) {
         ratings = snap.getRatings();
-        clamp = cf;
+        domain = dom;
         estimates = new double[ratings.size()];
 
         final LongCollection userIds = snap.getUserIds();
@@ -83,11 +84,15 @@ public final class TrainingEstimator {
      * @param ufvs The user feature values.
      * @param ifvs The item feature values.
      */
-    public void update(double[] ufvs, double[] ifvs) {
+    public void update(AVector ufvs, AVector ifvs) {
         for (IndexedPreference r : CollectionUtils.fast(ratings)) {
-            double est = estimates[r.getIndex()];
-            double offset = ufvs[r.getUserIndex()] * ifvs[r.getItemIndex()];
-            estimates[r.getIndex()] = clamp.apply(r.getUserId(), r.getItemId(), est + offset);
+            int idx = r.getIndex();
+            double est = estimates[idx];
+            est += ufvs.get(r.getUserIndex()) * ifvs.get(r.getItemIndex());
+            if (domain != null) {
+                est = domain.clampValue(est);
+            }
+            estimates[idx] = est;
         }
     }
 }
