@@ -54,7 +54,7 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
 
     @Override
     public TestUserMetricAccumulator makeAccumulator(Attributed algorithm, TTDataSet dataSet) {
-        return new Accum(dataSet.getPreferenceDomain());
+        return new Accum(dataSet.getTrainingData().getPreferenceDomain());
     }
 
     @Override

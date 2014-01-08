@@ -98,6 +98,10 @@ public class PackedDataSource implements DataSource {
         LenskitConfiguration config = new LenskitConfiguration();
         Provider<BinaryRatingDAO> provider = Providers.fromSupplier(packedDao, BinaryRatingDAO.class);
         config.bind(BinaryRatingDAO.class).toProvider(provider);
+        PreferenceDomain dom = getPreferenceDomain();
+        if (dom != null) {
+            config.addComponent(dom);
+        }
         return config;
     }
 

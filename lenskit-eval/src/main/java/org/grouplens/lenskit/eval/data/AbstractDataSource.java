@@ -24,6 +24,8 @@ import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.traintest.CachingDAOProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Base class to help implement data sources.
@@ -36,6 +38,7 @@ public abstract class AbstractDataSource implements DataSource {
     private transient volatile UserEventDAO userEventDAO;
     private transient volatile ItemDAO itemDAO;
     private transient volatile ItemEventDAO itemEventDAO;
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * Default user-event DAO implementation.  If the {@linkplain #getEventDAO() event DAO}
@@ -135,10 +138,12 @@ public abstract class AbstractDataSource implements DataSource {
 
     @Override
     public LenskitConfiguration getConfiguration() {
+        logger.debug("generating configuration for {}", this);
         LenskitConfiguration config = new LenskitConfiguration();
         config.addComponent(getEventDAO());
         PreferenceDomain dom = getPreferenceDomain();
         if (dom != null) {
+            logger.debug("using preference domain {}", dom);
             config.addComponent(dom);
         }
         config.bind(PrefetchingUserDAO.class)

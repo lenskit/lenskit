@@ -45,14 +45,6 @@ public interface TTDataSet {
     String getName();
 
     /**
-     * Get the preference domain for this data set.
-     *
-     * @return The data set preference domain.
-     */
-    @Nullable
-    PreferenceDomain getPreferenceDomain();
-
-    /**
      * Get the data set attributes (used for identification in output).
      *
      * @return A key -> value map of the attributes used to identify this data
