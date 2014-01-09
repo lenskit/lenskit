@@ -37,7 +37,7 @@ import java.util.Iterator;
  * A list of ratings backed by a buffer.  This is not thread-safe.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class BinaryRatingList extends AbstractList<Rating> implements FastCollection<Rating> {
+class BinaryRatingList extends AbstractList<Rating> implements FastCollection<Rating> {
     private final BinaryFormat format;
     private final ByteBuffer buffer;
     private final IntList positions;

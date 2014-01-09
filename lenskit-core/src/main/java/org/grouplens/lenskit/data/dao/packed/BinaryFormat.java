@@ -39,7 +39,7 @@ import java.util.Set;
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class BinaryFormat {
+final class BinaryFormat {
     public static final byte[] HEADER_MAGIC = "LK".getBytes(Charsets.US_ASCII);
     static final int INT_SIZE = 4;
     static final int LONG_SIZE = 8;

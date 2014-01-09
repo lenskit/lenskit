@@ -34,7 +34,7 @@ import java.util.Iterator;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class BinaryUserHistory extends AbstractUserHistory<Rating> implements FastCollection<Rating> {
+class BinaryUserHistory extends AbstractUserHistory<Rating> implements FastCollection<Rating> {
     private final long userId;
     private final BinaryRatingList ratings;
 

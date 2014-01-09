@@ -30,7 +30,7 @@ import java.util.Arrays;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class BinaryHeader {
+class BinaryHeader {
     public static final int HEADER_SIZE = BinaryFormat.INT_SIZE * 4;
 
     private final BinaryFormat format;

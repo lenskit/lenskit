@@ -41,7 +41,7 @@ import java.util.Iterator;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @ThreadSafe
-public class BinaryIndexTable {
+class BinaryIndexTable {
     private static final Logger logger = LoggerFactory.getLogger(BinaryIndexTable.class);
     private final LongKeyDomain keys;
     private final int[] offsets;

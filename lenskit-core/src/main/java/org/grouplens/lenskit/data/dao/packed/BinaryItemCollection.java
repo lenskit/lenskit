@@ -31,7 +31,7 @@ import java.util.Iterator;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class BinaryItemCollection extends AbstractCollection<Rating> implements ItemEventCollection<Rating>, FastCollection<Rating> {
+class BinaryItemCollection extends AbstractCollection<Rating> implements ItemEventCollection<Rating>, FastCollection<Rating> {
     private final long itemId;
     private final BinaryRatingList ratings;
 
