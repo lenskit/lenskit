@@ -105,8 +105,16 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
                           Map<Symbol, ImmutableSparseVector> chanVectors,
                           Map<TypedSymbol<?>, Long2ObjectMap<?>> chans) {
         super(ks, vs);
-        channelVectors = ImmutableMap.copyOf(chanVectors);
-        channels = ImmutableMap.copyOf(chans);
+        if (chanVectors.isEmpty()) {
+            channelVectors = Collections.emptyMap();
+        } else {
+            channelVectors = ImmutableMap.copyOf(chanVectors);
+        }
+        if (chans.isEmpty()) {
+            channels = Collections.emptyMap();
+        } else {
+            channels = ImmutableMap.copyOf(chans);
+        }
     }
 
     @Override
