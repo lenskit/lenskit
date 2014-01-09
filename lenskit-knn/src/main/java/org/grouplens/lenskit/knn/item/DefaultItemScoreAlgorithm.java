@@ -62,7 +62,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
         Predicate<ScoredId> usable = new VectorKeyPredicate(userData);
 
         // Create a channel for recording the neighborhoodsize
-        scores.getOrAddChannelVector(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL);
+        MutableSparseVector sizeChannel = scores.getOrAddChannelVector(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL);
         // for each item, compute its prediction
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
@@ -74,11 +74,12 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
             int size = Iterables.size(CollectionUtils.fast(neighbors));
 
             // compute score & place in vector
-            final double score = scorer.score(neighbors, userData);
-            scores.getChannelVector(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL)
-                  .set(e.getKey(), size); // set size even if no score
-            if (!Double.isNaN(score)) {
-                scores.set(e, score);
+            final ScoredId score = scorer.score(item, neighbors, userData);
+            if (score != null) {
+                scores.set(e, score.getScore());
+                if (score.hasUnboxedChannel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL)) {
+                    sizeChannel.set(e, score.getUnboxedChannelValue(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL));
+                }
             }
         }
     }

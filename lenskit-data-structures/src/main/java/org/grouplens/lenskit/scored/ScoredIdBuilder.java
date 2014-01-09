@@ -82,7 +82,7 @@ public class ScoredIdBuilder implements Builder<ScoredId> {
     public ScoredIdBuilder(long id, double score) {
         this.id = id;
         this.score = score;
-        channels = Lists.newLinkedList();
+        channels = Lists.newArrayList();
     }
 
     /**

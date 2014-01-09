@@ -57,7 +57,11 @@ final class ScoredIdImpl extends AbstractScoredId implements Serializable {
     public ScoredIdImpl(long id, double score, @Nonnull Collection<? extends SymbolValue<?>> chans) {
         this.id = id;
         this.score = score;
-        channels = ImmutableList.copyOf(chans);
+        if (chans.isEmpty()) {
+            channels = Collections.emptyList();
+        } else {
+            channels = ImmutableList.copyOf(chans);
+        }
     }
 
     @Override

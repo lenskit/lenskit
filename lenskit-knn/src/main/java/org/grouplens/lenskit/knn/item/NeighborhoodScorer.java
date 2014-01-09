@@ -42,11 +42,13 @@ public interface NeighborhoodScorer {
      * scores.
      *
      *
+     *
+     * @param item
      * @param neighbors A vector of neighbors with similarity measures.
      * @param scores    A vector of item scores. It should contain a score for
      *                  every item in {@var neighbors}.
-     * @return An accumulated score from the neighbors, or {@link Double#NaN} if
+     * @return An accumulated score from the neighbors, or {@code null} if
      *         no score could be computed.
      */
-    double score(Iterable<ScoredId> neighbors, SparseVector scores);
+    ScoredId score(long item, Iterable<ScoredId> neighbors, SparseVector scores);
 }
