@@ -87,8 +87,8 @@ public class UserUserItemScorer extends AbstractItemScorer {
         if (history == null) {
             history = History.forUser(user);
         }
-        logger.trace("Predicting for user {} with {} events",
-                     user, history.size());
+        logger.debug("Predicting for {} items for user {} with {} events",
+                     scores.size(), user, history.size());
 
         Long2ObjectMap<? extends Collection<Neighbor>> neighborhoods =
                 neighborhoodFinder.findNeighbors(history, scores.keyDomain());

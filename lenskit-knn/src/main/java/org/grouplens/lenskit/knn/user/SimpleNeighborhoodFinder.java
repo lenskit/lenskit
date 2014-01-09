@@ -123,7 +123,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         // Find candidate neighbors
         LongSet users = findCandidateNeighbors(user.getUserId(), nratings.keySet(), items);
 
-        logger.trace("Found {} candidate neighbors", users.size());
+        logger.debug("Found {} candidate neighbors", users.size());
 
         LongIterator uiter = users.iterator();
         while (uiter.hasNext()) {
