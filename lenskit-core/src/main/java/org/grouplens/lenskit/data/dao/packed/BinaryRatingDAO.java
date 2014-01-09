@@ -148,7 +148,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     public <E extends Event> Cursor<ItemEventCollection<E>> streamEventsByItem(Class<E> type) {
         if (type.isAssignableFrom(Rating.class)) {
             // cast is safe, Rating extends E
-            return (Cursor) Cursors.wrap(Collections2.transform(userTable.entries(),
+            return (Cursor) Cursors.wrap(Collections2.transform(itemTable.entries(),
                                                                 new ItemEntryTransformer()));
         } else {
             return Cursors.empty();
