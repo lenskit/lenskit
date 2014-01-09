@@ -20,10 +20,16 @@
  */
 package org.grouplens.lenskit.cli;
 
+import com.google.common.collect.Lists;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.*;
 import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.lenskit.config.ConfigurationLoader;
+import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.RecommenderConfigurationException;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
@@ -117,5 +123,21 @@ public class ScriptEnvironment {
             URL[] urls = classpath.toArray(new URL[classpath.size()]);
             return new URLClassLoader(urls, parent);
         }
+    }
+
+    public List<LenskitConfiguration> loadConfigurations(List<File> files) throws IOException, RecommenderConfigurationException {
+        if (files == null || files.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        ConfigurationLoader loader = new ConfigurationLoader(getClassLoader());
+        // FIXME Make properties available
+
+        List<LenskitConfiguration> configs = Lists.newArrayListWithCapacity(files.size());
+        for (File file: files) {
+            configs.add(loader.load(file));
+        }
+
+        return configs;
     }
 }

@@ -21,15 +21,13 @@
 package org.grouplens.lenskit.cli;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.config.ConfigurationLoader;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.core.ModelDisposition;
-import org.grouplens.lenskit.core.RecommenderConfigurationException;
+import org.grouplens.lenskit.core.*;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +36,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
+import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -56,7 +56,7 @@ public class TrainModel implements Command {
         input = new InputData(opts);
     }
 
-    public File getConfigFile() {
+    public List<File> getConfigFiles() {
         return options.get("config");
     }
 
@@ -64,24 +64,18 @@ public class TrainModel implements Command {
         return options.get("output_file");
     }
 
-    private LenskitConfiguration loadConfiguration() throws IOException, RecommenderConfigurationException {
-        File file = getConfigFile();
-        logger.info("loading configuration from {}", file);
-        ConfigurationLoader loader = new ConfigurationLoader(environment.getClassLoader());
-        return loader.load(file);
-    }
-
     @Override
     public void execute() throws IOException, RecommenderBuildException {
-        LenskitConfiguration config = loadConfiguration();
         LenskitConfiguration dataConfig = input.getConfiguration();
+        LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
+        for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
+            builder.addConfiguration(config);
+        }
+        builder.addConfiguration(dataConfig, ModelDisposition.EXCLUDED);
+
         Stopwatch timer = new Stopwatch();
         timer.start();
-        LenskitRecommenderEngine engine =
-                LenskitRecommenderEngine.newBuilder()
-                                        .addConfiguration(config)
-                                        .addConfiguration(dataConfig, ModelDisposition.EXCLUDED)
-                                        .build();
+        LenskitRecommenderEngine engine = builder.build();
         timer.stop();
         logger.info("built model in {}", timer);
         File output = getOutputFile();
@@ -110,6 +104,7 @@ public class TrainModel implements Command {
               .help("write trained model to FILE");
         parser.addArgument("config")
               .type(File.class)
+              .nargs("+")
               .metavar("CONFIG")
               .help("load algorithm configuration from CONFIG");
     }

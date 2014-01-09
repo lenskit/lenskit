@@ -94,7 +94,7 @@ public class Recommend implements Command {
         if (modelFile == null) {
             logger.info("creating fresh recommender");
             LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
-            for (LenskitConfiguration config: loadConfigurations()) {
+            for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
                 builder.addConfiguration(config);
             }
             builder.addConfiguration(input.getConfiguration());
@@ -107,7 +107,7 @@ public class Recommend implements Command {
         } else {
             logger.info("loading recommender from {}", modelFile);
             LenskitRecommenderEngineLoader loader = LenskitRecommenderEngine.newLoader();
-            for (LenskitConfiguration config: loadConfigurations()) {
+            for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
                 loader.addConfiguration(config);
             }
             loader.addConfiguration(input.getConfiguration());
@@ -129,21 +129,8 @@ public class Recommend implements Command {
         }
     }
 
-    private List<LenskitConfiguration> loadConfigurations() throws IOException, RecommenderConfigurationException {
-        List<File> files = options.getList("config_file");
-        if (files == null || files.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        ConfigurationLoader loader = new ConfigurationLoader(environment.getClassLoader());
-        // FIXME Make properties available
-
-        List<LenskitConfiguration> configs = Lists.newArrayListWithCapacity(files.size());
-        for (File file: files) {
-            configs.add(loader.load(file));
-        }
-
-        return configs;
+    List<File> getConfigFiles() {
+        return options.getList("config_file");
     }
 
     public static void configureArguments(ArgumentParser parser) {
