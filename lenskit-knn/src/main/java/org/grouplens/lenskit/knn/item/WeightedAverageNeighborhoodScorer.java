@@ -26,6 +26,7 @@ import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.vectors.SparseVector;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.Serializable;
 
@@ -37,7 +38,6 @@ import static java.lang.Math.abs;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
-@Singleton
 public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -54,11 +54,7 @@ public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Se
             n += 1;
         }
         if (weight > 0) {
-            return ScoredIds.newBuilder()
-                    .setId(item)
-                    .setScore(sum / weight)
-                    .addChannel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL, n)
-                    .build();
+            return ScoredIds.create(item, sum / weight);
         } else {
             return null;
         }

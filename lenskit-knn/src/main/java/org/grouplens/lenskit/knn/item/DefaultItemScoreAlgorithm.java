@@ -21,9 +21,8 @@
 package org.grouplens.lenskit.knn.item;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.core.Shareable;
+import com.google.common.collect.FluentIterable;
+import org.grouplens.lenskit.knn.MinNeighbors;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.scored.ScoredId;
@@ -35,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-import java.io.Serializable;
+import java.util.List;
 
 /**
  * Default item scoring algorithm. It uses up to {@link NeighborhoodSize} neighbors to
@@ -43,16 +42,16 @@ import java.io.Serializable;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@Shareable
-public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializable {
-    private static final long serialVersionUID = 1L;
-
+public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
     private static Logger logger = LoggerFactory.getLogger(DefaultItemScoreAlgorithm.class);
-    private int neighborhoodSize;
+
+    private final int neighborhoodSize;
+    private final int minNeighbors;
 
     @Inject
-    public DefaultItemScoreAlgorithm(@NeighborhoodSize int n) {
+    public DefaultItemScoreAlgorithm(@NeighborhoodSize int n, @MinNeighbors int min) {
         neighborhoodSize = n;
+        minNeighbors = min <= 0 ? 1 : min;
     }
 
     @Override
@@ -68,19 +67,25 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm, Serializab
             final long item = e.getKey();
 
             // find all potential neighbors
-            int limit = neighborhoodSize > 0 ? neighborhoodSize : -1;
-            Iterable<ScoredId> neighbors =
-                    CollectionUtils.fastFilterAndLimit(model.getNeighbors(item), usable, limit);
-            int size = Iterables.size(CollectionUtils.fast(neighbors));
+            FluentIterable<ScoredId> nbrIter = FluentIterable.from(model.getNeighbors(item))
+                                                             .filter(usable);
+            if (neighborhoodSize > 0) {
+                nbrIter = nbrIter.limit(neighborhoodSize);
+            }
+            List<ScoredId> neighbors = nbrIter.toList();
 
             // compute score & place in vector
-            final ScoredId score = scorer.score(item, neighbors, userData);
+            ScoredId score = null;
+
+            if (neighbors.size() >= minNeighbors) {
+                score = scorer.score(item, neighbors, userData);
+            }
+
             if (score != null) {
                 scores.set(e, score.getScore());
-                if (score.hasUnboxedChannel(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL)) {
-                    sizeChannel.set(e, score.getUnboxedChannelValue(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL));
-                }
             }
+
+            sizeChannel.set(e, neighbors.size());
         }
     }
 
