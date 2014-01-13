@@ -27,13 +27,17 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.config.ConfigurationLoader;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -44,12 +48,14 @@ import java.util.Properties;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ScriptEnvironment {
+    private static final Logger logger = LoggerFactory.getLogger(ScriptEnvironment.class);
+
     public static void configureArguments(ArgumentParser parser) {
         ArgumentGroup group = parser.addArgumentGroup("script environment")
                                     .description("Options for interpreting Groovy scripts.");
         group.addArgument("-C", "--classpath")
              .dest("classpath")
-             .type(URL.class)
+             .type(URI.class)
              .action(Arguments.append())
              .metavar("URL")
              .help("add URL (jar or dir) to script classpath");
@@ -73,7 +79,7 @@ public class ScriptEnvironment {
     }
 
     private final Properties properties;
-    private final List<URL> classpath;
+    private final List<URI> classpath;
 
     public ScriptEnvironment(Namespace ns) {
         properties = new Properties();
@@ -84,7 +90,7 @@ public class ScriptEnvironment {
             }
         }
 
-        List<URL> cp = ns.getList("classpath");
+        List<URI> cp = ns.getList("classpath");
         if (cp != null) {
             classpath = cp;
         } else {
@@ -104,7 +110,7 @@ public class ScriptEnvironment {
      * Get the classpath.
      * @return The classpath.
      */
-    public List<URL> getClasspath() {
+    public List<URI> getClasspath() {
         return classpath;
     }
 
@@ -120,7 +126,18 @@ public class ScriptEnvironment {
         if (classpath.isEmpty()) {
             return parent;
         } else {
-            URL[] urls = classpath.toArray(new URL[classpath.size()]);
+            URL[] urls = new URL[classpath.size()];
+            URI base = new File(".").toURI();
+            int i = 0;
+            for (URI uri: classpath) {
+                try {
+                    urls[i] = base.resolve(uri).toURL();
+                    logger.info("added to classpath: {}", urls[i]);
+                } catch (MalformedURLException e) {
+                    throw new IllegalArgumentException("Invalid URL", e);
+                }
+                i += 1;
+            }
             return new URLClassLoader(urls, parent);
         }
     }

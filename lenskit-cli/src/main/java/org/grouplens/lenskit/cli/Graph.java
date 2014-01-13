@@ -78,12 +78,9 @@ public class Graph implements Command {
     }
 
     private DAGNode<CachedSatisfaction,DesireChain> makeGraph() throws IOException, RecommenderConfigurationException {
-        ConfigurationLoader loader = new ConfigurationLoader(environment.getClassLoader());
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
         rgb.addConfiguration(makeDataConfig());
-        for (File file: getConfigFiles()) {
-            logger.info("loading configuration from {}", file);
-            LenskitConfiguration config = loader.load(file);
+        for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
             rgb.addConfiguration(config);
         }
 
