@@ -22,7 +22,9 @@ package org.grouplens.lenskit.config;
 
 import groovy.lang.Closure;
 import org.grouplens.grapht.Binding;
+import org.grouplens.grapht.Context;
 import org.grouplens.grapht.Module;
+import org.grouplens.grapht.spi.context.ContextPattern;
 import org.grouplens.lenskit.inject.AbstractConfigContext;
 import org.grouplens.lenskit.core.LenskitBinding;
 import org.grouplens.lenskit.core.LenskitConfigContext;
@@ -202,6 +204,15 @@ public class BindingDSL extends AbstractConfigContext {
     public LenskitConfigContext within(@Nullable Annotation qualifier,
                                        Class<?> type, Closure<?> block) {
         return configure(within(qualifier, type), block);
+    }
+
+    @Override
+    public LenskitConfigContext matching(ContextPattern pattern) {
+        return context.matching(pattern);
+    }
+
+    public Context matching(ContextPattern pattern, Closure<?> block) {
+        return configure(matching(pattern), block);
     }
 
     /** @see LenskitConfigContext#at(Class) */

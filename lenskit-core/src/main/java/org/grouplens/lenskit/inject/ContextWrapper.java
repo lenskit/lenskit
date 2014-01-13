@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.inject;
 
 import org.grouplens.grapht.Context;
+import org.grouplens.grapht.spi.context.ContextPattern;
 import org.grouplens.lenskit.core.LenskitBinding;
 import org.grouplens.lenskit.core.LenskitConfigContext;
 
@@ -62,6 +63,11 @@ class ContextWrapper extends AbstractConfigContext {
     @Override
     public LenskitConfigContext within(@Nullable Annotation qualifier, Class<?> type) {
         return wrapContext(base.within(qualifier, type));
+    }
+
+    @Override
+    public LenskitConfigContext matching(ContextPattern pattern) {
+        return wrapContext(base.matching(pattern));
     }
 
     @Override

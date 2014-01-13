@@ -22,6 +22,7 @@ package org.grouplens.lenskit.core;
 
 import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.Context;
+import org.grouplens.grapht.spi.context.ContextPattern;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -101,6 +102,9 @@ public interface LenskitConfigContext extends Context {
 
     @Override
     LenskitConfigContext within(@Nullable Annotation qualifier, Class<?> type);
+
+    @Override
+    LenskitConfigContext matching(ContextPattern pattern);
 
     @Override
     LenskitConfigContext at(Class<?> type);

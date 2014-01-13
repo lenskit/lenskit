@@ -29,7 +29,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.*;
 import org.grouplens.grapht.spi.CachedSatisfaction;
-import org.grouplens.grapht.spi.ContextMatcher;
+import org.grouplens.grapht.spi.context.ContextMatcher;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.PlaceholderSatisfaction;

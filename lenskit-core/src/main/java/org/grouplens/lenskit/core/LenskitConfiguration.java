@@ -28,6 +28,7 @@ import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.spi.InjectSPI;
+import org.grouplens.grapht.spi.context.ContextPattern;
 import org.grouplens.grapht.spi.reflect.ReflectionInjectSPI;
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.inject.AbstractConfigContext;
@@ -118,6 +119,11 @@ public class LenskitConfiguration extends AbstractConfigContext {
     @Override
     public LenskitConfigContext within(Annotation qualifier, Class<?> type) {
         return wrapContext(bindings.getRootContext().within(qualifier, type));
+    }
+
+    @Override
+    public LenskitConfigContext matching(ContextPattern pattern) {
+        return wrapContext(bindings.getRootContext().matching(pattern));
     }
 
     @Override
