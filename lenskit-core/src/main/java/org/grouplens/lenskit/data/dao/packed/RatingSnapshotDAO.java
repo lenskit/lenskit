@@ -44,6 +44,8 @@ import java.util.List;
 
 /**
  * A DAO that has a snapshot of the rating data.  This snapshot is stored in a {@link BinaryRatingDAO}.
+ * The file is defined with two parameters: the directory {@code lenskit.model.dir}, and the file
+ * defined by {@link RatingSnapshotPath}.
  *
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
