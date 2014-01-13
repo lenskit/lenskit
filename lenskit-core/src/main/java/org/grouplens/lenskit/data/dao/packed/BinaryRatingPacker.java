@@ -149,7 +149,9 @@ public class BinaryRatingPacker implements Closeable {
             writeIndex(userMap);
             writeIndex(itemMap);
             writeHeader();
+            channel.force(true);
         } finally {
+            channel.close();
             output.close();
         }
     }

@@ -22,6 +22,7 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.grapht.annotation.DefaultBoolean;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.grapht.annotation.DefaultString;
 import org.grouplens.lenskit.core.Parameter;
@@ -42,6 +43,7 @@ import javax.inject.Provider;
 import javax.inject.Qualifier;
 import java.io.*;
 import java.lang.annotation.*;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -190,31 +192,56 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
     @Target({ElementType.PARAMETER, ElementType.METHOD})
     public static @interface RatingSnapshotPath {}
 
+    @Documented
+    @Qualifier
+    @Parameter(Boolean.class)
+    @DefaultBoolean(true)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.PARAMETER, ElementType.METHOD})
+    public static @interface UseTimestamps {}
+
     public static class Builder implements Provider<RatingSnapshotDAO> {
         private final String path;
         private final EventDAO dao;
+        private final boolean useTimestamps;
 
         @Inject
         public Builder(@RatingSnapshotPath String path,
-                       @Transient EventDAO dao) {
+                       @Transient EventDAO dao,
+                       @UseTimestamps boolean ts) {
             this.path = path;
             this.dao = dao;
+            useTimestamps = ts;
         }
 
         @Override
         public RatingSnapshotDAO get() {
             File file = getSnapshotFile(path);
-            logger.debug("packing ratings to {}", file);
+            File tmpFile = new File(file.getParentFile(), file.getName() + ".tmp");
+            logger.debug("packing ratings to {}", tmpFile);
+
+            EnumSet<BinaryFormatFlag> flags = EnumSet.noneOf(BinaryFormatFlag.class);
+            SortOrder order = SortOrder.ANY;
+            if (useTimestamps) {
+                flags.add(BinaryFormatFlag.TIMESTAMPS);
+                order = SortOrder.TIMESTAMP;
+            }
+
             Closer closer = Closer.create();
             try {
                 try {
-                    BinaryRatingPacker packer = closer.register(BinaryRatingPacker.open(file, BinaryFormatFlag.TIMESTAMPS));
-                    Cursor<Rating> ratings = closer.register(dao.streamEvents(Rating.class, SortOrder.TIMESTAMP));
+                    BinaryRatingPacker packer = closer.register(BinaryRatingPacker.open(tmpFile, flags));
+                    Cursor<Rating> ratings = closer.register(dao.streamEvents(Rating.class, order));
                     packer.writeRatings(ratings);
                 } catch (Throwable th) {
                     throw closer.rethrow(th);
                 } finally {
                     closer.close();
+                }
+                logger.debug("renaming {} -> {}", tmpFile, file);
+                if (!tmpFile.renameTo(file)) {
+                    logger.error("cannot rename {} to {}", tmpFile, file);
+                    throw new RuntimeException("error renaming packed file");
                 }
                 return new RatingSnapshotDAO(path, new BinaryRatingDAO(file));
             } catch (IOException ex) {
