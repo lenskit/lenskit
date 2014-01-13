@@ -22,6 +22,7 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.grapht.annotation.DefaultString;
 import org.grouplens.lenskit.core.Parameter;
 import org.grouplens.lenskit.core.Shareable;
@@ -36,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Qualifier;
 import java.io.*;
@@ -51,6 +53,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
+@DefaultProvider(RatingSnapshotDAO.Builder.class)
 public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, UserDAO, ItemDAO, Serializable {
     private static final long serialVersionUID = -1L;
     private static final Logger logger = LoggerFactory.getLogger(RatingSnapshotDAO.class);
@@ -191,6 +194,7 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
         private final String path;
         private final EventDAO dao;
 
+        @Inject
         public Builder(@RatingSnapshotPath String path,
                        @Transient EventDAO dao) {
             this.path = path;
