@@ -107,7 +107,7 @@ public class Graph implements Command {
         parser.addArgument("-o", "--output-file")
               .type(File.class)
               .metavar("FILE")
-              .setDefault("recommender.dot")
+              .setDefault(new File("recommender.dot"))
               .help("write recommender diagram to FILE");
         parser.addArgument("--domain")
               .metavar("DOMAIN")
