@@ -24,11 +24,13 @@ import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.History;
-import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.knn.MinNeighbors;
+import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -50,16 +52,22 @@ public class UserUserItemScorer extends AbstractItemScorer {
     private static final double MINIMUM_SIMILARITY = 0.001;
     private static final Logger logger = LoggerFactory.getLogger(UserUserItemScorer.class);
 
+    public static final Symbol NEIGHBORHOOD_SIZE_SYMBOL =
+            Symbol.of("org.grouplens.lenskit.knn.user.NeighborhoodSize");
+
     private final UserEventDAO dao;
     protected final NeighborhoodFinder neighborhoodFinder;
     protected final UserVectorNormalizer normalizer;
+    private final int minNeighborCount;
 
     @Inject
     public UserUserItemScorer(UserEventDAO dao, NeighborhoodFinder nbrf,
-                              UserVectorNormalizer norm) {
+                              UserVectorNormalizer norm,
+                              @MinNeighbors int minNbrs) {
         this.dao = dao;
         neighborhoodFinder = nbrf;
         normalizer = norm;
+        minNeighborCount = minNbrs;
     }
 
     /**
@@ -95,24 +103,31 @@ public class UserUserItemScorer extends AbstractItemScorer {
         Long2ObjectMap<SparseVector> normedUsers =
                 normalizeNeighborRatings(neighborhoods.values());
 
+        MutableSparseVector sizeChan = scores.addChannelVector(NEIGHBORHOOD_SIZE_SYMBOL);
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
             double sum = 0;
             double weight = 0;
+            int count = 0;
             Collection<Neighbor> nbrs = neighborhoods.get(item);
             if (nbrs != null) {
                 for (Neighbor n : nbrs) {
                     weight += abs(n.similarity);
                     sum += n.similarity * normedUsers.get(n.user).get(item);
+                    count += 1;
                 }
             }
 
-            if (weight >= MINIMUM_SIMILARITY) {
-                logger.trace("Total neighbor weight for item {} is {}", item, weight);
+            if (count >= minNeighborCount && weight >= MINIMUM_SIMILARITY) {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Total neighbor weight for item {} is {} from {} neighbors",
+                                 item, weight, count);
+                }
                 scores.set(e, sum / weight);
             } else {
                 scores.unset(e);
             }
+            sizeChan.set(e, count);
         }
 
         // Denormalize and return the results

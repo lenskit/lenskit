@@ -21,15 +21,14 @@
 package org.grouplens.lenskit.cli;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.config.ConfigurationLoader;
 import org.grouplens.lenskit.core.*;
 import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +37,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
@@ -76,13 +74,18 @@ public class Recommend implements Command {
         }
 
         logger.info("recommending for {} users", users.size());
+        Symbol pchan = getPrintChannel();
         Stopwatch timer = new Stopwatch();
         timer.start();
         for (long user: users) {
             List<ScoredId> recs = irec.recommend(user, n);
             System.out.format("recommendations for user %d:\n", user);
             for (ScoredId item: recs) {
-                System.out.format("  %d: %.3f\n", item.getId(), item.getScore());
+                System.out.format("  %d: %.3f", item.getId(), item.getScore());
+                if (pchan != null && item.hasUnboxedChannel(pchan)) {
+                    System.out.format(" (%f)", item.getUnboxedChannelValue(pchan));
+                }
+                System.out.println();
             }
         }
         timer.stop();
@@ -133,6 +136,15 @@ public class Recommend implements Command {
         return options.getList("config_file");
     }
 
+    Symbol getPrintChannel() {
+        String name = options.get("print_channel");
+        if (name == null) {
+            return null;
+        } else {
+            return Symbol.of(name);
+        }
+    }
+
     public static void configureArguments(ArgumentParser parser) {
         InputData.configureArguments(parser);
         ScriptEnvironment.configureArguments(parser);
@@ -150,6 +162,9 @@ public class Recommend implements Command {
               .type(File.class)
               .metavar("FILE")
               .help("load model from FILE");
+        parser.addArgument("--print-channel")
+              .metavar("CHAN")
+              .help("also print value from CHAN");
         parser.addArgument("users")
               .type(Long.class)
               .nargs("+")
