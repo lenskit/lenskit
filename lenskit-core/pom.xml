@@ -79,23 +79,11 @@
                 <phase>generate-resources</phase>
                 <configuration>
                   <target>
-                    <script src="${basedir}/src/build/git-log.groovy" language="groovy"/>
+                    <ant antfile="${basedir}/src/build/git-log.ant" target="revlist"/>
                   </target>
                 </configuration>
               </execution>
             </executions>
-            <dependencies>
-              <dependency>
-                <groupId>org.codehaus.groovy</groupId>
-                <artifactId>groovy-all</artifactId>
-                <version>${groovy.version}</version>
-              </dependency>
-              <dependency>
-                <groupId>org.eclipse.jgit</groupId>
-                <artifactId>org.eclipse.jgit</artifactId>
-                <version>3.1.0.201310021548-r</version>
-              </dependency>
-            </dependencies>
           </plugin>
 
           <plugin>

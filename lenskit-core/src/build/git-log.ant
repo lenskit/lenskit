@@ -1,0 +1,22 @@
+<project>
+  <property environment="env"/>
+  <property name="output.dir"
+            value="${project.build.directory}/generated-resources/build-info"/>
+
+  <target name="fetch" if="env.CI">
+    <echo message="In CI, fetching revisions"/>
+    <exec executable="git">
+      <arg value="fetch"/>
+      <arg value="origin"/>
+    </exec>
+  </target>
+
+  <target name="revlist" depends="fetch">
+    <mkdir dir="${output.dir}"/>
+    <exec output="${output.dir}/git-commits.lst"
+          executable="git">
+      <arg value="log"/>
+      <arg value="--format=format:%H"/>
+    </exec>
+  </target>
+</project>
