@@ -375,10 +375,10 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             while (data.hasRemaining()) {
                 final int n = Math.min(4096, data.remaining());
                 int read = in.read(buf, 0, n);
-                if (read < n) {
+                if (read < 0) {
                     throw new InvalidObjectException("unexpected EOF");
                 }
-                data.put(buf, 0, n);
+                data.put(buf, 0, read);
             }
             data.clear();
             ratingData = data;

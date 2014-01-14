@@ -34,10 +34,11 @@ import org.grouplens.lenskit.config.ConfigHelpers
 import org.grouplens.lenskit.core.LenskitRecommender
 import org.grouplens.lenskit.core.LenskitRecommenderEngine
 import org.grouplens.lenskit.core.ModelDisposition
-import org.grouplens.lenskit.data.dao.EventDAO
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
+import org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
+import org.grouplens.lenskit.transform.normalize.VectorNormalizer
 import org.grouplens.lenskit.vectors.similarity.CosineVectorSimilarity
 import org.grouplens.lenskit.vectors.similarity.VectorSimilarity
 import org.junit.Test
@@ -92,5 +93,58 @@ public class UserUserBuildSerializeTest extends ML100KTestSuite {
         assertThat(pred, instanceOf(SimpleRatingPredictor.class))
         assertThat(((SimpleRatingPredictor) pred).getScorer(),
                    sameInstance(rec.getItemScorer()))
+    }
+
+    @Test
+    public void testBuildWithPackedRatings() throws RecommenderBuildException, IOException {
+        def config = ConfigHelpers.load {
+            bind ItemScorer to UserUserItemScorer
+            within (UserVectorSimilarity) {
+                bind VectorSimilarity to CosineVectorSimilarity
+            }
+            within (UserVectorNormalizer) {
+                bind VectorNormalizer to MeanCenteringVectorNormalizer
+            }
+            bind (BaselineScorer,ItemScorer) to UserMeanItemScorer
+            bind (UserMeanBaseline, ItemMeanRatingItemScorer) to ItemMeanRatingItemScorer
+            bind NeighborhoodFinder to SnapshotNeighborhoodFinder
+        }
+
+        LenskitRecommenderEngine engine =
+            LenskitRecommenderEngine.newBuilder()
+                                    .addConfiguration(config)
+                                    .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
+                                    .build()
+        assertThat(engine, notNullValue())
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream()
+        engine.write(out)
+        byte[] bytes = out.toByteArray()
+
+        ByteArrayInputStream input = new ByteArrayInputStream(bytes)
+        LenskitRecommenderEngine loaded =
+            LenskitRecommenderEngine.newLoader()
+                                    .addConfiguration(daoConfig)
+                                    .load(input)
+        assertThat(loaded, notNullValue())
+
+        LenskitRecommender rec = loaded.createRecommender()
+        assertThat(rec.getItemScorer(),
+                   instanceOf(UserUserItemScorer.class))
+        ItemRecommender recommender = rec.getItemRecommender()
+        assertThat(recommender, instanceOf(TopNItemRecommender.class))
+        assertThat(((TopNItemRecommender) recommender).getScorer(),
+                   sameInstance(rec.getItemScorer()))
+        RatingPredictor pred = rec.getRatingPredictor()
+        assertThat(pred, instanceOf(SimpleRatingPredictor.class))
+        assertThat(((SimpleRatingPredictor) pred).getScorer(),
+                   sameInstance(rec.getItemScorer()))
+
+
+        UserUserItemScorer is = rec.itemScorer as UserUserItemScorer
+        assertThat is.neighborhoodFinder, instanceOf(SnapshotNeighborhoodFinder)
+        def rec2 = loaded.createRecommender()
+        assertThat((rec2.itemScorer as UserUserItemScorer).neighborhoodFinder,
+                   sameInstance(is.neighborhoodFinder))
     }
 }
