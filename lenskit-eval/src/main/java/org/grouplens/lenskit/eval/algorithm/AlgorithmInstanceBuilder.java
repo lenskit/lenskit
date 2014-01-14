@@ -184,8 +184,9 @@ public class AlgorithmInstanceBuilder implements Builder<AlgorithmInstance> {
     public AlgorithmInstance build() {
         AlgorithmInstance instance = new AlgorithmInstance(getName(), config, attributes, preload);
         if (project != null) {
-            logger.warn("no project set");
             instance.setRandom(project.getRandom());
+        } else {
+            logger.warn("no project set");
         }
         return instance;
     }
