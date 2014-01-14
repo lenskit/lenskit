@@ -7,6 +7,7 @@
     <echo message="In CI, fetching revisions"/>
     <exec executable="git">
       <arg value="fetch"/>
+      <arg value="--depth=10000"/>
       <arg value="origin"/>
     </exec>
   </target>
