@@ -25,6 +25,7 @@ import groovy.lang.DelegatesTo;
 import groovy.util.AntBuilder;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.Task;
+import org.grouplens.lenskit.eval.EvalAntTask;
 
 /**
  * Delegate to build a target.
@@ -53,8 +54,9 @@ public class TargetDelegate {
 
     }
 
-    public void perform(Closure<?> cl) {
-        GroovyActionTask task = new GroovyActionTask(cl);
+    public <K> void perform(Closure<K> cl) {
+        GroovyActionTask<K> evalTask = new GroovyActionTask(cl);
+        EvalAntTask task = new EvalAntTask(evalTask);
         task.setProject(target.getProject());
         target.addTask(task);
     }
