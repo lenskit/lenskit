@@ -76,7 +76,8 @@ public class EvalTarget extends Target implements ListenableFuture<Object> {
                             returnValue.setException(ex.getCause());
                         } catch (InterruptedException e) {
                             logger.warn("{}: task future get() was interrupted", getName());
-                            /* try again */
+                            returnValue.setException(e);
+                            throw new BuildException("Build task interrupted", e);
                         }
                     }
                 }
