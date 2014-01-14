@@ -82,6 +82,10 @@ Several algorithms have been improved in this release.
     previously changed this threshold, you need to qualify your threshold implementation (*not*
     value) with `@ItemSimilarityThreshold`.
 
+-   Added `ItemwizeBuildContextProvider` that builds up the item-item build context without
+    transposing the ratings matrix (#issue(481)).  If your rating normalization is per-item instead
+    of per-user, this allows item-item builds to be more efficient.
+
 ## Evaluator
 
 -   The evaluator now supports loading algorithms from config files in both train-test
