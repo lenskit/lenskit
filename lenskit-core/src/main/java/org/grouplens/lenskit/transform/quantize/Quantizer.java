@@ -20,14 +20,17 @@
  */
 package org.grouplens.lenskit.transform.quantize;
 
+import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.vectors.ImmutableVec;
 
 /**
  * Quantize real values into discrete values. Used to do things like map floating point
- * ratings or predictions to discrete rating values.
+ * ratings or predictions to discrete rating values.  By default, if there is a preference
+ * domain available, a {@link PreferenceDomainQuantizer} will be used to implement this interface.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@DefaultProvider(PreferenceDomainQuantizer.AutoProvider.class)
 public interface Quantizer {
     /**
      * Get the possible values into which this quantizer will map input values. These
