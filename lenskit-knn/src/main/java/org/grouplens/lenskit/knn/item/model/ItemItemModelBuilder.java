@@ -28,6 +28,7 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
+import org.grouplens.lenskit.knn.item.ItemSimilarityThreshold;
 import org.grouplens.lenskit.knn.item.ModelSize;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.transform.threshold.Threshold;
@@ -65,7 +66,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
     @Inject
     public ItemItemModelBuilder(@Transient ItemSimilarity similarity,
                                 @Transient ItemItemBuildContext context,
-                                @Transient Threshold thresh,
+                                @Transient @ItemSimilarityThreshold Threshold thresh,
                                 @Transient NeighborIterationStrategy nbrStrat,
                                 @ModelSize int size) {
         itemSimilarity = similarity;

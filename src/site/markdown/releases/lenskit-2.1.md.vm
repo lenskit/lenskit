@@ -56,7 +56,15 @@ distribution of LensKit.
 
 ## Algorithms
 
+Several algorithms have been improved in this release.
+
+### User-user CF
+
 -   Updated user-user CF to be simpler & make better use of new DAOs (#issue(356)).
+
+-   Significantly sped up user-user CF.
+
+### Item-item CF
 
 -   Refactored item-item model build:
 
@@ -67,7 +75,9 @@ distribution of LensKit.
 
     - Better logging of the item-item model build process.
 
--   Significantly sped up user-user CF.
+-   **Configuration change**: qualified `ItemItemModelBuilder`'s dependency on a threshold.  If you
+    previously changed this threshold, you need to qualify your threshold implementation (*not*
+    value) with `@ItemSimilarityThreshold`.
 
 ## Evaluator
 
