@@ -293,9 +293,9 @@ class TrainTestTaskTest {
 
     @Test
     public void testMergedGraph() {
-        def scorers = Sets.newIdentityHashSet()
-        def itemMeanScorers = Sets.newIdentityHashSet()
-        def userMeanScorers = Sets.newIdentityHashSet()
+        def scorers = Collections.synchronizedSet Sets.newIdentityHashSet()
+        def itemMeanScorers = Collections.synchronizedSet Sets.newIdentityHashSet()
+        def userMeanScorers = Collections.synchronizedSet Sets.newIdentityHashSet()
         eval {
             dataset {
                 train "$folder.root.absolutePath/ratings.csv"
@@ -366,9 +366,9 @@ class TrainTestTaskTest {
 
     @Test
     public void testSeparatedGraph() {
-        def scorers = Sets.newIdentityHashSet()
-        def itemMeanScorers = Sets.newIdentityHashSet()
-        def userMeanScorers = Sets.newIdentityHashSet()
+        def scorers = Collections.synchronizedSet Sets.newIdentityHashSet()
+        def itemMeanScorers = Collections.synchronizedSet Sets.newIdentityHashSet()
+        def userMeanScorers = Collections.synchronizedSet Sets.newIdentityHashSet()
         eval {
             dataset {
                 train "$folder.root.absolutePath/ratings.csv"
