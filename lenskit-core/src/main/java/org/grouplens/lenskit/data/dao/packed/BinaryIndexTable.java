@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.concurrent.ThreadSafe;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Collection;
@@ -43,6 +43,7 @@ import java.util.Iterator;
  */
 @ThreadSafe
 class BinaryIndexTable implements Serializable {
+    private static final long serialVersionUID = -1L;
     private static final Logger logger = LoggerFactory.getLogger(BinaryIndexTable.class);
     private final LongKeyDomain keys;
     private final int[] offsets;
@@ -50,6 +51,8 @@ class BinaryIndexTable implements Serializable {
     private final IntBuffer buffer;
 
     private BinaryIndexTable(LongKeyDomain keytbl, int[] offtbl, int[] sztbl, IntBuffer buf) {
+        assert offtbl.length == keytbl.domainSize();
+        assert sztbl.length == keytbl.domainSize();
         keys = keytbl;
         offsets = offtbl;
         sizes = sztbl;
@@ -123,6 +126,14 @@ class BinaryIndexTable implements Serializable {
         return new EntryCollection();
     }
 
+    private Object writeReplace() throws ObjectStreamException {
+        return new SerialProxy(keys, offsets, sizes, buffer);
+    }
+
+    private Object readObject(ObjectInputStream in) throws IOException {
+        throw new InvalidObjectException("index table must use serial proxy");
+    }
+
     private class EntryCollection extends CopyingFastCollection<Pair<Long,IntList>> {
         @Override
         public int size() {
@@ -161,6 +172,51 @@ class BinaryIndexTable implements Serializable {
         @Override
         public void remove() {
             throw new UnsupportedOperationException("remove");
+        }
+    }
+
+    private static class SerialProxy implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        private final long[] keys;
+        private final int[] offsets;
+        private final int[] sizes;
+        private transient IntBuffer buffer;
+
+        private SerialProxy(LongKeyDomain keys, int [] offsets, int[] sizes, IntBuffer buffer) {
+            this.keys = keys.activeSetView().toLongArray();
+            this.offsets = offsets;
+            this.sizes = sizes;
+            this.buffer = buffer.duplicate();
+            this.buffer.clear();
+        }
+
+        private void writeObject(ObjectOutputStream out) throws IOException {
+            out.defaultWriteObject();
+            out.writeInt(buffer.limit());
+            while (buffer.hasRemaining()) {
+                out.writeInt(buffer.get());
+            }
+        }
+
+        private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+            in.defaultReadObject();
+            int size = in.readInt();
+            ByteBuffer store = ByteBuffer.allocateDirect(size * 4);
+            buffer = store.asIntBuffer();
+            assert buffer.remaining() == size;
+            while (buffer.hasRemaining()) {
+                buffer.put(in.readInt());
+            }
+            buffer.clear();
+        }
+
+        private Object readResolve() throws ObjectStreamException {
+            if (keys.length != offsets.length || keys.length != sizes.length) {
+                throw new InvalidObjectException("arrays not the same length");
+            }
+            return new BinaryIndexTable(LongKeyDomain.wrap(keys, keys.length, true),
+                                        offsets, sizes, buffer.duplicate());
         }
     }
 }

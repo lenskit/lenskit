@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.event.Event;
@@ -62,14 +63,37 @@ public class BinaryRatingDAOTest {
         File file = folder.newFile("ratings.bin");
         BinaryRatingPacker packer = BinaryRatingPacker.open(file);
         try {
-            packer.writeRating(Ratings.make(42, 105, 3.5));
-            packer.writeRating(Ratings.make(42, 120, 2.5));
-            packer.writeRating(Ratings.make(39, 120, 4.5));
+            populateSimpleDAO(packer);
         } finally {
             packer.close();
         }
 
         BinaryRatingDAO dao = BinaryRatingDAO.open(file);
+        verifySimpleDAO(dao);
+    }
+
+    @Test
+    public void testSerializedDAO() throws IOException {
+        File file = folder.newFile("ratings.bin");
+        BinaryRatingPacker packer = BinaryRatingPacker.open(file);
+        try {
+            populateSimpleDAO(packer);
+        } finally {
+            packer.close();
+        }
+
+        BinaryRatingDAO dao = BinaryRatingDAO.open(file);
+        BinaryRatingDAO clone = SerializationUtils.clone(dao);
+        verifySimpleDAO(clone);
+    }
+
+    private void populateSimpleDAO(BinaryRatingPacker packer) throws IOException {
+        packer.writeRating(Ratings.make(42, 105, 3.5));
+        packer.writeRating(Ratings.make(42, 120, 2.5));
+        packer.writeRating(Ratings.make(39, 120, 4.5));
+    }
+
+    private void verifySimpleDAO(BinaryRatingDAO dao) {
         assertThat(Cursors.makeList(dao.streamEvents()),
                    hasSize(3));
         assertThat(dao.getUserIds(), containsInAnyOrder(42L, 39L));

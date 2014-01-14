@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -45,10 +46,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.List;
@@ -61,7 +59,8 @@ import java.util.List;
  */
 @ThreadSafe
 @DefaultProvider(BinaryRatingDAO.Loader.class)
-public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, UserDAO, ItemDAO {
+public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, UserDAO, ItemDAO, Serializable {
+    private static final long serialVersionUID = -1L;
     private static final Logger logger = LoggerFactory.getLogger(BinaryRatingDAO.class);
 
     private final BinaryHeader header;
@@ -70,6 +69,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     private final BinaryIndexTable itemTable;
 
     private BinaryRatingDAO(BinaryHeader hdr, ByteBuffer data, BinaryIndexTable users, BinaryIndexTable items) {
+        Preconditions.checkArgument(data.position() == 0, "data is not at position 0");
         header = hdr;
         ratingData = data;
         userTable = users;
@@ -111,6 +111,14 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         } finally {
             input.close();
         }
+    }
+
+    private Object writeReplace() {
+        return new SerialProxy(header, ratingData, userTable, itemTable);
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException {
+        throw new InvalidObjectException("attempted to read BinaryRatingDAO without proxy");
     }
 
     private BinaryRatingList getRatingList() {
@@ -303,6 +311,81 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             } catch (IOException e) {
                 throw new RuntimeException("cannot open rating file", e);
             }
+        }
+    }
+
+    private static class SerialProxy implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        private BinaryHeader header;
+        private ByteBuffer ratingData;
+        private BinaryIndexTable userTable;
+        private BinaryIndexTable itemTable;
+
+        public SerialProxy(BinaryHeader hdr, ByteBuffer ratings, BinaryIndexTable users, BinaryIndexTable items) {
+            header = hdr;
+            ratingData = ratings.duplicate();
+            userTable = users;
+            itemTable = items;
+        }
+
+        private void writeObject(ObjectOutputStream out) throws IOException {
+            byte[] headerBytes = new byte[BinaryHeader.HEADER_SIZE];
+            ByteBuffer headBuffer = ByteBuffer.wrap(headerBytes);
+            header.render(headBuffer);
+            headBuffer.flip();
+            out.writeInt(BinaryHeader.HEADER_SIZE);
+            out.write(headerBytes);
+            out.writeObject(userTable);
+            out.writeObject(itemTable);
+
+            // TODO Write this with a compound file
+            ByteBuffer write = ratingData.duplicate();
+            write.clear();
+            out.writeInt(write.limit());
+            byte[] buf = new byte[4096];
+            while (write.hasRemaining()) {
+                final int n = Math.min(4096, write.remaining());
+                write.get(buf, 0, n);
+                out.write(buf, 0, n);
+            }
+        }
+
+        private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+            int headSize = in.readInt();
+            if (headSize != BinaryHeader.HEADER_SIZE) {
+                throw new InvalidObjectException("incorrect header size");
+            }
+            byte[] headerBytes = new byte[BinaryHeader.HEADER_SIZE];
+            int nbs = in.read(headerBytes);
+            if (nbs != headSize) {
+                throw new InvalidObjectException("not enough bytes for header");
+            }
+            ByteBuffer headBuf = ByteBuffer.wrap(headerBytes);
+            header = BinaryHeader.fromHeader(headBuf);
+
+            userTable = (BinaryIndexTable) in.readObject();
+            itemTable = (BinaryIndexTable) in.readObject();
+
+            int dataLength = in.readInt();
+            byte[] buf = new byte[4096];
+            ByteBuffer data = ByteBuffer.allocateDirect(dataLength);
+            assert data.position() == 0;
+            assert data.limit() == dataLength;
+            while (data.hasRemaining()) {
+                final int n = Math.min(4096, data.remaining());
+                int read = in.read(buf, 0, n);
+                if (read < n) {
+                    throw new InvalidObjectException("unexpected EOF");
+                }
+                data.put(buf, 0, n);
+            }
+            data.clear();
+            ratingData = data;
+        }
+
+        private Object readResolve() throws ObjectStreamException {
+            return new BinaryRatingDAO(header, ratingData, userTable, itemTable);
         }
     }
 }
