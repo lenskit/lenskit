@@ -125,7 +125,7 @@ public class InputData {
 
         @Override
         public EventDAO getEventDAO() throws IOException {
-            return new BinaryRatingDAO(inputFile);
+            return BinaryRatingDAO.open(inputFile);
         }
 
         @Override

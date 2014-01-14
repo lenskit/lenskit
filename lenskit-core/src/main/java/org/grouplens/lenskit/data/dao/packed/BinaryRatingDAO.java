@@ -28,6 +28,7 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
@@ -43,11 +44,12 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
+import javax.inject.Provider;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.List;
 
@@ -58,31 +60,54 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @ThreadSafe
+@DefaultProvider(BinaryRatingDAO.Loader.class)
 public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, UserDAO, ItemDAO {
     private static final Logger logger = LoggerFactory.getLogger(BinaryRatingDAO.class);
-    private final File backingFile;
+
     private final BinaryHeader header;
-    private final MappedByteBuffer data;
+    private final ByteBuffer ratingData;
     private final BinaryIndexTable userTable;
     private final BinaryIndexTable itemTable;
 
-    @Inject
-    public BinaryRatingDAO(@BinaryRatingFile File file) throws IOException {
-        backingFile = file;
+    private BinaryRatingDAO(BinaryHeader hdr, ByteBuffer data, BinaryIndexTable users, BinaryIndexTable items) {
+        header = hdr;
+        ratingData = data;
+        userTable = users;
+        itemTable = items;
+    }
+
+    static BinaryRatingDAO fromBuffer(ByteBuffer buffer) {
+        BinaryHeader header = BinaryHeader.fromHeader(buffer);
+        assert buffer.position() >= BinaryHeader.HEADER_SIZE;
+        ByteBuffer dup = buffer.duplicate();
+        dup.limit(header.getRatingDataSize());
+
+        ByteBuffer tableBuffer = buffer.duplicate();
+        tableBuffer.position(tableBuffer.position() + header.getRatingDataSize());
+        BinaryIndexTable utbl = BinaryIndexTable.fromBuffer(header.getUserCount(), tableBuffer);
+        BinaryIndexTable itbl = BinaryIndexTable.fromBuffer(header.getItemCount(), tableBuffer);
+
+        return new BinaryRatingDAO(header, dup.slice(), utbl, itbl);
+    }
+
+    public static BinaryRatingDAO open(File file) throws IOException {
         FileInputStream input = new FileInputStream(file);
         try {
             FileChannel channel = input.getChannel();
-            header = BinaryHeader.read(channel);
+            BinaryHeader header = BinaryHeader.read(channel);
             logger.info("Loading DAO with {} ratings of {} items from {} users",
                         header.getRatingCount(), header.getItemCount(), header.getUserCount());
 
-            data = channel.map(FileChannel.MapMode.READ_ONLY,
-                               channel.position(), channel.size() - channel.position());
+            ByteBuffer data = channel.map(FileChannel.MapMode.READ_ONLY,
+                                          channel.position(), header.getRatingDataSize());
+            channel.position(channel.position() + header.getRatingDataSize());
 
-            ByteBuffer tableBuffer = data.duplicate();
-            tableBuffer.position(header.getRatingDataSize());
-            userTable = BinaryIndexTable.create(header.getUserCount(), tableBuffer);
-            itemTable = BinaryIndexTable.create(header.getItemCount(), tableBuffer);
+            ByteBuffer tableBuffer = channel.map(FileChannel.MapMode.READ_ONLY,
+                                                 channel.position(), channel.size() - channel.position());
+            BinaryIndexTable utbl = BinaryIndexTable.fromBuffer(header.getUserCount(), tableBuffer);
+            BinaryIndexTable itbl = BinaryIndexTable.fromBuffer(header.getItemCount(), tableBuffer);
+
+            return new BinaryRatingDAO(header, data, utbl, itbl);
         } finally {
             input.close();
         }
@@ -93,7 +118,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     }
 
     private BinaryRatingList getRatingList(IntList indexes) {
-        return new BinaryRatingList(header.getFormat(), data, indexes);
+        return new BinaryRatingList(header.getFormat(), ratingData, indexes);
     }
 
     @Override
@@ -258,6 +283,26 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         @Override
         public UserHistory<Rating> apply(@Nullable Pair<Long, IntList> input) {
             return new BinaryUserHistory(input.getLeft(), getRatingList(input.getRight()));
+        }
+    }
+
+    public static class Loader implements Provider<BinaryRatingDAO>, Serializable {
+        public static final long serialVersionUID = 1L;
+
+        private final File dataFile;
+
+        @Inject
+        public Loader(@BinaryRatingFile File file) {
+            dataFile = file;
+        }
+
+        @Override
+        public BinaryRatingDAO get() {
+            try {
+                return open(dataFile);
+            } catch (IOException e) {
+                throw new RuntimeException("cannot open rating file", e);
+            }
         }
     }
 }

@@ -50,7 +50,7 @@ public class BinaryRatingDAOTest {
         BinaryRatingPacker packer = BinaryRatingPacker.open(file);
         packer.close();
 
-        BinaryRatingDAO dao = new BinaryRatingDAO(file);
+        BinaryRatingDAO dao = BinaryRatingDAO.open(file);
         assertThat(Cursors.makeList(dao.streamEvents()),
                    hasSize(0));
         assertThat(dao.getUserIds(), hasSize(0));
@@ -69,7 +69,7 @@ public class BinaryRatingDAOTest {
             packer.close();
         }
 
-        BinaryRatingDAO dao = new BinaryRatingDAO(file);
+        BinaryRatingDAO dao = BinaryRatingDAO.open(file);
         assertThat(Cursors.makeList(dao.streamEvents()),
                    hasSize(3));
         assertThat(dao.getUserIds(), containsInAnyOrder(42L, 39L));

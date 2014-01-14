@@ -175,7 +175,7 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
             File file = getSnapshotFile(path);
             logger.debug("using binary rating DAO in {}", file);
             try {
-                return new RatingSnapshotDAO(path, new BinaryRatingDAO(file));
+                return new RatingSnapshotDAO(path, BinaryRatingDAO.open(file));
             } catch (IOException e) {
                 ObjectStreamException ex = new InvalidObjectException("cannot load rating file");
                 ex.initCause(e);
@@ -243,7 +243,7 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
                     logger.error("cannot rename {} to {}", tmpFile, file);
                     throw new RuntimeException("error renaming packed file");
                 }
-                return new RatingSnapshotDAO(path, new BinaryRatingDAO(file));
+                return new RatingSnapshotDAO(path, BinaryRatingDAO.open(file));
             } catch (IOException ex) {
                 throw new RuntimeException("error packing ratings", ex);
             }

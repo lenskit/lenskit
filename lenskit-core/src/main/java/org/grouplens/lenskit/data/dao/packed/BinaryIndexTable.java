@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.concurrent.ThreadSafe;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Collection;
@@ -41,7 +42,7 @@ import java.util.Iterator;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @ThreadSafe
-class BinaryIndexTable {
+class BinaryIndexTable implements Serializable {
     private static final Logger logger = LoggerFactory.getLogger(BinaryIndexTable.class);
     private final LongKeyDomain keys;
     private final int[] offsets;
@@ -61,7 +62,7 @@ class BinaryIndexTable {
      * @param buffer The table buffer.  Its position will be advanced to the end of the table.
      * @return The index table.
      */
-    public static BinaryIndexTable create(int nentries, ByteBuffer buffer) {
+    public static BinaryIndexTable fromBuffer(int nentries, ByteBuffer buffer) {
         logger.debug("reading table of {} entries", nentries);
         long[] keys = new long[nentries];
         int[] offsets = new int[nentries];

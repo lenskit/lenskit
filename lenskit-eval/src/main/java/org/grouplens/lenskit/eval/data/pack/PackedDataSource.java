@@ -115,7 +115,7 @@ public class PackedDataSource implements DataSource {
         @Override
         public BinaryRatingDAO get() {
             try {
-                return new BinaryRatingDAO(packedFile);
+                return BinaryRatingDAO.open(packedFile);
             } catch (IOException ex) {
                 throw new RuntimeException("error opening " + packedFile, ex);
             }

@@ -46,7 +46,8 @@ class BinaryHeader {
     }
 
     /**
-     * Parse a header from a byte buffer.
+     * Parse a header from a byte buffer.  The buffer's position will be advanced to the end of the
+     * header.
      * @param buf The byte buffer.
      * @return The header.
      */
