@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.Collection;
@@ -60,10 +61,10 @@ import java.util.PriorityQueue;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@ThreadSafe
 public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializable {
     private static final long serialVersionUID = -6324767320394518347L;
     private static final Logger logger = LoggerFactory.getLogger(SimpleNeighborhoodFinder.class);
-
 
     private final UserEventDAO userDAO;
     private final ItemEventDAO itemDAO;
@@ -72,7 +73,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     private final UserVectorNormalizer normalizer;
 
     /**
-     * Construct a new user-user recommender.
+     * Construct a new user neighborhood finder.
      *
      * @param udao  The user-event DAO.
      * @param idao  The item-event DAO.
