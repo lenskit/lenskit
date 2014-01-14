@@ -37,6 +37,7 @@ import org.grouplens.lenskit.data.event.UseTimestamps;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
+import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +79,7 @@ public class SnapshotNeighborhoodFinder implements NeighborhoodFinder, Serializa
         private final int neighborhoodSize;
         private final UserSimilarity similarity;
         private final UserVectorNormalizer normalizer;
+        private final Threshold userThreshold;
         private final boolean useTimestamps;
 
         /**
@@ -94,11 +96,13 @@ public class SnapshotNeighborhoodFinder implements NeighborhoodFinder, Serializa
                        @NeighborhoodSize int nnbrs,
                        UserSimilarity sim,
                        UserVectorNormalizer norm,
+                       @UserSimilarityThreshold Threshold thresh,
                        @UseTimestamps boolean useTS) {
             eventDao = dao;
             neighborhoodSize = nnbrs;
             similarity = sim;
             normalizer = norm;
+            userThreshold = thresh;
             useTimestamps = useTS;
         }
 
@@ -111,7 +115,7 @@ public class SnapshotNeighborhoodFinder implements NeighborhoodFinder, Serializa
                 throw new RuntimeException("Error packing ratings", e);
             }
             SimpleNeighborhoodFinder nf;
-            nf = new SimpleNeighborhoodFinder(dao, dao, neighborhoodSize, similarity, normalizer);
+            nf = new SimpleNeighborhoodFinder(dao, dao, neighborhoodSize, similarity, normalizer, userThreshold);
             return new SnapshotNeighborhoodFinder(nf);
         }
 

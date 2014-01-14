@@ -64,6 +64,9 @@ Several algorithms have been improved in this release.
 
 -   Significantly sped up user-user CF.
 
+-   Added user similarity thresholding.  The default threshold is an absolute threshold of 0.0;
+    configure `@UserSimilarityThreshold` to change this.
+
 ### Item-item CF
 
 -   Refactored item-item model build:

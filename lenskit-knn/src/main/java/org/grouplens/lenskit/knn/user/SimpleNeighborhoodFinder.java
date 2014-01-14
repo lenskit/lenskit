@@ -31,6 +31,7 @@ import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
+import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -63,7 +64,7 @@ import java.util.PriorityQueue;
  */
 @ThreadSafe
 public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializable {
-    private static final long serialVersionUID = -6324767320394518347L;
+    private static final long serialVersionUID = 2L;
     private static final Logger logger = LoggerFactory.getLogger(SimpleNeighborhoodFinder.class);
 
     private final UserEventDAO userDAO;
@@ -71,6 +72,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     private final int neighborhoodSize;
     private final UserSimilarity similarity;
     private final UserVectorNormalizer normalizer;
+    private final Threshold userThreshold;
 
     /**
      * Construct a new user neighborhood finder.
@@ -84,12 +86,14 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     public SimpleNeighborhoodFinder(UserEventDAO udao, ItemEventDAO idao,
                                     @NeighborhoodSize int nnbrs,
                                     UserSimilarity sim,
-                                    UserVectorNormalizer norm) {
+                                    UserVectorNormalizer norm,
+                                    @UserSimilarityThreshold Threshold thresh) {
         userDAO = udao;
         itemDAO = idao;
         neighborhoodSize = nnbrs;
         similarity = sim;
         normalizer = norm;
+        userThreshold = thresh;
         Preconditions.checkArgument(sim.isSparse(), "user similarity function is not sparse");
     }
 
@@ -136,7 +140,7 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
             MutableSparseVector nurv = normalizer.normalize(uid2, urv, null);
 
             final double sim = similarity.similarity(uid1, nratings, uid2, nurv);
-            if (Double.isNaN(sim) || Double.isInfinite(sim)) {
+            if (Double.isNaN(sim) || Double.isInfinite(sim) || !userThreshold.retain(sim)) {
                 continue;
             }
             final Neighbor n = new Neighbor(uid2, urv, sim);
