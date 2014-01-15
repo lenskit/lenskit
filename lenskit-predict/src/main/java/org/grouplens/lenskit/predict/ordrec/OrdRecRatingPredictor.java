@@ -35,6 +35,8 @@ import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.transform.quantize.Quantizer;
 import org.grouplens.lenskit.vectors.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -50,6 +52,7 @@ import javax.inject.Inject;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class OrdRecRatingPredictor extends AbstractRatingPredictor {
+    private static final Logger logger = LoggerFactory.getLogger(OrdRecRatingPredictor.class);
     public static final TypedSymbol<Vec> RATING_PROBABILITY_CHANNEL =
             TypedSymbol.of(Vec.class, "org.grouplens.lenskit.predict.ordrec.RatingProbability");
 
@@ -305,6 +308,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
 
     @Override
     public void predict(long uid, @Nonnull MutableSparseVector predictions) {
+        logger.debug("predicting {} items for {}", predictions.keyDomain().size(), uid);
         OrdRecModel para = new OrdRecModel(quantizer);
         SparseVector ratings = makeUserVector(uid, userEventDao);
         LongSet keySet = LongUtils.setUnion(ratings.keySet(), predictions.keyDomain());
