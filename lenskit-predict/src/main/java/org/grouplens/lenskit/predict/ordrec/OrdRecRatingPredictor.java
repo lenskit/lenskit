@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.predict.ordrec;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.basic.AbstractRatingPredictor;
@@ -31,6 +32,7 @@ import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.transform.quantize.Quantizer;
 import org.grouplens.lenskit.vectors.*;
 
@@ -38,21 +40,26 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 /**
- * The implementation for the ordrec algorithm.
+ * Rating predictor using OrdRec to map scores to ratings.
  * The model views user feedback as ordinal. The framework is based on
  * a pointwise (rather than pairwise) ordinal approach, it can wrap existing
  * CF methods, and upgrade them into being able to tackle ordinal feedback.
- * The implementation is based on Koren's paper:
- * <a href="http://dl.acm.org/citation.cfm?doid=2043932.2043956">
+ * The implementation is based on <a href="http://dl.acm.org/citation.cfm?doid=2043932.2043956">Koren's paper</a>:
+ *
+ * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class OrdRecRatingPredictor extends AbstractRatingPredictor {
+    public static final TypedSymbol<Vec> RATING_PROBABILITY_CHANNEL =
+            TypedSymbol.of(Vec.class, "org.grouplens.lenskit.predict.ordrec.RatingProbability");
+
     private ItemScorer itemScorer;
     private UserEventDAO userEventDao;
     private Quantizer quantizer;
     private final double learningRate;
     private final double regTerm;
     private final int iterationCount;
+    private final boolean reportDistribution;
 
     /**
      * This is a helper class contains all parameters the Ordrec need:
@@ -252,15 +259,18 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
      * @param reg The Regularization
      */
     @Inject
-    public OrdRecRatingPredictor(ItemScorer scorer, UserEventDAO dao, Quantizer quantizer, @LearningRate double rate,
-                                 @RegularizationTerm double reg, @IterationCount int niters) {
+    public OrdRecRatingPredictor(ItemScorer scorer, UserEventDAO dao, Quantizer quantizer,
+                                 @LearningRate double rate,
+                                 @RegularizationTerm double reg,
+                                 @IterationCount int niters,
+                                 @ReportRatingDistribution boolean reportDist) {
         this.userEventDao = dao;
         this.itemScorer = scorer;
         this.quantizer = quantizer;
         this.learningRate = rate;
         this.regTerm = reg;
         this.iterationCount = niters;
-
+        reportDistribution = reportDist;
     }
 
 
@@ -272,6 +282,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         this.learningRate = 1e-3;
         this.regTerm = 0.015;
         this.iterationCount = 1000;
+        reportDistribution = false;
     }
 
     /**
@@ -301,6 +312,10 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         itemScorer.score(uid, scores);
         para.train(ratings, scores);
         MutableVec probabilities = MutableVec.create(para.getLevelCount());
+        Long2ObjectMap<Vec> distChannel = null;
+        if (reportDistribution) {
+            distChannel = predictions.addChannel(RATING_PROBABILITY_CHANNEL);
+        }
 
         for (VectorEntry e: predictions.fast(VectorEntry.State.EITHER)) {
             long iid = e.getKey();
@@ -309,6 +324,9 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
             int ratingIndex = probabilities.largestDimension();
 
             predictions.set(e, quantizer.getIndexValue(ratingIndex));
+            if (distChannel != null) {
+                distChannel.put(e.getKey(), probabilities.immutable());
+            }
         }
     }
 }
