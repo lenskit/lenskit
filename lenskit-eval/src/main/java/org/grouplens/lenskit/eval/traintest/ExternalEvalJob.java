@@ -104,7 +104,7 @@ class ExternalEvalJob extends TrainTestJob {
             @Override
             public String apply(@Nullable String input) {
                 if (input == null) {
-                    throw new IllegalArgumentException("cannot have null command element");
+                    throw new NullPointerException("command element");
                 }
                 String s = input.replace("{OUTPUT}", output.getAbsolutePath());
                 s = s.replace("{TRAIN_DATA}", train.getAbsolutePath());

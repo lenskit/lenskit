@@ -321,7 +321,7 @@ public class GraphDumper {
         @Override
         public List<String> apply(@Nullable DAGEdge<CachedSatisfaction,DesireChain> input) {
             if (input == null) {
-                throw new IllegalArgumentException("cannot order null edge");
+                throw new NullPointerException("cannot order null edge");
             }
             Desire desire = input.getLabel().getInitialDesire();
             InjectionPoint ip = desire.getInjectionPoint();
