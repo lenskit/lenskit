@@ -250,6 +250,17 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
             }
 
         }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("OrdRecParams(t1=")
+              .append(t1)
+              .append(", beta=")
+              .append(beta)
+              .append(")");
+            return sb.toString();
+        }
     }
 
     /**
@@ -309,13 +320,15 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
     @Override
     public void predict(long uid, @Nonnull MutableSparseVector predictions) {
         logger.debug("predicting {} items for {}", predictions.keyDomain().size(), uid);
-        OrdRecModel para = new OrdRecModel(quantizer);
+        OrdRecModel params = new OrdRecModel(quantizer);
         SparseVector ratings = makeUserVector(uid, userEventDao);
         LongSet keySet = LongUtils.setUnion(ratings.keySet(), predictions.keyDomain());
         MutableSparseVector scores = MutableSparseVector.create(keySet);
         itemScorer.score(uid, scores);
-        para.train(ratings, scores);
-        MutableVec probabilities = MutableVec.create(para.getLevelCount());
+        params.train(ratings, scores);
+        logger.debug("trained parameters for {}: {}", uid, params);
+
+        MutableVec probabilities = MutableVec.create(params.getLevelCount());
         Long2ObjectMap<Vec> distChannel = null;
         if (reportDistribution) {
             distChannel = predictions.addChannel(RATING_PROBABILITY_CHANNEL);
@@ -324,7 +337,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         for (VectorEntry e: predictions.fast(VectorEntry.State.EITHER)) {
             long iid = e.getKey();
             double score = scores.get(iid);
-            para.getProbDistribution(score, probabilities);
+            params.getProbDistribution(score, probabilities);
             int ratingIndex = probabilities.largestDimension();
 
             predictions.set(e, quantizer.getIndexValue(ratingIndex));
