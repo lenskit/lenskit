@@ -27,10 +27,9 @@ import com.google.common.collect.Maps;
 import org.grouplens.grapht.Injector;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.reflect.*;
 import org.grouplens.grapht.solver.DesireChain;
-import org.grouplens.grapht.spi.*;
 import org.grouplens.grapht.util.MemoizingProvider;
-import org.grouplens.lenskit.core.LenskitConfiguration;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -44,7 +43,6 @@ import java.util.Map;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class StaticInjector implements Injector, Function<DAGNode<CachedSatisfaction,DesireChain>,Object> {
-    private InjectSPI spi;
     private DAGNode<CachedSatisfaction, DesireChain> graph;
     private Map<DAGNode<CachedSatisfaction,DesireChain>, Provider<?>> providerCache;
 
@@ -54,21 +52,20 @@ public class StaticInjector implements Injector, Function<DAGNode<CachedSatisfac
      * @param g   The object graph.
      */
     public StaticInjector(DAGNode<CachedSatisfaction, DesireChain> g) {
-        spi = LenskitConfiguration.LENSKIT_SPI;
         graph = g;
         providerCache = Maps.newHashMap();
     }
 
     @Override
     public <T> T getInstance(Class<T> type) {
-        Desire d = spi.desire(null, type, true);
+        Desire d = Desires.create(null, type, true);
         DAGEdge<CachedSatisfaction, DesireChain> e =
                 graph.getOutgoingEdgeWithLabel(DesireChain.hasInitialDesire(d));
 
         if (e != null) {
             return type.cast(instantiate(e.getTail()));
         } else {
-            DAGNode<CachedSatisfaction,DesireChain> node = findSatisfyingNode(spi.matchDefault(), type);
+            DAGNode<CachedSatisfaction,DesireChain> node = findSatisfyingNode(Qualifiers.matchDefault(), type);
             if (node != null) {
                 return type.cast(instantiate(node));
             } else {
@@ -78,7 +75,7 @@ public class StaticInjector implements Injector, Function<DAGNode<CachedSatisfac
     }
 
     public <T> T getInstance(Class<? extends Annotation> qual, Class<T> type) {
-        DAGNode<CachedSatisfaction,DesireChain> node = findSatisfyingNode(spi.match(qual), type);
+        DAGNode<CachedSatisfaction,DesireChain> node = findSatisfyingNode(Qualifiers.match(qual), type);
         if (node != null) {
             return type.cast(instantiate(node));
         } else {
@@ -107,7 +104,6 @@ public class StaticInjector implements Injector, Function<DAGNode<CachedSatisfac
                        && qmatch.apply(input.getLabel()
                                             .getInitialDesire()
                                             .getInjectionPoint()
-                                            .getAttributes()
                                             .getQualifier());
             }
         };

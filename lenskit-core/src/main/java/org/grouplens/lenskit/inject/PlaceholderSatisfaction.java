@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.inject;
 
-import org.grouplens.grapht.spi.*;
+import org.grouplens.grapht.reflect.*;
 import org.grouplens.grapht.util.ClassProxy;
 
 import javax.inject.Provider;

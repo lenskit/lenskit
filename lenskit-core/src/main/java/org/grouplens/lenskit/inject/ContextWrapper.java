@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.inject;
 
 import org.grouplens.grapht.Context;
-import org.grouplens.grapht.spi.context.ContextPattern;
+import org.grouplens.grapht.context.ContextPattern;
 import org.grouplens.lenskit.core.LenskitBinding;
 import org.grouplens.lenskit.core.LenskitConfigContext;
 

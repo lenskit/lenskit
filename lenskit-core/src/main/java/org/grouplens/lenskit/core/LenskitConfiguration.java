@@ -22,14 +22,13 @@ package org.grouplens.lenskit.core;
 
 import com.google.common.collect.ImmutableSet;
 import org.grouplens.grapht.BindingFunctionBuilder;
+import org.grouplens.grapht.context.ContextPattern;
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.reflect.CachedSatisfaction;
+import org.grouplens.grapht.reflect.Desires;
 import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.solver.SolverException;
-import org.grouplens.grapht.spi.CachedSatisfaction;
-import org.grouplens.grapht.spi.InjectSPI;
-import org.grouplens.grapht.spi.context.ContextPattern;
-import org.grouplens.grapht.spi.reflect.ReflectionInjectSPI;
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.inject.AbstractConfigContext;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
@@ -57,13 +56,12 @@ public class LenskitConfiguration extends AbstractConfigContext {
             ItemRecommender.class,
             GlobalItemRecommender.class
     };
-    public static final InjectSPI LENSKIT_SPI = new ReflectionInjectSPI();
 
     private final BindingFunctionBuilder bindings;
     private final Set<Class<?>> roots;
 
     public LenskitConfiguration() {
-        bindings = new BindingFunctionBuilder(LENSKIT_SPI, true);
+        bindings = new BindingFunctionBuilder(true);
         roots = new HashSet<Class<?>>();
         Collections.addAll(roots, INITIAL_ROOTS);
     }
@@ -83,10 +81,6 @@ public class LenskitConfiguration extends AbstractConfigContext {
      */
     public LenskitConfiguration copy() {
         return new LenskitConfiguration(this);
-    }
-
-    InjectSPI getSPI() {
-        return bindings.getSPI();
     }
 
     /**
@@ -142,7 +136,7 @@ public class LenskitConfiguration extends AbstractConfigContext {
     }
 
     private void resolve(Class<?> type, DependencySolver solver) throws SolverException {
-        solver.resolve(bindings.getSPI().desire(null, type, true));
+        solver.resolve(Desires.create(null, type, true));
     }
 
     public BindingFunctionBuilder getBindings() {

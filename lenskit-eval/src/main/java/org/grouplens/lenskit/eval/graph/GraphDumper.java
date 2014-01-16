@@ -30,9 +30,9 @@ import com.google.common.io.Closer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.reflect.*;
+import org.grouplens.grapht.reflect.internal.*;
 import org.grouplens.grapht.solver.DesireChain;
-import org.grouplens.grapht.spi.*;
-import org.grouplens.grapht.spi.reflect.*;
 import org.grouplens.lenskit.core.Parameter;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.RecommenderInstantiator;
@@ -276,7 +276,7 @@ public class GraphDumper {
             Collections.sort(edges, EDGE_ORDER);
             for (DAGEdge<CachedSatisfaction,DesireChain> e: edges) {
                 Desire dep = e.getLabel().getInitialDesire();
-                Annotation q = dep.getInjectionPoint().getAttributes().getQualifier();
+                Annotation q = dep.getInjectionPoint().getQualifier();
                 DAGNode<CachedSatisfaction,DesireChain> targetNode = e.getTail();
                 if (q != null && q.annotationType().getAnnotation(Parameter.class) != null) {
                     logger.debug("dumping parameter {}", q);

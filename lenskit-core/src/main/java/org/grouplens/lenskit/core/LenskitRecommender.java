@@ -21,8 +21,8 @@
 package org.grouplens.lenskit.core;
 
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.reflect.CachedSatisfaction;
 import org.grouplens.grapht.solver.DesireChain;
-import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.inject.StaticInjector;
 

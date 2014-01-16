@@ -26,10 +26,11 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
 import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.grapht.context.ContextMatcher;
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.reflect.CachedSatisfaction;
 import org.grouplens.grapht.solver.*;
-import org.grouplens.grapht.spi.CachedSatisfaction;
-import org.grouplens.grapht.spi.context.ContextMatcher;
+import org.grouplens.grapht.util.Types;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.PlaceholderSatisfaction;
@@ -59,7 +60,28 @@ import java.util.List;
  */
 public class LenskitRecommenderEngineBuilder {
     private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngineBuilder.class);
+    private ClassLoader classLoader = Types.getDefaultClassLoader();
     private List<Pair<LenskitConfiguration,ModelDisposition>> configurations = Lists.newArrayList();
+
+    /**
+     * Get the class loader this builder will use.  By default, it uses the thread's current context
+     * class loader (if set).
+     *
+     * @return The class loader to be used.
+     */
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+
+    /**
+     * Set the class loader to use.
+     * @param classLoader The class loader to use when building the recommender.
+     * @return The builder (for chaining).
+     */
+    public LenskitRecommenderEngineBuilder setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+        return this;
+    }
 
     /**
      * Add a configuration to be included in the recommender engine.  This is the equivalent of
@@ -93,6 +115,7 @@ public class LenskitRecommenderEngineBuilder {
         // Build the initial graph
         logger.debug("building graph from {} configurations", configurations.size());
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
+        rgb.setClassLoader(classLoader);
         for (Pair<LenskitConfiguration,ModelDisposition> cfg: configurations) {
             rgb.addConfiguration(cfg.getLeft());
         }

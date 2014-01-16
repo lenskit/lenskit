@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval.graph;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.grapht.spi.Desire;
+import org.grouplens.grapht.reflect.Desire;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -76,7 +76,7 @@ class ComponentNodeBuilder implements Builder<GVNode> {
      * @return The builder (for chaining).
      */
     public ComponentNodeBuilder addDependency(Desire dep) {
-        Annotation q = dep.getInjectionPoint().getAttributes().getQualifier();
+        Annotation q = dep.getInjectionPoint().getQualifier();
         Class<?> type = dep.getDesiredType();
         if (q == null) {
             dependencies.add(shortClassName(type));

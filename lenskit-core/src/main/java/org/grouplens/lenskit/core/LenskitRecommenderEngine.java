@@ -22,10 +22,10 @@ package org.grouplens.lenskit.core;
 
 import com.google.common.base.Preconditions;
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.reflect.CachedSatisfaction;
 import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.solver.SolverException;
-import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.inject.GraphtUtils;

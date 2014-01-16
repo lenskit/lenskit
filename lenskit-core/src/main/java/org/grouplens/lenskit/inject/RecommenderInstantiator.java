@@ -28,10 +28,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.graph.DAGNodeBuilder;
+import org.grouplens.grapht.reflect.CachedSatisfaction;
+import org.grouplens.grapht.reflect.Satisfaction;
+import org.grouplens.grapht.reflect.Satisfactions;
 import org.grouplens.grapht.solver.DesireChain;
-import org.grouplens.grapht.spi.CachedSatisfaction;
-import org.grouplens.grapht.spi.InjectSPI;
-import org.grouplens.grapht.spi.Satisfaction;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
@@ -53,7 +53,6 @@ import java.util.Set;
  */
 public final class RecommenderInstantiator {
     private static final Logger logger = LoggerFactory.getLogger(RecommenderInstantiator.class);
-    private final InjectSPI spi = LenskitConfiguration.LENSKIT_SPI;
     private final DAGNode<CachedSatisfaction, DesireChain> graph;
     private final Function<? super DAGNode<CachedSatisfaction, DesireChain>, Object> instantiator;
 
@@ -111,9 +110,9 @@ public final class RecommenderInstantiator {
                 CachedSatisfaction label = node.getLabel();
                 Satisfaction instanceSat;
                 if (obj == null) {
-                    instanceSat = spi.satisfyWithNull(label.getSatisfaction().getErasedType());
+                    instanceSat = Satisfactions.nullOfType(label.getSatisfaction().getErasedType());
                 } else {
-                    instanceSat = spi.satisfy(obj);
+                    instanceSat = Satisfactions.instance(obj);
                 }
                 CachedSatisfaction newLabel = new CachedSatisfaction(instanceSat, label.getCachePolicy());
                 // build new node with replacement label
@@ -143,7 +142,7 @@ public final class RecommenderInstantiator {
                 assert node != null;
                 CachedSatisfaction label = node.getLabel();
                 if (!label.getSatisfaction().hasInstance()) {
-                    Satisfaction instanceSat = spi.satisfyWithNull(label.getSatisfaction().getErasedType());
+                    Satisfaction instanceSat = Satisfactions.nullOfType(label.getSatisfaction().getErasedType());
                     CachedSatisfaction newLbl = new CachedSatisfaction(instanceSat, label.getCachePolicy());
                     // build new node with replacement label
                     DAGNodeBuilder<CachedSatisfaction,DesireChain> bld = DAGNode.newBuilder(newLbl);

@@ -22,9 +22,9 @@ package org.grouplens.lenskit.eval.graph;
 
 import com.google.common.io.Files;
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.reflect.CachedSatisfaction;
 import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.solver.SolverException;
-import org.grouplens.grapht.spi.CachedSatisfaction;
 import org.grouplens.grapht.util.Providers;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;

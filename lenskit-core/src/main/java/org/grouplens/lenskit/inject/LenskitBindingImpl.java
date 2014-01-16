@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.inject;
 
 import org.grouplens.grapht.Binding;
-import org.grouplens.grapht.spi.Satisfaction;
+import org.grouplens.grapht.reflect.Satisfaction;
 import org.grouplens.lenskit.core.LenskitBinding;
 
 import javax.annotation.Nonnull;

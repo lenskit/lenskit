@@ -27,10 +27,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.grouplens.grapht.BindingFunctionBuilder;
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.reflect.CachePolicy;
+import org.grouplens.grapht.reflect.CachedSatisfaction;
+import org.grouplens.grapht.reflect.Desires;
 import org.grouplens.grapht.solver.*;
-import org.grouplens.grapht.spi.CachePolicy;
-import org.grouplens.grapht.spi.CachedSatisfaction;
-import org.grouplens.grapht.spi.InjectSPI;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 
 import java.util.List;
@@ -45,9 +45,14 @@ import java.util.Set;
 public class RecommenderGraphBuilder {
     private static final int RESOLVE_DEPTH_LIMIT = 100;
 
+    private ClassLoader classLoader;
     private List<BindingFunctionBuilder> configs = Lists.newArrayList();
     private Set<Class<?>> roots = Sets.newHashSet();
     private Function<BindingFunction, BindingFunction> bindingTransform = Functions.identity();
+
+    public void setClassLoader(ClassLoader loader) {
+        classLoader = loader;
+    }
 
     /**
      * Set a function to transform the bind rules used to build the dependency solver.
@@ -106,17 +111,16 @@ public class RecommenderGraphBuilder {
             dsb.addBindingFunction(bindingTransform.apply(cfg.build(BindingFunctionBuilder.RuleSet.SUPER_TYPES)));
         }
         // default desire function cannot trigger rewrites
-        dsb.addBindingFunction(new DefaultDesireBindingFunction(LenskitConfiguration.LENSKIT_SPI), false);
+        dsb.addBindingFunction(DefaultDesireBindingFunction.create(classLoader), false);
         dsb.setDefaultPolicy(CachePolicy.MEMOIZE);
         dsb.setMaxDepth(RESOLVE_DEPTH_LIMIT);
         return dsb.build();
     }
 
     public DAGNode<CachedSatisfaction,DesireChain> buildGraph() throws SolverException {
-        InjectSPI spi = LenskitConfiguration.LENSKIT_SPI;
         DependencySolver solver = buildDependencySolver();
         for (Class<?> root: roots) {
-            solver.resolve(spi.desire(null, root, true));
+            solver.resolve(Desires.create(null, root, true));
         }
 
         return solver.getGraph();

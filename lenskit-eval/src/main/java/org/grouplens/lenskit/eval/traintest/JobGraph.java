@@ -23,8 +23,8 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.reflect.CachedSatisfaction;
 import org.grouplens.grapht.solver.DesireChain;
-import org.grouplens.grapht.spi.CachedSatisfaction;
 
 import java.io.File;
 import java.io.IOException;

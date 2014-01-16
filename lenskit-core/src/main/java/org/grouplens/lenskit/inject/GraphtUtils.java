@@ -24,8 +24,8 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.reflect.*;
 import org.grouplens.grapht.solver.DesireChain;
-import org.grouplens.grapht.spi.*;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
@@ -176,8 +176,8 @@ public final class GraphtUtils {
      * @return {@code true} if the desire is transient.
      */
     public static boolean desireIsTransient(@Nonnull Desire d) {
-        Attributes attrs = d.getInjectionPoint().getAttributes();
-        return attrs.getAttribute(Transient.class) != null;
+        InjectionPoint ip = d.getInjectionPoint();
+        return ip.getAttribute(Transient.class) != null;
     }
 
     public static boolean edgeIsTransient(DAGEdge<?, DesireChain> input) {
