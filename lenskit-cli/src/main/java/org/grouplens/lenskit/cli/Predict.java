@@ -66,7 +66,7 @@ public class Predict implements Command {
     public void execute() throws IOException, RecommenderBuildException {
         LenskitRecommenderEngine engine = loadEngine();
 
-        long user = options.get("user");
+        long user = options.getLong("user");
         List<Long> items = options.get("items");
         final int n = options.getInt("num_recs");
 
@@ -82,9 +82,9 @@ public class Predict implements Command {
         Stopwatch timer = new Stopwatch();
         timer.start();
         SparseVector preds = pred.predict(user, items);
-        Long2ObjectMap<?> channel = null;
+        Long2ObjectMap channel = null;
         if (pchan != null) {
-            for (TypedSymbol<?> sym: preds.getChannelSymbols()) {
+            for (TypedSymbol sym: preds.getChannelSymbols()) {
                 if (sym.getRawSymbol().equals(pchan)) {
                     channel = preds.getChannel(sym);
                 }
