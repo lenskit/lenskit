@@ -26,6 +26,10 @@
     versions of their `streamEventsByUser` and `streamEventsByItem` methods.  Implementers will need
     to implement these new methods.
 
+-   Implemented new `BinaryRatingDAO` to read ratings from a packed binary file of rating data.
+    Build a file with `BinaryRatingPacker` or the `pack` eval task.  The new CLI also provides a
+    command to pack rating data.
+
 ## Configuration
 
 -   Added `LenskitRecommenderEngineBuilder` and `LenskitRecommenderEngineLoader`.
@@ -38,12 +42,16 @@
       to support building & serializing a model with one data access config and loading it with
       a different one.
 
-
--   Added `addComponent` methods to configuration contexts (#issue(457))
+-   Added `addComponent` methods to configuration contexts (#issue(457)).  This is equivalent to
+    binding a component type to itself, using it to supply dependencies on itself and any supertypes.
 
 -   RNG now configured via dependency injection.
 
+-   Context-sensitive matches can now be anchored to the root (with `at(null)`) (#issue(344)).
+
 -   Fixed class loader problems with deserializing recommender models (#issue(434)).
+
+-   Use Grapht 0.7.0.
 
 ## CLI
 
@@ -59,7 +67,10 @@ distribution of LensKit.
 This release includes several improvements and additions to LensKit's selection of algorithms.
 
 -   Added an implementation of [OrdRec](http://labs.yahoo.com/files/paper.pdf) (in the
-    `lenskit-predict` module).
+    `lenskit-predict` module) (#issue(225)).
+
+-   Report whether the score came from the baseline or primary scorer in the fallback item scorer
+    and simple rating predictor (#issue(444)).
 
 ### User-user CF
 
@@ -89,6 +100,11 @@ This release includes several improvements and additions to LensKit's selection 
     transposing the ratings matrix (#issue(481)).  If your rating normalization is per-item instead
     of per-user, this allows item-item builds to be more efficient.
 
+### Matrix factorization
+
+-   Refactored FunkSVD to use vectorz vectors and matrices, and have factored-out code useful for
+    other matrix factorization recommenders.
+
 ## Evaluator
 
 -   The evaluator now supports loading algorithms from config files in both train-test
@@ -96,9 +112,20 @@ This release includes several improvements and additions to LensKit's selection 
 
 -   In single-threaded mode, run eval tasks on the same thread as the evaluator (#issue(426)).
 
--   The evaluator now detects when two or more algorithm configurations have the same shared components, and only builds those components once.  A cache directory can be used to cache these objects on disk; specify this with the `cache` directive in `trainTest`.  One consequence of this is that build times are now meaningless.  This behavior can be disabled, and build times restored to meaning, by writing `separateAlgorithms true` in your `trainTest` block.
+-   The evaluator now detects when two or more algorithm configurations have the same shared
+    components, and only builds those components once.  A cache directory can be used to cache these
+    objects on disk; specify this with the `cache` directive in `trainTest`.  One consequence of
+    this is that build times are now meaningless.  This behavior can be disabled, and build times
+    restored to meaning, by writing `separateAlgorithms true` in your `trainTest` block.
+
+-   The evalator can now configure algorithms from algorithm files.
+
+## Data Structures
+
+-   LensKit now uses [vectorz](http://github.com/mikera/vectorz) for (non-sparse)( vectors and
+    matrices.
 
 ## Utilities
 
--   Remove `TaskGroupRunner` in favor of new `TaskGroup` class.
+-   Remove `TaskGroupRunner` in favor of new `TaskGraphExecutor` class.
 
