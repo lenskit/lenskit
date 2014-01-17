@@ -155,6 +155,11 @@ public abstract class Vec implements Serializable {
     }
 
     @Override
+    public String toString() {
+        return getClass().getSimpleName() + Arrays.toString(data);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == this) {
             return true;

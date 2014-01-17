@@ -56,7 +56,10 @@ distribution of LensKit.
 
 ## Algorithms
 
-Several algorithms have been improved in this release.
+This release includes several improvements and additions to LensKit's selection of algorithms.
+
+-   Added an implementation of [OrdRec](http://labs.yahoo.com/files/paper.pdf) (in the
+    `lenskit-predict` module).
 
 ### User-user CF
 
