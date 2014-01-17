@@ -8,6 +8,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>lenskit-predict</artifactId>
+  <name>LensKit rating predictors</name>
 
   <dependencies>
     <dependency>
