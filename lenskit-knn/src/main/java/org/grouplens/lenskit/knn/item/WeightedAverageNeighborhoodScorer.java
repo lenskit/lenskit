@@ -60,7 +60,7 @@ public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Se
             ScoredIdBuilder builder = ScoredIds.newBuilder();
             return builder.setId(item)
                           .setScore(sum/weight)
-                          .addChannel(NEIGHBORHOOD_WEIGHT_SYMBOL,sum)
+                          .addChannel(NEIGHBORHOOD_WEIGHT_SYMBOL,weight)
                           .build();
         } else {
             return null;
