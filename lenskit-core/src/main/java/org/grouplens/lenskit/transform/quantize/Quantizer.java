@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.transform.quantize;
 
-import org.grouplens.lenskit.vectors.ImmutableVec;
+import mikera.vectorz.impl.ImmutableVector;
 
 /**
  * Quantize real values into discrete values. Used to do things like map floating point
@@ -36,7 +36,7 @@ public interface Quantizer {
      *
      * @return The values of the discrete bins.
      */
-    ImmutableVec getValues();
+    ImmutableVector getValues();
 
     /**
      * Get the value corresponding to a quantized value, based on the index into
