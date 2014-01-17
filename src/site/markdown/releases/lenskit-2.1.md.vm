@@ -120,6 +120,8 @@ This release includes several improvements and additions to LensKit's selection 
 
 -   The evalator can now configure algorithms from algorithm files.
 
+-   The train-test task can now periodically write status files so its progress can be monitored.
+
 ## Data Structures
 
 -   LensKit now uses [vectorz](http://github.com/mikera/vectorz) for (non-sparse)( vectors and
