@@ -64,7 +64,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     private Order<Rating> order = new RandomOrder<Rating>();
     private PartitionAlgorithm<Rating> partition = new HoldoutNPartition<Rating>(10);
     private boolean isForced;
-    private boolean splitUsers = true;
+    private CrossfoldMethod method = CrossfoldMethod.PARTITION_USERS;
 
     public CrossfoldTask() {
         super(null);
@@ -127,7 +127,8 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     }
 
     /**
-     * Set holdout to a fixed number of items per user.
+     * Set holdout to a fixed number of items per user.  Only meaningful when the method is
+     * {@link CrossfoldMethod#PARTITION_USERS}.
      *
      * @param n The number of items to hold out from each user's profile.
      * @return The CrossfoldCommand object  (for chaining)
@@ -139,6 +140,8 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
 
     /**
      * Set holdout from using the retain part to a fixed number of items.
+     * Only meaningful when the method is
+     * {@link CrossfoldMethod#PARTITION_USERS}.
      * 
      * @param n The number of items to train data set from each user's profile.
      * @return The CrossfoldCommand object  (for chaining)
@@ -150,6 +153,8 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
 
     /**
      * Set holdout to a fraction of each user's profile.
+     * Only meaningful when the method is
+     * {@link CrossfoldMethod#PARTITION_USERS}.
      *
      * @param f The fraction of a user's ratings to hold out.
      * @return The CrossfoldCommand object  (for chaining)
@@ -182,9 +187,39 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
         isForced = force;
         return this;
     }
-    
+
+    /**
+     * Configure whether it splits per-user or per-rating.
+     *
+     * @param splitUsers {@code true} to split by users ({@link CrossfoldMethod#PARTITION_USERS}),
+     *                   {@code false} to split by rating ({@link CrossfoldMethod#PARTITION_RATINGS}).
+     * @deprecated Use {@link #setMethod(CrossfoldMethod)} instead.
+     */
+    @Deprecated
     public void setSplitUsers(boolean splitUsers) {
-        this.splitUsers = splitUsers;
+        if (splitUsers) {
+            setMethod(CrossfoldMethod.PARTITION_USERS);
+        } else {
+            setMethod(CrossfoldMethod.PARTITION_RATINGS);
+        }
+    }
+
+    /**
+     * Get the method to be used for crossfolding.
+     * @return The configured crossfold method.
+     */
+    public CrossfoldMethod getMethod() {
+        return method;
+    }
+
+    /**
+     * Set the crossfold method.  The default is {@link CrossfoldMethod#PARTITION_USERS}.
+     *
+     * @param m The crossfold method to use.
+     */
+    public CrossfoldTask setMethod(CrossfoldMethod m) {
+        method = m;
+        return this;
     }
 
     /**
@@ -276,10 +311,6 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
         return isForced || getProject().getConfig().force();
     }
 
-    public boolean getSplitUsers() {
-        return splitUsers;
-    }
-
     /**
      * Run the crossfold command. Write the partition files to the disk by reading in the source file.
      *
@@ -344,10 +375,13 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
                 trainWriters[i] = closer.register(CSVWriter.open(train, null));
                 testWriters[i] = closer.register(CSVWriter.open(test, null));
             }
-            if (getSplitUsers()) {
+            switch (method) {
+            case PARTITION_USERS:
                 writeTTFilesByUsers(trainWriters, testWriters);
-            } else {
+                break;
+            case PARTITION_RATINGS:
                 writeTTFilesByRatings(trainWriters, testWriters);
+                break;
             }
         } catch (Throwable th) {
             throw closer.rethrow(th);
