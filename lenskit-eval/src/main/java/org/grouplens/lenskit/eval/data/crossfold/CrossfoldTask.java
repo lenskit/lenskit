@@ -26,10 +26,10 @@ import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.dao.UserDAO;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
@@ -65,8 +65,6 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     private PartitionAlgorithm<Rating> partition = new HoldoutNPartition<Rating>(10);
     private boolean isForced;
     private boolean splitUsers = true;
-
-    private boolean cacheOutput = true;
 
     public CrossfoldTask() {
         super(null);
@@ -120,7 +118,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      * @return The CrossfoldCommand object  (for chaining)
      * @see RandomOrder
      * @see TimestampOrder
-     * @see #setHoldout(double)
+     * @see #setHoldoutFraction(double)
      * @see #setHoldout(int)
      */
     public CrossfoldTask setOrder(Order<Rating> o) {
@@ -197,7 +195,6 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      * @return The command (for chaining)
      */
     public CrossfoldTask setCache(boolean on) {
-        cacheOutput = on;
         return this;
     }
     
