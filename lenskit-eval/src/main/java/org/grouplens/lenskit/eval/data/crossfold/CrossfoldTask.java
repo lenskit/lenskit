@@ -22,7 +22,10 @@ package org.grouplens.lenskit.eval.data.crossfold;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrays;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
@@ -65,6 +68,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     private PartitionAlgorithm<Rating> partition = new HoldoutNPartition<Rating>(10);
     private boolean isForced;
     private CrossfoldMethod method = CrossfoldMethod.PARTITION_USERS;
+    private int sampleSize = 1000;
 
     public CrossfoldTask() {
         super(null);
@@ -82,6 +86,21 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      */
     public CrossfoldTask setPartitions(int partition) {
         partitionCount = partition;
+        return this;
+    }
+
+    public int getSampleSize() {
+        return sampleSize;
+    }
+
+    /**
+     * Set the sample size (# of users sampled per partition).  Only meaningful when the method is
+     * {@link CrossfoldMethod#SAMPLE_USERS}.
+     * @param n The number of users to sample for each partition.
+     * @return The task (for chaining).
+     */
+    public CrossfoldTask setSampleSize(int n) {
+        sampleSize = n;
         return this;
     }
 
@@ -377,6 +396,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
             }
             switch (method) {
             case PARTITION_USERS:
+            case SAMPLE_USERS:
                 writeTTFilesByUsers(trainWriters, testWriters);
                 break;
             case PARTITION_RATINGS:
@@ -408,11 +428,11 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
                 int foldNum = splits.get(history.getUserId());
                 // FIXME Use filtered streaming
                 List<Rating> ratings = new ArrayList<Rating>(history.filter(Rating.class));
-                final int p = mode.partition(ratings, getProject().getRandom());
                 final int n = ratings.size();
 
                 for (int f = 0; f < partitionCount; f++) {
                     if (f == foldNum) {
+                        final int p = mode.partition(ratings, getProject().getRandom());
                         for (int j = 0; j < p; j++) {
                             writeRating(trainWriters[f], ratings.get(j));
                         }
@@ -484,23 +504,56 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      * Split users ids to n splits, where n is the partitionCount
      *
      * @param dao The DAO of the source file
-     * @return a map of users to partition numbers.
+     * @return a map of users to partition numbers. Users not in a partition will return -1.
      */
     protected Long2IntMap splitUsers(UserDAO dao) {
         Long2IntMap userMap = new Long2IntOpenHashMap();
-        LongArrayList users = new LongArrayList(dao.getUserIds());
-        LongLists.shuffle(users, getProject().getRandom());
-        LongListIterator iter = users.listIterator();
-        while (iter.hasNext()) {
-            final int idx = iter.nextIndex();
-            final long user = iter.nextLong();
-            userMap.put(user, idx % partitionCount);
+        userMap.defaultReturnValue(-1);
+
+        switch (method) {
+        case PARTITION_USERS:
+            partitionUsers(userMap, dao.getUserIds());
+            break;
+        case SAMPLE_USERS:
+            sampleUsers(userMap, dao.getUserIds());
+            break;
+        default:
+            throw new RuntimeException("why is splitUsers running for non-user method?");
         }
 
-        logger.info("Partitioned {} users", userMap.size());
         return userMap;
     }
-    
+
+    private void sampleUsers(Long2IntMap userMap, LongSet users) {
+        if (partitionCount * sampleSize > users.size()) {
+            logger.warn("cannot make {} disjoint samples of {} from {} users, partitioning",
+                        partitionCount, sampleSize, users.size());
+            partitionUsers(userMap, users);
+        } else {
+            logger.info("Sampling {} users into {} disjoint samples of {}",
+                        users.size(), partitionCount, sampleSize);
+            long[] userArray = users.toLongArray();
+            LongArrays.shuffle(userArray, getProject().getRandom());
+            int i = 0;
+            for (int p = 0; p < partitionCount; p++) {
+                final int start = i;
+                for (; i < userArray.length && i - start < sampleSize; i++) {
+                    userMap.put(userArray[i], p);
+                }
+            }
+        }
+    }
+
+    private void partitionUsers(Long2IntMap userMap, LongSet users) {
+        logger.info("Splititng {} users into {} partitions", users.size(), partitionCount);
+        long[] userArray = users.toLongArray();
+        LongArrays.shuffle(userArray, getProject().getRandom());
+        for (int i = 0; i < userArray.length; i++) {
+            final long user = userArray[i];
+            userMap.put(user, i % partitionCount);
+        }
+    }
+
     /**
      * Get the train-test splits as data sets.
      * 

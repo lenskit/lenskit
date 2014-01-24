@@ -35,5 +35,10 @@ public enum CrossfoldMethod {
     /**
      * Partition the ratings into (roughly) equal sets.
      */
-    PARTITION_RATINGS
+    PARTITION_RATINGS,
+
+    /**
+     * Sample users for each partition.
+     */
+    SAMPLE_USERS
 }
