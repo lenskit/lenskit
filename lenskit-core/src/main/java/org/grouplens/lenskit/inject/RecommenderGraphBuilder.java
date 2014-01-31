@@ -21,11 +21,10 @@
 package org.grouplens.lenskit.inject;
 
 import com.google.common.base.Function;
-import com.google.common.base.Functions;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.*;
 import org.grouplens.grapht.BindingFunctionBuilder;
+import org.grouplens.grapht.context.ContextMatcher;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.CachePolicy;
 import org.grouplens.grapht.reflect.CachedSatisfaction;
@@ -33,6 +32,7 @@ import org.grouplens.grapht.reflect.Desires;
 import org.grouplens.grapht.solver.*;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 
@@ -48,20 +48,9 @@ public class RecommenderGraphBuilder {
     private ClassLoader classLoader;
     private List<BindingFunctionBuilder> configs = Lists.newArrayList();
     private Set<Class<?>> roots = Sets.newHashSet();
-    private Function<BindingFunction, BindingFunction> bindingTransform = Functions.identity();
 
     public void setClassLoader(ClassLoader loader) {
         classLoader = loader;
-    }
-
-    /**
-     * Set a function to transform the bind rules used to build the dependency solver.
-     * @param func The transform function.
-     * @return The builder (for chaining).
-     */
-    public RecommenderGraphBuilder setBindingTransform(Function<BindingFunction,BindingFunction> func) {
-        bindingTransform = func;
-        return this;
     }
 
     /**
@@ -104,11 +93,24 @@ public class RecommenderGraphBuilder {
      * @return The dependency solver.
      */
     public DependencySolver buildDependencySolver() {
+        return buildDependencySolverImpl(SolveDirection.SOLVE);
+    }
+
+    /**
+     * Build a dependency 'unsolver' from the provided bindings. The resulting solver, when rewriting
+     * a graph, will replace bound targets with placeholders.
+     * @return The dependency solver.
+     */
+    public DependencySolver buildDependencyUnsolver() {
+        return buildDependencySolverImpl(SolveDirection.UNSOLVE);
+    }
+
+    public DependencySolver buildDependencySolverImpl(SolveDirection direction) {
         DependencySolverBuilder dsb = DependencySolver.newBuilder();
         for (BindingFunctionBuilder cfg: Lists.reverse(configs)) {
-            dsb.addBindingFunction(bindingTransform.apply(cfg.build(BindingFunctionBuilder.RuleSet.EXPLICIT)));
-            dsb.addBindingFunction(bindingTransform.apply(cfg.build(BindingFunctionBuilder.RuleSet.INTERMEDIATE_TYPES)));
-            dsb.addBindingFunction(bindingTransform.apply(cfg.build(BindingFunctionBuilder.RuleSet.SUPER_TYPES)));
+            dsb.addBindingFunction(direction.transform(cfg.build(BindingFunctionBuilder.RuleSet.EXPLICIT)));
+            dsb.addBindingFunction(direction.transform(cfg.build(BindingFunctionBuilder.RuleSet.INTERMEDIATE_TYPES)));
+            dsb.addBindingFunction(direction.transform(cfg.build(BindingFunctionBuilder.RuleSet.SUPER_TYPES)));
         }
         // default desire function cannot trigger rewrites
         dsb.addBindingFunction(DefaultDesireBindingFunction.create(classLoader), false);
@@ -124,5 +126,41 @@ public class RecommenderGraphBuilder {
         }
 
         return solver.getGraph();
+    }
+
+    private static enum SolveDirection {
+        SOLVE {
+            @Override
+            public BindingFunction transform(BindingFunction bindFunction) {
+                return bindFunction;
+            }
+        },
+        UNSOLVE {
+            @Override
+            public BindingFunction transform(BindingFunction bindFunction) {
+                if (bindFunction instanceof RuleBasedBindingFunction) {
+                    RuleBasedBindingFunction rbf = (RuleBasedBindingFunction) bindFunction;
+                    ListMultimap<ContextMatcher, BindRule> bindings = rbf.getRules();
+                    ListMultimap<ContextMatcher, BindRule> newBindings;
+                    newBindings = Multimaps.transformValues(bindings, new Function<BindRule, BindRule>() {
+                        @Nullable
+                        @Override
+                        public BindRule apply(@Nullable BindRule rule) {
+                            Preconditions.checkNotNull(rule, "cannot apply to null binding function");
+                            assert rule != null;
+                            BindRuleBuilder builder = rule.newCopyBuilder();
+                            Class<?> type = builder.getDependencyType();
+                            return builder.setSatisfaction(new PlaceholderSatisfaction(type))
+                                          .build();
+                        }
+                    });
+                    return new RuleBasedBindingFunction(newBindings);
+                } else {
+                    throw new IllegalArgumentException("cannot transform bind function " + bindFunction);
+                }
+            }
+        };
+
+        public abstract BindingFunction transform(BindingFunction bindFunction);
     }
 }
