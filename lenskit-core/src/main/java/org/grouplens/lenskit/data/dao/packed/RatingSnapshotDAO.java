@@ -22,7 +22,6 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.grapht.annotation.DefaultBoolean;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.grapht.annotation.DefaultString;
 import org.grouplens.lenskit.core.Parameter;
@@ -32,6 +31,7 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.UseTimestamps;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.slf4j.Logger;
@@ -191,14 +191,6 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.PARAMETER, ElementType.METHOD})
     public static @interface RatingSnapshotPath {}
-
-    @Documented
-    @Qualifier
-    @Parameter(Boolean.class)
-    @DefaultBoolean(true)
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.PARAMETER, ElementType.METHOD})
-    public static @interface UseTimestamps {}
 
     public static class Builder implements Provider<RatingSnapshotDAO> {
         private final String path;
