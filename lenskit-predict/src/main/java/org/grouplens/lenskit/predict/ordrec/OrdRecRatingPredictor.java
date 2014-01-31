@@ -20,7 +20,12 @@
  */
 package org.grouplens.lenskit.predict.ordrec;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import mikera.vectorz.AVector;
+import mikera.vectorz.IVector;
+import mikera.vectorz.Vector;
+import mikera.vectorz.impl.ImmutableVector;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.basic.AbstractRatingPredictor;
 import org.grouplens.lenskit.collections.LongUtils;
@@ -31,28 +36,39 @@ import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.transform.quantize.Quantizer;
-import org.grouplens.lenskit.vectors.*;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 /**
- * The implementation for the ordrec algorithm.
+ * Rating predictor using OrdRec to map scores to ratings.
  * The model views user feedback as ordinal. The framework is based on
  * a pointwise (rather than pairwise) ordinal approach, it can wrap existing
  * CF methods, and upgrade them into being able to tackle ordinal feedback.
- * The implementation is based on Koren's paper:
- * <a href="http://dl.acm.org/citation.cfm?doid=2043932.2043956">
+ * The implementation is based on <a href="http://dl.acm.org/citation.cfm?doid=2043932.2043956">Koren's paper</a>:
+ *
+ * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class OrdRecRatingPredictor extends AbstractRatingPredictor {
+    private static final Logger logger = LoggerFactory.getLogger(OrdRecRatingPredictor.class);
+    public static final TypedSymbol<IVector> RATING_PROBABILITY_CHANNEL =
+            TypedSymbol.of(IVector.class, "org.grouplens.lenskit.predict.ordrec.RatingProbability");
+
     private ItemScorer itemScorer;
     private UserEventDAO userEventDao;
     private Quantizer quantizer;
     private final double learningRate;
     private final double regTerm;
     private final int iterationCount;
+    private final boolean reportDistribution;
 
     /**
      * This is a helper class contains all parameters the Ordrec need:
@@ -64,8 +80,8 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
 
         private int levelCount;
         private double t1;
-        private MutableVec beta;
-        ImmutableVec qtzValues;
+        private AVector beta;
+        private ImmutableVector qtzValues;
 
         /**
          * The constructor of OrdRecParameter.
@@ -78,9 +94,10 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
          */
         private OrdRecModel (Quantizer qtz) {
             qtzValues = qtz.getValues();
-            levelCount = qtzValues.size();
+            levelCount = qtzValues.length();
             t1 = (qtzValues.get(0) + qtzValues.get(1))/2;
-            beta = MutableVec.create(levelCount-2);
+            beta = Vector.createLength(levelCount - 2);
+
             /*
 //            I comment this part so that you can double check the correction of it
             for(int i = 1; i <= beta.length; i++ ) {
@@ -88,8 +105,8 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
             }
             */
             double tr = t1;
-            for (int i = 1; i <= beta.size(); i++) {
-                double trnext = (qtzValues.get(i) + qtzValues.get(i+1)) / 2;
+            for (int i = 1; i <= beta.length(); i++) {
+                double trnext = (qtzValues.get(i) + qtzValues.get(i+1)) * 0.5;
                 beta.set(i-1, Math.log(trnext - tr));
                 tr = trnext;
             }
@@ -109,7 +126,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
          *
          * @return beta set.
          */
-        public MutableVec getBeta() {
+        public AVector getBeta() {
             return beta;
         }
 
@@ -134,7 +151,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
                 return Double.NEGATIVE_INFINITY;
             } else if(thresholdIndex == 0){
                 return tr;
-            } else if(thresholdIndex > beta.size()) {
+            } else if(thresholdIndex > beta.length()) {
                 return Double.POSITIVE_INFINITY;
             } else {
                 for(int k = 0; k < thresholdIndex; k++)
@@ -194,11 +211,11 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         private void train(SparseVector ratings, MutableSparseVector scores) {
 
 
-            MutableVec dbeta = MutableVec.create(beta.size());
+            Vector dbeta = Vector.createLength(beta.length());
             double dt1;
             // n is the number of iteration;
             for (int j = 0; j < iterationCount; j++ ) {
-                for(VectorEntry rating : ratings) {
+                for (VectorEntry rating: ratings.fast()) {
                     long iid = rating.getKey();
                     double score = scores.get(iid);
                     int r = quantizer.index(rating.getValue());
@@ -211,13 +228,11 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
                             - probLessR_1 * (1 - probLessR_1) * derivateOfBeta(r-1, 0, t1) - regTerm*t1);
 
                     double dbetaK;
-                    for(int k = 0; k < beta.size(); k++) {
-
+                    for(int k = 0; k < beta.length(); k++) {
                         dbetaK = learningRate / probEqualR * ( probLessR * (1 - probLessR) *
                                 derivateOfBeta(r, k+1, beta.get(k)) - probLessR_1 * (1 - probLessR_1) *
                                 derivateOfBeta(r-1, k+1, beta.get(k)) - regTerm*beta.get(k));
                         dbeta.set(k, dbetaK);
-
                     }
                     t1 = t1 + dt1;
                     beta.add(dbeta);
@@ -230,7 +245,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
          * @param score The score
          * @param vec The MutableVec to be filled in.
          */
-        public void getProbDistribution(double score, MutableVec vec) {
+        public void getProbDistribution(double score, Vector vec) {
             double pre = getProbLE(score, 0);
             vec.set(0, pre);
             for(int i = 1; i < getLevelCount(); i++) {
@@ -239,6 +254,17 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
                 pre = pro;
             }
 
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("OrdRecParams(t1=")
+              .append(t1)
+              .append(", beta=")
+              .append(beta)
+              .append(")");
+            return sb.toString();
         }
     }
 
@@ -252,15 +278,18 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
      * @param reg The Regularization
      */
     @Inject
-    public OrdRecRatingPredictor(ItemScorer scorer, UserEventDAO dao, Quantizer quantizer, @LearningRate double rate,
-                                 @RegularizationTerm double reg, @IterationCount int niters) {
+    public OrdRecRatingPredictor(ItemScorer scorer, UserEventDAO dao, Quantizer quantizer,
+                                 @LearningRate double rate,
+                                 @RegularizationTerm double reg,
+                                 @IterationCount int niters,
+                                 @ReportRatingDistribution boolean reportDist) {
         this.userEventDao = dao;
         this.itemScorer = scorer;
         this.quantizer = quantizer;
         this.learningRate = rate;
         this.regTerm = reg;
         this.iterationCount = niters;
-
+        reportDistribution = reportDist;
     }
 
 
@@ -272,6 +301,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         this.learningRate = 1e-3;
         this.regTerm = 0.015;
         this.iterationCount = 1000;
+        reportDistribution = false;
     }
 
     /**
@@ -294,21 +324,39 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
 
     @Override
     public void predict(long uid, @Nonnull MutableSparseVector predictions) {
-        OrdRecModel para = new OrdRecModel(quantizer);
+        logger.debug("predicting {} items for {}", predictions.keyDomain().size(), uid);
+        OrdRecModel params = new OrdRecModel(quantizer);
         SparseVector ratings = makeUserVector(uid, userEventDao);
         LongSet keySet = LongUtils.setUnion(ratings.keySet(), predictions.keyDomain());
         MutableSparseVector scores = MutableSparseVector.create(keySet);
         itemScorer.score(uid, scores);
-        para.train(ratings, scores);
-        MutableVec probabilities = MutableVec.create(para.getLevelCount());
+        params.train(ratings, scores);
+        logger.debug("trained parameters for {}: {}", uid, params);
+
+        Vector probabilities = Vector.createLength(params.getLevelCount());
+        Long2ObjectMap<IVector> distChannel = null;
+        if (reportDistribution) {
+            distChannel = predictions.addChannel(RATING_PROBABILITY_CHANNEL);
+        }
 
         for (VectorEntry e: predictions.fast(VectorEntry.State.EITHER)) {
             long iid = e.getKey();
             double score = scores.get(iid);
-            para.getProbDistribution(score, probabilities);
-            int ratingIndex = probabilities.largestDimension();
+            params.getProbDistribution(score, probabilities);
 
-            predictions.set(e, quantizer.getIndexValue(ratingIndex));
+            int mlIdx = -1;
+            double mlProb = 0;
+            for (int i = 0; i < probabilities.length(); i++) {
+                double prob = probabilities.get(i);
+                if (prob > mlProb) {
+                    mlIdx = i;
+                    mlProb = prob;
+                }
+            }
+            predictions.set(e, quantizer.getIndexValue(mlIdx));
+            if (distChannel != null) {
+                distChannel.put(e.getKey(), probabilities.immutable());
+            }
         }
     }
 }

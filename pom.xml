@@ -30,6 +30,17 @@
     <tag>lenskit-2.0.5</tag>
   </scm>
 
+  <developers>
+    <developer>
+      <name>Michael Ekstrand</name>
+      <url>http://elehack.net</url>
+      <roles>
+        <role>Founder</role>
+        <role>Project leader</role>
+      </roles>
+    </developer>
+  </developers>
+
   <repositories>
     <repository>
       <id>sonatype-nexus-snapshots</id>
@@ -187,7 +198,7 @@
       <dependency>
         <groupId>org.grouplens.grapht</groupId>
         <artifactId>grapht</artifactId>
-        <version>0.7.0-SNAPSHOT</version>
+        <version>0.7.0</version>
       </dependency>
 
       <!-- test libraries -->

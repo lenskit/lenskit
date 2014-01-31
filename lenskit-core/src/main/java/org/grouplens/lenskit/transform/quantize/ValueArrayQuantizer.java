@@ -20,13 +20,11 @@
  */
 package org.grouplens.lenskit.transform.quantize;
 
+import com.google.common.base.Preconditions;
+import mikera.vectorz.impl.ImmutableVector;
 import org.grouplens.lenskit.core.Shareable;
 
-import com.google.common.base.Preconditions;
-import org.grouplens.lenskit.vectors.ImmutableVec;
-
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * Abstract quantizer implementation using a pre-generated array of possible
@@ -42,7 +40,7 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
      * The values to quantize to.  Subclasses must not modify this array after the object
      * has been constructed.
      */
-    protected final ImmutableVec values;
+    protected final ImmutableVector values;
 
     /**
      * Construct a new quantizer using the specified array of values.
@@ -51,22 +49,22 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
      */
     public ValueArrayQuantizer(double[] vs) {
         Preconditions.checkArgument(vs.length > 0, "must have at least one value");
-        values = ImmutableVec.create(vs);
+        values = ImmutableVector.of(vs);
     }
 
-    public ValueArrayQuantizer(ImmutableVec vs) {
-        Preconditions.checkArgument(vs.size() > 0, "must have at least one value");
+    public ValueArrayQuantizer(ImmutableVector vs) {
+        Preconditions.checkArgument(vs.length() > 0, "must have at least one value");
         values = vs;
     }
 
     @Override
-    public ImmutableVec getValues() {
+    public ImmutableVector getValues() {
         return values;
     }
 
     @Override
     public int getCount() {
-        return values.size();
+        return values.length();
     }
 
     @Override
@@ -80,7 +78,7 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
 
     @Override
     public int index(double val) {
-        final int n = values.size();
+        final int n = values.length();
         assert n > 0;
         int closest = -1;
         double closev = Double.MAX_VALUE;

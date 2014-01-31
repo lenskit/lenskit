@@ -34,6 +34,10 @@
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>net.mikera</groupId>
+      <artifactId>vectorz</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -79,7 +83,7 @@
                 <phase>generate-resources</phase>
                 <configuration>
                   <target>
-                    <ant antfile="${basedir}/src/build/git-log.ant" target="revlist"/>
+                    <ant antfile="${basedir}/src/build/git-log.ant" target="revlist" />
                   </target>
                 </configuration>
               </execution>
