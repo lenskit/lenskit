@@ -52,7 +52,11 @@ public class CSVDataSource extends AbstractDataSource {
 
     @Override
     public String getName() {
-        return name;
+        if (name == null) {
+            return sourceFile.getName();
+        } else {
+            return name;
+        }
     }
 
     public File getFile() {
@@ -76,5 +80,14 @@ public class CSVDataSource extends AbstractDataSource {
     @Override
     public EventDAO getEventDAO() {
         return dao;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        str.append("CSVData(")
+           .append(getName())
+           .append(")");
+        return str.toString();
     }
 }
