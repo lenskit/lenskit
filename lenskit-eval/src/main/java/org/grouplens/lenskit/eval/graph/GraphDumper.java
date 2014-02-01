@@ -305,6 +305,9 @@ public class GraphDumper {
                     String port = String.format("%s:%d", id, bld.getLastDependencyPort());
                     EdgeBuilder eb = EdgeBuilder.create(port, tid)
                                                 .set("arrowhead", "vee");
+                    if (targetNode.getLabel().isFixed()) {
+                        eb.set("arrowtail", "crow");
+                    }
                     if (GraphtUtils.desireIsTransient(dep)) {
                         eb.set("style", "dashed");
                     }

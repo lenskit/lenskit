@@ -114,7 +114,9 @@ public final class RecommenderInstantiator {
                 } else {
                     instanceSat = Satisfactions.instance(obj);
                 }
-                CachedSatisfaction newLabel = new CachedSatisfaction(instanceSat, label.getCachePolicy());
+                CachedSatisfaction newLabel = new CachedSatisfaction(instanceSat,
+                                                                     label.getCachePolicy(),
+                                                                     label.isFixed());
                 // build new node with replacement label
                 DAGNodeBuilder<CachedSatisfaction,DesireChain> bld = DAGNode.newBuilder(newLabel);
                 // retain all non-transient edges
@@ -143,7 +145,9 @@ public final class RecommenderInstantiator {
                 CachedSatisfaction label = node.getLabel();
                 if (!label.getSatisfaction().hasInstance()) {
                     Satisfaction instanceSat = Satisfactions.nullOfType(label.getSatisfaction().getErasedType());
-                    CachedSatisfaction newLbl = new CachedSatisfaction(instanceSat, label.getCachePolicy());
+                    CachedSatisfaction newLbl = new CachedSatisfaction(instanceSat,
+                                                                       label.getCachePolicy(),
+                                                                       label.isFixed());
                     // build new node with replacement label
                     DAGNodeBuilder<CachedSatisfaction,DesireChain> bld = DAGNode.newBuilder(newLbl);
                     // retain all non-transient edges
