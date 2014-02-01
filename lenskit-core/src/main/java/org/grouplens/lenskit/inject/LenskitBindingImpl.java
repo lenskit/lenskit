@@ -86,6 +86,11 @@ class LenskitBindingImpl<T> implements LenskitBinding<T> {
     }
 
     @Override
+    public Binding<T> fixed() {
+        return wrap(binding.fixed());
+    }
+
+    @Override
     public void to(@Nonnull Class<? extends T> impl, boolean chained) {
         binding.to(impl, chained);
     }
