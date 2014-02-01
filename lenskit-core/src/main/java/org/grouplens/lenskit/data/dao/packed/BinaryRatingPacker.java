@@ -71,6 +71,8 @@ public class BinaryRatingPacker implements Closeable {
     public BinaryRatingPacker(File file, EnumSet<BinaryFormatFlag> flags) throws IOException {
         format = new BinaryFormat(flags);
         outputFile = file;
+
+        logger.debug("opening binary pack file {}", outputFile);
         output = new RandomAccessFile(file, "rw");
         channel = output.getChannel();
 
@@ -143,6 +145,7 @@ public class BinaryRatingPacker implements Closeable {
     @Override
     public void close() throws IOException {
         try {
+            logger.debug("closing binary pack file {}", outputFile);
             if (needsSorting) {
                 throw new UnsupportedOperationException("sorting not yet supported");
             }
