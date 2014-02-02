@@ -20,27 +20,22 @@
  */
 package org.grouplens.lenskit.core;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimaps;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.grapht.context.ContextMatcher;
+import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.CachedSatisfaction;
-import org.grouplens.grapht.solver.*;
+import org.grouplens.grapht.solver.DependencySolver;
+import org.grouplens.grapht.solver.DesireChain;
+import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.util.Types;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.inject.GraphtUtils;
-import org.grouplens.lenskit.inject.PlaceholderSatisfaction;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
 import org.grouplens.lenskit.inject.RecommenderInstantiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -125,7 +120,7 @@ public class LenskitRecommenderEngineBuilder {
         } catch (SolverException e) {
             throw new RecommenderBuildException("Cannot resolve recommender graph", e);
         }
-        DAGNode<CachedSatisfaction, DesireChain> graph = inst.instantiate();
+        DAGNode<CachedSatisfaction, Dependency> graph = inst.instantiate();
 
         graph = rewriteGraph(graph);
 
@@ -133,9 +128,8 @@ public class LenskitRecommenderEngineBuilder {
         return new LenskitRecommenderEngine(graph, instantiable);
     }
 
-    private DAGNode<CachedSatisfaction, DesireChain> rewriteGraph(DAGNode<CachedSatisfaction, DesireChain> graph) throws RecommenderConfigurationException {
+    private DAGNode<CachedSatisfaction, Dependency> rewriteGraph(DAGNode<CachedSatisfaction, Dependency> graph) throws RecommenderConfigurationException {
         RecommenderGraphBuilder rewriteBuilder = new RecommenderGraphBuilder();
-        rewriteBuilder.setBindingTransform(ReverseBindingTransform.INSTANCE);
         boolean rewrite = false;
         for (Pair<LenskitConfiguration,ModelDisposition> cfg: configurations) {
             switch (cfg.getRight()) {
@@ -149,7 +143,7 @@ public class LenskitRecommenderEngineBuilder {
 
         if (rewrite) {
             logger.debug("rewriting graph");
-            DependencySolver rewriter = rewriteBuilder.buildDependencySolver();
+            DependencySolver rewriter = rewriteBuilder.buildDependencyUnsolver();
             try {
                 graph = rewriter.rewrite(graph);
             } catch (SolverException e) {
@@ -157,36 +151,5 @@ public class LenskitRecommenderEngineBuilder {
             }
         }
         return graph;
-    }
-
-    private static enum ReverseBindingTransform implements Function<BindingFunction,BindingFunction> {
-        INSTANCE;
-
-        @Nonnull
-        @Override
-        public BindingFunction apply(@Nullable BindingFunction bindFunction) {
-            Preconditions.checkNotNull(bindFunction, "cannot apply to null binding function");
-            if (bindFunction instanceof RuleBasedBindingFunction) {
-                RuleBasedBindingFunction rbf = (RuleBasedBindingFunction) bindFunction;
-                ListMultimap<ContextMatcher, BindRule> bindings = rbf.getRules();
-                ListMultimap<ContextMatcher, BindRule> newBindings;
-                newBindings = Multimaps.transformValues(bindings, new Function<BindRule, BindRule>() {
-                    @Nullable
-                    @Override
-                    public BindRule apply(@Nullable BindRule rule) {
-                        Preconditions.checkNotNull(rule, "cannot apply to null binding function");
-                        assert rule != null;
-                        BindRuleBuilder builder = rule.newCopyBuilder();
-                        Class<?> type = builder.getDependencyType();
-                        return builder.setSatisfaction(new PlaceholderSatisfaction(type))
-                                      .build();
-                    }
-                });
-                return new RuleBasedBindingFunction(newBindings);
-            } else {
-                throw new IllegalArgumentException("cannot transform bind function " + bindFunction);
-            }
-        }
-
     }
 }

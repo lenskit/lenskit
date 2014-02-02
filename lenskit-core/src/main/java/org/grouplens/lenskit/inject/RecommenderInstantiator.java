@@ -25,13 +25,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.graph.DAGNodeBuilder;
 import org.grouplens.grapht.reflect.CachedSatisfaction;
 import org.grouplens.grapht.reflect.Satisfaction;
 import org.grouplens.grapht.reflect.Satisfactions;
-import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
@@ -53,16 +53,16 @@ import java.util.Set;
  */
 public final class RecommenderInstantiator {
     private static final Logger logger = LoggerFactory.getLogger(RecommenderInstantiator.class);
-    private final DAGNode<CachedSatisfaction, DesireChain> graph;
-    private final Function<? super DAGNode<CachedSatisfaction, DesireChain>, Object> instantiator;
+    private final DAGNode<CachedSatisfaction, Dependency> graph;
+    private final Function<? super DAGNode<CachedSatisfaction, Dependency>, Object> instantiator;
 
 
-    public static RecommenderInstantiator create(DAGNode<CachedSatisfaction,DesireChain> g) {
+    public static RecommenderInstantiator create(DAGNode<CachedSatisfaction,Dependency> g) {
         return new RecommenderInstantiator(g, new StaticInjector(g));
     }
 
-    public static RecommenderInstantiator create(DAGNode<CachedSatisfaction,DesireChain> g,
-                                                 Function<? super DAGNode<CachedSatisfaction,DesireChain>, Object> instantiator) {
+    public static RecommenderInstantiator create(DAGNode<CachedSatisfaction,Dependency> g,
+                                                 Function<? super DAGNode<CachedSatisfaction,Dependency>, Object> instantiator) {
         return new RecommenderInstantiator(g, instantiator);
     }
 
@@ -71,7 +71,7 @@ public final class RecommenderInstantiator {
         return create(config.buildGraph());
     }
 
-    private RecommenderInstantiator(DAGNode<CachedSatisfaction, DesireChain> g, Function<? super DAGNode<CachedSatisfaction, DesireChain>, Object> inst) {
+    private RecommenderInstantiator(DAGNode<CachedSatisfaction, Dependency> g, Function<? super DAGNode<CachedSatisfaction, Dependency>, Object> inst) {
         graph = g;
         instantiator = inst;
     }
@@ -82,7 +82,7 @@ public final class RecommenderInstantiator {
      * @return The graph.  This method returns a defensive copy, so modifying it will not modify the
      *         graph underlying this instantiator.
      */
-    public DAGNode<CachedSatisfaction, DesireChain> getGraph() {
+    public DAGNode<CachedSatisfaction, Dependency> getGraph() {
         return graph;
     }
 
@@ -95,12 +95,12 @@ public final class RecommenderInstantiator {
      * @return A new instantiated recommender graph.
      * @throws RecommenderBuildException If there is an error instantiating the graph.
      */
-    public DAGNode<CachedSatisfaction,DesireChain> instantiate() throws RecommenderBuildException {
-        return replaceShareableNodes(new Function<DAGNode<CachedSatisfaction,DesireChain>, DAGNode<CachedSatisfaction,DesireChain>>() {
+    public DAGNode<CachedSatisfaction,Dependency> instantiate() throws RecommenderBuildException {
+        return replaceShareableNodes(new Function<DAGNode<CachedSatisfaction,Dependency>, DAGNode<CachedSatisfaction,Dependency>>() {
             @Nullable
             @Override
             @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
-            public DAGNode<CachedSatisfaction,DesireChain> apply(@Nullable DAGNode<CachedSatisfaction,DesireChain> node) {
+            public DAGNode<CachedSatisfaction, Dependency> apply(@Nullable DAGNode<CachedSatisfaction, Dependency> node) {
                 Preconditions.checkNotNull(node);
                 assert node != null;
                 if (node.getLabel().getSatisfaction().hasInstance()) {
@@ -114,11 +114,12 @@ public final class RecommenderInstantiator {
                 } else {
                     instanceSat = Satisfactions.instance(obj);
                 }
-                CachedSatisfaction newLabel = new CachedSatisfaction(instanceSat, label.getCachePolicy());
+                CachedSatisfaction newLabel = new CachedSatisfaction(instanceSat,
+                                                                     label.getCachePolicy());
                 // build new node with replacement label
-                DAGNodeBuilder<CachedSatisfaction,DesireChain> bld = DAGNode.newBuilder(newLabel);
+                DAGNodeBuilder<CachedSatisfaction,Dependency> bld = DAGNode.newBuilder(newLabel);
                 // retain all non-transient edges
-                for (DAGEdge<CachedSatisfaction,DesireChain> edge: node.getOutgoingEdges()) {
+                for (DAGEdge<CachedSatisfaction, Dependency> edge: node.getOutgoingEdges()) {
                     if (!GraphtUtils.edgeIsTransient(edge)) {
                         bld.addEdge(edge.getTail(), edge.getLabel());
                     }
@@ -132,27 +133,28 @@ public final class RecommenderInstantiator {
      * Simulate instantiating a graph.
      * @return The simulated graph.
      */
-    public DAGNode<CachedSatisfaction,DesireChain> simulate() {
-        return replaceShareableNodes(new Function<DAGNode<CachedSatisfaction,DesireChain>, DAGNode<CachedSatisfaction,DesireChain>>() {
+    public DAGNode<CachedSatisfaction,Dependency> simulate() {
+        return replaceShareableNodes(new Function<DAGNode<CachedSatisfaction,Dependency>, DAGNode<CachedSatisfaction,Dependency>>() {
             @Nullable
             @Override
             @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
-            public DAGNode<CachedSatisfaction,DesireChain> apply(@Nullable DAGNode<CachedSatisfaction,DesireChain> node) {
+            public DAGNode<CachedSatisfaction,Dependency> apply(@Nullable DAGNode<CachedSatisfaction,Dependency> node) {
                 Preconditions.checkNotNull(node);
                 assert node != null;
                 CachedSatisfaction label = node.getLabel();
                 if (!label.getSatisfaction().hasInstance()) {
                     Satisfaction instanceSat = Satisfactions.nullOfType(label.getSatisfaction().getErasedType());
-                    CachedSatisfaction newLbl = new CachedSatisfaction(instanceSat, label.getCachePolicy());
+                    CachedSatisfaction newLbl = new CachedSatisfaction(instanceSat,
+                                                                       label.getCachePolicy());
                     // build new node with replacement label
-                    DAGNodeBuilder<CachedSatisfaction,DesireChain> bld = DAGNode.newBuilder(newLbl);
+                    DAGNodeBuilder<CachedSatisfaction,Dependency> bld = DAGNode.newBuilder(newLbl);
                     // retain all non-transient edges
-                    for (DAGEdge<CachedSatisfaction,DesireChain> edge: node.getOutgoingEdges()) {
+                    for (DAGEdge<CachedSatisfaction,Dependency> edge: node.getOutgoingEdges()) {
                         if (!GraphtUtils.edgeIsTransient(edge)) {
                             bld.addEdge(edge.getTail(), edge.getLabel());
                         }
                     }
-                    DAGNode<CachedSatisfaction,DesireChain> repl = bld.build();
+                    DAGNode<CachedSatisfaction,Dependency> repl = bld.build();
                     logger.debug("simulating instantiation of {}", node);
                     return repl;
                 } else {
@@ -169,21 +171,21 @@ public final class RecommenderInstantiator {
      *                  be called; if it returns a node different from its input node, the
      *                  new node will be used as a replacement for the old.
      */
-    private DAGNode<CachedSatisfaction,DesireChain> replaceShareableNodes(Function<DAGNode<CachedSatisfaction,DesireChain>,DAGNode<CachedSatisfaction,DesireChain>> replace) {
+    private DAGNode<CachedSatisfaction,Dependency> replaceShareableNodes(Function<DAGNode<CachedSatisfaction,Dependency>,DAGNode<CachedSatisfaction,Dependency>> replace) {
         logger.debug("replacing nodes in graph with {} nodes", graph.getReachableNodes().size());
-        Set<DAGNode<CachedSatisfaction,DesireChain>> toReplace = getShareableNodes(graph);
+        Set<DAGNode<CachedSatisfaction,Dependency>> toReplace = getShareableNodes(graph);
         logger.debug("found {} shared nodes", toReplace.size());
 
-        Map<DAGNode<CachedSatisfaction,DesireChain>,DAGNode<CachedSatisfaction,DesireChain>> memory = Maps.newHashMap();
-        DAGNode<CachedSatisfaction,DesireChain> newGraph = graph;
-        for (DAGNode<CachedSatisfaction,DesireChain> node : toReplace) {
+        Map<DAGNode<CachedSatisfaction,Dependency>,DAGNode<CachedSatisfaction,Dependency>> memory = Maps.newHashMap();
+        DAGNode<CachedSatisfaction, Dependency> newGraph = graph;
+        for (DAGNode<CachedSatisfaction,Dependency> node : toReplace) {
             // look up this node in case it's already been replaced due to edge modifications
             while (memory.containsKey(node)) {
                 node = memory.get(node);
             }
 
             // now look up and replace this node
-            DAGNode<CachedSatisfaction,DesireChain> repl = replace.apply(node);
+            DAGNode<CachedSatisfaction,Dependency> repl = replace.apply(node);
             if (repl != node) {
                 newGraph = newGraph.replaceNode(node, repl, memory);
             }
@@ -197,15 +199,16 @@ public final class RecommenderInstantiator {
      * Find the set of shareable nodes (objects that will be replaced with instance satisfactions in
      * the final graph).
      *
+     *
      * @param graph The graph to analyze.
      * @return The set of root nodes - nodes that need to be instantiated and removed. These nodes
      *         are in topologically sorted order.
      */
-    private LinkedHashSet<DAGNode<CachedSatisfaction, DesireChain>> getShareableNodes(DAGNode<CachedSatisfaction, DesireChain> graph) {
-        LinkedHashSet<DAGNode<CachedSatisfaction, DesireChain>> shared = Sets.newLinkedHashSet();
+    private LinkedHashSet<DAGNode<CachedSatisfaction, Dependency>> getShareableNodes(DAGNode<CachedSatisfaction, Dependency> graph) {
+        LinkedHashSet<DAGNode<CachedSatisfaction, Dependency>> shared = Sets.newLinkedHashSet();
 
-        List<DAGNode<CachedSatisfaction, DesireChain>> nodes = graph.getSortedNodes();
-        for (DAGNode<CachedSatisfaction, DesireChain> node : nodes) {
+        List<DAGNode<CachedSatisfaction, Dependency>> nodes = graph.getSortedNodes();
+        for (DAGNode<CachedSatisfaction, Dependency> node : nodes) {
             if (!GraphtUtils.isShareable(node)) {
                 continue;
             }
@@ -213,7 +216,7 @@ public final class RecommenderInstantiator {
             // see if we depend on any non-shared nodes
             // since nodes are sorted, all shared nodes will have been seen
             boolean isShared = true;
-            for (DAGEdge<CachedSatisfaction,DesireChain> edge: node.getOutgoingEdges()) {
+            for (DAGEdge<CachedSatisfaction,Dependency> edge: node.getOutgoingEdges()) {
                 if (!GraphtUtils.edgeIsTransient(edge)) {
                     isShared &= shared.contains(edge.getTail());
                 }
