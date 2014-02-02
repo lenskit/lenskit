@@ -22,9 +22,9 @@ package org.grouplens.lenskit.cli;
 
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.CachedSatisfaction;
-import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.util.Providers;
 import org.grouplens.lenskit.core.LenskitConfiguration;
@@ -76,7 +76,7 @@ public class Graph implements Command {
         return config;
     }
 
-    private DAGNode<CachedSatisfaction,DesireChain> makeGraph() throws IOException, RecommenderConfigurationException {
+    private DAGNode<CachedSatisfaction,Dependency> makeGraph() throws IOException, RecommenderConfigurationException {
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
         rgb.addConfiguration(makeDataConfig());
         for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
@@ -92,7 +92,7 @@ public class Graph implements Command {
 
     @Override
     public void execute() throws IOException, RecommenderConfigurationException {
-        DAGNode<CachedSatisfaction, DesireChain> graph = makeGraph();
+        DAGNode<CachedSatisfaction, Dependency> graph = makeGraph();
         File output = getOutputFile();
         logger.info("writing graph to {}", output);
         GraphDumper.renderGraph(graph, output);

@@ -24,6 +24,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
 import org.grouplens.grapht.BindingFunctionBuilder;
+import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.context.ContextMatcher;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.CachePolicy;
@@ -119,7 +120,7 @@ public class RecommenderGraphBuilder {
         return dsb.build();
     }
 
-    public DAGNode<CachedSatisfaction,DesireChain> buildGraph() throws SolverException {
+    public DAGNode<CachedSatisfaction,Dependency> buildGraph() throws SolverException {
         DependencySolver solver = buildDependencySolver();
         for (Class<?> root: roots) {
             solver.resolve(Desires.create(null, root, true));

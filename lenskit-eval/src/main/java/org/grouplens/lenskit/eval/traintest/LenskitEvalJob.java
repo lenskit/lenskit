@@ -22,9 +22,9 @@ package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.CachedSatisfaction;
-import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
@@ -42,7 +42,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class LenskitEvalJob extends TrainTestJob {
-    private DAGNode<CachedSatisfaction, DesireChain> recommenderGraph;
+    private DAGNode<CachedSatisfaction, Dependency> recommenderGraph;
     @Nullable
     private final ComponentCache cache;
 
@@ -54,7 +54,7 @@ class LenskitEvalJob extends TrainTestJob {
                    @Nonnull TTDataSet ds,
                    @Nonnull MeasurementSuite measures,
                    @Nonnull ExperimentOutputs out,
-                   DAGNode<CachedSatisfaction, DesireChain> graph,
+                   DAGNode<CachedSatisfaction,Dependency> graph,
                    @Nullable ComponentCache cache) {
         super(task, algo, ds, measures, out);
         recommenderGraph = graph;
@@ -71,7 +71,7 @@ class LenskitEvalJob extends TrainTestJob {
             ri = RecommenderInstantiator.create(recommenderGraph,
                                                 cache.makeInstantiator(recommenderGraph));
         }
-        DAGNode<CachedSatisfaction, DesireChain> graph = ri.instantiate();
+        DAGNode<CachedSatisfaction, Dependency> graph = ri.instantiate();
         recommender = new LenskitRecommender(graph);
         // pre-fetch the test DAO
         userEvents = dataSet.getTestData().getUserEventDAO();

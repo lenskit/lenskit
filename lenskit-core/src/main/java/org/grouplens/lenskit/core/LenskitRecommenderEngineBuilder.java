@@ -22,6 +22,7 @@ package org.grouplens.lenskit.core;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.CachedSatisfaction;
 import org.grouplens.grapht.solver.DependencySolver;
@@ -119,7 +120,7 @@ public class LenskitRecommenderEngineBuilder {
         } catch (SolverException e) {
             throw new RecommenderBuildException("Cannot resolve recommender graph", e);
         }
-        DAGNode<CachedSatisfaction, DesireChain> graph = inst.instantiate();
+        DAGNode<CachedSatisfaction, Dependency> graph = inst.instantiate();
 
         graph = rewriteGraph(graph);
 
@@ -127,7 +128,7 @@ public class LenskitRecommenderEngineBuilder {
         return new LenskitRecommenderEngine(graph, instantiable);
     }
 
-    private DAGNode<CachedSatisfaction, DesireChain> rewriteGraph(DAGNode<CachedSatisfaction, DesireChain> graph) throws RecommenderConfigurationException {
+    private DAGNode<CachedSatisfaction, Dependency> rewriteGraph(DAGNode<CachedSatisfaction, Dependency> graph) throws RecommenderConfigurationException {
         RecommenderGraphBuilder rewriteBuilder = new RecommenderGraphBuilder();
         boolean rewrite = false;
         for (Pair<LenskitConfiguration,ModelDisposition> cfg: configurations) {
