@@ -28,9 +28,9 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.io.Closer;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.UncheckedExecutionException;
+import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.reflect.CachedSatisfaction;
 import org.grouplens.grapht.reflect.Satisfaction;
 import org.grouplens.lenskit.inject.StaticInjector;
 import org.slf4j.Logger;
@@ -62,11 +62,11 @@ class ComponentCache {
     /**
      * Map of nodes to their UUIDs, used for the disk-based cache.
      */
-    private final Map<DAGNode<CachedSatisfaction,Dependency>,UUID> keyMap;
+    private final Map<DAGNode<Component,Dependency>,UUID> keyMap;
     /**
      * In-memory cache of shared components.
      */
-    private final Cache<DAGNode<CachedSatisfaction,Dependency>,Object> objectCache;
+    private final Cache<DAGNode<Component,Dependency>,Object> objectCache;
 
     /**
      * Construct a new component cache.
@@ -75,7 +75,7 @@ class ComponentCache {
      */
     public ComponentCache(@Nullable File dir) {
         cacheDir = dir;
-        keyMap = new WeakHashMap<DAGNode<CachedSatisfaction,Dependency>,UUID>();
+        keyMap = new WeakHashMap<DAGNode<Component,Dependency>,UUID>();
         objectCache = CacheBuilder.newBuilder()
                                   .softValues()
                                   .build();
@@ -86,7 +86,7 @@ class ComponentCache {
         return cacheDir;
     }
 
-    public UUID getKey(DAGNode<CachedSatisfaction,Dependency> node) {
+    public UUID getKey(DAGNode<Component,Dependency> node) {
         synchronized (keyMap) {
             UUID key = keyMap.get(node);
             if (key == null) {
@@ -97,11 +97,11 @@ class ComponentCache {
         }
     }
 
-    public Function<DAGNode<CachedSatisfaction,Dependency>,Object> makeInstantiator(DAGNode<CachedSatisfaction,Dependency> graph) {
+    public Function<DAGNode<Component,Dependency>,Object> makeInstantiator(DAGNode<Component,Dependency> graph) {
         return new Instantiator(new StaticInjector(graph));
     }
 
-    private class Instantiator implements Function<DAGNode<CachedSatisfaction,Dependency>,Object> {
+    private class Instantiator implements Function<DAGNode<Component,Dependency>,Object> {
         private final StaticInjector injector;
 
         public Instantiator(StaticInjector inj) {
@@ -110,7 +110,7 @@ class ComponentCache {
 
         @Nullable
         @Override
-        public Object apply(@Nullable DAGNode<CachedSatisfaction, Dependency> node) {
+        public Object apply(@Nullable DAGNode<Component, Dependency> node) {
             Preconditions.checkNotNull(node, "input node");
             assert node != null;
 
@@ -139,11 +139,11 @@ class ComponentCache {
     }
 
     private class NodeInstantiator implements Callable<Object> {
-        private final Function<DAGNode<CachedSatisfaction, Dependency>, Object> delegate;
-        private final DAGNode<CachedSatisfaction,Dependency> node;
+        private final Function<DAGNode<Component, Dependency>, Object> delegate;
+        private final DAGNode<Component,Dependency> node;
 
-        public NodeInstantiator(Function<DAGNode<CachedSatisfaction,Dependency>,Object> dlg,
-                                DAGNode<CachedSatisfaction,Dependency> n) {
+        public NodeInstantiator(Function<DAGNode<Component,Dependency>,Object> dlg,
+                                DAGNode<Component,Dependency> n) {
             delegate = dlg;
             node = n;
         }

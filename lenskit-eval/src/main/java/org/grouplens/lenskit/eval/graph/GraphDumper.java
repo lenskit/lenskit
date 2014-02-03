@@ -28,6 +28,7 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
 import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
@@ -59,19 +60,19 @@ public class GraphDumper {
     private static final String ROOT_ID = "root";
 
     private final GraphWriter writer;
-    private final DAGNode<CachedSatisfaction, Dependency> graph;
-    private final HashSet<DAGNode<CachedSatisfaction, Dependency>> unsharedNodes;
-    private final Map<DAGNode<CachedSatisfaction, Dependency>, String> nodeIds;
+    private final DAGNode<Component, Dependency> graph;
+    private final HashSet<DAGNode<Component, Dependency>> unsharedNodes;
+    private final Map<DAGNode<Component, Dependency>, String> nodeIds;
     private final Map<String, String> nodeTargets;
     private final Queue<GVEdge> edgeQueue;
 
-    GraphDumper(DAGNode<CachedSatisfaction, Dependency> g, Set<DAGNode<CachedSatisfaction, Dependency>> unshared, GraphWriter gw) {
+    GraphDumper(DAGNode<Component, Dependency> g, Set<DAGNode<Component, Dependency>> unshared, GraphWriter gw) {
         writer = gw;
         graph = g;
         unsharedNodes = Sets.newHashSet(unshared);
         unsharedNodes.retainAll(g.getReachableNodes());
         logger.debug("{} shared nodes", unsharedNodes.size());
-        nodeIds = new HashMap<DAGNode<CachedSatisfaction, Dependency>, String>();
+        nodeIds = new HashMap<DAGNode<Component, Dependency>, String>();
         nodeTargets = new HashMap<String, String>();
         edgeQueue = new LinkedList<GVEdge>();
     }
@@ -82,7 +83,7 @@ public class GraphDumper {
      * @param root The root node.
      * @return The ID of the root node.
      */
-    String setRoot(DAGNode<CachedSatisfaction, Dependency> root) throws IOException {
+    String setRoot(DAGNode<Component, Dependency> root) throws IOException {
         if (!nodeTargets.isEmpty()) {
             throw new IllegalStateException("root node already specificied");
         }
@@ -102,7 +103,7 @@ public class GraphDumper {
      * @param node The node to process
      * @return The node's target descriptor (ID, possibly with port).
      */
-    String process(DAGNode<CachedSatisfaction, Dependency> node) throws IOException {
+    String process(DAGNode<Component, Dependency> node) throws IOException {
         Preconditions.checkNotNull(node, "node must not be null");
         if (nodeTargets.isEmpty()) {
             throw new IllegalStateException("root node has not been set");
@@ -112,7 +113,7 @@ public class GraphDumper {
         if (id == null) {
             id = "N" + nodeIds.size();
             nodeIds.put(node, id);
-            CachedSatisfaction csat = node.getLabel();
+            Component csat = node.getLabel();
             assert csat != null;
             Satisfaction sat = csat.getSatisfaction();
             try {
@@ -151,17 +152,17 @@ public class GraphDumper {
     }
 
     private class Visitor implements SatisfactionVisitor<String> {
-        private final DAGNode<CachedSatisfaction, Dependency> currentNode;
+        private final DAGNode<Component, Dependency> currentNode;
         private final String nodeId;
         private final Satisfaction satisfaction;
 
-        private Visitor(DAGNode<CachedSatisfaction, Dependency> nd, String id) {
+        private Visitor(DAGNode<Component, Dependency> nd, String id) {
             currentNode = nd;
             nodeId = id;
             if (currentNode == null) {
                 throw new IllegalStateException("dumper not running");
             }
-            CachedSatisfaction csat = currentNode.getLabel();
+            Component csat = currentNode.getLabel();
             assert csat != null;
             satisfaction = csat.getSatisfaction();
         }
@@ -274,15 +275,15 @@ public class GraphDumper {
             bld.setShareable(pid == null && GraphtUtils.isShareable(currentNode))
                .setShared(!unsharedNodes.contains(currentNode))
                .setIsProvider(pid != null);
-            List<DAGEdge<CachedSatisfaction, Dependency>> edges = Lists.newArrayList(currentNode.getOutgoingEdges());
+            List<DAGEdge<Component, Dependency>> edges = Lists.newArrayList(currentNode.getOutgoingEdges());
             Collections.sort(edges, EDGE_ORDER);
-            for (DAGEdge<CachedSatisfaction, Dependency> e: edges) {
+            for (DAGEdge<Component, Dependency> e: edges) {
                 Desire dep = e.getLabel().getInitialDesire();
                 Annotation q = dep.getInjectionPoint().getQualifier();
-                DAGNode<CachedSatisfaction, Dependency> targetNode = e.getTail();
+                DAGNode<Component, Dependency> targetNode = e.getTail();
                 if (q != null && q.annotationType().getAnnotation(Parameter.class) != null) {
                     logger.debug("dumping parameter {}", q);
-                    CachedSatisfaction tcsat = targetNode.getLabel();
+                    Component tcsat = targetNode.getLabel();
                     assert tcsat != null;
                     Satisfaction tsat = tcsat.getSatisfaction();
                     Object val = tsat.visit(new AbstractSatisfactionVisitor<Object>(null) {
@@ -321,10 +322,10 @@ public class GraphDumper {
         }
     }
 
-    private static Function<DAGEdge<CachedSatisfaction,Dependency>,List<String>> ORDER_KEY = new Function<DAGEdge<CachedSatisfaction, Dependency>, List<String>>() {
+    private static Function<DAGEdge<Component,Dependency>,List<String>> ORDER_KEY = new Function<DAGEdge<Component, Dependency>, List<String>>() {
         @Nullable
         @Override
-        public List<String> apply(@Nullable DAGEdge<CachedSatisfaction,Dependency> input) {
+        public List<String> apply(@Nullable DAGEdge<Component,Dependency> input) {
             if (input == null) {
                 throw new NullPointerException("cannot order null edge");
             }
@@ -359,7 +360,7 @@ public class GraphDumper {
         }
     };
 
-    private static Ordering<DAGEdge<CachedSatisfaction, Dependency>> EDGE_ORDER = Ordering.<String>natural()
+    private static Ordering<DAGEdge<Component, Dependency>> EDGE_ORDER = Ordering.<String>natural()
                                                        .lexicographical()
                                                        .onResultOf(ORDER_KEY);
 
@@ -370,12 +371,12 @@ public class GraphDumper {
      * @param graphvizFile The file to write the graph to.
      * @throws IOException
      */
-    public static void renderGraph(DAGNode<CachedSatisfaction,Dependency> graph,
+    public static void renderGraph(DAGNode<Component,Dependency> graph,
                                    File graphvizFile) throws IOException {
         logger.debug("graph has {} nodes", graph.getReachableNodes().size());
         logger.debug("simulating instantiation");
         RecommenderInstantiator instantiator = RecommenderInstantiator.create(graph);
-        DAGNode<CachedSatisfaction, Dependency> unshared = instantiator.simulate();
+        DAGNode<Component, Dependency> unshared = instantiator.simulate();
         logger.debug("unshared graph has {} nodes", unshared.getReachableNodes().size());
         Closer close = Closer.create();
         try {
@@ -385,9 +386,9 @@ public class GraphDumper {
             logger.debug("writing root node");
             String rid = dumper.setRoot(graph);
             // process each other node & add an edge
-            for (DAGEdge<CachedSatisfaction, Dependency> e: graph.getOutgoingEdges()) {
-                DAGNode<CachedSatisfaction, Dependency> target = e.getTail();
-                CachedSatisfaction csat = target.getLabel();
+            for (DAGEdge<Component, Dependency> e: graph.getOutgoingEdges()) {
+                DAGNode<Component, Dependency> target = e.getTail();
+                Component csat = target.getLabel();
                 if (!satIsNull(csat.getSatisfaction())) {
                     logger.debug("processing node {}", csat.getSatisfaction());
                     String id = dumper.process(target);

@@ -20,10 +20,9 @@
  */
 package org.grouplens.lenskit.core;
 
+import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.reflect.CachedSatisfaction;
-import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.inject.StaticInjector;
 
@@ -51,7 +50,7 @@ public class LenskitRecommender implements Recommender {
      *
      * @param graph This recommender's configuration graph.
      */
-    public LenskitRecommender(DAGNode<CachedSatisfaction,Dependency> graph) {
+    public LenskitRecommender(DAGNode<Component,Dependency> graph) {
         injector = new StaticInjector(graph);
     }
 

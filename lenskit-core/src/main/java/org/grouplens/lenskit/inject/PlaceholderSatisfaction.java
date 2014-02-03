@@ -20,7 +20,11 @@
  */
 package org.grouplens.lenskit.inject;
 
-import org.grouplens.grapht.reflect.*;
+import org.grouplens.grapht.CachePolicy;
+import org.grouplens.grapht.reflect.Desire;
+import org.grouplens.grapht.reflect.ProviderSource;
+import org.grouplens.grapht.reflect.Satisfaction;
+import org.grouplens.grapht.reflect.SatisfactionVisitor;
 import org.grouplens.grapht.util.ClassProxy;
 
 import javax.inject.Provider;

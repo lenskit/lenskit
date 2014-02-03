@@ -21,9 +21,9 @@
 package org.grouplens.lenskit.core;
 
 import com.google.common.base.Preconditions;
+import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.reflect.CachedSatisfaction;
 import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.lenskit.RecommenderBuildException;
@@ -51,10 +51,10 @@ import java.io.*;
 public final class LenskitRecommenderEngine implements RecommenderEngine {
     private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngine.class);
 
-    private final DAGNode<CachedSatisfaction, Dependency> graph;
+    private final DAGNode<Component, Dependency> graph;
     private final boolean instantiable;
 
-    LenskitRecommenderEngine(DAGNode<CachedSatisfaction,Dependency> dependencies,
+    LenskitRecommenderEngine(DAGNode<Component,Dependency> dependencies,
                              boolean instantiable) {
         this.graph = dependencies;
         this.instantiable = instantiable;
@@ -181,7 +181,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      */
     public LenskitRecommender createRecommender(LenskitConfiguration config) throws RecommenderConfigurationException {
         Preconditions.checkNotNull(config, "extra configuration");
-        final DAGNode<CachedSatisfaction, Dependency> toBuild;
+        final DAGNode<Component, Dependency> toBuild;
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
         rgb.addBindings(config.getBindings());
         DependencySolver solver = rgb.buildDependencySolver();
@@ -209,7 +209,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      *
      * @return The dependency graph.
      */
-    DAGNode<CachedSatisfaction, Dependency> getGraph() {
+    DAGNode<Component, Dependency> getGraph() {
         return graph;
     }
 

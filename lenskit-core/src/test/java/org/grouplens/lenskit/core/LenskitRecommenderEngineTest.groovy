@@ -20,8 +20,8 @@
  */
 package org.grouplens.lenskit.core
 
+import org.grouplens.grapht.Component
 import org.grouplens.grapht.graph.DAGNode
-import org.grouplens.grapht.reflect.CachedSatisfaction
 import org.grouplens.grapht.reflect.Satisfaction
 import org.grouplens.grapht.reflect.internal.InstanceSatisfaction
 import org.grouplens.grapht.solver.DesireChain
@@ -191,8 +191,8 @@ public class LenskitRecommenderEngineTest {
                    closeTo(0.042d, 1.0e-6d))
     }
 
-    private void assertNodeNotEVDao(DAGNode<CachedSatisfaction,DesireChain> node) {
-        CachedSatisfaction lbl = node.getLabel()
+    private void assertNodeNotEVDao(DAGNode<Component,DesireChain> node) {
+        def lbl = node.getLabel()
         if (lbl == null) {
             return
         }
@@ -231,9 +231,9 @@ public class LenskitRecommenderEngineTest {
                                              .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
                                              .build()
 
-        DAGNode<CachedSatisfaction,DesireChain> g = engine.getGraph()
+        def g = engine.getGraph()
         // make sure we have no record of an instance dao
-        for (DAGNode<CachedSatisfaction,DesireChain> n: g.getReachableNodes()) {
+        for (n in g.getReachableNodes()) {
             assertNodeNotEVDao(n)
         }
     }

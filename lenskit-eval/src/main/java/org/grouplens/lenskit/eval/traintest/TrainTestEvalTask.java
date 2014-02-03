@@ -28,11 +28,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
 import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.graph.DAGNodeBuilder;
 import org.grouplens.grapht.graph.MergePool;
-import org.grouplens.grapht.reflect.CachedSatisfaction;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.eval.AbstractTask;
@@ -525,7 +525,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                           DAGNode<JobGraph.Node, JobGraph.Edge> commonDep) throws RecommenderConfigurationException {
         List<DAGNode<JobGraph.Node, JobGraph.Edge>> nodes = Lists.newArrayList();
         for (AlgorithmInstance algo: experiments.getAlgorithms()) {
-            DAGNode<CachedSatisfaction,Dependency> graph =
+            DAGNode<Component,Dependency> graph =
                     algo.buildRecommenderGraph(dataset.getTrainingData().getConfiguration());
             TrainTestJob job = new LenskitEvalJob(this, algo, dataset, measurements,
                                                   outputs.getPrefixed(algo, dataset),
@@ -544,14 +544,14 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     makeMergedAlgoNodes(ExperimentSuite experiments, MeasurementSuite measurements, TTDataSet dataset, ExperimentOutputs outputs,
                         DAGNode<JobGraph.Node, JobGraph.Edge> commonDep) throws RecommenderConfigurationException {
         List<DAGNode<JobGraph.Node, JobGraph.Edge>> nodes = Lists.newArrayList();
-        MergePool<CachedSatisfaction, Dependency> mergePool = MergePool.create();
-        List<DAGNode<CachedSatisfaction,Dependency>> graphs = Lists.newArrayList();
-        Set<DAGNode<CachedSatisfaction,Dependency>> allNodes = Sets.newHashSet();
+        MergePool<Component, Dependency> mergePool = MergePool.create();
+        List<DAGNode<Component,Dependency>> graphs = Lists.newArrayList();
+        Set<DAGNode<Component,Dependency>> allNodes = Sets.newHashSet();
         ComponentCache cache = new ComponentCache(cacheDir);
         for (AlgorithmInstance algo: experiments.getAlgorithms()) {
             logger.debug("building graph for algorithm {}", algo);
             // Build the graph
-            DAGNode<CachedSatisfaction, Dependency> graph =
+            DAGNode<Component, Dependency> graph =
                     algo.buildRecommenderGraph(dataset.getTrainingData().getConfiguration());
             // Merge it with all previously-seen graphs
             graph = mergePool.merge(graph);
@@ -572,11 +572,11 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
             // Scan for all nodes we depend on. The first to introduce a node gets it.
             assert nodes.size() == graphs.size();
-            Set<DAGNode<CachedSatisfaction,Dependency>> seen = Sets.newHashSet();
+            Set<DAGNode<Component,Dependency>> seen = Sets.newHashSet();
             logger.debug("finding dependencies of {}", job);
             for (int i = 0; i < nodes.size(); i++) {
-                DAGNode<CachedSatisfaction, Dependency> other = graphs.get(i);
-                Set<DAGNode<CachedSatisfaction,Dependency>> freshCommon = Sets.newHashSet();
+                DAGNode<Component, Dependency> other = graphs.get(i);
+                Set<DAGNode<Component,Dependency>> freshCommon = Sets.newHashSet();
                 freshCommon.addAll(graph.getReachableNodes());
                 freshCommon.retainAll(other.getReachableNodes());
                 freshCommon.removeAll(seen);
@@ -585,7 +585,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                     logger.debug("{} depends on {} for {} nodes",
                                  job, nodes.get(i).getLabel(),
                                  freshCommon.size());
-                    for (DAGNode<CachedSatisfaction, Dependency> shared: freshCommon) {
+                    for (DAGNode<Component, Dependency> shared: freshCommon) {
                         logger.debug("it will reuse {}",
                                      shared.getLabel().getSatisfaction());
                     }

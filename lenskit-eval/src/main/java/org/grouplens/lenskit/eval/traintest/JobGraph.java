@@ -22,9 +22,9 @@ package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
+import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.reflect.CachedSatisfaction;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,9 +45,9 @@ class JobGraph {
         return new JobNode(job);
     }
     public static Edge edge() {
-        return edge(ImmutableSet.<DAGNode<CachedSatisfaction, Dependency>>of());
+        return edge(ImmutableSet.<DAGNode<Component, Dependency>>of());
     }
-    public static Edge edge(Set<DAGNode<CachedSatisfaction, Dependency>> deps) {
+    public static Edge edge(Set<DAGNode<Component, Dependency>> deps) {
         return new Edge(deps);
     }
 
@@ -139,10 +139,10 @@ class JobGraph {
         }
     }
 
-    public static class Edge implements Set<DAGNode<CachedSatisfaction,Dependency>> {
-        private final Set<DAGNode<CachedSatisfaction,Dependency>> dependencies;
+    public static class Edge implements Set<DAGNode<Component,Dependency>> {
+        private final Set<DAGNode<Component,Dependency>> dependencies;
 
-        public Edge(Set<DAGNode<CachedSatisfaction, Dependency>> deps) {
+        public Edge(Set<DAGNode<Component, Dependency>> deps) {
             this.dependencies = ImmutableSet.copyOf(deps);
         }
 
@@ -162,7 +162,7 @@ class JobGraph {
         }
 
         @Override
-        public Iterator<DAGNode<CachedSatisfaction, Dependency>> iterator() {
+        public Iterator<DAGNode<Component, Dependency>> iterator() {
             return dependencies.iterator();
         }
 
@@ -177,8 +177,8 @@ class JobGraph {
         }
 
         @Override
-        public boolean add(DAGNode<CachedSatisfaction, Dependency> cachedSatisfactionDependencyDAGNode) {
-            return dependencies.add(cachedSatisfactionDependencyDAGNode);
+        public boolean add(DAGNode<Component, Dependency> ComponentDependencyDAGNode) {
+            return dependencies.add(ComponentDependencyDAGNode);
         }
 
         @Override
@@ -192,7 +192,7 @@ class JobGraph {
         }
 
         @Override
-        public boolean addAll(Collection<? extends DAGNode<CachedSatisfaction, Dependency>> c) {
+        public boolean addAll(Collection<? extends DAGNode<Component, Dependency>> c) {
             return dependencies.addAll(c);
         }
 

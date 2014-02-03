@@ -21,9 +21,9 @@
 package org.grouplens.lenskit.eval.algorithm;
 
 import com.google.common.base.Joiner;
+import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.reflect.CachedSatisfaction;
 import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.*;
@@ -135,7 +135,7 @@ public class AlgorithmInstance implements Attributed {
      * @return The recommender graph.
      * @throws RecommenderBuildException if there is an error configuring the recommender.
      */
-    public DAGNode<CachedSatisfaction,Dependency> buildRecommenderGraph(LenskitConfiguration defaults) throws RecommenderConfigurationException {
+    public DAGNode<Component,Dependency> buildRecommenderGraph(LenskitConfiguration defaults) throws RecommenderConfigurationException {
         LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
         if (defaults != null) {
             builder.addConfiguration(defaults);

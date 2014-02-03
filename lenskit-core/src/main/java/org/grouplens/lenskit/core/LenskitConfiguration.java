@@ -22,10 +22,10 @@ package org.grouplens.lenskit.core;
 
 import com.google.common.collect.ImmutableSet;
 import org.grouplens.grapht.BindingFunctionBuilder;
+import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.context.ContextPattern;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.reflect.CachedSatisfaction;
 import org.grouplens.grapht.reflect.Desires;
 import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.solver.SolverException;
@@ -155,7 +155,7 @@ public class LenskitConfiguration extends AbstractConfigContext {
      * @deprecated This shouldn't be used anymore.
      */
     @Deprecated
-    public DAGNode<CachedSatisfaction,Dependency> buildGraph() throws RecommenderConfigurationException {
+    public DAGNode<Component,Dependency> buildGraph() throws RecommenderConfigurationException {
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
         rgb.addBindings(bindings);
         rgb.addRoots(roots);

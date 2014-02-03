@@ -24,11 +24,11 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
 import org.grouplens.grapht.BindingFunctionBuilder;
+import org.grouplens.grapht.CachePolicy;
+import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.context.ContextMatcher;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.reflect.CachePolicy;
-import org.grouplens.grapht.reflect.CachedSatisfaction;
 import org.grouplens.grapht.reflect.Desires;
 import org.grouplens.grapht.solver.*;
 import org.grouplens.lenskit.core.LenskitConfiguration;
@@ -120,7 +120,7 @@ public class RecommenderGraphBuilder {
         return dsb.build();
     }
 
-    public DAGNode<CachedSatisfaction,Dependency> buildGraph() throws SolverException {
+    public DAGNode<Component,Dependency> buildGraph() throws SolverException {
         DependencySolver solver = buildDependencySolver();
         for (Class<?> root: roots) {
             solver.resolve(Desires.create(null, root, true));
