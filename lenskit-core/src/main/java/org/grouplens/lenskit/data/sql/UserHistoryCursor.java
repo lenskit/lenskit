@@ -20,8 +20,10 @@
  */
 package org.grouplens.lenskit.data.sql;
 
+import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.cursors.AbstractCursor;
 import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.cursors.GroupingCursor;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.History;
@@ -38,50 +40,39 @@ import java.util.NoSuchElementException;
  *
  * @param <E> The event type.
  */
-class UserHistoryCursor<E extends Event> extends AbstractCursor<UserHistory<E>> {
-    private Cursor<? extends E> cursor;
-    private E lastEvent;
+class UserHistoryCursor<E extends Event> extends GroupingCursor<UserHistory<E>,E> {
+    private ImmutableList.Builder<E> builder;
+    private long userId;
 
     public UserHistoryCursor(@WillCloseWhenClosed Cursor<? extends E> cur) {
-        cursor = cur;
-        lastEvent = null;
+        super(cur);
     }
 
     @Override
-    public void close() {
-        if (cursor != null) {
-            cursor.close();
+    protected void clearGroup() {
+        builder = null;
+    }
+
+    @Override
+    protected boolean handleItem(E event) {
+        if (builder == null) {
+            userId = event.getUserId();
+            builder = ImmutableList.builder();
         }
-        cursor = null;
-        lastEvent = null;
+
+         if (userId == event.getUserId()) {
+            builder.add(event);
+            return true;
+         } else {
+             return false;
+         }
     }
 
-    @Override
-    public boolean hasNext() {
-        return cursor != null && (lastEvent != null || cursor.hasNext());
-    }
-
-    @Override
     @Nonnull
-    public UserHistory<E> next() {
-        if (cursor == null) {
-            throw new NoSuchElementException();
-        }
-        long uid;
-        List<E> events = new ArrayList<E>();
-        if (lastEvent == null) {
-            lastEvent = cursor.next();
-        }
-        uid = lastEvent.getUserId();
-        do {
-            events.add(lastEvent);
-            if (cursor.hasNext()) {
-                lastEvent = cursor.next();
-            } else {
-                lastEvent = null;
-            }
-        } while (lastEvent != null && lastEvent.getUserId() == uid);
-
-        return History.forUser(uid, events);
+    @Override
+    protected UserHistory<E> finishGroup() {
+        List<E> events = builder.build();
+        builder = null;
+        return History.forUser(userId, events);
     }
 }

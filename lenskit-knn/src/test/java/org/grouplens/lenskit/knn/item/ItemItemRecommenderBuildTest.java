@@ -34,6 +34,7 @@ import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.knn.item.model.ItemItemBuildContext;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.junit.Before;
 import org.junit.Test;
@@ -84,6 +85,13 @@ public class ItemItemRecommenderBuildTest {
                    instanceOf(TopNGlobalItemRecommender.class));
         assertThat(rec.getGlobalItemScorer(),
                    instanceOf(ItemItemGlobalScorer.class));
+    }
+
+    @Test
+    public void testContextRemoved() {
+        LenskitRecommender rec = engine.createRecommender();
+        assertThat(rec.get(ItemItemBuildContext.class),
+                   nullValue());
     }
 
     @Test

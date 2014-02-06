@@ -206,4 +206,82 @@ public class CursorsTest {
         assertThat(lst, contains(strings));
     }
     //endregion
+
+    //region Concat
+    @Test
+    public void testEmptyConcat() {
+        Cursor<String> cursor = Cursors.concat();
+        assertThat(cursor.hasNext(), equalTo(false));
+        try {
+            cursor.next();
+            fail("next on empty cursor should fail");
+        } catch (NoSuchElementException e) {
+            /* expected */
+        }
+    }
+    @Test
+    public void testConcatEmpty() {
+        Cursor<String> cursor = Cursors.concat(Cursors.<String>empty());
+        assertThat(cursor.hasNext(), equalTo(false));
+        try {
+            cursor.next();
+            fail("next on empty cursor should fail");
+        } catch (NoSuchElementException e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testConcatOne() {
+        Cursor<String> cursor = Cursors.concat(Cursors.of("foo"));
+        assertThat(cursor.hasNext(), equalTo(true));
+        assertThat(cursor.next(), equalTo("foo"));
+        assertThat(cursor.hasNext(), equalTo(false));
+        try {
+            cursor.next();
+            fail("next on consumed cursor should fail");
+        } catch (NoSuchElementException e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testConcatTwo() {
+        Cursor<String> cursor = Cursors.concat(Cursors.of("foo", "bar"));
+        assertThat(cursor.hasNext(), equalTo(true));
+        assertThat(cursor.next(), equalTo("foo"));
+        assertThat(cursor.next(), equalTo("bar"));
+        assertThat(cursor.hasNext(), equalTo(false));
+        try {
+            cursor.next();
+            fail("next on consumed cursor should fail");
+        } catch (NoSuchElementException e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testConcatTwoCursors() {
+        Cursor<String> cursor = Cursors.concat(Cursors.of("foo"), Cursors.of("bar"));
+        assertThat(cursor.hasNext(), equalTo(true));
+        assertThat(cursor.next(), equalTo("foo"));
+        assertThat(cursor.next(), equalTo("bar"));
+        assertThat(cursor.hasNext(), equalTo(false));
+        try {
+            cursor.next();
+            fail("next on consumed cursor should fail");
+        } catch (NoSuchElementException e) {
+            /* expected */
+        }
+    }
+
+    @Test
+    public void testConcatWithEmpty() {
+        Cursor<String> cursor = Cursors.concat(Cursors.of("foo"),
+                                               Cursors.<String>empty(),
+                                               Cursors.of("bar"));
+        assertThat(cursor, contains("foo", "bar"));
+        assertThat(cursor.hasNext(), equalTo(false));
+    }
+    //endregion
 }

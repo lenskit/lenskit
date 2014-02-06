@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
@@ -75,5 +76,33 @@ public class UserUserRecommenderBuildTest {
         assertThat(pred, instanceOf(SimpleRatingPredictor.class));
         assertThat(((SimpleRatingPredictor) pred).getScorer(),
                    sameInstance(rec.getItemScorer()));
+    }
+
+    @Test
+    public void testSnapshot() throws RecommenderBuildException {
+        List<Rating> rs = new ArrayList<Rating>();
+        rs.add(Ratings.make(1, 5, 2));
+        rs.add(Ratings.make(1, 7, 4));
+        rs.add(Ratings.make(8, 4, 5));
+        rs.add(Ratings.make(8, 5, 4));
+
+        EventDAO dao = new EventCollectionDAO(rs);
+
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(dao);
+        config.bind(ItemScorer.class).to(UserUserItemScorer.class);
+        config.bind(NeighborhoodFinder.class).to(SnapshotNeighborhoodFinder.class);
+
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
+        Recommender rec = engine.createRecommender();
+        assertThat(rec.getItemScorer(),
+                   instanceOf(UserUserItemScorer.class));
+        assertThat(rec.getItemRecommender(),
+                   instanceOf(TopNItemRecommender.class));
+        RatingPredictor pred = rec.getRatingPredictor();
+        assertThat(pred, instanceOf(SimpleRatingPredictor.class));
+
+        Recommender rec2 = engine.createRecommender();
+        assertThat(rec2.getItemScorer(), not(sameInstance(rec.getItemScorer())));
     }
 }

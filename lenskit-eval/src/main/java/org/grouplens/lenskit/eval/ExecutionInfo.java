@@ -31,7 +31,7 @@ import java.util.Map;
 
 /**
  * Bean containing information about a data set.  Used to provide that information to the
- * algorithm, if it needs it for some reason.  It is best avoided, but can be useful in certain
+ * algorithmInfo, if it needs it for some reason.  It is best avoided, but can be useful in certain
  * experimental setups.  The evaluators inject it into the configuration, so it is available
  * via DI.
  *
@@ -55,16 +55,16 @@ public class ExecutionInfo implements Serializable {
     }
 
     /**
-     * Get the algorithm name.
-     * @return The algorithm name.
+     * Get the algorithmInfo name.
+     * @return The algorithmInfo name.
      */
     public String getAlgoName() {
         return algoName;
     }
 
     /**
-     * Get the algorithm attributes.
-     * @return The algorithm attributes.
+     * Get the algorithmInfo attributes.
+     * @return The algorithmInfo attributes.
      */
     public Map<String, Object> getAlgoAttributes() {
         return algoAttributes;

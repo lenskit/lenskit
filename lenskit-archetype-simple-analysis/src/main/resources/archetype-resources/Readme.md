@@ -10,8 +10,8 @@ The key user files are:
   algorithms. It also downloads the ML-100K data set and runs R to
   produce charts of the algorithm performance.
 
-* chart.R: an R script that runs against the results of the evaluation
-  to produce some simple charts.
+* chart.py: a Python script that runs against the results of the
+  evaluation to produce some simple charts.  This requires matplotlib.
 
 # More Information
 

@@ -33,7 +33,9 @@ import static java.lang.Math.sqrt;
  *
  * @since 1.3
  * @compat Public
+ * @deprecated Use vectorz instead.
  */
+@Deprecated
 public abstract class Vec implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -120,6 +122,22 @@ public abstract class Vec implements Serializable {
     }
 
     /**
+     * Get the largest element of the vector.
+     *
+     * @return The index of largest element of the vector.
+     */
+    public int largestDimension() {
+        double largest = data[0];
+        int index = 0;
+        for(int i = 1; i < data.length; i++) {
+            if(data[i] > largest) {
+                largest = data[i];
+                index = i;
+            }
+        }
+        return index;
+    }
+    /**
      * Get an immutable vector with this vector's contents.  If the vector is already immutable,
      * it is not changed.
      * @return The immutable vector.
@@ -134,6 +152,11 @@ public abstract class Vec implements Serializable {
      */
     public MutableVec mutableCopy() {
         return MutableVec.wrap(Arrays.copyOf(data, data.length));
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + Arrays.toString(data);
     }
 
     @Override

@@ -1,0 +1,16 @@
+#parse("relnotes.vm")
+#header("2.0.3.2")
+
+This is a bugfix for 2.0.3.
+
+#pmIntro("2.0.3.2", 27)
+
+-   Report no value rather than NaN from metrics when no test users
+    could be used (#issue(401))
+
+-   Don't return NaN from top-N nDCG when user has no recommendations
+    (#issue(400))
+
+-   Compute vector means only over common keys in Pearson correlation
+    (#issue(404)).
+

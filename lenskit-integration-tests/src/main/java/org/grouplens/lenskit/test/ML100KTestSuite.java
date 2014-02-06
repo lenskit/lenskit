@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.test;
 
+import org.grouplens.lenskit.core.LenskitConfigContext;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
@@ -46,6 +48,12 @@ public class ML100KTestSuite {
 
     protected EventDAO dao;
 
+    protected LenskitConfiguration getDaoConfig() {
+        LenskitConfiguration config = new LenskitConfiguration();
+        config.bind(EventDAO.class).to(dao);
+        return config;
+    }
+
     @Before
     public void createDAOFactory() throws FileNotFoundException {
         assumeThat("Integration test skip requested",
@@ -65,8 +73,8 @@ public class ML100KTestSuite {
             throw new FileNotFoundException("ML data set at " + inputFile + ". " +
                                             "See <http://lenskit.grouplens.org/ML100K>.");
         }
-        EventDAO fileDao = new SimpleFileRatingDAO(inputFile, "\t", CompressionMode.NONE);
+        EventDAO fileDao = SimpleFileRatingDAO.create(inputFile, "\t", CompressionMode.NONE);
         List<Event> events = Cursors.makeList(fileDao.streamEvents());
-        dao = new EventCollectionDAO(events);
+        dao = EventCollectionDAO.create(events);
     }
 }

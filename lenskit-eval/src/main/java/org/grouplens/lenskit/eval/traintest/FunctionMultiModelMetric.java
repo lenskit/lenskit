@@ -24,7 +24,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.table.TableLayoutBuilder;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
@@ -36,7 +36,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Model metric backed by an arbitrary function that returns multiple rows per algorithm.
+ * Model metric backed by an arbitrary function that returns multiple rows per algorithmInfo.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
@@ -46,7 +46,7 @@ public class FunctionMultiModelMetric implements ModelMetric {
     private final List<String> columnHeaders;
     private final Function<Recommender, List<List<Object>>> function;
     private TableWriter writer;
-    private TrainTestEvalTask currentEval;
+    private ExperimentOutputLayout evalLayout;
 
     public FunctionMultiModelMetric(File file, List<String> columns,
                                     Function<Recommender, List<List<Object>>> func) {
@@ -61,9 +61,9 @@ public class FunctionMultiModelMetric implements ModelMetric {
     }
 
     @Override
-    public List<Object> measureAlgorithm(AlgorithmInstance instance, TTDataSet data, Recommender recommender) {
-        Preconditions.checkState(currentEval != null, "evaluation not in progress");
-        TableWriter w = currentEval.prefixTable(writer, instance, data);
+    public List<Object> measureAlgorithm(Attributed algorithm, TTDataSet data, Recommender recommender) {
+        Preconditions.checkState(evalLayout != null, "evaluation not in progress");
+        TableWriter w = evalLayout.prefixTable(writer, algorithm, data);
         for (List<Object> row: function.apply(recommender)) {
             try {
                 w.writeRow(row.toArray());
@@ -76,7 +76,9 @@ public class FunctionMultiModelMetric implements ModelMetric {
 
     @Override
     public void startEvaluation(TrainTestEvalTask eval) {
-        TableLayoutBuilder builder = TableLayoutBuilder.copy(eval.getMasterLayout());
+        evalLayout = eval.getOutputLayout();
+
+        TableLayoutBuilder builder = TableLayoutBuilder.copy(eval.getOutputLayout().getCommonLayout());
         for (String col: columnHeaders) {
             builder.addColumn(col);
         }
@@ -85,12 +87,11 @@ public class FunctionMultiModelMetric implements ModelMetric {
         } catch (IOException e) {
             throw new RuntimeException("error opening output file", e);
         }
-        currentEval = eval;
     }
 
     @Override
     public void finishEvaluation() {
-        currentEval = null;
+        evalLayout = null;
         try {
             writer.close();
         } catch (IOException e) {

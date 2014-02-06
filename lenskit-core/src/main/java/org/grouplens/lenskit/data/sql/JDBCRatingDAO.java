@@ -20,28 +20,30 @@
  */
 package org.grouplens.lenskit.data.sql;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.dao.*;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.History;
+import org.grouplens.lenskit.data.history.ItemEventCollection;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.WillCloseWhenClosed;
 import javax.inject.Inject;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Rating DAO backed by a JDBC connection.  This DAO can only store rating data;
@@ -290,6 +292,22 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
 
     @Override
     public Cursor<UserHistory<Event>> streamEventsByUser() {
-        return new UserHistoryCursor<Event>(streamEvents(Event.class, SortOrder.USER));
+        return streamEventsByUser(Event.class);
     }
+
+    @Override
+    public <E extends Event> Cursor<UserHistory<E>> streamEventsByUser(Class<E> type) {
+        return new UserHistoryCursor<E>(streamEvents(type, SortOrder.USER));
+    }
+
+    @Override
+    public Cursor<ItemEventCollection<Event>> streamEventsByItem() {
+        return streamEventsByItem(Event.class);
+    }
+
+    @Override
+    public <E extends Event> Cursor<ItemEventCollection<E>> streamEventsByItem(Class<E> type) {
+        return new ItemCollectionCursor<E>(streamEvents(type, SortOrder.USER));
+    }
+
 }

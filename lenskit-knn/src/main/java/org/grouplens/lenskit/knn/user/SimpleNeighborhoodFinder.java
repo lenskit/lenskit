@@ -22,29 +22,30 @@ package org.grouplens.lenskit.knn.user;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.dao.ItemEventDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
+import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
-
-import static java.lang.Math.max;
 
 /**
  * Neighborhood finder that does a fresh search over the data source ever time.
@@ -61,19 +62,20 @@ import static java.lang.Math.max;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@ThreadSafe
 public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializable {
-    private static final long serialVersionUID = -6324767320394518347L;
+    private static final long serialVersionUID = 2L;
     private static final Logger logger = LoggerFactory.getLogger(SimpleNeighborhoodFinder.class);
-
 
     private final UserEventDAO userDAO;
     private final ItemEventDAO itemDAO;
     private final int neighborhoodSize;
     private final UserSimilarity similarity;
     private final UserVectorNormalizer normalizer;
+    private final Threshold userThreshold;
 
     /**
-     * Construct a new user-user recommender.
+     * Construct a new user neighborhood finder.
      *
      * @param udao  The user-event DAO.
      * @param idao  The item-event DAO.
@@ -84,12 +86,15 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     public SimpleNeighborhoodFinder(UserEventDAO udao, ItemEventDAO idao,
                                     @NeighborhoodSize int nnbrs,
                                     UserSimilarity sim,
-                                    UserVectorNormalizer norm) {
+                                    UserVectorNormalizer norm,
+                                    @UserSimilarityThreshold Threshold thresh) {
         userDAO = udao;
         itemDAO = idao;
         neighborhoodSize = nnbrs;
         similarity = sim;
         normalizer = norm;
+        userThreshold = thresh;
+        Preconditions.checkArgument(sim.isSparse(), "user similarity function is not sparse");
     }
 
     /**
@@ -107,8 +112,12 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         Preconditions.checkNotNull(user, "user profile");
         Preconditions.checkNotNull(user, "item set");
 
-        Long2ObjectMap<PriorityQueue<Neighbor>> heaps =
-                new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items != null ? items.size() : 100);
+        Long2ObjectMap<PriorityQueue<Neighbor>> heaps = new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items.size());
+        for (LongIterator iter = items.iterator(); iter.hasNext();) {
+            long item = iter.nextLong();
+            heaps.put(item, new PriorityQueue<Neighbor>(neighborhoodSize + 1,
+                                                        Neighbor.SIMILARITY_COMPARATOR));
+        }
 
         SparseVector urs = RatingVectorUserHistorySummarizer.makeRatingVector(user);
         final long uid1 = user.getUserId();
@@ -116,14 +125,10 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
         ImmutableSparseVector nratings = normalizer.normalize(user.getUserId(), urs, null)
                                                    .freeze();
 
-        /* Find candidate neighbors. To reduce scanning, we limit users to those
-         * rating target items. If the similarity is sparse and the user has
-         * fewer items than target items, then we use the user's rated items to
-         * attempt to minimize the number of users considered.
-         */
-        LongSet users = findRatingUsers(user.getUserId(), items);
+        // Find candidate neighbors
+        LongSet users = findCandidateNeighbors(user.getUserId(), nratings.keySet(), items);
 
-        logger.trace("Found {} candidate neighbors", users.size());
+        logger.debug("Found {} candidate neighbors", users.size());
 
         LongIterator uiter = users.iterator();
         while (uiter.hasNext()) {
@@ -135,26 +140,20 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
             MutableSparseVector nurv = normalizer.normalize(uid2, urv, null);
 
             final double sim = similarity.similarity(uid1, nratings, uid2, nurv);
-            if (Double.isNaN(sim) || Double.isInfinite(sim)) {
+            if (Double.isNaN(sim) || Double.isInfinite(sim) || !userThreshold.retain(sim)) {
                 continue;
             }
             final Neighbor n = new Neighbor(uid2, urv, sim);
 
-            LongSet commonItems = new LongOpenHashSet(items);
-            commonItems.retainAll(urv.keySet());
-            LongIterator iit = commonItems.iterator();
-            while (iit.hasNext()) {
-                final long item = iit.nextLong();
+            for (VectorEntry e: urv.fast()) {
+                final long item = e.getKey();
                 PriorityQueue<Neighbor> heap = heaps.get(item);
-                if (heap == null) {
-                    heap = new PriorityQueue<Neighbor>(neighborhoodSize + 1,
-                                                       Neighbor.SIMILARITY_COMPARATOR);
-                    heaps.put(item, heap);
-                }
-                heap.add(n);
-                if (heap.size() > neighborhoodSize) {
-                    assert heap.size() == neighborhoodSize + 1;
-                    heap.remove();
+                if (heap != null) {
+                    heap.add(n);
+                    if (heap.size() > neighborhoodSize) {
+                        assert heap.size() == neighborhoodSize + 1;
+                        heap.remove();
+                    }
                 }
             }
         }
@@ -162,16 +161,25 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     }
 
     /**
-     * Find all users who have rated any of a set of items.
+     * Find users who may have rated items both in the user's rated item set and a target item
+     * set.  It will only query based on one set, so the users may or may not have rated both a
+     * target item and a source item.  This method tries to be efficient, so it uses the shorter
+     * list of items to find users.
      *
      * @param user    The current user's ID (excluded from the returned set).
+     * @param userItems The items the user has rated.
      * @param itemSet The set of items to look for.
-     * @return The set of all users who have rated at least one item in {@var itemSet}.
+     * @return The set of candidate neighbors.
      */
-    private LongSet findRatingUsers(long user, LongCollection itemSet) {
+    protected LongSet findCandidateNeighbors(long user, LongSet userItems, LongCollection itemSet) {
         LongSet users = new LongOpenHashSet(100);
 
-        LongIterator items = itemSet.iterator();
+        LongIterator items;
+        if (userItems.size() < itemSet.size()) {
+            items = userItems.iterator();
+        } else {
+            items = itemSet.iterator();
+        }
         while (items.hasNext()) {
             LongSet iusers = itemDAO.getUsersForItem(items.nextLong());
             if (iusers != null) {

@@ -1,0 +1,9 @@
+#parse("relnotes.vm")
+#stdHeader("1.0.2", 15)
+
+This release contains bug fixes against 1.0.1.
+
+-   Fix graph pruning so transient dependencies aren't serialized.
+
+-   Fix transient tags and serializability of item-item recommender models.
+

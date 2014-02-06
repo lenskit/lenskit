@@ -23,9 +23,7 @@ package org.grouplens.lenskit.cursors;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import it.unimi.dsi.fastutil.longs.*;
 
-import javax.annotation.Nonnull;
 import javax.annotation.WillClose;
 import javax.annotation.WillCloseWhenClosed;
 import java.util.*;
@@ -176,5 +174,33 @@ public final class Cursors {
         final ArrayList<T> list = makeList(cursor);
         Collections.sort(list, comp);
         return wrap(list);
+    }
+
+    /**
+     * Create a cursor over a fixed set of elements. This is mostly useful for testing.
+     * @param contents The contents.
+     * @param <T> The data type.
+     * @return The cursor.
+     */
+    public static <T> Cursor<T> of(T... contents) {
+        return wrap(Arrays.asList(contents));
+    }
+
+    /**
+     * Concatenate cursors.  Each cursor is closed as closed as it is consumed.
+     * @param cursors The cursors to concatenate.
+     * @param <T> The type of data.
+     * @return The concatenated cursor.
+     */
+    public static <T> Cursor<T> concat(Iterable<? extends Cursor<? extends T>> cursors) {
+        return new SequencedCursor<T>(cursors);
+    }
+
+    /**
+     * Concatenate cursors.
+     * @see #concat(Iterable)
+     */
+    public static <T> Cursor<T> concat(Cursor<? extends T>... cursors) {
+        return concat(Arrays.asList(cursors));
     }
 }

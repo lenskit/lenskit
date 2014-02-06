@@ -22,7 +22,9 @@ package org.grouplens.lenskit.core;
 
 import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.Context;
+import org.grouplens.grapht.context.ContextPattern;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 
@@ -51,6 +53,32 @@ public interface LenskitConfigContext extends Context {
      */
     @SuppressWarnings("rawtypes")
     Binding set(Class<? extends Annotation> param);
+
+    /**
+     * Add a component object to the injector.  This is the equivalent of:
+     * <pre>{@code
+     * this.bind(obj.getClass()).to(obj);
+     * }</pre>
+     * <p>It has the result of making {@code obj} available satisfy dependencies on its class or,
+     * via supertype binding generation, any of its supertypes.  Explicit bindings for those
+     * supertypes will override this binding.</p>
+     *
+     * @param obj The object to register.
+     */
+    void addComponent(@Nonnull Object obj);
+
+    /**
+     * Add a component type to the injector.  This is the equivalent of:
+     * <pre>{@code
+     * this.bind(type).to(type);
+     * }</pre>
+     * <p>It has the result of making {@code type} available satisfy dependencies on itself or,
+     * via supertype binding generation, any of its supertypes.  Explicit bindings for those
+     * supertypes will override this binding.</p>
+     *
+     * @param type The type to register.
+     */
+    void addComponent(@Nonnull Class<?> type);
     
     @Override
     @Deprecated
@@ -74,6 +102,9 @@ public interface LenskitConfigContext extends Context {
 
     @Override
     LenskitConfigContext within(@Nullable Annotation qualifier, Class<?> type);
+
+    @Override
+    LenskitConfigContext matching(ContextPattern pattern);
 
     @Override
     LenskitConfigContext at(Class<?> type);

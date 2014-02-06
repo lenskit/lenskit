@@ -122,4 +122,9 @@ public class PearsonCorrelation implements VectorSimilarity, Serializable {
     public boolean isSymmetric() {
         return true;
     }
+
+    @Override
+    public String toString() {
+        return String.format("Pearson[d=%s]", shrinkage);
+    }
 }

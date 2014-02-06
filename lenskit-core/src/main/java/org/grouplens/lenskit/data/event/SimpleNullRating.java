@@ -20,11 +20,9 @@
  */
 package org.grouplens.lenskit.data.event;
 
-import javax.annotation.concurrent.Immutable;
-
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.data.pref.Preference;
+
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Simple implementation of a null rating (unrate event).
@@ -85,22 +83,16 @@ final class SimpleNullRating implements Rating {
     
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Rating) {
-            Rating or = (Rating) o;
-            if (or.getPreference() == null) {
-                return new EqualsBuilder().append(userId, or.getUserId())
-                                          .append(itemId, or.getItemId())
-                                          .append(timestamp, or.getTimestamp())
-                                          .isEquals();
-            }
-        }
-        return false;
+        return o instanceof Rating && Ratings.equals(this, (Rating) o);
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(userId)
-                                    .append(itemId)
-                                    .toHashCode();
+        return Ratings.hashRating(this);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Rating(u=%d, i=%d, v=null, ts=%d", userId, itemId, timestamp);
     }
 }

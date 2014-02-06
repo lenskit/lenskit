@@ -30,6 +30,17 @@
     <tag>lenskit-2.0.5</tag>
   </scm>
 
+  <developers>
+    <developer>
+      <name>Michael Ekstrand</name>
+      <url>http://elehack.net</url>
+      <roles>
+        <role>Founder</role>
+        <role>Project leader</role>
+      </roles>
+    </developer>
+  </developers>
+
   <repositories>
     <repository>
       <id>sonatype-nexus-snapshots</id>
@@ -70,8 +81,6 @@
     <lenskit.web.path>${lenskit.web.url}</lenskit.web.path>
     <mathjax.source>http://cdn.mathjax.org/mathjax/latest</mathjax.source>
     <groovy.version>2.1.5</groovy.version>
-    <groovy.eclipse.version>2.7.0-01</groovy.eclipse.version>
-    <groovy.eclipse.batch>2.1.5-03</groovy.eclipse.batch>
     <lenskit.clean.removeAll>false</lenskit.clean.removeAll>
   </properties>
 
@@ -89,6 +98,8 @@
     <module>lenskit-eval-maven-plugin</module>
     <module>lenskit-test</module>
     <module>lenskit-all</module>
+    <module>lenskit-predict</module>
+    <module>lenskit-cli</module>
   </modules>
 
   <dependencyManagement>
@@ -146,7 +157,12 @@
       <dependency>
         <groupId>it.unimi.dsi</groupId>
         <artifactId>fastutil</artifactId>
-        <version>6.5.6</version>
+        <version>6.5.11</version>
+      </dependency>
+      <dependency>
+        <groupId>net.mikera</groupId>
+        <artifactId>vectorz</artifactId>
+        <version>0.27.0</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -182,7 +198,7 @@
       <dependency>
         <groupId>org.grouplens.grapht</groupId>
         <artifactId>grapht</artifactId>
-        <version>0.7.0-SNAPSHOT</version>
+        <version>0.8.0</version>
       </dependency>
 
       <!-- test libraries -->
@@ -227,7 +243,9 @@
   <build>
     <pluginManagement>
       <plugins>
-        <!-- Configure the compiler -->
+        <!-- Configure the compiler.  We allow Groovy in LensKit tests, so this is a bit subtle.
+             We want to use stock javac to build the main LensKit sources, but the joint
+             Groovy/Java compiler from Eclipse to build the test sources. -->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
@@ -244,8 +262,31 @@
               <compilerArg>-Xlint</compilerArg>
               <compilerArg>-Xlint:-processing</compilerArg>
             </compilerArgs>
-            <fork>true</fork>
           </configuration>
+
+          <executions>
+            <!-- Use the Groovy compiler to build tests. -->
+            <execution>
+              <id>default-testCompile</id>
+              <configuration>
+                <compilerId>groovy-eclipse-compiler</compilerId>
+              </configuration>
+            </execution>
+          </executions>
+
+          <!-- Make Groovy compiler available -->
+          <dependencies>
+            <dependency>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy-eclipse-compiler</artifactId>
+              <version>2.8.0-01</version>
+            </dependency>
+            <dependency>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy-eclipse-batch</artifactId>
+              <version>2.1.8-01</version>
+            </dependency>
+          </dependencies>
         </plugin>
 
         <!-- Testing and verification -->
@@ -274,6 +315,26 @@
               </property>
             </properties>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-invoker-plugin</artifactId>
+          <version>1.8</version>
+          <configuration>
+            <cloneClean>true</cloneClean>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.codehaus.groovy</groupId>
+              <artifactId>groovy-all</artifactId>
+              <version>${groovy.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>org.hamcrest</groupId>
+              <artifactId>hamcrest-library</artifactId>
+              <version>1.3</version>
+            </dependency>
+          </dependencies>
         </plugin>
 
         <!-- Packaging and build assistance -->
@@ -345,12 +406,22 @@
             <dependency>
               <groupId>org.apache.maven.wagon</groupId>
               <artifactId>wagon-ssh-external</artifactId>
-              <version>2.2</version>
+              <version>2.5</version>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.maven.wagon</groupId>
+              <artifactId>wagon-file</artifactId>
+              <version>2.5</version>
             </dependency>
             <dependency>
               <groupId>org.apache.velocity</groupId>
               <artifactId>velocity</artifactId>
               <version>1.6</version>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.maven.doxia</groupId>
+              <artifactId>doxia-module-markdown</artifactId>
+              <version>1.5</version>
             </dependency>
           </dependencies>
         </plugin>
@@ -463,7 +534,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.6</version>
+        <version>2.7</version>
         <reportSets>
           <reportSet>
             <reports>
@@ -623,9 +694,6 @@
           <name>prepareUpload</name>
         </property>
       </activation>
-      <modules>
-        <module>lenskit-package</module>
-      </modules>
       <build>
         <plugins>
           <!-- Prepare source archive -->
@@ -733,7 +801,7 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.6.4-SNAPSHOT</version>
+            <version>0.6.4.201312101107</version>
             <configuration>
               <propertyName>jacoco.vmargs</propertyName>
             </configuration>
@@ -820,12 +888,6 @@
           </plugin>
 
           <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>jdepend-maven-plugin</artifactId>
-            <version>2.0-beta-2</version>
-          </plugin>
-
-          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-checkstyle-plugin</artifactId>
             <version>2.10</version>
@@ -883,7 +945,7 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.6.4-SNAPSHOT</version>
+            <version>0.6.4.201312101107</version>
             <reportSets>
               <reportSet>
                 <reports>
@@ -891,6 +953,52 @@
                 </reports>
               </reportSet>
             </reportSets>
+          </plugin>
+
+          <plugin>
+            <inherited>false</inherited>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-changes-plugin</artifactId>
+            <version>2.9</version>
+            <reportSets>
+              <reportSet>
+                <reports>
+                  <report>github-report</report>
+                </reports>
+                <configuration>
+                  <includeOpenIssues>false</includeOpenIssues>
+                  <onlyCurrentVersion>true</onlyCurrentVersion>
+                  <columnNames>Id,Summary,Status,Created,Updated,Fix Version</columnNames>
+                </configuration>
+              </reportSet>
+            </reportSets>
+          </plugin>
+
+          <plugin>
+            <inherited>false</inherited>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-changelog-plugin</artifactId>
+            <version>2.2</version>
+            <reportSets>
+              <reportSet>
+                <reports>
+                  <report>changelog</report>
+                </reports>
+                <configuration>
+                  <issueIDRegexPattern>(?&lt;=#)\d+\b</issueIDRegexPattern>
+                  <issueLinkUrl>https://github.com/grouplens/lenskit/issues/</issueLinkUrl>
+                </configuration>
+              </reportSet>
+            </reportSets>
+          </plugin>
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>clirr-maven-plugin</artifactId>
+            <version>2.6.1</version>
+            <configuration>
+              <minSeverity>info</minSeverity>
+            </configuration>
           </plugin>
         </plugins>
       </reporting>

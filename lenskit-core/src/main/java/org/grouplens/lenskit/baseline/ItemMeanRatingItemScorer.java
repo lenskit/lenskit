@@ -84,6 +84,7 @@ public class ItemMeanRatingItemScorer extends AbstractItemScorer implements Seri
             final ImmutableSparseVector itemMeans;
             final double globalMean;
 
+            logger.debug("computing item mean ratings");
             Cursor<Rating> ratings = dao.streamEvents(Rating.class);
             try {
                 IdMeanAccumulator accum = new IdMeanAccumulator();
@@ -98,6 +99,8 @@ public class ItemMeanRatingItemScorer extends AbstractItemScorer implements Seri
             } finally {
                 ratings.close();
             }
+            logger.debug("computed means for {} items", itemMeans.size());
+            logger.debug("global mean rating is {}", globalMean);
 
             return new ItemMeanRatingItemScorer(itemMeans, globalMean, damping);
         }

@@ -52,7 +52,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 public class FunkSVDRecommenderBuildTest {
-    private EventCollectionDAO dao;
+    private EventDAO dao;
 
     @Before
     public void setup() throws RecommenderBuildException {
@@ -62,7 +62,7 @@ public class FunkSVDRecommenderBuildTest {
         rs.add(Ratings.make(8, 4, 5));
         rs.add(Ratings.make(8, 5, 4));
 
-        dao = new EventCollectionDAO(rs);
+        dao = EventCollectionDAO.create(rs);
     }
 
     @SuppressWarnings({"deprecation", "unchecked"})

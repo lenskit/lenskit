@@ -1,0 +1,133 @@
+#parse("relnotes.vm")
+#stdHeader("2.1", "22")
+
+## General Changes
+
+-   Added `lenskit-all` module so you can easily depend on all of LensKit with a single
+    dependency.
+
+-   Added `LenskitInfo` class, providing access to information about LensKit.  Currently, it
+    provides access to the Git revisions that are included in the build.  This works with released
+    binaries of LensKit, and versions built from Git sources; it will not work from tarball builds.
+
+-   Fixed equality and hashing on ratings to be consistently correct.
+
+## Data Access
+
+-   New methods to more easily construct DAOs (#issue(346))
+
+-   `Rating` class now has `hasValue()` and `getValue()` methods for convenience.
+
+-   **Incompatible change:** `ItemEventDAO` now has a `streamEventsByItem` method, corresponding
+    to the orthogonal methods on `UserEventDAO`.  Custom DAO implementations will need to provide
+    this new method.
+
+-   **Incompatible change:** The `UserEventDAO` and `ItemEventDAO` classes now have type-filtered
+    versions of their `streamEventsByUser` and `streamEventsByItem` methods.  Implementers will need
+    to implement these new methods.
+
+-   Implemented new `BinaryRatingDAO` to read ratings from a packed binary file of rating data.
+    Build a file with `BinaryRatingPacker` or the `pack` eval task.  The new CLI also provides a
+    command to pack rating data.
+
+## Configuration
+
+-   Added `LenskitRecommenderEngineBuilder` and `LenskitRecommenderEngineLoader`.
+
+    * Better interface for configuring build & load of recommender engines.
+
+    * Allow multiple configurations to contribute to an engine.
+
+    * Allow configurations to be removed (to remove e.g. DAOs from the model graph) and re-added
+      to support building & serializing a model with one data access config and loading it with
+      a different one.
+
+-   Added `addComponent` methods to configuration contexts (#issue(457)).  This is equivalent to
+    binding a component type to itself, using it to supply dependencies on itself and any supertypes.
+
+-   RNG now configured via dependency injection.
+
+-   Context-sensitive matches can now be anchored to the root (with `at(null)`) (#issue(344)).
+
+-   Fixed class loader problems with deserializing recommender models (#issue(434)).
+
+-   Use Grapht 0.7.0.
+
+## CLI
+
+LensKit now has a command-line tool, `lenskit`, included in the binary distribution.  This provides
+a lot of utilities for working with LensKit data and configurations, and is the new entry point for
+running the evaluator (`lenskit-eval` is now deprecated).
+
+This is in the `lenskit-cli` package, replacing `lenskit-package` as the source of the binary
+distribution of LensKit.
+
+## Algorithms
+
+This release includes several improvements and additions to LensKit's selection of algorithms.
+
+-   Added an implementation of [OrdRec](http://labs.yahoo.com/files/paper.pdf) (in the
+    `lenskit-predict` module) (#issue(225)).
+
+-   Report whether the score came from the baseline or primary scorer in the fallback item scorer
+    and simple rating predictor (#issue(444)).
+
+### User-user CF
+
+-   Updated user-user CF to be simpler & make better use of new DAOs (#issue(356)).
+
+-   Significantly sped up user-user CF.
+
+-   Added user similarity thresholding.  The default threshold is an absolute threshold of 0.0;
+    configure `@UserSimilarityThreshold` to change this.
+
+### Item-item CF
+
+-   Refactored item-item model build:
+
+    - Build the context with a provider rather than injecting a factory.
+
+    - Use the strategy pattern to abstract sparse vs. non-sparse iteration, allowing sparse
+      iteration to be disabled by overriding the default provider.
+
+    - Better logging of the item-item model build process.
+
+-   **Configuration change**: qualified `ItemItemModelBuilder`'s dependency on a threshold.  If you
+    previously changed this threshold, you need to qualify your threshold implementation (*not*
+    value) with `@ItemSimilarityThreshold`.
+
+-   Added `ItemwizeBuildContextProvider` that builds up the item-item build context without
+    transposing the ratings matrix (#issue(481)).  If your rating normalization is per-item instead
+    of per-user, this allows item-item builds to be more efficient.
+
+### Matrix factorization
+
+-   Refactored FunkSVD to use vectorz vectors and matrices, and have factored-out code useful for
+    other matrix factorization recommenders.
+
+## Evaluator
+
+-   The evaluator now supports loading algorithms from config files in both train-test
+    and graph dumping tasks (#issue(406)).
+
+-   In single-threaded mode, run eval tasks on the same thread as the evaluator (#issue(426)).
+
+-   The evaluator now detects when two or more algorithm configurations have the same shared
+    components, and only builds those components once.  A cache directory can be used to cache these
+    objects on disk; specify this with the `cache` directive in `trainTest`.  One consequence of
+    this is that build times are now meaningless.  This behavior can be disabled, and build times
+    restored to meaning, by writing `separateAlgorithms true` in your `trainTest` block.
+
+-   The evalator can now configure algorithms from algorithm files.
+
+-   The train-test task can now periodically write status files so its progress can be monitored.
+
+## Data Structures
+
+-   LensKit now uses [vectorz](http://github.com/mikera/vectorz) for (non-sparse)( vectors and
+    matrices.
+
+## Utilities
+
+-   Remove `TaskGroupRunner` in favor of new `TaskGraphExecutor` class.
+

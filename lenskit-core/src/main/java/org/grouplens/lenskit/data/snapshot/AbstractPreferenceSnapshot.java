@@ -37,7 +37,7 @@ public abstract class AbstractPreferenceSnapshot implements PreferenceSnapshot {
     /**
      * The user vector cache.
      */
-    protected volatile Long2ObjectMap<SparseVector> cache;
+    protected Long2ObjectMap<SparseVector> cache;
 
     /**
      * Initialize the snapshot.
@@ -48,14 +48,17 @@ public abstract class AbstractPreferenceSnapshot implements PreferenceSnapshot {
 
     @Override
     public SparseVector userRatingVector(long userId) {
-        SparseVector data = cache.get(userId);
-        if (data != null) {
-            return data;
-        } else {
-            FastCollection<IndexedPreference> prefs = this.getUserRatings(userId);
-            data = Preferences.userPreferenceVector(prefs).freeze();
-            cache.put(userId, data);
-            return data;
+        // FIXME Don't make this so locky
+        synchronized (cache) {
+            SparseVector data = cache.get(userId);
+            if (data != null) {
+                return data;
+            } else {
+                FastCollection<IndexedPreference> prefs = this.getUserRatings(userId);
+                data = Preferences.userPreferenceVector(prefs).freeze();
+                cache.put(userId, data);
+                return data;
+            }
         }
     }
 

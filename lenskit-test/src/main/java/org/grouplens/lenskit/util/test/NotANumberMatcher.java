@@ -31,7 +31,7 @@ class NotANumberMatcher extends BaseMatcher<Double> {
     @Override
     public boolean matches(Object item) {
         if (item instanceof Double) {
-            return Double.isNaN((Double) item);
+            return ((Double) item).isNaN();
         } else {
             return false;
         }

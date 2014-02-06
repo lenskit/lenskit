@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.transform.quantize;
 
+import mikera.vectorz.impl.ImmutableVector;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 
@@ -37,7 +38,7 @@ public class PreferenceDomainQuantizer extends ValueArrayQuantizer {
 
     private final PreferenceDomain domain;
 
-    static double[] makeValues(PreferenceDomain domain) {
+    static ImmutableVector makeValues(PreferenceDomain domain) {
         if (!domain.hasPrecision()) {
             throw new IllegalArgumentException("domain is not discrete");
         }
@@ -56,7 +57,7 @@ public class PreferenceDomainQuantizer extends ValueArrayQuantizer {
         for (int i = 0; i <= n; i++) {
             values[i] = min + (prec * i);
         }
-        return values;
+        return ImmutableVector.wrap(values);
     }
 
     /**

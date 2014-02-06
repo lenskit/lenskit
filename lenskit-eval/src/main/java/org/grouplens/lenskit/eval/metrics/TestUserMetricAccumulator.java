@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.metrics;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -37,7 +38,7 @@ public interface TestUserMetricAccumulator {
      *         per-user table (if one is configured).
      */
     @Nonnull
-    Object[] evaluate(TestUser user);
+    List<Object> evaluate(TestUser user);
 
     /**
      * Finalize the evaluation and return the final values.
@@ -45,5 +46,5 @@ public interface TestUserMetricAccumulator {
      * @return The column values for the final evaluation.
      */
     @Nonnull
-    Object[] finalResults();
+    List<Object> finalResults();
 }

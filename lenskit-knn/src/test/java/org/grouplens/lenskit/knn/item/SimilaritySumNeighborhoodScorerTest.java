@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.knn.item;
 
 import com.google.common.collect.Lists;
-import org.grouplens.lenskit.scored.PackedScoredIdList;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -35,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class SimilaritySumNeighborhoodScorerTest {
@@ -53,14 +53,14 @@ public class SimilaritySumNeighborhoodScorerTest {
     public void testEmpty() {
         List<ScoredId> nbrs = Collections.emptyList();
         SparseVector scores = MutableSparseVector.create();
-        assertThat(scorer.score(nbrs, scores), notANumber());
+        assertThat(scorer.score(42, nbrs, scores), nullValue());
     }
 
     @Test
     public void testEmptyNbrs() {
         List<ScoredId> nbrs = Collections.emptyList();
         SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
-        assertThat(scorer.score(nbrs, scores), notANumber());
+        assertThat(scorer.score(42, nbrs, scores), nullValue());
     }
 
     @Test
@@ -70,7 +70,7 @@ public class SimilaritySumNeighborhoodScorerTest {
                                                           .setScore(1.0)
                                                           .build());
         SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
-        assertThat(scorer.score(nbrs, scores), closeTo(1.0));
+        assertThat(scorer.score(42, nbrs, scores).getScore(), closeTo(1.0));
     }
 
     @Test
@@ -83,6 +83,6 @@ public class SimilaritySumNeighborhoodScorerTest {
         long[] scoreKeys = {2, 3, 5, 7};
         double[] scoreValues = {3.7, 4.2, 1.2, 7.8};
         SparseVector scores = MutableSparseVector.wrap(scoreKeys, scoreValues).freeze();
-        assertThat(scorer.score(nbrs, scores), closeTo(2.42));
+        assertThat(scorer.score(42, nbrs, scores).getScore(), closeTo(2.42));
     }
 }

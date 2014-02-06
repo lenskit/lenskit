@@ -24,7 +24,6 @@ import com.google.common.collect.FluentIterable;
 import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.transform.threshold.RealThreshold;
 import org.junit.Test;
 
 import java.util.List;
@@ -43,7 +42,7 @@ public class ItemItemModelAccumulatorTest {
         for (long i = 1; i <= 10; i++) {
             universe.add(i);
         }
-        return new ItemItemModelBuilder.Accumulator(universe, new RealThreshold(0.0), 5);
+        return new ItemItemModelBuilder.Accumulator(universe, 5);
     }
 
     @Test
@@ -57,8 +56,8 @@ public class ItemItemModelAccumulatorTest {
     @Test
     public void testSimpleAccum() {
         ItemItemModelBuilder.Accumulator accum = simpleAccumulator();
-        accum.put(1, 2, Math.PI);
-        accum.put(7, 3, Math.E);
+        accum.rowAccumulator(1).put(2, Math.PI);
+        accum.rowAccumulator(7).put(3, Math.E);
         ItemItemModel model = accum.build();
         List<ScoredId> nbrs = model.getNeighbors(1);
         assertThat(nbrs.size(), equalTo(1));
@@ -78,7 +77,7 @@ public class ItemItemModelAccumulatorTest {
         ItemItemModelBuilder.Accumulator accum = simpleAccumulator();
         for (long i = 1; i <= 10; i++) {
             for (long j = 1; j <= 10; j += (i % 3) + 1) {
-                accum.put(i, j, Math.pow(Math.E, -i) * Math.pow(Math.PI, -j));
+                accum.rowAccumulator(i).put(j, Math.pow(Math.E, -i) * Math.pow(Math.PI, -j));
             }
         }
         ItemItemModel model = accum.build();

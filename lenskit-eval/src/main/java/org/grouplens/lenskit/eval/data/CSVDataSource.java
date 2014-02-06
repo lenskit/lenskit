@@ -20,20 +20,12 @@
  */
 package org.grouplens.lenskit.eval.data;
 
-import org.grouplens.grapht.util.Providers;
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
-import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.util.SoftMemoizingProvider;
 import org.grouplens.lenskit.util.io.CompressionMode;
 
-import javax.annotation.Nonnull;
-import javax.inject.Provider;
 import java.io.File;
-import java.util.List;
 
 /**
  * Data source backed by a CSV file.  Use {@link CSVDataSourceBuilder} to configure and build one
@@ -44,36 +36,27 @@ import java.util.List;
  */
 public class CSVDataSource extends AbstractDataSource {
     final String name;
-    final Provider<EventDAO> provider;
+    final EventDAO dao;
     final File sourceFile;
     final PreferenceDomain domain;
     final String delimiter;
 
-    CSVDataSource(String name, File file, String delim, boolean cache, PreferenceDomain pdom) {
+    CSVDataSource(String name, File file, String delim, PreferenceDomain pdom) {
         this.name = name;
         sourceFile = file;
         domain = pdom;
         delimiter = delim;
 
-        final EventDAO fileDao = new SimpleFileRatingDAO(file, delim, CompressionMode.AUTO);
-
-        if (cache) {
-            provider = new SoftMemoizingProvider<EventDAO>() {
-                @Nonnull
-                @Override
-                protected EventDAO newValue() {
-                    List<Rating> ratings = Cursors.makeList(fileDao.streamEvents(Rating.class));
-                    return new EventCollectionDAO(ratings);
-                }
-            };
-        } else {
-            provider = Providers.of(fileDao);
-        }
+        dao = SimpleFileRatingDAO.create(file, delim, CompressionMode.AUTO);
     }
 
     @Override
     public String getName() {
-        return name;
+        if (name == null) {
+            return sourceFile.getName();
+        } else {
+            return name;
+        }
     }
 
     public File getFile() {
@@ -95,7 +78,16 @@ public class CSVDataSource extends AbstractDataSource {
     }
 
     @Override
-    public Provider<EventDAO> getEventDAOProvider() {
-        return provider;
+    public EventDAO getEventDAO() {
+        return dao;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        str.append("CSVData(")
+           .append(getName())
+           .append(")");
+        return str.toString();
     }
 }

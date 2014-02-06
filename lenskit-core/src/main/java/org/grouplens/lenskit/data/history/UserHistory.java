@@ -20,16 +20,14 @@
  */
 package org.grouplens.lenskit.data.history;
 
-import it.unimi.dsi.fastutil.longs.LongSet;
-
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.concurrent.ThreadSafe;
-
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.event.Event;
+
+import javax.annotation.concurrent.ThreadSafe;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Represents a user profile, associating an immutable list of events with a user. The

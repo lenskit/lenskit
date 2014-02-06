@@ -20,12 +20,11 @@
  */
 package org.grouplens.lenskit.transform.quantize;
 
+import com.google.common.base.Preconditions;
+import mikera.vectorz.impl.ImmutableVector;
 import org.grouplens.lenskit.core.Shareable;
 
-import com.google.common.base.Preconditions;
-
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * Abstract quantizer implementation using a pre-generated array of possible
@@ -41,7 +40,7 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
      * The values to quantize to.  Subclasses must not modify this array after the object
      * has been constructed.
      */
-    protected final double[] values;
+    protected final ImmutableVector values;
 
     /**
      * Construct a new quantizer using the specified array of values.
@@ -50,23 +49,28 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
      */
     public ValueArrayQuantizer(double[] vs) {
         Preconditions.checkArgument(vs.length > 0, "must have at least one value");
+        values = ImmutableVector.of(vs);
+    }
+
+    public ValueArrayQuantizer(ImmutableVector vs) {
+        Preconditions.checkArgument(vs.length() > 0, "must have at least one value");
         values = vs;
     }
 
     @Override
-    public double[] getValues() {
-        return Arrays.copyOf(values, values.length);
+    public ImmutableVector getValues() {
+        return values;
     }
 
     @Override
     public int getCount() {
-        return values.length;
+        return values.length();
     }
 
     @Override
     public double getIndexValue(int i) {
         try {
-            return values[i];
+            return values.get(i);
         } catch (IndexOutOfBoundsException e) { // have to catch and rethrow to avoid RuntimeException
             throw new IllegalArgumentException("invalid discrete value", e);
         }
@@ -74,12 +78,12 @@ public class ValueArrayQuantizer implements Quantizer, Serializable {
 
     @Override
     public int index(double val) {
-        final int n = values.length;
+        final int n = values.length();
         assert n > 0;
         int closest = -1;
         double closev = Double.MAX_VALUE;
         for (int i = 0; i < n; i++) {
-            double diff = Math.abs(val - values[i]);
+            double diff = Math.abs(val - values.get(i));
             if (diff <= closev) { // <= to round up
                 closev = diff;
                 closest = i;

@@ -20,10 +20,9 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
 import org.grouplens.lenskit.scored.ScoredId;
@@ -50,17 +49,17 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
     private static final Logger logger = LoggerFactory.getLogger(NormalizingItemItemModelBuilder.class);
 
     private final ItemSimilarity similarity;
-    private final ItemItemBuildContextFactory contextFactory;
+    private final ItemItemBuildContext buildContext;
     private final ItemVectorNormalizer rowNormalizer;
     private final VectorTruncator truncator;
 
     @Inject
     public NormalizingItemItemModelBuilder(@Transient ItemSimilarity similarity,
-                                           @Transient ItemItemBuildContextFactory ctxFactory,
+                                           @Transient ItemItemBuildContext context,
                                            @Transient ItemVectorNormalizer rowNormalizer,
                                            @Transient VectorTruncator truncator) {
         this.similarity = similarity;
-        contextFactory = ctxFactory;
+        buildContext = context;
         this.rowNormalizer = rowNormalizer;
         this.truncator = truncator;
     }
@@ -70,20 +69,22 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
     public SimilarityMatrixModel get() {
         logger.debug("building item-item model");
 
-        ItemItemBuildContext context = contextFactory.buildContext();
-        MutableSparseVector currentRow = MutableSparseVector.create(context.getItems());
+        MutableSparseVector currentRow = MutableSparseVector.create(buildContext.getItems());
 
-        LongSortedSet itemUniverse = context.getItems();
-        Long2ObjectMap<List<ScoredId>> matrix =
-                new Long2ObjectOpenHashMap<List<ScoredId>>(itemUniverse.size());
+        LongSortedSet itemUniverse = buildContext.getItems();
+        final int nitems = itemUniverse.size();
+        LongKeyDomain itemDomain = LongKeyDomain.fromCollection(itemUniverse, true);
+        assert itemDomain.size() == itemDomain.domainSize();
+        assert itemDomain.domainSize() == nitems;
+        List<List<ScoredId>> matrix = Lists.newArrayListWithCapacity(itemDomain.domainSize());
 
-        LongIterator outer = context.getItems().iterator();
-        while (outer.hasNext()) {
-            final long rowItem = outer.nextLong();
-            final SparseVector vec1 = context.itemVector(rowItem);
+        for (int i = 0; i < nitems; i++) {
+            assert matrix.size() == i;
+            final long rowItem = itemDomain.getKey(i);
+            final SparseVector vec1 = buildContext.itemVector(rowItem);
             for (VectorEntry e: currentRow.fast(VectorEntry.State.EITHER)) {
                 final long colItem = e.getKey();
-                final SparseVector vec2 = context.itemVector(colItem);
+                final SparseVector vec2 = buildContext.itemVector(colItem);
                 currentRow.set(e, similarity.similarity(rowItem, vec1, colItem, vec2));
             }
             MutableSparseVector normalized = rowNormalizer.normalize(rowItem, currentRow, null);
@@ -95,9 +96,9 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
                                     .addAll(ScoredIds.collectionFromVector(normalized))
                                     .sort(ScoredIds.scoreOrder().reverse())
                                     .finish();
-            matrix.put(rowItem, row);
+            matrix.add(row);
         }
 
-        return new SimilarityMatrixModel(itemUniverse, matrix);
+        return new SimilarityMatrixModel(itemDomain, matrix);
     }
 }

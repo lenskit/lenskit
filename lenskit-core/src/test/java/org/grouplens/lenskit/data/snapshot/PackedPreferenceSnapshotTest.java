@@ -23,12 +23,13 @@ package org.grouplens.lenskit.data.snapshot;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.pref.Preferences;
-import org.grouplens.lenskit.util.Index;
+import org.grouplens.lenskit.indexes.IdIndexMapping;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
@@ -80,8 +81,8 @@ public class PackedPreferenceSnapshotTest {
         rs.add(rating(1, 11, 5, 1));
         rs.add(rating(3, 11, 5, 2));
         rs.add(rating(4, 11, 5, 1));
-        EventCollectionDAO dao = new EventCollectionDAO(rs);
-        snap = new PackedPreferenceSnapshot.Provider(dao, new Random()).get();
+        EventDAO dao = EventCollectionDAO.create(rs);
+        snap = new PackedPreferenceSnapshot.Builder(dao, new Random()).get();
     }
 
     @Test
@@ -113,14 +114,14 @@ public class PackedPreferenceSnapshotTest {
 
     @Test
     public void testUserIndex() {
-        Index ind = snap.userIndex();
-        assertEquals(6, ind.getObjectCount());
-        assertTrue(ind.getIds().contains(1));
-        assertTrue(ind.getIds().contains(3));
-        assertTrue(ind.getIds().contains(4));
-        assertTrue(ind.getIds().contains(5));
-        assertTrue(ind.getIds().contains(6));
-        assertTrue(ind.getIds().contains(7));
+        IdIndexMapping ind = snap.userIndex();
+        assertEquals(6, ind.size());
+        assertTrue(ind.getIdList().contains(1));
+        assertTrue(ind.getIdList().contains(3));
+        assertTrue(ind.getIdList().contains(4));
+        assertTrue(ind.getIdList().contains(5));
+        assertTrue(ind.getIdList().contains(6));
+        assertTrue(ind.getIdList().contains(7));
         assertEquals(0, ind.getIndex(1));
         assertEquals(1, ind.getIndex(3));
         assertEquals(2, ind.getIndex(4));
@@ -137,13 +138,13 @@ public class PackedPreferenceSnapshotTest {
 
     @Test
     public void testItemIndex() {
-        Index ind = snap.itemIndex();
-        assertEquals(5, ind.getObjectCount());
-        assertTrue(ind.getIds().contains(7));
-        assertTrue(ind.getIds().contains(8));
-        assertTrue(ind.getIds().contains(9));
-        assertTrue(ind.getIds().contains(10));
-        assertTrue(ind.getIds().contains(11));
+        IdIndexMapping ind = snap.itemIndex();
+        assertEquals(5, ind.size());
+        assertTrue(ind.getIdList().contains(7));
+        assertTrue(ind.getIdList().contains(8));
+        assertTrue(ind.getIdList().contains(9));
+        assertTrue(ind.getIdList().contains(10));
+        assertTrue(ind.getIdList().contains(11));
         assertEquals(0, ind.getIndex(7));
         assertEquals(1, ind.getIndex(8));
         assertEquals(2, ind.getIndex(9));

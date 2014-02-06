@@ -31,6 +31,7 @@ import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
 
@@ -45,11 +46,13 @@ import java.util.Set;
 public abstract class AbstractScoredId implements ScoredId {
 
     private transient volatile int hashCode;
+    @Nullable
     private transient volatile String stringRepr;
 
-    @Override
+    @Override @Nonnull
     public String toString() {
-        if (stringRepr == null) {
+        String repr = stringRepr;
+        if (repr == null) {
             StringBuilder bld = new StringBuilder();
             bld.append("score(")
                .append(getId())
@@ -59,9 +62,9 @@ public abstract class AbstractScoredId implements ScoredId {
             if (nchans > 0) {
                 bld.append(" [with ").append(nchans).append(" channels]");
             }
-            stringRepr = bld.toString();
+            stringRepr = repr = bld.toString();
         }
-        return stringRepr;
+        return repr;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -79,7 +82,7 @@ public abstract class AbstractScoredId implements ScoredId {
             }
             builder.append(sum);
             
-            hashCode = builder.build();
+            hashCode = builder.toHashCode();
         }
         return hashCode;
     }

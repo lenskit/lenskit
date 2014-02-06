@@ -38,16 +38,8 @@ import java.util.Iterator;
  * @param <E> The type of value in the fast collection.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
+ * @deprecated Just implement {@link FastIterable}.
  */
-public interface FastCollection<E> extends Collection<E> {
-    /**
-     * Return a fast iterator.  The iterator may not actually be fast; if the
-     * underlying structure does not support fast iteration, the iterator may
-     * return distinct objects every time.  However, that is usually in cases
-     * where the underlying collection is storing distinct objects anyway so no
-     * overhead is introduced.
-     *
-     * @return An iterator that may not return distinct objects.
-     */
-    Iterator<E> fastIterator();
+@Deprecated
+public interface FastCollection<E> extends Collection<E>, FastIterable<E> {
 }

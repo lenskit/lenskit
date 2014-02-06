@@ -23,6 +23,7 @@ package org.grouplens.lenskit.data.history;
 import com.google.common.base.Function;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.data.event.Event;
 
 import javax.annotation.Nullable;
@@ -50,15 +51,16 @@ public abstract class AbstractUserHistory<E extends Event> extends AbstractList<
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
     public <T> T memoize(Function<? super UserHistory<E>, ? extends T> func) {
-        if (memTable == null) {
+        Map<Function,Object> table = memTable;
+        if (table == null) {
             synchronized (this) {
-                if (memTable == null) {
-                    memTable = new ConcurrentHashMap<Function, Object>();
+                table = memTable;
+                if (table == null) {
+                    memTable = table = new ConcurrentHashMap<Function, Object>();
                 }
             }
         }
 
-        Map<Function,Object> table = memTable;
         if (!table.containsKey(func)) {
             // worst case scenario: we compute the function twice. This is permissible.
             table.put(func, func.apply(this));
@@ -75,7 +77,7 @@ public abstract class AbstractUserHistory<E extends Event> extends AbstractList<
                 return null;
             } else {
                 LongSet items = new LongOpenHashSet();
-                for (Event e : input) {
+                for (Event e : CollectionUtils.fast(input)) {
                     items.add(e.getItemId());
                 }
                 return items;

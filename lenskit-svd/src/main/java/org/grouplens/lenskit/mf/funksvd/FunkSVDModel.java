@@ -21,64 +21,42 @@
 package org.grouplens.lenskit.mf.funksvd;
 
 import com.google.common.collect.ImmutableList;
+import mikera.matrixx.impl.ImmutableMatrix;
+import mikera.vectorz.AVector;
+import mikera.vectorz.impl.ImmutableVector;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.transform.clamp.ClampingFunction;
-import org.grouplens.lenskit.util.Index;
+import org.grouplens.lenskit.indexes.IdIndexMapping;
+import org.grouplens.lenskit.mf.svd.MFModel;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
- * The FunkSVD model class.
+ * Model for FunkSVD recommendation.  This extends the SVD model with clamping functions and
+ * information about the training of the features.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultProvider(FunkSVDModelBuilder.class)
 @Shareable
-public final class FunkSVDModel implements Serializable {
-    private static final long serialVersionUID = 2L;
-
-    private final int featureCount;
-
-    private final int numUser;
-    private final int numItem;
-
-    private final double[][] itemFeatures;
-    private final double[][] userFeatures;
-
-    private final ClampingFunction clampingFunction;
+public final class FunkSVDModel extends MFModel {
+    private static final long serialVersionUID = 3L;
 
     private final List<FeatureInfo> featureInfo;
+    private final AVector averageUser;
 
-    private final Index itemIndex;
-    private final Index userIndex;
-
-    public FunkSVDModel(int nfeatures, double[][] ifeats, double[][] ufeats,
-                        ClampingFunction clamp, Index iidx, Index uidx,
+    public FunkSVDModel(ImmutableMatrix umat, ImmutableMatrix imat,
+                        IdIndexMapping uidx, IdIndexMapping iidx,
                         List<FeatureInfo> features) {
-        featureCount = nfeatures;
-        clampingFunction = clamp;
-
-        itemFeatures = ifeats;
-        userFeatures = ufeats;
-
-        itemIndex = iidx;
-        userIndex = uidx;
-
-        numItem = iidx.getIds().size();
-        numUser = uidx.getIds().size();
+        super(umat, imat, uidx, iidx);
 
         featureInfo = ImmutableList.copyOf(features);
-    }
 
-    /**
-     * Get the model's feature count.
-     *
-     * @return The model's feature count.
-     */
-    public int getFeatureCount() {
-        return featureCount;
+        double[] means = new double[featureCount];
+        for (int f = featureCount - 1; f >= 0; f--) {
+            means[f] = featureInfo.get(f).getUserAverage();
+        }
+        averageUser = ImmutableVector.wrap(means);
     }
 
     /**
@@ -98,84 +76,7 @@ public final class FunkSVDModel implements Serializable {
         return featureInfo;
     }
 
-    /**
-     * The number of users.
-     */
-    public int getUserCount() {
-        return numUser;
-    }
-
-    /**
-     * The number of items.
-     */
-    public int getItemCount() {
-        return numItem;
-    }
-
-    /**
-     * The item-feature matrix (features, then items).  Do not modify this array.
-     */
-    @Deprecated
-    public double[][] getItemFeatures() {
-        return itemFeatures;
-    }
-
-    /**
-     * The user-feature matrix (features, then users).  Do not modify this array.
-     */
-    @Deprecated
-    public double[][] getUserFeatures() {
-        return userFeatures;
-    }
-
-    /**
-     * The clamping function used to build this model.
-     */
-    public ClampingFunction getClampingFunction() {
-        return clampingFunction;
-    }
-
-    /**
-     * The item index.
-     */
-    public Index getItemIndex() {
-        return itemIndex;
-    }
-
-    /**
-     * The user index.
-     */
-    public Index getUserIndex() {
-        return userIndex;
-    }
-
-    /**
-     * Get a particular feature value for an item.
-     * @param iid The item ID.
-     * @param feature The feature.
-     * @return The item-feature value, or 0 if the item was not in the training set.
-     */
-    public double getItemFeature(long iid, int feature) {
-        int iidx = itemIndex.getIndex(iid);
-        if (iidx < 0) {
-            return 0;
-        } else {
-            return itemFeatures[feature][iidx];
-        }
-    }
-
-    /**
-     * Get a particular feature value for an user.
-     * @param uid The item ID.
-     * @param feature The feature.
-     * @return The user-feature value, or 0 if the user was not in the training set.
-     */
-    public double getUserFeature(long uid, int feature) {
-        int uidx = userIndex.getIndex(uid);
-        if (uidx < 0) {
-            return 0;
-        } else {
-            return userFeatures[feature][uidx];
-        }
+    public AVector getAverageUserVector() {
+        return averageUser;
     }
 }

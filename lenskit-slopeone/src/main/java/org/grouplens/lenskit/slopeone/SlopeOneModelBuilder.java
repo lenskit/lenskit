@@ -22,9 +22,7 @@ package org.grouplens.lenskit.slopeone;
 
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.dao.ItemDAO;
-import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.knn.item.model.ItemItemBuildContext;
-import org.grouplens.lenskit.knn.item.model.ItemItemBuildContextFactory;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -39,14 +37,14 @@ import javax.inject.Provider;
 public class SlopeOneModelBuilder implements Provider<SlopeOneModel> {
     private final SlopeOneModelDataAccumulator accumulator;
 
-    private final ItemItemBuildContextFactory contextFactory;
+    private final ItemItemBuildContext buildContext;
 
     @Inject
     public SlopeOneModelBuilder(@Transient @Nonnull ItemDAO dao,
-                                @Transient ItemItemBuildContextFactory contextFactory,
+                                @Transient ItemItemBuildContext context,
                                 @DeviationDamping double damping) {
 
-        this.contextFactory = contextFactory;
+        buildContext = context;
         accumulator = new SlopeOneModelDataAccumulator(damping, dao);
     }
 
@@ -55,7 +53,6 @@ public class SlopeOneModelBuilder implements Provider<SlopeOneModel> {
      */
     @Override
     public SlopeOneModel get() {
-        ItemItemBuildContext buildContext = contextFactory.buildContext();
         for (ItemItemBuildContext.ItemVecPair pair : buildContext.getItemPairs()) {
             if (pair.itemId1 != pair.itemId2) {
                 accumulator.putItemPair(pair.itemId1, pair.vec1, pair.itemId2, pair.vec2);

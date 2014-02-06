@@ -27,7 +27,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.Uninterruptibles;
 import groovy.lang.Closure;
 import groovy.lang.GroovyRuntimeException;
 import groovy.lang.MetaClass;
@@ -434,8 +433,10 @@ public class ConfigMethodInvoker {
             Future<?> f = (Future<?>) args[0];
             if (f.isDone()) {
                 try {
-                    Object arg = Uninterruptibles.getUninterruptibly(f);
+                    Object arg = f.get();
                     return invokeConfigurationMethod(target, name, arg);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException("interrupted waiting for dependency", e);
                 } catch (ExecutionException e) {
                     throw new RuntimeException(e.getCause());
                 }

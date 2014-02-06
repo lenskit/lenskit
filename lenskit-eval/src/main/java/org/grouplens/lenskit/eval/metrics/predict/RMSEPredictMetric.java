@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.eval.metrics.predict;
 
 import com.google.common.collect.ImmutableList;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
+import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
@@ -47,7 +47,7 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
     private static final ImmutableList<String> USER_COLUMNS = ImmutableList.of("RMSE");
 
     @Override
-    public TestUserMetricAccumulator makeAccumulator(AlgorithmInstance algo, TTDataSet ds) {
+    public TestUserMetricAccumulator makeAccumulator(Attributed algo, TTDataSet ds) {
         return new Accum();
     }
 
@@ -69,7 +69,7 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] evaluate(TestUser user) {
+        public List<Object> evaluate(TestUser user) {
             SparseVector ratings = user.getTestRatings();
             SparseVector predictions = user.getPredictions();
             if (predictions == null) {
@@ -100,7 +100,7 @@ public class RMSEPredictMetric extends AbstractTestUserMetric {
 
         @Nonnull
         @Override
-        public Object[] finalResults() {
+        public List<Object> finalResults() {
             if (nratings > 0) {
                 double v = sqrt(sse / nratings);
                 logger.info("RMSE: {}", v);

@@ -58,7 +58,7 @@ public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
      */
     public TableLayoutBuilder addColumn(String name) {
         if (name == null) {
-            throw new IllegalArgumentException("column name cannot be null");
+            throw new NullPointerException("column name");
         }
         if (columns.contains(name)) {
             throw new IllegalArgumentException("column " + name + " already exists");

@@ -23,6 +23,7 @@ package org.grouplens.lenskit.data.history;
 import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.EventType;
@@ -70,7 +71,7 @@ public final class EventCountUserHistorySummarizer implements UserHistorySummari
     @Override @Nonnull
     public SparseVector summarize(@Nonnull UserHistory<? extends Event> history) {
         Long2DoubleMap map = new Long2DoubleOpenHashMap();
-        for (Event e : Iterables.filter(history, wantedType)) {
+        for (Event e : CollectionUtils.fast(history.filter(wantedType))) {
             final long iid = e.getItemId();
             map.put(iid, map.get(iid) + 1);
         }

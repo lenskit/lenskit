@@ -20,15 +20,13 @@
  */
 package org.grouplens.lenskit.transform.quantize;
 
+import mikera.vectorz.impl.ImmutableVector;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.transform.quantize.PreferenceDomainQuantizer;
-import org.grouplens.lenskit.transform.quantize.Quantizer;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -44,9 +42,14 @@ public class PreferenceDomainQuantizerTest {
 
     @Test
     public void testMakeValues() {
-        double[] vals = PreferenceDomainQuantizer.makeValues(domain);
-        double[] evals = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0};
-        assertArrayEquals(evals, vals, 1.0e-6);
+        ImmutableVector vals = PreferenceDomainQuantizer.makeValues(domain);
+        ImmutableVector evals = ImmutableVector.of(0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0);
+        assertThat(vals.length(), equalTo(evals.length()));
+        for (int i = 0; i < vals.length(); i++) {
+            assertThat("element " + i,
+                       vals.get(i),
+                       closeTo(evals.get(i), 1.0e-6));
+        }
     }
 
     @Test

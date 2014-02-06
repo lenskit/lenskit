@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.grouplens.lenskit.tests</groupId>
+  <artifactId>all-output-files</artifactId>
+  <version>@project.version@</version>
+  <name>All Output test</name>
+  <description>Test that the eval runner produces all expected output files.</description>
+
+  <properties>
+    <lenskit.movielens.100k>@lenskit.movielens.100k@</lenskit.movielens.100k>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.grouplens.lenskit</groupId>
+      <artifactId>lenskit-knn</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>lenskit-eval-maven-plugin</artifactId>
+        <groupId>org.grouplens.lenskit</groupId>
+        <version>@project.version@</version>
+        <extensions>true</extensions>
+        <configuration>
+          <scriptDir>${project.basedir}</scriptDir>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

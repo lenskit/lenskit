@@ -23,23 +23,23 @@ package org.grouplens.lenskit.eval.results;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
- * Accumulates the results of a single test pass on a single algorithm.
+ * Accumulates the results of a single test pass on a single algorithmInfo.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public interface AlgorithmTestAccumulator {
     /**
-     * Start the algorithm's build timer.
+     * Start the algorithmInfo's build timer.
      */
     void startBuildTimer();
 
     /**
-     * Stop the algorithm's build timer.
+     * Stop the algorithmInfo's build timer.
      */
     void finishBuild();
 
     /**
-     * Start the algorithm's test timer.
+     * Start the algorithmInfo's test timer.
      */
     void startTestTimer();
 
