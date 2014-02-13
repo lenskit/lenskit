@@ -22,33 +22,66 @@ package org.grouplens.lenskit.eval.metrics.topn;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.longs.*;
+import org.grouplens.lenskit.core.LenskitRecommender;
+import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
 import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
 import org.grouplens.lenskit.eval.traintest.TestUser;
+import org.grouplens.lenskit.knn.item.ItemSimilarity;
+import org.grouplens.lenskit.knn.item.model.ItemItemBuildContext;
+import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
- * Metric that measures how long a TopN list actually is.
+ * Metric that measures how diverse the items in the TopN list are.
+ * 
+ * To use this metric ensure that you have a reasonable item item model configured in each algorithm
+ * The "default" will be used for generating similarity scores for use in this evaluation.
+ * Your model must not use truncation of any sort (size of similarity value).
+ * 
+ * Example configuration:
+ * <pre>
+ *     bind VectorSimilarity to CosineVectorSimilarity
+ *     bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
+ *     within (UserVectorNormalizer) {
+ *         bind (BaselineScorer, ItemScorer) to ItemMeanRatingItemScorer
+ *         set MeanDamping to 5.0d
+ *     }
+ *     set ModelSize to 0
+ *     bind (ItemSimilarityThreshold, Threshold) to NoThreshold
+ *     root (ItemItemBuildContext)
+ *     root (ItemSimilarity)
+ * </pre>
+ * 
+ * I also recommend enabling model sharing and cacheing between algorithms to make this much more efficient.
+ * 
+ * This computes the average disimilarity (-1 * similarity) of all pairs of items. 
+ * 
+ * The number is large for non-diverse lists, and small for diverse lists.
+ * 
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TopNLengthMetric extends AbstractTestUserMetric {
+public class TopNDiversityMetric extends AbstractTestUserMetric {
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
     private final ImmutableList<String> columns;
 
-    public TopNLengthMetric(String lbl, int listSize, ItemSelector candidates, ItemSelector exclude) {
+    public TopNDiversityMetric(String lbl, int listSize, ItemSelector candidates, ItemSelector exclude) {
         this.listSize = listSize;
         this.candidates = candidates;
         this.exclude = exclude;
         columns = ImmutableList.of(lbl);
     }
-
+    
     @Override
     public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
         return new Accum();
@@ -67,19 +100,46 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
     class Accum implements TestUserMetricAccumulator {
         double total = 0;
         int nusers = 0;
-
+        
         @Nonnull
         @Override
         public List<Object> evaluate(TestUser user) {
+            
             List<ScoredId> recs;
             recs = user.getRecommendations(listSize, candidates, exclude);
-            if (recs == null) {
+            if (recs == null || recs.isEmpty()) {
                 return userRow();
+            } 
+            
+            double simSum = 0;
+
+            LenskitRecommender rec = (LenskitRecommender) user.getRecommender();
+            ItemSimilarityMetric metric = rec.get(ItemSimilarityMetric.class);
+            ItemItemBuildContext context = metric.getContext();
+            ItemSimilarity sim = metric.getSim();
+            if (context == null || sim == null) {
+                throw new RuntimeException("TopNDiversityMetric requires an build context and similarity function.");
             }
+            
+            for (ScoredId s1 : recs) {
+                long i1 = s1.getId();
+                SparseVector v1 = context.itemVector(i1);
+                for (ScoredId s2 : recs) {
+                    long i2 = s2.getId();
+                    if(i1 == i2) {
+                        continue;
+                    }
+                    SparseVector v2 = context.itemVector(i2);
+                    simSum -= sim.similarity(i1,v1,i2,v2);
+                }
+            }
+            
             int n = recs.size();
-            total += n;
+            simSum /= (n*n - n);
+            
+            total += simSum;
             nusers += 1;
-            return userRow(n);
+            return userRow(simSum);
         }
 
         @Nonnull
@@ -97,8 +157,8 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
      * Build a Top-N length metric to measure Top-N lists.
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Builder extends TopNMetricBuilder<Builder, TopNLengthMetric> {
-        private String label = "TopN.ActualLength";
+    public static class Builder extends TopNMetricBuilder<Builder, TopNDiversityMetric> {
+        private String label = "TopN.diversity";
 
         /**
          * Get the column label for this metric.
@@ -120,8 +180,8 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
         }
 
         @Override
-        public TopNLengthMetric build() {
-            return new TopNLengthMetric(label, listSize, candidates, exclude);
+        public TopNDiversityMetric build() {
+            return new TopNDiversityMetric(label, listSize, candidates, exclude);
         }
     }
 

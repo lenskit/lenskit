@@ -22,6 +22,10 @@ package org.grouplens.lenskit.eval.metrics.topn;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.longs.*;
+import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
@@ -31,27 +35,54 @@ import org.grouplens.lenskit.scored.ScoredId;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Metric that measures how long a TopN list actually is.
+ * Metric that measures how popular the items in the TopN list are.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TopNLengthMetric extends AbstractTestUserMetric {
+public class TopNPopularityMetric extends AbstractTestUserMetric {
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
     private final ImmutableList<String> columns;
 
-    public TopNLengthMetric(String lbl, int listSize, ItemSelector candidates, ItemSelector exclude) {
+    public TopNPopularityMetric(String lbl, int listSize, ItemSelector candidates, ItemSelector exclude) {
         this.listSize = listSize;
         this.candidates = candidates;
         this.exclude = exclude;
         columns = ImmutableList.of(lbl);
     }
 
+    /**
+     * Computes the popularity of a set of ratings as the number of users who have rated an item
+     * This function is robust in the face of multiple ratings ont he same item by the same user.
+     * @return an immutable map from movie Ids to the number of users who have rated the identified movie.
+     */
+    public Long2IntMap computePop(EventDAO dao) {
+
+        Long2ObjectOpenHashMap<LongSet> watchingUsers = new Long2ObjectOpenHashMap<LongSet>();
+        for (Rating r : dao.streamEvents(Rating.class).fast()) {
+            long item = r.getItemId();
+            long user = r.getUserId();
+            if (! watchingUsers.containsKey(item)) {
+                watchingUsers.put(item, new LongOpenHashSet());
+            }
+            watchingUsers.get(item).add(user);
+        }
+        
+        Long2IntMap userCounts = new Long2IntOpenHashMap();
+        for (long item : watchingUsers.keySet()) {
+            userCounts.put(item, watchingUsers.get(item).size());
+        }
+        return Long2IntMaps.unmodifiable(userCounts);
+    }
+    
     @Override
     public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
-        return new Accum();
+        Long2IntMap popularity = computePop(ds.getTrainingDAO()); 
+        return new Accum(popularity);
     }
 
     @Override
@@ -67,19 +98,31 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
     class Accum implements TestUserMetricAccumulator {
         double total = 0;
         int nusers = 0;
+        Long2IntMap popularity;
+
+        public Accum(Long2IntMap popularity) {
+            this.popularity = popularity;
+        }
+
 
         @Nonnull
         @Override
         public List<Object> evaluate(TestUser user) {
+            
             List<ScoredId> recs;
             recs = user.getRecommendations(listSize, candidates, exclude);
-            if (recs == null) {
+            if (recs == null || recs.isEmpty()) {
                 return userRow();
+            } 
+            double pop = 0;
+            for (ScoredId s : recs) {
+                pop += popularity.get(s.getId()); // default value should be 0 here.
             }
-            int n = recs.size();
-            total += n;
+            pop = pop / recs.size();
+            
+            total += pop;
             nusers += 1;
-            return userRow(n);
+            return userRow(pop);
         }
 
         @Nonnull
@@ -97,8 +140,8 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
      * Build a Top-N length metric to measure Top-N lists.
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Builder extends TopNMetricBuilder<Builder, TopNLengthMetric> {
-        private String label = "TopN.ActualLength";
+    public static class Builder extends TopNMetricBuilder<Builder, TopNPopularityMetric> {
+        private String label = "TopN.avgPop";
 
         /**
          * Get the column label for this metric.
@@ -120,8 +163,8 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
         }
 
         @Override
-        public TopNLengthMetric build() {
-            return new TopNLengthMetric(label, listSize, candidates, exclude);
+        public TopNPopularityMetric build() {
+            return new TopNPopularityMetric(label, listSize, candidates, exclude);
         }
     }
 

@@ -22,36 +22,17 @@ package org.grouplens.lenskit.eval.metrics.topn;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
+import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 
 /**
- * Build a Top-N length metric to measure Top-N lists.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TopNLengthMetricBuilder implements Builder<TopNLengthMetric> {
-    private int listSize = 5;
-    private ItemSelector candidates = ItemSelectors.testItems();
-    private ItemSelector exclude = ItemSelectors.trainingItems();
-    private String label = "TopN.ActualLength";
-
-    /**
-     * Get the column label for this metric.
-     * @return The column label.
-     */
-    public String getLabel() {
-        return label;
-    }
-
-    /**
-     * Set the column label for this metric.
-     * @param l The column label
-     * @return The builder (for chaining).
-     */
-    public TopNLengthMetricBuilder setLabel(String l) {
-        Preconditions.checkNotNull(l, "label cannot be null");
-        label = l;
-        return this;
-    }
-
+public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends TestUserMetric> implements Builder<K> {
+    protected int listSize = 5;
+    protected ItemSelector candidates = ItemSelectors.testItems();
+    protected ItemSelector exclude = ItemSelectors.trainingItems();
+    
     /**
      * Get the list size.
      * @return The number of items to return in a recommendation list.
@@ -81,9 +62,9 @@ public class TopNLengthMetricBuilder implements Builder<TopNLengthMetric> {
      * @param n The recommendation list size.
      * @return The builder (for chaining).
      */
-    public TopNLengthMetricBuilder setListSize(int n) {
+    public T setListSize(int n) {
         listSize = n;
-        return this;
+        return (T) this;
     }
 
     /**
@@ -91,9 +72,9 @@ public class TopNLengthMetricBuilder implements Builder<TopNLengthMetric> {
      * @param sel The candidate item selector.
      * @return The builder (for chaining).
      */
-    public TopNLengthMetricBuilder setCandidates(ItemSelector sel) {
+    public T setCandidates(ItemSelector sel) {
         candidates = sel;
-        return this;
+        return (T) this;
     }
 
     /**
@@ -101,12 +82,10 @@ public class TopNLengthMetricBuilder implements Builder<TopNLengthMetric> {
      * @param sel The exclude item selector.
      * @return The builder (for chaining).
      */
-    public TopNLengthMetricBuilder setExclude(ItemSelector sel) {
+    public TopNMetricBuilder setExclude(ItemSelector sel) {
         exclude = sel;
         return this;
     }
 
-    public TopNLengthMetric build() {
-        return new TopNLengthMetric(label, listSize, candidates, exclude);
-    }
+    public abstract K build();
 }

@@ -72,12 +72,18 @@
       <scope>compile</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.grouplens.lenskit</groupId>
-      <artifactId>lenskit-test</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
+      <dependency>
+          <groupId>org.grouplens.lenskit</groupId>
+          <artifactId>lenskit-test</artifactId>
+          <version>${project.version}</version>
+          <scope>test</scope>
+      </dependency>
+
+      <dependency>
+          <groupId>org.grouplens.lenskit</groupId>
+          <artifactId>lenskit-knn</artifactId>
+          <version>${project.version}</version>
+      </dependency>
   </dependencies>
 
   <build>
