@@ -24,11 +24,13 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
+import org.grouplens.grapht.CachePolicy;
+import org.grouplens.grapht.Component;
+import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.Injector;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.*;
-import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.util.MemoizingProvider;
 
 import javax.annotation.Nonnull;
@@ -42,16 +44,16 @@ import java.util.Map;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class StaticInjector implements Injector, Function<DAGNode<CachedSatisfaction,DesireChain>,Object> {
-    private DAGNode<CachedSatisfaction, DesireChain> graph;
-    private Map<DAGNode<CachedSatisfaction,DesireChain>, Provider<?>> providerCache;
+public class StaticInjector implements Injector, Function<DAGNode<Component,Dependency>,Object> {
+    private DAGNode<Component, Dependency> graph;
+    private Map<DAGNode<Component,Dependency>, Provider<?>> providerCache;
 
     /**
      * Create a new static injector.
      *
      * @param g   The object graph.
      */
-    public StaticInjector(DAGNode<CachedSatisfaction, DesireChain> g) {
+    public StaticInjector(DAGNode<Component,Dependency> g) {
         graph = g;
         providerCache = Maps.newHashMap();
     }
@@ -59,13 +61,13 @@ public class StaticInjector implements Injector, Function<DAGNode<CachedSatisfac
     @Override
     public <T> T getInstance(Class<T> type) {
         Desire d = Desires.create(null, type, true);
-        DAGEdge<CachedSatisfaction, DesireChain> e =
-                graph.getOutgoingEdgeWithLabel(DesireChain.hasInitialDesire(d));
+        DAGEdge<Component, Dependency> e =
+                graph.getOutgoingEdgeWithLabel(Dependency.hasInitialDesire(d));
 
         if (e != null) {
             return type.cast(instantiate(e.getTail()));
         } else {
-            DAGNode<CachedSatisfaction,DesireChain> node = findSatisfyingNode(Qualifiers.matchDefault(), type);
+            DAGNode<Component, Dependency> node = findSatisfyingNode(Qualifiers.matchDefault(), type);
             if (node != null) {
                 return type.cast(instantiate(node));
             } else {
@@ -75,7 +77,7 @@ public class StaticInjector implements Injector, Function<DAGNode<CachedSatisfac
     }
 
     public <T> T getInstance(Class<? extends Annotation> qual, Class<T> type) {
-        DAGNode<CachedSatisfaction,DesireChain> node = findSatisfyingNode(Qualifiers.match(qual), type);
+        DAGNode<Component, Dependency> node = findSatisfyingNode(Qualifiers.match(qual), type);
         if (node != null) {
             return type.cast(instantiate(node));
         } else {
@@ -92,10 +94,10 @@ public class StaticInjector implements Injector, Function<DAGNode<CachedSatisfac
      * @review Decide how to handle qualifiers and contexts
      */
     @Nullable
-    private DAGNode<CachedSatisfaction,DesireChain> findSatisfyingNode(final QualifierMatcher qmatch, final Class<?> type) {
-        Predicate<DAGEdge<CachedSatisfaction,DesireChain>> pred = new Predicate<DAGEdge<CachedSatisfaction, DesireChain>>() {
+    private DAGNode<Component,Dependency> findSatisfyingNode(final QualifierMatcher qmatch, final Class<?> type) {
+        Predicate<DAGEdge<Component,Dependency>> pred = new Predicate<DAGEdge<Component, Dependency>>() {
             @Override
-            public boolean apply(@Nullable DAGEdge<CachedSatisfaction, DesireChain> input) {
+            public boolean apply(@Nullable DAGEdge<Component, Dependency> input) {
                 return input != null
                        && type.isAssignableFrom(input.getTail()
                                                      .getLabel()
@@ -107,7 +109,7 @@ public class StaticInjector implements Injector, Function<DAGNode<CachedSatisfac
                                             .getQualifier());
             }
         };
-        DAGEdge<CachedSatisfaction,DesireChain> edge = graph.findEdgeBFS(pred);
+        DAGEdge<Component, Dependency> edge = graph.findEdgeBFS(pred);
         if (edge != null) {
             return edge.getTail();
         } else {
@@ -118,10 +120,11 @@ public class StaticInjector implements Injector, Function<DAGNode<CachedSatisfac
     /**
      * Instantiate a particular node in the graph.
      *
+     *
      * @param node The node to instantiate.
      * @return The instantiation of the node.
      */
-    public Object instantiate(DAGNode<CachedSatisfaction,DesireChain> node) {
+    public Object instantiate(DAGNode<Component, Dependency> node) {
         Provider<?> p = getProvider(node);
 
         return p.get();
@@ -129,16 +132,16 @@ public class StaticInjector implements Injector, Function<DAGNode<CachedSatisfac
 
     @Nonnull
     @Override
-    public Object apply(@Nullable DAGNode<CachedSatisfaction, DesireChain> input) {
+    public Object apply(@Nullable DAGNode<Component, Dependency> input) {
         Preconditions.checkNotNull(input, "input node");
         return instantiate(input);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private synchronized Provider<?> getProvider(DAGNode<CachedSatisfaction,DesireChain> node) {
+    private synchronized Provider<?> getProvider(DAGNode<Component, Dependency> node) {
         Provider<?> provider = providerCache.get(node);
         if (provider == null) {
-            CachedSatisfaction lbl = node.getLabel();
+            Component lbl = node.getLabel();
             assert lbl != null;
             provider = lbl.getSatisfaction().makeProvider(new DepSrc(node));
             CachePolicy pol = lbl.getCachePolicy();
@@ -164,17 +167,17 @@ public class StaticInjector implements Injector, Function<DAGNode<CachedSatisfac
     }
 
     private class DepSrc implements ProviderSource {
-        private DAGNode<CachedSatisfaction,DesireChain> node;
+        private DAGNode<Component, Dependency> node;
 
-        private DepSrc(DAGNode<CachedSatisfaction,DesireChain> n) {
+        private DepSrc(DAGNode<Component, Dependency> n) {
             this.node = n;
         }
 
         @Override
         @SuppressWarnings("rawtypes")
         public Provider<?> apply(Desire desire) {
-            final DAGNode<CachedSatisfaction,DesireChain> dep =
-                    node.getOutgoingEdgeWithLabel(DesireChain.hasInitialDesire(desire)).getTail();
+            final DAGNode<Component, Dependency> dep =
+                    node.getOutgoingEdgeWithLabel(Dependency.hasInitialDesire(desire)).getTail();
             return new Provider() {
                 @Override
                 public Object get() {

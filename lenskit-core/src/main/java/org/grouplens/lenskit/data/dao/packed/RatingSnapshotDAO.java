@@ -22,16 +22,14 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.grapht.annotation.DefaultBoolean;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.grapht.annotation.DefaultString;
-import org.grouplens.lenskit.core.Parameter;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.UseTimestamps;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.slf4j.Logger;
@@ -40,16 +38,14 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Provider;
-import javax.inject.Qualifier;
-import java.io.*;
-import java.lang.annotation.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.EnumSet;
 import java.util.List;
 
 /**
  * A DAO that has a snapshot of the rating data.  This snapshot is stored in a {@link BinaryRatingDAO}.
- * The file is defined with two parameters: the directory {@code lenskit.model.dir}, and the file
- * defined by {@link RatingSnapshotPath}.
  *
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -57,14 +53,12 @@ import java.util.List;
 @Shareable
 @DefaultProvider(RatingSnapshotDAO.Builder.class)
 public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, UserDAO, ItemDAO, Serializable {
-    private static final long serialVersionUID = -1L;
+    private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(RatingSnapshotDAO.class);
 
-    private final String daoPath;
     private final BinaryRatingDAO delegate;
 
-    private RatingSnapshotDAO(String path, BinaryRatingDAO dao) {
-        daoPath = path;
+    private RatingSnapshotDAO(BinaryRatingDAO dao) {
         delegate = dao;
     }
 
@@ -147,78 +141,27 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
         return delegate.getEventsForUser(user, type);
     }
 
-    private static File getSnapshotFile(String path) {
-        File file = new File(path);
-        if (!file.isAbsolute()) {
-            String root = System.getProperty("lenskit.model.dir");
-            if (root != null) {
-                file = new File(root, path);
-            }
-        }
-        return file;
-    }
-
-    private Object writeReplace() throws ObjectStreamException {
-        return new SerialProxy(daoPath);
-    }
-
-    private static class SerialProxy implements Serializable {
-        private static final long serialVersionUID = 1L;
-
-        private final String path;
-
-        public SerialProxy(String p) {
-            path = p;
-        }
-
-        private Object readResolve() throws ObjectStreamException {
-            File file = getSnapshotFile(path);
-            logger.debug("using binary rating DAO in {}", file);
-            try {
-                return new RatingSnapshotDAO(path, BinaryRatingDAO.open(file));
-            } catch (IOException e) {
-                ObjectStreamException ex = new InvalidObjectException("cannot load rating file");
-                ex.initCause(e);
-                throw ex;
-            }
-        }
-    }
-
-    @Documented
-    @Qualifier
-    @Parameter(String.class)
-    @DefaultString("ratings.pack")
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.PARAMETER, ElementType.METHOD})
-    public static @interface RatingSnapshotPath {}
-
-    @Documented
-    @Qualifier
-    @Parameter(Boolean.class)
-    @DefaultBoolean(true)
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.PARAMETER, ElementType.METHOD})
-    public static @interface UseTimestamps {}
-
     public static class Builder implements Provider<RatingSnapshotDAO> {
-        private final String path;
         private final EventDAO dao;
         private final boolean useTimestamps;
 
         @Inject
-        public Builder(@RatingSnapshotPath String path,
-                       @Transient EventDAO dao,
+        public Builder(@Transient EventDAO dao,
                        @UseTimestamps boolean ts) {
-            this.path = path;
             this.dao = dao;
             useTimestamps = ts;
         }
 
         @Override
         public RatingSnapshotDAO get() {
-            File file = getSnapshotFile(path);
-            File tmpFile = new File(file.getParentFile(), file.getName() + ".tmp");
-            logger.debug("packing ratings to {}", tmpFile);
+            File file;
+            try {
+                file = File.createTempFile("ratings", ".pack");
+            } catch (IOException e) {
+                throw new RuntimeException("cannot create temporary file");
+            }
+            file.deleteOnExit();
+            logger.debug("packing ratings to {}", file);
 
             EnumSet<BinaryFormatFlag> flags = EnumSet.noneOf(BinaryFormatFlag.class);
             SortOrder order = SortOrder.ANY;
@@ -230,7 +173,7 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
             Closer closer = Closer.create();
             try {
                 try {
-                    BinaryRatingPacker packer = closer.register(BinaryRatingPacker.open(tmpFile, flags));
+                    BinaryRatingPacker packer = closer.register(BinaryRatingPacker.open(file, flags));
                     Cursor<Rating> ratings = closer.register(dao.streamEvents(Rating.class, order));
                     packer.writeRatings(ratings);
                 } catch (Throwable th) {
@@ -238,12 +181,12 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
                 } finally {
                     closer.close();
                 }
-                logger.debug("renaming {} -> {}", tmpFile, file);
-                if (!tmpFile.renameTo(file)) {
-                    logger.error("cannot rename {} to {}", tmpFile, file);
-                    throw new RuntimeException("error renaming packed file");
+                BinaryRatingDAO result = BinaryRatingDAO.open(file);
+                // try to delete the file early, helps keep things clean on Unix
+                if (file.delete()) {
+                    logger.debug("unlinked {}, will be deleted when freed", file);
                 }
-                return new RatingSnapshotDAO(path, BinaryRatingDAO.open(file));
+                return new RatingSnapshotDAO(result);
             } catch (IOException ex) {
                 throw new RuntimeException("error packing ratings", ex);
             }

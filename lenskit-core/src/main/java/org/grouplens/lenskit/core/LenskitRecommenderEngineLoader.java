@@ -22,10 +22,10 @@ package org.grouplens.lenskit.core;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import org.grouplens.grapht.Component;
+import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.reflect.CachedSatisfaction;
 import org.grouplens.grapht.solver.DependencySolver;
-import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
@@ -94,7 +94,7 @@ public class LenskitRecommenderEngineLoader {
 
     public LenskitRecommenderEngine load(InputStream stream) throws IOException, RecommenderConfigurationException {
         logger.debug("using classloader {}", classLoader);
-        DAGNode<CachedSatisfaction, DesireChain> graph;
+        DAGNode<Component,Dependency> graph;
 
         ObjectInputStream in = new CustomClassLoaderObjectInputStream(stream, classLoader);
         try {

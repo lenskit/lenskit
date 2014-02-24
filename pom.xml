@@ -198,7 +198,7 @@
       <dependency>
         <groupId>org.grouplens.grapht</groupId>
         <artifactId>grapht</artifactId>
-        <version>0.7.0</version>
+        <version>0.8.0</version>
       </dependency>
 
       <!-- test libraries -->

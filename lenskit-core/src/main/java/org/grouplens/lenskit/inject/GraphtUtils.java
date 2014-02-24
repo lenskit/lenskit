@@ -22,10 +22,15 @@ package org.grouplens.lenskit.inject;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import org.grouplens.grapht.CachePolicy;
+import org.grouplens.grapht.Component;
+import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.reflect.*;
-import org.grouplens.grapht.solver.DesireChain;
+import org.grouplens.grapht.reflect.AbstractSatisfactionVisitor;
+import org.grouplens.grapht.reflect.Desire;
+import org.grouplens.grapht.reflect.InjectionPoint;
+import org.grouplens.grapht.reflect.Satisfaction;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
@@ -50,7 +55,7 @@ public final class GraphtUtils {
 
 //    public static Node replaceNodeWithPlaceholder(InjectSPI spi, Graph graph, Node node) {
 //        // replace it with a null satisfaction
-//        final CachedSatisfaction daoLbl = node.getLabel();
+//        final Component daoLbl = node.getLabel();
 //        assert daoLbl != null;
 //        final Satisfaction oldSat = daoLbl.getSatisfaction();
 //        final Class<?> type = oldSat.getErasedType();
@@ -74,14 +79,15 @@ public final class GraphtUtils {
 
     /**
      * Check a graph for placeholder satisfactions.
+     *
      * @param graph The graph to check.
      * @throws org.grouplens.lenskit.core.RecommenderConfigurationException if the graph has a placeholder satisfaction.
      */
-    public static void checkForPlaceholders(DAGNode<CachedSatisfaction, DesireChain> graph, Logger logger) throws RecommenderConfigurationException {
-        Set<DAGNode<CachedSatisfaction, DesireChain>> placeholders = getPlaceholderNodes(graph);
+    public static void checkForPlaceholders(DAGNode<Component, Dependency> graph, Logger logger) throws RecommenderConfigurationException {
+        Set<DAGNode<Component, Dependency>> placeholders = getPlaceholderNodes(graph);
         Satisfaction sat = null;
-        for (DAGNode<CachedSatisfaction,DesireChain> node: placeholders) {
-            CachedSatisfaction csat = node.getLabel();
+        for (DAGNode<Component,Dependency> node: placeholders) {
+            Component csat = node.getLabel();
             if (sat == null) {
                 sat = csat.getSatisfaction();
             }
@@ -94,13 +100,14 @@ public final class GraphtUtils {
 
     /**
      * Get the placeholder nodes from a graph.
+     *
      * @param graph The graph.
      * @return The set of nodes that have placeholder satisfactions.
      */
-    public static Set<DAGNode<CachedSatisfaction, DesireChain>> getPlaceholderNodes(DAGNode<CachedSatisfaction, DesireChain> graph) {
-        Predicate<CachedSatisfaction> isPlaceholder = new Predicate<CachedSatisfaction>() {
+    public static Set<DAGNode<Component, Dependency>> getPlaceholderNodes(DAGNode<Component,Dependency> graph) {
+        Predicate<Component> isPlaceholder = new Predicate<Component>() {
             @Override
-            public boolean apply(@Nullable CachedSatisfaction input) {
+            public boolean apply(@Nullable Component input) {
                 return input != null && input.getSatisfaction() instanceof PlaceholderSatisfaction;
             }
         };
@@ -116,8 +123,8 @@ public final class GraphtUtils {
      * @param node The node.
      * @return {@code true} if the component is shareable.
      */
-    public static boolean isShareable(DAGNode<CachedSatisfaction, DesireChain> node) {
-        CachedSatisfaction label = node.getLabel();
+    public static boolean isShareable(DAGNode<Component, Dependency> node) {
+        Component label = node.getLabel();
         if (label == null) {
             return false;
         }
@@ -180,15 +187,15 @@ public final class GraphtUtils {
         return ip.getAttribute(Transient.class) != null;
     }
 
-    public static boolean edgeIsTransient(DAGEdge<?, DesireChain> input) {
+    public static boolean edgeIsTransient(DAGEdge<?, Dependency> input) {
         Desire desire = input.getLabel().getInitialDesire();
         return desireIsTransient(desire);
     }
 
-    public static Predicate<DAGEdge<?, DesireChain>> edgeIsTransient() {
-        return new Predicate<DAGEdge<?, DesireChain>>() {
+    public static Predicate<DAGEdge<?, Dependency>> edgeIsTransient() {
+        return new Predicate<DAGEdge<?, Dependency>>() {
             @Override
-            public boolean apply(@Nullable DAGEdge<?, DesireChain> input) {
+            public boolean apply(@Nullable DAGEdge<?, Dependency> input) {
                 Desire desire = input == null ? null : input.getLabel().getInitialDesire();
                 return desire != null && !desireIsTransient(desire);
             }

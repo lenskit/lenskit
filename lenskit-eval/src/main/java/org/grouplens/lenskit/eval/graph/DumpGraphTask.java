@@ -21,9 +21,9 @@
 package org.grouplens.lenskit.eval.graph;
 
 import com.google.common.io.Files;
+import org.grouplens.grapht.Component;
+import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.reflect.CachedSatisfaction;
-import org.grouplens.grapht.solver.DesireChain;
 import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.util.Providers;
 import org.grouplens.lenskit.core.LenskitConfiguration;
@@ -135,7 +135,7 @@ public class DumpGraphTask extends AbstractTask<File> {
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
         rgb.addConfiguration(daoConfig);
         rgb.addConfiguration(algorithm.getConfig());
-        DAGNode<CachedSatisfaction, DesireChain> graph = null;
+        DAGNode<Component,Dependency> graph = null;
         try {
             graph = rgb.buildGraph();
         } catch (SolverException e) {
