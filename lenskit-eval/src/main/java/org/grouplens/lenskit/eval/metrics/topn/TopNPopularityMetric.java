@@ -57,7 +57,7 @@ public class TopNPopularityMetric extends AbstractTestUserMetric {
 
     /**
      * Computes the popularity of a set of ratings as the number of users who have rated an item
-     * This function is robust in the face of multiple ratings ont he same item by the same user.
+     * This function is robust in the face of multiple ratings on the same item by the same user.
      * @return an immutable map from movie Ids to the number of users who have rated the identified movie.
      */
     public Long2IntMap computePop(EventDAO dao) {
