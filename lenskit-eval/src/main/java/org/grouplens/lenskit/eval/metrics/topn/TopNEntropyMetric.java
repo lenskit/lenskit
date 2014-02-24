@@ -99,7 +99,7 @@ public class TopNEntropyMetric extends AbstractTestUserMetric {
                 }
                 return finalRow(entropy);
             } else {
-                return finalRow(null);
+                return finalRow();
             }
         }
     }
