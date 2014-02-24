@@ -43,29 +43,26 @@ import java.util.List;
 /**
  * Metric that measures how diverse the items in the TopN list are.
  * 
- * To use this metric ensure that you have a reasonable item item model configured in each algorithm
- * The "default" will be used for generating similarity scores for use in this evaluation.
- * Your model must not use truncation of any sort (size of similarity value).
+ * To use this metric ensure that you have a reasonable itemSimilarityMetric configured in each algorithm
  * 
- * Example configuration:
+ * Example configuration (add this to your existing algorithm configuration)
  * <pre>
+ * root (ItemSimilarityMetric)
+ * within (ItemSimilarityMetric) {
  *     bind VectorSimilarity to CosineVectorSimilarity
  *     bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
  *     within (UserVectorNormalizer) {
  *         bind (BaselineScorer, ItemScorer) to ItemMeanRatingItemScorer
  *         set MeanDamping to 5.0d
  *     }
- *     set ModelSize to 0
- *     bind (ItemSimilarityThreshold, Threshold) to NoThreshold
- *     root (ItemItemBuildContext)
- *     root (ItemSimilarity)
+ * }
  * </pre>
  * 
  * I also recommend enabling model sharing and cacheing between algorithms to make this much more efficient.
  * 
  * This computes the average disimilarity (-1 * similarity) of all pairs of items. 
  * 
- * The number is large for non-diverse lists, and small for diverse lists.
+ * The number is 1 for a perfectly diverse list, and -1 for a perfectly non-diverse lists.
  * 
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -118,7 +115,7 @@ public class TopNDiversityMetric extends AbstractTestUserMetric {
             ItemItemBuildContext context = metric.getContext();
             ItemSimilarity sim = metric.getSim();
             if (context == null || sim == null) {
-                throw new RuntimeException("TopNDiversityMetric requires an build context and similarity function.");
+                throw new RuntimeException("TopNDiversityMetric requires a build context and similarity function.");
             }
             
             for (ScoredId s1 : recs) {

@@ -95,11 +95,11 @@ public class TopNEntropyMetric extends AbstractTestUserMetric {
                 double entropy = 0;
                 for (Long2IntMap.Entry e : counts.long2IntEntrySet()) {
                     double p = (double) e.getIntValue()/n;
-                    entropy += p*Math.log(p);
+                    entropy -= p*Math.log(p)/Math.log(2);
                 }
                 return finalRow(entropy);
             } else {
-                return finalRow();
+                return finalRow(null);
             }
         }
     }
