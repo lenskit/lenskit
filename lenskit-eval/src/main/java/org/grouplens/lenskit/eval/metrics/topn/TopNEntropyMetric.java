@@ -36,6 +36,17 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Metric that measures the entropy of the top N recommendations across all users.
+ * 
+ * This tell us essentially how large of a range of the items your recommender is covering.
+ * 
+ * Small values indicate that the algorithm tends to prefer a small number of items which it recomments
+ * to all users. Large values mean that the algorithm recommends many different items (to many different 
+ * users) 
+ * 
+ * The smallest value happens when the topN list is the same for all users (which would give an entropy
+ * of roughly log_2(N)). The largest value happens when each item is recommended the same number of times
+ * (for an entropy of roughly log_2(number of items)).
  * 
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -105,7 +116,6 @@ public class TopNEntropyMetric extends AbstractTestUserMetric {
     }
 
     /**
-     * Build a Top-N length metric to measure Top-N lists.
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder extends TopNMetricBuilder<Builder, TopNEntropyMetric> {

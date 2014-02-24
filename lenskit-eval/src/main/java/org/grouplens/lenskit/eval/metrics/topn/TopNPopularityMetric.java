@@ -60,7 +60,7 @@ public class TopNPopularityMetric extends AbstractTestUserMetric {
      * This function is robust in the face of multiple ratings on the same item by the same user.
      * @return an immutable map from movie Ids to the number of users who have rated the identified movie.
      */
-    public Long2IntMap computePop(EventDAO dao) {
+    private Long2IntMap computePop(EventDAO dao) {
 
         Long2ObjectOpenHashMap<LongSet> watchingUsers = new Long2ObjectOpenHashMap<LongSet>();
         for (Rating r : dao.streamEvents(Rating.class).fast()) {
@@ -137,7 +137,6 @@ public class TopNPopularityMetric extends AbstractTestUserMetric {
     }
 
     /**
-     * Build a Top-N length metric to measure Top-N lists.
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder extends TopNMetricBuilder<Builder, TopNPopularityMetric> {
