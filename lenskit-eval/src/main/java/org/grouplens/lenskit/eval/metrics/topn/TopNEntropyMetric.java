@@ -22,6 +22,8 @@ package org.grouplens.lenskit.eval.metrics.topn;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
@@ -30,25 +32,37 @@ import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Metric that measures how long a TopN list actually is.
+ * Metric that measures the entropy of the top N recommendations across all users.
+ * 
+ * This tell us essentially how large of a range of the items your recommender is covering.
+ * 
+ * Small values indicate that the algorithm tends to prefer a small number of items which it recomments
+ * to all users. Large values mean that the algorithm recommends many different items (to many different 
+ * users) 
+ * 
+ * The smallest value happens when the topN list is the same for all users (which would give an entropy
+ * of roughly log_2(N)). The largest value happens when each item is recommended the same number of times
+ * (for an entropy of roughly log_2(number of items)).
+ * 
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TopNLengthMetric extends AbstractTestUserMetric {
+public class TopNEntropyMetric extends AbstractTestUserMetric {
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
     private final ImmutableList<String> columns;
 
-    public TopNLengthMetric(String lbl, int listSize, ItemSelector candidates, ItemSelector exclude) {
+    public TopNEntropyMetric(String lbl, int listSize, ItemSelector candidates, ItemSelector exclude) {
         this.listSize = listSize;
         this.candidates = candidates;
         this.exclude = exclude;
         columns = ImmutableList.of(lbl);
     }
-
+    
     @Override
     public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
         return new Accum();
@@ -61,32 +75,40 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
 
     @Override
     public List<String> getUserColumnLabels() {
-        return columns;
+        return Collections.emptyList();
     }
 
     class Accum implements TestUserMetricAccumulator {
-        double total = 0;
-        int nusers = 0;
-
+        Long2IntMap counts = new Long2IntOpenHashMap();
+        int n = 0;
+        
         @Nonnull
         @Override
         public List<Object> evaluate(TestUser user) {
+            
             List<ScoredId> recs;
             recs = user.getRecommendations(listSize, candidates, exclude);
             if (recs == null) {
                 return userRow();
             }
-            int n = recs.size();
-            total += n;
-            nusers += 1;
-            return userRow(n);
+            
+            for (ScoredId s: recs) {
+                counts.put(s.getId(), counts.get(s.getId()) +1);
+                n +=1;
+            }
+            return userRow();
         }
 
         @Nonnull
         @Override
         public List<Object> finalResults() {
-            if (nusers > 0) {
-                return finalRow(total / nusers);
+            if (n>0) {
+                double entropy = 0;
+                for (Long2IntMap.Entry e : counts.long2IntEntrySet()) {
+                    double p = (double) e.getIntValue()/n;
+                    entropy -= p*Math.log(p)/Math.log(2);
+                }
+                return finalRow(entropy);
             } else {
                 return finalRow();
             }
@@ -94,11 +116,10 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
     }
 
     /**
-     * Build a Top-N length metric to measure Top-N lists.
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Builder extends TopNMetricBuilder<Builder, TopNLengthMetric> {
-        private String label = "TopN.ActualLength";
+    public static class Builder extends TopNMetricBuilder<Builder, TopNEntropyMetric> {
+        private String label = "TopN.pop.entropy";
 
         /**
          * Get the column label for this metric.
@@ -120,8 +141,8 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
         }
 
         @Override
-        public TopNLengthMetric build() {
-            return new TopNLengthMetric(label, listSize, candidates, exclude);
+        public TopNEntropyMetric build() {
+            return new TopNEntropyMetric(label, listSize, candidates, exclude);
         }
     }
 

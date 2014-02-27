@@ -54,6 +54,8 @@ public class UserUserItemScorer extends AbstractItemScorer {
 
     public static final Symbol NEIGHBORHOOD_SIZE_SYMBOL =
             Symbol.of("org.grouplens.lenskit.knn.user.NeighborhoodSize");
+    public static final Symbol NEIGHBORHOOD_WEIGHT_SYMBOL =
+            Symbol.of("org.grouplens.lenskit.knn.user.NeighborhoodWeight");
 
     private final UserEventDAO dao;
     protected final NeighborhoodFinder neighborhoodFinder;
@@ -104,6 +106,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
                 normalizeNeighborRatings(neighborhoods.values());
 
         MutableSparseVector sizeChan = scores.addChannelVector(NEIGHBORHOOD_SIZE_SYMBOL);
+        MutableSparseVector weightChan = scores.addChannelVector(NEIGHBORHOOD_WEIGHT_SYMBOL);
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
             double sum = 0;
@@ -117,7 +120,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
                     count += 1;
                 }
             }
-
+            
             if (count >= minNeighborCount && weight >= MINIMUM_SIMILARITY) {
                 if (logger.isTraceEnabled()) {
                     logger.trace("Total neighbor weight for item {} is {} from {} neighbors",
@@ -128,6 +131,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
                 scores.unset(e);
             }
             sizeChan.set(e, count);
+            weightChan.set(e,weight);
         }
 
         // Denormalize and return the results

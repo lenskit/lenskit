@@ -26,6 +26,8 @@ import org.grouplens.lenskit.knn.MinNeighbors;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.symbols.DoubleSymbolValue;
+import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -83,6 +85,9 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
 
             if (score != null) {
                 scores.set(e, score.getScore());
+                for (TypedSymbol sym: score.getChannelSymbols()) {
+                    scores.getOrAddChannel(sym).put(e.getKey(),score.getChannelValue(sym));
+                }
             }
 
             sizeChannel.set(e, neighbors.size());

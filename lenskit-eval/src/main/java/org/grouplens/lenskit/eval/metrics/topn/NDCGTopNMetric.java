@@ -20,10 +20,12 @@
  */
 package org.grouplens.lenskit.eval.metrics.topn;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
+import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
@@ -149,4 +151,36 @@ public class NDCGTopNMetric extends AbstractTestUserMetric {
             }
         }
     }
+
+    /**
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+     */
+    public static class Builder extends TopNMetricBuilder<Builder, NDCGTopNMetric>{
+        private String label = "TopN.nDCG";
+        
+        /**
+         * Get the column label for this metric.
+         * @return The column label.
+         */
+        public String getLabel() {
+            return label;
+        }
+
+        /**
+         * Set the column label for this metric.
+         * @param l The column label
+         * @return The builder (for chaining).
+         */
+        public Builder setLabel(String l) {
+            Preconditions.checkNotNull(l, "label cannot be null");
+            label = l;
+            return this;
+        }
+
+        @Override
+        public NDCGTopNMetric build() {
+            return new NDCGTopNMetric(label, listSize, candidates, exclude);
+        }
+    }
+
 }
