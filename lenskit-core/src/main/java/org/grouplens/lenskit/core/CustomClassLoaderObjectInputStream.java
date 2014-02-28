@@ -34,11 +34,11 @@ import java.io.ObjectStreamClass;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class CustomClassLoaderObjectInputStream extends ObjectInputStream {
+public class CustomClassLoaderObjectInputStream extends ObjectInputStream {
     private static final Logger logger = LoggerFactory.getLogger(CustomClassLoaderObjectInputStream.class);
     private final ClassLoader classLoader;
 
-    CustomClassLoaderObjectInputStream(InputStream in, ClassLoader loader) throws IOException {
+    public CustomClassLoaderObjectInputStream(InputStream in, ClassLoader loader) throws IOException {
         super(in);
         classLoader = loader;
     }
