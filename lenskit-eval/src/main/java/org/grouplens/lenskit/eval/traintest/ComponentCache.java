@@ -32,6 +32,7 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.Satisfaction;
+import org.grouplens.lenskit.core.CustomClassLoaderObjectInputStream;
 import org.grouplens.lenskit.inject.StaticInjector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,10 @@ class ComponentCache {
 
     @Nullable
     private final File cacheDir;
+    
+    @Nullable
+    private final ClassLoader classLoader;
+    
     /**
      * Map of nodes to their UUIDs, used for the disk-based cache.
      */
@@ -72,9 +77,11 @@ class ComponentCache {
      * Construct a new component cache.
      *
      * @param dir The cache directory (or {@code null} to disable disk-based caching).
+     * @param loader The class loader to be used when loading components from disk (or {@code null} if not needed)
      */
-    public ComponentCache(@Nullable File dir) {
+    public ComponentCache(@Nullable File dir, @Nullable ClassLoader loader) {
         cacheDir = dir;
+        classLoader = loader;
         keyMap = new WeakHashMap<DAGNode<Component,Dependency>,UUID>();
         objectCache = CacheBuilder.newBuilder()
                                   .softValues()
@@ -203,7 +210,7 @@ class ComponentCache {
             try {
                 InputStream in = closer.register(new FileInputStream(cacheFile));
                 InputStream gzin = closer.register(new GZIPInputStream(in));
-                ObjectInputStream oin = closer.register(new ObjectInputStream(gzin));
+                ObjectInputStream oin = closer.register(new CustomClassLoaderObjectInputStream(gzin, classLoader));
                 return type.cast(oin.readObject());
             } catch (Throwable th) {
                 throw closer.rethrow(th);

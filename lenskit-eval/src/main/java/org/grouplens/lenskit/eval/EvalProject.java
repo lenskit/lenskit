@@ -42,6 +42,7 @@ public class EvalProject {
     private Random random = new Random();
     private String defaultTarget;
     private final EventBus eventBus;
+    private final ClassLoader classLoader;
 
     /**
      * Construct a new eval project.
@@ -49,8 +50,11 @@ public class EvalProject {
      *              project, in addition to the system properties.  This is not where properties
      *              from the command line should be supplied; those should be set with
      *              {@link #setUserProperty(String, String)} so that they have Ant-like behavior.
+     * @param loader A class loader. This class loader will be used by the project for custom class
+     *               loading, such as reading cached objects from disk. If null, the default classloader
+     *               will be used.
      */
-    public EvalProject(@Nullable Properties props) {
+    public EvalProject(@Nullable Properties props, @Nullable ClassLoader loader) {
         antProject = new Project();
         antProject.init();
         antProject.addBuildListener(new Listener());
@@ -60,9 +64,20 @@ public class EvalProject {
                 ph.setProperty(prop.getKey().toString(), prop.getValue().toString(), false);
             }
         }
+
+        classLoader = loader;        
         eventBus = new EventBus();
     }
 
+    /**
+     * Get the class loader that should be used for custom class loading.
+     * 
+     * @return the class loader
+     */
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+    
     /**
      * Get the Ant project from this eval project.
      *

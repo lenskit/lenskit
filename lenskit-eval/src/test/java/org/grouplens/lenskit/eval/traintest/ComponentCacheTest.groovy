@@ -57,7 +57,7 @@ class ComponentCacheTest {
 
     @Before
     void createCache() {
-        cache = new ComponentCache(folder.root)
+        cache = new ComponentCache(folder.root, null) 
     }
 
     @Test
