@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval;
 import com.google.common.collect.Iterables;
 import com.google.common.eventbus.EventBus;
 import org.apache.tools.ant.*;
+import org.grouplens.grapht.util.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,11 +51,22 @@ public class EvalProject {
      *              project, in addition to the system properties.  This is not where properties
      *              from the command line should be supplied; those should be set with
      *              {@link #setUserProperty(String, String)} so that they have Ant-like behavior.
-     * @param loader A class loader. This class loader will be used by the project for custom class
-     *               loading, such as reading cached objects from disk. If null, the default classloader
-     *               will be used.
      */
-    public EvalProject(@Nullable Properties props, @Nullable ClassLoader loader) {
+    public EvalProject(@Nullable Properties props) {
+        this(props, Types.getDefaultClassLoader());
+    }
+
+        /**
+         * Construct a new eval project.
+         * @param props A set of additional properties.  These properties will be available in the
+         *              project, in addition to the system properties.  This is not where properties
+         *              from the command line should be supplied; those should be set with
+         *              {@link #setUserProperty(String, String)} so that they have Ant-like behavior.
+         * @param loader A class loader. This class loader will be used by the project for custom class
+         *               loading, such as reading cached objects from disk. If null, the default classloader
+         *               will be used.
+         */
+    public EvalProject(@Nullable Properties props, ClassLoader loader) {
         antProject = new Project();
         antProject.init();
         antProject.addBuildListener(new Listener());
