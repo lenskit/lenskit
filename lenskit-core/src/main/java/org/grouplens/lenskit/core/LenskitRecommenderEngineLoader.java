@@ -29,6 +29,7 @@ import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
+import org.grouplens.lenskit.util.io.CustomClassLoaderObjectInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

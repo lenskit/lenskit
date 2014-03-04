@@ -32,7 +32,7 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.Satisfaction;
-import org.grouplens.lenskit.core.CustomClassLoaderObjectInputStream;
+import org.grouplens.lenskit.util.io.CustomClassLoaderObjectInputStream;
 import org.grouplens.lenskit.inject.StaticInjector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
