@@ -547,7 +547,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         MergePool<Component, Dependency> mergePool = MergePool.create();
         List<DAGNode<Component,Dependency>> graphs = Lists.newArrayList();
         Set<DAGNode<Component,Dependency>> allNodes = Sets.newHashSet();
-        ComponentCache cache = new ComponentCache(cacheDir);
+        ComponentCache cache = new ComponentCache(cacheDir, getProject().getClassLoader());
         for (AlgorithmInstance algo: experiments.getAlgorithms()) {
             logger.debug("building graph for algorithm {}", algo);
             // Build the graph

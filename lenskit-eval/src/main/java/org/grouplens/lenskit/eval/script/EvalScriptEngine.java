@@ -115,7 +115,7 @@ public class EvalScriptEngine {
      * @return The eval project.
      */
     public EvalProject createProject() {
-        return new EvalProject(properties);
+        return new EvalProject(properties, classLoader);
     }
 
     //region Loading and running scripts
@@ -192,7 +192,7 @@ public class EvalScriptEngine {
      */
     public EvalProject loadProject(File file) throws TaskExecutionException, IOException {
         logger.debug("loading script file {}", file);
-        EvalProject project = new EvalProject(properties);
+        EvalProject project = new EvalProject(properties, classLoader);
         runScript(file, project);
         return project;
     }

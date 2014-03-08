@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
+package org.grouplens.lenskit.util.io;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.slf4j.Logger;
@@ -34,11 +34,11 @@ import java.io.ObjectStreamClass;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class CustomClassLoaderObjectInputStream extends ObjectInputStream {
+public class CustomClassLoaderObjectInputStream extends ObjectInputStream {
     private static final Logger logger = LoggerFactory.getLogger(CustomClassLoaderObjectInputStream.class);
     private final ClassLoader classLoader;
 
-    CustomClassLoaderObjectInputStream(InputStream in, ClassLoader loader) throws IOException {
+    public CustomClassLoaderObjectInputStream(InputStream in, ClassLoader loader) throws IOException {
         super(in);
         classLoader = loader;
     }
