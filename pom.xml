@@ -801,7 +801,8 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.6.4.201312101107</version>
+            <!-- <version>0.6.4.201312101107</version> -->
+            <version>0.7.0-beta-SNAPSHOT</version>
             <configuration>
               <propertyName>jacoco.vmargs</propertyName>
             </configuration>
