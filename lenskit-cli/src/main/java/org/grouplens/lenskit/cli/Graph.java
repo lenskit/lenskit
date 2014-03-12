@@ -27,8 +27,7 @@ import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.util.Providers;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.RecommenderConfigurationException;
+import org.grouplens.lenskit.core.*;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.graph.GraphDumper;
@@ -76,6 +75,23 @@ public class Graph implements Command {
         return config;
     }
 
+    private DAGNode<Component, Dependency> getModel() throws IOException, RecommenderConfigurationException {
+        File file = options.get("model_file");
+        if (file == null) {
+            return null;
+        }
+
+        logger.info("loading model from {}", file);
+        LenskitRecommenderEngineLoader loader = LenskitRecommenderEngine.newLoader();
+        loader.setValidationMode(EngineValidationMode.DEFERRED)
+              .addConfiguration(makeDataConfig());
+        for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
+            loader.addConfiguration(config);
+        }
+        LenskitRecommenderEngine engine = loader.load(file);
+        return engine.getGraph();
+    }
+
     private DAGNode<Component,Dependency> makeGraph() throws IOException, RecommenderConfigurationException {
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
         rgb.addConfiguration(makeDataConfig());
@@ -92,7 +108,10 @@ public class Graph implements Command {
 
     @Override
     public void execute() throws IOException, RecommenderConfigurationException {
-        DAGNode<Component, Dependency> graph = makeGraph();
+        DAGNode<Component, Dependency> graph = getModel();
+        if (graph == null) {
+            graph = makeGraph();
+        }
         File output = getOutputFile();
         logger.info("writing graph to {}", output);
         GraphDumper.renderGraph(graph, output);
@@ -108,6 +127,10 @@ public class Graph implements Command {
         parser.addArgument("--domain")
               .metavar("DOMAIN")
               .help("specify preference domain");
+        parser.addArgument("--model-file")
+              .metavar("FILE")
+              .type(File.class)
+              .help("load saved model from FILE");
         parser.addArgument("config")
               .type(File.class)
               .metavar("CONFIG")

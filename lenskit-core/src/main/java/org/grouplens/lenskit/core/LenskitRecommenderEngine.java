@@ -209,7 +209,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      *
      * @return The dependency graph.
      */
-    DAGNode<Component, Dependency> getGraph() {
+    public DAGNode<Component, Dependency> getGraph() {
         return graph;
     }
 
