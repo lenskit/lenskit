@@ -28,8 +28,6 @@ import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.vectors.SparseVector;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.io.Serializable;
 
 import static java.lang.Math.abs;
@@ -44,6 +42,7 @@ public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Se
     private static final long serialVersionUID = 1L;
     public static final Symbol NEIGHBORHOOD_WEIGHT_SYMBOL =
             Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodWeight");
+
     @Override
     public ScoredId score(long item, Iterable<ScoredId> neighbors, SparseVector scores) {
         double sum = 0;
@@ -65,5 +64,10 @@ public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Se
         } else {
             return null;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "[NeighborhoodScorer: WeightedAverage]";
     }
 }

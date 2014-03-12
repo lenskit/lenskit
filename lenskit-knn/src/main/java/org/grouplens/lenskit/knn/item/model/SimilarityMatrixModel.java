@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.knn.item.model;
 
 import com.google.common.collect.ImmutableList;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.LongKeyDomain;
@@ -51,6 +50,7 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
 
     private final LongKeyDomain itemDomain;
     private final List<List<ScoredId>> neighborhoods;
+    private transient volatile String stringValue;
 
     /**
      * Construct a new item-item model.
@@ -77,5 +77,19 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
         } else {
             return neighborhoods.get(idx);
         }
+    }
+
+    @Override
+    public String toString() {
+        String val = stringValue;
+        if (val == null) {
+            int nsims = 0;
+            for (List<ScoredId> nbrs: neighborhoods) {
+                nsims += nbrs.size();
+            }
+            val = String.format("matrix of %d similarities for %d items", nsims, neighborhoods.size());
+            stringValue = val;
+        }
+        return val;
     }
 }

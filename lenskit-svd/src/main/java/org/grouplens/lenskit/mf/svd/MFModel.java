@@ -232,4 +232,18 @@ public class MFModel implements Serializable {
             return itemMatrix.get(iidx, feature);
         }
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName())
+          .append("(nu=")
+          .append(getUserCount())
+          .append(", ni=")
+          .append(getItemCount())
+          .append(", nf=")
+          .append(getFeatureCount())
+          .append(")");
+        return sb.toString();
+    }
 }
