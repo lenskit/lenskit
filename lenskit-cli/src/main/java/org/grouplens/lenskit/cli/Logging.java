@@ -48,7 +48,7 @@ public final class Logging {
     private static final String FILE_PATTERN =
             "%date{HH:mm:ss.SSS} %level [%thread] %logger: %msg%n";
 
-    static void addLoggingGroup(ArgumentParser parser) {
+    public static void addLoggingGroup(ArgumentParser parser) {
         ArgumentGroup logging = parser.addArgumentGroup("logging")
                                       .description("Control the logging output.");
         logging.addArgument("--log-file")
