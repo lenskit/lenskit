@@ -20,22 +20,11 @@
  */
 package org.grouplens.lenskit.cli;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.filter.ThresholdFilter;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.ConsoleAppender;
-import ch.qos.logback.core.FileAppender;
 import net.sourceforge.argparse4j.ArgumentParsers;
-import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.*;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -49,18 +38,7 @@ public class Main {
         ArgumentParser parser =
                 ArgumentParsers.newArgumentParser("lenskit")
                                .description("Work with LensKit recommenders and data.");
-        ArgumentGroup logging = parser.addArgumentGroup("logging")
-                                      .description("Control the logging output.");
-        logging.addArgument("--log-file")
-               .type(File.class)
-               .metavar("FILE")
-               .help("write logging output to FILE");
-        logging.addArgument("-d", "--debug")
-               .action(Arguments.storeTrue())
-               .help("write debug output to the console");
-        logging.addArgument("--debug-grapht")
-               .action(Arguments.storeTrue())
-               .help("include debug output from Grapht");
+        Logging.addLoggingGroup(parser);
 
         Subparsers subparsers = parser.addSubparsers()
                                       .metavar("COMMAND")
@@ -75,7 +53,7 @@ public class Main {
 
         try {
             Namespace options = parser.parseArgs(args);
-            configureLogging(options);
+            Logging.configureLogging(options);
             Command cmd = getCommand(options);
             cmd.execute();
         } catch (ArgumentParserException e) {
@@ -117,67 +95,6 @@ public class Main {
             throw new RuntimeException("cannot instantiate command " + command, e);
         } catch (InstantiationException e) {
             throw new RuntimeException("cannot instantiate command " + command, e);
-        }
-    }
-
-    private static final String CONSOLE_PATTERN =
-            "%highlight(%-5level) %white(%date{HH:mm:ss.SSS}) [%yellow(%thread)] " +
-            "%cyan(%logger{24}) %msg%n";
-    private static final String FILE_PATTERN =
-            "%date{HH:mm:ss.SSS} %level [%thread] %logger: %msg%n";
-
-    public static void configureLogging(Namespace options) {
-        if (System.getProperty("logback.configurationFile") != null) {
-            return;
-        }
-        boolean debug = options.getBoolean("debug");
-        boolean debugGrapht = options.getBoolean("debug_grapht");
-        File logFile = options.get("log_file");
-
-        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        Logger root = context.getLogger(Logger.ROOT_LOGGER_NAME);
-        root.detachAndStopAllAppenders();
-
-        ConsoleAppender<ILoggingEvent> console = new ConsoleAppender<ILoggingEvent>();
-        console.setContext(context);
-        console.setTarget("System.err");
-        console.setWithJansi(true);
-        PatternLayoutEncoder consolePat = new PatternLayoutEncoder();
-        consolePat.setContext(context);
-        consolePat.setPattern(CONSOLE_PATTERN);
-        consolePat.start();
-        console.setEncoder(consolePat);
-        root.addAppender(console);
-
-        if (logFile != null) {
-            FileAppender<ILoggingEvent> fileOutput = new FileAppender<ILoggingEvent>();
-            fileOutput.setContext(context);
-            fileOutput.setFile(logFile.getAbsolutePath());
-            PatternLayoutEncoder filePat = new PatternLayoutEncoder();
-            filePat.setContext(context);
-            filePat.setPattern(FILE_PATTERN);
-            filePat.start();
-            fileOutput.setEncoder(filePat);
-            fileOutput.start();
-            root.addAppender(fileOutput);
-            root.setLevel(Level.DEBUG);
-            if (!debug) {
-                ThresholdFilter filter = new ThresholdFilter();
-                filter.setContext(context);
-                filter.setLevel("INFO");
-                filter.start();
-                console.addFilter(filter);
-            }
-        } else if (debug) {
-            root.setLevel(Level.DEBUG);
-        } else {
-            root.setLevel(Level.INFO);
-        }
-
-        console.start();
-
-        if (!debugGrapht) {
-            context.getLogger("org.grouplens.grapht").setLevel(Level.WARN);
         }
     }
 }
