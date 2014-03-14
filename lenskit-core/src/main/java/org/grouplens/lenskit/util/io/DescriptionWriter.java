@@ -20,8 +20,6 @@
  */
 package org.grouplens.lenskit.util.io;
 
-import java.util.List;
-
 /**
  * Accumulate a description of an object (or objects).  Object descriptions should reflect the
  * complete identity of an object - enough to uniquely distinguish it from non-equivalent objects -
@@ -33,13 +31,13 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 2.1
  */
-public abstract class DescriptionWriter {
+public interface DescriptionWriter {
     /**
      * Put a field into the description.
      * @param name The field name. It cannot begin with an underscore.
      * @param value The field value.
      */
-    public abstract DescriptionWriter putField(String name, String value);
+    DescriptionWriter putField(String name, String value);
 
     /**
      * Put an integer field.
@@ -47,7 +45,7 @@ public abstract class DescriptionWriter {
      * @param value The field value.
      * @see #putField(String, String)
      */
-    public abstract DescriptionWriter putField(String name, long value);
+    DescriptionWriter putField(String name, long value);
 
     /**
      * Put a floating-point field.
@@ -55,7 +53,7 @@ public abstract class DescriptionWriter {
      * @param value The field value.
      * @see #putField(String, String)
      */
-    public abstract DescriptionWriter putField(String name, double value);
+    DescriptionWriter putField(String name, double value);
 
     /**
      * Put a byte array field.
@@ -63,16 +61,14 @@ public abstract class DescriptionWriter {
      * @param value The field value.
      * @see #putField(String, String)
      */
-    public abstract DescriptionWriter putField(String name, byte[] value);
+    DescriptionWriter putField(String name, byte[] value);
 
     /**
      * Put an object field into the description.
      * @param name The field name. It cannot begin with an underscore.
-     * @param value The field value.  It is described with {@link Descriptions#defaultDescriber()}}.
+     * @param value The field value.  It is described with {@link org.grouplens.lenskit.util.io.Descriptions#defaultDescriber()}}.
      */
-    public DescriptionWriter putField(String name, Object value) {
-        return putField(name, value, Descriptions.defaultDescriber());
-    }
+    DescriptionWriter putField(String name, Object value);
 
     /**
      * Put a field with a list of values, using the default describer.
@@ -80,9 +76,7 @@ public abstract class DescriptionWriter {
      * @param objects The list of objects.
      * @return The description writer (for chaining).
      */
-    public DescriptionWriter putList(String name, Iterable<?> objects) {
-        return putList(name, objects, Descriptions.defaultDescriber());
-    }
+    DescriptionWriter putList(String name, Iterable<?> objects);
 
     /**
      * Put a field with a list of values.
@@ -92,15 +86,15 @@ public abstract class DescriptionWriter {
      * @param <T> The type of objects in the list.
      * @return The description writer (for chaining).
      */
-    public abstract <T> DescriptionWriter putList(String name, Iterable<T> objects,
-                                                  Describer<? super T> describer);
+    <T> DescriptionWriter putList(String name, Iterable<T> objects,
+                                  Describer<? super T> describer);
 
     /**
      * Put an object field into the description.
      * @param name The field name. It cannot begin with an underscore.
-     * @param value The field value.  If it implements {@link Describable}, then it is asked to write
+     * @param value The field value.  If it implements {@link org.grouplens.lenskit.util.io.Describable}, then it is asked to write
      *              its description; otherwise, some default behavior is used.
      * @param describer A describer to describe the value.
      */
-    public abstract <T> DescriptionWriter putField(String name, T value, Describer<? super T> describer);
+    <T> DescriptionWriter putField(String name, T value, Describer<? super T> describer);
 }

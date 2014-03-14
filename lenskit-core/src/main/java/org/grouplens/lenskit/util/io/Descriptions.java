@@ -34,7 +34,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 /**
- * Utility classes for {@link DescriptionWriter}s.
+ * Utility classes for {@link AbstractDescriptionWriter}s.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 2.1
@@ -63,7 +63,7 @@ public final class Descriptions {
      * @return A description writer computing a SHA1 hash.
      */
     public static HashDescriptionWriter sha1Writer() {
-        return new HashDescriptionWriter(Hashing.sha1().newHasher());
+        return hashWriter(Hashing.sha1());
     }
 
     /**
@@ -73,6 +73,14 @@ public final class Descriptions {
      */
     public static HashDescriptionWriter hashWriter(HashFunction func) {
         return new HashDescriptionWriter(func.newHasher());
+    }
+
+    /**
+     * Construct a new description writer that outputs a string.
+     * @return A string description writer.
+     */
+    public static StringDescriptionWriter stringWriter() {
+        return new StringDescriptionWriter();
     }
 
     /**

@@ -31,7 +31,7 @@ import com.google.common.hash.Hasher;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 2.1
  */
-public class HashDescriptionWriter extends DescriptionWriter {
+public class HashDescriptionWriter extends AbstractDescriptionWriter {
     private final Hasher hasher;
 
     HashDescriptionWriter(Hasher hash) {

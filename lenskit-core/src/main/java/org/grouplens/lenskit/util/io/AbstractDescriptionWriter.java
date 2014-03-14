@@ -21,15 +21,20 @@
 package org.grouplens.lenskit.util.io;
 
 /**
- * Describe an object to a {@link AbstractDescriptionWriter}.
+ * Base class to help implementing {@link DescriptionWriter}s.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 2.1
  */
-public interface Describer<T> {
-    /**
-     * Write a description of an object to a description writer.
-     * @param obj The object to describe.
-     * @param description The description writer.
-     */
-    void describe(T obj, DescriptionWriter description);
+public abstract class AbstractDescriptionWriter implements DescriptionWriter {
+    @Override
+    public DescriptionWriter putField(String name, Object value) {
+        return putField(name, value, Descriptions.defaultDescriber());
+    }
+
+    @Override
+    public DescriptionWriter putList(String name, Iterable<?> objects) {
+        return putList(name, objects, Descriptions.defaultDescriber());
+    }
+
 }
