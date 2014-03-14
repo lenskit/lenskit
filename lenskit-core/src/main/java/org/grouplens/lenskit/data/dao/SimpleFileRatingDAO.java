@@ -21,13 +21,17 @@
 
 package org.grouplens.lenskit.data.dao;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
+import com.google.common.hash.PrimitiveSink;
 import com.google.common.io.Closeables;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.grouplens.lenskit.util.io.DescriptionWriter;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +49,7 @@ import java.util.Comparator;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
-public class SimpleFileRatingDAO implements EventDAO {
+public class SimpleFileRatingDAO implements EventDAO, Describable {
     private static final Logger logger = LoggerFactory.getLogger(SimpleFileRatingDAO.class);
 
     private final File sourceFile;
@@ -159,5 +163,12 @@ public class SimpleFileRatingDAO implements EventDAO {
             Throwables.propagateIfPossible(th);
             throw new DataAccessException(th);
         }
+    }
+
+    @Override
+    public void describeTo(DescriptionWriter descr) {
+        descr.putField("file", sourceFile.getAbsolutePath())
+             .putField("length", sourceFile.length())
+             .putField("mtime", sourceFile.lastModified());
     }
 }
