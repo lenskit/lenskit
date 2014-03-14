@@ -54,9 +54,10 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     private final DAGNode<Component, Dependency> graph;
     private final boolean instantiable;
 
-    LenskitRecommenderEngine(DAGNode<Component,Dependency> dependencies,
+    LenskitRecommenderEngine(@Nonnull DAGNode<Component,Dependency> graph,
                              boolean instantiable) {
-        this.graph = dependencies;
+        Preconditions.checkNotNull(graph, "configuration graph");
+        this.graph = graph;
         this.instantiable = instantiable;
     }
 
@@ -209,6 +210,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      *
      * @return The dependency graph.
      */
+    @Nonnull
     public DAGNode<Component, Dependency> getGraph() {
         return graph;
     }
