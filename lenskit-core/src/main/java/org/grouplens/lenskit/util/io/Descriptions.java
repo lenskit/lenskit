@@ -109,12 +109,13 @@ public final class Descriptions {
             if (obj instanceof String) {
                 // FIXME Do something saner here - just write the string somehow
                 description.putField("string", (String) obj);
+            } else if (obj instanceof Number) {
+                description.putField("number", obj.toString());
             } if (obj instanceof Describable) {
                 ((Describable) obj).describeTo(description);
             } else if (obj instanceof Serializable) {
                 logger.debug("describing {} by hashing its serialization", obj);
                 HashCode hash = Hashing.sha1().hashObject(obj, Functional.serializeFunnel());
-                description.putField("type", obj.getClass().getName());
                 description.putField("hash", hash.toString());
             } else {
                 logger.warn("object {} not describable or serializable, using nondeterministic key");

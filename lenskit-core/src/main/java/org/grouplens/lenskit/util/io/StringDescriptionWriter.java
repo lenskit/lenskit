@@ -41,9 +41,13 @@ public class StringDescriptionWriter extends AbstractDescriptionWriter {
     private StringDescriptionWriter(StringBuilder bld, int ind) {
         builder = bld;
         indent = ind;
-        char[] chars = new char[indent];
+        indentString = makeIndent(indent);
+    }
+
+    private String makeIndent(int n) {
+        char[] chars = new char[n];
         Arrays.fill(chars, ' ');
-        indentString = String.valueOf(chars);
+        return String.valueOf(chars);
     }
 
     /**
@@ -104,13 +108,15 @@ public class StringDescriptionWriter extends AbstractDescriptionWriter {
                .append(name)
                .append(": [\n");
         int i = 0;
+        String mid = makeIndent(indent + 2);
         for (T obj: objects) {
-            builder.append(getIndent())
+            builder.append(mid)
                    .append(i)
                    .append(": {\n");
-            describer.describe(obj, new StringDescriptionWriter(builder, indent + 2));
-            builder.append(getIndent())
+            describer.describe(obj, new StringDescriptionWriter(builder, indent + 4));
+            builder.append(mid)
                    .append("}\n");
+            i++;
         }
         builder.append(getIndent())
                .append("]\n");
