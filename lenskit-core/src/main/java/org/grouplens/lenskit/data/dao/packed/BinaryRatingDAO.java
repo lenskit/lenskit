@@ -20,11 +20,13 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.hash.PrimitiveSink;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -39,6 +41,8 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.util.io.Describable;
+import org.grouplens.lenskit.util.io.DescriptionWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,17 +63,20 @@ import java.util.List;
  */
 @ThreadSafe
 @DefaultProvider(BinaryRatingDAO.Loader.class)
-public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, UserDAO, ItemDAO, Serializable {
+public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, UserDAO, ItemDAO, Serializable, Describable {
     private static final long serialVersionUID = -1L;
     private static final Logger logger = LoggerFactory.getLogger(BinaryRatingDAO.class);
 
+    @Nullable
+    private final transient File backingFile;
     private final BinaryHeader header;
     private final ByteBuffer ratingData;
     private final BinaryIndexTable userTable;
     private final BinaryIndexTable itemTable;
 
-    private BinaryRatingDAO(BinaryHeader hdr, ByteBuffer data, BinaryIndexTable users, BinaryIndexTable items) {
+    private BinaryRatingDAO(@Nullable File file, BinaryHeader hdr, ByteBuffer data, BinaryIndexTable users, BinaryIndexTable items) {
         Preconditions.checkArgument(data.position() == 0, "data is not at position 0");
+        backingFile = file;
         header = hdr;
         ratingData = data;
         userTable = users;
@@ -87,7 +94,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         BinaryIndexTable utbl = BinaryIndexTable.fromBuffer(header.getUserCount(), tableBuffer);
         BinaryIndexTable itbl = BinaryIndexTable.fromBuffer(header.getItemCount(), tableBuffer);
 
-        return new BinaryRatingDAO(header, dup.slice(), utbl, itbl);
+        return new BinaryRatingDAO(null, header, dup.slice(), utbl, itbl);
     }
 
     public static BinaryRatingDAO open(File file) throws IOException {
@@ -107,7 +114,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             BinaryIndexTable utbl = BinaryIndexTable.fromBuffer(header.getUserCount(), tableBuffer);
             BinaryIndexTable itbl = BinaryIndexTable.fromBuffer(header.getItemCount(), tableBuffer);
 
-            return new BinaryRatingDAO(header, data, utbl, itbl);
+            return new BinaryRatingDAO(file, header, data, utbl, itbl);
         } finally {
             input.close();
         }
@@ -270,6 +277,18 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         return (UserHistory<E>) new BinaryUserHistory(user, getRatingList(index));
     }
 
+    @Override
+    public void describeTo(DescriptionWriter writer) {
+        if (backingFile != null) {
+            writer.putField("file", backingFile.getAbsolutePath())
+                  .putField("mtime", backingFile.lastModified());
+        } else {
+            writer.putField("file", "/dev/null")
+                  .putField("mtime", 0);
+        }
+        writer.putField("header", header.render());
+    }
+
     private class EntryToCursorTransformer implements Function<Pair<Long, IntList>, Cursor<Rating>> {
         @Nullable
         @Override
@@ -385,7 +404,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         }
 
         private Object readResolve() throws ObjectStreamException {
-            return new BinaryRatingDAO(header, ratingData, userTable, itemTable);
+            return new BinaryRatingDAO(null, header, ratingData, userTable, itemTable);
         }
     }
 }
