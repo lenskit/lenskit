@@ -166,9 +166,11 @@ class ComponentCache {
                 String key = getKey(node);
                 cacheFile = new File(cacheDir, key + ".dat.gz");
                 if (cacheFile.exists()) {
-                    logger.debug("reading object for {} from cache (UUID {})",
+                    logger.debug("reading object for {} from cache (key {})",
                                  node.getLabel().getSatisfaction(), key);
-                    return readCompressedObject(cacheFile, node.getLabel().getSatisfaction().getErasedType());
+                    Object obj = readCompressedObject(cacheFile, node.getLabel().getSatisfaction().getErasedType());
+                    logger.debug("read object {} from key {}", obj, key);
+                    return obj;
                 }
             }
 
@@ -184,6 +186,11 @@ class ComponentCache {
                 if (cacheFile != null) {
                     logger.debug("writing object {} to cache (UUID {})",
                                  obj, getKey(node));
+                    if (logger.isDebugEnabled()) {
+                        StringDescriptionWriter sdw = Descriptions.stringWriter();
+                        NodeDescriber.INSTANCE.describe(node, sdw);
+                        logger.debug("object description: {}", sdw.finish());
+                    }
                     writeCompressedObject(cacheFile, obj);
                 }
             } else {
