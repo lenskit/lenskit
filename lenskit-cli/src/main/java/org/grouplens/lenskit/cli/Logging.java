@@ -57,13 +57,14 @@ public final class Logging {
                .help("write logging output to FILE");
         logging.addArgument("-d", "--debug")
                .action(Arguments.storeTrue())
-               .help("write debug output to the console");
+               .help("include debug logging in console output");
         logging.addArgument("--debug-grapht")
                .action(Arguments.storeTrue())
                .help("include debug output from Grapht");
     }
 
     public static void configureLogging(Namespace options) {
+        // if the user has explicitly configured a Logback config, honor that.
         if (System.getProperty("logback.configurationFile") != null) {
             return;
         }
