@@ -75,12 +75,14 @@ public class Graph implements Command {
         return config;
     }
 
-    private DAGNode<Component, Dependency> getModel() throws IOException, RecommenderConfigurationException {
-        File file = options.get("model_file");
-        if (file == null) {
-            return null;
-        }
-
+    /**
+     * Load a configuration graph from a recommender model.
+     * @param file The model file.
+     * @return The recommender graph.
+     * @throws IOException
+     * @throws RecommenderConfigurationException
+     */
+    private DAGNode<Component, Dependency> loadModel(File file) throws IOException, RecommenderConfigurationException {
         logger.info("loading model from {}", file);
         LenskitRecommenderEngineLoader loader = LenskitRecommenderEngine.newLoader();
         loader.setValidationMode(EngineValidationMode.DEFERRED)
@@ -92,7 +94,13 @@ public class Graph implements Command {
         return engine.getGraph();
     }
 
-    private DAGNode<Component,Dependency> makeGraph() throws IOException, RecommenderConfigurationException {
+    /**
+     * Build a configured recommender graph from the specified configurations.
+     * @return The configuration graph.
+     * @throws IOException
+     * @throws RecommenderConfigurationException
+     */
+    private DAGNode<Component,Dependency> makeNewGraph() throws IOException, RecommenderConfigurationException {
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
         rgb.addConfiguration(makeDataConfig());
         for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
@@ -108,9 +116,12 @@ public class Graph implements Command {
 
     @Override
     public void execute() throws IOException, RecommenderConfigurationException {
-        DAGNode<Component, Dependency> graph = getModel();
-        if (graph == null) {
-            graph = makeGraph();
+        File modelFile = options.get("model_file");
+        DAGNode<Component, Dependency> graph;
+        if (modelFile != null) {
+            graph = loadModel(modelFile);
+        } else {
+            graph = makeNewGraph();
         }
         File output = getOutputFile();
         logger.info("writing graph to {}", output);
