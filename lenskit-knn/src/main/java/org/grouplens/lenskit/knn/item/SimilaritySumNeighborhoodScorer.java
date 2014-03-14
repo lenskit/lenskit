@@ -53,4 +53,9 @@ public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Seri
             return null;
         }
     }
+
+    @Override
+    public String toString() {
+        return "[NeighborhoodScorer: SimilaritySum]";
+    }
 }
