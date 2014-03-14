@@ -20,8 +20,10 @@
  */
 package org.grouplens.lenskit.inject;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Ordering;
 import org.grouplens.grapht.CachePolicy;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
@@ -31,6 +33,7 @@ import org.grouplens.grapht.reflect.AbstractSatisfactionVisitor;
 import org.grouplens.grapht.reflect.Desire;
 import org.grouplens.grapht.reflect.InjectionPoint;
 import org.grouplens.grapht.reflect.Satisfaction;
+import org.grouplens.grapht.reflect.internal.*;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
@@ -41,6 +44,8 @@ import javax.annotation.Nullable;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -201,4 +206,50 @@ public final class GraphtUtils {
             }
         };
     }
+
+    private static Function<DAGEdge<Component,Dependency>,List<String>> ORDER_KEY = new Function<DAGEdge<Component, Dependency>, List<String>>() {
+        @Nullable
+        @Override
+        public List<String> apply(@Nullable DAGEdge<Component,Dependency> input) {
+            if (input == null) {
+                throw new NullPointerException("cannot order null edge");
+            }
+            Desire desire = input.getLabel().getInitialDesire();
+            InjectionPoint ip = desire.getInjectionPoint();
+            List<String> key = new ArrayList<String>(4);
+            if (ip instanceof ConstructorParameterInjectionPoint) {
+                ConstructorParameterInjectionPoint cpi = (ConstructorParameterInjectionPoint) ip;
+                key.add("0: constructor");
+                key.add(Integer.toString(cpi.getParameterIndex()));
+            } else if (ip instanceof SetterInjectionPoint) {
+                SetterInjectionPoint spi = (SetterInjectionPoint) ip;
+                key.add("1: setter");
+                key.add(spi.getMember().getName());
+                key.add(Integer.toString(spi.getParameterIndex()));
+            } else if (ip instanceof FieldInjectionPoint) {
+                FieldInjectionPoint fpi = (FieldInjectionPoint) ip;
+                key.add("2: field");
+                key.add(fpi.getMember().getName());
+            } else if (ip instanceof NoArgumentInjectionPoint) {
+                /* this shouldn't really happen */
+                NoArgumentInjectionPoint fpi = (NoArgumentInjectionPoint) ip;
+                key.add("8: no-arg");
+                key.add(fpi.getMember().getName());
+            } else if (ip instanceof SimpleInjectionPoint) {
+                key.add("5: simple");
+            } else {
+                key.add("9: unknown");
+                key.add(ip.getClass().getName());
+            }
+            return key;
+        }
+    };
+
+    /**
+     * An ordering over dependency edges.
+     */
+    public static Ordering<DAGEdge<Component, Dependency>> DEP_EDGE_ORDER =
+            Ordering.<String>natural()
+                    .lexicographical()
+                    .onResultOf(ORDER_KEY);
 }
