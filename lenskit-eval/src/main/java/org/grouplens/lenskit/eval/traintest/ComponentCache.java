@@ -25,24 +25,29 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.Satisfaction;
-import org.grouplens.lenskit.util.io.CustomClassLoaderObjectInputStream;
+import org.grouplens.grapht.reflect.SatisfactionVisitor;
+import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.StaticInjector;
+import org.grouplens.lenskit.util.io.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
+import javax.inject.Provider;
 import java.io.*;
-import java.util.Map;
-import java.util.UUID;
-import java.util.WeakHashMap;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.GZIPInputStream;
@@ -64,10 +69,8 @@ class ComponentCache {
     @Nullable
     private final ClassLoader classLoader;
     
-    /**
-     * Map of nodes to their UUIDs, used for the disk-based cache.
-     */
-    private final Map<DAGNode<Component,Dependency>,UUID> keyMap;
+    private final LoadingCache<DAGNode<Component,Dependency>,String> keyCache;
+
     /**
      * In-memory cache of shared components.
      */
@@ -82,8 +85,11 @@ class ComponentCache {
     public ComponentCache(@Nullable File dir, @Nullable ClassLoader loader) {
         cacheDir = dir;
         classLoader = loader;
-        keyMap = new WeakHashMap<DAGNode<Component,Dependency>,UUID>();
+        keyCache = CacheBuilder.newBuilder()
+                               .weakKeys()
+                               .build(CacheLoader.from(new NodeKeyGenerator()));
         objectCache = CacheBuilder.newBuilder()
+                                  .weakKeys()
                                   .softValues()
                                   .build();
     }
@@ -93,14 +99,12 @@ class ComponentCache {
         return cacheDir;
     }
 
-    public UUID getKey(DAGNode<Component,Dependency> node) {
-        synchronized (keyMap) {
-            UUID key = keyMap.get(node);
-            if (key == null) {
-                key = UUID.randomUUID();
-                keyMap.put(node, key);
-            }
-            return key;
+    public String getKey(final DAGNode<Component,Dependency> node) {
+        Preconditions.checkNotNull(node, "cached node");
+        try {
+            return keyCache.get(node);
+        } catch (ExecutionException e) {
+            throw Throwables.propagate(e.getCause());
         }
     }
 
@@ -159,8 +163,8 @@ class ComponentCache {
         public Object call() throws IOException, NullComponentException {
             File cacheFile = null;
             if (cacheDir != null) {
-                UUID key = getKey(node);
-                cacheFile = new File(cacheDir, key.toString() + ".dat.gz");
+                String key = getKey(node);
+                cacheFile = new File(cacheDir, key + ".dat.gz");
                 if (cacheFile.exists()) {
                     logger.debug("reading object for {} from cache (UUID {})",
                                  node.getLabel().getSatisfaction(), key);
@@ -221,5 +225,89 @@ class ComponentCache {
     }
 
     private static class NullComponentException extends Exception {
+        private static final long serialVersionUID = 1L;
     }
+
+    //region Node key generation
+
+    /**
+     * Function to generate a key for a graph node.
+     */
+    private class NodeKeyGenerator implements Function<DAGNode<Component, Dependency>, String> {
+        @Nullable
+        @Override
+        public String apply(@Nullable DAGNode<Component, Dependency> node) {
+            HashDescriptionWriter descr = Descriptions.sha1Writer();
+            NodeDescriber.INSTANCE.describe(node, descr);
+            return descr.finish().toString();
+        }
+    }
+
+    /**
+     * A describer for graph nodes, for generating keys of configuration subgraphs.
+     */
+    private static enum NodeDescriber implements Describer<DAGNode<Component, Dependency>> {
+        INSTANCE;
+
+        @Override
+        public void describe(DAGNode<Component, Dependency> node, DescriptionWriter description) {
+            node.getLabel().getSatisfaction().visit(new LabelDescriptionVisitor(description));
+            description.putField("cachePolicy", node.getLabel().getCachePolicy().name());
+            List<DAGNode<Component, Dependency>> edges =
+                    Lists.transform(GraphtUtils.DEP_EDGE_ORDER.sortedCopy(node.getOutgoingEdges()),
+                                    DAGEdge.<Component,Dependency>extractTail());
+            description.putList("dependencies", edges, INSTANCE);
+        }
+    }
+
+    /**
+     * Satisfaction visitor for hashing node satisfactions (objects, etc.)
+     */
+    private static class LabelDescriptionVisitor implements SatisfactionVisitor<String> {
+        private final DescriptionWriter description;
+
+        public LabelDescriptionVisitor(DescriptionWriter sink) {
+            description = sink;
+        }
+
+        @Override
+        public String visitNull() {
+            description.putField("type", "null");
+            return "";
+        }
+
+        @Override
+        public String visitClass(Class<?> clazz) {
+            description.putField("type", "class")
+                       .putField("class", clazz.getCanonicalName());
+            return clazz.getCanonicalName();
+        }
+
+        @Override
+        public String visitInstance(Object instance) {
+            description.putField("type", "instance")
+                       .putField("object", instance);
+            return instance.toString();
+        }
+
+        @Override
+        public String visitProviderClass(Class<? extends Provider<?>> pclass) {
+            description.putField("type", "provider class")
+                       .putField("class", pclass.getCanonicalName());
+            return pclass.getCanonicalName();
+        }
+
+        @Override
+        public String visitProviderInstance(Provider<?> provider) {
+            if (provider == null) {
+                description.putField("type", "null provider");
+                return "null provider";
+            } else {
+                description.putField("type", "provider")
+                           .putField("provider", provider);
+                return provider.toString();
+            }
+        }
+    }
+    //endregion
 }
