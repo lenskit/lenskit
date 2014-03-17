@@ -30,11 +30,15 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
+import org.grouplens.lenskit.util.io.CompressionMode;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.WillClose;
 import java.io.*;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * LensKit implementation of a recommender engine.  It uses containers set up by
@@ -139,8 +143,36 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @see #write(java.io.OutputStream)
      */
     public void write(@Nonnull File file) throws IOException {
+        write(file, CompressionMode.NONE);
+    }
+
+    /**
+     * Write the state of this LenskitRecommenderEngine to the given file so
+     * that it can be recreated later using another DAOFactory. This uses
+     * default object serialization so if the factory has a PicoContainer or
+     * session bindings containing non-serializable types, this will fail.
+     *
+     * @param file The file to write the rec engine to.
+     * @param compressed Whether to compress the output file.
+     * @throws IOException if there is an error serializing the engine.
+     * @see #write(java.io.OutputStream)
+     */
+    public void write(@Nonnull File file, CompressionMode compressed) throws IOException {
         OutputStream out = new FileOutputStream(file);
         try {
+            switch (compressed) {
+            case GZIP:
+                out = new GZIPOutputStream(out);
+                break;
+            case AUTO:
+                if (LKFileUtils.isCompressed(file)) {
+                    out = new GZIPOutputStream(out);
+                }
+                break;
+            case NONE:
+            default:
+                break;
+            }
             write(out);
         } finally {
             out.close();
@@ -157,7 +189,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @throws IOException if there is an error serializing the engine.
      * @see #load(InputStream)
      */
-    public void write(@Nonnull OutputStream stream) throws IOException {
+    public void write(@Nonnull @WillClose OutputStream stream) throws IOException {
         ObjectOutputStream out = new ObjectOutputStream(stream);
         try {
             out.writeObject(graph);

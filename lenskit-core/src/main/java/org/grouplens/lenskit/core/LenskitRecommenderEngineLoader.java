@@ -30,6 +30,7 @@ import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
 import org.grouplens.lenskit.util.io.CustomClassLoaderObjectInputStream;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,11 +94,23 @@ public class LenskitRecommenderEngineLoader {
         return this;
     }
 
+    /**
+     * Load a recommender engine from an input stream.  The input data can be gzip-compressed.
+     *
+     * @param stream The input stream.
+     * @return The deserialized recommender.
+     * @throws IOException if there is an error reading the input data.
+     * @throws RecommenderConfigurationException
+     *                     if there is a configuration error with the deserialized recommender or
+     *                     the configurations applied to it.
+     */
     public LenskitRecommenderEngine load(InputStream stream) throws IOException, RecommenderConfigurationException {
         logger.debug("using classloader {}", classLoader);
-        DAGNode<Component,Dependency> graph;
+        DAGNode<Component, Dependency> graph;
 
-        ObjectInputStream in = new CustomClassLoaderObjectInputStream(stream, classLoader);
+        // And load the stream once we've wrapped it appropriately.
+        ObjectInputStream in = new CustomClassLoaderObjectInputStream(
+                LKFileUtils.transparentlyDecompress(stream), classLoader);
         try {
             Thread current = Thread.currentThread();
             // save the old class loader
@@ -124,7 +137,7 @@ public class LenskitRecommenderEngineLoader {
         if (!configurations.isEmpty()) {
             logger.info("rewriting with {} configurations", configurations.size());
             RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
-            for (LenskitConfiguration config: configurations) {
+            for (LenskitConfiguration config : configurations) {
                 rgb.addBindings(config.getBindings());
             }
             DependencySolver solver = rgb.buildDependencySolver();

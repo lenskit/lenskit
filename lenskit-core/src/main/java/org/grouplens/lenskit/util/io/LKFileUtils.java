@@ -25,7 +25,10 @@ import com.google.common.io.Closeables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.WillCloseWhenClosed;
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -172,5 +175,50 @@ public final class LKFileUtils {
     @SuppressWarnings("unused")
     public static Writer openOutput(File file) throws IOException {
         return openOutput(file, Charset.defaultCharset(), CompressionMode.AUTO);
+    }
+
+    /**
+     * Auto-detect whether a stream needs decompression.  Currently detects GZIP compression (using
+     * the GZIP magic in the header).
+     *
+     * @param stream The stream to read.
+     * @return A stream that will read from {@code stream}, decompressing if needed.  It may not be
+     *         the same object as {@code stream}, even if no decompression is needed, as the input
+     *         stream may be wrapped in a buffered stream for lookahead.
+     */
+    public static InputStream transparentlyDecompress(@WillCloseWhenClosed InputStream stream) throws IOException {
+        InputStream buffered;
+        // get a markable stream
+        if (stream.markSupported()) {
+            buffered = stream;
+        } else {
+            logger.debug("stream {} does not support mark, wrapping", stream);
+            buffered = new BufferedInputStream(stream);
+        }
+
+        // read the first 2 bytes for GZIP magic
+        buffered.mark(2);
+        int b1 = buffered.read();
+        if (b1 < 0) {
+            buffered.reset();
+            return buffered;
+        }
+        int b2 = buffered.read();
+        if (b2 < 0) {
+            buffered.reset();
+            return buffered;
+        }
+        buffered.reset();
+
+        // they're in little-endian order
+        int magic = b1 | (b2 << 8);
+
+        logger.debug(String.format("found magic %x", magic));
+        if (magic == GZIPInputStream.GZIP_MAGIC) {
+            logger.info("stream is gzip-compressed, decompressing");
+            return new GZIPInputStream(buffered);
+        }
+
+        return buffered;
     }
 }
