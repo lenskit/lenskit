@@ -196,18 +196,25 @@ public final class LKFileUtils {
             buffered = new BufferedInputStream(stream);
         }
 
-        // read the header, look for GZIP magic.
+        // read the first 2 bytes for GZIP magic
         buffered.mark(2);
-        byte[] leadingBytes = new byte[2];
-        int pos = 0;
-        while (pos < leadingBytes.length) {
-            pos += buffered.read(leadingBytes, pos, leadingBytes.length - pos);
+        int b1 = buffered.read();
+        if (b1 < 0) {
+            buffered.reset();
+            return buffered;
+        }
+        int b2 = buffered.read();
+        if (b2 < 0) {
+            buffered.reset();
+            return buffered;
         }
         buffered.reset();
-        ByteBuffer buf = ByteBuffer.wrap(leadingBytes).order(ByteOrder.LITTLE_ENDIAN);
-        short magic = buf.getShort();
+
+        // they're in little-endian order
+        int magic = b1 | (b2 << 8);
+
         logger.debug(String.format("found magic %x", magic));
-        if (magic == (short) GZIPInputStream.GZIP_MAGIC) {
+        if (magic == GZIPInputStream.GZIP_MAGIC) {
             logger.info("stream is gzip-compressed, decompressing");
             return new GZIPInputStream(buffered);
         }
