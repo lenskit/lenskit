@@ -39,6 +39,7 @@ import org.grouplens.lenskit.iterative.StoppingThreshold
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
 import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer
+import org.grouplens.lenskit.util.io.CompressionMode
 import org.grouplens.lenskit.util.test.MockItemScorer
 import org.junit.Before
 import org.junit.Test
@@ -252,6 +253,30 @@ public class LenskitRecommenderEngineTest {
         File tfile = File.createTempFile("lenskit", "engine")
         try {
             engine.write(tfile)
+            def e2 = LenskitRecommenderEngine.newLoader()
+                                             .addConfiguration(daoConfig)
+                                             .load(tfile)
+            // e2.setSymbolMapping(mapping)
+            verifyBasicRecommender(e2.createRecommender())
+        } finally {
+            tfile.delete()
+        }
+    }
+
+    @Test
+    public void testSerializeCompressed() throws RecommenderBuildException, IOException, ClassNotFoundException {
+        LenskitConfiguration config = configureBasicRecommender(false)
+        LenskitConfiguration daoConfig = makeDAOConfig(null)
+
+        def engine = LenskitRecommenderEngine.newBuilder()
+                                             .addConfiguration(config)
+                                             .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
+                                             .build()
+
+        // engine.setSymbolMapping(null)
+        File tfile = File.createTempFile("lenskit", "engine.gz")
+        try {
+            engine.write(tfile, CompressionMode.GZIP)
             def e2 = LenskitRecommenderEngine.newLoader()
                                              .addConfiguration(daoConfig)
                                              .load(tfile)
