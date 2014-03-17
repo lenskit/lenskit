@@ -45,6 +45,7 @@ import javax.inject.Provider;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
@@ -380,7 +381,7 @@ public class GraphDumper {
         logger.debug("unshared graph has {} nodes", unshared.getReachableNodes().size());
         Closer close = Closer.create();
         try {
-            FileWriter writer = close.register(new FileWriter(graphvizFile));
+            Writer writer = close.register(new FileWriter(graphvizFile));
             GraphWriter gw = close.register(new GraphWriter(writer));
             GraphDumper dumper = new GraphDumper(graph, unshared.getReachableNodes(), gw);
             logger.debug("writing root node");

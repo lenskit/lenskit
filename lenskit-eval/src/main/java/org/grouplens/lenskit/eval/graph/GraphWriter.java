@@ -23,7 +23,8 @@ package org.grouplens.lenskit.eval.graph;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
-import org.apache.commons.lang3.StringEscapeUtils;
+import com.google.common.escape.Escaper;
+import com.google.common.escape.Escapers;
 
 import javax.annotation.Nullable;
 import java.io.BufferedWriter;
@@ -38,6 +39,14 @@ import java.util.regex.Pattern;
  */
 class GraphWriter implements Closeable {
     private static final Pattern SAFE_VALUE = Pattern.compile("\\w+");
+    private static final Escaper ESCAPE =
+            Escapers.builder()
+                    .addEscape('"', "\\\"")
+                    .addEscape('\n', "\\n")
+                    .addEscape('\r', "")
+                    .addEscape('\\', "\\\\")
+                    .build();
+
     private final BufferedWriter output;
 
     public GraphWriter(Writer out) throws IOException {
@@ -64,7 +73,7 @@ class GraphWriter implements Closeable {
         if (obj instanceof HTMLLabel || SAFE_VALUE.matcher(str).matches()) {
             return str;
         } else {
-            return "\"" + StringEscapeUtils.escapeJava(str) + "\"";
+            return "\"" + ESCAPE.escape(str) + "\"";
         }
     }
 
