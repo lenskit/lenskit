@@ -51,6 +51,12 @@
 
 -   Fixed class loader problems with deserializing recommender models (#issue(434)).
 
+-   Support compression in recommender model serialization (#issue(527))
+
+    - Support writing recommenders to compressed files.
+
+    - Auto-detect if a serialized recommender stream is compressed.
+
 -   Use Grapht 0.7.0.
 
 ## CLI
@@ -122,10 +128,13 @@ This release includes several improvements and additions to LensKit's selection 
 
 -   The train-test task can now periodically write status files so its progress can be monitored.
 
+-   Crossfolidng can now sample users instead of just partitioning them (e.g. creating 5 partitions,
+    each with 10% of the users, instead of forcing (100/N)%) (#issue(512)).
+
 ## Data Structures
 
--   LensKit now uses [vectorz](http://github.com/mikera/vectorz) for (non-sparse)( vectors and
-    matrices.
+-   LensKit now uses [vectorz](http://github.com/mikera/vectorz) for (non-sparse) vectors and
+    matrices.  The `Vec` class and related classes are deprecated.
 
 ## Utilities
 
