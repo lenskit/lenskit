@@ -78,6 +78,12 @@ This release includes several improvements and additions to LensKit's selection 
 -   Report whether the score came from the baseline or primary scorer in the fallback item scorer
     and simple rating predictor (#issue(444)).
 
+-   Add a rescoring item recommender, wrapping an existing item recommender and rewriting its scores
+    (#issue(491)).
+
+-   Add `RatingPredictorItemScorer`, a wrapper that uses the output of a rating predictor to produce
+    item scores.  Useful primarily for using things like OrdRec for item-scorer-based components.
+
 ### User-user CF
 
 -   Updated user-user CF to be simpler & make better use of new DAOs (#issue(356)).
