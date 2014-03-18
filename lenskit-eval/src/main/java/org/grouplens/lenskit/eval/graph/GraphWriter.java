@@ -39,12 +39,15 @@ import java.util.regex.Pattern;
  */
 class GraphWriter implements Closeable {
     private static final Pattern SAFE_VALUE = Pattern.compile("\\w+");
-    private static final Escaper ESCAPE =
+    /**
+     * Escaper for GraphViz string literals. It is strange that they only escape quotes, not even
+     * the escape character, but that is what they do.
+     * See <a href="http://www.graphviz.org/content/dot-language">The DOT Language</a> for a
+     * reference.
+     */
+    private static final Escaper GRAPHVIZ_ESCAPE =
             Escapers.builder()
                     .addEscape('"', "\\\"")
-                    .addEscape('\n', "\\n")
-                    .addEscape('\r', "")
-                    .addEscape('\\', "\\\\")
                     .build();
 
     private final BufferedWriter output;
@@ -73,7 +76,7 @@ class GraphWriter implements Closeable {
         if (obj instanceof HTMLLabel || SAFE_VALUE.matcher(str).matches()) {
             return str;
         } else {
-            return "\"" + ESCAPE.escape(str) + "\"";
+            return "\"" + GRAPHVIZ_ESCAPE.escape(str) + "\"";
         }
     }
 
