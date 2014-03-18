@@ -77,10 +77,12 @@ public class SimpleNeighborhoodFinder implements NeighborhoodFinder, Serializabl
     /**
      * Construct a new user neighborhood finder.
      *
-     * @param udao  The user-event DAO.
-     * @param idao  The item-event DAO.
-     * @param nnbrs The number of neighbors to consider for each item.
-     * @param sim   The similarity function to use.
+     * @param udao   The user-event DAO.
+     * @param idao   The item-event DAO.
+     * @param nnbrs  The number of neighbors to consider for each item.
+     * @param sim    The similarity function to use.
+     * @param thresh A threshold for user similarities.  Neighbors are only considered if their
+     *               similarity to the user passes this threshold.
      */
     @Inject
     public SimpleNeighborhoodFinder(UserEventDAO udao, ItemEventDAO idao,

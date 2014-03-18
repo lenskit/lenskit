@@ -49,7 +49,6 @@ import static java.lang.Math.abs;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class UserUserItemScorer extends AbstractItemScorer {
-    private static final double MINIMUM_SIMILARITY = 0.001;
     private static final Logger logger = LoggerFactory.getLogger(UserUserItemScorer.class);
 
     public static final Symbol NEIGHBORHOOD_SIZE_SYMBOL =
@@ -121,7 +120,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
                 }
             }
             
-            if (count >= minNeighborCount && weight >= MINIMUM_SIMILARITY) {
+            if (count >= minNeighborCount) {
                 if (logger.isTraceEnabled()) {
                     logger.trace("Total neighbor weight for item {} is {} from {} neighbors",
                                  item, weight, count);

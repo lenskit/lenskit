@@ -93,6 +93,11 @@ This release includes several improvements and additions to LensKit's selection 
 -   Added user similarity thresholding.  The default threshold is an absolute threshold of 0.0;
     configure `@UserSimilarityThreshold` to change this.
 
+-   Add support for a minimum neighborhood size to user-user CF.
+
+-   Remove hard-coded minimum total similarity value from user-user CF.  Minimum neighborhood sizes
+    and user similarity thresholds cover this case.
+
 ### Item-item CF
 
 -   Refactored item-item model build:
