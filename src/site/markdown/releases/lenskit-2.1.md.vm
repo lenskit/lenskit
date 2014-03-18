@@ -130,11 +130,11 @@ This release includes several improvements and additions to LensKit's selection 
     this is that build times are now meaningless.  This behavior can be disabled, and build times
     restored to meaning, by writing `separateAlgorithms true` in your `trainTest` block.
 
--   The evalator can now configure algorithms from algorithm files.
+-   The evaluator can now configure algorithms from algorithm files.
 
 -   The train-test task can now periodically write status files so its progress can be monitored.
 
--   Crossfolidng can now sample users instead of just partitioning them (e.g. creating 5 partitions,
+-   Crossfolding can now sample users instead of just partitioning them (e.g. creating 5 partitions,
     each with 10% of the users, instead of forcing (100/N)%) (#issue(512)).
 
 ## Data Structures
