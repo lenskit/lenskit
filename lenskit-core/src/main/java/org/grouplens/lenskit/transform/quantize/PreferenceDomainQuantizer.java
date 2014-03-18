@@ -24,7 +24,9 @@ import mikera.vectorz.impl.ImmutableVector;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * Quantizer that uses a range and precision to determine discrete values.
@@ -85,5 +87,22 @@ public class PreferenceDomainQuantizer extends ValueArrayQuantizer {
     @SuppressWarnings("unused")
     public PreferenceDomain getPreferenceDomain() {
         return domain;
+    }
+
+    public static class AutoProvider implements Provider<PreferenceDomainQuantizer> {
+        private final PreferenceDomain domain;
+
+        @Inject
+        public AutoProvider(@Nullable PreferenceDomain dom) {
+            domain = dom;
+        }
+
+        public PreferenceDomainQuantizer get() {
+            if (domain == null) {
+                return null;
+            } else {
+                return new PreferenceDomainQuantizer(domain);
+            }
+        }
     }
 }
