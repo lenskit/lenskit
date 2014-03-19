@@ -139,7 +139,17 @@ class ComponentCache {
                 Optional<Object> result = objectCache.get(node, new NodeInstantiator(injector, node));
                 return result.orNull();
             } catch (ExecutionException e) {
-                throw new UncheckedExecutionException(e.getCause());
+                if (e.getCause() instanceof RuntimeException) {
+                    throw Throwables.propagate(e.getCause());
+                } else {
+                    throw new UncheckedExecutionException(e.getCause());
+                }
+            } catch (UncheckedExecutionException e) {
+                if (e.getCause() instanceof RuntimeException) {
+                    throw Throwables.propagate(e.getCause());
+                } else {
+                    throw e;
+                }
             }
         }
     }
