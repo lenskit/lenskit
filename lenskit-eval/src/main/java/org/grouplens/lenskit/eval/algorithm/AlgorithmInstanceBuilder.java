@@ -173,8 +173,7 @@ public class AlgorithmInstanceBuilder implements Builder<AlgorithmInstance> {
                 setAttribute(name, attr.getValue());
             }
         }
-        // FIXME Use the correct class loader
-        ConfigurationLoader loader = new ConfigurationLoader();
+        ConfigurationLoader loader = new ConfigurationLoader(getProject().getClassLoader());
         LenskitConfigScript script = loader.loadScript(file);
         script.configure(getConfig());
         return this;

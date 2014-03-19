@@ -117,7 +117,8 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     public TrainTestEvalTask addAlgorithm(Map<String,Object> attrs, String file) throws IOException, RecommenderConfigurationException {
-        algorithms.add(new AlgorithmInstanceBuilder().configureFromFile(attrs, new File(file))
+        algorithms.add(new AlgorithmInstanceBuilder().setProject(getProject())
+                                                     .configureFromFile(attrs, new File(file))
                                                      .build());
         return this;
     }
