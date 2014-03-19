@@ -47,7 +47,7 @@ public interface TTDataSet {
     /**
      * Get the data set attributes (used for identification in output).
      *
-     * @return A key -> value map of the attributes used to identify this data
+     * @return A key &rarr; value map of the attributes used to identify this data
      *         set. For example, a crossfold data set may include the source
      *         name and fold number.
      */

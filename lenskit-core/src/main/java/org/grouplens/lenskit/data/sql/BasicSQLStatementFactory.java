@@ -145,18 +145,8 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     }
 
     @Override
-    public String prepareUserCount() {
-        return String.format("SELECT COUNT(DISTINCT %s) FROM %s", userColumn, tableName);
-    }
-
-    @Override
     public String prepareItems() {
         return String.format("SELECT DISTINCT %s FROM %s", itemColumn, tableName);
-    }
-
-    @Override
-    public String prepareItemCount() {
-        return String.format("SELECT COUNT(DISTINCT %s) FROM %s", itemColumn, tableName);
     }
 
     /**

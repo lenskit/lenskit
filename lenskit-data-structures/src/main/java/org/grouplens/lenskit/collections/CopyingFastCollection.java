@@ -29,7 +29,7 @@ import java.util.Iterator;
 
 /**
  * Abstract fast collection that implements {@link #iterator()} in terms of
- * {@link #fastIterator()} and {@link #copy(E)}.
+ * {@link #fastIterator()} and {@link #copy(Object)}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1

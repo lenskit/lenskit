@@ -161,7 +161,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         }
 
         /**
-         * Get the probability of P(rui<=r|Theta)
+         * Get the probability of P(rui&lt;=r|Theta)
          *
          * @param score The score of user uid and item iid.
          * @param r The index of rth threshold.
@@ -186,7 +186,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         /**
          * This is a helper function to calculate derivative of parameters.
          * this function computes $\frac{d}{dx} (t_r - y_{ui})$, and that r specifies
-         * what t_r is used, and k speficies x (with k=0, $x = t_1$; for k > 0, it is $x = β_k$).
+         * what t_r is used, and k speficies x (with k=0, $x = t_1$; for k &gt; 0, it is $x = β_k$).
          *
          * @param r The index of rth threshold
          * @param k The index of kth parameters need to derivative

@@ -40,9 +40,9 @@ public interface TestUserMetric extends Metric<TrainTestEvalTask> {
      * Create a result accumulator for a single row for this evaluation. The accumulator
      * will be passed the predictions for each user in turn, then asked for the results
      * from the evaluation to insert into the results table.
-     * <p/>
+     * <p>
      * One accumulator is created and used per evaluation (data set × algorithmInfo).
-     * <p/>
+     * <p>
      * Individual accumulators do not need to be thread-safe, but it must
      * be possible to have multiple accumulators in separate threads in use concurrently.
      *

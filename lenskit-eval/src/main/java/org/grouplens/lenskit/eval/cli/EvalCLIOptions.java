@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Parse & present command line options for running the evaluator.
+ * Parse &amp; present command line options for running the evaluator.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10

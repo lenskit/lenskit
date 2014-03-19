@@ -93,10 +93,10 @@ public abstract class AbstractTask<T> extends AbstractFuture<T> implements EvalT
     }
 
     /**
-     * Execute the task.  This calls {@link #perform()}, exposing the return value (or execption)
+     * Execute the task.  This calls {@link #perform()}, exposing the return value (or exception)
      * as the task's value.
      *
-     * @throws TaskExecutionException
+     * @throws TaskExecutionException if there is an error performing the task.
      */
     @Override
     public void execute() throws TaskExecutionException {

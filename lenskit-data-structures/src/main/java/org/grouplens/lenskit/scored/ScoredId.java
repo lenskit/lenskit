@@ -35,7 +35,7 @@ import java.util.Set;
  * A {@code ScoredId} object is intended to be immutable.  Scored IDs can be created by using the
  * {@linkplain ScoredIds#newBuilder() builder} or accumulated in a {@link PackedScoredIdList}.
  * <p>
- * In addition to the score, a scored id associates <emph>channels</emph> with the id.  Channels are
+ * In addition to the score, a scored id associates <em>channels</em> with the id.  Channels are
  * identified by {@link TypedSymbol}s.  As an optimization, channels of type {@code double} can be
  * accessed in unboxed fashion using an untyped {@link Symbol}.
  * </p>

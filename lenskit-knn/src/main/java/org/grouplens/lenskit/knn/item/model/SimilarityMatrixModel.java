@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * Item-item similarity model using an in-memory similarity matrix.
  *
- * <p/>
+ * <p>
  * These similarities are post-normalization, so code using them
  * should use the same normalizations used by the builder to make use of the
  * similarity scores.

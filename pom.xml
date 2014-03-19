@@ -631,12 +631,12 @@
                   <packages>org.grouplens.lenskit</packages>
                 </group>
                 <group>
-                  <title>Core API</title>
-                  <packages>org.grouplens.lenskit.core:org.grouplens.lenskit.params</packages>
+                  <title>Core</title>
+                  <packages>org.grouplens.lenskit.core:org.grouplens.lenskit.basic:org.grouplens.lenskit.config</packages>
                 </group>
                 <group>
                   <title>Data Structures</title>
-                  <packages>org.grouplens.lenskit.vectors:org.grouplens.lenskit.collections:org.grouplens.lenskit.symbols</packages>
+                  <packages>org.grouplens.lenskit.vectors:org.grouplens.lenskit.collections:org.grouplens.lenskit.symbols:org.grouplens.lenskit.scored:org.grouplens.lenskit.indexes</packages>
                 </group>
                 <group>
                   <title>Data Access</title>
@@ -648,15 +648,15 @@
                 </group>
                 <group>
                   <title>Recommender Implementations</title>
-                  <packages>org.grouplens.lenskit.knn*:org.grouplens.lenskit.mf*:org.grouplens.lenskit.slopeone*</packages>
+                  <packages>org.grouplens.lenskit.predict*:org.grouplens.lenskit.knn*:org.grouplens.lenskit.mf*:org.grouplens.lenskit.slopeone*</packages>
                 </group>
                 <group>
-                  <title>Recommender Evaluation</title>
-                  <packages>org.grouplens.lenskit.eval*</packages>
+                  <title>Recommender Evaluation and Tooling</title>
+                  <packages>org.grouplens.lenskit.eval*:org.grouplens.lenskit.cli*</packages>
                 </group>
                 <group>
                   <title>Utility Classes</title>
-                  <packages>org.grouplens.lenskit.util*:org.grouplens.lenskit.test*</packages>
+                  <packages>org.grouplens.lenskit.util*:org.grouplens.lenskit.test*:org.grouplens.lenskit.inject:org.grouplens.lenskit.iterative</packages>
                 </group>
               </groups>
             </configuration>
@@ -786,22 +786,13 @@
         <grouplens.mldata.acknowledge>yes</grouplens.mldata.acknowledge>
       </properties>
 
-      <pluginRepositories>
-        <pluginRepository>
-          <id>sonatype-snapshots</id>
-          <releases><enabled>false</enabled></releases>
-          <snapshots><enabled>true</enabled></snapshots>
-          <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </pluginRepository>
-      </pluginRepositories>
-
       <build>
         <plugins>
           <!-- Start up test coverage -->
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.6.4.201312101107</version>
+            <version>0.7.0.201403182114</version>
             <configuration>
               <propertyName>jacoco.vmargs</propertyName>
             </configuration>

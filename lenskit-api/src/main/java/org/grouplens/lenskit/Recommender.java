@@ -27,8 +27,8 @@ import javax.annotation.Nullable;
  * is effectively a recommender <i>session</i>: it is a per-thread or per-request
  * object, likely connected to a database connection or persistence session, that
  * needs to be closed when the client code is finished with it.
- * <p/>
- * <p>The various methods in this class return {@var null} if the corresponding
+ *
+ * <p>The various methods in this class return {@code null} if the corresponding
  * operation is not supported by the underlying recommender configuration.  This
  * ensures that, if you can actually get an object implementing a particular interface,
  * you are guaranteed to be able to use it.

@@ -49,7 +49,7 @@ import java.util.*;
 
 /**
  * Load and process configuration files. Also provides helper methods used by the
- * configuration scripts to locate & invoke methods.
+ * configuration scripts to locate &amp; invoke methods.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10

@@ -31,10 +31,6 @@ public class AverageAccumulatorTest {
 
     private static final double PRECISION = 0.0001;
 
-    /**
-     * Test method for
-     * {@link org.grouplens.lenskit.statistics.AverageAccumulator} .
-     */
     @Test
     public void testInitialize() {
         AverageAccumulator avg = new AverageAccumulator();
@@ -42,10 +38,6 @@ public class AverageAccumulatorTest {
         Assert.assertEquals(0, avg.getCount());
     }
 
-    /**
-     * Test method for
-     * {@link org.grouplens.lenskit.statistics.AverageAccumulator} .
-     */
     @Test
     public void testInitializeAdvanced() {
         AverageAccumulator avg = new AverageAccumulator(4, 2);
@@ -57,10 +49,6 @@ public class AverageAccumulatorTest {
         Assert.assertEquals(3, avg.getCount());
     }
 
-    /**
-     * Test method for
-     * {@link org.grouplens.lenskit.statistics.AverageAccumulator#add(double)} .
-     */
     @Test
     public void testAdd() {
         AverageAccumulator avg = new AverageAccumulator();
@@ -88,11 +76,6 @@ public class AverageAccumulatorTest {
         Assert.assertEquals(5, avg.getCount());
     }
 
-    /**
-     * Test method for
-     * {@link org.grouplens.lenskit.statistics.AverageAccumulator#getAverage()}
-     * .
-     */
     @Test
     public void testGetAverage() {
         AverageAccumulator avg = new AverageAccumulator();
@@ -105,10 +88,6 @@ public class AverageAccumulatorTest {
         Assert.assertEquals(9, avg.getAverage(), PRECISION);
     }
 
-    /**
-     * Test method for
-     * {@link org.grouplens.lenskit.statistics.AverageAccumulator#getCount()} .
-     */
     @Test
     public void testGetCount() {
         AverageAccumulator avg = new AverageAccumulator();

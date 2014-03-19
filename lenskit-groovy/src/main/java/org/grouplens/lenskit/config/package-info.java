@@ -25,7 +25,7 @@
  * org.grouplens.lenskit.core.LenskitConfiguration LensKit configurations} from configuration files
  * written using a Groovy-based DSL.  For example, the following:
  * </p>
- * <code><pre>
+ * <pre>{@code
  * // configure the item scorer
  * bind ItemScorer to ItemItemScorer
  * // set up a baseline predictor
@@ -34,7 +34,7 @@
  * bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
  * // the default neighborhood size is 20, so the next line isn't technically needed
  * set NeighborhoodSize to 20
- * </pre></code>
+ * }</pre>
  * <p>
  * See {@link ConfigHelpers} for entry points to quickly load configurations, and
  * {@link ConfigurationLoader} for more control over the configuration load process.

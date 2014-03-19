@@ -472,7 +472,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
     /**
      * Add a vector to this vector with a scaling factor.  It multiplies {@code v} by
-     * the scaling factor {@param scale} and adds it to this vector.  Only keys set
+     * the scaling factor {@code scale} and adds it to this vector.  Only keys set
      * in both {@code v} and {@code this} are modified.  The scaling is done
      * on-the-fly; {@code v} is unmodified.
      * @param v The vector to add to this vector.

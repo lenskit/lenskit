@@ -36,7 +36,7 @@ public class LogContext {
      * Set a key in the MDC environment.
      * @param key The key to set.
      * @param value The key's value.
-     * @see {@link MDC#put(String, String)}
+     * @see MDC#put(String, String)
      */
     public void put(String key, String value) {
         MDC.put(key, value);

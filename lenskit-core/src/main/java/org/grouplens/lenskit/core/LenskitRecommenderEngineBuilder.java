@@ -43,7 +43,7 @@ import java.util.List;
  * <p>
  * If multiple configurations are used, later configurations superseded previous configurations.
  * This allows you to add a configuration of defaults, followed by a custom configuration.  The
- * final build process takes the <emph>union</emph> of the roots of all provided configurations as
+ * final build process takes the <em>union</em> of the roots of all provided configurations as
  * the roots of the configured object graph.
  * </p>
  *

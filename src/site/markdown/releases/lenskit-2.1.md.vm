@@ -26,6 +26,9 @@
     versions of their `streamEventsByUser` and `streamEventsByItem` methods.  Implementers will need
     to implement these new methods.
 
+-   **Incompatible change:** The `SQLStatementFactory` interface no longer exposes user and item
+    count statements (they were unused by all current DAOs).
+
 -   Implemented new `BinaryRatingDAO` to read ratings from a packed binary file of rating data.
     Build a file with `BinaryRatingPacker` or the `pack` eval task.  The new CLI also provides a
     command to pack rating data.

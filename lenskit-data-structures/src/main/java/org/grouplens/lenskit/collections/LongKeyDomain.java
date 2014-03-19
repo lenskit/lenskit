@@ -37,8 +37,8 @@ import java.util.Collection;
  * implementing {@link LongSortedArraySet}, {@link org.grouplens.lenskit.vectors.SparseVector}, etc.
  * This class should not be directly used outside of the LensKit data structures.
  * <p>
- * A key set has a <emph>domain</emph>, which is the set of all possible keys that it can contain.
- * These keys are stored in an array.  The <emph>active</emph> keys are those that are actually in
+ * A key set has a <em>domain</em>, which is the set of all possible keys that it can contain.
+ * These keys are stored in an array.  The <em>active</em> keys are those that are actually in
  * the set.  Active/inactive status is tracked with a bitmask.
  *
  * @since 2.0
@@ -141,7 +141,7 @@ public final class LongKeyDomain implements Serializable {
      *
      * @param key The key.
      * @return The index, or a negative value if the key is not in the domain.  Such a negative
-     *         value is the <emph>insertion point</emph>, as defined by
+     *         value is the <em>insertion point</em>, as defined by
      *         {@link Arrays#binarySearch(long[], int, int, long)}.
      */
     public int getIndex(long key) {
@@ -215,7 +215,7 @@ public final class LongKeyDomain implements Serializable {
     }
 
     /**
-     * Mark this key set as <emph>unowned</emph>.  The next call to {@link #clone()} will mark the
+     * Mark this key set as <em>unowned</em>.  The next call to {@link #clone()} will mark the
      * key set as owned and return it rather than making a copy.  This allows code to avoid an
      * extra copy when creating a key set to pass off to another method or object that will make
      * a defensive copy.
@@ -435,6 +435,7 @@ public final class LongKeyDomain implements Serializable {
 
     /**
      * Get the active keys as a bit set.  The returned bit set <strong>must not</strong> be modified.
+     * @return The active bit mask.  Do not modify this bit set.
      */
     public BitSet getActiveMask() {
         return mask;

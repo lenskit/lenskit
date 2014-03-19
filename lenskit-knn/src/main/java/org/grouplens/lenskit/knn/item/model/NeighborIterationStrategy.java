@@ -36,7 +36,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 public interface NeighborIterationStrategy {
     /**
      * Get an iterator over possible neighbors of an item.
-     * @param context The build context (to get item & neighbor information).
+     * @param context The build context (to get item &amp; neighbor information).
      * @param item The item ID.  The item may or may not be included in the returned items.
      * @param onlyAfter If {@code true}, only consider item IDs after {@code item}, because
      *                  the caller only needs unique unordered pairs.

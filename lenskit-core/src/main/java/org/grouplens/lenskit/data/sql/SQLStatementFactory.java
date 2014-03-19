@@ -45,16 +45,6 @@ public interface SQLStatementFactory {
     String prepareUsers();
 
     /**
-     * Prepare a statement to satisfy {@link DataAccessObject#getUserCount()}.
-     * The result set should contain a single row whose first column contains
-     * the number of users.
-     *
-     * @return A string for a sql query containing the total number of
-     *         users.
-     */
-    String prepareUserCount();
-
-    /**
      * Prepare a statement to satisfy {@link org.grouplens.lenskit.data.dao.ItemDAO#getItemIds()}.
      * Querying the statement should return one column per row containing the
      * numeric item ID.
@@ -62,15 +52,6 @@ public interface SQLStatementFactory {
      * @return A string for a sql query containing item ID data.
      */
     String prepareItems();
-
-    /**
-     * Prepare a statement to satisfy {@link DataAccessObject#getItemCount()}.
-     * The result set should contain a single row whose first column contains
-     * the number of items.
-     *
-     * @return A string for a sql query containing the total number of items.
-     */
-    String prepareItemCount();
 
     /**
      * Prepare a statement to satisfy
