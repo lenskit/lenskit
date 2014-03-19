@@ -195,7 +195,7 @@ class ComponentCache {
                             NodeDescriber.INSTANCE.describe(node, sdw);
                             logger.debug("object description: {}", sdw.finish());
                         }
-                        writeCompressedObject(cacheFile, result);
+                        writeCompressedObject(cacheFile, obj);
                     }
                 } else {
                     logger.warn("unserializable object {} instantiated", result);
