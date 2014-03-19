@@ -792,7 +792,7 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.7.0-201403182114</version>
+            <version>0.7.0.201403182114</version>
             <configuration>
               <propertyName>jacoco.vmargs</propertyName>
             </configuration>
