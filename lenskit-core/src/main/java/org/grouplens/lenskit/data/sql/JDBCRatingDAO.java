@@ -77,9 +77,7 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
     private final SQLStatementFactory statementFactory;
 
     private final CachedPreparedStatement userStatement;
-    private final CachedPreparedStatement userCountStatement;
     private final CachedPreparedStatement itemStatement;
-    private final CachedPreparedStatement itemCountStatement;
     private final Map<SortOrder,CachedPreparedStatement> eventStatements =
             new EnumMap<SortOrder,CachedPreparedStatement>(SortOrder.class);
     private final CachedPreparedStatement userEventStatement;
@@ -110,9 +108,7 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
         closeConnection = close;
         statementFactory = sfac;
         userStatement = new CachedPreparedStatement(dbc, statementFactory.prepareUsers());
-        userCountStatement = new CachedPreparedStatement(dbc, statementFactory.prepareUserCount());
         itemStatement = new CachedPreparedStatement(dbc, statementFactory.prepareItems());
-        itemCountStatement = new CachedPreparedStatement(dbc, statementFactory.prepareItemCount());
         for (SortOrder order : SortOrder.values()) {
             eventStatements.put(order, new CachedPreparedStatement(dbc,
                 statementFactory.prepareEvents(order)));
@@ -139,9 +135,7 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
         boolean failed = false;
         try {
             failed = failed || !closeStatement(userStatement);
-            failed = failed || !closeStatement(userCountStatement);
             failed = failed || !closeStatement(itemStatement);
-            failed = failed || !closeStatement(itemCountStatement);
             for (CachedPreparedStatement s : eventStatements.values()) {
                 failed = failed || !closeStatement(s);
             }

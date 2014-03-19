@@ -24,7 +24,7 @@
  * <p>
  * The classes in this package provide object indexing capabilities.  There are times when code
  * needs to use some dense, indexed data structure (e.g. an array or matrix) to store data
- * about sparse ids or objects.  An {@link IdIndex} provides a bidirectional mapping between
+ * about sparse ids or objects.  An {@link IdIndexMapping} provides a bidirectional mapping between
  * long IDs and contiguous, 0-based integers for this purpose.
  */
 package org.grouplens.lenskit.indexes;
