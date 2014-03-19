@@ -152,7 +152,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>14.0.1</version>
+        <version>16.0.1</version>
       </dependency>
       <dependency>
         <groupId>it.unimi.dsi</groupId>
@@ -167,7 +167,7 @@
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
-        <version>3.1</version>
+        <version>3.3</version>
       </dependency>
 
       <!-- I/O support -->

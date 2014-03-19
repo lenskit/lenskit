@@ -145,6 +145,8 @@ This release includes several improvements and additions to LensKit's selection 
 -   Crossfolding can now sample users instead of just partitioning them (e.g. creating 5 partitions,
     each with 10% of the users, instead of forcing (100/N)%) (#issue(512)).
 
+-   Fixed escaping of GraphViz output (#issue(528)).
+
 ## Data Structures
 
 -   LensKit now uses [vectorz](http://github.com/mikera/vectorz) for (non-sparse) vectors and
