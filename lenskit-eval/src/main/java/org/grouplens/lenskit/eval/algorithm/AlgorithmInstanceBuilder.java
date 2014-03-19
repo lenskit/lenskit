@@ -97,15 +97,19 @@ public class AlgorithmInstanceBuilder implements Builder<AlgorithmInstance> {
     public EvalProject getProject() {
         return project;
     }
-    
+
     /**
-     * Set whether the algorithmInfo wants ratings pre-loaded. Use this for algorithms that
-     * are too slow reading on a CSV file if you have enough memory to load them all.
+     * Set whether the algorithmInfo wants ratings pre-loaded. Use this for algorithms that are too
+     * slow reading on a CSV file if you have enough memory to load them all.
      *
      * @param pl {@code true} to pre-load input data when running this algorithmInfo.
      * @return The command for chaining.
+     * @deprecated This method doesn't do anything anymore.  Pack rating data if you want
+     *             preloading.
      */
+    @Deprecated
     public AlgorithmInstanceBuilder setPreload(boolean pl) {
+        logger.warn("algorithm data preloading is a deprecated no-op");
         preload = pl;
         return this;
     }
