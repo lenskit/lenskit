@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
@@ -74,7 +75,7 @@ class ComponentCache {
     /**
      * In-memory cache of shared components.
      */
-    private final Cache<DAGNode<Component,Dependency>,Object> objectCache;
+    private final Cache<DAGNode<Component,Dependency>,Optional<Object>> objectCache;
 
     /**
      * Construct a new component cache.
@@ -135,22 +136,15 @@ class ComponentCache {
 
             try {
                 logger.debug("satisfying instantiation request for {}", sat);
-                return objectCache.get(node, new NodeInstantiator(injector, node));
+                Optional<Object> result = objectCache.get(node, new NodeInstantiator(injector, node));
+                return result.orNull();
             } catch (ExecutionException e) {
-                if (e.getCause() instanceof NullComponentException) {
-                    return null;
-                }
-                throw Throwables.propagate(e.getCause());
-            } catch (UncheckedExecutionException e) {
-                if (e.getCause() instanceof NullComponentException) {
-                    return null;
-                }
-                throw Throwables.propagate(e.getCause());
+                throw new UncheckedExecutionException(e.getCause());
             }
         }
     }
 
-    private class NodeInstantiator implements Callable<Object> {
+    private class NodeInstantiator implements Callable<Optional<Object>> {
         private final Function<DAGNode<Component, Dependency>, Object> delegate;
         private final DAGNode<Component,Dependency> node;
 
@@ -161,7 +155,7 @@ class ComponentCache {
         }
 
         @Override
-        public Object call() throws IOException, NullComponentException {
+        public Optional<Object> call() throws IOException {
             File cacheFile = null;
             if (cacheDir != null) {
                 String key = getKey(node);
@@ -171,34 +165,34 @@ class ComponentCache {
                                  node.getLabel().getSatisfaction(), key);
                     Object obj = readCompressedObject(cacheFile, node.getLabel().getSatisfaction().getErasedType());
                     logger.debug("read object {} from key {}", obj, key);
-                    return obj;
+                    return Optional.fromNullable(obj);
                 }
             }
 
             // No object from the serialization stream, let's try to make one
             logger.debug("instantiating object for {}", node.getLabel().getSatisfaction());
-            Object obj = delegate.apply(node);
-            if (obj == null) {
-                throw new NullComponentException();
-            }
+            Optional<Object> result = Optional.fromNullable(delegate.apply(node));
 
             // now save it to disk, if possible and non-null
-            if (obj instanceof Serializable) {
-                if (cacheFile != null) {
-                    logger.debug("writing object {} to cache (UUID {})",
-                                 obj, getKey(node));
-                    if (logger.isDebugEnabled()) {
-                        StringDescriptionWriter sdw = Descriptions.stringWriter();
-                        NodeDescriber.INSTANCE.describe(node, sdw);
-                        logger.debug("object description: {}", sdw.finish());
+            if (result.isPresent()) {
+                Object obj = result.get();
+                if (obj instanceof Serializable) {
+                    if (cacheFile != null) {
+                        logger.debug("writing object {} to cache (UUID {})",
+                                     obj, getKey(node));
+                        if (logger.isDebugEnabled()) {
+                            StringDescriptionWriter sdw = Descriptions.stringWriter();
+                            NodeDescriber.INSTANCE.describe(node, sdw);
+                            logger.debug("object description: {}", sdw.finish());
+                        }
+                        writeCompressedObject(cacheFile, result);
                     }
-                    writeCompressedObject(cacheFile, obj);
+                } else {
+                    logger.warn("unserializable object {} instantiated", result);
                 }
-            } else {
-                logger.warn("unserializable object {} instantiated", obj);
             }
 
-            return obj;
+            return result;
         }
 
         private void writeCompressedObject(File cacheFile, Object obj) throws IOException {
@@ -230,10 +224,6 @@ class ComponentCache {
                 closer.close();
             }
         }
-    }
-
-    private static class NullComponentException extends Exception {
-        private static final long serialVersionUID = 1L;
     }
 
     //region Node key generation
