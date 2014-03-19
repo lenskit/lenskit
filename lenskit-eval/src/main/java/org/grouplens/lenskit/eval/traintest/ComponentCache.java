@@ -94,6 +94,7 @@ class ComponentCache {
                                   .build();
     }
 
+    @SuppressWarnings("unused")
     @Nullable
     public File getCacheDir() {
         return cacheDir;
