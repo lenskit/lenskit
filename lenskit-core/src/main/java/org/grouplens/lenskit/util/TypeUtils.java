@@ -121,7 +121,7 @@ public class TypeUtils {
     /**
      * Function that gets the class for its argument.
      * @param supertype A class known to be a valid supertype for any argument.
-     * @param acceptNull Whether nulls are accepted & passed through. If {@code false}, the function
+     * @param acceptNull Whether nulls are accepted &amp; passed through. If {@code false}, the function
      *                   will never return {@code null}.
      */
     public static <T> Function<T, Class<? extends T>> extractClass(final Class<T> supertype, final boolean acceptNull) {

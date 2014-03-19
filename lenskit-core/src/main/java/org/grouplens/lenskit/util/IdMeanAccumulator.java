@@ -64,7 +64,7 @@ public final class IdMeanAccumulator {
     /**
      * Get the per-ID means.  Equivalent to {@code computeIdMeans(0, 0)}.
      * @return A vector of means for each ID that has been accumulated.
-     * @see {@link #computeIdMeans(double, double)}
+     * @see #computeIdMeans(double, double)
      */
     public ImmutableSparseVector idMeans() {
         return computeIdMeans(0, 0);
@@ -77,10 +77,10 @@ public final class IdMeanAccumulator {
      * If \(y\) is the global mean, this computes each ID's average deviation from the global mean.
      * If \(\gamma\) is additionally positive, then these average deviations are then damped towards
      * 0, effectively pretending that each ID has an additional \(\gamma\) values at exactly the
-     * global mean.  If \(y=0\) and \(gamma > 0\), it pretends each ID has additional values at 0.
+     * global mean.  If \(y=0\) and \(gamma &gt; 0\), it pretends each ID has additional values at 0.
      *
      * <p>The prior (assumed value for additional values) is always 0 in the output domain.  If
-     * \(y>0\), then the values are offset first, and then damped towards 0.  This method does
+     * \(y&gt;0\), then the values are offset first, and then damped towards 0.  This method does
      * not yet support damping towards some other value; if you need actual damped means, where
      * each is damped towards the global mean, add the global mean to the resulting vector.
      *
@@ -106,7 +106,7 @@ public final class IdMeanAccumulator {
      *
      * @param damping The damping term.
      * @return A vector of mean offsets.
-     * @see {@link #computeIdMeans(double, double)}}
+     * @see #computeIdMeans(double, double)
      */
     public ImmutableSparseVector idMeanOffsets(double damping) {
         return computeIdMeans(globalMean(), damping);

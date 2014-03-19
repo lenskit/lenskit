@@ -41,7 +41,7 @@ import static org.apache.commons.io.FileUtils.copyFile;
 /**
  * Run an R script for statistical analysis.
  * 
- * @author GroupLens Research <ekstrand@cs.umn.edu>
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @deprecated Run R from within the eval script, using the Ant exec task instead.
  */
 @Mojo(name = "run-r",

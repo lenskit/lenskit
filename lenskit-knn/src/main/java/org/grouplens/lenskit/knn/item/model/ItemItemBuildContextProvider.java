@@ -101,9 +101,8 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
      * Transpose the user matrix so we have a matrix of item ids to ratings. Accumulate user item vectors into
      * the candidate sets for each item
      *
-     * @param ratings    a Long2ObjectMap<Long2DoubleMap> encoding a matrix of item ids to (userId: rating)
-     *                   pairs (to be filled)
-     * @param candidates a Long2ObjectMap<LongSortedSet> holding item candidate sets (to be filled)
+     * @param ratings    mapping from item ids to (userId: rating) maps (to be filled)
+     * @param candidates mapping of user IDs to rated item sets to be filled.
      */
     private void buildItemRatings(Long2ObjectMap<Long2DoubleMap> ratings,
                                   Long2ObjectMap<LongSortedSet> candidates) {

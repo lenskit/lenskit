@@ -33,7 +33,6 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * and it is applied to the target vector; this allows e.g. the user's average
  * rating to be subtracted from a set of ratings.
  *
- * @param <V> The type of reference vectors.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultImplementation(IdentityVectorNormalizer.class)
@@ -50,8 +49,7 @@ public interface VectorNormalizer {
      * {@var vector}.
      *
      * <p>
-     * This method is equivalent to
-     * <code>makeTransformation(reference).apply(target)</code).
+     * This method is equivalent to {@code makeTransformation(reference).apply(target)}.
      *
      * @param reference The reference used to compute whatever transformation is
      *                  needed (e.g. the mean value).

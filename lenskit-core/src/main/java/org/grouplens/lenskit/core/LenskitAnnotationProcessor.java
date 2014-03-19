@@ -34,8 +34,8 @@ import java.util.Set;
 /**
  * Annotation processor to provide basic linting of LensKit annotations.
  *
- * @see {@link Shareable}
- * @see {@link Parameter}
+ * @see Shareable
+ * @see Parameter
  */
 @SupportedAnnotationTypes("org.grouplens.lenskit.core.*")
 public class LenskitAnnotationProcessor extends AbstractProcessor {

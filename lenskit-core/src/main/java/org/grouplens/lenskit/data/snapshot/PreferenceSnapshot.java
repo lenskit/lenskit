@@ -34,25 +34,20 @@ import java.io.Closeable;
 /**
  * Snapshot of the ratings data for building a recommender.
  *
- * <p>
- * The recommender build process often needs to take multiple passes over the
- * rating data. In a live system, the data provided by a
- * {@link DataAccessObject} may change between iterations. Therefore, we
- * introduce <em>build contexts</em> &mdash; snapshots of the rating data at
- * a particular point in time that can be iterated as many times as necessary to
+ * <p> The recommender build process often needs to take multiple passes over the rating data. In a
+ * live system, the data provided by a {@link org.grouplens.lenskit.data.dao.EventDAO} may change
+ * between iterations. Therefore, we introduce <em>build contexts</em> &mdash; snapshots of the
+ * rating data at a particular point in time that can be iterated as many times as necessary to
  * build the recommender.
  *
- * <p>
- * Implementers have a variety of options for implementing build contexts. They
- * can be in-memory snapshots, database transactions, database clones, or even
- * disk files. Recommender build code does assume, however, that multiple
- * iterations is pretty fast. Therefore, implementations should avoid
- * re-fetching the data over a network connection for each request.
+ * <p> Implementers have a variety of options for implementing build contexts. They can be in-memory
+ * snapshots, database transactions, database clones, or even disk files. Recommender build code
+ * does assume, however, that multiple iterations is pretty fast. Therefore, implementations should
+ * avoid re-fetching the data over a network connection for each request.
  *
- * <p>
- * An additional feature provided by build contexts is that of mapping the item
- * and user IDs to consecutive, 0-based indices. The indices <strong>may
- * differ</strong> from one build context to another.
+ * <p> An additional feature provided by build contexts is that of mapping the item and user IDs to
+ * consecutive, 0-based indices. The indices <strong>may differ</strong> from one build context to
+ * another.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -88,30 +83,27 @@ public interface PreferenceSnapshot extends Closeable {
     IdIndexMapping itemIndex();
 
     /**
-     * Get the collection of ratings in the snapshot. The ratings are returned
-     * in an undetermined order. It is guaranteed that no duplicate ratings
-     * appear - each <i>(user,item)</i> pair is rated at most once. Each
-     * preference's index is also in the range [0,len), where len is the size of
-     * this collection.
+     * Get the collection of ratings in the snapshot. The ratings are returned in an undetermined
+     * order. It is guaranteed that no duplicate ratings appear - each <i>(user,item)</i> pair is
+     * rated at most once. Each preference's index is also in the range [0,len), where len is the
+     * size of this collection.
      *
-     * <p>
-     * Modifying the returned indexed preferences will <b>not</b> modify the
-     * underlying snapshot.
+     * <p> Modifying the returned indexed preferences will <b>not</b> modify the underlying
+     * snapshot.
      *
      * @return All ratings in the system.
      */
     FastCollection<IndexedPreference> getRatings();
 
     /**
-     * Get the ratings for a particular user. It is guaranteed that no duplicate
-     * ratings appear - each <i>(user,item)</i> pair is rated at most once.
+     * Get the ratings for a particular user. It is guaranteed that no duplicate ratings appear -
+     * each <i>(user,item)</i> pair is rated at most once.
      *
-     * <p>Modifying the returned indexed preferences will <b>not</b> modify the
-     * underlying snapshot.
+     * <p>Modifying the returned indexed preferences will <b>not</b> modify the underlying
+     * snapshot.
      *
      * @param userId The user's ID.
-     * @return The user's ratings, or an empty collection if the user is
-     *         unknown.
+     * @return The user's ratings, or an empty collection if the user is unknown.
      */
     FastCollection<IndexedPreference> getUserRatings(long userId);
 
@@ -124,13 +116,11 @@ public interface PreferenceSnapshot extends Closeable {
     SparseVector userRatingVector(long userId);
 
     /**
-     * Close the build context. This overrides {@link Closeable#close()} to drop
-     * the exception that can be thrown.
+     * Close the build context. This overrides {@link Closeable#close()} to drop the exception that
+     * can be thrown.
      *
-     * <p>
-     * After the build context has been closed, all methods are allowed to fail.
-     * Objects returned from those methods, however, should continue to be
-     * valid.
+     * <p> After the build context has been closed, all methods are allowed to fail. Objects
+     * returned from those methods, however, should continue to be valid.
      */
     @Override
     void close();

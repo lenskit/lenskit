@@ -36,7 +36,7 @@ import org.grouplens.lenskit.core.Parameter;
  * have fewer than <i>n</i> keys in common, then the similarity is decreased.
  *
  * @see org.grouplens.lenskit.vectors.similarity.SignificanceWeightedVectorSimilarity
- * @see WeightedSimilarity
+ * @see SignificanceWeightedVectorSimilarity
  */
 @Documented
 @DefaultInteger(0)

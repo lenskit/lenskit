@@ -333,9 +333,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     /**
      * Run the crossfold command. Write the partition files to the disk by reading in the source file.
      *
-     * @return List<TTDataSet> The partition files stored as a list of TTDataSet
-     * @throws org.grouplens.lenskit.eval.TaskExecutionException
-     *
+     * @return The partition files stored as a list of TTDataSet
      */
     @Override
     public List<TTDataSet> perform() throws TaskExecutionException {
@@ -557,7 +555,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     /**
      * Get the train-test splits as data sets.
      * 
-     * @return List<TTDataSet> The partition files stored as a list of TTDataSet
+     * @return The partition files stored as a list of TTDataSet
      */
     public List<TTDataSet> getTTFiles() {
         List<TTDataSet> dataSets = new ArrayList<TTDataSet>(partitionCount);

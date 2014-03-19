@@ -107,8 +107,7 @@ public enum SubsampleMode {
      * @param source The DAO of the data source file
      * @param output The table output to output the rating
      * @param fraction The fraction of data to keep.
-     * @throws org.grouplens.lenskit.eval.TaskExecutionException
-     *          Any error
+     * @throws IOException if there is an error sampling the data set.
      */
     public abstract void doSample(DataSource source, TableWriter output, double fraction, Random rng) throws IOException;
 
