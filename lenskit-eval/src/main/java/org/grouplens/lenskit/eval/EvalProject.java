@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval;
 import com.google.common.collect.Iterables;
 import com.google.common.eventbus.EventBus;
 import org.apache.tools.ant.*;
-import org.grouplens.grapht.util.Types;
+import org.grouplens.grapht.util.ClassLoaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +53,7 @@ public class EvalProject {
      *              {@link #setUserProperty(String, String)} so that they have Ant-like behavior.
      */
     public EvalProject(@Nullable Properties props) {
-        this(props, Types.getDefaultClassLoader());
+        this(props, ClassLoaders.inferDefault(EvalProject.class));
     }
 
         /**
