@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
 import groovy.lang.*;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.util.ClassDirectory;
@@ -51,10 +52,9 @@ public class ConfigurationLoader {
 
     /**
      * Construct a new configuration loader. It uses the current thread's class loader.
-     * @review Is this the classloader we should use?
      */
     public ConfigurationLoader() {
-        this(Thread.currentThread().getContextClassLoader());
+        this(ClassLoaders.inferDefault(ConfigurationLoader.class));
     }
 
     /**

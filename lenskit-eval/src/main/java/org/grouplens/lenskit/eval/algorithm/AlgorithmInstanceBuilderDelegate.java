@@ -48,6 +48,7 @@ public class AlgorithmInstanceBuilderDelegate extends LenskitConfigDSL {
         return builder.getPreload();
     }
 
+    @Deprecated
     public void setPreload(boolean pl) {
         builder.setPreload(pl);
     }
