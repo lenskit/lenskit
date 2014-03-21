@@ -120,6 +120,13 @@ This release includes several improvements and additions to LensKit's selection 
     transposing the ratings matrix (#issue(481)).  If your rating normalization is per-item instead
     of per-user, this allows item-item builds to be more efficient.
 
+### SVD CF
+
+ - **Configuration change:** the FunkSVDItemScorer no longer returns the baseline score for all
+   Items. It now only returns scores for user-item pairs where the scorer has both a user and item
+   vector. If you were relying on the old behavior you can configure a FallbackItemScorer with 
+   FunkSVDItemScorer as the primary scorer.
+
 ### Matrix factorization
 
 -   Refactored FunkSVD to use vectorz vectors and matrices, and have factored-out code useful for
