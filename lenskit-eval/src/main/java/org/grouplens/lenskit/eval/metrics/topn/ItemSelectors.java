@@ -145,6 +145,18 @@ public final class ItemSelectors {
         };
     }
 
+    public static ItemSelector union(final ItemSelector selectorOne, final ItemSelector selectorTwo) {
+        return new ItemSelector() {
+            @Override
+            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
+                LongSet l1 = selectorOne.select(trainingData, testData, universe);
+                LongSet l2 = selectorTwo.select(trainingData, testData, universe);
+                // @Review Is this reasonably efficient?
+                return LongUtils.setUnion(LongUtils.packedSet(l1), LongUtils.packedSet(l2));
+            }
+        };
+    }
+
     private static enum SingletonSelectors implements ItemSelector {
         ALL_ITEMS {
             @Override

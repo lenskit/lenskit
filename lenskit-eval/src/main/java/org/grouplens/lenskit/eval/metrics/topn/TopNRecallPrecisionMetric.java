@@ -37,6 +37,11 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
+ * A metric to compute the precision and recall of a recommender given a 
+ * set of candidate items to recommend from and a set of desired items.
+ * 
+ * This can be used to compute metrics like fallout (probability that a 
+ * recommendation is bad) by configuring bad items as the test item set.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TopNRecallPrecisionMetric extends AbstractTestUserMetric {
@@ -49,10 +54,13 @@ public class TopNRecallPrecisionMetric extends AbstractTestUserMetric {
     private final ItemSelector testItems;
 
     /**
-     * Construct a new nDCG Top-N metric.
+     * Construct a new recall and precision top n metric
      * @param listSize The number of recommendations to fetch.
-     * @param candidates The candidate selector.
-     * @param exclude The exclude selector.
+     * @param candidates The candidate selector, provides a list of items which can be recommended
+     * @param exclude The exclude selector, provides a list of items which must not be recommended 
+     *                (These items are removed from the candidate items to form the final candidate set)
+     * @param testItems The list of items to consider "true positives", all other items will be treated
+     *                  as "false positives".
      */
     public TopNRecallPrecisionMetric(String[] lbls, int listSize, ItemSelector candidates, ItemSelector exclude, ItemSelector testItems) {
         this.listSize = listSize;
