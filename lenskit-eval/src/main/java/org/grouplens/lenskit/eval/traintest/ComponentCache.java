@@ -139,17 +139,11 @@ class ComponentCache {
                 Optional<Object> result = objectCache.get(node, new NodeInstantiator(injector, node));
                 return result.orNull();
             } catch (ExecutionException e) {
-                if (e.getCause() instanceof RuntimeException) {
-                    throw Throwables.propagate(e.getCause());
-                } else {
-                    throw new UncheckedExecutionException(e.getCause());
-                }
+                Throwables.propagateIfPossible(e.getCause());
+                throw new UncheckedExecutionException(e.getCause());
             } catch (UncheckedExecutionException e) {
-                if (e.getCause() instanceof RuntimeException) {
-                    throw Throwables.propagate(e.getCause());
-                } else {
-                    throw e;
-                }
+                Throwables.propagateIfPossible(e.getCause());
+                throw e;
             }
         }
     }
@@ -188,7 +182,7 @@ class ComponentCache {
                 Object obj = result.get();
                 if (obj instanceof Serializable) {
                     if (cacheFile != null) {
-                        logger.debug("writing object {} to cache (UUID {})",
+                        logger.debug("writing object {} to cache (key {})",
                                      obj, getKey(node));
                         if (logger.isDebugEnabled()) {
                             StringDescriptionWriter sdw = Descriptions.stringWriter();
