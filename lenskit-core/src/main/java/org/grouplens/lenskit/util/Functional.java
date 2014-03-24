@@ -22,9 +22,14 @@ package org.grouplens.lenskit.util;
 
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
+import com.google.common.hash.Funnel;
+import com.google.common.hash.Funnels;
+import com.google.common.hash.PrimitiveSink;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -80,6 +85,14 @@ public final class Functional {
     }
 
     /**
+     * A {@link Funnel} that serializes an object to the sink.
+     * @return A funnel that funnels objects by serializing them.
+     */
+    public static Funnel<Object> serializeFunnel() {
+        return SerializeFunnel.INSTANCE;
+    }
+
+    /**
      * Identity function casting its arguments to a particular type.
      *
      * @param <F> The function's input type.
@@ -95,5 +108,23 @@ public final class Functional {
                 return target.cast(obj);
             }
         };
+    }
+
+    private static enum SerializeFunnel implements Funnel<Object> {
+        INSTANCE;
+
+        @Override
+        public void funnel(Object from, PrimitiveSink into) {
+            try {
+                ObjectOutputStream out = new ObjectOutputStream(Funnels.asOutputStream(into));
+                try {
+                    out.writeObject(from);
+                } finally {
+                    out.close();
+                }
+            } catch (IOException ex) {
+                throw Throwables.propagate(ex);
+            }
+        }
     }
 }

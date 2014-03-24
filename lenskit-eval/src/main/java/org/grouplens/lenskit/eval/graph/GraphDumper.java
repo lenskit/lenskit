@@ -20,11 +20,9 @@
  */
 package org.grouplens.lenskit.eval.graph;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
 import org.apache.commons.lang3.tuple.Pair;
@@ -32,15 +30,16 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.reflect.*;
-import org.grouplens.grapht.reflect.internal.*;
+import org.grouplens.grapht.reflect.AbstractSatisfactionVisitor;
+import org.grouplens.grapht.reflect.Desire;
+import org.grouplens.grapht.reflect.Satisfaction;
+import org.grouplens.grapht.reflect.SatisfactionVisitor;
 import org.grouplens.lenskit.core.Parameter;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.RecommenderInstantiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.inject.Provider;
 import java.io.File;
 import java.io.FileWriter;
@@ -277,7 +276,7 @@ public class GraphDumper {
                .setShared(!unsharedNodes.contains(currentNode))
                .setIsProvider(pid != null);
             List<DAGEdge<Component, Dependency>> edges = Lists.newArrayList(currentNode.getOutgoingEdges());
-            Collections.sort(edges, EDGE_ORDER);
+            Collections.sort(edges, GraphtUtils.DEP_EDGE_ORDER);
             for (DAGEdge<Component, Dependency> e: edges) {
                 Desire dep = e.getLabel().getInitialDesire();
                 Annotation q = dep.getInjectionPoint().getQualifier();
@@ -322,48 +321,6 @@ public class GraphDumper {
             return node;
         }
     }
-
-    private static Function<DAGEdge<Component,Dependency>,List<String>> ORDER_KEY = new Function<DAGEdge<Component, Dependency>, List<String>>() {
-        @Nullable
-        @Override
-        public List<String> apply(@Nullable DAGEdge<Component,Dependency> input) {
-            if (input == null) {
-                throw new NullPointerException("cannot order null edge");
-            }
-            Desire desire = input.getLabel().getInitialDesire();
-            InjectionPoint ip = desire.getInjectionPoint();
-            List<String> key = new ArrayList<String>(4);
-            if (ip instanceof ConstructorParameterInjectionPoint) {
-                ConstructorParameterInjectionPoint cpi = (ConstructorParameterInjectionPoint) ip;
-                key.add("0: constructor");
-                key.add(Integer.toString(cpi.getParameterIndex()));
-            } else if (ip instanceof SetterInjectionPoint) {
-                SetterInjectionPoint spi = (SetterInjectionPoint) ip;
-                key.add("1: setter");
-                key.add(spi.getMember().getName());
-                key.add(Integer.toString(spi.getParameterIndex()));
-            } else if (ip instanceof FieldInjectionPoint) {
-                FieldInjectionPoint fpi = (FieldInjectionPoint) ip;
-                key.add("2: field");
-                key.add(fpi.getMember().getName());
-            } else if (ip instanceof NoArgumentInjectionPoint) {
-                /* this shouldn't really happen */
-                NoArgumentInjectionPoint fpi = (NoArgumentInjectionPoint) ip;
-                key.add("8: no-arg");
-                key.add(fpi.getMember().getName());
-            } else if (ip instanceof SimpleInjectionPoint) {
-                key.add("5: simple");
-            } else {
-                key.add("9: unknown");
-                key.add(ip.getClass().getName());
-            }
-            return key;
-        }
-    };
-
-    private static Ordering<DAGEdge<Component, Dependency>> EDGE_ORDER = Ordering.<String>natural()
-                                                       .lexicographical()
-                                                       .onResultOf(ORDER_KEY);
 
     /**
      * Render a graph to a file.
