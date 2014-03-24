@@ -3,12 +3,10 @@
 DEPLOY_JDK=oraclejdk7
 
 . etc/ci/ci-helpers.sh
-skip_unless_master_build deploy
-
-case "$TRAVIS_BRANCH" in
-master|release/*) DO_RUN=yes;;
-*) skip "deploy disabled for branch $TRAVIS_BRANCH";;
-esac
+skip_unless is_main_jdk deploy
+skip_unless is_main_repo deploy
+skip_if is_pr deploy
+skip_unless is_release_branch deploy
 
 if [ -z "$CI_DEPLOY_USER" -o -z "$CI_DEPLOY_PASSWORD" ]; then
     echo "Deploy credentials unavailable" >&2
