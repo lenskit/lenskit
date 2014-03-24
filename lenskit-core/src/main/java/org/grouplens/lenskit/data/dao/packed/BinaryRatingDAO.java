@@ -52,7 +52,17 @@ import java.nio.channels.FileChannel;
 import java.util.List;
 
 /**
- * DAO implementation using binary-packed data.
+ * DAO implementation using binary-packed data.  This DAO reads ratings from a compact binary format
+ * using memory-mapped IO, so the data is efficiently readable (subject to available memory and
+ * operating system caching logic) without expanding the Java heap.
+ * <p>
+ * To create a file compatible with this DAO, use the {@link BinaryRatingPacker} class or the
+ * <tt>pack</tt> command in the LensKit command line tool.
+ * <p>
+ * Currently, serializing a binary rating DAO puts all the rating data into the serialized output
+ * stream. When deserialized, the data be written back to a direct buffer (allocated with
+ * {@link ByteBuffer#allocateDirect(int)}).  When deserializing this DAO, make sure your
+ * system has enough virtual memory (beyond what is allowed for Java) to contain the entire data set.
  *
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -90,6 +100,12 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         return new BinaryRatingDAO(header, dup.slice(), utbl, itbl);
     }
 
+    /**
+     * Open a binary rating DAO.
+     * @param file The file to open.
+     * @return A DAO backed by {@code file}.
+     * @throws IOException If there is
+     */
     public static BinaryRatingDAO open(File file) throws IOException {
         FileInputStream input = new FileInputStream(file);
         try {
