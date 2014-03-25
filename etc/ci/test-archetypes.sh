@@ -13,7 +13,7 @@ echo "Testing archetypes for version $LENSKIT_VERSION"
 
 generate()
 {
-    cmd mvn -B archetype:generate \
+    cmd mvn --batch-mode archetype:generate \
         -DarchetypeGroupId="org.grouplens.lenskit" \
         -DarchetypeArtifactId="lenskit-archetype-$1" \
         -DarchetypeVersion="$LENSKIT_VERSION" \
@@ -26,7 +26,7 @@ generate()
 execute()
 {
     cd test-"$1" || exit 1
-    cmd mvn -B -e -Dlenskit.eval.threadCount=2 \
+    cmd mvn --batch-mode -e -Dlenskit.eval.threadCount=2 \
         lenskit-publish
     cd "$TEST_ROOT" || exit 1
 }
