@@ -87,6 +87,10 @@ This release includes several improvements and additions to LensKit's selection 
 -   Add `RatingPredictorItemScorer`, a wrapper that uses the output of a rating predictor to produce
     item scores.  Useful primarily for using things like OrdRec for item-scorer-based components.
 
+-   **Behavior change:** the default exclude set used by `TopNItemRecommender` now contains all
+    items the user has interacted with, not just the ones they have rated.  Baking the knowledge of
+    ratings into the top-N recommender was arguably a mistake.
+
 ### User-user CF
 
 -   Updated user-user CF to be simpler & make better use of new DAOs (#issue(356)).
