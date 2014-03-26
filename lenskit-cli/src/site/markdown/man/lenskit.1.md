@@ -1,4 +1,4 @@
-# lenskit(1)
+# lenskit
 
 ## Name
 

@@ -1,4 +1,4 @@
-# lenskit-predict(1)
+# lenskit-predict
 
 ## Name
 

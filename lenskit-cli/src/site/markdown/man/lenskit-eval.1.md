@@ -1,4 +1,4 @@
-# lenskit-eval(1)
+# lenskit-eval
 
 ## Name
 

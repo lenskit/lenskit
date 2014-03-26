@@ -1,4 +1,4 @@
-# lenskit-train-model(1)
+# lenskit-train-model
 
 ## Name
 

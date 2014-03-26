@@ -1,4 +1,4 @@
-# lenskit-version(1)
+# lenskit-version
 
 ## Name
 

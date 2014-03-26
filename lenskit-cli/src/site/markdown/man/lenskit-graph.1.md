@@ -1,4 +1,4 @@
-# lenskit-graph(1)
+# lenskit-graph
 
 ## Name
 

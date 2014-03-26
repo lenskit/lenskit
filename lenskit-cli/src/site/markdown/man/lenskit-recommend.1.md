@@ -1,4 +1,4 @@
-# lenskit-recommend(1)
+# lenskit-recommend
 
 ## Name
 

@@ -1,4 +1,4 @@
-# lenskit-pack-ratings(1)
+# lenskit-pack-ratings
 
 ## Name
 
