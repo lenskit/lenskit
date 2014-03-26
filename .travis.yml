@@ -8,7 +8,7 @@ branches:
   - www
 before_install:
 - sudo apt-get update
-- sudo apt-get install --no-install-recommends time graphviz r-base-core python-requests python-matplotlib python-pandas texlive-latex-base
+- sudo apt-get install --no-install-recommends time graphviz r-base-core python-requests python-matplotlib python-pandas texlive-latex-base pandoc
 install: mvn --batch-mode dependency:resolve-plugins
 script:
 - ./etc/ci/in-fold.sh build mvn --batch-mode install
