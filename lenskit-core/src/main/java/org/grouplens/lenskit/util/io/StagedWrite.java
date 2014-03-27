@@ -57,6 +57,7 @@ public class StagedWrite {
     private static final Logger logger = LoggerFactory.getLogger(StagedWrite.class);
     private final File targetFile;
     private final File stagingFile;
+    private boolean committed = false;
 
     private StagedWrite(File target, File temp) {
         targetFile = target;
@@ -94,6 +95,9 @@ public class StagedWrite {
     }
 
     public FileOutputStream openOutputStream() throws FileNotFoundException {
+        if (committed) {
+            throw new IllegalStateException("staged write already committed");
+        }
         return new FileOutputStream(stagingFile);
     }
 
@@ -102,6 +106,9 @@ public class StagedWrite {
      * @throws IOException if there is an error moving the file.
      */
     public void commit() throws IOException {
+        if (committed) {
+            throw new IllegalStateException("staged write already committed");
+        }
         logger.debug("finishing write of {}", targetFile);
         if (!stagingFile.renameTo(targetFile)) {
             logger.debug("cannot rename staging file {}, trying to delete", stagingFile);

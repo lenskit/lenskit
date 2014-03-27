@@ -211,7 +211,6 @@ class ComponentCache {
                     OutputStream gzOut = closer.register(new GZIPOutputStream(out));
                     ObjectOutputStream objOut = closer.register(new ObjectOutputStream(gzOut));
                     objOut.writeObject(obj);
-                    stage.commit();
                 } catch (Throwable th) {
                     throw closer.rethrow(th);
                 } finally {
