@@ -33,6 +33,7 @@ import org.grouplens.lenskit.eval.data.CSVDataSource;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.util.io.StagedWrite;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,27 +135,29 @@ public class PackTask extends AbstractTask<List<Object>> {
         check.addOutput(outFile);
         if (check.isUpToDate()) {
             logger.info("{} is up to date", outFile);
-        } else {
-            logger.info("packing {} to {}", data, outFile);
-            File tmpFile = new File(outFile.getParentFile(), outFile.getName() + ".tmp");
+            return source;
+        }
+
+        logger.info("packing {} to {}", data, outFile);
+        StagedWrite stage = StagedWrite.begin(outFile);
+        try {
+            BinaryRatingPacker packer = BinaryRatingPacker.open(stage.getStagingFile(), binaryFlags);
             try {
-                BinaryRatingPacker packer = BinaryRatingPacker.open(tmpFile, binaryFlags);
+                Cursor<Rating> ratings = data.getEventDAO().streamEvents(Rating.class);
                 try {
-                    Cursor<Rating> ratings = data.getEventDAO().streamEvents(Rating.class);
-                    try {
-                        packer.writeRatings(ratings);
-                    } finally {
-                        ratings.close();
-                    }
+                    packer.writeRatings(ratings);
                 } finally {
-                    packer.close();
+                    ratings.close();
                 }
-            } catch (IOException ex) {
-                logger.error("error packing {}: {}", outFile, ex);
-                tmpFile.delete();
-                throw new TaskExecutionException("error packing " + outFile, ex);
+            } finally {
+                packer.close();
             }
-            tmpFile.renameTo(outFile);
+            stage.commit();
+        } catch (IOException ex) {
+            logger.error("error packing {}: {}", outFile, ex);
+            throw new TaskExecutionException("error packing " + outFile, ex);
+        } finally {
+            stage.cleanup();
         }
 
         return source;
