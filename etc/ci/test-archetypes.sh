@@ -4,7 +4,8 @@
 
 MLDATA_ZIP="$PWD/lenskit-integration-tests/target/data/ml100k.zip"
 if [ ! -r "$MLDATA_ZIP" ]; then
-    echo "MovieLens data not downloaded!" >&2
+    echo "No MovieLens data found." >&2
+    echo "This probably means the main build failed."
     exit 3
 fi
 
