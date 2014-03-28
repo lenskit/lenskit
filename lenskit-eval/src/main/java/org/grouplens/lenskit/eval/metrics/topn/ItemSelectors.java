@@ -126,6 +126,7 @@ public final class ItemSelectors {
                     // algorithmInfo adapted from Wikipedia coverage of Fisher-Yates shuffle
                     // https://en.wikipedia.org/wiki/Fisher-Yates_shuffle
                     int j = rng.nextInt(n + 1);
+                    n = n + 1; //@review, this wasn't there before and seems important, necissary?
                     if (j < nRandom) {
                         if (offset + j == selected.size()) {
                             selected.add(item);
@@ -145,6 +146,94 @@ public final class ItemSelectors {
         };
     }
 
+    /**
+     * Randomly select items selected by another selector.
+     *
+     * @param base The base selector (e.g. {@link #allItems()}).
+     * @param n The number of random items to select.
+     * @return An item selector that selects {@code n} items from the items selected by {@code base}, 
+     * or simply the items selected by {@code base} if there are fewer then {@code n} items selected.
+     */
+    public static ItemSelector nRandomFrom(final ItemSelector base, final int n) {
+        return new ItemSelector() {
+            @Override
+            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
+                // FIXME The RNG should come from configuration
+                Random rng = new Random();
+                LongSet newUniverse = base.select(trainingData, testData, universe);
+                if (newUniverse.size() <= n) {
+                    return newUniverse;
+                }
+
+                LongList selected = new LongArrayList(n);
+                int m = 0;
+                LongIterator iter = newUniverse.iterator();
+                while (iter.hasNext()) {
+                    final long item = iter.nextLong();
+                    // algorithmInfo adapted from Wikipedia coverage of Fisher-Yates shuffle
+                    // https://en.wikipedia.org/wiki/Fisher-Yates_shuffle
+                    int j = rng.nextInt(m + 1);
+                    m = m + 1;
+                    if (j < n) {
+                        if (j == selected.size()) {
+                            selected.add(item);
+                        } else {
+                            long old = selected.getLong(j);
+                            if (selected.size() == n) {
+                                selected.set(n - 1, old);
+                            } else {
+                                selected.add(old);
+                            }
+                            selected.set(j, item);
+                        }
+                    }
+                }
+                return LongUtils.packedSet(selected);
+            }
+        };
+    }
+
+    /**
+     * Randomly selects items from the universe.
+     * 
+     * Short for {@code ItemSelectors.nRandomFrom(ItemSelectors.allItems, n)}
+     */
+    public static ItemSelector nRandom(final int n) {
+        return ItemSelectors.nRandomFrom(ItemSelectors.allItems(), n);
+    }
+
+
+    /**
+     * Selects the set difference between two other selectors
+     * 
+     * @param selectorToKeep selects items that are to be kept
+     * @param selectorToNotKeep selects items that are to be excluded
+     * @return an item selector which selects every item that is selected by {@code selectorToKeep} 
+     * and not selected by {@code selectorToNotKeep}. 
+     */
+    public static ItemSelector setDifference(final ItemSelector selectorToKeep, final ItemSelector selectorToNotKeep) {
+        return new ItemSelector() {
+            @Override
+            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
+                LongSet l1 = selectorToKeep.select(trainingData, testData, universe);
+                LongSet l2 = selectorToNotKeep.select(trainingData, testData, universe);
+                return LongUtils.setDifference(l1, l2);
+            }
+        };
+    }
+
+    /**
+     * Selects all items not selected by a given selector.
+     * 
+     * Short for {@code ItemSelectors.setDifference(ItemSelectors.allItems(), selector);}
+     */
+    public static ItemSelector everythingBut(final ItemSelector selector) {
+        return setDifference(allItems(), selector);
+    }
+    
+    /**
+     * selects any items selected by at least one of two other selectors.
+     */
     public static ItemSelector union(final ItemSelector selectorOne, final ItemSelector selectorTwo) {
         return new ItemSelector() {
             @Override
