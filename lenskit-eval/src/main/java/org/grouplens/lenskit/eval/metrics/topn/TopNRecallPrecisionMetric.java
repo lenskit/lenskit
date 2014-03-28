@@ -142,7 +142,7 @@ public class TopNRecallPrecisionMetric extends AbstractTestUserMetric {
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder extends TopNMetricBuilder<Builder, TopNRecallPrecisionMetric>{
-        private String[] labels = {"TopN.precision","TopN.recall"};
+        private String[] labels = {"TopN.Precision","TopN.Recall"};
         private ItemSelector testItems = ItemSelectors.testRatingMatches(Matchers.greaterThanOrEqualTo(5.0d));
 
         public Builder() {
