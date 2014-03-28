@@ -118,7 +118,8 @@ public final class Descriptions {
                 HashCode hash = Hashing.sha1().hashObject(obj, Functional.serializeFunnel());
                 description.putField("hash", hash.toString());
             } else {
-                logger.warn("object {} not describable or serializable, using nondeterministic key");
+                logger.warn("object {} not describable or serializable, using nondeterministic key",
+                            obj);
                 UUID key = RANDOM_KEY_MAP.getUnchecked(obj);
                 description.putField("_uuid", key.toString());
             }
