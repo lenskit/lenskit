@@ -2,23 +2,25 @@ cmd()
 {
     mode=run
     dir=
+    precmd=
     case "$1" in
     -e) mode=exec; shift;;
     -d) dir="$2"; shift 2;;
+    -t) precmd=./etc/ci/tslines.pl; shift;;
     esac
 
     if [ "$mode" = exec ]; then
         echo "->" "$@"
-        exec ./etc/ci/tslines.pl "$@"
+        exec $precmd "$@"
     else
         if [ -z "$dir" ]; then
             echo + "$@"
-            ./etc/ci/tslines.pl "$@"
+            $precmd "$@"
             ec="$?"
         else
             echo "[in $dir]" "$@"
             old_pwd="$PWD"
-            (cd "$dir" && "$old_pwd/ci/tslines.pl" "$@")
+            (cd "$dir" && "$@")
             ec="$?"
         fi
         if [ "$ec" -ne 0 ]; then

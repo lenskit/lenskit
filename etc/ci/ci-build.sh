@@ -11,5 +11,5 @@ test -n "$CI_DEPLOY_USER" && echo "have CI_DEPLOY_USER"
 test -n "$CI_DEPLOY_PASSWORD" && echo "have CI_DEPLOY_PASSWORD"
 test -n "$UPLOAD_SECRET" && echo "have UPLOAD_SECRET"
 
-cmd mvn --batch-mode install
-cmd ./etc/ci/test-archetypes.sh
+cmd -t mvn --batch-mode install
+cmd -t ./etc/ci/test-archetypes.sh

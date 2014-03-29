@@ -14,6 +14,6 @@ if [ -z "$CI_DEPLOY_USER" -o -z "$CI_DEPLOY_PASSWORD" ]; then
 fi
 
 echo "Running Maven deploy"
-cmd -e mvn --batch-mode --settings etc/ci/settings.xml deploy \
+cmd -t -e mvn --batch-mode --settings etc/ci/settings.xml deploy \
     -DskipTests=true -Dinvoker.skip=true \
     -DprepareUpload=true
