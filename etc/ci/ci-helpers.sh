@@ -9,16 +9,16 @@ cmd()
 
     if [ "$mode" = exec ]; then
         echo "->" "$@"
-        exec ./etc/ci/tslines "$@"
+        exec ./etc/ci/tslines.pl "$@"
     else
         if [ -z "$dir" ]; then
             echo + "$@"
-            ./etc/ci/tslines "$@"
+            ./etc/ci/tslines.pl "$@"
             ec="$?"
         else
             echo "[in $dir]" "$@"
             old_pwd="$PWD"
-            (cd "$dir" && "$old_pwd/ci/tslines" "$@")
+            (cd "$dir" && "$old_pwd/ci/tslines.pl" "$@")
             ec="$?"
         fi
         if [ "$ec" -ne 0 ]; then
