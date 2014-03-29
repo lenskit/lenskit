@@ -1,5 +1,7 @@
 #!/bin/sh
 
+. ./etc/ci/ci-helpers.sh
+
 echo "Starting CI build of LensKit"
 echo "Building branch $TRAVIS_BRANCH of repository $TRAVIS_REPO_SLUG"
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
@@ -9,5 +11,5 @@ test -n "$CI_DEPLOY_USER" && echo "have CI_DEPLOY_USER"
 test -n "$CI_DEPLOY_PASSWORD" && echo "have CI_DEPLOY_PASSWORD"
 test -n "$UPLOAD_SECRET" && echo "have UPLOAD_SECRET"
 
-mvn --batch-mode install || exit 2
-./etc/ci/test-archetypes.sh || exit 2
+cmd -t mvn --batch-mode install
+cmd -t ./etc/ci/test-archetypes.sh
