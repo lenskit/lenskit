@@ -157,7 +157,7 @@ public class PackTask extends AbstractTask<List<Object>> {
             logger.error("error packing {}: {}", outFile, ex);
             throw new TaskExecutionException("error packing " + outFile, ex);
         } finally {
-            stage.cleanup();
+            stage.close();
         }
 
         return source;

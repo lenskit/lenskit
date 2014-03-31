@@ -23,8 +23,8 @@ package org.grouplens.lenskit.util.io;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.UUID;
@@ -36,12 +36,12 @@ import java.util.UUID;
  * <pre>{@code
  * StagedWrite stage = StagedWrite.begin(outputFile);
  * try {
- *     OutputStream stream = new FileOutputStream(stage.getStagingFile());
+ *     OutputStream stream = stage.openOutputStream();
  *     // write to stream
  *     stream.close();
  *     stage.commit();
  * } finally {
- *     stage.cleanup();
+ *     stage.close();
  * }}</pre>
  *
  * <p>
@@ -53,10 +53,11 @@ import java.util.UUID;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 2.1
  */
-public class StagedWrite {
+public class StagedWrite implements Closeable {
     private static final Logger logger = LoggerFactory.getLogger(StagedWrite.class);
     private final File targetFile;
     private final File stagingFile;
+    private boolean opened = false;
     private boolean committed = false;
 
     private StagedWrite(File target, File temp) {
@@ -94,15 +95,27 @@ public class StagedWrite {
         return stagingFile;
     }
 
-    public FileOutputStream openOutputStream() throws FileNotFoundException {
+    /**
+     * Open an output stream for the staging file.  This method cannot be called multiple times.
+     *
+     * @return An output stream to write to the staging file. This output stream must be closed
+     *         before calling {@link #commit()}.
+     * @throws IOException if there is an error opening the output stream.
+     */
+    public FileOutputStream openOutputStream() throws IOException {
         if (committed) {
             throw new IllegalStateException("staged write already committed");
+        } else if (opened) {
+            throw new IllegalStateException("staged write already opened");
         }
-        return new FileOutputStream(stagingFile);
+        FileOutputStream stream = new FileOutputStream(stagingFile);
+        opened = true;
+        return stream;
     }
 
     /**
-     * Complete the staging write by replacing the target file with the staging file.
+     * Complete the staging write by replacing the target file with the staging file.  Any streams
+     * or channels used to write the file must be closed and/or flushed prior to calling this method.
      * @throws IOException if there is an error moving the file.
      */
     public void commit() throws IOException {
@@ -122,13 +135,19 @@ public class StagedWrite {
                 throw new IOException("failed to create " + targetFile);
             }
         }
+        committed = true;
     }
 
     /**
-     * Clean up the staged write, deleting the staging file if it still exists.
+     * Clean up the staged write, deleting the staging file if it still exists.  It is safe to call
+     * this method multiple times, and safe to call it after calling {@link #commit()}.  Typical
+     * use of a staged write will call this method in a {@code finally} block.
      */
-    public void cleanup() {
-        logger.debug("aborting write of {}", targetFile);
+    @Override
+    public void close() {
+        if (!committed) {
+            logger.debug("aborting write of {}", targetFile);
+        }
         if (stagingFile.delete()) {
             logger.debug("deleted staging file {}", stagingFile);
         }

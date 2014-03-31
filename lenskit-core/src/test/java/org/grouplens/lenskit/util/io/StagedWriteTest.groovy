@@ -42,7 +42,7 @@ class StagedWriteTest {
             stage.stagingFile.text = "hello, world"
             stage.commit()
         } finally {
-            stage.cleanup()
+            stage.close()
         }
         assertThat file.exists(), equalTo(true)
         assertThat file.text, equalTo("hello, world")
@@ -57,7 +57,7 @@ class StagedWriteTest {
         try {
             stage.stagingFile.text = "hello, world"
         } finally {
-            stage.cleanup()
+            stage.close()
         }
         assertThat file.exists(), equalTo(false)
         assertThat folder.root.listFiles().toList(), hasSize(0)
@@ -73,7 +73,7 @@ class StagedWriteTest {
             stage.stagingFile.text = "goodnight, moon"
             stage.commit()
         } finally {
-            stage.cleanup()
+            stage.close()
         }
         assertThat file.exists(), equalTo(true)
         assertThat file.text, equalTo("goodnight, moon")

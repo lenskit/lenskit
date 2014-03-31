@@ -218,7 +218,7 @@ class ComponentCache {
                 }
                 stage.commit();
             } finally {
-                stage.cleanup();
+                stage.close();
             }
         }
 
