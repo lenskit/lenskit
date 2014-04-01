@@ -43,6 +43,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -263,8 +264,13 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
     @SuppressWarnings("unchecked")
     @Override
     public <E extends Event> UserHistory<E> getEventsForUser(long uid, Class<E> type) {
-        if (type.isAssignableFrom(Rating.class)) {
-            return (UserHistory<E>) getEventsForUser(uid);
+        UserHistory<Event> history = getEventsForUser(uid);
+        if (history != null) {
+            if (type.isAssignableFrom(Rating.class)) {
+                return (UserHistory<E>) history;
+            } else {
+                return History.forUser(uid);
+            }
         } else {
             return null;
         }
@@ -301,8 +307,13 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
     @SuppressWarnings("unchecked")
     @Override
     public <E extends Event> List<E> getEventsForItem(long iid, Class<E> type) {
-        if (type.isAssignableFrom(Rating.class)) {
-            return (List<E>) getEventsForItem(iid);
+        List<Event> events = getEventsForItem(iid);
+        if (events != null) {
+            if (type.isAssignableFrom(Rating.class)) {
+                return (List<E>) events;
+            } else {
+                return Collections.emptyList();
+            }
         } else {
             return null;
         }
