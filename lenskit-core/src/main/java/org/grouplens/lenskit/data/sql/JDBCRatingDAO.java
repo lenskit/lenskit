@@ -84,12 +84,22 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
     private final CachedPreparedStatement itemUserStatement;
 
     /**
+     * Create a new JDBC DAO builder.
+     * @return The new builder.
+     */
+    public static JDBCRatingDAOBuilder newBuilder() {
+        return new JDBCRatingDAOBuilder();
+    }
+
+    /**
      * Create a new JDBC rating DAO.
      *
      * @param dbc  The database connection. The connection will be closed
      *             when the DAO is closed.
      * @param sfac The statement factory.
+     * @deprecated Use {@link #newBuilder()}.
      */
+    @Deprecated
     public JDBCRatingDAO(@WillCloseWhenClosed Connection dbc, SQLStatementFactory sfac) {
         this(dbc, sfac, true);
     }
@@ -100,7 +110,9 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
      * @param dbc   The database connection.
      * @param sfac  The statement factory.
      * @param close Whether to close the database connection when the DAO is closed.
+     * @deprecated Use {@link #newBuilder()}.
      */
+    @Deprecated
     public JDBCRatingDAO(Connection dbc, SQLStatementFactory sfac, boolean close) {
         connection = dbc;
         closeConnection = close;
