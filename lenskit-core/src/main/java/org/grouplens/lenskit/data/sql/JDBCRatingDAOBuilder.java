@@ -20,7 +20,7 @@ import java.util.List;
 public class JDBCRatingDAOBuilder {
     private SQLStatementFactory factory;
     private BasicSQLStatementFactory basicFactory;
-    private boolean closeWhenClosed;
+    private boolean closeWhenClosed = true;
     private CacheBuilder<? super QueryKey, ? super List<?>> cacheBuilder;
     private Cache<QueryKey, List<Rating>> queryCache;
 
@@ -88,6 +88,13 @@ public class JDBCRatingDAOBuilder {
         return closeWhenClosed;
     }
 
+    /**
+     * Configure whether the the DAO should close the database connection.
+     *
+     * @param close {@code true} to close the database connection with the DAO, {@code false} to
+     *              leave it open.
+     * @return The builder (for chaining).
+     */
     public JDBCRatingDAOBuilder setCloseWhenClosed(boolean close) {
         this.closeWhenClosed = close;
         return this;

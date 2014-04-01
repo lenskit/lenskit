@@ -35,6 +35,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.derby</groupId>
+      <artifactId>derby</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>net.mikera</groupId>
       <artifactId>vectorz</artifactId>
     </dependency>

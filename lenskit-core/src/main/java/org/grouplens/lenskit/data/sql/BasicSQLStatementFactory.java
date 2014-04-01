@@ -211,7 +211,6 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
      * @param query The query accumulator
      */
     protected void rqFinish(StringBuilder query) {
-        query.append(";");
     }
 
     @Override
