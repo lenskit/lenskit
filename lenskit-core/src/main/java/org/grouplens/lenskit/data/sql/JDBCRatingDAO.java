@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.WillCloseWhenClosed;
-import javax.inject.Inject;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -91,7 +90,6 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
      *             when the DAO is closed.
      * @param sfac The statement factory.
      */
-    @Inject
     public JDBCRatingDAO(@WillCloseWhenClosed Connection dbc, SQLStatementFactory sfac) {
         this(dbc, sfac, true);
     }
