@@ -45,7 +45,7 @@ class ResultSetRatingCursor extends AbstractPollingCursor<Rating> {
         resultSet = stmt.executeQuery();
         try {
             // SUPPRESS CHECKSTYLE MagicNumber
-            hasTimestampColumn = resultSet.getMetaData().getColumnCount() > 4;
+            hasTimestampColumn = resultSet.getMetaData().getColumnCount() >= JDBCRatingDAO.COL_TIMESTAMP;
         } catch (SQLException e) {
             resultSet.close();
             throw e;
