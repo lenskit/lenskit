@@ -20,6 +20,10 @@
  */
 package org.grouplens.lenskit.eval.traintest
 
+import org.grouplens.grapht.CachePolicy
+import org.grouplens.grapht.Component
+import org.grouplens.grapht.graph.DAGNode
+import org.grouplens.grapht.reflect.Satisfactions
 import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.config.ConfigHelpers
@@ -32,6 +36,8 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.existingFile
+import static org.hamcrest.Matchers.equalTo
+import static org.hamcrest.Matchers.not
 import static org.hamcrest.Matchers.notNullValue
 import static org.hamcrest.Matchers.nullValue
 import static org.hamcrest.Matchers.sameInstance
@@ -101,5 +107,38 @@ class ComponentCacheTest {
         }
         def object = cache.makeInstantiator(graph).apply(node)
         assertThat object, nullValue()
+    }
+
+    @Test
+    public void testUnequalKeys() {
+        def node1 = DAGNode.newBuilder(Component.create(Satisfactions.instance("foo"),
+                                                        CachePolicy.MEMOIZE))
+                           .build()
+        def node2 = DAGNode.newBuilder(Component.create(Satisfactions.instance("bar"),
+                                                        CachePolicy.MEMOIZE))
+                           .build()
+        assertThat cache.getKey(node1), not(equalTo(cache.getKey(node2)))
+    }
+
+    @Test
+    public void testEqualKeys() {
+        def node1 = DAGNode.newBuilder(Component.create(Satisfactions.instance("foo"),
+                                                        CachePolicy.MEMOIZE))
+                           .build()
+        def node2 = DAGNode.newBuilder(Component.create(Satisfactions.instance("foo"),
+                                                        CachePolicy.MEMOIZE))
+        .build()
+        assertThat cache.getKey(node1), equalTo(cache.getKey(node2))
+    }
+
+    @Test
+    public void testPolicyUnequalKeys() {
+        def node1 = DAGNode.newBuilder(Component.create(Satisfactions.instance("foo"),
+                                                        CachePolicy.MEMOIZE))
+                           .build()
+        def node2 = DAGNode.newBuilder(Component.create(Satisfactions.instance("foo"),
+                                                        CachePolicy.NEW_INSTANCE))
+                           .build()
+        assertThat cache.getKey(node1), not(equalTo(cache.getKey(node2)))
     }
 }

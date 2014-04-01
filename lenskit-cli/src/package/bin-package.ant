@@ -20,7 +20,29 @@
     </copy>
   </target>
 
-  <target name="package" depends="fix-perms,collect-notices,copy-licenses">
+  <target name="render-manpages">
+    <mkdir dir="${packageDir}/man"/>
+    <apply executable="pandoc"
+           dest="${packageDir}/man">
+      <arg value="-Mheader=LensKit"/>
+      <arg value="-Mfooter=${project.version}"/>
+      <arg value="-Msection=1"/>
+      <arg value="-F"/>
+      <arg value="${packageScripts}/filter-manpage.py"/>
+      <arg value="-s"/>
+      <arg value="-t"/>
+      <arg value="man"/>
+      <arg value="-o"/>
+      <targetfile/>
+      <srcfile/>
+      <fileset dir="${basedir}/src/site/markdown/man">
+        <include name="*.1.md"/>
+      </fileset>
+      <mapper type="glob" from="*.md" to="*"/>
+    </apply>
+  </target>
+
+  <target name="package" depends="fix-perms,collect-notices,copy-licenses,render-manpages">
     <tar destfile="${outputDir}/lenskit-${project.version}.tar.gz" compression="gzip">
       <tarfileset dir="${packageDir}" prefix="lenskit-${project.version}/" />
     </tar>

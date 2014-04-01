@@ -98,12 +98,6 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
             t1 = (qtzValues.get(0) + qtzValues.get(1))/2;
             beta = Vector.createLength(levelCount - 2);
 
-            /*
-//            I comment this part so that you can double check the correction of it
-            for(int i = 1; i <= beta.length; i++ ) {
-                beta[i-1] = Math.log((qtzValues.get(i+1)-qtzValues.get(i-1))/2);
-            }
-            */
             double tr = t1;
             for (int i = 1; i <= beta.length(); i++) {
                 double trnext = (qtzValues.get(i) + qtzValues.get(i+1)) * 0.5;
@@ -344,15 +338,8 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
             double score = scores.get(iid);
             params.getProbDistribution(score, probabilities);
 
-            int mlIdx = -1;
-            double mlProb = 0;
-            for (int i = 0; i < probabilities.length(); i++) {
-                double prob = probabilities.get(i);
-                if (prob > mlProb) {
-                    mlIdx = i;
-                    mlProb = prob;
-                }
-            }
+            int mlIdx = probabilities.maxElementIndex();
+
             predictions.set(e, quantizer.getIndexValue(mlIdx));
             if (distChannel != null) {
                 distChannel.put(e.getKey(), probabilities.immutable());

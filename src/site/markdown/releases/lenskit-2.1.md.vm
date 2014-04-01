@@ -87,6 +87,10 @@ This release includes several improvements and additions to LensKit's selection 
 -   Add `RatingPredictorItemScorer`, a wrapper that uses the output of a rating predictor to produce
     item scores.  Useful primarily for using things like OrdRec for item-scorer-based components.
 
+-   **Behavior change:** the default exclude set used by `TopNItemRecommender` now contains all
+    items the user has interacted with, not just the ones they have rated.  Baking the knowledge of
+    ratings into the top-N recommender was arguably a mistake.
+
 ### User-user CF
 
 -   Updated user-user CF to be simpler & make better use of new DAOs (#issue(356)).
@@ -120,10 +124,20 @@ This release includes several improvements and additions to LensKit's selection 
     transposing the ratings matrix (#issue(481)).  If your rating normalization is per-item instead
     of per-user, this allows item-item builds to be more efficient.
 
+### SVD CF
+
+
 ### Matrix factorization
 
--   Refactored FunkSVD to use vectorz vectors and matrices, and have factored-out code useful for
-    other matrix factorization recommenders.
+-   Refactored FunkSVD to use vectorz vectors and matrices, and have
+    factored-out code useful for other matrix factorization
+    recommenders.
+
+-   **Configuration change:** the FunkSVDItemScorer no longer returns
+    the baseline score for all Items. It now only returns scores for
+    user-item pairs where the scorer has both a user and item
+    vector. If you were relying on the old behavior you can configure
+    a FallbackItemScorer with FunkSVDItemScorer as the primary scorer.
 
 ## Evaluator
 

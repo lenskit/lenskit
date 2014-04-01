@@ -37,6 +37,8 @@ import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.util.io.Describable;
+import org.grouplens.lenskit.util.io.DescriptionWriter;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -49,7 +51,7 @@ import java.util.Map;
  * @since 2.0
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class PrefetchingItemEventDAO implements ItemEventDAO {
+public final class PrefetchingItemEventDAO implements ItemEventDAO, Describable {
     private final EventDAO eventDAO;
     private final Supplier<Long2ObjectMap<List<Event>>> cache;
 
@@ -108,6 +110,12 @@ public final class PrefetchingItemEventDAO implements ItemEventDAO {
             users.add(evt.getUserId());
         }
         return users;
+    }
+
+    @Override
+    public void describeTo(DescriptionWriter writer) {
+        writer.putField("daoType", "ItemEvent")
+              .putField("delegate", eventDAO);
     }
 
     private class ItemProfileScanner implements Supplier<Long2ObjectMap<List<Event>>> {

@@ -21,28 +21,33 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
-import com.google.common.io.Files;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.Satisfaction;
-import org.grouplens.lenskit.util.io.CustomClassLoaderObjectInputStream;
+import org.grouplens.grapht.reflect.SatisfactionVisitor;
+import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.StaticInjector;
+import org.grouplens.lenskit.util.io.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
+import javax.inject.Provider;
 import java.io.*;
-import java.util.Map;
-import java.util.UUID;
-import java.util.WeakHashMap;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.GZIPInputStream;
@@ -64,14 +69,12 @@ class ComponentCache {
     @Nullable
     private final ClassLoader classLoader;
     
-    /**
-     * Map of nodes to their UUIDs, used for the disk-based cache.
-     */
-    private final Map<DAGNode<Component,Dependency>,UUID> keyMap;
+    private final LoadingCache<DAGNode<Component,Dependency>,String> keyCache;
+
     /**
      * In-memory cache of shared components.
      */
-    private final Cache<DAGNode<Component,Dependency>,Object> objectCache;
+    private final Cache<DAGNode<Component,Dependency>,Optional<Object>> objectCache;
 
     /**
      * Construct a new component cache.
@@ -82,25 +85,27 @@ class ComponentCache {
     public ComponentCache(@Nullable File dir, @Nullable ClassLoader loader) {
         cacheDir = dir;
         classLoader = loader;
-        keyMap = new WeakHashMap<DAGNode<Component,Dependency>,UUID>();
+        keyCache = CacheBuilder.newBuilder()
+                               .weakKeys()
+                               .build(CacheLoader.from(new NodeKeyGenerator()));
         objectCache = CacheBuilder.newBuilder()
+                                  .weakKeys()
                                   .softValues()
                                   .build();
     }
 
+    @SuppressWarnings("unused")
     @Nullable
     public File getCacheDir() {
         return cacheDir;
     }
 
-    public UUID getKey(DAGNode<Component,Dependency> node) {
-        synchronized (keyMap) {
-            UUID key = keyMap.get(node);
-            if (key == null) {
-                key = UUID.randomUUID();
-                keyMap.put(node, key);
-            }
-            return key;
+    public String getKey(final DAGNode<Component,Dependency> node) {
+        Preconditions.checkNotNull(node, "cached node");
+        try {
+            return keyCache.get(node);
+        } catch (ExecutionException e) {
+            throw Throwables.propagate(e.getCause());
         }
     }
 
@@ -130,22 +135,19 @@ class ComponentCache {
 
             try {
                 logger.debug("satisfying instantiation request for {}", sat);
-                return objectCache.get(node, new NodeInstantiator(injector, node));
+                Optional<Object> result = objectCache.get(node, new NodeInstantiator(injector, node));
+                return result.orNull();
             } catch (ExecutionException e) {
-                if (e.getCause() instanceof NullComponentException) {
-                    return null;
-                }
-                throw Throwables.propagate(e.getCause());
+                Throwables.propagateIfPossible(e.getCause());
+                throw new UncheckedExecutionException(e.getCause());
             } catch (UncheckedExecutionException e) {
-                if (e.getCause() instanceof NullComponentException) {
-                    return null;
-                }
-                throw Throwables.propagate(e.getCause());
+                Throwables.propagateIfPossible(e.getCause());
+                throw e;
             }
         }
     }
 
-    private class NodeInstantiator implements Callable<Object> {
+    private class NodeInstantiator implements Callable<Optional<Object>> {
         private final Function<DAGNode<Component, Dependency>, Object> delegate;
         private final DAGNode<Component,Dependency> node;
 
@@ -156,70 +158,173 @@ class ComponentCache {
         }
 
         @Override
-        public Object call() throws IOException, NullComponentException {
+        public Optional<Object> call() throws IOException {
             File cacheFile = null;
             if (cacheDir != null) {
-                UUID key = getKey(node);
-                cacheFile = new File(cacheDir, key.toString() + ".dat.gz");
+                String key = getKey(node);
+                cacheFile = new File(cacheDir, key + ".dat.gz");
                 if (cacheFile.exists()) {
-                    logger.debug("reading object for {} from cache (UUID {})",
+                    logger.debug("reading object for {} from cache (key {})",
                                  node.getLabel().getSatisfaction(), key);
-                    return readCompressedObject(cacheFile, node.getLabel().getSatisfaction().getErasedType());
+                    Object obj = readCompressedObject(cacheFile, node.getLabel().getSatisfaction().getErasedType());
+                    logger.debug("read object {} from key {}", obj, key);
+                    return Optional.fromNullable(obj);
                 }
             }
 
             // No object from the serialization stream, let's try to make one
             logger.debug("instantiating object for {}", node.getLabel().getSatisfaction());
-            Object obj = delegate.apply(node);
-            if (obj == null) {
-                throw new NullComponentException();
-            }
+            Optional<Object> result = Optional.fromNullable(delegate.apply(node));
 
             // now save it to disk, if possible and non-null
-            if (obj instanceof Serializable) {
-                if (cacheFile != null) {
-                    logger.debug("writing object {} to cache (UUID {})",
-                                 obj, getKey(node));
-                    writeCompressedObject(cacheFile, obj);
+            if (result.isPresent()) {
+                Object obj = result.get();
+                if (obj instanceof Serializable) {
+                    if (cacheFile != null) {
+                        logger.debug("writing object {} to cache (key {})",
+                                     obj, getKey(node));
+                        if (logger.isDebugEnabled()) {
+                            StringDescriptionWriter sdw = Descriptions.stringWriter();
+                            NodeDescriber.INSTANCE.describe(node, sdw);
+                            logger.debug("object description: {}", sdw.finish());
+                        }
+                        writeCompressedObject(cacheFile, obj);
+                    }
+                } else {
+                    logger.warn("unserializable object {} instantiated", result);
                 }
-            } else {
-                logger.warn("unserializable object {} instantiated", obj);
             }
 
-            return obj;
+            return result;
         }
 
         private void writeCompressedObject(File cacheFile, Object obj) throws IOException {
-            Files.createParentDirs(cacheFile);
-            Closer closer = Closer.create();
+            assert cacheDir != null;
+            if (cacheDir.mkdirs()) {
+                logger.debug("created cache directory {}", cacheDir);
+            }
+            StagedWrite stage = StagedWrite.begin(cacheFile);
             try {
-                OutputStream out = closer.register(new FileOutputStream(cacheFile));
-                OutputStream gzOut = closer.register(new GZIPOutputStream(out));
-                ObjectOutputStream objOut = closer.register(new ObjectOutputStream(gzOut));
-                objOut.writeObject(obj);
-            } catch (Throwable th) {
-                throw closer.rethrow(th);
+                Closer closer = Closer.create();
+                try {
+                    OutputStream out = closer.register(stage.openOutputStream());
+                    OutputStream gzOut = closer.register(new GZIPOutputStream(out));
+                    ObjectOutputStream objOut = closer.register(new ObjectOutputStream(gzOut));
+                    objOut.writeObject(obj);
+                } catch (Throwable th) {
+                    throw closer.rethrow(th);
+                } finally {
+                    closer.close();
+                }
+                stage.commit();
             } finally {
-                closer.close();
+                stage.close();
             }
         }
 
-        private Object readCompressedObject(File cacheFile, Class<?> type) throws IOException {
-            // The file is there, copy it
-            Closer closer = Closer.create();
+        private Object readCompressedObject(File cacheFile, Class<?> type) {
+            // The file is there, load it
             try {
-                InputStream in = closer.register(new FileInputStream(cacheFile));
-                InputStream gzin = closer.register(new GZIPInputStream(in));
-                ObjectInputStream oin = closer.register(new CustomClassLoaderObjectInputStream(gzin, classLoader));
-                return type.cast(oin.readObject());
-            } catch (Throwable th) {
-                throw closer.rethrow(th);
-            } finally {
-                closer.close();
+                Closer closer = Closer.create();
+                try {
+                    InputStream in = closer.register(new FileInputStream(cacheFile));
+                    InputStream gzin = closer.register(new GZIPInputStream(in));
+                    ObjectInputStream oin = closer.register(new CustomClassLoaderObjectInputStream(gzin, classLoader));
+                    return type.cast(oin.readObject());
+                } catch (Throwable th) {
+                    throw closer.rethrow(th);
+                } finally {
+                    closer.close();
+                }
+            } catch (IOException ex) {
+                logger.warn("ignoring cache file {} due to read error: {}",
+                            cacheFile.getName(), ex.toString());
+                logger.info("This error can be caused by a corrupted cache file.");
+                return null;
             }
         }
     }
 
-    private static class NullComponentException extends Exception {
+    //region Node key generation
+
+    /**
+     * Function to generate a key for a graph node.
+     */
+    private class NodeKeyGenerator implements Function<DAGNode<Component, Dependency>, String> {
+        @Nullable
+        @Override
+        public String apply(@Nullable DAGNode<Component, Dependency> node) {
+            HashDescriptionWriter descr = Descriptions.sha1Writer();
+            NodeDescriber.INSTANCE.describe(node, descr);
+            return descr.finish().toString();
+        }
     }
+
+    /**
+     * A describer for graph nodes, for generating keys of configuration subgraphs.
+     */
+    private static enum NodeDescriber implements Describer<DAGNode<Component, Dependency>> {
+        INSTANCE;
+
+        @Override
+        public void describe(DAGNode<Component, Dependency> node, DescriptionWriter description) {
+            node.getLabel().getSatisfaction().visit(new LabelDescriptionVisitor(description));
+            description.putField("cachePolicy", node.getLabel().getCachePolicy().name());
+            List<DAGNode<Component, Dependency>> edges =
+                    Lists.transform(GraphtUtils.DEP_EDGE_ORDER.sortedCopy(node.getOutgoingEdges()),
+                                    DAGEdge.<Component,Dependency>extractTail());
+            description.putList("dependencies", edges, INSTANCE);
+        }
+    }
+
+    /**
+     * Satisfaction visitor for hashing node satisfactions (objects, etc.)
+     */
+    private static class LabelDescriptionVisitor implements SatisfactionVisitor<String> {
+        private final DescriptionWriter description;
+
+        public LabelDescriptionVisitor(DescriptionWriter sink) {
+            description = sink;
+        }
+
+        @Override
+        public String visitNull() {
+            description.putField("type", "null");
+            return "";
+        }
+
+        @Override
+        public String visitClass(Class<?> clazz) {
+            description.putField("type", "class")
+                       .putField("class", clazz.getCanonicalName());
+            return clazz.getCanonicalName();
+        }
+
+        @Override
+        public String visitInstance(Object instance) {
+            description.putField("type", "instance")
+                       .putField("object", instance);
+            return instance.toString();
+        }
+
+        @Override
+        public String visitProviderClass(Class<? extends Provider<?>> pclass) {
+            description.putField("type", "provider class")
+                       .putField("class", pclass.getCanonicalName());
+            return pclass.getCanonicalName();
+        }
+
+        @Override
+        public String visitProviderInstance(Provider<?> provider) {
+            if (provider == null) {
+                description.putField("type", "null provider");
+                return "null provider";
+            } else {
+                description.putField("type", "provider")
+                           .putField("provider", provider);
+                return provider.toString();
+            }
+        }
+    }
+    //endregion
 }

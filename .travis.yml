@@ -6,13 +6,19 @@ jdk:
 branches:
   except:
   - www
+cache:
+  apt: true
+  directories:
+  - $HOME/.m2/repository
 before_install:
-- sudo apt-get update
-- sudo apt-get install --no-install-recommends time graphviz r-base-core python-requests python-matplotlib python-pandas texlive-latex-base
-install: mvn dependency:resolve-plugins
-script:
-- ./etc/ci/in-fold.sh build mvn install
-- ./etc/ci/test-archetypes.sh
+- sudo apt-get -q update
+- sudo apt-get -q install --no-install-recommends time graphviz r-base-core python-requests python-matplotlib python-pandas texlive-latex-base pandoc
+install:
+# download all dependencies
+- mvn --batch-mode --update-snapshots dependency:go-offline
+# undownload the project artifacts to declutter the build
+- mvn --batch-mode --quiet build-helper:remove-project-artifact
+script: ./etc/ci/ci-build.sh
 after_success:
 - ./etc/ci/maybe-deploy.sh
 - ./etc/ci/maybe-site.sh

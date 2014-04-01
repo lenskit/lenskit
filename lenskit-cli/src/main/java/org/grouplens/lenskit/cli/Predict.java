@@ -68,7 +68,6 @@ public class Predict implements Command {
 
         long user = options.getLong("user");
         List<Long> items = options.get("items");
-        final int n = options.getInt("num_recs");
 
         LenskitRecommender rec = engine.createRecommender();
         RatingPredictor pred = rec.getRatingPredictor();
@@ -157,11 +156,6 @@ public class Predict implements Command {
     public static void configureArguments(ArgumentParser parser) {
         InputData.configureArguments(parser);
         ScriptEnvironment.configureArguments(parser);
-        parser.addArgument("-n", "--num-recs")
-              .type(Integer.class)
-              .setDefault(10)
-              .metavar("N")
-              .help("generate up to N recommendations per user");
         parser.addArgument("-c", "--config-file")
               .type(File.class)
               .action(Arguments.append())

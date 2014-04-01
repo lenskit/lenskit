@@ -47,6 +47,8 @@ trainTest {
         includeTimestamps false
     }
 
+    componentCacheDirectory "cache"
+
     algorithm("Baseline") {
         bind ItemScorer to UserMeanItemScorer
         bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer

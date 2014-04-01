@@ -25,7 +25,6 @@ import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.indexes.IdIndexMapping;
-import org.grouplens.lenskit.util.Index;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.concurrent.ThreadSafe;

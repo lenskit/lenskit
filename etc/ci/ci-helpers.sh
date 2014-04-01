@@ -2,21 +2,24 @@ cmd()
 {
     mode=run
     dir=
+    precmd=
     case "$1" in
     -e) mode=exec; shift;;
     -d) dir="$2"; shift 2;;
+    -t) precmd=./etc/ci/tslines.pl; shift;;
     esac
 
     if [ "$mode" = exec ]; then
         echo "->" "$@"
-        exec "$@"
+        exec $precmd "$@"
     else
         if [ -z "$dir" ]; then
             echo + "$@"
-            "$@"
+            $precmd "$@"
             ec="$?"
         else
             echo "[in $dir]" "$@"
+            old_pwd="$PWD"
             (cd "$dir" && "$@")
             ec="$?"
         fi
@@ -37,20 +40,53 @@ skip()
     fi
 }
 
-# Check if this build is a master build (on grouplens/lenskit, jdk7, not pull request)
-skip_unless_master_build()
+is_main_jdk()
 {
-    key="$1"
-    if [ "$TRAVIS_JDK_VERSION" != "$DEPLOY_JDK" ]; then
-        skip "$key disabled for JDK $TRAVIS_JDK_VERSION"
+    if [ "$TRAVIS_JDK_VERSION" = "$DEPLOY_JDK" ]; then
+        return 0
+    else
+        return 1
     fi
+}
 
-    if [ "$TRAVIS_PULL_REQUEST" != false ]; then
-        skip "$key disabled for pull requests"
+is_main_repo()
+{
+    if [ "$TRAVIS_REPO_SLUG" = "grouplens/lenskit" ]; then
+        return 0
+    else
+        return 1
     fi
+}
 
-    if [ "$TRAVIS_REPO_SLUG" != "grouplens/lenskit" ]; then
-        skip "$key disabled for forks"
+is_pr()
+{
+    case "$TRAVIS_PULL_REQUEST" in
+    false) return 1;;
+    *) return 0;;
+    esac
+}
+
+is_release_branch()
+{
+    case "$TRAVIS_BRANCH" in
+    master|release/*) return 0;;
+    *) return 1;;
+    esac
+}
+
+skip_if()
+{
+    "$1"
+    if [ "$?" -eq 0 ]; then
+        skip "$2 skipped: passed test $1"
+    fi
+}
+
+skip_unless()
+{
+    "$1"
+    if [ "$?" -ne 0 ]; then
+        skip "$2 skipped: failed test $1"
     fi
 }
 

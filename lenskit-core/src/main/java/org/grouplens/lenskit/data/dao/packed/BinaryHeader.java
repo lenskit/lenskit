@@ -108,6 +108,12 @@ class BinaryHeader {
         buf.putInt(itemCount);
     }
 
+    public byte[] render() {
+        ByteBuffer buf = ByteBuffer.allocate(HEADER_SIZE);
+        render(buf);
+        return buf.array();
+    }
+
     public BinaryFormat getFormat() {
         return format;
     }

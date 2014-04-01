@@ -24,6 +24,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
@@ -378,7 +379,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             layout = ExperimentOutputLayout.create(experiments, measurements);
             TableBuilder resultsBuilder = new TableBuilder(layout.getResultsLayout());
 
-            logger.info("Starting evaluation");
+            logger.info("Starting evaluation of {} algorithms ({} from LensKit) on {} data sets",
+                        Iterables.size(experiments.getAllAlgorithms()),
+                        experiments.getAlgorithms().size(),
+                        experiments.getDataSets().size());
             Closer closer = Closer.create();
 
             try {
