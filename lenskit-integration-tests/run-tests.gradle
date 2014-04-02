@@ -42,6 +42,10 @@ file('src/it').eachDir { dir ->
         args 'eval', '-j0'
         // tell it where to find the data
         args "-Dlenskit.movielens.100k=$mlDataDir"
+        
+        if (project.hasProperty('maxTestHeap')) {
+            maxHeapSize project.maxTestHeap
+        }
     }
 
     task("verify$camelName", type: JavaExec, group: 'verification') {
