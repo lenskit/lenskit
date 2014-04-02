@@ -1,0 +1,23 @@
+configurations {
+    application {
+        extendsFrom runtime
+    }
+    testRuntime {
+        extendsFrom application
+    }
+}
+
+dependencies {
+    compile project(':lenskit-core')
+    compile project(':lenskit-groovy')
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
+    compile group: 'joda-time', name: 'joda-time', version: '2.3'
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
+    compile group: 'org.apache.ant', name: 'ant', version: '1.8.4'
+    compile group: 'org.hamcrest', name: 'hamcrest-core', version: '1.3'
+
+    application group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
+    application group: 'org.slf4j', name: 'jul-to-slf4j', version: slf4jVersion
+}
+
+apply plugin: 'groovy'
