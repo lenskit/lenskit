@@ -1,0 +1,29 @@
+allprojects {
+    group 'org.grouplens.lenskit'
+    version '2.1-SNAPSHOT'
+    
+    ext.groovyVersion = '2.1.5'
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    sourceCompatibility = '1.6'
+
+    // some common deps shared by everything
+    dependencies {
+        compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6'
+        compile group: 'com.google.code.findbugs', name: 'annotations', version: '2.0.1'
+
+        if (name != 'lenskit-test') {
+            testCompile project(':lenskit-test')
+        }
+    }
+}

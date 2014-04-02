@@ -1,0 +1,4 @@
+dependencies {
+    compile group: 'junit', name: 'junit', version: '4.11'
+    compile group: 'org.hamcrest', name: 'hamcrest-library', version: '1.3'
+}
