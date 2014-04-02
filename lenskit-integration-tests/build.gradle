@@ -1,6 +1,7 @@
 dependencies {
     compile project(':lenskit-all')
     compile project(':lenskit-test')
+    testRuntime project(':lenskit-cli')
 }
 
 apply plugin: 'groovy'
@@ -34,3 +35,47 @@ test {
     dependsOn fetchData
     systemProperties 'lenskit.movielens.100k': mlDataDir
 }
+
+// Run some high-level integration tests
+task runEvalTest(type: JavaExec, group: 'test') {
+    description 'Run an evaluation script for testing.'
+    dependsOn fetchData
+    mustRunAfter test // run the JUnit-based tests first, less overhead
+    
+    ext.sourceDir = 'src/it/all-output-files'
+    ext.testDir = "$buildDir/it/eval-script"
+
+    inputs.dir sourceDir
+    inputs.dir mlDataDir
+    outputs.dir testDir
+
+    // before running the eval script, copy it to the working dir
+    doFirst {
+        delete testDir
+        copy {
+            from sourceDir
+            into testDir
+            include '*.groovy'
+        }
+    }
+
+    workingDir testDir
+    classpath configurations.testRuntime
+    main 'org.grouplens.lenskit.cli.Main'
+    args 'eval', '-j0'
+    // tell it where to find the data
+    args "-Dlenskit.movielens.100k=$mlDataDir"
+}
+
+task verifyEvalTest(type: JavaExec, group: 'test') {
+    description 'Verify the run evaluation script.'
+    dependsOn runEvalTest
+
+    inputs.dir runEvalTest.testDir
+
+    workingDir runEvalTest.testDir
+    classpath sourceSets.test.runtimeClasspath
+    main 'org.grouplens.lenskit.test.VerifyTestRun'
+    args runEvalTest.testDir
+}
+check.dependsOn verifyEvalTest
