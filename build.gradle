@@ -1,3 +1,9 @@
+ext.webUrl = 'http://lenskit.grouplens.org'
+
+configurations {
+    allDeps // collect all external dependencies of all modules
+}
+
 allprojects {
     group 'org.grouplens.lenskit'
     version '2.1-SNAPSHOT'
@@ -12,6 +18,10 @@ allprojects {
         maven {
             url "https://oss.sonatype.org/content/repositories/snapshots/"
         }
+    }
+    configurations {
+        // the 'support' config will be for build helpers (e.g. JavaDoc taglets)
+        support
     }
 }
 
@@ -44,6 +54,13 @@ subprojects {
             systemProperties 'log.file': "$buildDir/test.log"
         }
     }
+
+    afterEvaluate { p ->
+        def deps = p.configurations.compile.dependencies.findAll { dep ->
+            !(dep instanceof ProjectDependency)
+        }
+        rootProject.configurations.allDeps.dependencies.addAll deps
+    }
 }
 
 // Impose some ordering on the tasks to make output slightly saner
@@ -65,3 +82,65 @@ order 'lenskit-groovy', 'lenskit-slopeone'
 order 'lenskit-groovy', 'lenskit-predict'
 order 'lenskit-eval', 'lenskit-all'
 order 'lenskit-all', 'lenskit-cli'
+
+// Aggregate documentation
+ext.masterProjects = ['lenskit-api', 'lenskit-core', 'lenskit-data-structures',
+                      'lenskit-groovy', 'lenskit-eval', 'lenskit-cli',
+                      'lenskit-knn', 'lenskit-svd',
+                      'lenskit-slopeone', 'lenskit-predict']
+task javadoc(type: Javadoc, group: 'build') {
+    for (prj in masterProjects) {
+        source project(prj).sourceSets.main.allJava
+    }
+    destinationDir = file("$buildDir/docs/javadoc")
+    classpath = configurations.allDeps
+    title = "LensKit $version"
+}
+
+allprojects {
+    dependencies {
+        // We need the GroupLens taglets
+        support group: 'org.grouplens.common', name: 'common-javadoc', version: '0.8'
+    }
+    tasks.withType(Javadoc) { task ->
+        task.configure {
+            options {
+                tags 'todo:a:To Do:', 'review:a:Review:'
+
+                // grab the taglets from the support classpath
+                tagletPath configurations.support.files.toList()
+                taglets 'org.grouplens.javadoc.taglets.ExtraInlineTaglet'
+                taglets 'org.grouplens.javadoc.taglets.CompatTaglet'
+
+                jFlags "-Dgrouplens.javadoc.versioning.url=$webUrl/versioning.html"
+
+                group 'General API', 'org.grouplens.lenskit'
+                group('Core', 'org.grouplens.lenskit.core',
+                      'org.grouplens.lenskit.basic', 'org.grouplens.lenskit.config')
+                group('Data Structures', 'org.grouplens.lenskit.vectors',
+              'org.grouplens.lenskit.collections', 'org.grouplens.lenskit.symbols',
+                      'org.grouplens.lenskit.scored', 'org.grouplens.lenskit.indexes')
+                group('Data Access', 'org.grouplens.lenskit.data*',
+                      'org.grouplens.lenskit.cursors')
+                group('Data Transformation',
+                      'org.grouplens.lenskit.baseline*', 'org.grouplens.lenskit.transform*',
+                      'org.grouplens.lenskit.vectors.*')
+                group('Recommender Implementations',
+                      'org.grouplens.lenskit.predict*', 'org.grouplens.lenskit.knn*',
+                      'org.grouplens.lenskit.mf*', 'org.grouplens.lenskit.slopeone*')
+                group('Recommender Evaluation and Tooling',
+                      'org.grouplens.lenskit.eval*',
+                      'org.grouplens.lenskit.cli*')
+                group('Utility Classes',
+                      'org.grouplens.lenskit.util*',
+                      'org.grouplens.lenskit.test*', 
+                      'org.grouplens.lenskit.inject',
+                      'org.grouplens.lenskit.iterative')
+
+                links 'http://fastutil.dsi.unimi.it/docs/'
+                links 'http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/'
+                links 'http://dev.grouplens.org/grapht/apidocs/'
+            }
+        }
+    }
+}
