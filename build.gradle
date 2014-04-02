@@ -45,3 +45,23 @@ subprojects {
         }
     }
 }
+
+// Impose some ordering on the tasks to make output slightly saner
+def order(first, second) {
+    project(second).afterEvaluate { p ->
+        p.tasks['compileJava'].mustRunAfter ":$first:check"
+        p.tasks['compileJava'].mustRunAfter ":$first:build"
+    }
+}
+
+order 'lenskit-test', 'lenskit-data-structures'
+order 'lenskit-data-structures', 'lenskit-api'
+order 'lenskit-api', 'lenskit-core'
+order 'lenskit-core', 'lenskit-groovy'
+order 'lenskit-groovy', 'lenskit-eval'
+order 'lenskit-groovy', 'lenskit-knn'
+order 'lenskit-groovy', 'lenskit-svd'
+order 'lenskit-groovy', 'lenskit-slopeone'
+order 'lenskit-groovy', 'lenskit-predict'
+order 'lenskit-eval', 'lenskit-all'
+order 'lenskit-all', 'lenskit-cli'
