@@ -8,3 +8,19 @@ dependencies {
 }
 
 apply plugin: 'groovy'
+apply plugin: 'application'
+
+mainClassName = 'org.grouplens.lenskit.cli.Main'
+applicationName = 'lenskit'
+
+task evalStartScripts(type: CreateStartScripts) {
+    applicationName = 'lenskit-eval'
+    mainClassName = 'org.grouplens.lenskit.eval.cli.EvalCLI'
+    classpath = startScripts.classpath
+    outputDir = startScripts.outputDir
+    optsEnvironmentVar = 'LENSKIT_OPTS'
+}
+applicationDistribution.from(evalStartScripts) {
+    into 'bin'
+}
+assemble.dependsOn distZip, distTar
