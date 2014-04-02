@@ -1,4 +1,5 @@
 import org.gradle.process.internal.ExecException
+import java.util.zip.ZipFile
 
 dependencies {
     compile project(':lenskit-all')
@@ -62,4 +63,40 @@ applicationDistribution.from(renderManPages) {
     into 'man'
 }
 
+// aggregate license info and notices from dependencies
+task notices(group: 'build') {
+    ext.noticeFile = "$buildDir/NOTICE.txt"
+    inputs.files configurations.runtime
+    outputs.file noticeFile
+
+    doLast {
+        def cfg = configurations.runtime.resolvedConfiguration
+        file(noticeFile).withPrintWriter { out ->
+            out.println("This file contains the notices required by the libraries used by LensKit.")
+            out.println()
+
+            cfg.resolvedArtifacts*.file.each { File jar ->
+                def zip = new ZipFile(jar)
+                try {
+                    def noticeEntry = zip.getEntry("META-INF/NOTICE.txt")
+                    if (noticeEntry != null) {
+                        def notice = zip.getInputStream(noticeEntry).text
+                        out.println("${jar.name}:")
+                        notice.eachLine { line ->
+                            out.println("    ${line}")
+                        }
+                        out.println()
+                    }
+                } finally {
+                    zip.close()
+                }
+            }
+        }
+    }
+}
+applicationDistribution.from(notices)
+applicationDistribution.from('src/package/text')
+
+// build application packages with standard tasks
+build.dependsOn installApp
 assemble.dependsOn distZip, distTar
