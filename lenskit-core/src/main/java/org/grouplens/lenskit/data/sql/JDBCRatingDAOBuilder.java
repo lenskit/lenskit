@@ -56,6 +56,7 @@ public class JDBCRatingDAOBuilder {
 
     public JDBCRatingDAOBuilder setTableName(String table) {
         Preconditions.checkState(basicFactory != null, "statement factory has been explicitly set");
+        Preconditions.checkNotNull(table, "table name");
         basicFactory.setTableName(table);
         return this;
     }
@@ -67,6 +68,7 @@ public class JDBCRatingDAOBuilder {
 
     public JDBCRatingDAOBuilder setUserColumn(@Nonnull String col) {
         Preconditions.checkState(basicFactory != null, "statement factory has been explicitly set");
+        Preconditions.checkNotNull(col, "user column name");
         basicFactory.setUserColumn(col);
         return this;
     }
@@ -78,6 +80,7 @@ public class JDBCRatingDAOBuilder {
 
     public JDBCRatingDAOBuilder setItemColumn(@Nonnull String col) {
         Preconditions.checkState(basicFactory != null, "statement factory has been explicitly set");
+        Preconditions.checkNotNull(col, "item column name");
         basicFactory.setItemColumn(col);
         return this;
     }
@@ -89,6 +92,7 @@ public class JDBCRatingDAOBuilder {
 
     public JDBCRatingDAOBuilder setRatingColumn(@Nonnull String col) {
         Preconditions.checkState(basicFactory != null, "statement factory has been explicitly set");
+        Preconditions.checkNotNull(col, "rating column name");
         basicFactory.setRatingColumn(col);
         return this;
     }
