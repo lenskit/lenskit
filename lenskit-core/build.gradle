@@ -1,0 +1,55 @@
+dependencies {
+    compile project(':lenskit-api')
+
+    compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.9.0-SNAPSHOT'
+
+    compile group: 'net.mikera', name: 'vectorz', version: '0.29.0'
+
+    testCompile project(':lenskit-test')
+    testCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
+}
+
+apply plugin: 'groovy'
+
+/* Since we define an annotation processor in this project, run it in its own task */
+task checkAnnotations(type: JavaCompile, dependsOn: classes) {
+    source sourceSets.main.java
+    classpath = sourceSets.main.compileClasspath
+    destinationDir = file("$buildDir/check-output")
+    
+    options.compilerArgs << '-proc:only'
+}
+check.dependsOn checkAnnotations
+
+/* Generate the Git commit list */
+task listGitCommits(group: 'build') {
+    // where does the report go?
+    ext.outputFile = "$sourceSets.main.output.resourcesDir/META-INF/lenskit/git-commits.lst"
+    // make sure we don't get stomped on
+    mustRunAfter processResources
+    
+    outputs.file outputFile
+    inputs.dir "$rootDir/.git"
+
+    doLast {
+        mkdir file(outputFile).parentFile
+        // fetch all revisions if needed
+        if (inTravis) {
+            exec {
+                workingDir rootDir
+                executable 'git'
+                args 'fetch', '--depth=10000', 'origin'
+            }
+        }
+        // make the log file
+        file(outputFile).withOutputStream { out ->
+            exec {
+                workingDir rootDir
+                executable 'git'
+                args 'log', '--format=format:%H'
+                standardOutput = out
+            }
+        }
+    }
+}
+classes.dependsOn listGitCommits

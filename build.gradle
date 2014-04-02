@@ -17,6 +17,15 @@ subprojects {
     apply plugin: 'java'
     sourceCompatibility = '1.6'
 
+    ext.inTravis = System.getenv("CI") != null
+
+    compileJava {
+        options.encoding = 'UTF-8'
+        options.fork = true
+        options.deprecation = true
+        options.compilerArgs << '-Xlint' << '-Xlint:-processing'
+    }
+
     // some common deps shared by everything
     dependencies {
         compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6'

@@ -22,6 +22,7 @@ package org.grouplens.lenskit.util;
 
 import org.grouplens.lenskit.util.ClassDirectory;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.contains;
@@ -38,7 +39,7 @@ public class ClassDirectoryTest {
                    hasSize(0));
     }
 
-    @Test
+    @Test @Ignore("depends on non-implemented Gradle build")
     public void testLookupSelfClass() {
         ClassDirectory dir = ClassDirectory.forClassLoader(getClass().getClassLoader());
         assertThat(dir.getPackages("ClassDirectory"),
