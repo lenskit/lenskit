@@ -20,10 +20,11 @@
  */
 package org.grouplens.lenskit.eval.metrics.topn;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSets;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.eval.Attributed;
@@ -50,24 +51,24 @@ import java.util.List;
  * 
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TopNIndependentRecallMetric extends AbstractTestUserMetric {
+public class IndependentRecallTopNMetric extends AbstractTestUserMetric {
     private final int listSize;
-    private final ItemSelector testItems;
+    private final ItemSelector queryItems;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
     private final ImmutableList<String> columns;
 
     /**
      * @param lbl the label for the result column of this evaluation.
-     * @param testItems the "true positive" items that we compute the hit rate over
+     * @param queryItems the "true positive" items that we compute the hit rate over
      * @param candidates items to add to the recommendation, should be a random selection
      * @param listSize The size of the recommendation list to evaluate
      * @param exclude Items which should not be included in the recommendations.
      *                Should not include test set.
      */
-    public TopNIndependentRecallMetric(String lbl, ItemSelector testItems, ItemSelector candidates, int listSize, ItemSelector exclude) {
+    public IndependentRecallTopNMetric(String lbl, ItemSelector queryItems, ItemSelector candidates, int listSize, ItemSelector exclude) {
         columns = ImmutableList.of(lbl);
-        this.testItems = testItems;
+        this.queryItems = queryItems;
         this.candidates = candidates;
         this.listSize = listSize;
         this.exclude = exclude;
@@ -106,12 +107,14 @@ public class TopNIndependentRecallMetric extends AbstractTestUserMetric {
             SingletonSelector theItem = new SingletonSelector();
             ItemSelector finalCandidates = ItemSelectors.union(candidates, theItem);
             
-            LongSet items = testItems.select(user.getTrainHistory(), user.getTestHistory(), universe);
-            for (final long l : items) {
+            LongSet items = queryItems.select(user.getTrainHistory(), user.getTestHistory(), universe);
+            LongIterator it = items.iterator();
+            while (it.hasNext()) {
+                final long l = it.nextLong();
                 theItem.setTheItem(l);
                 
                 List<ScoredId> recs = user.getRecommendations(listSize, finalCandidates, exclude);
-                for (ScoredId s : recs) {
+                for (ScoredId s : CollectionUtils.fast(recs)) {
                     if (s.getId() == l) {
                         score +=1;
                     }
@@ -143,9 +146,9 @@ public class TopNIndependentRecallMetric extends AbstractTestUserMetric {
     /**
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Builder extends TopNMetricBuilder<Builder, TopNIndependentRecallMetric> {
+    public static class Builder extends TopNMetricBuilder<Builder, IndependentRecallTopNMetric> {
         private String lbl = "TopN.Independent.Recall";
-        private ItemSelector testItems = ItemSelectors.testItems();
+        private ItemSelector queryItems = ItemSelectors.testItems();
 
         public String getLbl() {
             return lbl;
@@ -155,17 +158,17 @@ public class TopNIndependentRecallMetric extends AbstractTestUserMetric {
             this.lbl = lbl;
             return this;
         }
-        public ItemSelector getTestItems() {
-            return testItems;
+        public ItemSelector getQueryItems() {
+            return queryItems;
         }
 
-        public Builder setTestItems(ItemSelector testItems) {
-            this.testItems = testItems;
+        public Builder setQueryItems(ItemSelector queryItems) {
+            this.queryItems = queryItems;
             return this;
         }
 
-        public TopNIndependentRecallMetric build() {
-            return new TopNIndependentRecallMetric(lbl, testItems, candidates, listSize, exclude);
+        public IndependentRecallTopNMetric build() {
+            return new IndependentRecallTopNMetric(lbl, queryItems, candidates, listSize, exclude);
         }
     }
 

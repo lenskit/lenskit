@@ -26,7 +26,6 @@ import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.History;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.*;
@@ -119,12 +118,12 @@ public class ItemSelectorsTest {
     }    
     @Test
     public void testNRandomFrom() {
-        LongSet items = ItemSelectors.nRandomFrom(ItemSelectors.trainingItems(), 2).select(
+        LongSet items = ItemSelectors.randomSubset(ItemSelectors.trainingItems(), 2).select(
                 History.<Event>forUser(42, Lists.newArrayList(Ratings.make(42, 88, 3.5),
-                                                              Ratings.make(42, 5, 2.4),
-                                                              Ratings.make(42, 6, 4.0))),
+                        Ratings.make(42, 5, 2.4),
+                        Ratings.make(42, 6, 4.0))),
                 History.forUser(42),
-                LongUtils.packedSet(88,5,6,7));
+                LongUtils.packedSet(88, 5, 6, 7));
         
         assertThat(items, hasSize(2));
         assertThat(items, not(hasItem(7L)));

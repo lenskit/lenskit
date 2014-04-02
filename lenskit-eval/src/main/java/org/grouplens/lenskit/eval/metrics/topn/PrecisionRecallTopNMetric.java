@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.metrics.topn;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.*;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
@@ -44,14 +45,14 @@ import java.util.List;
  * recommendation is bad) by configuring bad items as the test item set.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TopNRecallPrecisionMetric extends AbstractTestUserMetric {
-    private static final Logger logger = LoggerFactory.getLogger(TopNRecallPrecisionMetric.class);
+public class PrecisionRecallTopNMetric extends AbstractTestUserMetric {
+    private static final Logger logger = LoggerFactory.getLogger(PrecisionRecallTopNMetric.class);
 
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
     private final ImmutableList<String> columns;
-    private final ItemSelector testItems;
+    private final ItemSelector queryItems;
 
     /**
      * Construct a new recall and precision top n metric
@@ -59,14 +60,14 @@ public class TopNRecallPrecisionMetric extends AbstractTestUserMetric {
      * @param candidates The candidate selector, provides a list of items which can be recommended
      * @param exclude The exclude selector, provides a list of items which must not be recommended 
      *                (These items are removed from the candidate items to form the final candidate set)
-     * @param testItems The list of items to consider "true positives", all other items will be treated
+     * @param queryItems The list of items to consider "true positives", all other items will be treated
      *                  as "false positives".
      */
-    public TopNRecallPrecisionMetric(String[] lbls, int listSize, ItemSelector candidates, ItemSelector exclude, ItemSelector testItems) {
+    public PrecisionRecallTopNMetric(String[] lbls, int listSize, ItemSelector candidates, ItemSelector exclude, ItemSelector queryItems) {
         this.listSize = listSize;
         this.candidates = candidates;
         this.exclude = exclude;
-        this.testItems = testItems;
+        this.queryItems = queryItems;
         columns = ImmutableList.copyOf(lbls);
     }
 
@@ -102,10 +103,10 @@ public class TopNRecallPrecisionMetric extends AbstractTestUserMetric {
             int tp = 0;
             int fp = 0;
 
-            LongSet items = testItems.select(user.getTrainHistory(), user.getTestHistory(), universe);
+            LongSet items = queryItems.select(user.getTrainHistory(), user.getTestHistory(), universe);
             
             List<ScoredId> recs = user.getRecommendations(listSize, candidates, exclude);
-            for(ScoredId s : recs) {
+            for(ScoredId s : CollectionUtils.fast(recs)) {
                 if(items.contains(s.getId())) {
                     tp += 1; 
                 } else {
@@ -141,9 +142,9 @@ public class TopNRecallPrecisionMetric extends AbstractTestUserMetric {
     /**
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Builder extends TopNMetricBuilder<Builder, TopNRecallPrecisionMetric>{
+    public static class Builder extends TopNMetricBuilder<Builder, PrecisionRecallTopNMetric>{
         private String[] labels = {"TopN.Precision","TopN.Recall"};
-        private ItemSelector testItems = ItemSelectors.testRatingMatches(Matchers.greaterThanOrEqualTo(5.0d));
+        private ItemSelector queryItems = ItemSelectors.testRatingMatches(Matchers.greaterThanOrEqualTo(4.0d));
 
         public Builder() {
             // override the default candidate items with a more reasonable set.
@@ -172,18 +173,18 @@ public class TopNRecallPrecisionMetric extends AbstractTestUserMetric {
             return this;
         }
 
-        public ItemSelector getTestItems() {
-            return testItems;
+        public ItemSelector getQueryItems() {
+            return queryItems;
         }
 
-        public Builder setTestItems(ItemSelector testItems) {
-            this.testItems = testItems;
+        public Builder setQueryItems(ItemSelector queryItems) {
+            this.queryItems = queryItems;
             return this;
         }
 
         @Override
-        public TopNRecallPrecisionMetric build() {
-            return new TopNRecallPrecisionMetric(labels, listSize, candidates, exclude, testItems);
+        public PrecisionRecallTopNMetric build() {
+            return new PrecisionRecallTopNMetric(labels, listSize, candidates, exclude, queryItems);
         }
     }
 

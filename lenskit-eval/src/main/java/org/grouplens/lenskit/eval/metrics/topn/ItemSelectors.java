@@ -112,36 +112,9 @@ public final class ItemSelectors {
             public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
                 // FIXME The RNG should come from configuration
                 Random rng = new Random();
-                LongSet initial = base.select(trainingData, testData, universe);
-                final int offset = initial.size();
-                LongList selected = new LongArrayList(offset + nRandom);
-                selected.addAll(initial);
-                int n = 0;
-                LongIterator iter = universe.iterator();
-                while (iter.hasNext()) {
-                    final long item = iter.nextLong();
-                    if (initial.contains(item)) {
-                        continue;
-                    }
-                    // algorithmInfo adapted from Wikipedia coverage of Fisher-Yates shuffle
-                    // https://en.wikipedia.org/wiki/Fisher-Yates_shuffle
-                    int j = rng.nextInt(n + 1);
-                    n = n + 1; //@review, this wasn't there before and seems important, necissary?
-                    if (j < nRandom) {
-                        if (offset + j == selected.size()) {
-                            selected.add(item);
-                        } else {
-                            long old = selected.getLong(offset + j);
-                            if (selected.size() == offset + nRandom) {
-                                selected.set(offset + nRandom - 1, old);
-                            } else {
-                                selected.add(old);
-                            }
-                            selected.set(offset + j, item);
-                        }
-                    }
-                }
-                return LongUtils.packedSet(selected);
+                LongSortedSet initial = LongUtils.packedSet(base.select(trainingData, testData, universe));
+                LongSortedSet selected = LongUtils.randomSubset(universe, nRandom, initial, rng);
+                return LongUtils.setUnion(initial, selected);
             }
         };
     }
@@ -154,7 +127,7 @@ public final class ItemSelectors {
      * @return An item selector that selects {@code n} items from the items selected by {@code base}, 
      * or simply the items selected by {@code base} if there are fewer then {@code n} items selected.
      */
-    public static ItemSelector nRandomFrom(final ItemSelector base, final int n) {
+    public static ItemSelector randomSubset(final ItemSelector base, final int n) {
         return new ItemSelector() {
             @Override
             public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
@@ -164,31 +137,7 @@ public final class ItemSelectors {
                 if (newUniverse.size() <= n) {
                     return newUniverse;
                 }
-
-                LongList selected = new LongArrayList(n);
-                int m = 0;
-                LongIterator iter = newUniverse.iterator();
-                while (iter.hasNext()) {
-                    final long item = iter.nextLong();
-                    // algorithmInfo adapted from Wikipedia coverage of Fisher-Yates shuffle
-                    // https://en.wikipedia.org/wiki/Fisher-Yates_shuffle
-                    int j = rng.nextInt(m + 1);
-                    m = m + 1;
-                    if (j < n) {
-                        if (j == selected.size()) {
-                            selected.add(item);
-                        } else {
-                            long old = selected.getLong(j);
-                            if (selected.size() == n) {
-                                selected.set(n - 1, old);
-                            } else {
-                                selected.add(old);
-                            }
-                            selected.set(j, item);
-                        }
-                    }
-                }
-                return LongUtils.packedSet(selected);
+                return LongUtils.randomSubset(newUniverse, n, rng);
             }
         };
     }
@@ -196,10 +145,10 @@ public final class ItemSelectors {
     /**
      * Randomly selects items from the universe.
      * 
-     * Short for {@code ItemSelectors.nRandomFrom(ItemSelectors.allItems, n)}
+     * Short for {@code ItemSelectors.randomSubset(ItemSelectors.allItems, n)}
      */
     public static ItemSelector nRandom(final int n) {
-        return ItemSelectors.nRandomFrom(ItemSelectors.allItems(), n);
+        return ItemSelectors.randomSubset(ItemSelectors.allItems(), n);
     }
 
 
@@ -220,15 +169,6 @@ public final class ItemSelectors {
                 return LongUtils.setDifference(l1, l2);
             }
         };
-    }
-
-    /**
-     * Selects all items not selected by a given selector.
-     * 
-     * Short for {@code ItemSelectors.setDifference(ItemSelectors.allItems(), selector);}
-     */
-    public static ItemSelector everythingBut(final ItemSelector selector) {
-        return setDifference(allItems(), selector);
     }
     
     /**
