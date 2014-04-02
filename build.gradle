@@ -31,6 +31,9 @@ subprojects {
     apply plugin: 'java'
     sourceCompatibility = '1.6'
 
+    // don't package until testing
+    jar.mustRunAfter 'check'
+
     compileJava {
         options.encoding = 'UTF-8'
         options.fork = true
