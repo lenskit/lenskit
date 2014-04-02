@@ -63,8 +63,4 @@ cacheDir.eachFile { file ->
         objects[cls] = objects.get(cls, 0) + 1
     }
 }
-println "cached object count:"
-objects.each { key, value ->
-    println "$key: $value"
-}
 assertThat objects[SimilarityMatrixModel.name], equalTo(5)
