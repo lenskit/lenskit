@@ -1,0 +1,4 @@
+dependencies {
+    compile project(':lenskit-core')
+    compile project(':lenskit-knn')
+}

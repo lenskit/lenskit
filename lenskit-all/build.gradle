@@ -1,0 +1,7 @@
+dependencies {
+    compile project(':lenskit-core')
+    compile project(':lenskit-eval')
+    for (algo in ['knn', 'svd', 'predict', 'slopeone']) {
+        compile project(":lenskit-$algo")
+    }
+}
