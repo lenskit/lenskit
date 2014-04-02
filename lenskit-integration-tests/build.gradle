@@ -1,0 +1,36 @@
+dependencies {
+    compile project(':lenskit-all')
+    compile project(':lenskit-test')
+}
+
+apply plugin: 'groovy'
+
+// These tests require the MovieLens data set - arrange to download it
+ext.mlDataDir = file("$buildDir/ml-100k")
+ext.mlDataFile = file("$buildDir/ml-100k.zip")
+ext.mlDataURL = 'http://files.grouplens.org/datasets/movielens/ml-100k.zip'
+
+task fetchData(group: 'build') {
+    description "Fetch data for integration tests."
+    inputs.property 'url', mlDataURL
+    outputs.file mlDataFile
+    outputs.dir mlDataDir
+    // don't download if we're running offline
+    onlyIf { !gradle.startParameter.isOffline() }
+}
+fetchData << {
+    logger.lifecycle "This analysis makes use of the MovieLens 100K data set from GroupLens Research.  Use of this data set is restricted to non-commercial purposes and is only permitted in accordance with the license terms.  More information is available at <http://lenskit.grouplens.org/ML100K>."
+    mkdir buildDir
+    ant {
+        get src: mlDataURL, dest: mlDataFile, skipexisting: true
+        unzip(src: mlDataFile, dest: mlDataDir) {
+            mapper type: 'flatten'
+        }
+    }
+}
+
+// Configure the tests to use the data set
+test {
+    dependsOn fetchData
+    systemProperties 'lenskit.movielens.100k': mlDataDir
+}
