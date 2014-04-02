@@ -1,3 +1,5 @@
+import org.gradle.process.internal.ExecException
+
 dependencies {
     compile project(':lenskit-all')
     compile group: 'net.sourceforge.argparse4j', name: 'argparse4j', version: '0.4.3'
@@ -23,4 +25,41 @@ task evalStartScripts(type: CreateStartScripts) {
 applicationDistribution.from(evalStartScripts) {
     into 'bin'
 }
+
+// Render the manpages
+task renderManPages(group: 'build') {
+    ext.manDir = 'src/site/markdown/man'
+    ext.outputDir = "$buildDir/man"
+    ext.filterScript = 'src/package/filter-manpage.py'
+    inputs.source fileTree(manDir) {
+        include '*.md'
+    }
+    inputs.file filterScript
+    outputs.dir outputDir
+    doLast {
+        mkdir outputDir
+        for (doc in inputs.sourceFiles.files) {
+            def name = doc.name - '.md'
+            try {
+                exec {
+                    executable 'pandocb'
+                    args '-Mheader=LensKit'
+                    args "-Mfooter=$version"
+                    args '-Msection=1'
+                    args '-F', file(filterScript)
+                    args '-s', '-t', 'man'
+                    args '-o', file("$outputDir/$name")
+                    args doc
+                }
+            } catch (ExecException e) {
+                logger.warn 'pandoc error, skipping man pages'
+                throw new StopExecutionException("cannot run pandoc")
+            }
+        }
+    }
+}
+applicationDistribution.from(renderManPages) {
+    into 'man'
+}
+
 assemble.dependsOn distZip, distTar

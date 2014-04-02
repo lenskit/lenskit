@@ -78,7 +78,6 @@ def dropLinks(key, value, fmt, meta):
     if key == 'Link':
         text, link = value
         url, title = link
-        print >>sys.stderr, 'testing url', url
         if _man_link_re.match(url) is not None:
             return text
 
