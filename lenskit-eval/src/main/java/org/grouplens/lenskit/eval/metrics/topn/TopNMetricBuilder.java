@@ -82,9 +82,9 @@ public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends 
      * @param sel The exclude item selector.
      * @return The builder (for chaining).
      */
-    public TopNMetricBuilder setExclude(ItemSelector sel) {
+    public T setExclude(ItemSelector sel) {
         exclude = sel;
-        return this;
+        return (T) this;
     }
 
     public abstract K build();

@@ -112,35 +112,76 @@ public final class ItemSelectors {
             public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
                 // FIXME The RNG should come from configuration
                 Random rng = new Random();
-                LongSet initial = base.select(trainingData, testData, universe);
-                final int offset = initial.size();
-                LongList selected = new LongArrayList(offset + nRandom);
-                selected.addAll(initial);
-                int n = 0;
-                LongIterator iter = universe.iterator();
-                while (iter.hasNext()) {
-                    final long item = iter.nextLong();
-                    if (initial.contains(item)) {
-                        continue;
-                    }
-                    // algorithmInfo adapted from Wikipedia coverage of Fisher-Yates shuffle
-                    // https://en.wikipedia.org/wiki/Fisher-Yates_shuffle
-                    int j = rng.nextInt(n + 1);
-                    if (j < nRandom) {
-                        if (offset + j == selected.size()) {
-                            selected.add(item);
-                        } else {
-                            long old = selected.getLong(offset + j);
-                            if (selected.size() == offset + nRandom) {
-                                selected.set(offset + nRandom - 1, old);
-                            } else {
-                                selected.add(old);
-                            }
-                            selected.set(offset + j, item);
-                        }
-                    }
+                LongSortedSet initial = LongUtils.packedSet(base.select(trainingData, testData, universe));
+                LongSortedSet selected = LongUtils.randomSubset(universe, nRandom, initial, rng);
+                return LongUtils.setUnion(initial, selected);
+            }
+        };
+    }
+
+    /**
+     * Randomly select items selected by another selector.
+     *
+     * @param base The base selector (e.g. {@link #allItems()}).
+     * @param n The number of random items to select.
+     * @return An item selector that selects {@code n} items from the items selected by {@code base}, 
+     * or simply the items selected by {@code base} if there are fewer then {@code n} items selected.
+     */
+    public static ItemSelector randomSubset(final ItemSelector base, final int n) {
+        return new ItemSelector() {
+            @Override
+            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
+                // FIXME The RNG should come from configuration
+                Random rng = new Random();
+                LongSet newUniverse = base.select(trainingData, testData, universe);
+                if (newUniverse.size() <= n) {
+                    return newUniverse;
                 }
-                return LongUtils.packedSet(selected);
+                return LongUtils.randomSubset(newUniverse, n, rng);
+            }
+        };
+    }
+
+    /**
+     * Randomly selects items from the universe.
+     * 
+     * Short for {@code ItemSelectors.randomSubset(ItemSelectors.allItems, n)}
+     */
+    public static ItemSelector nRandom(final int n) {
+        return ItemSelectors.randomSubset(ItemSelectors.allItems(), n);
+    }
+
+
+    /**
+     * Selects the set difference between two other selectors
+     * 
+     * @param selectorToKeep selects items that are to be kept
+     * @param selectorToNotKeep selects items that are to be excluded
+     * @return an item selector which selects every item that is selected by {@code selectorToKeep} 
+     * and not selected by {@code selectorToNotKeep}. 
+     */
+    public static ItemSelector setDifference(final ItemSelector selectorToKeep, final ItemSelector selectorToNotKeep) {
+        return new ItemSelector() {
+            @Override
+            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
+                LongSet l1 = selectorToKeep.select(trainingData, testData, universe);
+                LongSet l2 = selectorToNotKeep.select(trainingData, testData, universe);
+                return LongUtils.setDifference(l1, l2);
+            }
+        };
+    }
+    
+    /**
+     * selects any items selected by at least one of two other selectors.
+     */
+    public static ItemSelector union(final ItemSelector selectorOne, final ItemSelector selectorTwo) {
+        return new ItemSelector() {
+            @Override
+            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
+                LongSet l1 = selectorOne.select(trainingData, testData, universe);
+                LongSet l2 = selectorTwo.select(trainingData, testData, universe);
+                // @Review Is this reasonably efficient?
+                return LongUtils.setUnion(LongUtils.packedSet(l1), LongUtils.packedSet(l2));
             }
         };
     }
