@@ -1,0 +1,6 @@
+dependencies {
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
+    compile project(':lenskit-core')
+}
+
+apply plugin: 'groovy'
