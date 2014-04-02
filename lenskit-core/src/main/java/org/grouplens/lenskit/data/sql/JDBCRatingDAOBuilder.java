@@ -30,6 +30,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Construct and configure a JDBC rating DAO. Get a builder with {@link JDBCRatingDAO#newBuilder()}.
@@ -46,7 +47,10 @@ public class JDBCRatingDAOBuilder {
 
     JDBCRatingDAOBuilder() {
         factory = basicFactory = new BasicSQLStatementFactory();
-        cacheBuilder = CacheBuilder.newBuilder().softValues().maximumSize(1000);
+        cacheBuilder = CacheBuilder.newBuilder()
+                                   .softValues()
+                                   .maximumSize(1000)
+                                   .expireAfterWrite(5, TimeUnit.MINUTES);
     }
 
     public String getTableName() {
@@ -145,7 +149,7 @@ public class JDBCRatingDAOBuilder {
 
     /**
      * Set a cache builder to use for making the DAO's internal caches.  The default builder uses
-     * soft values and a maximum size of 1000.
+     * soft value, a maximum size of 1000, and a timeout of 5 minutes after load.
      *
      * @param cb The cache builder.
      * @return The builder (for chaining).
