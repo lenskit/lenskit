@@ -34,7 +34,7 @@ task listGitCommits(group: 'build') {
     doLast {
         mkdir file(outputFile).parentFile
         // fetch all revisions if needed
-        if (inTravis) {
+        if (travis.active) {
             exec {
                 workingDir rootDir
                 executable 'git'

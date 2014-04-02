@@ -27,7 +27,7 @@ file('src/it').eachDir { dir ->
         doFirst {
             // clean up outputs for a clean build
             delete fileTree(testDir) {
-                include 'cache'
+                include 'cache/**'
                 include '*.gz'
                 include '*.csv'
                 include '*.pack'
