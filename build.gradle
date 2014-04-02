@@ -44,6 +44,8 @@ subprojects {
         compile group: 'com.google.code.findbugs', name: 'annotations', version: '2.0.1'
     }
 
+    apply from: "$rootDir/gradle/class-list.gradle"
+
     if (name != 'lenskit-test') {
         dependencies {
             testCompile project(':lenskit-test')

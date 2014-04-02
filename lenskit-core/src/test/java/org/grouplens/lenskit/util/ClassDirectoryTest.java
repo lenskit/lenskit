@@ -39,7 +39,7 @@ public class ClassDirectoryTest {
                    hasSize(0));
     }
 
-    @Test @Ignore("depends on non-implemented Gradle build")
+    @Test
     public void testLookupSelfClass() {
         ClassDirectory dir = ClassDirectory.forClassLoader(getClass().getClassLoader());
         assertThat(dir.getPackages("ClassDirectory"),

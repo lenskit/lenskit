@@ -1,0 +1,34 @@
+/* Code to generate class lists. */
+task classList(group: 'build') {
+    description 'Generate a list of classes in this archive.'
+    ext.listFile = "$sourceSets.main.output.resourcesDir/META-INF/classes.lst"
+
+    outputs.file listFile
+    inputs.dir sourceSets.main.output.classesDir
+
+    doLast {
+        def classes = fileTree(sourceSets.main.output.classesDir) {
+            include '**/*.class'
+        }
+        mkdir file(listFile).parentFile
+        file(listFile).withPrintWriter { out ->
+            for (cf in classes) {
+                def path = cf.absolutePath
+                // extract org.grouplens... and sanitize
+                path = path.replaceAll(~/.*(org\/grouplens.*)\.class/) { m ->
+                    // convert slashes and $ to dots
+                    m[1].replaceAll(~/[\/$]/, '.')
+                }
+                if (!(path =~ /\.\d+$/)) { // no anonymous classes
+                    out.println path
+                }
+            }
+        }
+    }
+}
+classes.dependsOn classList
+tasks.all { task ->
+    if (task.name == 'compileGroovy' || task.name == 'compile') {
+        classList.dependsOn task
+    }
+}
