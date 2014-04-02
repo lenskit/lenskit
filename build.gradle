@@ -23,13 +23,13 @@ allprojects {
         // the 'support' config will be for build helpers (e.g. JavaDoc taglets)
         support
     }
+
+    apply from: "$rootDir/gradle/travis.gradle"
 }
 
 subprojects {
     apply plugin: 'java'
     sourceCompatibility = '1.6'
-
-    ext.inTravis = System.getenv("CI") != null
 
     compileJava {
         options.encoding = 'UTF-8'
@@ -126,3 +126,5 @@ allprojects {
         }
     }
 }
+
+ciPublish.tasks << javadoc.path

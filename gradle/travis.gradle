@@ -1,0 +1,69 @@
+/**
+ * Extension object providing basic Travis query support.
+ */
+class Travis {
+    boolean isActive() {
+        return System.getenv('CI') == 'true'
+    }
+
+    String getRepo() {
+        return System.getenv('TRAVIS_REPO_SLUG')
+    }
+
+    String getBranch() {
+        return System.getenv('TRAVIS_BRANCH')
+    }
+
+    String getPullRequest() {
+        def pr = System.getenv('TRAVIS_PULL_REQUEST')
+        return pr == 'false' ? null : pr
+    }
+
+    boolean isInMasterRepo() {
+        return repo == 'grouplens/lenskit'
+    }
+
+    boolean isOnReleaseBranch() {
+        def b = branch
+        return b == 'master' || b =~ '^release/'
+    }
+}
+
+extensions.create('travis', Travis)
+
+task travisInfo(group: 'help') {
+    description 'Print information about the Travis environment'
+    doLast {
+        if (travis.active) {
+            println "Doing a build of branch $travis.branch on $travis.repo"
+            if (travis.pullRequest != null) {
+                println "Building pull request $travis.pullRequest"
+            }
+            if (travis.inMasterRepo && travis.onReleaseBranch) {
+                println 'Building a release branch.'
+            }
+        } else {
+            println 'Not in a CI build.'
+        }
+    }
+}
+
+task ciBuild(group: 'deploy') {
+    description 'Perform the build and test actions for CI builds.'
+}
+tasks.all { task ->
+    switch (task.name) {
+    case 'check':
+    case 'assemble':
+        ciBuild.dependsOn task
+        break;
+    }
+}
+
+// the publish task will run other tasks recursively
+task ciPublish(type: GradleBuild, group: 'deploy') {
+    description 'Publish the results of a CI build.'
+    onlyIf {
+        travis.inMasterRepo && travis.onReleaseBranch && travis.pullRequest == null
+    }
+}
