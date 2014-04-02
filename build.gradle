@@ -30,9 +30,16 @@ subprojects {
     dependencies {
         compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6'
         compile group: 'com.google.code.findbugs', name: 'annotations', version: '2.0.1'
+    }
 
-        if (name != 'lenskit-test') {
+    if (name != 'lenskit-test') {
+        dependencies {
             testCompile project(':lenskit-test')
+            testRuntime group: 'ch.qos.logback', name: 'logback-classic', version: '1.0.13'
+        }
+        test {
+            systemProperties listener: 'org.grouplens.lenskit.util.test.LoggingListener'
+            systemProperties 'log.file': "$buildDir/test.log"
         }
     }
 }
