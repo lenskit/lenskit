@@ -9,20 +9,15 @@ branches:
 cache:
   apt: true
   directories:
-  - $HOME/.m2/repository
+  - $HOME/.gradle/caches
+  - $HOME/.gradle/wrapper
 before_install:
 - sudo apt-get -q update
 - sudo apt-get -q install --no-install-recommends time graphviz r-base-core python-requests python-matplotlib python-pandas texlive-latex-base pandoc
-install:
-# download all dependencies
-- mvn --batch-mode --update-snapshots dependency:go-offline
-# undownload the project artifacts to declutter the build
-- mvn --batch-mode --quiet build-helper:remove-project-artifact
-script: ./etc/ci/ci-build.sh
+- pip install --user pandocfilters
+script: ./gradlew ciBuild
 after_success:
-- ./etc/ci/maybe-deploy.sh
-- ./etc/ci/maybe-site.sh
-- ./etc/ci/disk-stats.sh
+- ./gradlew ciPublish
 env:
   global:
   # CI_DEPLOY_USER
