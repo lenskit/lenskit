@@ -33,7 +33,7 @@ import static org.hamcrest.Matchers.*
 File resultsFile = new File(basedir, "results.csv")
 File userFile = new File(basedir, "users.csv")
 File predictFile = new File(basedir, "predictions.csv")
-File recommendFile = new File(basedir, "recommendations.csv")
+File recommendFile = new File(basedir, "recommendations.csv.gz")
 
 assertThat("output file existence",
            resultsFile, allOf(existingFile(),
