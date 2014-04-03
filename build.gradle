@@ -34,8 +34,10 @@ subprojects {
     // don't package until testing
     jar.mustRunAfter 'check'
 
+	tasks.withType(JavaCompile).all { task ->
+	    task.options.encoding = 'UTF-8'
+	}
     compileJava {
-        options.encoding = 'UTF-8'
         options.fork = true
         options.deprecation = true
         options.compilerArgs << '-Xlint' << '-Xlint:-processing'

@@ -13,7 +13,7 @@ task classList(group: 'build') {
         mkdir file(listFile).parentFile
         file(listFile).withPrintWriter { out ->
             for (cf in classes) {
-                def path = cf.absolutePath
+                def path = cf.absolutePath.replace('\\', '/')
                 // extract org.grouplens... and sanitize
                 path = path.replaceAll(~/.*(org\/grouplens.*)\.class/) { m ->
                     // convert slashes and $ to dots
