@@ -23,7 +23,9 @@
   <target name="render-manpages">
     <mkdir dir="${packageDir}/man"/>
     <apply executable="pandoc"
-           dest="${packageDir}/man">
+           dest="${packageDir}/man"
+           failonerror="false"
+           failifexecutionfails="false">
       <arg value="-Mheader=LensKit"/>
       <arg value="-Mfooter=${project.version}"/>
       <arg value="-Msection=1"/>
