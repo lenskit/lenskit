@@ -215,7 +215,7 @@ public final class LKFileUtils {
 
         logger.debug(String.format("found magic %x", magic));
         if (magic == GZIPInputStream.GZIP_MAGIC) {
-            logger.info("stream is gzip-compressed, decompressing");
+            logger.debug("stream is gzip-compressed, decompressing");
             return new GZIPInputStream(buffered);
         }
 
