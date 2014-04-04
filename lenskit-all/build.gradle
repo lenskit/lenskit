@@ -1,7 +1,14 @@
+apply from: "$rootDir/gradle/maven.gradle"
+
 dependencies {
     compile project(':lenskit-core')
     compile project(':lenskit-eval')
     for (algo in ['knn', 'svd', 'predict', 'slopeone']) {
         compile project(":lenskit-$algo")
     }
+}
+
+meta {
+    name 'LensKit Metapackage'
+    description 'Metapackage to pull in all LensKit components.'
 }

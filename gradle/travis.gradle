@@ -61,9 +61,13 @@ tasks.all { task ->
 }
 
 // the publish task will run other tasks recursively
-task ciPublish(type: GradleBuild, group: 'deploy') {
+task ciPublish(group: 'deploy') {
     description 'Publish the results of a CI build.'
-    onlyIf {
-        travis.inMasterRepo && travis.onReleaseBranch && travis.pullRequest == null
+    ext.isActive = travis.inMasterRepo && travis.onReleaseBranch && travis.pullRequest == null
+    onlyIf { isActive }
+    ext.addTask = { task ->
+        if (isActive) {
+            dependsOn task
+        }
     }
 }

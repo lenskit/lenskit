@@ -1,6 +1,12 @@
+apply from: "$rootDir/gradle/maven.gradle"
+apply plugin: 'groovy'
+
 dependencies {
     compile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
     compile project(':lenskit-core')
 }
 
-apply plugin: 'groovy'
+meta {
+    name 'LensKit Groovy support'
+    description 'Groovy-based DSL for configuring LensKit recommenders.'
+}

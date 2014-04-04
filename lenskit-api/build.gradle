@@ -1,3 +1,10 @@
+apply from: "$rootDir/gradle/maven.gradle"
+
 dependencies {
     compile project(':lenskit-data-structures')
+}
+
+meta {
+    name 'LensKit Core API'
+    description 'The core public APIs implemented by LensKit.'
 }

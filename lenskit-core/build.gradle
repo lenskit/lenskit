@@ -1,3 +1,6 @@
+apply from: "$rootDir/gradle/maven.gradle"
+apply plugin: 'groovy'
+
 dependencies {
     compile project(':lenskit-api')
 
@@ -9,7 +12,10 @@ dependencies {
     testCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
 }
 
-apply plugin: 'groovy'
+meta {
+    name 'LensKit Core'
+    description 'The core of LensKit, providing basic implementations and algorithm support.'
+}
 
 /* Since we define an annotation processor in this project, run it in its own task */
 task checkAnnotations(type: JavaCompile, dependsOn: classes) {

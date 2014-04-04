@@ -1,4 +1,11 @@
+apply from: "$rootDir/gradle/maven.gradle"
+
 dependencies {
     compile project(':lenskit-core')
     compile project(':lenskit-knn')
+}
+
+meta {
+    name 'LensKit Slope-One CF'
+    description 'Slope-One CF recommenders for LensKit'
 }
