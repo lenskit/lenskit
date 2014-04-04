@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
@@ -92,7 +93,7 @@ public class TopNEntropyMetric extends AbstractTestUserMetric {
                 return userRow();
             }
             
-            for (ScoredId s: recs) {
+            for (ScoredId s: CollectionUtils.fast(recs)) {
                 counts.put(s.getId(), counts.get(s.getId()) +1);
                 n +=1;
             }

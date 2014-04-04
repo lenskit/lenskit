@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.metrics.topn;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.*;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
@@ -115,7 +116,7 @@ public class TopNPopularityMetric extends AbstractTestUserMetric {
                 return userRow();
             } 
             double pop = 0;
-            for (ScoredId s : recs) {
+            for (ScoredId s : CollectionUtils.fast(recs)) {
                 pop += popularity.get(s.getId()); // default value should be 0 here.
             }
             pop = pop / recs.size();
