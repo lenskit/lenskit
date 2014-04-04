@@ -20,6 +20,7 @@ after_success:
 - ./gradlew ciPublish
 env:
   global:
+  - TERM=dumb
   # CI_DEPLOY_USER
   - secure: D3tCdALkjsp9W1hs1A32FaIOB0VkGT6+dG8maFY+In7wAF2KQ/jkYkYG+uutPn01gjaZgQiaGzal+Ck97+kfHMnm4YrK41mCL6XbZy3O7x68e/VK0GUVOJf88L8/bH2OhS33KA9Bif73I1eBy4ZfuQhXeh/UXqh7zOyOnYV1sJQ=
   # CI_DEPLOY_PASSwORD
