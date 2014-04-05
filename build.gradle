@@ -34,8 +34,12 @@ allprojects {
         def resolve = task("resolve${cfg.name.capitalize()}") {
             description "Resolve dependencies in the $cfg.name configuration."
             doLast {
+                logger.info 'resolving {}', cfg.name
                 def result = cfg.resolvedConfiguration
                 result.rethrowFailure()
+                for (f in result.resolvedArtifacts*.file) {
+                    logger.info '{} depends on file {}', cfg.name, f
+                }
             }
         }
         resolveAll.dependsOn resolve
@@ -77,11 +81,10 @@ subprojects {
         }
     }
 
-    afterEvaluate { p ->
-        def deps = p.configurations.compile.dependencies.findAll { dep ->
-            !(dep instanceof ProjectDependency)
+    configurations.compile.dependencies.all { dep ->
+        if (!(dep instanceof ProjectDependency)) {
+            rootProject.configurations.allDeps.dependencies << dep
         }
-        rootProject.configurations.allDeps.dependencies.addAll deps
     }
 }
 
