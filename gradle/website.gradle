@@ -60,7 +60,7 @@ uploadWeb << {
         content.addPart('archive', new FileBody(zipFile))
         req.setEntity(content)
         response.success = { res ->
-            logger.info 'Succeeded with code {}', res.statusLIne.statusCode
+            logger.info 'Succeeded with code {}', res.statusLine.statusCode
         }
     }
 }
