@@ -24,6 +24,7 @@ allprojects {
         support
     }
 
+    apply from: "$rootDir/gradle/git.gradle"
     apply from: "$rootDir/gradle/travis.gradle"
 
     // Provide support for forcing configuration deps to be resolved
