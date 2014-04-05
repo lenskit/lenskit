@@ -219,7 +219,7 @@ public final class LongUtils {
      *
      * @param set the set of items to select from
      * @param num The number of random items to add.
-     * @paraem random a random number generator to be used.
+     * @param random a random number generator to be used.
      * @return An item selector that selects the items selected by {@code base} plus an additional
      * {@code nRandom} items.
      */
@@ -235,7 +235,7 @@ public final class LongUtils {
      * @param set the set of items to select from
      * @param num The number of random items to add.
      * @param exclude a set of longs which must not be returned
-     * @paraem random a random number generator to be used.
+     * @param rng a random number generator to be used.
      * @return An item selector that selects the items selected by {@code base} plus an additional
      * {@code nRandom} items.
      */
