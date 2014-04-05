@@ -96,7 +96,6 @@ public class Eval implements Command {
 
     @Override
     public void execute() throws IOException, TaskExecutionException {
-        System.out.println(options);
         File file = getFile();
         if (!file.exists()) {
             logger.error("script file {} does not exist", file);
