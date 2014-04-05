@@ -39,6 +39,7 @@ apply plugin: 'application'
 mainClassName = 'org.grouplens.lenskit.cli.Main'
 applicationName = 'lenskit'
 
+// We need to be able to start lenskit-eval as well as lenskit
 task evalStartScripts(type: CreateStartScripts) {
     applicationName = 'lenskit-eval'
     mainClassName = 'org.grouplens.lenskit.eval.cli.EvalCLI'
@@ -52,9 +53,9 @@ applicationDistribution.from(evalStartScripts) {
 
 // Render the manpages
 task renderManPages(group: 'build') {
-    ext.manDir = 'src/site/markdown/man'
+    ext.manDir = 'src/man'
     ext.outputDir = "$buildDir/man"
-    ext.filterScript = 'src/package/filter-manpage.py'
+    ext.filterScript = 'src/man/filter-manpage.py'
     inputs.source fileTree(manDir) {
         include '*.md'
     }
@@ -66,7 +67,7 @@ task renderManPages(group: 'build') {
             def name = doc.name - '.md'
             try {
                 exec {
-                    executable 'pandocb'
+                    executable 'pandoc'
                     args '-Mheader=LensKit'
                     args "-Mfooter=$version"
                     args '-Msection=1'
@@ -76,7 +77,8 @@ task renderManPages(group: 'build') {
                     args doc
                 }
             } catch (ExecException e) {
-                logger.warn 'pandoc error, skipping man pages'
+                logger.warn 'pandoc {}: {}', name, e
+                logger.warn 'skipping man page build'
                 throw new StopExecutionException("cannot run pandoc")
             }
         }
@@ -118,8 +120,13 @@ task notices(group: 'build') {
     }
 }
 applicationDistribution.from(notices)
-applicationDistribution.from('src/package/text')
+// copy license texts into the distribution
+applicationDistribution.from('src/licenses')
+// include aggregate javadoc
+applicationDistribution.from(rootProject.tasks['javadoc']) {
+    into 'javadoc'
+}
 
-// build application packages with standard tasks
+// make standard tasks build the application
 build.dependsOn installApp
 assemble.dependsOn distZip, distTar
