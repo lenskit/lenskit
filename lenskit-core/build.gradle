@@ -1,3 +1,12 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.eclipse.jgit:org.eclipse.jgit:3.3.1.201403241930-r'
+    }
+}
+
 apply from: "$rootDir/gradle/maven.gradle"
 apply plugin: 'groovy'
 
@@ -28,6 +37,19 @@ task checkAnnotations(type: JavaCompile, dependsOn: classes) {
 check.dependsOn checkAnnotations
 
 /* Generate the Git commit list */
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.lib.Constants
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder
+def withRepo(block) {
+    def bld = new FileRepositoryBuilder()
+    def repo = bld.readEnvironment().findGitDir().build()
+    try {
+        block.call(repo)
+    } finally {
+        repo.close()
+    }
+}
+
 task listGitCommits(group: 'build') {
     // where does the report go?
     ext.outputFile = "$sourceSets.main.output.resourcesDir/META-INF/lenskit/git-commits.lst"
@@ -35,16 +57,28 @@ task listGitCommits(group: 'build') {
     mustRunAfter processResources
     
     outputs.file outputFile
-    inputs.dir "$rootDir/.git"
+    // we change with the HEAD revision
+    inputs.property('HEAD') {
+        withRepo { repo ->
+            repo.resolve(Constants.HEAD)
+        }
+    }
 
     doLast {
         mkdir file(outputFile).parentFile
-        file(outputFile).withOutputStream { out ->
-            exec {
-                workingDir rootDir
-                executable 'git'
-                args 'log', '--format=format:%H'
-                standardOutput = out
+        withRepo { repo ->
+            logger.info 'git repository at {}', repo.directory
+            def head = repo.resolve('HEAD')
+            logger.info 'head revision: {}', head.name
+            file(outputFile).withPrintWriter { out ->
+                def git = new Git(repo)
+                int n = 0
+                for (commit in git.log().add(repo.resolve(Constants.HEAD)).call()) {
+                    logger.debug 'found commit {}', commit.id
+                    out.println commit.id.name
+                    n += 1
+                }
+                logger.info 'found {} revisions', n
             }
         }
     }
