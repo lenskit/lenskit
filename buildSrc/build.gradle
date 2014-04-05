@@ -9,4 +9,7 @@ dependencies {
     compile localGroovy()
     compile 'nl.javadude.gradle.plugins:license-gradle-plugin:0.7.0'
     compile 'org.eclipse.jgit:org.eclipse.jgit:3.3.1.201403241930-r'
+    compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
+    compile 'org.apache.httpcomponents:httpmime:4.2.1'
+    compile 'com.google.guava:guava:16.0.1'
 }

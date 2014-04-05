@@ -1,21 +1,4 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
-        classpath 'org.apache.httpcomponents:httpmime:4.2.1'
-        classpath 'com.google.guava:guava:16.0.1'
-    }
-}
-
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
-import com.google.common.io.BaseEncoding
-import groovyx.net.http.*
-import org.apache.http.entity.mime.MultipartEntity
-import org.apache.http.entity.mime.HttpMultipartMode
-import org.apache.http.entity.mime.content.*
+import org.grouplens.lenskit.build.SiteUpload
 
 task webZip(type: Zip) {
     dependsOn javadoc
@@ -28,41 +11,11 @@ task webZip(type: Zip) {
     }
 }
 
-task uploadWeb(group: 'upload', dependsOn: webZip) {
+task uploadWeb(type: SiteUpload, group: 'upload', dependsOn: webZip) {
     description 'Upload the web site to the web'
-    ext.zipFile = webZip.archivePath
-    ext.uploadUrl = System.getenv('SITE_UPLOAD_URL')
-    ext.hmacDigest = {
-        def secret = System.getenv('UPLOAD_SECRET')
-        if (secret == null) {
-            logger.warn 'No upload secret'
-            null
-        } else {
-            def mac = Mac.getInstance('HmacSHA1')
-            mac.init(new SecretKeySpec(secret.getBytes('UTF-8'), 'HmacSHA1'))
-            zipFile.eachByte(1024) { bytes, n ->
-                mac.update(bytes, 0, n)
-            }
-            def digest = BaseEncoding.base16().encode(mac.doFinal()).toLowerCase()
-            logger.info 'HMAC of web archive: {}', hmacDigest
-            digest
-        }
-    }.memoize()
-    onlyIf { travis.publishingActive && hmacDigest() != null && uploadUrl != null }
-    inputs.file zipFile
-}
-uploadWeb << {
-    def http = new HTTPBuilder(uploadUrl)
-    http.request(Method.POST, 'multipart/form-data') { req ->
-        def content = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE)
-        content.addPart('branch', new StringBody(travis.branch))
-        content.addPart('hmac', new StringBody(hmacDigest()))
-        content.addPart('archive', new FileBody(zipFile))
-        req.setEntity(content)
-        response.success = { res ->
-            logger.info 'Succeeded with code {}', res.statusLine.statusCode
-        }
-    }
+    siteArchive webZip.archivePath
+    uploadUrl System.getenv('SITE_UPLOAD_URL')
+    onlyIf { travis.publishingActive && hmacDigest != null && uploadUrl != null }
 }
 
 ciPublish.addTask uploadWeb
