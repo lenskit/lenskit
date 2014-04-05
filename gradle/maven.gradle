@@ -78,7 +78,11 @@ uploadArchives {
     }
     // allow deploy to be skipped on the command line
     onlyIf {
-        !(project.properties.get('deploy.skip', 'false') as Boolean)
+        if (travis.active) {
+            travis.publishingActive
+        } else {
+            !(project.properties.get('deploy.skip', 'false').toBoolean())
+        }
     }
 }
 

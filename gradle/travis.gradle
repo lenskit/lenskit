@@ -27,6 +27,10 @@ class Travis {
         def b = branch
         return b == 'master' || b =~ '^release/'
     }
+
+    boolean isPublishingActive() {
+        inMasterRepo && onReleaseBranch && pullRequest == null
+    }
 }
 
 extensions.create('travis', Travis)
@@ -64,11 +68,5 @@ tasks.all { task ->
 // the publish task will run other tasks recursively
 task ciPublish(group: 'deploy') {
     description 'Publish the results of a CI build.'
-    ext.isActive = travis.inMasterRepo && travis.onReleaseBranch && travis.pullRequest == null
-    onlyIf { isActive }
-    ext.addTask = { task ->
-        if (isActive) {
-            dependsOn task
-        }
-    }
+    ext.addTask = { task -> dependsOn task }
 }

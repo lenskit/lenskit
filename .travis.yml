@@ -15,6 +15,7 @@ before_install:
 - sudo apt-get -q update
 - sudo apt-get -q install --no-install-recommends time graphviz r-base-core python-requests python-matplotlib python-pandas texlive-latex-base pandoc
 - pip install --user pandocfilters
+- git fetch --depth=10000 origin
 script: ./gradlew ciBuild
 after_success:
 - ./gradlew ciPublish

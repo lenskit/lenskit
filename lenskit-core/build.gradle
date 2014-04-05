@@ -39,15 +39,6 @@ task listGitCommits(group: 'build') {
 
     doLast {
         mkdir file(outputFile).parentFile
-        // fetch all revisions if needed
-        if (travis.active) {
-            exec {
-                workingDir rootDir
-                executable 'git'
-                args 'fetch', '--depth=10000', 'origin'
-            }
-        }
-        // make the log file
         file(outputFile).withOutputStream { out ->
             exec {
                 workingDir rootDir

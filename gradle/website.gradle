@@ -48,7 +48,7 @@ task uploadWeb(group: 'upload', dependsOn: webZip) {
             digest
         }
     }.memoize()
-    onlyIf { hmacDigest() != null && uploadUrl != null }
+    onlyIf { travis.publishingActive && hmacDigest() != null && uploadUrl != null }
     inputs.file zipFile
 }
 uploadWeb << {
