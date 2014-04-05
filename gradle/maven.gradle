@@ -79,7 +79,7 @@ uploadArchives {
     // allow deploy to be skipped on the command line
     onlyIf {
         if (travis.active) {
-            travis.publishingActive
+            travis.publishingActive && !(git.headCommit.fullMessage.contains('[skip deploy]'))
         } else {
             !(project.properties.get('deploy.skip', 'false').toBoolean())
         }
