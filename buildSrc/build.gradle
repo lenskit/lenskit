@@ -5,5 +5,6 @@ repositories {
 }
 
 dependencies {
+    compile gradleApi()
     compile 'nl.javadude.gradle.plugins:license-gradle-plugin:0.7.0'
 }
