@@ -58,6 +58,10 @@ task travisInfo(group: 'help') {
     }
 }
 
+task ciPrep(group: 'deploy') {
+    description 'Prepare CI build (travis install).'
+}
+
 task ciBuild(group: 'deploy') {
     description 'Perform the build and test actions for CI builds.'
 }

@@ -25,6 +25,21 @@ allprojects {
     }
 
     apply from: "$rootDir/gradle/travis.gradle"
+
+    // Provide support for forcing configuration deps to be resolved
+    task resolveAll
+    ciPrep.dependsOn resolveAll
+
+    configurations.all { cfg ->
+        def resolve = task("resolve${cfg.name.capitalize()}") {
+            description "Resolve dependencies in the $cfg.name configuration."
+            doLast {
+                def result = cfg.resolvedConfiguration
+                result.rethrowFailure()
+            }
+        }
+        resolveAll.dependsOn resolve
+    }
 }
 
 subprojects {
