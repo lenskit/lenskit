@@ -6,7 +6,8 @@ target
 /.idea_modules
 .gradle
 gradle.properties
-build
+/build
+/*/build
 *.iml
 *.ipr
 *.iws

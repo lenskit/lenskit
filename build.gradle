@@ -1,3 +1,5 @@
+import org.grouplens.lenskit.build.*
+
 ext.webUrl = 'http://lenskit.grouplens.org'
 
 configurations {
@@ -24,7 +26,7 @@ allprojects {
         support
     }
 
-    apply from: "$rootDir/gradle/git.gradle"
+    extensions.create('git', GitExtension)
     apply from: "$rootDir/gradle/travis.gradle"
 
     // Provide support for forcing configuration deps to be resolved

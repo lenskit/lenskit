@@ -1,26 +1,22 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'org.eclipse.jgit:org.eclipse.jgit:3.3.1.201403241930-r'
-    }
-}
+package org.grouplens.lenskit.build
 
-import org.eclipse.jgit.lib.Constants
-import org.eclipse.jgit.lib.Repository
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.lib.Constants
+import org.eclipse.jgit.lib.ObjectId
+import org.eclipse.jgit.lib.Repository
+import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.jgit.revwalk.RevWalk
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 
-class GitUtils {
+class GitExtension {
     private Repository repo
+
     /**
      * Invoke a block with an open Git repository.  The block will receive the
      * Repository object as its first parameter, and optionally a Git object as
      * its second.  This method takes care of closing the repository.
      */
-    def withRepo(block) {
+    public <V> V withRepo(Closure<V> block) {
         def bld = new FileRepositoryBuilder()
         if (repo == null) {
             repo = bld.readEnvironment().findGitDir().build()
@@ -38,7 +34,7 @@ class GitUtils {
         }
     }
 
-    private def invokeWithRepo(block) {
+    private <V> V invokeWithRepo(Closure<V> block) {
         if (block.maximumNumberOfParameters > 1) {
             block.call(repo, new Git(repo))
         } else {
@@ -46,16 +42,14 @@ class GitUtils {
         }
     }
 
-    def getHeadRevision() {
-        withRepo { repo -> repo.resolve(Constants.HEAD) }
+    ObjectId getHeadRevision() {
+        withRepo { Repository repo -> repo.resolve(Constants.HEAD) }
     }
 
-    def getHeadCommit() {
-        withRepo { repo -> 
-            def walk = new RevWalk(repository)
+    RevCommit getHeadCommit() {
+        withRepo { Repository repo ->
+            def walk = new RevWalk(repo)
             walk.parseCommit(headRevision)
         }
     }
 }
-
-extensions.create('git', GitUtils)
