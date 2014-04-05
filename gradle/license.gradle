@@ -6,4 +6,10 @@ license {
     mapping('java': 'SLASHSTAR_STYLE', 'groovy': 'SLASHSTAR_STYLE')
 }
 
-check.dependsOn licenseMain, licenseTest
+if (JavaVersion.current().java7Compatible) {
+    check.dependsOn licenseMain, licenseTest
+} else {
+    check.doFirst {
+        logger.warn 'License header checks disabled on Java 6'
+    }
+}
