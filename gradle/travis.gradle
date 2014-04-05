@@ -2,6 +2,8 @@
  * Extension object providing basic Travis query support.
  */
 class Travis {
+    final def deployJdk = 'oraclejdk7'
+
     boolean isActive() {
         return System.getenv('CI') == 'true'
     }
@@ -19,6 +21,10 @@ class Travis {
         return pr == 'false' ? null : pr
     }
 
+    String getActiveJdk() {
+        return System.getenv('TRAVIS_JDK_VERSION')
+    }
+
     boolean isInMasterRepo() {
         return repo == 'grouplens/lenskit'
     }
@@ -29,7 +35,7 @@ class Travis {
     }
 
     boolean isPublishingActive() {
-        inMasterRepo && onReleaseBranch && pullRequest == null
+        inMasterRepo && onReleaseBranch && pullRequest == null && activeJdk == deployJdk
     }
 }
 
