@@ -53,10 +53,11 @@ task ciBuild(group: 'deploy') {
 }
 tasks.all { task ->
     switch (task.name) {
-    case 'check':
-    case 'assemble':
-        ciBuild.dependsOn task
-        break;
+        case 'check':
+        case 'assemble':
+        case 'javadoc':
+            ciBuild.dependsOn task
+            break;
     }
 }
 

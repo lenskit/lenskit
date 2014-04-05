@@ -132,4 +132,4 @@ allprojects {
     }
 }
 
-ciPublish.addTask javadoc
+apply from: "$rootDir/gradle/website.gradle"
