@@ -91,7 +91,7 @@ public final class RatingVectorUserHistorySummarizer implements UserHistorySumma
             if (history == null) {
                 throw new NullPointerException("history is null");
             }
-            return Ratings.userRatingVector(history.filter(Rating.class));
+            return Ratings.userRatingVector(history.filter(Rating.class)).immutable();
         }
     }
 }

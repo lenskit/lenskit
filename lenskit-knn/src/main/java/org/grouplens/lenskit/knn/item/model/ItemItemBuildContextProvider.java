@@ -22,6 +22,7 @@ package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.collections.LongKeyDomain;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
@@ -128,7 +129,7 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
 
                 // get the item's candidate set
                 if (candidates != null) {
-                    candidates.put(uid, normed.keySet());
+                    candidates.put(uid, LongUtils.packedSet(summary.keySet()));
                 }
             }
         } finally {
