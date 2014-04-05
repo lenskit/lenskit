@@ -47,6 +47,8 @@ allprojects {
         }
         resolveAll.dependsOn resolve
     }
+
+    ext.skipSlowTests = project.properties.get('tests.skipSlow', 'false').toBoolean()
 }
 
 subprojects {

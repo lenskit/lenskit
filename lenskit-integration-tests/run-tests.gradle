@@ -60,5 +60,10 @@ file('src/it').eachDir { dir ->
         main 'org.grouplens.lenskit.test.VerifyTestRun'
         args testDir
     }
-    check.dependsOn "verify$camelName"
+
+    if (!skipSlowTests) {
+        check.dependsOn "verify$camelName"
+    }
 }
+
+test.onlyIf { !skipSlowTests }
