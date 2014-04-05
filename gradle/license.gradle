@@ -9,6 +9,7 @@ license {
 if (JavaVersion.current().java7Compatible) {
     check.dependsOn licenseMain, licenseTest
 } else {
+    // The license plugin is not compatible with Java 6, so turn it off
     check.doFirst {
         logger.warn 'License header checks disabled on Java 6'
     }
