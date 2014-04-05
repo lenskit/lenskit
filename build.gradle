@@ -70,6 +70,7 @@ subprojects {
     }
 
     apply from: "$rootDir/gradle/class-list.gradle"
+    apply from: "$rootDir/gradle/license.gradle"
 
     if (name != 'lenskit-test') {
         dependencies {

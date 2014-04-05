@@ -1,0 +1,9 @@
+apply plugin: 'groovy'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'nl.javadude.gradle.plugins:license-gradle-plugin:0.7.0'
+}
