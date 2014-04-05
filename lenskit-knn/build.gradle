@@ -1,0 +1,10 @@
+apply from: "$rootDir/gradle/maven.gradle"
+
+dependencies {
+    compile project(':lenskit-core')
+}
+
+meta {
+    name 'LensKit k-NN CF'
+    description 'k-NN collaborative filtering for LensKit.'
+}

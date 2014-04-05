@@ -23,7 +23,7 @@ package org.grouplens.lenskit.util.io;
 /**
  * Accumulate a description of an object (or objects).  Object descriptions should reflect the
  * complete identity of an object - enough to uniquely distinguish it from non-equivalent objects -
- * but are not (usually) a full serialization.  They are more verbose than {@link #toString()}, and
+ * but are not (usually) a full serialization.  They are more verbose than {@link Object#toString()}, and
  * are used for things like generating deterministic keys for naming cache files.
  * <p>
  * Descriptions are composed of fields with values.

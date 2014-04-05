@@ -1,0 +1,122 @@
+/*
+ * This build script contains code for uploading to Maven.
+ */
+
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url 'https://oss.sonatype.org/content/repositories/snapshots/'
+        }
+    }
+    dependencies {
+        classpath 'net.elehack.gradle:gradle-util:0.1-SNAPSHOT'
+    }
+}
+
+import net.elehack.gradle.util.*
+
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+class ProjectMeta {
+    def String name
+    def String description
+    def String packaging = 'jar'
+
+    def call(Closure block) {
+        ClosureUtil.configure(this, block)
+    }
+}
+extensions.create('meta', ProjectMeta)
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    classifier = 'javadoc'
+}
+
+artifacts {
+    archives sourcesJar, javadocJar
+}
+
+signing {
+    signatories = new GnuPGSignatoryProvider()
+    required {
+        !version.endsWith('SNAPSHOT') && gradle.taskGraph.hasTask('uploadArchives')
+    }
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        def user = System.getenv('DEPLOY_USER') ?: project.properties.get('deploy.user', null)
+        def password = System.getenv('DEPLOY_PASSWORD') ?: project.properties.get('deploy.password', null)
+
+        def deployUrl = project.properties.get('deploy.url', null)
+        repository(url: deployUrl ?: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
+            if (user != null && password != null) {
+                authentication(userName: user, password: password)
+            }
+        }
+
+        if (deployUrl == null) {
+            snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+                if (user != null && password != null) {
+                    authentication(userName: user, password: password)
+                }
+            }
+        }
+
+        beforeDeployment { deploy ->
+            signing.signPom(deploy)
+        }
+    }
+    // allow deploy to be skipped on the command line
+    onlyIf {
+        if (travis.active) {
+            travis.publishingActive && !(git.headCommit.fullMessage.contains('[skip deploy]'))
+        } else {
+            !(project.properties.get('deploy.skip', 'false').toBoolean())
+        }
+    }
+}
+
+// Publish the archives on CI builds
+ciPublish.addTask uploadArchives
+
+// set up the Maven metadata at the end of configuration
+afterEvaluate {
+    uploadArchives.repositories.mavenDeployer.pom.project {
+        name meta.name
+        packaging 'jar'
+        // optionally artifactId can be defined here
+        description meta.description
+        url 'http://lenskit.grouplens.org'
+
+        scm {
+            connection 'scm:git:http://github.com/grouplens/lenskit.git'
+            developerConnection 'scm:git:git@github.com:grouplens/lenskit.git'
+            url 'http://github.com/grouplens/lenskit'
+        }
+
+        licenses {
+            license {
+                name 'GNU Lesser General Public License version 2.1 or later'
+                url 'https://www.gnu.org/licenses/lgpl-2.1.txt'
+            }
+        }
+
+        developers {
+            developer {
+                id 'ekstrand'
+                name 'Michael Ekstrand'
+                email 'ekstrand@cs.umn.edu'
+            }
+        }
+    }
+}

@@ -18,33 +18,25 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util;
+package org.grouplens.lenskit.test;
 
-import org.grouplens.lenskit.util.ClassDirectory;
-import org.junit.Test;
-import org.junit.Ignore;
-
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertThat;
+import java.io.File;
+import java.io.IOException;
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 
 /**
+ * Run Groovy verification scripts for integration tests.  The main method takes a
+ * base directory as its only argument.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class ClassDirectoryTest {
-    @Test
-    public void testLookupNonexistentClass() {
-        ClassDirectory dir = ClassDirectory.forClassLoader(getClass().getClassLoader());
-        assertThat(dir.getPackages("HackemMuche"),
-                   hasSize(0));
-    }
-
-    @Test
-    public void testLookupSelfClass() {
-        ClassDirectory dir = ClassDirectory.forClassLoader(getClass().getClassLoader());
-        assertThat(dir.getPackages("ClassDirectory"),
-                   hasSize(1));
-        assertThat(dir.getPackages("ClassDirectory"),
-                   contains("org.grouplens.lenskit.util"));
+public class VerifyTestRun {
+    public static void main(String[] args) throws IOException {
+        File baseDir = new File(args[0]);
+        Binding binding = new Binding();
+        binding.setVariable("basedir", baseDir);
+        GroovyShell shell = new GroovyShell(binding);
+        shell.evaluate(new File(baseDir, "verify.groovy"));
     }
 }

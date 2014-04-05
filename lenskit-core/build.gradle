@@ -1,0 +1,59 @@
+apply from: "$rootDir/gradle/maven.gradle"
+apply plugin: 'groovy'
+
+dependencies {
+    compile project(':lenskit-api')
+    compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.9.0-SNAPSHOT'
+    compile group: 'com.google.guava', name: 'guava', version: '16.0.1'
+
+    compile group: 'net.mikera', name: 'vectorz', version: '0.29.0'
+
+    testCompile project(':lenskit-test')
+    testCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
+}
+
+meta {
+    name 'LensKit Core'
+    description 'The core of LensKit, providing basic implementations and algorithm support.'
+}
+
+/* Since we define an annotation processor in this project, run it in its own task */
+task checkAnnotations(type: JavaCompile, dependsOn: classes) {
+    source sourceSets.main.java
+    classpath = sourceSets.main.compileClasspath
+    destinationDir = file("$buildDir/check-output")
+    
+    options.compilerArgs << '-proc:only'
+}
+check.dependsOn checkAnnotations
+
+/* Generate the Git commit list */
+task listGitCommits(group: 'build') {
+    // where does the report go?
+    ext.outputFile = "$sourceSets.main.output.resourcesDir/META-INF/lenskit/git-commits.lst"
+    // make sure we don't get stomped on
+    mustRunAfter processResources
+    
+    outputs.file outputFile
+    // we change with the HEAD revision
+    inputs.property('HEAD') { git.headRevision.name }
+
+    doLast {
+        mkdir file(outputFile).parentFile
+        git.withRepo { repo, cmd ->
+            logger.info 'git repository at {}', repo.directory
+            def head = repo.resolve('HEAD')
+            logger.info 'head revision: {}', head.name
+            file(outputFile).withPrintWriter { out ->
+                int n = 0
+                for (commit in cmd.log().add(git.headRevision).call()) {
+                    logger.debug 'found {}', commit.id
+                    out.println commit.id.name
+                    n += 1
+                }
+                logger.info 'listed {} revisions', n
+            }
+        }
+    }
+}
+classes.dependsOn listGitCommits

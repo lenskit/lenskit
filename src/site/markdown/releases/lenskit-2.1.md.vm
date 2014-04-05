@@ -167,6 +167,8 @@ This release includes several improvements and additions to LensKit's selection 
 
 -   Fixed escaping of GraphViz output (#issue(528)).
 
+-   The evaluator now has Top-*N* precision and recall support.
+
 ## Data Structures
 
 -   LensKit now uses [vectorz](http://github.com/mikera/vectorz) for (non-sparse) vectors and
