@@ -51,6 +51,10 @@ allprojects {
     ext.skipSlowTests = project.properties.get('tests.skipSlow', 'false').toBoolean()
 }
 
+task reportTests(type: TestReport) {
+    destinationDir file("$buildDir/reports/all-tests")
+}
+
 subprojects {
     apply plugin: 'java'
     sourceCompatibility = '1.6'
@@ -66,6 +70,10 @@ subprojects {
         options.deprecation = true
         options.compilerArgs << '-Xlint' << '-Xlint:-processing'
     }
+    test {
+        maxHeapSize = '512m'
+    }
+    reportTests.reportOn test
 
     // some common deps shared by everything
     dependencies {
