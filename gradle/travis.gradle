@@ -1,61 +1,10 @@
-/**
- * Extension object providing basic Travis query support.
- */
-class Travis {
-    final def deployJdk = 'oraclejdk7'
+import org.grouplens.lenskit.build.*
 
-    boolean isActive() {
-        return System.getenv('CI') == 'true'
-    }
-
-    String getRepo() {
-        return System.getenv('TRAVIS_REPO_SLUG')
-    }
-
-    String getBranch() {
-        return System.getenv('TRAVIS_BRANCH')
-    }
-
-    String getPullRequest() {
-        def pr = System.getenv('TRAVIS_PULL_REQUEST')
-        return pr == 'false' ? null : pr
-    }
-
-    String getActiveJdk() {
-        return System.getenv('TRAVIS_JDK_VERSION')
-    }
-
-    boolean isInMasterRepo() {
-        return repo == 'grouplens/lenskit'
-    }
-
-    boolean isOnReleaseBranch() {
-        def b = branch
-        return b == 'master' || b =~ '^release/'
-    }
-
-    boolean isPublishingActive() {
-        inMasterRepo && onReleaseBranch && pullRequest == null && activeJdk == deployJdk
-    }
-}
-
-extensions.create('travis', Travis)
-
-task travisInfo(group: 'help') {
-    description 'Print information about the Travis environment'
-    doLast {
-        if (travis.active) {
-            println "Doing a build of branch $travis.branch on $travis.repo"
-            if (travis.pullRequest != null) {
-                println "Building pull request $travis.pullRequest"
-            }
-            if (travis.inMasterRepo && travis.onReleaseBranch) {
-                println 'Building a release branch.'
-            }
-        } else {
-            println 'Not in a CI build.'
-        }
-    }
+extensions.create('travis', TravisExtension)
+travis {
+    masterJdk 'oraclejdk7'
+    masterRepo 'grouplens/lenskit'
+    releaseBranchPattern ~/^(master$|release\/)/
 }
 
 task ciPrep(group: 'deploy') {
