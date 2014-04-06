@@ -7,10 +7,10 @@ travis {
     releaseBranchPattern ~/^(master$|release\/)/
 }
 
-if (System.getenv('CI_DEPLOY_USER' != null)) {
+if (System.getenv('CI_DEPLOY_USER') != null) {
     properties['deploy.user'] = System.getenv('CI_DEPLOY_USER')
 }
-if (System.getenv('CI_DEPLOY_PASSWORD' != null)) {
+if (System.getenv('CI_DEPLOY_PASSWORD') != null) {
     properties['deploy.password'] = System.getenv('CI_DEPLOY_PASSWORD')
 }
 
