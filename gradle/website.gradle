@@ -20,6 +20,7 @@ task uploadWeb(type: SiteUpload, group: 'upload', dependsOn: webZip) {
     siteArchive webZip.archivePath
     uploadUrl System.getenv('SITE_UPLOAD_URL')
     authSecret System.getenv('UPLOAD_SECRET')
+    branch travis.branch
     onlyIf { travis.publishingActive && hmacDigest != null && uploadUrl != null }
 }
 

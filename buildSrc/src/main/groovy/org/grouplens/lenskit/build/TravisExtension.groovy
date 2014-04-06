@@ -55,7 +55,7 @@ class TravisExtension {
     }
 
     boolean isPublishingActive() {
-        inMasterRepo && onReleaseBranch && pullRequest == null && activeJdk == masterJdk
+        System.getenv('CI_PUBLISH') == 'true' || (inMasterRepo && onReleaseBranch && pullRequest == null && activeJdk == masterJdk)
     }
 
     void call(Closure block) {

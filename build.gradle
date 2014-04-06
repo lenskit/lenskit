@@ -61,6 +61,7 @@ subprojects {
 
     // don't package until testing
     jar.mustRunAfter 'check'
+    jar.mustRunAfter 'test'
 
     tasks.withType(JavaCompile).all { task ->
         task.options.encoding = 'UTF-8'
