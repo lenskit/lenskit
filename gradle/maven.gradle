@@ -58,6 +58,9 @@ uploadArchives {
         def password = System.getenv('DEPLOY_PASSWORD') ?: project.properties.get('deploy.password', null)
 
         def deployUrl = project.properties.get('deploy.url', null)
+        if (deployUrl != null) {
+            deployUrl = rootProject.uri(deployUrl)
+        }
         repository(url: deployUrl ?: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
             if (user != null && password != null) {
                 authentication(userName: user, password: password)
