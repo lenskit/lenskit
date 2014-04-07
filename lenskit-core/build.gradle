@@ -10,6 +10,7 @@ dependencies {
 
     testCompile project(':lenskit-test')
     testCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
+    testRuntime group: 'org.apache.derby', name: 'derby', version: '10.10.1.1'
 }
 
 meta {
