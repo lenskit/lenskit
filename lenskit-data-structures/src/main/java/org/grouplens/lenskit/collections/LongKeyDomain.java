@@ -27,9 +27,7 @@ import it.unimi.dsi.fastutil.longs.*;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * Implement a domain of long keys, sorted by key.  Keys can be mapped back to indexes and vice
@@ -80,14 +78,25 @@ public abstract class LongKeyDomain implements Serializable {
     public static LongKeyDomain fromCollection(Collection<Long> keys, boolean initiallyActive) {
         if (keys instanceof LongSortedArraySet) {
             return ((LongSortedArraySet) keys).getDomain().compactCopy(initiallyActive);
+        } else {
+            return fromIterator(keys.size(), keys.iterator(), initiallyActive);
         }
+    }
 
+    /**
+     * Build a key domain from an iterator.
+     * @param nmax The maximum number of items to include.
+     * @param keys The key iterator.  The iterator must return no more than {@code nmax} items.
+     * @param initiallyActive Whether the keys should be initially active.
+     * @return The key domain.
+     */
+    private static LongKeyDomain fromIterator(int nmax, Iterator<Long> keys, boolean initiallyActive) {
         // 2 options to build the array. Invariant: exactly one is non-null.
         long[] keyArray = null;
-        int[] smallKeyArray = new int[keys.size()];
+        int[] smallKeyArray = new int[nmax];
 
         int pos = 0;
-        LongIterator iter = LongIterators.asLongIterator(keys.iterator());
+        LongIterator iter = LongIterators.asLongIterator(keys);
         while (iter.hasNext()) {
             long k = iter.nextLong();
             if (smallKeyArray != null && k >= Integer.MIN_VALUE && k <= Integer.MAX_VALUE) {
@@ -97,7 +106,7 @@ public abstract class LongKeyDomain implements Serializable {
                 if (keyArray == null) {
                     assert smallKeyArray != null;
                     // we need to upgrade
-                    keyArray = new long[keys.size()];
+                    keyArray = new long[nmax];
                     for (int i = 0; i < pos; i++) {
                         keyArray[i] = smallKeyArray[i];
                     }
@@ -106,6 +115,9 @@ public abstract class LongKeyDomain implements Serializable {
                 keyArray[pos] = k;
             }
             pos++;
+        }
+        if (iter.hasNext()) {
+            throw new ConcurrentModificationException("iterator size changed during scan");
         }
 
         if (keyArray != null) {
@@ -306,7 +318,7 @@ public abstract class LongKeyDomain implements Serializable {
             return makeCompactCopy(newMask);
         } else {
             // slow path: we cannot count on all keys being active
-            return fromCollection(LongIterators.pour(keyIterator(activeIndexIterator(false))), active);
+            return fromIterator(size(), keyIterator(activeIndexIterator(false)), active);
         }
     }
 
