@@ -22,10 +22,12 @@ package org.grouplens.lenskit.eval.traintest;
 
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * The outputs for an experiment.
@@ -41,17 +43,19 @@ class ExperimentOutputs {
     private final TableWriter predictionWriter;
     @Nullable
     private final TableWriter recommendationWriter;
+    private final List<Metric<?>> metrics;
 
     public ExperimentOutputs(ExperimentOutputLayout eol,
                              @Nonnull TableWriter results,
                              @Nullable TableWriter user,
                              @Nullable TableWriter predict,
-                             @Nullable TableWriter rec) {
+                             @Nullable TableWriter rec, List<Metric<?>> ms) {
         layouts = eol;
         resultsWriter = results;
         userWriter = user;
         predictionWriter = predict;
         recommendationWriter = rec;
+        metrics = ms;
     }
 
     @Nonnull
@@ -74,11 +78,15 @@ class ExperimentOutputs {
         return recommendationWriter;
     }
 
+    List<Metric<?>> getMetrics() {
+        return metrics;
+    }
+
     public ExperimentOutputs getPrefixed(Attributed algo, TTDataSet data) {
         TableWriter results = layouts.prefixTable(resultsWriter, algo, data);
         TableWriter user = layouts.prefixTable(userWriter, algo, data);
         TableWriter predict = layouts.prefixTable(predictionWriter, algo, data);
         TableWriter recommend = layouts.prefixTable(recommendationWriter, algo, data);
-        return new ExperimentOutputs(layouts, results, user, predict, recommend);
+        return new ExperimentOutputs(layouts, results, user, predict, recommend, metrics);
     }
 }

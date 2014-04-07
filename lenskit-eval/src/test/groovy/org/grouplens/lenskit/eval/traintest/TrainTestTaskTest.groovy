@@ -113,7 +113,7 @@ class TrainTestTaskTest {
             metric new CoveragePredictMetric()
             metric new RMSEPredictMetric()
         }
-        def metrics = command.getMetrics()
+        def metrics = command.getMetricFactories()
         assertThat(metrics.size(), equalTo(2))
     }
 
@@ -123,7 +123,7 @@ class TrainTestTaskTest {
             metric CoveragePredictMetric
             metric RMSEPredictMetric
         }
-        def metrics = command.getMetrics()
+        def metrics = command.getMetricFactories()
         assertThat(metrics.size(), equalTo(2))
     }
 

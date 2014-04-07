@@ -22,10 +22,10 @@ package org.grouplens.lenskit.eval.metrics.topn;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 
@@ -36,7 +36,7 @@ import java.util.List;
  * Metric that measures how long a TopN list actually is.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TopNLengthMetric extends AbstractTestUserMetric {
+public class TopNLengthMetric extends AbstractMetric<AbstractMetric.MeanAccumulator> {
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
@@ -50,8 +50,8 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
     }
 
     @Override
-    public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
-        return new Accum();
+    public MeanAccumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new MeanAccumulator();
     }
 
     @Override
@@ -64,33 +64,17 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
         return columns;
     }
 
-    class Accum implements TestUserMetricAccumulator {
-        double total = 0;
-        int nusers = 0;
-
-        @Nonnull
-        @Override
-        public List<Object> evaluate(TestUser user) {
-            List<ScoredId> recs;
-            recs = user.getRecommendations(listSize, candidates, exclude);
-            if (recs == null) {
-                return userRow();
-            }
-            int n = recs.size();
-            total += n;
-            nusers += 1;
-            return userRow(n);
+    @Nonnull
+    @Override
+    public List<Object> measureUser(TestUser user, MeanAccumulator accumulator) {
+        List<ScoredId> recs;
+        recs = user.getRecommendations(listSize, candidates, exclude);
+        if (recs == null) {
+            return userRow();
         }
-
-        @Nonnull
-        @Override
-        public List<Object> finalResults() {
-            if (nusers > 0) {
-                return finalRow(total / nusers);
-            } else {
-                return finalRow();
-            }
-        }
+        int n = recs.size();
+        accumulator.addUserValue(n);
+        return userRow(n);
     }
 
     /**

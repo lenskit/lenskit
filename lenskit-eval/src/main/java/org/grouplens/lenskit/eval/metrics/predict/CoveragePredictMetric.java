@@ -21,10 +21,11 @@
 package org.grouplens.lenskit.eval.metrics.predict;
 
 import com.google.common.collect.ImmutableList;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.metrics.MetricAccumulator;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -40,7 +41,7 @@ import java.util.List;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class CoveragePredictMetric extends AbstractTestUserMetric {
+public class CoveragePredictMetric extends AbstractMetric<CoveragePredictMetric.CoverageAccumulator> {
     private static final Logger logger = LoggerFactory.getLogger(CoveragePredictMetric.class);
     private static final ImmutableList<String> COLUMNS =
             ImmutableList.of("NUsers", "NAttempted", "NGood", "Coverage");
@@ -48,8 +49,8 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
             ImmutableList.of("NAttempted", "NGood", "Coverage");
 
     @Override
-    public TestUserMetricAccumulator makeAccumulator(Attributed algo, TTDataSet ds) {
-        return new Accum();
+    public CoverageAccumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new CoverageAccumulator();
     }
 
     @Override
@@ -62,37 +63,41 @@ public class CoveragePredictMetric extends AbstractTestUserMetric {
         return USER_COLUMNS;
     }
 
-    class Accum implements TestUserMetricAccumulator {
+    @Nonnull
+    @Override
+    public List<Object> measureUser(TestUser user, CoverageAccumulator accumulator) {
+        SparseVector ratings = user.getTestRatings();
+        SparseVector predictions = user.getPredictions();
+        if (predictions == null) {
+            userRow();
+        }
+        int n = 0;
+        int good = 0;
+        for (VectorEntry e : ratings.fast()) {
+            n += 1;
+            if (predictions.containsKey(e.getKey())) {
+                good += 1;
+            }
+        }
+        accumulator.addUser(n, good);
+        return userRow(n, good,
+                       n > 0 ? (((double) good) / n) : null);
+    }
+
+    public class CoverageAccumulator implements MetricAccumulator {
         private int npreds = 0;
         private int ngood = 0;
         private int nusers = 0;
 
-        @Nonnull
-        @Override
-        public List<Object> evaluate(TestUser user) {
-            SparseVector ratings = user.getTestRatings();
-            SparseVector predictions = user.getPredictions();
-            if (predictions == null) {
-                userRow();
-            }
-            int n = 0;
-            int good = 0;
-            for (VectorEntry e : ratings.fast()) {
-                n += 1;
-                if (predictions.containsKey(e.getKey())) {
-                    good += 1;
-                }
-            }
-            npreds += n;
-            ngood += good;
+        private void addUser(int np, int ng) {
+            npreds += np;
+            ngood += ng;
             nusers += 1;
-            return userRow(n, good,
-                           n > 0 ? (((double) good) / n) : null);
         }
 
         @Nonnull
         @Override
-        public List<Object> finalResults() {
+        public List<Object> finish() {
             Double coverage = null;
             if (npreds > 0) {
                 coverage = (double) ngood / npreds;

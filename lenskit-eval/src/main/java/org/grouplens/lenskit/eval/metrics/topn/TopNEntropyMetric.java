@@ -24,10 +24,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.metrics.MetricAccumulator;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 
@@ -50,7 +51,7 @@ import java.util.List;
  * 
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TopNEntropyMetric extends AbstractTestUserMetric {
+public class TopNEntropyMetric extends AbstractMetric<TopNEntropyMetric.Accumulator> {
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
@@ -64,8 +65,8 @@ public class TopNEntropyMetric extends AbstractTestUserMetric {
     }
     
     @Override
-    public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
-        return new Accum();
+    public Accumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new Accumulator();
     }
 
     @Override
@@ -78,34 +79,35 @@ public class TopNEntropyMetric extends AbstractTestUserMetric {
         return Collections.emptyList();
     }
 
-    class Accum implements TestUserMetricAccumulator {
-        Long2IntMap counts = new Long2IntOpenHashMap();
-        int n = 0;
+    @Nonnull
+    @Override
+    public List<Object> measureUser(TestUser user, Accumulator accumulator) {
+        List<ScoredId> recs;
+        recs = user.getRecommendations(listSize, candidates, exclude);
+        if (recs != null) {
+            accumulator.addUser(recs);
+        }
+        return userRow();
+    }
+
+    public class Accumulator implements MetricAccumulator {
+        private Long2IntMap counts = new Long2IntOpenHashMap();
+        private int recCount = 0;
         
-        @Nonnull
-        @Override
-        public List<Object> evaluate(TestUser user) {
-            
-            List<ScoredId> recs;
-            recs = user.getRecommendations(listSize, candidates, exclude);
-            if (recs == null) {
-                return userRow();
-            }
-            
+        private void addUser(List<ScoredId> recs) {
             for (ScoredId s: recs) {
                 counts.put(s.getId(), counts.get(s.getId()) +1);
-                n +=1;
+                recCount +=1;
             }
-            return userRow();
         }
 
         @Nonnull
         @Override
-        public List<Object> finalResults() {
-            if (n>0) {
+        public List<Object> finish() {
+            if (recCount > 0) {
                 double entropy = 0;
                 for (Long2IntMap.Entry e : counts.long2IntEntrySet()) {
-                    double p = (double) e.getIntValue()/n;
+                    double p = (double) e.getIntValue()/ recCount;
                     entropy -= p*Math.log(p)/Math.log(2);
                 }
                 return finalRow(entropy);

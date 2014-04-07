@@ -22,11 +22,12 @@ package org.grouplens.lenskit.eval.metrics.predict;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.metrics.MetricAccumulator;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.transform.quantize.PreferenceDomainQuantizer;
 import org.grouplens.lenskit.transform.quantize.Quantizer;
@@ -47,14 +48,14 @@ import java.util.List;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class EntropyPredictMetric extends AbstractTestUserMetric {
+public class EntropyPredictMetric extends AbstractMetric<EntropyPredictMetric.Accumulator> {
     private static final Logger logger = LoggerFactory.getLogger(EntropyPredictMetric.class);
     private static final ImmutableList<String> COLUMNS =
             ImmutableList.of("Entropy.ofRating.ByUser", "Entropy.ofPredictions.byUser", "Information.ByUser");
 
     @Override
-    public TestUserMetricAccumulator makeAccumulator(Attributed algorithm, TTDataSet dataSet) {
-        return new Accum(dataSet.getTrainingData().getPreferenceDomain());
+    public Accumulator createAccumulator(Attributed algorithm, TTDataSet dataSet, Recommender rec) {
+        return new Accumulator(dataSet.getTrainingData().getPreferenceDomain());
     }
 
     @Override
@@ -67,7 +68,39 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
         return COLUMNS;
     }
 
-    class Accum implements TestUserMetricAccumulator {
+    @Nonnull
+    @Override
+    public List<Object> measureUser(TestUser user, Accumulator accumulator) {
+        SparseVector ratings = user.getTestRatings();
+        SparseVector predictions = user.getPredictions();
+        if (predictions == null) {
+            return userRow();
+        }
+
+        Quantizer q = accumulator.quantizer;
+
+        // TODO Re-use accumulators
+        MutualInformationAccumulator accum = new MutualInformationAccumulator(q.getCount());
+
+        for (Pair<VectorEntry,VectorEntry> e: Vectors.fastIntersect(ratings, predictions)) {
+            accum.count(q.index(e.getLeft().getValue()),
+                        q.index(e.getRight().getValue()));
+        }
+
+        if (accum.getCount() > 0) {
+            double ratingEntropy = accum.getV1Entropy();
+            double predEntropy = accum.getV2Entropy();
+            double info = accum.getMutualInformation();
+            accumulator.addUser(info, ratingEntropy, predEntropy);
+            return userRow(ratingEntropy,
+                           predEntropy,
+                           info);
+        } else {
+            return userRow();
+        }
+    }
+
+    class Accumulator implements MetricAccumulator {
         private Quantizer quantizer;
 
         private double informationSum = 0.0;
@@ -75,46 +108,20 @@ public class EntropyPredictMetric extends AbstractTestUserMetric {
         private double predictionEntropySum = 0.0;
         private int nusers = 0;
 
-        public Accum(PreferenceDomain preferenceDomain) {
+        public Accumulator(PreferenceDomain preferenceDomain) {
             quantizer = new PreferenceDomainQuantizer(preferenceDomain);
         }
 
-        @Nonnull
-        @Override
-        public List<Object> evaluate(TestUser user) {
-            SparseVector ratings = user.getTestRatings();
-            SparseVector predictions = user.getPredictions();
-            if (predictions == null) {
-                return userRow();
-            }
-
-            // TODO Re-use accumulators
-            MutualInformationAccumulator accum = new MutualInformationAccumulator(quantizer.getCount());
-
-            for (Pair<VectorEntry,VectorEntry> e: Vectors.fastIntersect(ratings, predictions)) {
-                accum.count(quantizer.index(e.getLeft().getValue()),
-                            quantizer.index(e.getRight().getValue()));
-            }
-
-            if (accum.getCount() > 0) {
-                double ratingEntropy = accum.getV1Entropy();
-                double predEntropy = accum.getV2Entropy();
-                double info = accum.getMutualInformation();
-                informationSum += info;
-                ratingEntropySum += ratingEntropy;
-                predictionEntropySum += predEntropy;
-                nusers += 1;
-                return userRow(ratingEntropy,
-                               predEntropy,
-                               info);
-            } else {
-                return userRow();
-            }
+        private void addUser(double info, double rent, double pent) {
+            informationSum += info;
+            ratingEntropySum += rent;
+            predictionEntropySum += pent;
+            nusers += 1;
         }
 
         @Nonnull
         @Override
-        public List<Object> finalResults() {
+        public List<Object> finish() {
             if (nusers <= 0) {
                 return finalRow();
             }

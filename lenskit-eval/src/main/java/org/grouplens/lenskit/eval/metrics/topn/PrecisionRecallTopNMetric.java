@@ -22,12 +22,13 @@ package org.grouplens.lenskit.eval.metrics.topn;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.metrics.MetricAccumulator;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.hamcrest.Matchers;
@@ -45,7 +46,7 @@ import java.util.List;
  * recommendation is bad) by configuring bad items as the test item set.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class PrecisionRecallTopNMetric extends AbstractTestUserMetric {
+public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTopNMetric.Accumulator> {
     private static final Logger logger = LoggerFactory.getLogger(PrecisionRecallTopNMetric.class);
 
     private final int listSize;
@@ -72,8 +73,8 @@ public class PrecisionRecallTopNMetric extends AbstractTestUserMetric {
     }
 
     @Override
-    public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
-        return new Accum(ds.getTestData().getItemDAO().getItemIds());
+    public Accumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new Accumulator(ds.getTestData().getItemDAO().getItemIds());
     }
 
     @Override
@@ -86,51 +87,57 @@ public class PrecisionRecallTopNMetric extends AbstractTestUserMetric {
         return columns;
     }
 
-    class Accum implements TestUserMetricAccumulator {
+    @Nonnull
+    @Override
+    public List<Object> measureUser(TestUser user, Accumulator accumulator) {
+        int tp = 0;
+        int fp = 0;
+
+        LongSet items = queryItems.select(user.getTrainHistory(),
+                                          user.getTestHistory(),
+                                          accumulator.universe);
+
+        List<ScoredId> recs = user.getRecommendations(listSize, candidates, exclude);
+        for(ScoredId s : CollectionUtils.fast(recs)) {
+            if(items.contains(s.getId())) {
+                tp += 1;
+            } else {
+                fp += 1;
+            }
+        }
+        int fn = items.size() - tp;
+
+        if (items.size() > 0 && recs.size() > 0) {
+            // if both the items set and recommendations are non-empty (no division by 0).
+            double precision = (double) tp/(tp+fp);
+            double recall = (double) tp/(tp+fn);
+            accumulator.addUser(precision, recall);
+            return userRow(precision, recall);
+        } else {
+            return userRow();
+        }
+    }
+
+    public class Accumulator implements MetricAccumulator {
         private final LongSet universe;
 
         double totalPrecision = 0;
         double totalRecall = 0;
         int nusers = 0;
 
-        Accum(LongSet universe) {
+        Accumulator(LongSet universe) {
             this.universe = universe;
         }
 
-        @Nonnull
-        @Override
-        public List<Object> evaluate(TestUser user) {
-            int tp = 0;
-            int fp = 0;
-
-            LongSet items = queryItems.select(user.getTrainHistory(), user.getTestHistory(), universe);
-            
-            List<ScoredId> recs = user.getRecommendations(listSize, candidates, exclude);
-            for(ScoredId s : CollectionUtils.fast(recs)) {
-                if(items.contains(s.getId())) {
-                    tp += 1; 
-                } else {
-                    fp += 1;
-                }
-            }
-            int fn = items.size() - tp;
-            
-            if (items.size() > 0 && recs.size() > 0) {
-                // if both the items set and recommendations are non-empty (no division by 0).
-                double precision = (double) tp/(tp+fp);
-                double recall = (double) tp/(tp+fn);
-                totalPrecision += precision;
-                totalRecall += recall;
-                nusers += 1;
-                return userRow(precision, recall);
-            } else {
-                return userRow();
-            }
+        private void addUser(double prec, double rec) {
+            totalPrecision += prec;
+            totalRecall += rec;
+            nusers += 1;
         }
 
         @Nonnull
         @Override
-        public List<Object> finalResults() {
+        public List<Object> finish() {
             if (nusers > 0) {
                 return finalRow(totalPrecision / nusers, totalRecall / nusers);
             } else {

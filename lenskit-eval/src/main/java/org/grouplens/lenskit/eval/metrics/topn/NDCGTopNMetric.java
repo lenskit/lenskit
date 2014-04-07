@@ -25,12 +25,11 @@ import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -45,7 +44,7 @@ import static java.lang.Math.log;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class NDCGTopNMetric extends AbstractTestUserMetric {
+public class NDCGTopNMetric extends AbstractMetric<AbstractMetric.MeanAccumulator> {
     private static final Logger logger = LoggerFactory.getLogger(NDCGTopNMetric.class);
 
     private final int listSize;
@@ -67,8 +66,8 @@ public class NDCGTopNMetric extends AbstractTestUserMetric {
     }
 
     @Override
-    public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
-        return new Accum();
+    public MeanAccumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new AbstractMetric.MeanAccumulator();
     }
 
     @Override
@@ -105,51 +104,32 @@ public class NDCGTopNMetric extends AbstractTestUserMetric {
         return gain;
     }
 
-    class Accum implements TestUserMetricAccumulator {
-        double total = 0;
-        int nusers = 0;
-
-        @Nonnull
-        @Override
-        public List<Object> evaluate(TestUser user) {
-            List<ScoredId> recommendations;
-            recommendations = user.getRecommendations(listSize, candidates, exclude);
-            if (recommendations == null) {
-                return userRow();
-            }
-            return evaluateRecommendations(user.getTestRatings(), recommendations);
+    @Nonnull
+    @Override
+    public List<Object> measureUser(TestUser user, MeanAccumulator accum) {
+        List<ScoredId> recommendations;
+        recommendations = user.getRecommendations(listSize, candidates, exclude);
+        if (recommendations == null) {
+            return userRow();
         }
 
-        List<Object> evaluateRecommendations(SparseVector ratings, List<ScoredId> recommendations) {
-            LongList ideal = ratings.keysByValue(true);
-            if (ideal.size() > listSize) {
-                ideal = ideal.subList(0, listSize);
-            }
-            double idealGain = computeDCG(ideal, ratings);
-
-            LongList actual = new LongArrayList(recommendations.size());
-            for (ScoredId id: CollectionUtils.fast(recommendations)) {
-                actual.add(id.getId());
-            }
-            double gain = computeDCG(actual, ratings);
-
-            double score = gain / idealGain;
-            total += score;
-            nusers += 1;
-            return userRow(score);
+        SparseVector ratings = user.getTestRatings();
+        LongList ideal = ratings.keysByValue(true);
+        if (ideal.size() > listSize) {
+            ideal = ideal.subList(0, listSize);
         }
+        double idealGain = computeDCG(ideal, ratings);
 
-        @Nonnull
-        @Override
-        public List<Object> finalResults() {
-            if (nusers > 0) {
-                double v = total / nusers;
-                logger.info("Top-N nDCG: {}", v);
-                return finalRow(v);
-            } else {
-                return finalRow();
-            }
+        LongList actual = new LongArrayList(recommendations.size());
+        for (ScoredId id: CollectionUtils.fast(recommendations)) {
+            actual.add(id.getId());
         }
+        double gain = computeDCG(actual, ratings);
+
+        double score = gain / idealGain;
+
+        accum.addUserValue(score);
+        return userRow(score);
     }
 
     /**

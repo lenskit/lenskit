@@ -21,10 +21,11 @@
 package org.grouplens.lenskit.eval.metrics.predict;
 
 import com.google.common.collect.ImmutableList;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.metrics.MetricAccumulator;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -47,14 +48,42 @@ import static java.lang.Math.abs;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class MAEPredictMetric extends AbstractTestUserMetric {
+public class MAEPredictMetric extends AbstractMetric<MAEPredictMetric.Accumulator> {
     private static final Logger logger = LoggerFactory.getLogger(MAEPredictMetric.class);
     private static final ImmutableList<String> COLUMNS = ImmutableList.of("MAE", "MAE.ByUser");
     private static final ImmutableList<String> USER_COLUMNS = ImmutableList.of("MAE");
 
     @Override
-    public TestUserMetricAccumulator makeAccumulator(Attributed algo, TTDataSet ds) {
-        return new Accum();
+    public Accumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new Accumulator();
+    }
+
+    @Nonnull
+    @Override
+    public List<Object> measureUser(TestUser user, Accumulator accumulator) {
+        SparseVector ratings = user.getTestRatings();
+        SparseVector predictions = user.getPredictions();
+        if (predictions == null) {
+            return userRow();
+        }
+        double err = 0;
+        int n = 0;
+        for (VectorEntry e : predictions.fast()) {
+            if (Double.isNaN(e.getValue())) {
+                continue;
+            }
+
+            err += abs(e.getValue() - ratings.get(e.getKey()));
+            n++;
+        }
+
+        if (n > 0) {
+            double mae = err / n;
+            accumulator.addUser(n, err, mae);
+            return userRow(mae);
+        } else {
+            return userRow();
+        }
     }
 
     @Override
@@ -67,46 +96,22 @@ public class MAEPredictMetric extends AbstractTestUserMetric {
         return USER_COLUMNS;
     }
 
-    class Accum implements TestUserMetricAccumulator {
+    public class Accumulator implements MetricAccumulator {
         private double totalError = 0;
         private double totalUserError = 0;
         private int nratings = 0;
         private int nusers = 0;
 
-        @Nonnull
-        @Override
-        public List<Object> evaluate(TestUser user) {
-            SparseVector ratings = user.getTestRatings();
-            SparseVector predictions = user.getPredictions();
-            if (predictions == null) {
-                return userRow();
-            }
-            double err = 0;
-            int n = 0;
-            for (VectorEntry e : predictions.fast()) {
-                if (Double.isNaN(e.getValue())) {
-                    continue;
-                }
-
-                err += abs(e.getValue() - ratings.get(e.getKey()));
-                n++;
-            }
-
-            if (n > 0) {
-                totalError += err;
-                nratings += n;
-                double errRate = err / n;
-                totalUserError += errRate;
-                nusers += 1;
-                return userRow(errRate);
-            } else {
-                return userRow();
-            }
+        public void addUser(int nr, double sae, double mae) {
+            totalError += sae;
+            totalUserError += mae;
+            nratings += nr;
+            nusers += 1;
         }
 
         @Nonnull
         @Override
-        public List<Object> finalResults() {
+        public List<Object> finish() {
             if (nratings > 0) {
                 double v = totalError / nratings;
                 double uv = totalUserError / nusers;

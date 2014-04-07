@@ -20,11 +20,17 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.traintest.MockTestUser;
+import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.junit.Before;
 import org.junit.Test;
 
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class NDCGTest {
     long[] items = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
@@ -44,6 +50,25 @@ public class NDCGTest {
     SparseVector pv1 = MutableSparseVector.wrap(items, predictions1).freeze();
     SparseVector pv2 = MutableSparseVector.wrap(items, predictions2).freeze();
     SparseVector pv3 = MutableSparseVector.wrap(items, predictions3).freeze();
+
+    TestUser user1, user2, user3;
+
+    @Before
+    public void createTestUsers() {
+        MockTestUser.Builder b1, b2, b3;
+
+        b1 = MockTestUser.newBuilder().setUserId(1);
+        b2 = MockTestUser.newBuilder().setUserId(2);
+        b3 = MockTestUser.newBuilder().setUserId(3);
+        for (int i = 0; i < 10; i++) {
+            b1.addTestRating(items[i], ratings1[i]);
+            b2.addTestRating(items[i], ratings2[i]);
+            b3.addTestRating(items[i], ratings3[i]);
+        }
+        user1 = b1.setPredictions(pv1).build();
+        user2 = b1.setPredictions(pv2).build();
+        user3 = b1.setPredictions(pv3).build();
+    }
 
     @Test
     public void testComputeDCG() {
@@ -74,15 +99,18 @@ public class NDCGTest {
 
     @Test
     public void testAccumulator() {
-        NDCGPredictMetric.Accum acc = (new NDCGPredictMetric()).makeAccumulator(null, null);
-        acc.evaluatePredictions(rv1, pv1);
-        assertEquals(1, acc.nusers);
-        assertEquals(0.9533, acc.total, 0.0001);
-        acc.evaluatePredictions(rv2, pv2);
-        assertEquals(2, acc.nusers);
-        assertEquals(1.9110, acc.total, 0.0001);
-        acc.evaluatePredictions(rv3, pv3);
-        assertEquals(3, acc.nusers);
-        assertEquals(2.8069, acc.total, 0.0001);
+        NDCGPredictMetric metric = new NDCGPredictMetric();
+        AbstractMetric.MeanAccumulator acc = metric.createAccumulator(null, null, null);
+        assertThat(acc, notNullValue());
+        assert acc != null;
+        metric.measureUser(user1, acc);
+        assertEquals(1, acc.getUserCount());
+        assertEquals(0.9533, acc.getTotal(), 0.0001);
+        metric.measureUser(user2, acc);
+        assertEquals(2, acc.getUserCount());
+        assertEquals(1.9110, acc.getTotal(), 0.0001);
+        metric.measureUser(user3, acc);
+        assertEquals(3, acc.getUserCount());
+        assertEquals(2.8069, acc.getTotal(), 0.0001);
     }
 }

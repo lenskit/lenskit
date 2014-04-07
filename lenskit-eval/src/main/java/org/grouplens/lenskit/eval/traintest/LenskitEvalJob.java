@@ -32,6 +32,8 @@ import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.Metric;
+import org.grouplens.lenskit.eval.metrics.MetricAccumulator;
 import org.grouplens.lenskit.inject.RecommenderInstantiator;
 
 import javax.annotation.Nonnull;
@@ -78,12 +80,8 @@ class LenskitEvalJob extends TrainTestJob {
     }
 
     @Override
-    protected List<Object> getModelMeasurements() {
-        List<Object> row = Lists.newArrayList();
-        for (ModelMetric metric: measurements.getModelMetrics()) {
-            row.addAll(metric.measureAlgorithm(algorithmInfo, dataSet, recommender));
-        }
-        return row;
+    protected <A extends MetricAccumulator> MetricWithAccumulator<A> makeMetricAccumulator(Metric<A> metric) {
+        return new MetricWithAccumulator<A>(metric, metric.createAccumulator(algorithmInfo, dataSet, recommender));
     }
 
     @Override

@@ -42,7 +42,6 @@ import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.parallel.TaskGraphExecutor;
 import org.grouplens.lenskit.util.table.Table;
@@ -74,8 +73,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private List<TTDataSet> dataSets;
     private List<AlgorithmInstance> algorithms;
     private List<ExternalAlgorithm> externalAlgorithms;
-    private List<TestUserMetric> metrics;
-    private List<ModelMetric> modelMetrics;
+    private List<MetricFactory> metrics;
     private List<Pair<Symbol,String>> predictChannels;
     private boolean isolate;
     private boolean separateAlgorithms;
@@ -101,7 +99,6 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         algorithms = Lists.newArrayList();
         externalAlgorithms = Lists.newArrayList();
         metrics = Lists.newArrayList();
-        modelMetrics = Lists.newArrayList();
         predictChannels = Lists.newArrayList();
         outputFile = new File("train-test-results.csv");
         isolate = false;
@@ -129,12 +126,12 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return this;
     }
 
-    public TrainTestEvalTask addMetric(TestUserMetric metric) {
-        metrics.add(metric);
+    public TrainTestEvalTask addMetric(Metric metric) {
+        metrics.add(MetricFactory.forMetric(metric));
         return this;
     }
 
-    public TrainTestEvalTask addMetric(Class<? extends TestUserMetric> metricClass) throws IllegalAccessException, InstantiationException {
+    public TrainTestEvalTask addMetric(Class<? extends Metric> metricClass) throws IllegalAccessException, InstantiationException {
         return addMetric(metricClass.newInstance());
     }
 
@@ -147,7 +144,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      * @return The command (for chaining).
      */
     public TrainTestEvalTask addMultiMetric(File file, List<String> columns, Function<Recommender,List<List<Object>>> metric) {
-        modelMetrics.add(new FunctionMultiModelMetric(file, columns, metric));
+        metrics.add(new FunctionMultiModelMetric.Factory(file, columns, metric));
         return this;
     }
 
@@ -159,7 +156,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      * @return The command (for chaining).
      */
     public TrainTestEvalTask addMetric(List<String> columns, Function<Recommender,List<Object>> metric) {
-        modelMetrics.add(new FunctionModelMetric(columns, metric));
+        addMetric(new FunctionModelMetric(columns, metric));
         return this;
     }
 
@@ -297,7 +294,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return externalAlgorithms;
     }
 
-    List<TestUserMetric> getMetrics() {
+    List<MetricFactory> getMetricFactories() {
         return metrics;
     }
 
@@ -396,16 +393,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                 registerTaskListener(jobGraph);
 
                 // tell all metrics to get started
-                for (Metric<TrainTestEvalTask> metric : measurements.getAllMetrics()) {
-                    metric.startEvaluation(this);
-                }
-                try {
-                    runEvaluations(jobGraph);
-                } finally {
-                    for (Metric<TrainTestEvalTask> metric : measurements.getAllMetrics()) {
-                        metric.finishEvaluation();
-                    }
-                }
+                runEvaluations(jobGraph);
             } catch (Throwable th) {
                 throw closer.rethrow(th, TaskExecutionException.class, InterruptedException.class);
             } finally {
@@ -456,7 +444,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     MeasurementSuite createMeasurementSuite() {
-        return new MeasurementSuite(metrics, modelMetrics, predictChannels);
+        return new MeasurementSuite(metrics, predictChannels);
     }
 
     private void runEvaluations(DAGNode<JobGraph.Node, JobGraph.Edge> graph) throws TaskExecutionException, InterruptedException {
@@ -628,6 +616,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         if (recommendOutputFile != null) {
             recommend = closer.register(CSVWriter.open(recommendOutputFile, layouts.getRecommendLayout()));
         }
-        return new ExperimentOutputs(layouts, allResults, user, predict, recommend);
+        List<Metric<?>> metrics = Lists.newArrayList();
+        for (MetricFactory metric : measurements.getMetricFactories()) {
+            metrics.add(closer.register(metric.createMetric(this)));
+        }
+        return new ExperimentOutputs(layouts, allResults, user, predict, recommend, metrics);
     }
 }

@@ -20,31 +20,113 @@
  */
 package org.grouplens.lenskit.eval.metrics;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * A simple metric base class that tracks the current evaluation.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-public abstract class AbstractMetric<E> implements Metric<E> {
-    private E currentEvaluation;
-
-    @Override
-    public void startEvaluation(E eval) {
-        currentEvaluation = eval;
-    }
-
-    @Override
-    public void finishEvaluation() {
-        currentEvaluation = null;
+public abstract class AbstractMetric<A extends MetricAccumulator> implements Metric<A> {
+    /**
+     * Make a user result row. This expands it to the length of the user columns, inserting
+     * {@code null}s as needed.
+     * @return The result row, the same length as {@link #getUserColumnLabels()}.
+     */
+    protected List<Object> userRow(Object... results) {
+        int len = getUserColumnLabels().size();
+        Preconditions.checkArgument(results.length <= len, "too many results");;
+        List<Object> row = Lists.newArrayListWithCapacity(len);
+        Collections.addAll(row, results);
+        while (row.size() < len) {
+            row.add(null);
+        }
+        return row;
     }
 
     /**
-     * Get the current evaluation, or {@code null} none is in progress.
-     *
-     * @return The current evaluation.
+     * Make a final aggregate result row. This expands it to the length of the columns, inserting
+     * {@code null}s as needed.
+     * @return The result row, the same length as {@link #getColumnLabels()}.
      */
-    protected E getCurrentEvaluation() {
-        return currentEvaluation;
+    protected List<Object> finalRow(Object... results) {
+        int len = getColumnLabels().size();
+        Preconditions.checkArgument(results.length <= len, "too many results");;
+        List<Object> row = Lists.newArrayListWithCapacity(len);
+        Collections.addAll(row, results);
+        while (row.size() < len) {
+            row.add(null);
+        }
+        return row;
+    }
+
+    /**
+     * Close the metric.  Many metrics do not need to be closed, so this implementation is a no-op.
+     *
+     * @throws IOException if there is an error closing the metric.
+     */
+    @Override
+    public void close() throws IOException {}
+
+    /**
+     * A simple metric accumulator that accumulates a single mean.  If it has not accumulated any
+     * entries, it returns no value.
+     */
+    public static class MeanAccumulator implements MetricAccumulator {
+        private double total;
+        private int nusers;
+
+        public void addUserValue(double val) {
+            total += val;
+            nusers += 1;
+        }
+
+        public double getTotal() {
+            return total;
+        }
+
+        public int getUserCount() {
+            return nusers;
+        }
+
+        public double getMean() {
+            return total / nusers;
+        }
+
+        @Nonnull
+        @Override
+        public List<Object> finish() {
+            if (nusers > 0) {
+                return Collections.<Object>singletonList(total / nusers);
+            } else {
+                return Collections.singletonList(null);
+            }
+        }
+    }
+
+    /**
+     * An accumulator that returns a pre-computed result. Used for metrics where the real computation
+     * happens in {@link Metric#createAccumulator(org.grouplens.lenskit.eval.Attributed, org.grouplens.lenskit.eval.data.traintest.TTDataSet, org.grouplens.lenskit.Recommender)}.
+     */
+    public static class ConstantAccumulator implements MetricAccumulator {
+        private final List<?> result;
+
+        public ConstantAccumulator(List<?> row) {
+            result = row;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Nonnull
+        @Override
+        public List<Object> finish() {
+            return (List) result;
+        }
     }
 }

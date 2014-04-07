@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
 import com.google.common.io.Closer;
@@ -32,8 +31,8 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.TestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.Metric;
+import org.grouplens.lenskit.eval.metrics.MetricAccumulator;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelectors;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -119,25 +118,16 @@ abstract class TrainTestJob implements Callable<Void> {
             logger.info("Built {} in {}", algorithmInfo.getName(), buildTimer);
 
             logger.info("Measuring {} on {}", algorithmInfo.getName(), dataSet.getName());
-            List<Object> modelMeasures = getModelMeasurements();
-            if (modelMeasures != null) {
-                assert modelMeasures.size() == measurements.getModelColumnCount();
-                outputRow.addAll(modelMeasures);
-            } else {
-                Iterators.addAll(outputRow, Iterators.limit(Iterators.cycle((Object) null),
-                                                            measurements.getModelColumnCount()));
-            }
 
             logger.info("Testing {}", algorithmInfo.getName());
             StopWatch testTimer = new StopWatch();
             testTimer.start();
-            List<TestUserMetricAccumulator> evalAccums = Lists.newArrayList();
-
             List<Object> userRow = Lists.newArrayList();
 
-            for (TestUserMetric eval: measurements.getTestUserMetrics()) {
-                TestUserMetricAccumulator accum = eval.makeAccumulator(algorithmInfo, dataSet);
-                evalAccums.add(accum);
+            List<MetricWithAccumulator<?>> accumulators = Lists.newArrayList();
+
+            for (Metric<?> eval: output.getMetrics()) {
+                accumulators.add(makeMetricAccumulator(eval));
             }
 
             LongSet testUsers = dataSet.getTestData().getUserDAO().getUserIds();
@@ -150,8 +140,8 @@ abstract class TrainTestJob implements Callable<Void> {
 
                 TestUser test = getUserResults(uid);
 
-                for (TestUserMetricAccumulator accum : evalAccums) {
-                    List<Object> ures = accum.evaluate(test);
+                for (MetricWithAccumulator<?> accum : accumulators) {
+                    List<Object> ures = accum.measureUser(test);
                     if (ures != null) {
                         userRow.addAll(ures);
                     }
@@ -171,7 +161,7 @@ abstract class TrainTestJob implements Callable<Void> {
             testTimer.stop();
             logger.info("Tested {} in {}", algorithmInfo.getName(), testTimer);
 
-            writeMetricValues(buildTimer, testTimer, outputRow, evalAccums);
+            writeMetricValues(buildTimer, testTimer, outputRow, accumulators);
             bus.post(JobEvents.finished(this));
         } catch (Throwable th) {
             bus.post(JobEvents.failed(this, th));
@@ -183,17 +173,20 @@ abstract class TrainTestJob implements Callable<Void> {
     }
 
     /**
+     * Create an accumulator for a metric.
+     * @param metric The metric.
+     * @return The metric accumulator.
+     */
+    protected <A extends MetricAccumulator> MetricWithAccumulator<A> makeMetricAccumulator(Metric<A> metric) {
+        return new MetricWithAccumulator<A>(metric, metric.createAccumulator(algorithmInfo, dataSet, null));
+    }
+
+    /**
      * Build the recommender.
      * @throws RecommenderBuildException if there is an error building the recommender.
      * @throws IllegalStateException if the recommender has already been built.
      */
     protected abstract void buildRecommender() throws RecommenderBuildException;
-
-    /**
-     * Get the measurements of the built recommender model.
-     * @return The model measurements, or {@code null} if there are none.
-     */
-    protected abstract List<Object> getModelMeasurements();
 
     /**
      * Get the results for a particular user.
@@ -267,15 +260,15 @@ abstract class TrainTestJob implements Callable<Void> {
         }
     }
 
-    private void writeMetricValues(StopWatch build, StopWatch test, List<Object> measures, List<TestUserMetricAccumulator> accums) throws IOException {
+    private void writeMetricValues(StopWatch build, StopWatch test, List<Object> measures, List<MetricWithAccumulator<?>> accums) throws IOException {
         TableWriter results = output.getResultsWriter();
 
         List<Object> row = Lists.newArrayList();
         row.add(build.getTime());
         row.add(test.getTime());
         row.addAll(measures);
-        for (TestUserMetricAccumulator acc : accums) {
-            row.addAll(acc.finalResults());
+        for (MetricWithAccumulator<?> acc : accums) {
+            row.addAll(acc.getAccumulator().finish());
         }
         results.writeRow(row);
     }
@@ -283,5 +276,27 @@ abstract class TrainTestJob implements Callable<Void> {
     @Override
     public String toString() {
         return String.format("test %s on %s", algorithmInfo, dataSet);
+    }
+
+    protected static class MetricWithAccumulator<A extends MetricAccumulator> {
+        private final Metric<A> metric;
+        private final A accumulator;
+
+        public MetricWithAccumulator(Metric<A> m, A a) {
+            metric = m;
+            accumulator = a;
+        }
+
+        public List<Object> measureUser(TestUser user) {
+            return metric.measureUser(user, accumulator);
+        }
+
+        public Metric<A> getMetric() {
+            return metric;
+        }
+
+        public A getAccumulator() {
+            return accumulator;
+        }
     }
 }

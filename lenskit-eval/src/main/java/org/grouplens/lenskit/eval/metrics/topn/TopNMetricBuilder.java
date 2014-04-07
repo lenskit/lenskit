@@ -20,15 +20,13 @@
  */
 package org.grouplens.lenskit.eval.metrics.topn;
 
-import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetric;
+import org.grouplens.lenskit.eval.metrics.Metric;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends TestUserMetric> implements Builder<K> {
+public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends Metric> implements Builder<K> {
     protected int listSize = 5;
     protected ItemSelector candidates = ItemSelectors.testItems();
     protected ItemSelector exclude = ItemSelectors.trainingItems();

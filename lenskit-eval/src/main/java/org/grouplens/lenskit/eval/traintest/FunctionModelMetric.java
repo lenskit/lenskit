@@ -24,8 +24,13 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
+import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.metrics.MetricAccumulator;
 
+import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -34,7 +39,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
  */
-public class FunctionModelMetric implements ModelMetric {
+public class FunctionModelMetric extends AbstractMetric<MetricAccumulator> {
     private final List<String> columnHeaders;
     private final Function<Recommender, List<Object>> function;
 
@@ -49,13 +54,18 @@ public class FunctionModelMetric implements ModelMetric {
     }
 
     @Override
-    public List<Object> measureAlgorithm(Attributed algorithm, TTDataSet data, Recommender recommender) {
-        return function.apply(recommender);
+    public List<String> getUserColumnLabels() {
+        return Collections.emptyList();
     }
 
     @Override
-    public void startEvaluation(TrainTestEvalTask eval) {}
+    public MetricAccumulator createAccumulator(Attributed algorithm, TTDataSet dataSet, Recommender recommender) {
+        return new ConstantAccumulator(function.apply(recommender));
+    }
 
+    @Nonnull
     @Override
-    public void finishEvaluation() {}
+    public List<Object> measureUser(TestUser user, MetricAccumulator accumulator) {
+        return userRow();
+    }
 }

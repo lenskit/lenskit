@@ -23,10 +23,10 @@ package org.grouplens.lenskit.eval.metrics.predict;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -52,13 +52,13 @@ import static java.lang.Math.log;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class NDCGPredictMetric extends AbstractTestUserMetric {
+public class NDCGPredictMetric extends AbstractMetric<AbstractMetric.MeanAccumulator> {
     private static final Logger logger = LoggerFactory.getLogger(NDCGPredictMetric.class);
     private static final ImmutableList<String> COLUMNS = ImmutableList.of("nDCG");
 
     @Override
-    public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
-        return new Accum();
+    public MeanAccumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new AbstractMetric.MeanAccumulator();
     }
 
     @Override
@@ -95,41 +95,21 @@ public class NDCGPredictMetric extends AbstractTestUserMetric {
         return gain;
     }
 
-    class Accum implements TestUserMetricAccumulator {
-        double total = 0;
-        int nusers = 0;
-
-        @Nonnull
-        @Override
-        public List<Object> evaluate(TestUser user) {
-            SparseVector predictions = user.getPredictions();
-            if (predictions == null) {
-                return userRow();
-            }
-            return evaluatePredictions(user.getTestRatings(), predictions);
+    @Nonnull
+    @Override
+    public List<Object> measureUser(TestUser user, MeanAccumulator accumulator) {
+        SparseVector predictions = user.getPredictions();
+        if (predictions == null) {
+            return userRow();
         }
 
-        List<Object> evaluatePredictions(SparseVector ratings, SparseVector predictions) {
-            LongList ideal = ratings.keysByValue(true);
-            LongList actual = predictions.keysByValue(true);
-            double idealGain = computeDCG(ideal, ratings);
-            double gain = computeDCG(actual, ratings);
-            double score = gain / idealGain;
-            total += score;
-            nusers += 1;
-            return userRow(score);
-        }
-
-        @Nonnull
-        @Override
-        public List<Object> finalResults() {
-            if (nusers > 0) {
-                double v = total / nusers;
-                logger.info("nDCG: {}", v);
-                return finalRow(v);
-            } else {
-                return finalRow();
-            }
-        }
+        SparseVector ratings = user.getTestRatings();
+        LongList ideal = ratings.keysByValue(true);
+        LongList actual = predictions.keysByValue(true);
+        double idealGain = computeDCG(ideal, ratings);
+        double gain = computeDCG(actual, ratings);
+        double score = gain / idealGain;
+        accumulator.addUserValue(score);
+        return userRow(score);
     }
 }

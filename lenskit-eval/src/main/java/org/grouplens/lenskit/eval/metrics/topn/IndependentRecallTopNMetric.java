@@ -24,13 +24,13 @@ import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSets;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 
@@ -51,7 +51,7 @@ import java.util.List;
  * 
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class IndependentRecallTopNMetric extends AbstractTestUserMetric {
+public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecallTopNMetric.Accumulator> {
     private final int listSize;
     private final ItemSelector queryItems;
     private final ItemSelector candidates;
@@ -75,8 +75,8 @@ public class IndependentRecallTopNMetric extends AbstractTestUserMetric {
     }
 
     @Override
-    public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
-        return new Accum(ds.getTestData().getItemDAO().getItemIds());
+    public Accumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new Accumulator(ds.getTestData().getItemDAO().getItemIds());
     }
 
     @Override
@@ -89,57 +89,43 @@ public class IndependentRecallTopNMetric extends AbstractTestUserMetric {
         return columns;
     }
 
-    class Accum implements TestUserMetricAccumulator {
-        private final LongSet universe;
-        
-        double total = 0;
-        int nusers = 0;
+    @Nonnull
+    @Override
+    public List<Object> measureUser(TestUser user, Accumulator accumulator) {
+        double score = 0;
 
-        Accum(LongSet universe) {
-            this.universe = universe;
-        }
+        SingletonSelector theItem = new SingletonSelector();
+        ItemSelector finalCandidates = ItemSelectors.union(candidates, theItem);
 
-        @Nonnull
-        @Override
-        public List<Object> evaluate(TestUser user) {
-            double score = 0;
+        LongSet items = queryItems.select(user.getTrainHistory(), user.getTestHistory(), accumulator.universe);
+        LongIterator it = items.iterator();
+        while (it.hasNext()) {
+            final long l = it.nextLong();
+            theItem.setTheItem(l);
 
-            SingletonSelector theItem = new SingletonSelector();
-            ItemSelector finalCandidates = ItemSelectors.union(candidates, theItem);
-            
-            LongSet items = queryItems.select(user.getTrainHistory(), user.getTestHistory(), universe);
-            LongIterator it = items.iterator();
-            while (it.hasNext()) {
-                final long l = it.nextLong();
-                theItem.setTheItem(l);
-                
-                List<ScoredId> recs = user.getRecommendations(listSize, finalCandidates, exclude);
-                for (ScoredId s : CollectionUtils.fast(recs)) {
-                    if (s.getId() == l) {
-                        score +=1;
-                    }
+            List<ScoredId> recs = user.getRecommendations(listSize, finalCandidates, exclude);
+            for (ScoredId s : CollectionUtils.fast(recs)) {
+                if (s.getId() == l) {
+                    score +=1;
                 }
             }
-            
-            int n = items.size();
-            if (n>0) {
-                score /= n;
-                total += score;
-                nusers += 1;
-                return userRow(score);
-            } else {
-                return userRow();
-            }
         }
 
-        @Nonnull
-        @Override
-        public List<Object> finalResults() {
-            if (nusers > 0) {
-                return finalRow(total / nusers);
-            } else {
-                return finalRow();
-            }
+        int n = items.size();
+        if (n>0) {
+            score /= n;
+            accumulator.addUserValue(score);
+            return userRow(score);
+        } else {
+            return userRow();
+        }
+    }
+
+    public class Accumulator extends AbstractMetric.MeanAccumulator {
+        private final LongSet universe;
+        
+        Accumulator(LongSet universe) {
+            this.universe = universe;
         }
     }
 

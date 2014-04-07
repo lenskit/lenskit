@@ -20,29 +20,62 @@
  */
 package org.grouplens.lenskit.eval.metrics;
 
+import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.eval.Attributed;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.traintest.TestUser;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.Closeable;
+import java.util.List;
+
 /**
- * Base interface for metrics, which are used by evaluations to measure their results.
+ * Base interface for metrics, which are used by evaluations to measure their results.  Metrics may
+ * have additional resources backing them, such as extra output files, and therefore must be closed.
  *
- * @param <E> The type of evaluation.
+ * @param <A> The type of accumulator used by this metric.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 0.10
+ * @since 0.10 (rewritten in 2.1)
  */
-public interface Metric<E> {
+public interface Metric<A extends MetricAccumulator> extends Closeable {
     /**
-     * Initialize the metric to accumulate evaluations for the specified evaluation.
-     * This method is called before any accumulators are constructed. It is invalid
-     * to start a metric twice without finishing it first.
+     * Get labels for the aggregate columns output by this evaluator.
      *
-     * @param eval The evaluation this metric is in use for.
+     * @return The labels for this evaluator's output, used as column headers when
+     *         outputting the results table.
      */
-    void startEvaluation(E eval);
+    List<String> getColumnLabels();
 
     /**
-     * Finish the evaluation, releasing any resources allocated for it. This
-     * will be called after all algorithms and data sets are run through the accumulator.
-     * After this method, the metric should be ready to be used on another evaluation.
+     * Get labels for the per-user columns output by this evaluator.
      *
-     * @review Is that really the behavior we want?
+     * @return The labels for this evaluator's per-user output, used as column headers
+     *         when outputting the results table.
+     * @see #measureUser(TestUser, MetricAccumulator)
      */
-    void finishEvaluation();
+    List<String> getUserColumnLabels();
+
+    /**
+     * Create the accumulator for a single experiment (algorithm/data set pair).
+     *
+     *
+     * @param algorithm The algorithm.
+     * @param dataSet   The data set.
+     * @param recommender The LensKit recommender, if applicable.  This can be null for an external
+     *                    algorithm that does not provide a LensKit recommender.
+     * @return The accumulator.  This will be passed to {@link #measureUser(TestUser, MetricAccumulator)}. If
+     * the metric does not accumulate any results, this method can return {@code null}.
+     */
+    @Nullable
+    A createAccumulator(Attributed algorithm, TTDataSet dataSet, Recommender recommender);
+
+    /**
+     * Measure a user in the evaluation.
+     * @param user The user to evaluate.
+     * @param accumulator The accumulator for this experiment.
+     * @return The table rows resulting from this user's measurement.
+     */
+    @Nonnull
+    List<Object> measureUser(TestUser user, A accumulator);
 }

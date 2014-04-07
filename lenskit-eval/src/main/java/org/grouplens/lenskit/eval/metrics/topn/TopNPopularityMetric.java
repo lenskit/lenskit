@@ -23,26 +23,23 @@ package org.grouplens.lenskit.eval.metrics.topn;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Metric that measures how popular the items in the TopN list are.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TopNPopularityMetric extends AbstractTestUserMetric {
+public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Accumulator> {
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
@@ -80,9 +77,9 @@ public class TopNPopularityMetric extends AbstractTestUserMetric {
     }
     
     @Override
-    public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
+    public Accumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
         Long2IntMap popularity = computePop(ds.getTrainingDAO()); 
-        return new Accum(popularity);
+        return new Accumulator(popularity);
     }
 
     @Override
@@ -95,44 +92,29 @@ public class TopNPopularityMetric extends AbstractTestUserMetric {
         return columns;
     }
 
-    class Accum implements TestUserMetricAccumulator {
-        double total = 0;
-        int nusers = 0;
+    @Nonnull
+    @Override
+    public List<Object> measureUser(TestUser user, Accumulator accumulator) {
+        List<ScoredId> recs;
+        recs = user.getRecommendations(listSize, candidates, exclude);
+        if (recs == null || recs.isEmpty()) {
+            return userRow();
+        }
+        double pop = 0;
+        for (ScoredId s : recs) {
+            pop += accumulator.popularity.get(s.getId()); // default value should be 0 here.
+        }
+        pop = pop / recs.size();
+
+        accumulator.addUserValue(pop);
+        return userRow(pop);
+    }
+
+    public class Accumulator extends AbstractMetric.MeanAccumulator {
         Long2IntMap popularity;
 
-        public Accum(Long2IntMap popularity) {
+        public Accumulator(Long2IntMap popularity) {
             this.popularity = popularity;
-        }
-
-
-        @Nonnull
-        @Override
-        public List<Object> evaluate(TestUser user) {
-            
-            List<ScoredId> recs;
-            recs = user.getRecommendations(listSize, candidates, exclude);
-            if (recs == null || recs.isEmpty()) {
-                return userRow();
-            } 
-            double pop = 0;
-            for (ScoredId s : recs) {
-                pop += popularity.get(s.getId()); // default value should be 0 here.
-            }
-            pop = pop / recs.size();
-            
-            total += pop;
-            nusers += 1;
-            return userRow(pop);
-        }
-
-        @Nonnull
-        @Override
-        public List<Object> finalResults() {
-            if (nusers > 0) {
-                return finalRow(total / nusers);
-            } else {
-                return finalRow();
-            }
         }
     }
 

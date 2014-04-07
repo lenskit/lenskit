@@ -23,10 +23,10 @@ package org.grouplens.lenskit.eval.metrics.predict;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public class HLUtilityPredictMetric extends AbstractTestUserMetric {
+public class HLUtilityPredictMetric extends AbstractMetric<AbstractMetric.MeanAccumulator> {
     private static final Logger logger = LoggerFactory.getLogger(HLUtilityPredictMetric.class);
     private static final List<String> COLUMNS = ImmutableList.of("HLUtility");
 
@@ -50,8 +50,8 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
     }
 
     @Override
-    public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
-        return new Accum();
+    public MeanAccumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new AbstractMetric.MeanAccumulator();
     }
 
     @Override
@@ -76,43 +76,22 @@ public class HLUtilityPredictMetric extends AbstractTestUserMetric {
         return utility;
     }
 
-    public class Accum implements TestUserMetricAccumulator {
-
-        double total = 0;
-        int nusers = 0;
-
-        @Nonnull
-        @Override
-        public List<Object> evaluate(TestUser user) {
-            SparseVector predictions = user.getPredictions();
-            if (predictions == null) {
-                return userRow();
-            }
-            return evaluatePredictions(user.getTestRatings(), predictions);
+    @Nonnull
+    @Override
+    public List<Object> measureUser(TestUser user, MeanAccumulator accumulator) {
+        SparseVector predictions = user.getPredictions();
+        if (predictions == null) {
+            return userRow();
         }
 
-        @Nonnull
-        List<Object> evaluatePredictions(SparseVector ratings, SparseVector predictions) {
-            LongList ideal = ratings.keysByValue(true);
-            LongList actual = predictions.keysByValue(true);
-            double idealUtility = computeHLU(ideal, ratings);
-            double actualUtility = computeHLU(actual, ratings);
-            double u = actualUtility / idealUtility;
-            total += u;
-            nusers++;
-            return userRow(u);
-        }
+        SparseVector ratings = user.getTestRatings();
+        LongList ideal = ratings.keysByValue(true);
+        LongList actual = predictions.keysByValue(true);
+        double idealUtility = computeHLU(ideal, ratings);
+        double actualUtility = computeHLU(actual, ratings);
+        double u = actualUtility / idealUtility;
 
-        @Nonnull
-        @Override
-        public List<Object> finalResults() {
-            if (nusers > 0) {
-                double v = total / nusers;
-                logger.info("HLU: {}", v);
-                return finalRow(v);
-            } else {
-                return finalRow();
-            }
-        }
+        accumulator.addUserValue(u);
+        return userRow(u);
     }
 }

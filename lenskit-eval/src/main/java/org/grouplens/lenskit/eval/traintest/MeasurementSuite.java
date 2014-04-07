@@ -20,10 +20,7 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.collect.Iterables;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.eval.metrics.Metric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.symbols.Symbol;
 
 import java.util.List;
@@ -35,64 +32,21 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class MeasurementSuite {
-    private final List<TestUserMetric> testUserMetrics;
-    private final List<ModelMetric> modelMetrics;
+    private final List<MetricFactory> metricFactories;
     private final List<Pair<Symbol, String>> predictionChannels;
 
-    public MeasurementSuite(List<TestUserMetric> uMetrics,
-                            List<ModelMetric> mMetrics,
-                            List<Pair<Symbol, String>> pChannels) {
-        testUserMetrics = uMetrics;
-        modelMetrics = mMetrics;
+    /**
+     * Create a new measurement suite.
+     * @param metrics The factories for the metrics to use.
+     * @param pChannels The channels to write.
+     */
+    public MeasurementSuite(List<MetricFactory> metrics, List<Pair<Symbol, String>> pChannels) {
+        metricFactories = metrics;
         predictionChannels = pChannels;
     }
 
-    public List<TestUserMetric> getTestUserMetrics() {
-        return testUserMetrics;
-    }
-
-    public List<ModelMetric> getModelMetrics() {
-        return modelMetrics;
-    }
-
-    /**
-     * Get the number of columns used for aggregates of user metrics.
-     * @return The number of aggregate user metric columns.
-     */
-    public int getAggregateUserColumnCount() {
-        int n = 0;
-        for (TestUserMetric m: testUserMetrics) {
-            n += m.getColumnLabels().size();
-        }
-        return n;
-    }
-
-    /**
-     * Get the number of columns used for per-user metrics.
-     * @return The number of per-user metric columns.
-     */
-    public int getUserColumnCount() {
-        int n = 0;
-        for (TestUserMetric m: testUserMetrics) {
-            n += m.getUserColumnLabels().size();
-        }
-        return n;
-    }
-
-    /**
-     * Get the number of columns used for model metrics.
-     * @return The model metric column count.
-     */
-    public int getModelColumnCount() {
-        int n = 0;
-        for (ModelMetric m: modelMetrics) {
-            n += m.getColumnLabels().size();
-        }
-        return n;
-    }
-
-    public Iterable<Metric<TrainTestEvalTask>> getAllMetrics() {
-        return Iterables.concat(testUserMetrics, modelMetrics);
+    public List<MetricFactory> getMetricFactories() {
+        return metricFactories;
     }
 
     public List<Pair<Symbol, String>> getPredictionChannels() {
