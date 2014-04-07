@@ -46,7 +46,7 @@ import java.util.Collection;
  * @compat Private
  */
 @SuppressWarnings("deprecation")
-public final class LongKeyDomain implements Serializable {
+public abstract class LongKeyDomain implements Serializable {
     /**
      * Wrap a key array (with a specified size) into a key set.
      * @param keys The key array.  This array must be sorted, and must not contain duplicates.  For
@@ -66,7 +66,7 @@ public final class LongKeyDomain implements Serializable {
         if (initiallyActive) {
             mask.set(0, size);
         }
-        return new LongKeyDomain(keys, size, mask);
+        return new FullLongKeyDomain(keys, size, mask);
     }
 
     /**
@@ -82,15 +82,49 @@ public final class LongKeyDomain implements Serializable {
             return ((LongSortedArraySet) keys).getDomain().compactCopy(initiallyActive);
         }
 
-        long[] keyArray;
-        if (keys instanceof LongCollection) {
-            keyArray = ((LongCollection) keys).toLongArray();
-        } else {
-            keyArray = LongIterators.unwrap(LongIterators.asLongIterator(keys.iterator()));
+        // 2 options to build the array. Invariant: exactly one is non-null.
+        long[] keyArray = null;
+        int[] smallKeyArray = new int[keys.size()];
+
+        int pos = 0;
+        LongIterator iter = LongIterators.asLongIterator(keys.iterator());
+        while (iter.hasNext()) {
+            long k = iter.nextLong();
+            if (smallKeyArray != null && k >= Integer.MIN_VALUE && k <= Integer.MAX_VALUE) {
+                // still building a small key array
+                smallKeyArray[pos] = (int) k;
+            } else {
+                if (keyArray == null) {
+                    assert smallKeyArray != null;
+                    // we need to upgrade
+                    keyArray = new long[keys.size()];
+                    for (int i = 0; i < pos; i++) {
+                        keyArray[i] = smallKeyArray[i];
+                    }
+                    smallKeyArray = null;
+                }
+                keyArray[pos] = k;
+            }
+            pos++;
         }
-        Arrays.sort(keyArray);
-        int size = MoreArrays.deduplicate(keyArray, 0, keyArray.length);
-        return wrap(keyArray, size, initiallyActive);
+
+        if (keyArray != null) {
+            assert pos == keyArray.length;
+            assert smallKeyArray == null;
+            Arrays.sort(keyArray);
+            int size = MoreArrays.deduplicate(keyArray, 0, keyArray.length);
+            BitSet mask = new BitSet(size);
+            mask.set(0, size, initiallyActive);
+            return new FullLongKeyDomain(keyArray, size, mask);
+        } else {
+            assert smallKeyArray != null;
+            assert pos == smallKeyArray.length;
+            Arrays.sort(smallKeyArray);
+            int size = MoreArrays.deduplicate(smallKeyArray, 0, smallKeyArray.length);
+            BitSet mask = new BitSet(size);
+            mask.set(0, size, initiallyActive);
+            return new CompactLongKeyDomain(smallKeyArray, size, mask);
+        }
     }
 
     /**
@@ -123,16 +157,14 @@ public final class LongKeyDomain implements Serializable {
 
     private static final LongKeyDomain EMPTY_DOMAIN = wrap(new long[0], 0, true);
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
-    private final long[] keys;
-    private final int domainSize;
+    final int domainSize;
     private final BitSet mask;
     private boolean unowned = false;
 
-    private LongKeyDomain(long[] ks, int end, BitSet m) {
-        keys = ks;
-        domainSize = end;
+    LongKeyDomain(int size, BitSet m) {
+        domainSize = size;
         mask = m;
     }
 
@@ -144,9 +176,7 @@ public final class LongKeyDomain implements Serializable {
      *         value is the <em>insertion point</em>, as defined by
      *         {@link Arrays#binarySearch(long[], int, int, long)}.
      */
-    public int getIndex(long key) {
-        return Arrays.binarySearch(keys, 0, domainSize, key);
-    }
+    public abstract int getIndex(long key);
 
     /**
      * Get the index for a key if that key is active.
@@ -210,9 +240,16 @@ public final class LongKeyDomain implements Serializable {
             unowned = false;
             return this;
         } else {
-            return new LongKeyDomain(keys, domainSize, (BitSet) mask.clone());
+            return makeClone((BitSet) mask.clone());
         }
     }
+
+    /**
+     * Make a clone of this key domain.
+     * @param mask The mask for the clone (the clone will use this mask instance directly).
+     * @return The cloned key domain.
+     */
+    abstract LongKeyDomain makeClone(BitSet mask);
 
     /**
      * Mark this key set as <em>unowned</em>.  The next call to {@link #clone()} will mark the
@@ -242,7 +279,7 @@ public final class LongKeyDomain implements Serializable {
      * @return The new key set, with the same keys but all of them deactivated.
      */
     public LongKeyDomain inactiveCopy() {
-        return new LongKeyDomain(keys, domainSize, new BitSet());
+        return makeClone(new BitSet(domainSize));
     }
 
     /**
@@ -261,27 +298,23 @@ public final class LongKeyDomain implements Serializable {
      * @return A compacted copy of this key set.
      */
     public LongKeyDomain compactCopy(boolean active) {
-        long[] compactKeys;
-        if (domainSize == keys.length && mask.nextClearBit(0) >= domainSize) {
-            // fast path 1: reuse the keys
-            compactKeys = keys;
-        } else if (mask.nextClearBit(0) >= domainSize) {
-            // fast path 2: all keys are active, use fast copy
-            int size = domainSize();
-            compactKeys = new long[size];
-            System.arraycopy(keys, 0, compactKeys, 0, size);
+        int firstUnused = mask.nextClearBit(0);
+        if (firstUnused >= domainSize) {
+            // fast path: all keys are active, just compact if needed
+            BitSet newMask = new BitSet(domainSize);
+            newMask.set(0, domainSize, active);
+            return makeCompactCopy(newMask);
         } else {
-            // there are unused keys, do a slow copy
-            compactKeys = LongIterators.unwrap(keyIterator(activeIndexIterator(false)));
-            assert compactKeys.length == size();
+            // slow path: we cannot count on all keys being active
+            return fromCollection(LongIterators.pour(keyIterator(activeIndexIterator(false))), active);
         }
-
-        BitSet compactMask = new BitSet(compactKeys.length);
-        if (active) {
-            compactMask.set(0, compactKeys.length, true);
-        }
-        return new LongKeyDomain(compactKeys, compactKeys.length, compactMask);
     }
+
+    /**
+     * Make a compact copy of the key domain.  The compact copy should shed any excess capacity.
+     * @return The copied key domain.
+     */
+    abstract LongKeyDomain makeCompactCopy(BitSet m);
 
     /**
      * Query whether an index is active.
@@ -316,10 +349,7 @@ public final class LongKeyDomain implements Serializable {
      * @param idx The index to query.
      * @return The key at the specified index.
      */
-    public long getKey(int idx) {
-        assert idx >= 0 && idx < domainSize;
-        return keys[idx];
-    }
+    public abstract long getKey(int idx);
 
     /**
      * Get the domain size of this set.
@@ -422,7 +452,7 @@ public final class LongKeyDomain implements Serializable {
         // TODO Cache the domain
         BitSet bits = new BitSet(domainSize);
         bits.set(0, domainSize);
-        return new LongSortedArraySet(new LongKeyDomain(keys, domainSize, bits));
+        return new LongSortedArraySet(makeClone(bits));
     }
 
     /**
@@ -451,9 +481,7 @@ public final class LongKeyDomain implements Serializable {
      * @param other The other key set.
      * @return {@code true} if the two key sets are compatible.
      */
-    public boolean isCompatibleWith(@Nonnull LongKeyDomain other) {
-        return keys == other.keys;
-    }
+    public abstract boolean isCompatibleWith(@Nonnull LongKeyDomain other);
 
     //region Active flag modification
     /**

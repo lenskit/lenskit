@@ -6,6 +6,7 @@ dependencies {
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3'
 
     testCompile project(':lenskit-test')
+    testCompile group: 'net.java.quickcheck', name: 'quickcheck', version: '0.6'
 }
 
 meta {

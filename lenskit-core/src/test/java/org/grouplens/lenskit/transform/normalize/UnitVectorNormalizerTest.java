@@ -23,6 +23,7 @@ package org.grouplens.lenskit.transform.normalize;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.junit.Before;
 import org.junit.Test;
 
 import static java.lang.Math.sqrt;
@@ -33,7 +34,12 @@ import static org.junit.Assert.assertThat;
 
 public class UnitVectorNormalizerTest {
     UnitVectorNormalizer norm = new UnitVectorNormalizer();
-    LongSortedSet keySet = LongUtils.packedSet(1,3,4,6);
+    LongSortedSet keySet;
+
+    @Before
+    public void createKeySet() {
+        keySet = LongUtils.packedSet(1, 3, 4, 6);
+    }
 
     @Test
     public void testScale() {
