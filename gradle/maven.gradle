@@ -52,6 +52,19 @@ signing {
     sign configurations.archives
 }
 
+install {
+    def installUrl = project.properties.get('install.url', null)
+    if (installUrl != null) {
+        logger.info 'installing to $installUrl'
+        repositories.clear()
+        repositories {
+            mavenDeployer {
+                repository(url: rootProject.uri(installUrl))
+            }
+        }
+    }
+}
+
 uploadArchives {
     repositories.mavenDeployer {
         def user = System.getenv('DEPLOY_USER') ?: project.properties.get('deploy.user', null)
