@@ -21,16 +21,17 @@
 package org.grouplens.lenskit.knn.item.model;
 
 import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.longs.LongSortedSets;
+import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
-import org.grouplens.grapht.annotation.DefaultProvider;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.Iterator;
 

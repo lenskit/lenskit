@@ -26,6 +26,8 @@ import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import org.apache.commons.lang3.builder.Builder;
@@ -34,6 +36,8 @@ import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -124,12 +128,37 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         double[] builtScores = reuse ? scores : Arrays.copyOf(scores, size);
         if (tryReuse) {
             // invalidate the builder
-            ids = null;
-            scores = null;
-            channels = null;
-            typedChannels = null;
+            clear();
         }
         return new PackedScoredIdList(builtIds, builtScores, typedChans, chans);
+    }
+
+    /**
+     * Clear the builder. After it is cleared, it can no longer be used.
+     */
+    public void clear() {
+        ids = null;
+        scores = null;
+        channels = null;
+        typedChannels = null;
+    }
+
+    /**
+     * Build a sparse vector directly from the list of IDs. This allows a scored ID list builder to
+     * be used to efficiently accumulate a sparse vector.  If the same ID is added multiple times,
+     * the first instance is used.
+     * <p><strong>Warning:</strong> this method currently discards all side channels.
+     *
+     * @return A sparse vector containing the data accumulated.
+     */
+    public ImmutableSparseVector buildVector() {
+        LongList idList = LongArrayList.wrap(ids, size);
+        MutableSparseVector msv = MutableSparseVector.create(idList);
+        for (int i = 0; i < size; i++) {
+            msv.set(ids[i], scores[i]);
+        }
+        // FIXME Accumulate side channels
+        return msv.freeze();
     }
 
     /**
