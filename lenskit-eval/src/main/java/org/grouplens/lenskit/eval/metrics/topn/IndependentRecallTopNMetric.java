@@ -149,7 +149,7 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
      */
     public static class Builder extends TopNMetricBuilder<Builder, IndependentRecallTopNMetric> {
         private String suffix = null;
-        private ItemSelector queryItems = ItemSelectors.testItems();
+        private ItemSelector goodItems = ItemSelectors.testItems();
 
         public String getSuffix() {
             return suffix;
@@ -159,17 +159,17 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
             this.suffix = lbl;
             return this;
         }
-        public ItemSelector getQueryItems() {
-            return queryItems;
+        public ItemSelector getGoodItems() {
+            return goodItems;
         }
 
-        public Builder setQueryItems(ItemSelector queryItems) {
-            this.queryItems = queryItems;
+        public Builder setGoodItems(ItemSelector goodItems) {
+            this.goodItems = goodItems;
             return this;
         }
 
         public IndependentRecallTopNMetric build() {
-            return new IndependentRecallTopNMetric(suffix, queryItems, candidates, listSize, exclude);
+            return new IndependentRecallTopNMetric(suffix, goodItems, candidates, listSize, exclude);
         }
     }
 
