@@ -15,7 +15,9 @@ allprojects {
     ext.slf4jVersion = '1.7.6'
 
     repositories {
-        mavenLocal()
+        if (properties.get('maven.useLocal', 'false').toBoolean()) {
+            mavenLocal()
+        }
         mavenCentral()
         maven {
             url "https://oss.sonatype.org/content/repositories/snapshots/"
