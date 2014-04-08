@@ -335,7 +335,7 @@ class TrainTestTaskTest {
         def measures = command.createMeasurementSuite()
         def layout = ExperimentOutputLayout.create(exp, measures)
         def table = new TableBuilder(layout.resultsLayout)
-        def out = command.openExperimentOutputs(layout, table, Closer.create())
+        def out = command.openExperimentOutputs(layout, measures, table, Closer.create())
         def jobGraph = command.makeJobGraph(exp, measures, out)
         assertThat jobGraph.adjacentNodes, hasSize(3)
 
@@ -408,7 +408,7 @@ class TrainTestTaskTest {
         def measures = command.createMeasurementSuite()
         def layout = ExperimentOutputLayout.create(exp, measures)
         def table = new TableBuilder(layout.resultsLayout)
-        def out = command.openExperimentOutputs(layout, table, Closer.create())
+        def out = command.openExperimentOutputs(layout, measures, table, Closer.create())
         def jobGraph = command.makeJobGraph(exp, measures, out)
         assertThat jobGraph.adjacentNodes, hasSize(3)
 

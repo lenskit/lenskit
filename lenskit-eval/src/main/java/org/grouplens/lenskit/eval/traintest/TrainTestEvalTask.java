@@ -383,7 +383,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             Closer closer = Closer.create();
 
             try {
-                ExperimentOutputs outputs = openExperimentOutputs(layout, resultsBuilder, closer);
+                ExperimentOutputs outputs = openExperimentOutputs(layout, measurements, resultsBuilder, closer);
                 DAGNode<JobGraph.Node,JobGraph.Edge> jobGraph =
                         makeJobGraph(experiments, measurements, outputs);
                 if (taskGraphFile != null) {
@@ -597,7 +597,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     /**
      * Prepare the evaluation by opening all outputs and initializing metrics.
      */
-    ExperimentOutputs openExperimentOutputs(ExperimentOutputLayout layouts, TableWriter results, Closer closer) throws IOException {
+    ExperimentOutputs openExperimentOutputs(ExperimentOutputLayout layouts, MeasurementSuite measures, TableWriter results, Closer closer) throws IOException {
         TableLayout resultLayout = layouts.getResultsLayout();
         TableWriter allResults = results;
         if (outputFile != null) {
@@ -617,7 +617,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             recommend = closer.register(CSVWriter.open(recommendOutputFile, layouts.getRecommendLayout()));
         }
         List<Metric<?>> metrics = Lists.newArrayList();
-        for (MetricFactory metric : measurements.getMetricFactories()) {
+        for (MetricFactory metric : measures.getMetricFactories()) {
             metrics.add(closer.register(metric.createMetric(this)));
         }
         return new ExperimentOutputs(layouts, allResults, user, predict, recommend, metrics);
