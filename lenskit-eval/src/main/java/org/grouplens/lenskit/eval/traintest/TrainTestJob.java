@@ -32,7 +32,6 @@ import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
-import org.grouplens.lenskit.eval.metrics.MetricAccumulator;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelectors;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
