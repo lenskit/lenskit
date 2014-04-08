@@ -1,0 +1,14 @@
+// IntelliJ IDEA configuration.
+
+allprojects {
+    apply plugin: 'idea'
+}
+subprojects {
+    rootProject.tasks['ideaProject'].dependsOn ideaModule
+    idea {
+        module {
+            outputDir = sourceSets.main.output.classesDir
+            testOutputDir = sourceSets.test.output.classesDir
+        }
+    }
+}
