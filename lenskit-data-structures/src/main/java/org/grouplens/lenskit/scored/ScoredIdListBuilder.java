@@ -26,6 +26,7 @@ import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.objects.ObjectArrays;
@@ -157,7 +158,21 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         for (int i = 0; i < size; i++) {
             msv.set(ids[i], scores[i]);
         }
-        // FIXME Accumulate side channels
+
+        for (ChannelStorage chan: channels.values()) {
+            MutableSparseVector vchan = msv.getOrAddChannelVector(chan.symbol);
+            for (int i = 0; i < size; i++) {
+                vchan.set(ids[i], chan.values[i]);
+            }
+        }
+
+        for (TypedChannelStorage<?> chan: typedChannels.values()) {
+            Long2ObjectMap vchan = msv.getOrAddChannel(chan.symbol);
+            for (int i = 0; i < size; i++) {
+                vchan.put(ids[i], chan.values[i]);
+            }
+        }
+
         return msv.freeze();
     }
 
