@@ -15,3 +15,12 @@ dependencies {
 }
 
 apply plugin: 'idea'
+idea {
+    module {
+        outputDir = sourceSets.main.output.classesDir
+        testOutputDir = sourceSets.test.output.classesDir
+        downloadSources = true
+        downloadJavadoc = true
+        inheritOutputDirs = false
+    }
+}

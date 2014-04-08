@@ -27,10 +27,11 @@ idea {
     project {
         ipr {
             withXml {
-                Node modules = it.asNode().depthFirst().find {
+                Node ipr = it.asNode()
+                Node modules = ipr.depthFirst().find {
                     it.name() == 'modules'
                 }
-                Node bsm = modules.children().find { Node kid ->
+                def bsm = modules.children().find { Node kid ->
                     kid.attribute('fileurl').endsWith('buildSrc.iml')
                 }
                 if (bsm == null) {
@@ -40,6 +41,15 @@ idea {
                             filepath: '$PROJECT_DIR$/buildSrc/buildSrc.iml'
                     ]
                     modules.appendNode('module', attrs)
+                }
+
+                ipr.children().each { Node comp ->
+                    if (comp.name() == 'component' && comp.attribute('name') == 'ProjectRootManager') {
+                        def output = comp.get('output')
+                        if (output != null) {
+                            output.@url = 'file://$PROJECT_DIR$/build/classes'
+                        }
+                    }
                 }
             }
         }
