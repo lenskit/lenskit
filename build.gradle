@@ -60,6 +60,10 @@ task reportTests(type: TestReport) {
 subprojects {
     apply plugin: 'java'
     sourceCompatibility = '1.6'
+    sourceSets.all { ss ->
+        // generate resources & classes to same dir
+        ss.output.resourcesDir = ss.output.classesDir
+    }
 
     // don't package until testing
     jar.mustRunAfter 'check'
