@@ -34,6 +34,10 @@ import java.util.List;
  * Base interface for metrics, which are used by evaluations to measure their results.  Metrics may
  * have additional resources backing them, such as extra output files, and therefore must be closed.
  *
+ * <p>
+ * A metric can define a <emph>metric accumulator</emph>, created by {@link #createAccumulator(Attributed, TTDataSet, Recommender)},
+ * that is used to accumulate the results of different users in a single experiment.
+ *
  * @param <A> The type of accumulator used by this metric.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10 (rewritten in 2.1)
