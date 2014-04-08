@@ -35,7 +35,7 @@ import java.util.List;
  * have additional resources backing them, such as extra output files, and therefore must be closed.
  *
  * <p>
- * A metric can define a <emph>metric accumulator</emph>, created by {@link #createAccumulator(Attributed, TTDataSet, Recommender)},
+ * A metric can define a <em>metric accumulator</em>, created by {@link #createAccumulator(Attributed, TTDataSet, Recommender)},
  * that is used to accumulate the results of different users in a single experiment.
  *
  * @param <A> The type of accumulator used by this metric.
