@@ -9,21 +9,3 @@ include 'lenskit-knn', 'lenskit-svd', 'lenskit-slopeone', 'lenskit-predict'
 include 'lenskit-all'
 include 'lenskit-cli'
 include 'lenskit-integration-tests'
-
-def includeBuildSrc = false
-def propFile = new File(settingsDir, 'gradle.properties')
-if (propFile.exists()) {
-    def props = new Properties()
-    propFile.withReader {props.load(it)}
-    def bsp = props.getProperty('include.buildSrc', null)
-    if (bsp != null) {
-        includeBuildSrc = bsp.toBoolean()
-    }
-}
-def cmdBsp = startParameter.projectProperties.get('include.buildSrc')
-if (cmdBsp != null) {
-    includeBuildSrc = cmdBsp.toBoolean()
-}
-if (includeBuildSrc) {
-    include 'buildSrc'
-}
