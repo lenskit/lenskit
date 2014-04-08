@@ -148,7 +148,6 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
      * Build a sparse vector directly from the list of IDs. This allows a scored ID list builder to
      * be used to efficiently accumulate a sparse vector.  If the same ID is added multiple times,
      * the first instance is used.
-     * <p><strong>Warning:</strong> this method currently discards all side channels.
      *
      * @return A sparse vector containing the data accumulated.
      */

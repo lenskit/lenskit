@@ -1,6 +1,4 @@
 // IntelliJ IDEA configuration.
-import javax.xml.xpath.*
-
 allprojects {
     apply plugin: 'idea'
 }
