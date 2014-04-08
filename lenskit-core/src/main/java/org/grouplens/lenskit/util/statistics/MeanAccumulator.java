@@ -21,13 +21,13 @@
 package org.grouplens.lenskit.util.statistics;
 
 /**
- * Accumulate an average.
+ * Accumulate a mean.
  * Only the sum and the item count is stored, not the values themselves.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
-public class AverageAccumulator {
+public class MeanAccumulator {
 
     private double accSum;
     private long accCount;
@@ -35,25 +35,25 @@ public class AverageAccumulator {
     /**
      * Construct a new, zeroed average accumulator.
      */
-    public AverageAccumulator() {
+    public MeanAccumulator() {
         accCount = 0;
         accSum = 0;
     }
 
     /**
-     * Initialize the {@link AverageAccumulator} with a pre-calculated sum and
+     * Initialize the {@link MeanAccumulator} with a pre-calculated sum and
      * the amount of values included.
      *
      * @param sum   pre-calculated sum
      * @param count amount of values that where used to build this sum
      */
-    public AverageAccumulator(double sum, long count) {
+    public MeanAccumulator(double sum, long count) {
         accCount = count;
         accSum = sum;
     }
 
     /**
-     * Add a new datum to the {@link AverageAccumulator}.
+     * Add a new datum to the {@link MeanAccumulator}.
      *
      * @param datum new datum to include into the average.
      */
@@ -65,12 +65,20 @@ public class AverageAccumulator {
     /**
      * @return average over all added datums
      */
-    public double getAverage() {
+    public double getMean() {
         if (accCount == 0 || accSum == 0) {
             return 0;
         }
 
         return accSum / accCount;
+    }
+
+    /**
+     * Get the total of the values accumulated so far.
+     * @return The total of the values.
+     */
+    public double getTotal() {
+        return accSum;
     }
 
     /**
@@ -82,6 +90,6 @@ public class AverageAccumulator {
 
     @Override
     public String toString() {
-        return Double.toString(this.getAverage());
+        return Double.toString(this.getMean());
     }
 }

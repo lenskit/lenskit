@@ -177,7 +177,7 @@ abstract class TrainTestJob implements Callable<Void> {
      * @param metric The metric.
      * @return The metric accumulator.
      */
-    protected <A extends MetricAccumulator> MetricWithAccumulator<A> makeMetricAccumulator(Metric<A> metric) {
+    protected <A> MetricWithAccumulator<A> makeMetricAccumulator(Metric<A> metric) {
         return new MetricWithAccumulator<A>(metric, metric.createAccumulator(algorithmInfo, dataSet, null));
     }
 
@@ -268,7 +268,7 @@ abstract class TrainTestJob implements Callable<Void> {
         row.add(test.getTime());
         row.addAll(measures);
         for (MetricWithAccumulator<?> acc : accums) {
-            row.addAll(acc.getAccumulator().finish());
+            row.addAll(acc.getResults());
         }
         results.writeRow(row);
     }
@@ -278,7 +278,7 @@ abstract class TrainTestJob implements Callable<Void> {
         return String.format("test %s on %s", algorithmInfo, dataSet);
     }
 
-    protected static class MetricWithAccumulator<A extends MetricAccumulator> {
+    protected static class MetricWithAccumulator<A> {
         private final Metric<A> metric;
         private final A accumulator;
 
@@ -297,6 +297,10 @@ abstract class TrainTestJob implements Callable<Void> {
 
         public A getAccumulator() {
             return accumulator;
+        }
+
+        public List<Object> getResults() {
+            return metric.getResults(accumulator);
         }
     }
 }

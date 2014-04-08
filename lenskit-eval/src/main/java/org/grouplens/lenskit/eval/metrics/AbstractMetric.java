@@ -20,52 +20,88 @@
  */
 package org.grouplens.lenskit.eval.metrics;
 
-import com.google.common.base.Preconditions;
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import org.grouplens.lenskit.eval.traintest.TestUser;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * A simple metric base class that tracks the current evaluation.
  *
+ * @param <A> The accumulator type.
+ * @param <U> The type of per-user results.
+ * @param <G> The type of global results.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-public abstract class AbstractMetric<A extends MetricAccumulator> implements Metric<A> {
-    /**
-     * Make a user result row. This expands it to the length of the user columns, inserting
-     * {@code null}s as needed.
-     * @return The result row, the same length as {@link #getUserColumnLabels()}.
-     */
-    protected List<Object> userRow(Object... results) {
-        int len = getUserColumnLabels().size();
-        Preconditions.checkArgument(results.length <= len, "too many results");;
-        List<Object> row = Lists.newArrayListWithCapacity(len);
-        Collections.addAll(row, results);
-        while (row.size() < len) {
-            row.add(null);
-        }
-        return row;
+public abstract class AbstractMetric<A, G, U> implements Metric<A> {
+    private final ResultConverter<G> aggregateConverter;
+    private final ResultConverter<U> userConverter;
+
+    protected AbstractMetric(Class<G> aggregate, Class<U> user) {
+        aggregateConverter = ResultConverter.create(aggregate);
+        userConverter = ResultConverter.create(user);
     }
 
     /**
-     * Make a final aggregate result row. This expands it to the length of the columns, inserting
-     * {@code null}s as needed.
-     * @return The result row, the same length as {@link #getColumnLabels()}.
+     * A prefix to be applied to column names.  If non-{@code null}, this prefix will be applied and
+     * separated with a period.
+     * @return The prefix to apply to column names.
      */
-    protected List<Object> finalRow(Object... results) {
-        int len = getColumnLabels().size();
-        Preconditions.checkArgument(results.length <= len, "too many results");;
-        List<Object> row = Lists.newArrayListWithCapacity(len);
-        Collections.addAll(row, results);
-        while (row.size() < len) {
-            row.add(null);
-        }
-        return row;
+    protected String getPrefix() {
+        return null;
     }
+
+    /**
+     * A suffix to be applied to column names.  If non-{@code null}, this suffix will be applied and
+     * separated with a period.
+     * @return The suffix to apply to column names.
+     */
+    protected String getSuffix() {
+        return null;
+    }
+
+    @Override
+    public List<String> getColumnLabels() {
+        return Lists.transform(aggregateConverter.getColumnLabels(), new HeaderTransform());
+    }
+
+    @Override
+    public List<String> getUserColumnLabels() {
+        return Lists.transform(userConverter.getColumnLabels(), new HeaderTransform());
+    }
+
+    @Nonnull
+    @Override
+    public List<Object> measureUser(TestUser user, A accumulator) {
+        return userConverter.getColumns(doMeasureUser(user, accumulator));
+    }
+
+    /**
+     * Measure a user with typed results.
+     * @param user The user to measure.
+     * @param accum The accumulator.
+     * @return The results of measuring the user, or {@code null} to emit NAs for the user.
+     */
+    protected abstract U doMeasureUser(TestUser user, A accum);
+
+    @Nonnull
+    @Override
+    public List<Object> getResults(A accum) {
+        return aggregateConverter.getColumns(getTypedResults(accum));
+    }
+
+    /**
+     * Get the typed results from an accumulator.
+     * @param accum The accumulator.
+     * @return The results accumulated for this experiment, or {@code null} to emit NAs.
+     */
+    protected abstract G getTypedResults(A accum);
 
     /**
      * Close the metric.  Many metrics do not need to be closed, so this implementation is a no-op.
@@ -75,58 +111,21 @@ public abstract class AbstractMetric<A extends MetricAccumulator> implements Met
     @Override
     public void close() throws IOException {}
 
-    /**
-     * A simple metric accumulator that accumulates a single mean.  If it has not accumulated any
-     * entries, it returns no value.
-     */
-    public static class MeanAccumulator implements MetricAccumulator {
-        private double total;
-        private int nusers;
-
-        public void addUserValue(double val) {
-            total += val;
-            nusers += 1;
-        }
-
-        public double getTotal() {
-            return total;
-        }
-
-        public int getUserCount() {
-            return nusers;
-        }
-
-        public double getMean() {
-            return total / nusers;
-        }
-
-        @Nonnull
+    private class HeaderTransform implements Function<String,String> {
+        @Nullable
         @Override
-        public List<Object> finish() {
-            if (nusers > 0) {
-                return Collections.<Object>singletonList(total / nusers);
-            } else {
-                return Collections.singletonList(null);
+        public String apply(@Nullable String input) {
+            StringBuilder sb = new StringBuilder();
+            String part = getPrefix();
+            if (part != null) {
+                sb.append(part).append(".");
             }
-        }
-    }
-
-    /**
-     * An accumulator that returns a pre-computed result. Used for metrics where the real computation
-     * happens in {@link Metric#createAccumulator(org.grouplens.lenskit.eval.Attributed, org.grouplens.lenskit.eval.data.traintest.TTDataSet, org.grouplens.lenskit.Recommender)}.
-     */
-    public static class ConstantAccumulator implements MetricAccumulator {
-        private final List<?> result;
-
-        public ConstantAccumulator(List<?> row) {
-            result = row;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Nonnull
-        @Override
-        public List<Object> finish() {
-            return (List) result;
+            sb.append(input);
+            part = getSuffix();
+            if (part != null) {
+                sb.append(part).append(".");
+            }
+            return sb.toString();
         }
     }
 }

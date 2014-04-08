@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.eval.metrics.topn;
 
-import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSets;
@@ -31,10 +30,11 @@ import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -51,27 +51,34 @@ import java.util.List;
  * 
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecallTopNMetric.Accumulator> {
+public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecallTopNMetric.Accumulator, IndependentRecallTopNMetric.Result, IndependentRecallTopNMetric.Result> {
+    private final String suffix;
     private final int listSize;
     private final ItemSelector queryItems;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
-    private final ImmutableList<String> columns;
 
     /**
-     * @param lbl the label for the result column of this evaluation.
+     * @param sfx the label for this independent recall evaluation, or {@code null} for no label.
+     *            The label will be appended as a suffix, separated by a dot.
      * @param queryItems the "true positive" items that we compute the hit rate over
      * @param candidates items to add to the recommendation, should be a random selection
      * @param listSize The size of the recommendation list to evaluate
      * @param exclude Items which should not be included in the recommendations.
      *                Should not include test set.
      */
-    public IndependentRecallTopNMetric(String lbl, ItemSelector queryItems, ItemSelector candidates, int listSize, ItemSelector exclude) {
-        columns = ImmutableList.of(lbl);
+    public IndependentRecallTopNMetric(String sfx, ItemSelector queryItems, ItemSelector candidates, int listSize, ItemSelector exclude) {
+        super(Result.class, Result.class);
+        suffix = sfx;
         this.queryItems = queryItems;
         this.candidates = candidates;
         this.listSize = listSize;
         this.exclude = exclude;
+    }
+
+    @Override
+    protected String getSuffix() {
+        return suffix;
     }
 
     @Override
@@ -80,18 +87,7 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
     }
 
     @Override
-    public List<String> getColumnLabels() {
-        return columns;
-    }
-
-    @Override
-    public List<String> getUserColumnLabels() {
-        return columns;
-    }
-
-    @Nonnull
-    @Override
-    public List<Object> measureUser(TestUser user, Accumulator accumulator) {
+    public Result doMeasureUser(TestUser user, Accumulator accumulator) {
         double score = 0;
 
         SingletonSelector theItem = new SingletonSelector();
@@ -114,15 +110,34 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
         int n = items.size();
         if (n>0) {
             score /= n;
-            accumulator.addUserValue(score);
-            return userRow(score);
+            accumulator.mean.add(score);
+            return new Result(score);
         } else {
-            return userRow();
+            return null;
         }
     }
 
-    public class Accumulator extends AbstractMetric.MeanAccumulator {
+    @Override
+    protected Result getTypedResults(Accumulator accum) {
+        if (accum.mean.getCount() > 0) {
+            return new Result(accum.mean.getMean());
+        } else {
+            return null;
+        }
+    }
+
+    public static class Result {
+        @ResultColumn("IndepRecall")
+        public final double recall;
+
+        public Result(double r) {
+            recall = r;
+        }
+    }
+
+    public class Accumulator {
         private final LongSet universe;
+        private final MeanAccumulator mean = new MeanAccumulator();
         
         Accumulator(LongSet universe) {
             this.universe = universe;
@@ -133,15 +148,15 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder extends TopNMetricBuilder<Builder, IndependentRecallTopNMetric> {
-        private String lbl = "TopN.Independent.Recall";
+        private String suffix = null;
         private ItemSelector queryItems = ItemSelectors.testItems();
 
-        public String getLbl() {
-            return lbl;
+        public String getSuffix() {
+            return suffix;
         }
 
-        public Builder setLbl(String lbl) {
-            this.lbl = lbl;
+        public Builder setSuffix(String lbl) {
+            this.suffix = lbl;
             return this;
         }
         public ItemSelector getQueryItems() {
@@ -154,7 +169,7 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
         }
 
         public IndependentRecallTopNMetric build() {
-            return new IndependentRecallTopNMetric(lbl, queryItems, candidates, listSize, exclude);
+            return new IndependentRecallTopNMetric(suffix, queryItems, candidates, listSize, exclude);
         }
     }
 

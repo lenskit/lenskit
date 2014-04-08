@@ -20,9 +20,9 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import org.grouplens.lenskit.eval.metrics.AbstractMetric;
 import org.grouplens.lenskit.eval.traintest.MockTestUser;
 import org.grouplens.lenskit.eval.traintest.TestUser;
+import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
@@ -100,17 +100,17 @@ public class NDCGTest {
     @Test
     public void testAccumulator() {
         NDCGPredictMetric metric = new NDCGPredictMetric();
-        AbstractMetric.MeanAccumulator acc = metric.createAccumulator(null, null, null);
+        MeanAccumulator acc = metric.createAccumulator(null, null, null);
         assertThat(acc, notNullValue());
         assert acc != null;
         metric.measureUser(user1, acc);
-        assertEquals(1, acc.getUserCount());
+        assertEquals(1, acc.getCount());
         assertEquals(0.9533, acc.getTotal(), 0.0001);
         metric.measureUser(user2, acc);
-        assertEquals(2, acc.getUserCount());
+        assertEquals(2, acc.getCount());
         assertEquals(1.9110, acc.getTotal(), 0.0001);
         metric.measureUser(user3, acc);
-        assertEquals(3, acc.getUserCount());
+        assertEquals(3, acc.getCount());
         assertEquals(2.8069, acc.getTotal(), 0.0001);
     }
 }

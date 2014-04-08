@@ -20,43 +20,43 @@
  */
 package org.grouplens.lenskit.eval.metrics.topn;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
-import org.grouplens.lenskit.eval.metrics.MetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.hamcrest.Matchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
  * A metric to compute the precision and recall of a recommender given a 
- * set of candidate items to recommend from and a set of desired items.
+ * set of candidate items to recommend from and a set of desired items.  The aggregate results are
+ * means of the user results.
  * 
  * This can be used to compute metrics like fallout (probability that a 
  * recommendation is bad) by configuring bad items as the test item set.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTopNMetric.Accumulator> {
+public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTopNMetric.Accumulator, PrecisionRecallTopNMetric.Result, PrecisionRecallTopNMetric.Result> {
     private static final Logger logger = LoggerFactory.getLogger(PrecisionRecallTopNMetric.class);
 
+    private final String suffix;
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
-    private final ImmutableList<String> columns;
     private final ItemSelector queryItems;
 
     /**
      * Construct a new recall and precision top n metric
+     * @param sfx The metric suffix, if any.
      * @param listSize The number of recommendations to fetch.
      * @param candidates The candidate selector, provides a list of items which can be recommended
      * @param exclude The exclude selector, provides a list of items which must not be recommended 
@@ -64,12 +64,18 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
      * @param queryItems The list of items to consider "true positives", all other items will be treated
      *                  as "false positives".
      */
-    public PrecisionRecallTopNMetric(String[] lbls, int listSize, ItemSelector candidates, ItemSelector exclude, ItemSelector queryItems) {
+    public PrecisionRecallTopNMetric(String sfx, int listSize, ItemSelector candidates, ItemSelector exclude, ItemSelector queryItems) {
+        super(Result.class, Result.class);
+        suffix = sfx;
         this.listSize = listSize;
         this.candidates = candidates;
         this.exclude = exclude;
         this.queryItems = queryItems;
-        columns = ImmutableList.copyOf(lbls);
+    }
+
+    @Override
+    protected String getSuffix() {
+        return suffix;
     }
 
     @Override
@@ -78,18 +84,7 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
     }
 
     @Override
-    public List<String> getColumnLabels() {
-        return columns;
-    }
-
-    @Override
-    public List<String> getUserColumnLabels() {
-        return columns;
-    }
-
-    @Nonnull
-    @Override
-    public List<Object> measureUser(TestUser user, Accumulator accumulator) {
+    public Result doMeasureUser(TestUser user, Accumulator accumulator) {
         int tp = 0;
         int fp = 0;
 
@@ -112,13 +107,30 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
             double precision = (double) tp/(tp+fp);
             double recall = (double) tp/(tp+fn);
             accumulator.addUser(precision, recall);
-            return userRow(precision, recall);
+            return new Result(precision, recall);
         } else {
-            return userRow();
+            return null;
         }
     }
 
-    public class Accumulator implements MetricAccumulator {
+    @Override
+    protected Result getTypedResults(Accumulator accum) {
+        return accum.finish();
+    }
+
+    public static class Result {
+        @ResultColumn("Precision")
+        public final double precision;
+        @ResultColumn("Recall")
+        public final double recall;
+
+        public Result(double prec, double rec) {
+            precision = prec;
+            recall = rec;
+        }
+    }
+
+    public class Accumulator {
         private final LongSet universe;
 
         double totalPrecision = 0;
@@ -135,13 +147,11 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
             nusers += 1;
         }
 
-        @Nonnull
-        @Override
-        public List<Object> finish() {
+        public Result finish() {
             if (nusers > 0) {
-                return finalRow(totalPrecision / nusers, totalRecall / nusers);
+                return new Result(totalPrecision / nusers, totalRecall / nusers);
             } else {
-                return finalRow();
+                return null;
             }
         }
     }
@@ -150,7 +160,7 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder extends TopNMetricBuilder<Builder, PrecisionRecallTopNMetric>{
-        private String[] labels = {"TopN.Precision","TopN.Recall"};
+        private String suffix;
         private ItemSelector queryItems = ItemSelectors.testRatingMatches(Matchers.greaterThanOrEqualTo(4.0d));
 
         public Builder() {
@@ -159,24 +169,20 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
         }
 
         /**
-         * Get the column labels for this metric.
-         * There are two computed metrics, precision and recall, listed in that order.
+         * Get the suffix for this metric's labels.
          * @return The column label.
          */
-        public String[] getLabels() {
-            return labels;
+        public String getSuffix() {
+            return suffix;
         }
 
         /**
-         * Set the column label for this metric.
-         * @param precision The column label for the precision metric.
-         * @param recall the column label for the recall metric.
+         * Set the column label suffix for this metric.
+         * @param sfx The suffix to apply to column labels.
          * @return The builder (for chaining).
          */
-        public Builder setLabels(String precision, String recall) {
-            Preconditions.checkNotNull(precision, "label cannot be null");
-            Preconditions.checkNotNull(recall, "label cannot be null");
-            labels = new String[]{precision, recall};
+        public Builder setLabels(String sfx) {
+            suffix = sfx;
             return this;
         }
 
@@ -191,7 +197,7 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
 
         @Override
         public PrecisionRecallTopNMetric build() {
-            return new PrecisionRecallTopNMetric(labels, listSize, candidates, exclude, queryItems);
+            return new PrecisionRecallTopNMetric(suffix, listSize, candidates, exclude, queryItems);
         }
     }
 

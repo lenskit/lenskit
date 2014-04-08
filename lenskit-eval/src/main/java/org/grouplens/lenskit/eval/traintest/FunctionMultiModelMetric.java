@@ -26,9 +26,7 @@ import com.google.common.collect.Lists;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractMetric;
 import org.grouplens.lenskit.eval.metrics.Metric;
-import org.grouplens.lenskit.eval.metrics.MetricAccumulator;
 import org.grouplens.lenskit.util.table.TableLayoutBuilder;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
@@ -46,7 +44,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
  */
-public class FunctionMultiModelMetric extends AbstractMetric<MetricAccumulator> {
+public class FunctionMultiModelMetric implements Metric<Void> {
     private final File outputFile;
     private final List<String> columnHeaders;
     private final Function<Recommender, List<List<Object>>> function;
@@ -84,7 +82,7 @@ public class FunctionMultiModelMetric extends AbstractMetric<MetricAccumulator> 
 
     @Nullable
     @Override
-    public MetricAccumulator createAccumulator(Attributed algorithm, TTDataSet dataSet, Recommender recommender) {
+    public Void createAccumulator(Attributed algorithm, TTDataSet dataSet, Recommender recommender) {
         Preconditions.checkState(evalLayout != null, "evaluation not in progress");
         TableWriter w = evalLayout.prefixTable(writer, algorithm, dataSet);
         for (List<Object> row: function.apply(recommender)) {
@@ -99,8 +97,14 @@ public class FunctionMultiModelMetric extends AbstractMetric<MetricAccumulator> 
 
     @Nonnull
     @Override
-    public List<Object> measureUser(TestUser user, MetricAccumulator accumulator) {
-        return userRow();
+    public List<Object> measureUser(TestUser user, Void accum) {
+        return Collections.emptyList();
+    }
+
+    @Nonnull
+    @Override
+    public List<Object> getResults(Void accum) {
+        return Collections.emptyList();
     }
 
     @Override

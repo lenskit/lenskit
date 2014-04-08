@@ -42,7 +42,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10 (rewritten in 2.1)
  */
-public interface Metric<A extends MetricAccumulator> extends Closeable {
+public interface Metric<A> extends Closeable {
     /**
      * Get labels for the aggregate columns output by this evaluator.
      *
@@ -56,7 +56,7 @@ public interface Metric<A extends MetricAccumulator> extends Closeable {
      *
      * @return The labels for this evaluator's per-user output, used as column headers
      *         when outputting the results table.
-     * @see #measureUser(TestUser, MetricAccumulator)
+     * @see #measureUser(TestUser, Object)
      */
     List<String> getUserColumnLabels();
 
@@ -68,7 +68,7 @@ public interface Metric<A extends MetricAccumulator> extends Closeable {
      * @param dataSet   The data set.
      * @param recommender The LensKit recommender, if applicable.  This can be null for an external
      *                    algorithm that does not provide a LensKit recommender.
-     * @return The accumulator.  This will be passed to {@link #measureUser(TestUser, MetricAccumulator)}. If
+     * @return The accumulator.  This will be passed to {@link #measureUser(TestUser, Object)}. If
      * the metric does not accumulate any results, this method can return {@code null}.
      */
     @Nullable
@@ -82,4 +82,12 @@ public interface Metric<A extends MetricAccumulator> extends Closeable {
      */
     @Nonnull
     List<Object> measureUser(TestUser user, A accumulator);
+
+    /**
+     * Get the aggregate results from an accumulator.
+     * @param accum An accumulator.
+     * @return The aggregate results from the accumulator.
+     */
+    @Nonnull
+    List<Object> getResults(A accum);
 }

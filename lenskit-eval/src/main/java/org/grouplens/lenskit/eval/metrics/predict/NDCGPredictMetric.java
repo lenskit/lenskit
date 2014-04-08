@@ -20,20 +20,18 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
+import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
-import java.util.List;
 
 import static java.lang.Math.log;
 
@@ -52,23 +50,16 @@ import static java.lang.Math.log;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class NDCGPredictMetric extends AbstractMetric<AbstractMetric.MeanAccumulator> {
+public class NDCGPredictMetric extends AbstractMetric<MeanAccumulator, NDCGPredictMetric.Result, NDCGPredictMetric.Result> {
     private static final Logger logger = LoggerFactory.getLogger(NDCGPredictMetric.class);
-    private static final ImmutableList<String> COLUMNS = ImmutableList.of("nDCG");
+
+    public NDCGPredictMetric() {
+        super(Result.class, Result.class);
+    }
 
     @Override
     public MeanAccumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
-        return new AbstractMetric.MeanAccumulator();
-    }
-
-    @Override
-    public List<String> getColumnLabels() {
-        return COLUMNS;
-    }
-
-    @Override
-    public List<String> getUserColumnLabels() {
-        return COLUMNS;
+        return new MeanAccumulator();
     }
 
     /**
@@ -95,12 +86,11 @@ public class NDCGPredictMetric extends AbstractMetric<AbstractMetric.MeanAccumul
         return gain;
     }
 
-    @Nonnull
     @Override
-    public List<Object> measureUser(TestUser user, MeanAccumulator accumulator) {
+    public Result doMeasureUser(TestUser user, MeanAccumulator accumulator) {
         SparseVector predictions = user.getPredictions();
         if (predictions == null) {
-            return userRow();
+            return null;
         }
 
         SparseVector ratings = user.getTestRatings();
@@ -109,7 +99,21 @@ public class NDCGPredictMetric extends AbstractMetric<AbstractMetric.MeanAccumul
         double idealGain = computeDCG(ideal, ratings);
         double gain = computeDCG(actual, ratings);
         double score = gain / idealGain;
-        accumulator.addUserValue(score);
-        return userRow(score);
+        accumulator.add(score);
+        return new Result(score);
+    }
+
+    @Override
+    protected Result getTypedResults(MeanAccumulator accum) {
+        return new Result(accum.getMean());
+    }
+
+    public static class Result {
+        @ResultColumn("nDCG")
+        public final double utility;
+
+        public Result(double util) {
+            utility = util;
+        }
     }
 }

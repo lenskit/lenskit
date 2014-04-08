@@ -20,8 +20,6 @@
  */
 package org.grouplens.lenskit.eval.metrics.topn;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.dao.EventDAO;
@@ -29,27 +27,34 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
  * Metric that measures how popular the items in the TopN list are.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Accumulator> {
+public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Accumulator, TopNPopularityMetric.Result, TopNPopularityMetric.Result> {
+    private final String suffix;
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
-    private final ImmutableList<String> columns;
 
-    public TopNPopularityMetric(String lbl, int listSize, ItemSelector candidates, ItemSelector exclude) {
+    public TopNPopularityMetric(String sfx, int listSize, ItemSelector candidates, ItemSelector exclude) {
+        super(Result.class, Result.class);
+        suffix = sfx;
         this.listSize = listSize;
         this.candidates = candidates;
         this.exclude = exclude;
-        columns = ImmutableList.of(lbl);
+    }
+
+    @Override
+    protected String getSuffix() {
+        return suffix;
     }
 
     /**
@@ -83,22 +88,11 @@ public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Ac
     }
 
     @Override
-    public List<String> getColumnLabels() {
-        return columns;
-    }
-
-    @Override
-    public List<String> getUserColumnLabels() {
-        return columns;
-    }
-
-    @Nonnull
-    @Override
-    public List<Object> measureUser(TestUser user, Accumulator accumulator) {
+    public Result doMeasureUser(TestUser user, Accumulator accumulator) {
         List<ScoredId> recs;
         recs = user.getRecommendations(listSize, candidates, exclude);
         if (recs == null || recs.isEmpty()) {
-            return userRow();
+            return null;
         }
         double pop = 0;
         for (ScoredId s : recs) {
@@ -106,12 +100,27 @@ public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Ac
         }
         pop = pop / recs.size();
 
-        accumulator.addUserValue(pop);
-        return userRow(pop);
+        accumulator.mean.add(pop);
+        return new Result(pop);
     }
 
-    public class Accumulator extends AbstractMetric.MeanAccumulator {
-        Long2IntMap popularity;
+    @Override
+    protected Result getTypedResults(Accumulator accum) {
+        return new Result(accum.mean.getMean());
+    }
+
+    public static class Result {
+        @ResultColumn("TopN.MeanPopularity")
+        public final double mean;
+
+        public Result(double mu) {
+            mean = mu;
+        }
+    }
+
+    public class Accumulator {
+        final Long2IntMap popularity;
+        final MeanAccumulator mean = new MeanAccumulator();
 
         public Accumulator(Long2IntMap popularity) {
             this.popularity = popularity;
@@ -122,30 +131,29 @@ public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Ac
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder extends TopNMetricBuilder<Builder, TopNPopularityMetric> {
-        private String label = "TopN.avgPop";
+        private String suffix;
 
         /**
-         * Get the column label for this metric.
-         * @return The column label.
+         * Get the column suffix for this metric.
+         * @return The column suffix.
          */
-        public String getLabel() {
-            return label;
+        public String getSuffix() {
+            return suffix;
         }
 
         /**
-         * Set the column label for this metric.
-         * @param l The column label
+         * Set the column suffix for this metric.
+         * @param l The column suffix
          * @return The builder (for chaining).
          */
-        public Builder setLabel(String l) {
-            Preconditions.checkNotNull(l, "label cannot be null");
-            label = l;
+        public Builder setSuffix(String l) {
+            suffix = l;
             return this;
         }
 
         @Override
         public TopNPopularityMetric build() {
-            return new TopNPopularityMetric(label, listSize, candidates, exclude);
+            return new TopNPopularityMetric(suffix, listSize, candidates, exclude);
         }
     }
 

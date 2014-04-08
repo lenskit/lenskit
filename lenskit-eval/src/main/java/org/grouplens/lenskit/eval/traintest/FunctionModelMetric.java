@@ -21,15 +21,16 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractMetric;
-import org.grouplens.lenskit.eval.metrics.MetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.Metric;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,7 +40,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
  */
-public class FunctionModelMetric extends AbstractMetric<MetricAccumulator> {
+public class FunctionModelMetric implements Metric<List<Object>> {
     private final List<String> columnHeaders;
     private final Function<Recommender, List<Object>> function;
 
@@ -59,13 +60,26 @@ public class FunctionModelMetric extends AbstractMetric<MetricAccumulator> {
     }
 
     @Override
-    public MetricAccumulator createAccumulator(Attributed algorithm, TTDataSet dataSet, Recommender recommender) {
-        return new ConstantAccumulator(function.apply(recommender));
+    public List<Object> createAccumulator(Attributed algorithm, TTDataSet dataSet, Recommender recommender) {
+        return function.apply(recommender);
     }
 
     @Nonnull
     @Override
-    public List<Object> measureUser(TestUser user, MetricAccumulator accumulator) {
-        return userRow();
+    public List<Object> measureUser(TestUser user, List<Object> accumulator) {
+        return Collections.emptyList();
     }
+
+    @Nonnull
+    @Override
+    public List<Object> getResults(List<Object> accum) {
+        if (accum == null) {
+            return Lists.transform(columnHeaders, Functions.constant(null));
+        } else {
+            return accum;
+        }
+    }
+
+    @Override
+    public void close() {}
 }

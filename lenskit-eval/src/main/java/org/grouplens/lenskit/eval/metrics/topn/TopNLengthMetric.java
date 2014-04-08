@@ -20,33 +20,38 @@
  */
 package org.grouplens.lenskit.eval.metrics.topn;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
  * Metric that measures how long a TopN list actually is.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TopNLengthMetric extends AbstractMetric<AbstractMetric.MeanAccumulator> {
+public class TopNLengthMetric extends AbstractMetric<MeanAccumulator, TopNLengthMetric.Result, TopNLengthMetric.Result> {
+    private final String suffix;
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
-    private final ImmutableList<String> columns;
 
-    public TopNLengthMetric(String lbl, int listSize, ItemSelector candidates, ItemSelector exclude) {
+    public TopNLengthMetric(String sfx, int listSize, ItemSelector candidates, ItemSelector exclude) {
+        super(Result.class, Result.class);
+        suffix = sfx;
         this.listSize = listSize;
         this.candidates = candidates;
         this.exclude = exclude;
-        columns = ImmutableList.of(lbl);
+    }
+
+    @Override
+    protected String getSuffix() {
+        return suffix;
     }
 
     @Override
@@ -55,57 +60,59 @@ public class TopNLengthMetric extends AbstractMetric<AbstractMetric.MeanAccumula
     }
 
     @Override
-    public List<String> getColumnLabels() {
-        return columns;
-    }
-
-    @Override
-    public List<String> getUserColumnLabels() {
-        return columns;
-    }
-
-    @Nonnull
-    @Override
-    public List<Object> measureUser(TestUser user, MeanAccumulator accumulator) {
+    public Result doMeasureUser(TestUser user, MeanAccumulator accumulator) {
         List<ScoredId> recs;
         recs = user.getRecommendations(listSize, candidates, exclude);
         if (recs == null) {
-            return userRow();
+            return null;
         }
         int n = recs.size();
-        accumulator.addUserValue(n);
-        return userRow(n);
+        accumulator.add(n);
+        return new Result(n);
+    }
+
+    @Override
+    protected Result getTypedResults(MeanAccumulator accum) {
+        return new Result(accum.getMean());
+    }
+
+    public static class Result {
+        @ResultColumn("TopN.ActualLength")
+        public final double length;
+
+        public Result(double len) {
+            length = len;
+        }
     }
 
     /**
-     * Build a Top-N length metric to measure Top-N lists.
+     * Build a Top-N mean metric to measure Top-N lists.
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder extends TopNMetricBuilder<Builder, TopNLengthMetric> {
-        private String label = "TopN.ActualLength";
+        private String suffix;
 
         /**
-         * Get the column label for this metric.
-         * @return The column label.
+         * Get the column suffix for this metric.
+         * @return The column suffix.
          */
-        public String getLabel() {
-            return label;
+        public String getSuffix() {
+            return suffix;
         }
 
         /**
-         * Set the column label for this metric.
-         * @param l The column label
+         * Set the column suffix for this metric.
+         * @param l The column suffix
          * @return The builder (for chaining).
          */
-        public Builder setLabel(String l) {
-            Preconditions.checkNotNull(l, "label cannot be null");
-            label = l;
+        public Builder setSuffix(String l) {
+            suffix = l;
             return this;
         }
 
         @Override
         public TopNLengthMetric build() {
-            return new TopNLengthMetric(label, listSize, candidates, exclude);
+            return new TopNLengthMetric(suffix, listSize, candidates, exclude);
         }
     }
 

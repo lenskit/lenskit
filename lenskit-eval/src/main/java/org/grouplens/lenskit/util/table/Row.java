@@ -50,9 +50,9 @@ public interface Row extends Iterable<Object> {
     Object value(int idx);
 
     /**
-     * Get the length of this row.
+     * Get the mean of this row.
      *
-     * @return The length of the row.
+     * @return The mean of the row.
      */
     int length();
 

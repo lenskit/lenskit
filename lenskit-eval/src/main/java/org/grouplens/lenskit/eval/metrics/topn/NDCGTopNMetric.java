@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.eval.metrics.topn;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
@@ -30,13 +29,14 @@ import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 
 import static java.lang.Math.log;
@@ -44,13 +44,13 @@ import static java.lang.Math.log;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class NDCGTopNMetric extends AbstractMetric<AbstractMetric.MeanAccumulator> {
+public class NDCGTopNMetric extends AbstractMetric<MeanAccumulator, NDCGTopNMetric.Result, NDCGTopNMetric.Result> {
     private static final Logger logger = LoggerFactory.getLogger(NDCGTopNMetric.class);
 
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
-    private final ImmutableList<String> columns;
+    private final String suffix;
 
     /**
      * Construct a new nDCG Top-N metric.
@@ -59,25 +59,21 @@ public class NDCGTopNMetric extends AbstractMetric<AbstractMetric.MeanAccumulato
      * @param exclude The exclude selector.
      */
     public NDCGTopNMetric(String lbl, int listSize, ItemSelector candidates, ItemSelector exclude) {
+        super(Result.class, Result.class);
+        suffix = lbl;
         this.listSize = listSize;
         this.candidates = candidates;
         this.exclude = exclude;
-        columns = ImmutableList.of(lbl);
     }
 
     @Override
     public MeanAccumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
-        return new AbstractMetric.MeanAccumulator();
+        return new MeanAccumulator();
     }
 
     @Override
-    public List<String> getColumnLabels() {
-        return columns;
-    }
-
-    @Override
-    public List<String> getUserColumnLabels() {
-        return columns;
+    protected String getSuffix() {
+        return suffix;
     }
 
     /**
@@ -104,13 +100,12 @@ public class NDCGTopNMetric extends AbstractMetric<AbstractMetric.MeanAccumulato
         return gain;
     }
 
-    @Nonnull
     @Override
-    public List<Object> measureUser(TestUser user, MeanAccumulator accum) {
+    public Result doMeasureUser(TestUser user, MeanAccumulator accum) {
         List<ScoredId> recommendations;
         recommendations = user.getRecommendations(listSize, candidates, exclude);
         if (recommendations == null) {
-            return userRow();
+            return null;
         }
 
         SparseVector ratings = user.getTestRatings();
@@ -128,22 +123,36 @@ public class NDCGTopNMetric extends AbstractMetric<AbstractMetric.MeanAccumulato
 
         double score = gain / idealGain;
 
-        accum.addUserValue(score);
-        return userRow(score);
+        accum.add(score);
+        return new Result(score);
+    }
+
+    @Override
+    protected Result getTypedResults(MeanAccumulator accum) {
+        return new Result(accum.getMean());
+    }
+
+    public static class Result {
+        @ResultColumn("TopN.nDCG")
+        public final double nDCG;
+
+        public Result(double v) {
+            nDCG = v;
+        }
     }
 
     /**
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder extends TopNMetricBuilder<Builder, NDCGTopNMetric>{
-        private String label = "TopN.nDCG";
+        private String suffix;
         
         /**
          * Get the column label for this metric.
          * @return The column label.
          */
-        public String getLabel() {
-            return label;
+        public String getSuffix() {
+            return suffix;
         }
 
         /**
@@ -151,15 +160,15 @@ public class NDCGTopNMetric extends AbstractMetric<AbstractMetric.MeanAccumulato
          * @param l The column label
          * @return The builder (for chaining).
          */
-        public Builder setLabel(String l) {
+        public Builder setSuffix(String l) {
             Preconditions.checkNotNull(l, "label cannot be null");
-            label = l;
+            suffix = l;
             return this;
         }
 
         @Override
         public NDCGTopNMetric build() {
-            return new NDCGTopNMetric(label, listSize, candidates, exclude);
+            return new NDCGTopNMetric(suffix, listSize, candidates, exclude);
         }
     }
 

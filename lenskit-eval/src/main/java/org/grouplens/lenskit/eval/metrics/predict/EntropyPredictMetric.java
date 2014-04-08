@@ -20,14 +20,13 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
-import org.grouplens.lenskit.eval.metrics.MetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.transform.quantize.PreferenceDomainQuantizer;
 import org.grouplens.lenskit.transform.quantize.Quantizer;
@@ -38,9 +37,6 @@ import org.grouplens.lenskit.vectors.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import java.util.List;
-
 /**
  * Evaluate a recommender's prediction accuracy by computing the mutual
  * information between the ratings and the prediction. This tells us the amount
@@ -48,10 +44,12 @@ import java.util.List;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class EntropyPredictMetric extends AbstractMetric<EntropyPredictMetric.Accumulator> {
+public class EntropyPredictMetric extends AbstractMetric<EntropyPredictMetric.Accumulator, EntropyPredictMetric.EntropyResult, EntropyPredictMetric.EntropyResult> {
     private static final Logger logger = LoggerFactory.getLogger(EntropyPredictMetric.class);
-    private static final ImmutableList<String> COLUMNS =
-            ImmutableList.of("Entropy.ofRating.ByUser", "Entropy.ofPredictions.byUser", "Information.ByUser");
+
+    public EntropyPredictMetric() {
+        super(EntropyResult.class, EntropyResult.class);
+    }
 
     @Override
     public Accumulator createAccumulator(Attributed algorithm, TTDataSet dataSet, Recommender rec) {
@@ -59,22 +57,11 @@ public class EntropyPredictMetric extends AbstractMetric<EntropyPredictMetric.Ac
     }
 
     @Override
-    public List<String> getUserColumnLabels() {
-        return COLUMNS;
-    }
-
-    @Override
-    public List<String> getColumnLabels() {
-        return COLUMNS;
-    }
-
-    @Nonnull
-    @Override
-    public List<Object> measureUser(TestUser user, Accumulator accumulator) {
+    public EntropyResult doMeasureUser(TestUser user, Accumulator accumulator) {
         SparseVector ratings = user.getTestRatings();
         SparseVector predictions = user.getPredictions();
         if (predictions == null) {
-            return userRow();
+            return null;
         }
 
         Quantizer q = accumulator.quantizer;
@@ -92,15 +79,39 @@ public class EntropyPredictMetric extends AbstractMetric<EntropyPredictMetric.Ac
             double predEntropy = accum.getV2Entropy();
             double info = accum.getMutualInformation();
             accumulator.addUser(info, ratingEntropy, predEntropy);
-            return userRow(ratingEntropy,
-                           predEntropy,
-                           info);
+            return new EntropyResult(info, ratingEntropy, predEntropy);
         } else {
-            return userRow();
+            return null;
         }
     }
 
-    class Accumulator implements MetricAccumulator {
+    @Override
+    protected EntropyResult getTypedResults(Accumulator accum) {
+        if (accum.nusers <= 0) {
+            return null;
+        } else {
+            return new EntropyResult(accum.informationSum / accum.nusers,
+                                     accum.ratingEntropySum / accum.nusers,
+                                     accum.predictionEntropySum / accum.nusers);
+        }
+    }
+
+    public static class EntropyResult {
+        @ResultColumn("MutualInformation")
+        public final double mutualInformation;
+        @ResultColumn("RatingEntropy")
+        public final double ratingEntropy;
+        @ResultColumn("PredictionEntropy")
+        public final double predictionEntropy;
+
+        public EntropyResult(double mi, double re, double pe){
+            mutualInformation = mi;
+            ratingEntropy = re;
+            predictionEntropy = pe;
+        }
+    }
+
+    public class Accumulator {
         private Quantizer quantizer;
 
         private double informationSum = 0.0;
@@ -108,7 +119,7 @@ public class EntropyPredictMetric extends AbstractMetric<EntropyPredictMetric.Ac
         private double predictionEntropySum = 0.0;
         private int nusers = 0;
 
-        public Accumulator(PreferenceDomain preferenceDomain) {
+        private Accumulator(PreferenceDomain preferenceDomain) {
             quantizer = new PreferenceDomainQuantizer(preferenceDomain);
         }
 
@@ -117,22 +128,6 @@ public class EntropyPredictMetric extends AbstractMetric<EntropyPredictMetric.Ac
             ratingEntropySum += rent;
             predictionEntropySum += pent;
             nusers += 1;
-        }
-
-        @Nonnull
-        @Override
-        public List<Object> finish() {
-            if (nusers <= 0) {
-                return finalRow();
-            }
-
-            logger.info("H(rating|user): {}", ratingEntropySum / nusers);
-            logger.info("H(prediction|user): {}", predictionEntropySum / nusers);
-            logger.info("I(rating;prediction): {}", informationSum / nusers);
-
-            return finalRow(ratingEntropySum / nusers,
-                            predictionEntropySum / nusers,
-                            informationSum / nusers);
         }
     }
 }

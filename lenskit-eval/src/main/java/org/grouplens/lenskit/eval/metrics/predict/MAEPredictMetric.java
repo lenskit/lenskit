@@ -20,20 +20,16 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
-import org.grouplens.lenskit.eval.metrics.MetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
-import java.util.List;
 
 import static java.lang.Math.abs;
 
@@ -48,23 +44,24 @@ import static java.lang.Math.abs;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class MAEPredictMetric extends AbstractMetric<MAEPredictMetric.Accumulator> {
+public class MAEPredictMetric extends AbstractMetric<MAEPredictMetric.Accumulator, MAEPredictMetric.AggregateResult, MAEPredictMetric.UserResult> {
     private static final Logger logger = LoggerFactory.getLogger(MAEPredictMetric.class);
-    private static final ImmutableList<String> COLUMNS = ImmutableList.of("MAE", "MAE.ByUser");
-    private static final ImmutableList<String> USER_COLUMNS = ImmutableList.of("MAE");
+
+    public MAEPredictMetric() {
+        super(AggregateResult.class, UserResult.class);
+    }
 
     @Override
     public Accumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
         return new Accumulator();
     }
 
-    @Nonnull
     @Override
-    public List<Object> measureUser(TestUser user, Accumulator accumulator) {
+    public UserResult doMeasureUser(TestUser user, Accumulator accumulator) {
         SparseVector ratings = user.getTestRatings();
         SparseVector predictions = user.getPredictions();
         if (predictions == null) {
-            return userRow();
+            return null;
         }
         double err = 0;
         int n = 0;
@@ -80,23 +77,39 @@ public class MAEPredictMetric extends AbstractMetric<MAEPredictMetric.Accumulato
         if (n > 0) {
             double mae = err / n;
             accumulator.addUser(n, err, mae);
-            return userRow(mae);
+            return new UserResult(mae);
         } else {
-            return userRow();
+            return null;
         }
     }
 
     @Override
-    public List<String> getColumnLabels() {
-        return COLUMNS;
+    protected AggregateResult getTypedResults(Accumulator accum) {
+        return accum.finish();
     }
 
-    @Override
-    public List<String> getUserColumnLabels() {
-        return USER_COLUMNS;
+    public static class UserResult {
+        @ResultColumn("MAE")
+        public final double mae;
+
+        public UserResult(double err) {
+            mae = err;
+        }
     }
 
-    public class Accumulator implements MetricAccumulator {
+    public static class AggregateResult {
+        @ResultColumn("MAE.ByUser")
+        public final double userMAE;
+        @ResultColumn("MAE.ByRating")
+        public final double globalMAE;
+
+        public AggregateResult(double umae, double gmae) {
+            userMAE = umae;
+            globalMAE = gmae;
+        }
+    }
+
+    public class Accumulator {
         private double totalError = 0;
         private double totalUserError = 0;
         private int nratings = 0;
@@ -109,16 +122,14 @@ public class MAEPredictMetric extends AbstractMetric<MAEPredictMetric.Accumulato
             nusers += 1;
         }
 
-        @Nonnull
-        @Override
-        public List<Object> finish() {
+        public AggregateResult finish() {
             if (nratings > 0) {
                 double v = totalError / nratings;
                 double uv = totalUserError / nusers;
                 logger.info("MAE: {}", v);
-                return finalRow(v, uv);
+                return new AggregateResult(uv, v);
             } else {
-                return finalRow();
+                return null;
             }
         }
 

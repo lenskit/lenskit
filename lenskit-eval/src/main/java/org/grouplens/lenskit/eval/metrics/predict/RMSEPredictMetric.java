@@ -20,20 +20,16 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
-import org.grouplens.lenskit.eval.metrics.MetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
-import java.util.List;
 
 import static java.lang.Math.sqrt;
 
@@ -42,10 +38,12 @@ import static java.lang.Math.sqrt;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class RMSEPredictMetric extends AbstractMetric<RMSEPredictMetric.Accumulator> {
+public class RMSEPredictMetric extends AbstractMetric<RMSEPredictMetric.Accumulator, RMSEPredictMetric.AggregateResult, RMSEPredictMetric.UserResult> {
     private static final Logger logger = LoggerFactory.getLogger(RMSEPredictMetric.class);
-    private static final ImmutableList<String> COLUMNS = ImmutableList.of("RMSE.ByRating", "RMSE.ByUser");
-    private static final ImmutableList<String> USER_COLUMNS = ImmutableList.of("RMSE");
+
+    public RMSEPredictMetric() {
+        super(AggregateResult.class, UserResult.class);
+    }
 
     @Override
     public Accumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
@@ -53,22 +51,11 @@ public class RMSEPredictMetric extends AbstractMetric<RMSEPredictMetric.Accumula
     }
 
     @Override
-    public List<String> getColumnLabels() {
-        return COLUMNS;
-    }
-
-    @Override
-    public List<String> getUserColumnLabels() {
-        return USER_COLUMNS;
-    }
-
-    @Nonnull
-    @Override
-    public List<Object> measureUser(TestUser user, Accumulator accumulator) {
+    public UserResult doMeasureUser(TestUser user, Accumulator accumulator) {
         SparseVector ratings = user.getTestRatings();
         SparseVector predictions = user.getPredictions();
         if (predictions == null) {
-            return userRow();
+            return null;
         }
         double sse = 0;
         int n = 0;
@@ -84,13 +71,39 @@ public class RMSEPredictMetric extends AbstractMetric<RMSEPredictMetric.Accumula
         if (n > 0) {
             double rmse = sqrt(sse / n);
             accumulator.addUser(n, sse, rmse);
-            return userRow(rmse);
+            return new UserResult(rmse);
         } else {
-            return userRow();
+            return null;
         }
     }
 
-    public class Accumulator implements MetricAccumulator {
+    @Override
+    protected AggregateResult getTypedResults(Accumulator accum) {
+        return accum.finish();
+    }
+
+    public static class UserResult {
+        @ResultColumn("RMSE")
+        public final double mae;
+
+        public UserResult(double err) {
+            mae = err;
+        }
+    }
+
+    public static class AggregateResult {
+        @ResultColumn("RMSE.ByUser")
+        public final double userRMSE;
+        @ResultColumn("RUSE.ByRating")
+        public final double globalRMSE;
+
+        public AggregateResult(double uerr, double gerr) {
+            userRMSE = uerr;
+            globalRMSE = gerr;
+        }
+    }
+
+    public class Accumulator {
         private double totalSSE = 0;
         private double totalRMSE = 0;
         private int nratings = 0;
@@ -103,15 +116,13 @@ public class RMSEPredictMetric extends AbstractMetric<RMSEPredictMetric.Accumula
             nusers += 1;
         }
 
-        @Nonnull
-        @Override
-        public List<Object> finish() {
+        public AggregateResult finish() {
             if (nratings > 0) {
                 double v = sqrt(totalSSE / nratings);
                 logger.info("RMSE: {}", v);
-                return finalRow(v, totalRMSE / nusers);
+                return new AggregateResult(totalRMSE / nusers, v);
             } else {
-                return finalRow();
+                return null;
             }
         }
     }

@@ -20,48 +20,36 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
+import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
-import java.util.List;
-
-public class HLUtilityPredictMetric extends AbstractMetric<AbstractMetric.MeanAccumulator> {
+public class HLUtilityPredictMetric extends AbstractMetric<MeanAccumulator, HLUtilityPredictMetric.Result, HLUtilityPredictMetric.Result> {
     private static final Logger logger = LoggerFactory.getLogger(HLUtilityPredictMetric.class);
-    private static final List<String> COLUMNS = ImmutableList.of("HLUtility");
 
     private double alpha;
 
     public HLUtilityPredictMetric(double newAlpha) {
+        super(Result.class, Result.class);
         alpha = newAlpha;
     }
 
     public HLUtilityPredictMetric() {
-        alpha = 5;
+        this(5);
     }
 
     @Override
     public MeanAccumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
-        return new AbstractMetric.MeanAccumulator();
-    }
-
-    @Override
-    public List<String> getColumnLabels() {
-        return COLUMNS;
-    }
-
-    @Override
-    public List<String> getUserColumnLabels() {
-        return COLUMNS;
+        return new MeanAccumulator();
     }
 
     double computeHLU(LongList items, SparseVector values) {
@@ -76,12 +64,20 @@ public class HLUtilityPredictMetric extends AbstractMetric<AbstractMetric.MeanAc
         return utility;
     }
 
-    @Nonnull
+    public static class Result {
+        @ResultColumn("HLUtility")
+        public final double utility;
+
+        public Result(double util) {
+            utility = util;
+        }
+    }
+
     @Override
-    public List<Object> measureUser(TestUser user, MeanAccumulator accumulator) {
+    public Result doMeasureUser(TestUser user, MeanAccumulator accumulator) {
         SparseVector predictions = user.getPredictions();
         if (predictions == null) {
-            return userRow();
+            return null;
         }
 
         SparseVector ratings = user.getTestRatings();
@@ -91,7 +87,12 @@ public class HLUtilityPredictMetric extends AbstractMetric<AbstractMetric.MeanAc
         double actualUtility = computeHLU(actual, ratings);
         double u = actualUtility / idealUtility;
 
-        accumulator.addUserValue(u);
-        return userRow(u);
+        accumulator.add(u);
+        return new Result(u);
+    }
+
+    @Override
+    protected Result getTypedResults(MeanAccumulator accum) {
+        return new Result(accum.getMean());
     }
 }
