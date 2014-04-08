@@ -64,8 +64,8 @@ public class HLUTest {
             b3.addTestRating(items[i], ratings3[i]);
         }
         user1 = b1.setPredictions(pv1).build();
-        user2 = b1.setPredictions(pv2).build();
-        user3 = b1.setPredictions(pv3).build();
+        user2 = b2.setPredictions(pv2).build();
+        user3 = b3.setPredictions(pv3).build();
     }
 
     @Test
