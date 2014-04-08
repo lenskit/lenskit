@@ -10,6 +10,7 @@ dependencies {
 
     testCompile project(':lenskit-test')
     testCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
+    testRuntime group: 'com.h2database', name: 'h2', version: '1.3.176'
 }
 
 meta {

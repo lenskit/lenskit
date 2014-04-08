@@ -42,21 +42,12 @@ import static org.junit.Assert.assertThat
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class JDBCRatingDAOTest {
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder()
-
     private Connection cxn
     private JDBCRatingDAO dao
 
-    @BeforeClass
-    public static void configureDerby() {
-        System.setProperty("derby.stream.error.field", "java.lang.System.out")
-        System.setProperty("derby.stream.error.logSeverityLevel", "30000")
-    }
-
     @Before
     public void makeConnection() {
-        cxn = DriverManager.getConnection("jdbc:derby:" + folder.root.absolutePath + "/db;create=true")
+        cxn = DriverManager.getConnection("jdbc:h2:mem:")
         def sql = new Sql(cxn)
         sql.execute('CREATE TABLE ratings (userId INTEGER NOT NULL, itemId INTEGER NOT NULL, rating REAL NOT NULL, ratingTime BIGINT NOT NULL)')
         def ratings = sql.dataSet('ratings')
