@@ -71,9 +71,9 @@ subprojects {
 
     tasks.withType(JavaCompile).all { task ->
         task.options.encoding = 'UTF-8'
+        task.options.fork = true
     }
     compileJava {
-        options.fork = true
         options.deprecation = true
         options.compilerArgs << '-Xlint' << '-Xlint:-processing'
     }
