@@ -1,4 +1,5 @@
 // IntelliJ IDEA configuration.
+import javax.xml.xpath.*
 
 allprojects {
     apply plugin: 'idea'
@@ -9,6 +10,34 @@ subprojects {
         module {
             outputDir = sourceSets.main.output.classesDir
             testOutputDir = sourceSets.test.output.classesDir
+            downloadSources = true
+            downloadJavadoc = true
+        }
+    }
+}
+
+task ideaBuildSrcModule(type: GradleBuild) {
+    dir file('buildSrc')
+    tasks = ['ideaModule']
+}
+ideaProject {
+    dependsOn ideaBuildSrcModule
+}
+
+idea {
+    project {
+        ipr {
+            withXml {
+                Node modules = it.asNode().depthFirst().find {
+                    it.name() == 'modules'
+                }
+                logger.info 'adding buildSrc module'
+                def attrs = [
+                        fileurl: 'file://$PROJECT_DIR$/buildSrc/buildSrc.iml',
+                        filepath: '$PROJECT_DIR$/buildSrc/buildSrc.iml'
+                ]
+                modules.appendNode('module', attrs)
+            }
         }
     }
 }

@@ -166,7 +166,7 @@ allprojects {
 }
 
 apply from: "$rootDir/gradle/website.gradle"
-apply from: "$gradle/idea.gradle"
+apply from: "$rootDir/gradle/idea.gradle"
 
 if (file('local.gradle').exists()) {
     apply from: 'local.gradle'

@@ -13,3 +13,5 @@ dependencies {
     compile 'org.apache.httpcomponents:httpmime:4.2.1'
     compile 'com.google.guava:guava:16.0.1'
 }
+
+apply plugin: 'idea'
