@@ -85,6 +85,9 @@ public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Accumulator, MRR
         LongSet good = goodItems.select(user.getTrainHistory(),
                                         user.getTestHistory(),
                                         accumulator.universe);
+        if (good.isEmpty()) {
+            logger.warn("no good items for user {}", user.getUserId());
+        }
 
         List<ScoredId> recs = user.getRecommendations(listSize, candidates, exclude);
         Integer rank = null;
@@ -97,18 +100,14 @@ public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Accumulator, MRR
             }
         }
 
-        if (rank == null) {
-            return null;
-        } else {
-            UserResult result = new UserResult(rank);
-            accumulator.mean.add(result.getRecipRank());
-            return result;
-        }
+        UserResult result = new UserResult(rank);
+        accumulator.addUser(result);
+        return result;
     }
 
     @Override
     protected AggregateResult getTypedResults(Accumulator accum) {
-        return new AggregateResult(accum.mean.getMean());
+        return new AggregateResult(accum);
     }
 
     public static class UserResult {
@@ -121,25 +120,43 @@ public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Accumulator, MRR
 
         @ResultColumn("RecipRank")
         public double getRecipRank() {
-            return 1.0 / rank;
+            return rank == null ? 0 : 1.0 / rank;
         }
     }
 
     public static class AggregateResult {
+        /**
+         * The MRR over all users.  Users for whom no good items are included, and have a reciprocal
+         * rank of 0.
+         */
         @ResultColumn("MRR")
         public final double mrr;
+        /**
+         * The MRR over those users for whom a good item could be recommended.
+         */
+        @ResultColumn("MRR.OfGood")
+        public final double goodMRR;
 
-        public AggregateResult(double mrr) {
-            this.mrr = mrr;
+        public AggregateResult(Accumulator accum) {
+            this.mrr = accum.allMean.getMean();
+            this.goodMRR = accum.goodMean.getMean();
         }
     }
 
-    public class Accumulator {
+    public static class Accumulator {
         private final LongSet universe;
-        private final MeanAccumulator mean = new MeanAccumulator();
+        private final MeanAccumulator allMean = new MeanAccumulator();
+        private final MeanAccumulator goodMean = new MeanAccumulator();
 
         Accumulator(LongSet universe) {
             this.universe = universe;
+        }
+
+        void addUser(UserResult ur) {
+            allMean.add(ur.getRecipRank());
+            if (ur.rank != null) {
+                goodMean.add(ur.getRecipRank());
+            }
         }
     }
 

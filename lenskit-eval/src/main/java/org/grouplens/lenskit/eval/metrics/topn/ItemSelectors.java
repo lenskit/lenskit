@@ -31,6 +31,8 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.hamcrest.Matcher;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Random;
 
 /**
@@ -184,6 +186,30 @@ public final class ItemSelectors {
                 return LongUtils.setUnion(LongUtils.packedSet(l1), LongUtils.packedSet(l2));
             }
         };
+    }
+
+    /**
+     * Select a fixed collection of items.
+     * @param items The set of items. to select.
+     * @return A selector that selects {@code items}.
+     */
+    public static ItemSelector fixed(final Collection<Long> items) {
+        return new ItemSelector() {
+            private final LongSet selected = LongUtils.packedSet(items);
+            @Override
+            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
+                return selected;
+            }
+        };
+    }
+
+    /**
+     * Select a fixed collection of items.
+     * @param items The items to select.
+     * @return A selector that selects {@code items}.
+     */
+    public static ItemSelector fixed(long... items) {
+        return fixed(LongArrayList.wrap(items));
     }
 
     private static enum SingletonSelectors implements ItemSelector {
