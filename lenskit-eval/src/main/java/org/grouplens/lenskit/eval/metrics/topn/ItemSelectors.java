@@ -21,17 +21,24 @@
 package org.grouplens.lenskit.eval.metrics.topn;
 
 import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.collections.CollectionUtils;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSets;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.collections.LongUtils;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.core.LenskitRecommender;
+import org.grouplens.lenskit.data.dao.ItemDAO;
+import org.grouplens.lenskit.eval.traintest.TestUser;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.hamcrest.Matcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
 
@@ -40,6 +47,7 @@ import java.util.Random;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class ItemSelectors {
+    private static Logger logger = LoggerFactory.getLogger(ItemSelectors.class);
     private ItemSelectors() {}
 
     /**
@@ -75,28 +83,11 @@ public final class ItemSelectors {
      * @return An item selector that selects items with matching test ratings.
      */
     public static ItemSelector testRatingMatches(final Matcher<Double> matcher) {
-        return new ItemSelector() {
-            @Override
-            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
-                // FIXME See about making this more efficient
-                MutableSparseVector vec = RatingVectorUserHistorySummarizer.makeRatingVector(testData).mutableCopy();
-                for (VectorEntry e: vec.fast()) {
-                    if (!matcher.matches(e.getValue())) {
-                        vec.unset(e);
-                    }
-                }
-                return vec.immutable().keySet();
-            }
-        };
+        return new TestRatingMatcherItemSelector(matcher);
     }
 
     public static ItemSelector allItemsExcept(final ItemSelector base) {
-        return new ItemSelector() {
-            @Override
-            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
-                return LongUtils.setDifference(universe, base.select(trainingData, testData, universe));
-            }
-        };
+        return new ComplementItemSelector(base);
     }
 
     /**
@@ -109,16 +100,8 @@ public final class ItemSelectors {
      */
     public static ItemSelector addNRandom(final ItemSelector base, final int nRandom) {
         Preconditions.checkArgument(nRandom >= 0, "nRandom cannot be negative");
-        return new ItemSelector() {
-            @Override
-            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
-                // FIXME The RNG should come from configuration
-                Random rng = new Random();
-                LongSortedSet initial = LongUtils.packedSet(base.select(trainingData, testData, universe));
-                LongSortedSet selected = LongUtils.randomSubset(universe, nRandom, initial, rng);
-                return LongUtils.setUnion(initial, selected);
-            }
-        };
+        Preconditions.checkArgument(nRandom >= 0, "nRandom cannot be negative");
+        return union(base, randomSubset(allItemsExcept(base), nRandom));
     }
 
     /**
@@ -130,18 +113,7 @@ public final class ItemSelectors {
      * or simply the items selected by {@code base} if there are fewer then {@code n} items selected.
      */
     public static ItemSelector randomSubset(final ItemSelector base, final int n) {
-        return new ItemSelector() {
-            @Override
-            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
-                // FIXME The RNG should come from configuration
-                Random rng = new Random();
-                LongSet newUniverse = base.select(trainingData, testData, universe);
-                if (newUniverse.size() <= n) {
-                    return newUniverse;
-                }
-                return LongUtils.randomSubset(newUniverse, n, rng);
-            }
-        };
+        return new RandomSubsetItemSelector(base, n);
     }
 
     /**
@@ -150,7 +122,7 @@ public final class ItemSelectors {
      * Short for {@code ItemSelectors.randomSubset(ItemSelectors.allItems, n)}
      */
     public static ItemSelector nRandom(final int n) {
-        return ItemSelectors.randomSubset(ItemSelectors.allItems(), n);
+        return randomSubset(allItems(), n);
     }
 
 
@@ -163,29 +135,14 @@ public final class ItemSelectors {
      * and not selected by {@code selectorToNotKeep}. 
      */
     public static ItemSelector setDifference(final ItemSelector selectorToKeep, final ItemSelector selectorToNotKeep) {
-        return new ItemSelector() {
-            @Override
-            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
-                LongSet l1 = selectorToKeep.select(trainingData, testData, universe);
-                LongSet l2 = selectorToNotKeep.select(trainingData, testData, universe);
-                return LongUtils.setDifference(l1, l2);
-            }
-        };
+        return new SetDifferenceItemSelector(selectorToKeep, selectorToNotKeep);
     }
     
     /**
      * selects any items selected by at least one of two other selectors.
      */
     public static ItemSelector union(final ItemSelector selectorOne, final ItemSelector selectorTwo) {
-        return new ItemSelector() {
-            @Override
-            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
-                LongSet l1 = selectorOne.select(trainingData, testData, universe);
-                LongSet l2 = selectorTwo.select(trainingData, testData, universe);
-                // @Review Is this reasonably efficient?
-                return LongUtils.setUnion(LongUtils.packedSet(l1), LongUtils.packedSet(l2));
-            }
-        };
+        return new SetUnionItemSelector(selectorOne, selectorTwo);
     }
 
     /**
@@ -194,13 +151,7 @@ public final class ItemSelectors {
      * @return A selector that selects {@code items}.
      */
     public static ItemSelector fixed(final Collection<Long> items) {
-        return new ItemSelector() {
-            private final LongSet selected = LongUtils.packedSet(items);
-            @Override
-            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
-                return selected;
-            }
-        };
+        return new FixedItemSelector(items);
     }
 
     /**
@@ -212,32 +163,278 @@ public final class ItemSelectors {
         return fixed(LongArrayList.wrap(items));
     }
 
+    /**
+     * Get the universe from a recommender.
+     * @param rec The recommender.
+     * @return The recommender's universe.
+     */
+    static LongSet getUniverse(Recommender rec) {
+        Preconditions.checkNotNull(rec, "recommender");
+        return UNIVERSE_CACHE.getUnchecked(rec);
+    }
+
+    /**
+     * A cache of item universes for recommenders.
+     */
+    private static LoadingCache<Recommender,LongSet> UNIVERSE_CACHE =
+            CacheBuilder.newBuilder()
+                        .weakKeys()
+                        .build(new UniverseLoader());
+
+    /**
+     * Cache loader to extract the item universe from a recommender.
+     */
+    private static class UniverseLoader extends CacheLoader<Recommender,LongSet> {
+        public LongSet load(Recommender rec) throws Exception {
+            LenskitRecommender lkrec = (LenskitRecommender) rec;
+            ItemDAO idao = lkrec.get(ItemDAO.class);
+            if (idao == null) {
+                logger.warn("Recommender has no item DAO");
+                return LongSets.EMPTY_SET;
+            } else {
+                return idao.getItemIds();
+            }
+        }
+    }
+
+
     private static enum SingletonSelectors implements ItemSelector {
         ALL_ITEMS {
             @Override
-            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
-                return universe;
+            public LongSet select(TestUser user) {
+                return getUniverse(user.getRecommender());
             }
         },
         TEST_ITEMS {
             @Override
-            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
-                LongSet items = new LongOpenHashSet(testData.size());
-                for (Event e: CollectionUtils.fast(testData)) {
-                    items.add(e.getItemId());
-                }
-                return items;
+            public LongSet select(TestUser user) {
+                return user.getTestHistory().itemSet();
             }
         },
         TRAIN_ITEMS {
             @Override
-            public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
-                LongSet items = new LongOpenHashSet(testData.size());
-                for (Event e: CollectionUtils.fast(trainingData)) {
-                    items.add(e.getItemId());
+            public LongSet select(TestUser user) {
+                return user.getTrainHistory().itemSet();
+            }
+        }
+    }
+
+    private static class TestRatingMatcherItemSelector implements ItemSelector {
+        private final Matcher<Double> matcher;
+
+        public TestRatingMatcherItemSelector(Matcher<Double> matcher) {
+            this.matcher = matcher;
+        }
+
+        @Override
+        public LongSet select(TestUser user) {
+            LongSet items = new LongOpenHashSet();
+            SparseVector vec = user.getTestRatings();
+            for (VectorEntry e: vec.fast()) {
+                if (matcher.matches(e.getValue())) {
+                    items.add(e.getKey());
                 }
+            }
+            return items;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            TestRatingMatcherItemSelector that = (TestRatingMatcherItemSelector) o;
+
+            if (!matcher.equals(that.matcher)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return matcher.hashCode();
+        }
+    }
+
+    private static class ComplementItemSelector implements ItemSelector {
+        private final ItemSelector base;
+
+        public ComplementItemSelector(ItemSelector base) {
+            this.base = base;
+        }
+
+        @Override
+        public LongSet select(TestUser user) {
+            LongSet universe = UNIVERSE_CACHE.getUnchecked(user.getRecommender());
+            return LongUtils.setDifference(universe, base.select(user));
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            ComplementItemSelector that = (ComplementItemSelector) o;
+
+            if (!base.equals(that.base)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return base.hashCode();
+        }
+    }
+
+    private static class SetDifferenceItemSelector implements ItemSelector {
+        private final ItemSelector selectorToKeep;
+        private final ItemSelector selectorToNotKeep;
+
+        public SetDifferenceItemSelector(ItemSelector selectorToKeep, ItemSelector selectorToNotKeep) {
+            this.selectorToKeep = selectorToKeep;
+            this.selectorToNotKeep = selectorToNotKeep;
+        }
+
+        @Override
+        public LongSet select(TestUser user) {
+            LongSet l1 = selectorToKeep.select(user);
+            LongSet l2 = selectorToNotKeep.select(user);
+            return LongUtils.setDifference(l1, l2);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            SetDifferenceItemSelector that = (SetDifferenceItemSelector) o;
+
+            if (!selectorToKeep.equals(that.selectorToKeep)) return false;
+            if (!selectorToNotKeep.equals(that.selectorToNotKeep)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = selectorToKeep.hashCode();
+            result = 31 * result + selectorToNotKeep.hashCode();
+            return result;
+        }
+    }
+
+    private static class SetUnionItemSelector implements ItemSelector {
+        private final ItemSelector selectorOne;
+        private final ItemSelector selectorTwo;
+
+        public SetUnionItemSelector(ItemSelector selectorOne, ItemSelector selectorTwo) {
+            this.selectorOne = selectorOne;
+            this.selectorTwo = selectorTwo;
+        }
+
+        @Override
+        public LongSet select(TestUser user) {
+            LongSet items = new LongOpenHashSet(selectorOne.select(user));
+            items.addAll(selectorTwo.select(user));
+            return items;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            SetUnionItemSelector that = (SetUnionItemSelector) o;
+
+            if (!selectorOne.equals(that.selectorOne)) return false;
+            if (!selectorTwo.equals(that.selectorTwo)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = selectorOne.hashCode();
+            result = 31 * result + selectorTwo.hashCode();
+            return result;
+        }
+    }
+
+    private static class FixedItemSelector implements ItemSelector {
+        private final LongSet selected;
+
+        public FixedItemSelector(Collection<Long> items) {
+            selected = LongUtils.packedSet(items);
+        }
+
+        @Override
+        public LongSet select(TestUser user) {
+            return selected;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            FixedItemSelector that = (FixedItemSelector) o;
+
+            if (!selected.equals(that.selected)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return selected.hashCode();
+        }
+    }
+
+    private static class RandomSubsetItemSelector implements ItemSelector {
+        private final ItemSelector delegate;
+        private final int count;
+
+        public RandomSubsetItemSelector(ItemSelector base, int n) {
+            delegate = base;
+            count = n;
+        }
+
+        @Override
+        public LongSet select(TestUser user) {
+            LenskitRecommender lkr = (LenskitRecommender) user.getRecommender();
+            Random rng = null;
+            if (lkr != null) {
+                rng = lkr.get(Random.class);
+            }
+            if (rng == null) {
+                rng = new Random();
+            }
+            LongSet items = delegate.select(user);
+            if (items.size() <= count) {
                 return items;
             }
+            return LongUtils.randomSubset(items, count, rng);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            RandomSubsetItemSelector that = (RandomSubsetItemSelector) o;
+
+            if (count != that.count) return false;
+            if (!delegate.equals(that.delegate)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = delegate.hashCode();
+            result = 31 * result + count;
+            return result;
         }
     }
 }
