@@ -22,13 +22,14 @@ package org.grouplens.lenskit.eval.traintest;
 
 import org.grouplens.lenskit.eval.metrics.Metric;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class MetricFactory {
-    public abstract Metric createMetric(TrainTestEvalTask task);
+    public abstract Metric createMetric(TrainTestEvalTask task) throws IOException;
 
     public abstract List<String> getColumnLabels();
 

@@ -28,12 +28,9 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
-import org.grouplens.lenskit.eval.metrics.topn.ItemSelectors;
-import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -155,7 +152,6 @@ abstract class TrainTestJob implements Callable<Void> {
                 userRow.clear();
 
                 writePredictions(test);
-                writeRecommendations(test);
             }
             testTimer.stop();
             logger.info("Tested {} in {}", algorithmInfo.getName(), testTimer);
@@ -233,29 +229,6 @@ abstract class TrainTestJob implements Callable<Void> {
                 i += 1;
             }
             predictTable.writeRow(row);
-        }
-    }
-
-    private void writeRecommendations(TestUser user) throws IOException {
-        TableWriter recommendTable = output.getRecommendationWriter();
-        if (recommendTable == null) return;
-
-        // FIXME: for now, the recommend ouput default to predict on all items excluding rated items
-        List<ScoredId> recs = user.getRecommendations(-1, ItemSelectors.allItems(),
-                                                      ItemSelectors.trainingItems());
-        if (recs == null) return;
-
-        final int ncols = recommendTable.getLayout().getColumnCount();
-        final String[] row = new String[ncols];
-        row[0] = Long.toString(user.getUserId());
-        int counter = 1;
-        for (ScoredId p : CollectionUtils.fast(recs)) {
-            long iid = p.getId();
-            row[1] = Long.toString(iid);
-            row[2] = String.valueOf(counter);
-            counter ++;
-            row[3] = Double.toString(p.getScore());
-            recommendTable.writeRow(row);
         }
     }
 

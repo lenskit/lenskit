@@ -41,20 +41,17 @@ class ExperimentOutputs {
     private final TableWriter userWriter;
     @Nullable
     private final TableWriter predictionWriter;
-    @Nullable
-    private final TableWriter recommendationWriter;
     private final List<Metric<?>> metrics;
 
     public ExperimentOutputs(ExperimentOutputLayout eol,
                              @Nonnull TableWriter results,
                              @Nullable TableWriter user,
                              @Nullable TableWriter predict,
-                             @Nullable TableWriter rec, List<Metric<?>> ms) {
+                             List<Metric<?>> ms) {
         layouts = eol;
         resultsWriter = results;
         userWriter = user;
         predictionWriter = predict;
-        recommendationWriter = rec;
         metrics = ms;
     }
 
@@ -73,11 +70,6 @@ class ExperimentOutputs {
         return predictionWriter;
     }
 
-    @Nullable
-    public TableWriter getRecommendationWriter() {
-        return recommendationWriter;
-    }
-
     List<Metric<?>> getMetrics() {
         return metrics;
     }
@@ -86,7 +78,6 @@ class ExperimentOutputs {
         TableWriter results = layouts.prefixTable(resultsWriter, algo, data);
         TableWriter user = layouts.prefixTable(userWriter, algo, data);
         TableWriter predict = layouts.prefixTable(predictionWriter, algo, data);
-        TableWriter recommend = layouts.prefixTable(recommendationWriter, algo, data);
-        return new ExperimentOutputs(layouts, results, user, predict, recommend, metrics);
+        return new ExperimentOutputs(layouts, results, user, predict, metrics);
     }
 }
