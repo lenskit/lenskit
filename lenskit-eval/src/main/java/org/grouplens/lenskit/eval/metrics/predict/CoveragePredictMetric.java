@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class CoveragePredictMetric extends AbstractMetric<CoveragePredictMetric.CoverageAccumulator, CoveragePredictMetric.AggregateCoverage, CoveragePredictMetric.Coverage> {
+public class CoveragePredictMetric extends AbstractMetric<CoveragePredictMetric.Context, CoveragePredictMetric.AggregateCoverage, CoveragePredictMetric.Coverage> {
     private static final Logger logger = LoggerFactory.getLogger(CoveragePredictMetric.class);
 
     public CoveragePredictMetric() {
@@ -45,12 +45,12 @@ public class CoveragePredictMetric extends AbstractMetric<CoveragePredictMetric.
     }
 
     @Override
-    public CoverageAccumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
-        return new CoverageAccumulator();
+    public Context createContext(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new Context();
     }
 
     @Override
-    public Coverage doMeasureUser(TestUser user, CoverageAccumulator accumulator) {
+    public Coverage doMeasureUser(TestUser user, Context context) {
         SparseVector ratings = user.getTestRatings();
         SparseVector predictions = user.getPredictions();
         if (predictions == null) {
@@ -64,13 +64,13 @@ public class CoveragePredictMetric extends AbstractMetric<CoveragePredictMetric.
                 good += 1;
             }
         }
-        accumulator.addUser(n, good);
+        context.addUser(n, good);
         return new Coverage(n, good);
     }
 
     @Override
-    protected AggregateCoverage getTypedResults(CoverageAccumulator accum) {
-        return new AggregateCoverage(accum.nusers, accum.npreds, accum.ngood);
+    protected AggregateCoverage getTypedResults(Context context) {
+        return new AggregateCoverage(context.nusers, context.npreds, context.ngood);
     }
 
     public static class Coverage {
@@ -104,7 +104,7 @@ public class CoveragePredictMetric extends AbstractMetric<CoveragePredictMetric.
         }
     }
 
-    public class CoverageAccumulator {
+    public class Context {
         private int npreds = 0;
         private int ngood = 0;
         private int nusers = 0;

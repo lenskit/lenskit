@@ -38,7 +38,7 @@ import static java.lang.Math.sqrt;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class RMSEPredictMetric extends AbstractMetric<RMSEPredictMetric.Accumulator, RMSEPredictMetric.AggregateResult, RMSEPredictMetric.UserResult> {
+public class RMSEPredictMetric extends AbstractMetric<RMSEPredictMetric.Context, RMSEPredictMetric.AggregateResult, RMSEPredictMetric.UserResult> {
     private static final Logger logger = LoggerFactory.getLogger(RMSEPredictMetric.class);
 
     public RMSEPredictMetric() {
@@ -46,12 +46,12 @@ public class RMSEPredictMetric extends AbstractMetric<RMSEPredictMetric.Accumula
     }
 
     @Override
-    public Accumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
-        return new Accumulator();
+    public Context createContext(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new Context();
     }
 
     @Override
-    public UserResult doMeasureUser(TestUser user, Accumulator accumulator) {
+    public UserResult doMeasureUser(TestUser user, Context context) {
         SparseVector ratings = user.getTestRatings();
         SparseVector predictions = user.getPredictions();
         if (predictions == null) {
@@ -70,7 +70,7 @@ public class RMSEPredictMetric extends AbstractMetric<RMSEPredictMetric.Accumula
         }
         if (n > 0) {
             double rmse = sqrt(sse / n);
-            accumulator.addUser(n, sse, rmse);
+            context.addUser(n, sse, rmse);
             return new UserResult(rmse);
         } else {
             return null;
@@ -78,8 +78,8 @@ public class RMSEPredictMetric extends AbstractMetric<RMSEPredictMetric.Accumula
     }
 
     @Override
-    protected AggregateResult getTypedResults(Accumulator accum) {
-        return accum.finish();
+    protected AggregateResult getTypedResults(Context context) {
+        return context.finish();
     }
 
     public static class UserResult {
@@ -103,7 +103,7 @@ public class RMSEPredictMetric extends AbstractMetric<RMSEPredictMetric.Accumula
         }
     }
 
-    public class Accumulator {
+    public class Context {
         private double totalSSE = 0;
         private double totalRMSE = 0;
         private int nratings = 0;

@@ -38,7 +38,7 @@ import java.util.List;
  * Metric that measures how popular the items in the TopN list are.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Accumulator, TopNPopularityMetric.Result, TopNPopularityMetric.Result> {
+public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Context, TopNPopularityMetric.Result, TopNPopularityMetric.Result> {
     private final String suffix;
     private final int listSize;
     private final ItemSelector candidates;
@@ -82,13 +82,13 @@ public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Ac
     }
     
     @Override
-    public Accumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
+    public Context createContext(Attributed algo, TTDataSet ds, Recommender rec) {
         Long2IntMap popularity = computePop(ds.getTrainingDAO()); 
-        return new Accumulator(popularity);
+        return new Context(popularity);
     }
 
     @Override
-    public Result doMeasureUser(TestUser user, Accumulator accumulator) {
+    public Result doMeasureUser(TestUser user, Context context) {
         List<ScoredId> recs;
         recs = user.getRecommendations(listSize, candidates, exclude);
         if (recs == null || recs.isEmpty()) {
@@ -96,17 +96,17 @@ public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Ac
         }
         double pop = 0;
         for (ScoredId s : recs) {
-            pop += accumulator.popularity.get(s.getId()); // default value should be 0 here.
+            pop += context.popularity.get(s.getId()); // default value should be 0 here.
         }
         pop = pop / recs.size();
 
-        accumulator.mean.add(pop);
+        context.mean.add(pop);
         return new Result(pop);
     }
 
     @Override
-    protected Result getTypedResults(Accumulator accum) {
-        return new Result(accum.mean.getMean());
+    protected Result getTypedResults(Context context) {
+        return new Result(context.mean.getMean());
     }
 
     public static class Result {
@@ -118,11 +118,11 @@ public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Ac
         }
     }
 
-    public class Accumulator {
+    public class Context {
         final Long2IntMap popularity;
         final MeanAccumulator mean = new MeanAccumulator();
 
-        public Accumulator(Long2IntMap popularity) {
+        public Context(Long2IntMap popularity) {
             this.popularity = popularity;
         }
     }

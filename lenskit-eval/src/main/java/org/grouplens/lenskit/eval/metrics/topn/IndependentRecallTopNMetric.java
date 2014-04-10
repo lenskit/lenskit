@@ -51,7 +51,7 @@ import java.util.List;
  * 
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecallTopNMetric.Accumulator, IndependentRecallTopNMetric.Result, IndependentRecallTopNMetric.Result> {
+public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecallTopNMetric.Context, IndependentRecallTopNMetric.Result, IndependentRecallTopNMetric.Result> {
     private final String suffix;
     private final int listSize;
     private final ItemSelector queryItems;
@@ -82,18 +82,18 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
     }
 
     @Override
-    public Accumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
-        return new Accumulator(ds.getTestData().getItemDAO().getItemIds());
+    public Context createContext(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new Context(ds.getTestData().getItemDAO().getItemIds());
     }
 
     @Override
-    public Result doMeasureUser(TestUser user, Accumulator accumulator) {
+    public Result doMeasureUser(TestUser user, Context context) {
         double score = 0;
 
         SingletonSelector theItem = new SingletonSelector();
         ItemSelector finalCandidates = ItemSelectors.union(candidates, theItem);
 
-        LongSet items = queryItems.select(user.getTrainHistory(), user.getTestHistory(), accumulator.universe);
+        LongSet items = queryItems.select(user.getTrainHistory(), user.getTestHistory(), context.universe);
         LongIterator it = items.iterator();
         while (it.hasNext()) {
             final long l = it.nextLong();
@@ -110,7 +110,7 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
         int n = items.size();
         if (n>0) {
             score /= n;
-            accumulator.mean.add(score);
+            context.mean.add(score);
             return new Result(score);
         } else {
             return null;
@@ -118,9 +118,9 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
     }
 
     @Override
-    protected Result getTypedResults(Accumulator accum) {
-        if (accum.mean.getCount() > 0) {
-            return new Result(accum.mean.getMean());
+    protected Result getTypedResults(Context context) {
+        if (context.mean.getCount() > 0) {
+            return new Result(context.mean.getMean());
         } else {
             return null;
         }
@@ -135,11 +135,11 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
         }
     }
 
-    public class Accumulator {
+    public class Context {
         private final LongSet universe;
         private final MeanAccumulator mean = new MeanAccumulator();
         
-        Accumulator(LongSet universe) {
+        Context(LongSet universe) {
             this.universe = universe;
         }
     }

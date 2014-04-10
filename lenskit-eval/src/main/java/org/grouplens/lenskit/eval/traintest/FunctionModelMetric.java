@@ -60,23 +60,23 @@ public class FunctionModelMetric implements Metric<List<Object>> {
     }
 
     @Override
-    public List<Object> createAccumulator(Attributed algorithm, TTDataSet dataSet, Recommender recommender) {
+    public List<Object> createContext(Attributed algorithm, TTDataSet dataSet, Recommender recommender) {
         return function.apply(recommender);
     }
 
     @Nonnull
     @Override
-    public List<Object> measureUser(TestUser user, List<Object> accumulator) {
+    public List<Object> measureUser(TestUser user, List<Object> context) {
         return Collections.emptyList();
     }
 
     @Nonnull
     @Override
-    public List<Object> getResults(List<Object> accum) {
-        if (accum == null) {
+    public List<Object> getResults(List<Object> context) {
+        if (context == null) {
             return Lists.transform(columnHeaders, Functions.constant(null));
         } else {
-            return accum;
+            return context;
         }
     }
 

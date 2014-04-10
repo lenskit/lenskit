@@ -32,14 +32,16 @@ import java.util.List;
 /**
  * A simple metric base class that tracks the current evaluation.
  *
- * @param <A> The accumulator type.
- * @param <U> The type of per-user results.
- * @param <G> The type of global results.
+ * @param <X> The context type.
+ * @param <U> The type of per-user results.  This is a plain Java class that has fields or methods
+ *           annotated with {@link ResultColumn} containing the per-user output columns.
+ * @param <G> The type of global results.  This is a plain Java class that has fields or methods
+ *           annotated with {@link ResultColumn} containing the aggregate output columns.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-public abstract class AbstractMetric<A, G, U> implements Metric<A> {
+public abstract class AbstractMetric<X, G, U> implements Metric<X> {
     private final ResultConverter<G> aggregateConverter;
     private final ResultConverter<U> userConverter;
 
@@ -78,30 +80,30 @@ public abstract class AbstractMetric<A, G, U> implements Metric<A> {
 
     @Nonnull
     @Override
-    public List<Object> measureUser(TestUser user, A accumulator) {
-        return userConverter.getColumns(doMeasureUser(user, accumulator));
+    public List<Object> measureUser(TestUser user, X context) {
+        return userConverter.getColumns(doMeasureUser(user, context));
     }
 
     /**
      * Measure a user with typed results.
      * @param user The user to measure.
-     * @param accum The accumulator.
+     * @param context The context.
      * @return The results of measuring the user, or {@code null} to emit NAs for the user.
      */
-    protected abstract U doMeasureUser(TestUser user, A accum);
+    protected abstract U doMeasureUser(TestUser user, X context);
 
     @Nonnull
     @Override
-    public List<Object> getResults(A accum) {
-        return aggregateConverter.getColumns(getTypedResults(accum));
+    public List<Object> getResults(X context) {
+        return aggregateConverter.getColumns(getTypedResults(context));
     }
 
     /**
      * Get the typed results from an accumulator.
-     * @param accum The accumulator.
+     * @param context The context.
      * @return The results accumulated for this experiment, or {@code null} to emit NAs.
      */
-    protected abstract G getTypedResults(A accum);
+    protected abstract G getTypedResults(X context);
 
     /**
      * Close the metric.  Many metrics do not need to be closed, so this implementation is a no-op.

@@ -49,7 +49,7 @@ import java.util.List;
  * 
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class TopNEntropyMetric extends AbstractMetric<TopNEntropyMetric.Accumulator, TopNEntropyMetric.Result, Void> {
+public class TopNEntropyMetric extends AbstractMetric<TopNEntropyMetric.Context, TopNEntropyMetric.Result, Void> {
     private final String suffix;
     private final int listSize;
     private final ItemSelector candidates;
@@ -71,8 +71,8 @@ public class TopNEntropyMetric extends AbstractMetric<TopNEntropyMetric.Accumula
     }
 
     @Override
-    public Accumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
-        return new Accumulator();
+    public Context createContext(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new Context();
     }
 
     @Override
@@ -86,18 +86,18 @@ public class TopNEntropyMetric extends AbstractMetric<TopNEntropyMetric.Accumula
     }
 
     @Override
-    public Void doMeasureUser(TestUser user, Accumulator accumulator) {
+    public Void doMeasureUser(TestUser user, Context context) {
         List<ScoredId> recs;
         recs = user.getRecommendations(listSize, candidates, exclude);
         if (recs != null) {
-            accumulator.addUser(recs);
+            context.addUser(recs);
         }
         return null;
     }
 
     @Override
-    protected Result getTypedResults(Accumulator accum) {
-        return accum.finish();
+    protected Result getTypedResults(Context context) {
+        return context.finish();
     }
 
     public static class Result {
@@ -108,7 +108,7 @@ public class TopNEntropyMetric extends AbstractMetric<TopNEntropyMetric.Accumula
         }
     }
 
-    public class Accumulator {
+    public class Context {
         private Long2IntMap counts = new Long2IntOpenHashMap();
         private int recCount = 0;
         

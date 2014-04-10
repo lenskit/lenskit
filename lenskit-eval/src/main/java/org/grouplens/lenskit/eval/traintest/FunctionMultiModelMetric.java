@@ -82,7 +82,7 @@ public class FunctionMultiModelMetric implements Metric<Void> {
 
     @Nullable
     @Override
-    public Void createAccumulator(Attributed algorithm, TTDataSet dataSet, Recommender recommender) {
+    public Void createContext(Attributed algorithm, TTDataSet dataSet, Recommender recommender) {
         Preconditions.checkState(evalLayout != null, "evaluation not in progress");
         TableWriter w = evalLayout.prefixTable(writer, algorithm, dataSet);
         for (List<Object> row: function.apply(recommender)) {
@@ -97,13 +97,13 @@ public class FunctionMultiModelMetric implements Metric<Void> {
 
     @Nonnull
     @Override
-    public List<Object> measureUser(TestUser user, Void accum) {
+    public List<Object> measureUser(TestUser user, Void context) {
         return Collections.emptyList();
     }
 
     @Nonnull
     @Override
-    public List<Object> getResults(Void accum) {
+    public List<Object> getResults(Void context) {
         return Collections.emptyList();
     }
 

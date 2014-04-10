@@ -58,7 +58,7 @@ public class NDCGPredictMetric extends AbstractMetric<MeanAccumulator, NDCGPredi
     }
 
     @Override
-    public MeanAccumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
+    public MeanAccumulator createContext(Attributed algo, TTDataSet ds, Recommender rec) {
         return new MeanAccumulator();
     }
 
@@ -87,7 +87,7 @@ public class NDCGPredictMetric extends AbstractMetric<MeanAccumulator, NDCGPredi
     }
 
     @Override
-    public Result doMeasureUser(TestUser user, MeanAccumulator accumulator) {
+    public Result doMeasureUser(TestUser user, MeanAccumulator context) {
         SparseVector predictions = user.getPredictions();
         if (predictions == null) {
             return null;
@@ -99,13 +99,13 @@ public class NDCGPredictMetric extends AbstractMetric<MeanAccumulator, NDCGPredi
         double idealGain = computeDCG(ideal, ratings);
         double gain = computeDCG(actual, ratings);
         double score = gain / idealGain;
-        accumulator.add(score);
+        context.add(score);
         return new Result(score);
     }
 
     @Override
-    protected Result getTypedResults(MeanAccumulator accum) {
-        return new Result(accum.getMean());
+    protected Result getTypedResults(MeanAccumulator context) {
+        return new Result(context.getMean());
     }
 
     public static class Result {

@@ -78,7 +78,7 @@ class LenskitEvalJob extends TrainTestJob {
 
     @Override
     protected <A> MetricWithAccumulator<A> makeMetricAccumulator(Metric<A> metric) {
-        return new MetricWithAccumulator<A>(metric, metric.createAccumulator(algorithmInfo, dataSet, recommender));
+        return new MetricWithAccumulator<A>(metric, metric.createContext(algorithmInfo, dataSet, recommender));
     }
 
     @Override

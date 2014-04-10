@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class EntropyPredictMetric extends AbstractMetric<EntropyPredictMetric.Accumulator, EntropyPredictMetric.EntropyResult, EntropyPredictMetric.EntropyResult> {
+public class EntropyPredictMetric extends AbstractMetric<EntropyPredictMetric.Context, EntropyPredictMetric.EntropyResult, EntropyPredictMetric.EntropyResult> {
     private static final Logger logger = LoggerFactory.getLogger(EntropyPredictMetric.class);
 
     public EntropyPredictMetric() {
@@ -52,19 +52,19 @@ public class EntropyPredictMetric extends AbstractMetric<EntropyPredictMetric.Ac
     }
 
     @Override
-    public Accumulator createAccumulator(Attributed algorithm, TTDataSet dataSet, Recommender rec) {
-        return new Accumulator(dataSet.getTrainingData().getPreferenceDomain());
+    public Context createContext(Attributed algorithm, TTDataSet dataSet, Recommender rec) {
+        return new Context(dataSet.getTrainingData().getPreferenceDomain());
     }
 
     @Override
-    public EntropyResult doMeasureUser(TestUser user, Accumulator accumulator) {
+    public EntropyResult doMeasureUser(TestUser user, Context context) {
         SparseVector ratings = user.getTestRatings();
         SparseVector predictions = user.getPredictions();
         if (predictions == null) {
             return null;
         }
 
-        Quantizer q = accumulator.quantizer;
+        Quantizer q = context.quantizer;
 
         // TODO Re-use accumulators
         MutualInformationAccumulator accum = new MutualInformationAccumulator(q.getCount());
@@ -78,7 +78,7 @@ public class EntropyPredictMetric extends AbstractMetric<EntropyPredictMetric.Ac
             double ratingEntropy = accum.getV1Entropy();
             double predEntropy = accum.getV2Entropy();
             double info = accum.getMutualInformation();
-            accumulator.addUser(info, ratingEntropy, predEntropy);
+            context.addUser(info, ratingEntropy, predEntropy);
             return new EntropyResult(info, ratingEntropy, predEntropy);
         } else {
             return null;
@@ -86,13 +86,13 @@ public class EntropyPredictMetric extends AbstractMetric<EntropyPredictMetric.Ac
     }
 
     @Override
-    protected EntropyResult getTypedResults(Accumulator accum) {
-        if (accum.nusers <= 0) {
+    protected EntropyResult getTypedResults(Context context) {
+        if (context.nusers <= 0) {
             return null;
         } else {
-            return new EntropyResult(accum.informationSum / accum.nusers,
-                                     accum.ratingEntropySum / accum.nusers,
-                                     accum.predictionEntropySum / accum.nusers);
+            return new EntropyResult(context.informationSum / context.nusers,
+                                     context.ratingEntropySum / context.nusers,
+                                     context.predictionEntropySum / context.nusers);
         }
     }
 
@@ -111,7 +111,7 @@ public class EntropyPredictMetric extends AbstractMetric<EntropyPredictMetric.Ac
         }
     }
 
-    public class Accumulator {
+    public class Context {
         private Quantizer quantizer;
 
         private double informationSum = 0.0;
@@ -119,7 +119,7 @@ public class EntropyPredictMetric extends AbstractMetric<EntropyPredictMetric.Ac
         private double predictionEntropySum = 0.0;
         private int nusers = 0;
 
-        private Accumulator(PreferenceDomain preferenceDomain) {
+        private Context(PreferenceDomain preferenceDomain) {
             quantizer = new PreferenceDomainQuantizer(preferenceDomain);
         }
 

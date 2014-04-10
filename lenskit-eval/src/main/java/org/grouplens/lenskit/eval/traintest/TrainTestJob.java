@@ -177,7 +177,7 @@ abstract class TrainTestJob implements Callable<Void> {
      * @return The metric accumulator.
      */
     protected <A> MetricWithAccumulator<A> makeMetricAccumulator(Metric<A> metric) {
-        return new MetricWithAccumulator<A>(metric, metric.createAccumulator(algorithmInfo, dataSet, null));
+        return new MetricWithAccumulator<A>(metric, metric.createContext(algorithmInfo, dataSet, null));
     }
 
     /**

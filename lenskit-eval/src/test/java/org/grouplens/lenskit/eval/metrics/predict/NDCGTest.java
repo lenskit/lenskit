@@ -100,7 +100,7 @@ public class NDCGTest {
     @Test
     public void testAccumulator() {
         NDCGPredictMetric metric = new NDCGPredictMetric();
-        MeanAccumulator acc = metric.createAccumulator(null, null, null);
+        MeanAccumulator acc = metric.createContext(null, null, null);
         assertThat(acc, notNullValue());
         assert acc != null;
         metric.measureUser(user1, acc);

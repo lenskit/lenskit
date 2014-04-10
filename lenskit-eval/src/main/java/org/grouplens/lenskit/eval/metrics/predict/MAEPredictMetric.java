@@ -44,7 +44,7 @@ import static java.lang.Math.abs;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class MAEPredictMetric extends AbstractMetric<MAEPredictMetric.Accumulator, MAEPredictMetric.AggregateResult, MAEPredictMetric.UserResult> {
+public class MAEPredictMetric extends AbstractMetric<MAEPredictMetric.Context, MAEPredictMetric.AggregateResult, MAEPredictMetric.UserResult> {
     private static final Logger logger = LoggerFactory.getLogger(MAEPredictMetric.class);
 
     public MAEPredictMetric() {
@@ -52,12 +52,12 @@ public class MAEPredictMetric extends AbstractMetric<MAEPredictMetric.Accumulato
     }
 
     @Override
-    public Accumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
-        return new Accumulator();
+    public Context createContext(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new Context();
     }
 
     @Override
-    public UserResult doMeasureUser(TestUser user, Accumulator accumulator) {
+    public UserResult doMeasureUser(TestUser user, Context context) {
         SparseVector ratings = user.getTestRatings();
         SparseVector predictions = user.getPredictions();
         if (predictions == null) {
@@ -76,7 +76,7 @@ public class MAEPredictMetric extends AbstractMetric<MAEPredictMetric.Accumulato
 
         if (n > 0) {
             double mae = err / n;
-            accumulator.addUser(n, err, mae);
+            context.addUser(n, err, mae);
             return new UserResult(mae);
         } else {
             return null;
@@ -84,8 +84,8 @@ public class MAEPredictMetric extends AbstractMetric<MAEPredictMetric.Accumulato
     }
 
     @Override
-    protected AggregateResult getTypedResults(Accumulator accum) {
-        return accum.finish();
+    protected AggregateResult getTypedResults(Context context) {
+        return context.finish();
     }
 
     public static class UserResult {
@@ -109,7 +109,7 @@ public class MAEPredictMetric extends AbstractMetric<MAEPredictMetric.Accumulato
         }
     }
 
-    public class Accumulator {
+    public class Context {
         private double totalError = 0;
         private double totalUserError = 0;
         private int nratings = 0;

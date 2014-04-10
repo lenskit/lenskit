@@ -48,7 +48,7 @@ public class HLUtilityPredictMetric extends AbstractMetric<MeanAccumulator, HLUt
     }
 
     @Override
-    public MeanAccumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
+    public MeanAccumulator createContext(Attributed algo, TTDataSet ds, Recommender rec) {
         return new MeanAccumulator();
     }
 
@@ -74,7 +74,7 @@ public class HLUtilityPredictMetric extends AbstractMetric<MeanAccumulator, HLUt
     }
 
     @Override
-    public Result doMeasureUser(TestUser user, MeanAccumulator accumulator) {
+    public Result doMeasureUser(TestUser user, MeanAccumulator context) {
         SparseVector predictions = user.getPredictions();
         if (predictions == null) {
             return null;
@@ -87,12 +87,12 @@ public class HLUtilityPredictMetric extends AbstractMetric<MeanAccumulator, HLUt
         double actualUtility = computeHLU(actual, ratings);
         double u = actualUtility / idealUtility;
 
-        accumulator.add(u);
+        context.add(u);
         return new Result(u);
     }
 
     @Override
-    protected Result getTypedResults(MeanAccumulator accum) {
-        return new Result(accum.getMean());
+    protected Result getTypedResults(MeanAccumulator context) {
+        return new Result(context.getMean());
     }
 }

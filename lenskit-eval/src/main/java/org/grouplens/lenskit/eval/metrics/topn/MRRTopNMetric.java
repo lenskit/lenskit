@@ -42,7 +42,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 2.1
  */
-public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Accumulator, MRRTopNMetric.AggregateResult, MRRTopNMetric.UserResult> {
+public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Context, MRRTopNMetric.AggregateResult, MRRTopNMetric.UserResult> {
     private static final Logger logger = LoggerFactory.getLogger(MRRTopNMetric.class);
 
     private final String suffix;
@@ -76,15 +76,15 @@ public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Accumulator, MRR
     }
 
     @Override
-    public Accumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
-        return new Accumulator(ds.getTestData().getItemDAO().getItemIds());
+    public Context createContext(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new Context(ds.getTestData().getItemDAO().getItemIds());
     }
 
     @Override
-    public UserResult doMeasureUser(TestUser user, Accumulator accumulator) {
+    public UserResult doMeasureUser(TestUser user, Context context) {
         LongSet good = goodItems.select(user.getTrainHistory(),
                                         user.getTestHistory(),
-                                        accumulator.universe);
+                                        context.universe);
         if (good.isEmpty()) {
             logger.warn("no good items for user {}", user.getUserId());
         }
@@ -101,13 +101,13 @@ public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Accumulator, MRR
         }
 
         UserResult result = new UserResult(rank);
-        accumulator.addUser(result);
+        context.addUser(result);
         return result;
     }
 
     @Override
-    protected AggregateResult getTypedResults(Accumulator accum) {
-        return new AggregateResult(accum);
+    protected AggregateResult getTypedResults(Context context) {
+        return new AggregateResult(context);
     }
 
     public static class UserResult {
@@ -137,18 +137,18 @@ public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Accumulator, MRR
         @ResultColumn("MRR.OfGood")
         public final double goodMRR;
 
-        public AggregateResult(Accumulator accum) {
+        public AggregateResult(Context accum) {
             this.mrr = accum.allMean.getMean();
             this.goodMRR = accum.goodMean.getMean();
         }
     }
 
-    public static class Accumulator {
+    public static class Context {
         private final LongSet universe;
         private final MeanAccumulator allMean = new MeanAccumulator();
         private final MeanAccumulator goodMean = new MeanAccumulator();
 
-        Accumulator(LongSet universe) {
+        Context(LongSet universe) {
             this.universe = universe;
         }
 

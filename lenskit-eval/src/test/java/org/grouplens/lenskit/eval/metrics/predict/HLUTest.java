@@ -86,7 +86,7 @@ public class HLUTest {
     @Test
     public void testAccumulator() {
         HLUtilityPredictMetric metric = new HLUtilityPredictMetric(5);
-        MeanAccumulator acc = metric.createAccumulator(null, null, null);
+        MeanAccumulator acc = metric.createContext(null, null, null);
         assert acc != null;
 
         metric.measureUser(user1, acc);

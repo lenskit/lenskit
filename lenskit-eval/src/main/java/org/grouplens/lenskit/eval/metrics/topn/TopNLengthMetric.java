@@ -55,25 +55,25 @@ public class TopNLengthMetric extends AbstractMetric<MeanAccumulator, TopNLength
     }
 
     @Override
-    public MeanAccumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
+    public MeanAccumulator createContext(Attributed algo, TTDataSet ds, Recommender rec) {
         return new MeanAccumulator();
     }
 
     @Override
-    public Result doMeasureUser(TestUser user, MeanAccumulator accumulator) {
+    public Result doMeasureUser(TestUser user, MeanAccumulator context) {
         List<ScoredId> recs;
         recs = user.getRecommendations(listSize, candidates, exclude);
         if (recs == null) {
             return null;
         }
         int n = recs.size();
-        accumulator.add(n);
+        context.add(n);
         return new Result(n);
     }
 
     @Override
-    protected Result getTypedResults(MeanAccumulator accum) {
-        return new Result(accum.getMean());
+    protected Result getTypedResults(MeanAccumulator context) {
+        return new Result(context.getMean());
     }
 
     public static class Result {

@@ -35,14 +35,40 @@ import java.util.List;
  * have additional resources backing them, such as extra output files, and therefore must be closed.
  *
  * <p>
- * A metric can define a <em>metric accumulator</em>, created by {@link #createAccumulator(Attributed, TTDataSet, Recommender)},
- * that is used to accumulate the results of different users in a single experiment.
+ * Metrics use <em>contexts</em> to track and accumulate data for experimental conditions.  For each
+ * experimental condition (algorithm / data set pair), the evaluator will do the following:
  *
- * @param <A> The type of accumulator used by this metric.
+ * <ol>
+ * <li>Create a context for the experiment using {@link #createContext(Attributed, TTDataSet, Recommender)}.</li>
+ * <li>Measure each test user with {@link #measureUser(TestUser, Object)}, passing in the context
+ * in which the user should be evaluated.</li>
+ * <li>Output the result of each user measurement to the per-user output table (if active).</li>
+ * <li>Obtain the aggregate results from this metric with {@link #getResults(Object)}.</li>
+ * </ol>
+ *
+ * <p>
+ * The context will general consist of accumulators for the aggregate results reported by a metric
+ * over the entire experimental condition, such as the average of all user measurements.  It may
+ * also contain additional relevant information, such as anything needed from the algorithm and
+ * data set for the measurements, or additional output tables for recording extra data.
+ *
+ * <p>
+ * Metrics themselves are generally stateless, with all state contained in the context.  In this
+ * case, there is a single instance of the metric, or an instance per parameterization, and the
+ * {@link #close()} method is a no-op.  Some metrics need state or output resources; such metrics
+ * should define a {@link org.grouplens.lenskit.eval.traintest.MetricFactory} to instantiate them,
+ * and clean up and release resources or state in {@link #close()}.
+ *
+ * <p>
+ * {@link AbstractMetric} provides a base implementation of this interface that allows user and
+ * aggregate measurements to be defined in plan Java objects, so metrics do not need to handle
+ * creating table rows themselves.
+ *
+ * @param <X> The type of accumulator used by this metric.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10 (rewritten in 2.1)
  */
-public interface Metric<A> extends Closeable {
+public interface Metric<X> extends Closeable {
     /**
      * Get labels for the aggregate columns output by this evaluator.
      *
@@ -61,8 +87,7 @@ public interface Metric<A> extends Closeable {
     List<String> getUserColumnLabels();
 
     /**
-     * Create the accumulator for a single experiment (algorithm/data set pair).
-     *
+     * Create the context for an experimental condition (algorithm/data set pair).
      *
      * @param algorithm The algorithm.
      * @param dataSet   The data set.
@@ -72,22 +97,22 @@ public interface Metric<A> extends Closeable {
      * the metric does not accumulate any results, this method can return {@code null}.
      */
     @Nullable
-    A createAccumulator(Attributed algorithm, TTDataSet dataSet, Recommender recommender);
+    X createContext(Attributed algorithm, TTDataSet dataSet, Recommender recommender);
 
     /**
      * Measure a user in the evaluation.
      * @param user The user to evaluate.
-     * @param accumulator The accumulator for this experiment.
+     * @param context The context for the active experimental condition.
      * @return The table rows resulting from this user's measurement.
      */
     @Nonnull
-    List<Object> measureUser(TestUser user, A accumulator);
+    List<Object> measureUser(TestUser user, X context);
 
     /**
      * Get the aggregate results from an accumulator.
-     * @param accum An accumulator.
+     * @param context The context for an experimental condition.
      * @return The aggregate results from the accumulator.
      */
     @Nonnull
-    List<Object> getResults(A accum);
+    List<Object> getResults(X context);
 }

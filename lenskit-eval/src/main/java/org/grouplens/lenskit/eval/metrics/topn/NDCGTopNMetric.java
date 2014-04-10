@@ -67,7 +67,7 @@ public class NDCGTopNMetric extends AbstractMetric<MeanAccumulator, NDCGTopNMetr
     }
 
     @Override
-    public MeanAccumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
+    public MeanAccumulator createContext(Attributed algo, TTDataSet ds, Recommender rec) {
         return new MeanAccumulator();
     }
 
@@ -101,7 +101,7 @@ public class NDCGTopNMetric extends AbstractMetric<MeanAccumulator, NDCGTopNMetr
     }
 
     @Override
-    public Result doMeasureUser(TestUser user, MeanAccumulator accum) {
+    public Result doMeasureUser(TestUser user, MeanAccumulator context) {
         List<ScoredId> recommendations;
         recommendations = user.getRecommendations(listSize, candidates, exclude);
         if (recommendations == null) {
@@ -123,13 +123,13 @@ public class NDCGTopNMetric extends AbstractMetric<MeanAccumulator, NDCGTopNMetr
 
         double score = gain / idealGain;
 
-        accum.add(score);
+        context.add(score);
         return new Result(score);
     }
 
     @Override
-    protected Result getTypedResults(MeanAccumulator accum) {
-        return new Result(accum.getMean());
+    protected Result getTypedResults(MeanAccumulator context) {
+        return new Result(context.getMean());
     }
 
     public static class Result {

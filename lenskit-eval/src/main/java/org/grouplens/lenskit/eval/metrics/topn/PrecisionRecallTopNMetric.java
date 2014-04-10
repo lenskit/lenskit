@@ -45,7 +45,7 @@ import java.util.List;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTopNMetric.Accumulator, PrecisionRecallTopNMetric.Result, PrecisionRecallTopNMetric.Result> {
+public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTopNMetric.Context, PrecisionRecallTopNMetric.Result, PrecisionRecallTopNMetric.Result> {
     private static final Logger logger = LoggerFactory.getLogger(PrecisionRecallTopNMetric.class);
 
     private final String suffix;
@@ -79,18 +79,18 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
     }
 
     @Override
-    public Accumulator createAccumulator(Attributed algo, TTDataSet ds, Recommender rec) {
-        return new Accumulator(ds.getTestData().getItemDAO().getItemIds());
+    public Context createContext(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new Context(ds.getTestData().getItemDAO().getItemIds());
     }
 
     @Override
-    public Result doMeasureUser(TestUser user, Accumulator accumulator) {
+    public Result doMeasureUser(TestUser user, Context context) {
         int tp = 0;
         int fp = 0;
 
         LongSet items = queryItems.select(user.getTrainHistory(),
                                           user.getTestHistory(),
-                                          accumulator.universe);
+                                          context.universe);
 
         List<ScoredId> recs = user.getRecommendations(listSize, candidates, exclude);
         for(ScoredId s : CollectionUtils.fast(recs)) {
@@ -106,7 +106,7 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
             // if both the items set and recommendations are non-empty (no division by 0).
             double precision = (double) tp/(tp+fp);
             double recall = (double) tp/(tp+fn);
-            accumulator.addUser(precision, recall);
+            context.addUser(precision, recall);
             return new Result(precision, recall);
         } else {
             return null;
@@ -114,8 +114,8 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
     }
 
     @Override
-    protected Result getTypedResults(Accumulator accum) {
-        return accum.finish();
+    protected Result getTypedResults(Context context) {
+        return context.finish();
     }
 
     public static class Result {
@@ -130,14 +130,14 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
         }
     }
 
-    public class Accumulator {
+    public class Context {
         private final LongSet universe;
 
         double totalPrecision = 0;
         double totalRecall = 0;
         int nusers = 0;
 
-        Accumulator(LongSet universe) {
+        Context(LongSet universe) {
             this.universe = universe;
         }
 

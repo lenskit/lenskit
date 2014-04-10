@@ -37,7 +37,7 @@ import static org.junit.Assert.assertThat
 class MRRTopNMetricTest {
     LongSet universe = LongUtils.packedSet(1l..50)
     MRRTopNMetric metric
-    MRRTopNMetric.Accumulator accum
+    MRRTopNMetric.Context accum
 
     static Matcher<Double> closeTo(double x) {
         return closeTo(x, 1.0e-6d)
@@ -49,7 +49,7 @@ class MRRTopNMetricTest {
                 .setGoodItems(ItemSelectors.fixed(3, 7, 9, 42))
                 .setListSize(0)
                 .build();
-        accum = new MRRTopNMetric.Accumulator(universe)
+        accum = new MRRTopNMetric.Context(universe)
     }
 
     @Test
