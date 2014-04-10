@@ -20,34 +20,25 @@
  */
 package org.grouplens.lenskit.knn.user;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 
-import javax.annotation.Nonnull;
-import java.util.Collection;
-
 /**
- * Interface for neighborhood-finding strategies. These strategies are used by
- * {@link UserUserItemScorer} to find neighbors for generating scores.
+ * Finds candidate neighbors for a user.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 2.1
  */
-@DefaultImplementation(SimpleNeighborhoodFinder.class)
-public interface NeighborhoodFinder {
+public interface NeighborFinder {
     /**
-     * Find neighboring users for particular items. {@var user} and the
-     * returned rating vectors are <em>unnormalized</em>.  Any normalization
-     * used by the neighborhood finder is only for comparing neighbors.
+     * Get potential neighbors for a particular user.
      *
-     * @param user  The user's event history.
-     * @param items The items we're trying to recommend, or {@code null} to get
-     *              get neighborhoods for all possible items.
-     * @return A map from item IDs to user neighborhoods for all items for which
-     *         we can find neighboring users.
+     * @param user  The user whose neighbors are wanted.
+     * @param items The items that the client needs to be able to score or recommend.
+     * @return A collection of potential neighbors for {@code user}.  This collection may include
+     *         neighbors that are not useful for scoring any item in {@code items}; the item set
+     *         is just to help the neighbor finder guide its search if relevant.
      */
-    Long2ObjectMap<? extends Collection<Neighbor>> findNeighbors(
-            @Nonnull UserHistory<? extends Event> user, @Nonnull LongSet items);
+    Iterable<Neighbor> getCandidateNeighbors(UserHistory<? extends Event> user, LongSet items);
 }

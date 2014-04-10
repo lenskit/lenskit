@@ -107,7 +107,7 @@ public class UserUserBuildSerializeTest extends ML100KTestSuite {
             }
             bind (BaselineScorer,ItemScorer) to UserMeanItemScorer
             bind (UserMeanBaseline, ItemMeanRatingItemScorer) to ItemMeanRatingItemScorer
-            bind NeighborhoodFinder to SnapshotNeighborhoodFinder
+            bind NeighborFinder to SnapshotNeighborFinder
         }
 
         LenskitRecommenderEngine engine =
@@ -142,7 +142,7 @@ public class UserUserBuildSerializeTest extends ML100KTestSuite {
 
 
         UserUserItemScorer is = rec.itemScorer as UserUserItemScorer
-        assertThat is.neighborhoodFinder, instanceOf(SnapshotNeighborhoodFinder)
+        assertThat is.neighborhoodFinder, instanceOf(SnapshotNeighborFinder)
         def rec2 = loaded.createRecommender()
         assertThat((rec2.itemScorer as UserUserItemScorer).neighborhoodFinder,
                    sameInstance(is.neighborhoodFinder))
