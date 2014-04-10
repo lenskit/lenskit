@@ -26,15 +26,11 @@ import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
-import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,8 +146,6 @@ abstract class TrainTestJob implements Callable<Void> {
                     }
                 }
                 userRow.clear();
-
-                writePredictions(test);
             }
             testTimer.stop();
             logger.info("Tested {} in {}", algorithmInfo.getName(), testTimer);
@@ -196,41 +190,6 @@ abstract class TrainTestJob implements Callable<Void> {
      * Clean up the job after it is finished (freeing memory, etc.).
      */
     protected abstract void cleanup();
-
-    private void writePredictions(TestUser user) throws IOException {
-        TableWriter predictTable = output.getPredictionWriter();
-        if (predictTable == null) return;
-
-        SparseVector predictions = user.getPredictions();
-        if (predictions == null) return;
-
-        SparseVector ratings = user.getTestRatings();
-
-        final int ncols = predictTable.getLayout().getColumnCount();
-        final Object[] row = new String[ncols];
-        row[0] = Long.toString(user.getUserId());
-        for (VectorEntry e : ratings.fast()) {
-            long iid = e.getKey();
-            row[1] = Long.toString(iid);
-            row[2] = Double.toString(e.getValue());
-            if (predictions.containsKey(iid)) {
-                row[3] = Double.toString(predictions.get(iid));
-            } else {
-                row[3] = null;
-            }
-            int i = 4;
-            for (Pair<Symbol,String> pair: measurements.getPredictionChannels()) {
-                Symbol c = pair.getLeft();
-                if (predictions.hasChannelVector(c) && predictions.getChannelVector(c).containsKey(iid)) {
-                    row[i] = Double.toString(predictions.getChannelVector(c).get(iid));
-                } else {
-                    row[i] = null;
-                }
-                i += 1;
-            }
-            predictTable.writeRow(row);
-        }
-    }
 
     private void writeMetricValues(StopWatch build, StopWatch test, List<Object> measures, List<MetricWithAccumulator<?>> accums) throws IOException {
         TableWriter results = output.getResultsWriter();

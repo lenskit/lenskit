@@ -39,19 +39,15 @@ class ExperimentOutputs {
     private final TableWriter resultsWriter;
     @Nullable
     private final TableWriter userWriter;
-    @Nullable
-    private final TableWriter predictionWriter;
     private final List<Metric<?>> metrics;
 
     public ExperimentOutputs(ExperimentOutputLayout eol,
                              @Nonnull TableWriter results,
                              @Nullable TableWriter user,
-                             @Nullable TableWriter predict,
                              List<Metric<?>> ms) {
         layouts = eol;
         resultsWriter = results;
         userWriter = user;
-        predictionWriter = predict;
         metrics = ms;
     }
 
@@ -65,11 +61,6 @@ class ExperimentOutputs {
         return userWriter;
     }
 
-    @Nullable
-    public TableWriter getPredictionWriter() {
-        return predictionWriter;
-    }
-
     List<Metric<?>> getMetrics() {
         return metrics;
     }
@@ -77,7 +68,6 @@ class ExperimentOutputs {
     public ExperimentOutputs getPrefixed(Attributed algo, TTDataSet data) {
         TableWriter results = layouts.prefixTable(resultsWriter, algo, data);
         TableWriter user = layouts.prefixTable(userWriter, algo, data);
-        TableWriter predict = layouts.prefixTable(predictionWriter, algo, data);
-        return new ExperimentOutputs(layouts, results, user, predict, metrics);
+        return new ExperimentOutputs(layouts, results, user, metrics);
     }
 }

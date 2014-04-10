@@ -446,6 +446,9 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         if (recommendOutputFile != null) {
             activeMetrics.add(new OutputTopNMetric.Factory());
         }
+        if (predictOutputFile != null) {
+            activeMetrics.add(new OutputPredictMetric.Factory());
+        }
         return new MeasurementSuite(activeMetrics.build(), predictChannels);
     }
 
@@ -610,14 +613,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         if (userOutputFile != null) {
             user = closer.register(CSVWriter.open(userOutputFile, layouts.getUserLayout()));
         }
-        TableWriter predict = null;
-        if (predictOutputFile != null) {
-            predict = closer.register(CSVWriter.open(predictOutputFile, layouts.getPredictLayout()));
-        }
         List<Metric<?>> metrics = Lists.newArrayList();
         for (MetricFactory metric : measures.getMetricFactories()) {
             metrics.add(closer.register(metric.createMetric(this)));
         }
-        return new ExperimentOutputs(layouts, allResults, user, predict, metrics);
+        return new ExperimentOutputs(layouts, allResults, user, metrics);
     }
 }
