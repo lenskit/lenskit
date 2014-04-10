@@ -98,12 +98,6 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
             t1 = (qtzValues.get(0) + qtzValues.get(1))/2;
             beta = Vector.createLength(levelCount - 2);
 
-            /*
-//            I comment this part so that you can double check the correction of it
-            for(int i = 1; i <= beta.length; i++ ) {
-                beta[i-1] = Math.log((qtzValues.get(i+1)-qtzValues.get(i-1))/2);
-            }
-            */
             double tr = t1;
             for (int i = 1; i <= beta.length(); i++) {
                 double trnext = (qtzValues.get(i) + qtzValues.get(i+1)) * 0.5;
@@ -161,7 +155,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         }
 
         /**
-         * Get the probability of P(rui<=r|Theta)
+         * Get the probability of P(rui&lt;=r|Theta)
          *
          * @param score The score of user uid and item iid.
          * @param r The index of rth threshold.
@@ -186,7 +180,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         /**
          * This is a helper function to calculate derivative of parameters.
          * this function computes $\frac{d}{dx} (t_r - y_{ui})$, and that r specifies
-         * what t_r is used, and k speficies x (with k=0, $x = t_1$; for k > 0, it is $x = β_k$).
+         * what t_r is used, and k speficies x (with k=0, $x = t_1$; for k &gt; 0, it is $x = β_k$).
          *
          * @param r The index of rth threshold
          * @param k The index of kth parameters need to derivative
@@ -344,15 +338,8 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
             double score = scores.get(iid);
             params.getProbDistribution(score, probabilities);
 
-            int mlIdx = -1;
-            double mlProb = 0;
-            for (int i = 0; i < probabilities.length(); i++) {
-                double prob = probabilities.get(i);
-                if (prob > mlProb) {
-                    mlIdx = i;
-                    mlProb = prob;
-                }
-            }
+            int mlIdx = probabilities.maxElementIndex();
+
             predictions.set(e, quantizer.getIndexValue(mlIdx));
             if (distChannel != null) {
                 distChannel.put(e.getKey(), probabilities.immutable());

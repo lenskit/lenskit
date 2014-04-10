@@ -22,10 +22,7 @@ package org.grouplens.lenskit.collections;
 
 import it.unimi.dsi.fastutil.longs.*;
 
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Utilities for working with longs and collections of them from Fastutil.
@@ -215,6 +212,66 @@ public final class LongUtils {
         return new LongSortedArraySet(LongKeyDomain.wrap(data, data.length, true));
     }
 
+    /**
+     * Selects a random subset of {@code n} longs from a given set of longs. If fewer than {@code n}
+     * items can be selected the whole set is returned. 
+     *
+     *
+     * @param set the set of items to select from
+     * @param num The number of random items to add.
+     * @param random a random number generator to be used.
+     * @return An item selector that selects the items selected by {@code base} plus an additional
+     * {@code nRandom} items.
+     */
+    public static LongSet randomSubset(LongSet set, int num, Random random) {
+        return randomSubset(set, num, LongSortedSets.EMPTY_SET, random);
+    }
+    
+    /**
+     * Selects a random subset of {@code n} longs from a given set of longs such that no selected 
+     * items is in a second set of longs. If fewer than {@code n} items can be selected the whole set is returned. 
+     *
+     *
+     * @param set the set of items to select from
+     * @param num The number of random items to add.
+     * @param exclude a set of longs which must not be returned
+     * @param rng a random number generator to be used.
+     * @return An item selector that selects the items selected by {@code base} plus an additional
+     * {@code nRandom} items.
+     */
+    public static LongSortedSet randomSubset(LongSet set, int num, LongSet exclude, Random rng) {
+        // FIXME The RNG should come from configuration
+        LongSet initial = exclude;
+        LongList selected = new LongArrayList(num);
+        int n = 0;
+        LongIterator iter = set.iterator();
+        while (iter.hasNext()) {
+            final long item = iter.nextLong();
+            if (exclude.contains(item)) {
+                continue;
+            }
+            // algorithm adapted from Wikipedia coverage of Fisher-Yates shuffle
+            // https://en.wikipedia.org/wiki/Fisher-Yates_shuffle
+            int j = rng.nextInt(n + 1);
+            n = n + 1;
+            if (j < num) {
+                if (j == selected.size()) {
+                    selected.add(item);
+                } else {
+                    long old = selected.getLong(j);
+                    if (selected.size() ==  num) {
+                        selected.set(num - 1, old);
+                    } else {
+                        selected.add(old);
+                    }
+                    selected.set(j, item);
+                }
+            }
+        }
+        return LongUtils.packedSet(selected);
+
+    }
+    
     /**
      * Wrapper class that implements a {@link LongCollection} by delegating to
      * a {@link Collection}.

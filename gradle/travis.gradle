@@ -1,0 +1,38 @@
+import org.grouplens.lenskit.build.*
+
+extensions.create('travis', TravisExtension)
+travis {
+    masterJdk 'oraclejdk7'
+    masterRepo 'grouplens/lenskit'
+    releaseBranchPattern ~/^(master$|release\/)/
+}
+
+if (System.getenv('CI_DEPLOY_USER') != null) {
+    properties['deploy.user'] = System.getenv('CI_DEPLOY_USER')
+}
+if (System.getenv('CI_DEPLOY_PASSWORD') != null) {
+    properties['deploy.password'] = System.getenv('CI_DEPLOY_PASSWORD')
+}
+
+task ciPrep(group: 'deploy') {
+    description 'Prepare CI build (travis install).'
+}
+
+task ciBuild(group: 'deploy') {
+    description 'Perform the build and test actions for CI builds.'
+}
+tasks.all { task ->
+    switch (task.name) {
+        case 'check':
+        case 'assemble':
+        case 'javadoc':
+            ciBuild.dependsOn task
+            break;
+    }
+}
+
+// the publish task will run other tasks recursively
+task ciPublish(group: 'deploy') {
+    description 'Publish the results of a CI build.'
+    ext.addTask = { task -> dependsOn task }
+}

@@ -31,6 +31,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -50,7 +51,7 @@ public class QuantizedRatingPredictor extends AbstractRatingPredictor implements
      */
     @Inject
     public QuantizedRatingPredictor(@PrimaryScorer ItemScorer scorer,
-                                    @BaselineScorer ItemScorer baseline,
+                                    @Nullable @BaselineScorer ItemScorer baseline,
                                     Quantizer q) {
         itemScorer = scorer;
         baselineScorer = baseline;
@@ -66,10 +67,12 @@ public class QuantizedRatingPredictor extends AbstractRatingPredictor implements
     @Override
     public void predict(long user, @Nonnull MutableSparseVector scores) {
         itemScorer.score(user, scores);
-        LongSet unset = scores.unsetKeySet();
-        if (!unset.isEmpty()) {
-            SparseVector bscores = baselineScorer.score(user, unset);
-            scores.set(bscores);
+        if (baselineScorer != null) {
+            LongSet unset = scores.unsetKeySet();
+            if (!unset.isEmpty()) {
+                SparseVector bscores = baselineScorer.score(user, unset);
+                scores.set(bscores);
+            }
         }
         quantize(scores);
     }

@@ -1,0 +1,27 @@
+import org.grouplens.lenskit.build.SiteUpload
+
+task webZip(type: Zip) {
+    dependsOn javadoc
+    dependsOn reportTests
+
+    destinationDir = file("$buildDir/distributions")
+    classifier = 'website'
+
+    from(javadoc) {
+        into 'apidocs'
+    }
+    from(reportTests) {
+        into 'tests'
+    }
+}
+
+task uploadWeb(type: SiteUpload, group: 'upload', dependsOn: webZip) {
+    description 'Upload the web site to the web'
+    siteArchive webZip.archivePath
+    uploadUrl System.getenv('SITE_UPLOAD_URL')
+    authSecret System.getenv('UPLOAD_SECRET')
+    branch travis.branch
+    onlyIf { travis.publishingActive && hmacDigest != null && uploadUrl != null }
+}
+
+ciPublish.addTask uploadWeb

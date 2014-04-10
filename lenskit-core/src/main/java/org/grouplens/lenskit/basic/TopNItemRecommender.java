@@ -23,7 +23,6 @@ package org.grouplens.lenskit.basic;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import org.apache.commons.lang3.tuple.Pair;
@@ -34,7 +33,6 @@ import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdBuilder;
@@ -158,7 +156,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
 
     /**
      * Get the default exclude set for a user.  The base implementation gets
-     * all their rated items.
+     * all the items they have interacted with.
      *
      * @param user The user ID.
      * @return The set of items to exclude.
@@ -169,7 +167,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
 
     /**
      * Get the default exclude set for a user.  The base implementation returns
-     * all their rated items.
+     * all the items they have interacted with (from {@link UserHistory#itemSet()}).
      *
      * @param user The user history.
      * @return The set of items to exclude.
@@ -177,12 +175,9 @@ public class TopNItemRecommender extends AbstractItemRecommender {
     protected LongSet getDefaultExcludes(@Nullable UserHistory<? extends Event> user) {
         if (user == null) {
             return LongSets.EMPTY_SET;
+        } else {
+            return user.itemSet();
         }
-        LongSet excludes = new LongOpenHashSet();
-        for (Rating r: CollectionUtils.fast(user.filter(Rating.class))) {
-            excludes.add(r.getItemId());
-        }
-        return excludes;
     }
 
     /**

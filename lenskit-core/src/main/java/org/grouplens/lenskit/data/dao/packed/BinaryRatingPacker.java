@@ -43,7 +43,7 @@ import java.nio.channels.FileChannel;
 import java.util.EnumSet;
 
 /**
- * A binary rating packer.
+ * Creates rating pack files for the {@link BinaryRatingDAO}.
  *
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -68,7 +68,7 @@ public class BinaryRatingPacker implements Closeable {
      *
      * @throws IOException The output exception.
      */
-    public BinaryRatingPacker(File file, EnumSet<BinaryFormatFlag> flags) throws IOException {
+    BinaryRatingPacker(File file, EnumSet<BinaryFormatFlag> flags) throws IOException {
         format = new BinaryFormat(flags);
         outputFile = file;
 
@@ -89,10 +89,24 @@ public class BinaryRatingPacker implements Closeable {
         ratingBuffer = ByteBuffer.allocateDirect(format.getRatingSize());
     }
 
+    /**
+     * Open a new binary rating packer.
+     * @param file The output file.
+     * @param flags The flags to use when creating the file.
+     *
+     * @throws IOException The output exception.
+     */
     public static BinaryRatingPacker open(File file, BinaryFormatFlag... flags) throws IOException {
         return open(file, BinaryFormatFlag.makeSet(flags));
     }
 
+    /**
+     * Open a new binary rating packer.
+     * @param file The output file.
+     * @param flags The flags to use when creating the file.
+     *
+     * @throws IOException The output exception.
+     */
     public static BinaryRatingPacker open(File file, EnumSet<BinaryFormatFlag> flags) throws IOException {
         return new BinaryRatingPacker(file, flags);
     }

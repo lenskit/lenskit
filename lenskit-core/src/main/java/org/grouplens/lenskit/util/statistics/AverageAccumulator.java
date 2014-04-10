@@ -21,10 +21,8 @@
 package org.grouplens.lenskit.util.statistics;
 
 /**
- * <p>
- * An implementation of a moving average.<br/>
- * Only the sum and the item count is stored, not the values them self.
- * </p>
+ * Accumulate an average.
+ * Only the sum and the item count is stored, not the values themselves.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11

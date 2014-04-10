@@ -26,6 +26,15 @@
     versions of their `streamEventsByUser` and `streamEventsByItem` methods.  Implementers will need
     to implement these new methods.
 
+-   **Incompatible change:** The `SQLStatementFactory` interface no longer exposes user and item
+    count statements (they were unused by all current DAOs).
+
+-   **Incompatible chnage:** The `JDBCRatingDAO` is no longer injectable.  It cannot be safely
+    constructed by the injector without lifecycle support in the LensKit recommender container
+    (#issue(456)).  JDBC rating DAOs can still be injected into other components, but they should
+    be configured with an instance binding to the particular DAO instance rather than attempting to
+    let the injector instantiate the DAO.
+
 -   Implemented new `BinaryRatingDAO` to read ratings from a packed binary file of rating data.
     Build a file with `BinaryRatingPacker` or the `pack` eval task.  The new CLI also provides a
     command to pack rating data.
@@ -51,6 +60,12 @@
 
 -   Fixed class loader problems with deserializing recommender models (#issue(434)).
 
+-   Support compression in recommender model serialization (#issue(527))
+
+    - Support writing recommenders to compressed files.
+
+    - Auto-detect if a serialized recommender stream is compressed.
+
 -   Use Grapht 0.7.0.
 
 ## CLI
@@ -72,6 +87,16 @@ This release includes several improvements and additions to LensKit's selection 
 -   Report whether the score came from the baseline or primary scorer in the fallback item scorer
     and simple rating predictor (#issue(444)).
 
+-   Add a rescoring item recommender, wrapping an existing item recommender and rewriting its scores
+    (#issue(491)).
+
+-   Add `RatingPredictorItemScorer`, a wrapper that uses the output of a rating predictor to produce
+    item scores.  Useful primarily for using things like OrdRec for item-scorer-based components.
+
+-   **Behavior change:** the default exclude set used by `TopNItemRecommender` now contains all
+    items the user has interacted with, not just the ones they have rated.  Baking the knowledge of
+    ratings into the top-N recommender was arguably a mistake.
+
 ### User-user CF
 
 -   Updated user-user CF to be simpler & make better use of new DAOs (#issue(356)).
@@ -80,6 +105,11 @@ This release includes several improvements and additions to LensKit's selection 
 
 -   Added user similarity thresholding.  The default threshold is an absolute threshold of 0.0;
     configure `@UserSimilarityThreshold` to change this.
+
+-   Add support for a minimum neighborhood size to user-user CF.
+
+-   Remove hard-coded minimum total similarity value from user-user CF.  Minimum neighborhood sizes
+    and user similarity thresholds cover this case.
 
 ### Item-item CF
 
@@ -100,10 +130,20 @@ This release includes several improvements and additions to LensKit's selection 
     transposing the ratings matrix (#issue(481)).  If your rating normalization is per-item instead
     of per-user, this allows item-item builds to be more efficient.
 
+### SVD CF
+
+
 ### Matrix factorization
 
--   Refactored FunkSVD to use vectorz vectors and matrices, and have factored-out code useful for
-    other matrix factorization recommenders.
+-   Refactored FunkSVD to use vectorz vectors and matrices, and have
+    factored-out code useful for other matrix factorization
+    recommenders.
+
+-   **Configuration change:** the FunkSVDItemScorer no longer returns
+    the baseline score for all Items. It now only returns scores for
+    user-item pairs where the scorer has both a user and item
+    vector. If you were relying on the old behavior you can configure
+    a FallbackItemScorer with FunkSVDItemScorer as the primary scorer.
 
 ## Evaluator
 
@@ -118,14 +158,21 @@ This release includes several improvements and additions to LensKit's selection 
     this is that build times are now meaningless.  This behavior can be disabled, and build times
     restored to meaning, by writing `separateAlgorithms true` in your `trainTest` block.
 
--   The evalator can now configure algorithms from algorithm files.
+-   The evaluator can now configure algorithms from algorithm files.
 
 -   The train-test task can now periodically write status files so its progress can be monitored.
 
+-   Crossfolding can now sample users instead of just partitioning them (e.g. creating 5 partitions,
+    each with 10% of the users, instead of forcing (100/N)%) (#issue(512)).
+
+-   Fixed escaping of GraphViz output (#issue(528)).
+
+-   The evaluator now has Top-*N* precision and recall support.
+
 ## Data Structures
 
--   LensKit now uses [vectorz](http://github.com/mikera/vectorz) for (non-sparse)( vectors and
-    matrices.
+-   LensKit now uses [vectorz](http://github.com/mikera/vectorz) for (non-sparse) vectors and
+    matrices.  The `Vec` class and related classes are deprecated.
 
 ## Utilities
 

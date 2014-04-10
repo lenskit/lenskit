@@ -90,7 +90,6 @@ public class ConfigHelpers {
      * Modify a configuration from a closure. The class loader is not really consulted in this case.
      * @param block The block to evaluate. This block will be evaluated with a delegate providing
      *              the LensKit DSL and the {@link Closure#DELEGATE_FIRST} resolution strategy.
-     * @return The resulting LensKit configuration.
      */
     public static void configure(LenskitConfiguration config, @Nonnull Closure<?> block) throws RecommenderConfigurationException {
         Preconditions.checkNotNull(block, "Configuration block");

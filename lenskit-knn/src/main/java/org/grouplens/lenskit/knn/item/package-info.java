@@ -20,37 +20,36 @@
  */
 /**
  * Implementation of item-item collaborative filtering.
- * <p/>
+ * <p>
  * The item-item CF implementation is built up of several pieces. The
  * {@linkplain org.grouplens.lenskit.knn.item.model.ItemItemModelBuilder model builder} takes the rating data
  * and several parameters and components, such as the
  * {@linkplain org.grouplens.lenskit.vectors.similarity.VectorSimilarity similarity function} and {@linkplain ModelSize model size},
  * and computes the {@linkplain org.grouplens.lenskit.knn.item.model.SimilarityMatrixModel similarity matrix}. The
- * {@linkplain ItemItemScorer scorer} (or {@linkplain ItemItemRatingPredictor predictor})
- * use this model to score items, and the {@linkplain ItemItemRecommender} uses a scorer
- * to recommend items.
- * <p/>
+ * {@linkplain ItemItemScorer scorer}
+ * uses this model to score items.
+ * <p>
  * The basic idea of item-item CF is to compute similarities between items, typically
  * based on the users that have rated them, and the recommend items similar to the items
  * that a user likes. The model is then truncated — only the {@link ModelSize} most similar
  * items are retained for each item – to save space. Neighborhoods are further truncated
- * when doing recommendation; only the {@link NeighborhoodSize} most similar items that
+ * when doing recommendation; only the {@link org.grouplens.lenskit.knn.NeighborhoodSize} most similar items that
  * a user has rated are used to score any given item. {@link ModelSize} is typically
- * larger than {@link NeighborhoodSize} to improve the ability of the recommender to find
+ * larger than {@link org.grouplens.lenskit.knn.NeighborhoodSize} to improve the ability of the recommender to find
  * neighbors.
- * <p/>
+ * <p>
  * When the similarity function is asymmetric (\(s(i,j)=s(j,i)\) does not hold), some care
  * is needed to make sure that the function is used in the correct direction. Following
  * Deshpande and Karypis, we use the similarity function as \(s(j,i)\), where \(j\) is the
  * item the user has purchased or rated and \(i\) is the item that is going to be scored. This
  * function is then stored in row \(i\) and column \(j\) of the matrix. Rows are then truncated
  * (so we retain the {@link ModelSize} most similar items for each \(i\)); this direction differs
- * from Deshpande & Karypis, as row truncation is more efficient & simplier to write within
+ * from Deshpande &amp; Karypis, as row truncation is more efficient &amp; simpler to write within
  * LensKit's item-item algorithm structure, and performs better in offline tests against the
  * MovieLens 1M data set
  * (see <a href="http://dev.grouplens.org/trac/lenskit/wiki/ItemItemTruncateDirection">writeup</a>).
  * Computation against a particular item the user has rated is done down that item's column.
- * <p/>
+ * <p>
  * The scorers and recommenders actually operate on a generic {@link org.grouplens.lenskit.knn.item.model.ItemItemModel}, so the
  * item-based scoring algorithm can be used against other sources of similarity, such as
  * similarities stored in a database or text index.

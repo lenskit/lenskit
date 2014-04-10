@@ -30,6 +30,7 @@ import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.NDCGPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
 import org.grouplens.lenskit.knn.item.ItemItemScorer
+import org.grouplens.lenskit.knn.item.ModelSize
 
 def dataDir = config['lenskit.movielens.100k']
 
@@ -47,6 +48,8 @@ trainTest {
         includeTimestamps false
     }
 
+    componentCacheDirectory "cache"
+
     algorithm("Baseline") {
         bind ItemScorer to UserMeanItemScorer
         bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
@@ -56,6 +59,7 @@ trainTest {
         bind ItemScorer to ItemItemScorer
         bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
         bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
+        set ModelSize to 500
     }
 
     metric CoveragePredictMetric
@@ -67,5 +71,5 @@ trainTest {
     output 'results.csv'
     userOutput 'users.csv'
     predictOutput 'predictions.csv'
-    recommendOutput 'recommendations.csv'
+    recommendOutput 'recommendations.csv.gz'
 }

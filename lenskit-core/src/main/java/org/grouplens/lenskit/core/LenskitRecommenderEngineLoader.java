@@ -27,11 +27,16 @@ import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.solver.SolverException;
+import org.grouplens.grapht.util.ClassLoaderContext;
+import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
+import org.grouplens.lenskit.util.io.CustomClassLoaderObjectInputStream;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.WillClose;
 import java.io.*;
 import java.util.List;
 
@@ -92,26 +97,34 @@ public class LenskitRecommenderEngineLoader {
         return this;
     }
 
-    public LenskitRecommenderEngine load(InputStream stream) throws IOException, RecommenderConfigurationException {
+    /**
+     * Load a recommender engine from an input stream.  The input data can be gzip-compressed.
+     *
+     * @param stream The input stream.
+     * @return The deserialized recommender.
+     * @throws IOException if there is an error reading the input data.
+     * @throws RecommenderConfigurationException
+     *                     if there is a configuration error with the deserialized recommender or
+     *                     the configurations applied to it.
+     */
+    public LenskitRecommenderEngine load(@WillClose InputStream stream) throws IOException, RecommenderConfigurationException {
         logger.debug("using classloader {}", classLoader);
-        DAGNode<Component,Dependency> graph;
+        DAGNode<Component, Dependency> graph;
 
-        ObjectInputStream in = new CustomClassLoaderObjectInputStream(stream, classLoader);
+        // And load the stream once we've wrapped it appropriately.
+        ObjectInputStream in = new CustomClassLoaderObjectInputStream(
+                LKFileUtils.transparentlyDecompress(stream), classLoader);
         try {
-            Thread current = Thread.currentThread();
-            // save the old class loader
-            ClassLoader oldLoader = current.getContextClassLoader();
+            ClassLoaderContext ctx = null;
             if (classLoader != null) {
-                // set the new class loader
-                // Grapht will automatically use the context class loader
-                current.setContextClassLoader(classLoader);
+                // Grapht will automatically use the context class loader, set it up
+                ctx = ClassLoaders.pushContext(classLoader);
             }
             try {
                 graph = (DAGNode) in.readObject();
             } finally {
-                if (classLoader != null) {
-                    // restore the old class loader if needed
-                    current.setContextClassLoader(oldLoader);
+                if (ctx != null) {
+                    ctx.pop();
                 }
             }
         } catch (ClassNotFoundException e) {
@@ -123,7 +136,7 @@ public class LenskitRecommenderEngineLoader {
         if (!configurations.isEmpty()) {
             logger.info("rewriting with {} configurations", configurations.size());
             RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
-            for (LenskitConfiguration config: configurations) {
+            for (LenskitConfiguration config : configurations) {
                 rgb.addBindings(config.getBindings());
             }
             DependencySolver solver = rgb.buildDependencySolver();

@@ -19,6 +19,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+
+import org.grouplens.lenskit.knn.item.model.ItemItemModel
+import org.grouplens.lenskit.knn.item.model.SimilarityMatrixModel
+
+import java.util.zip.GZIPInputStream
+
 import static org.grouplens.lenskit.util.test.ExtraMatchers.existingFile
 import static org.grouplens.lenskit.util.test.ExtraMatchers.hasLineCount
 import static org.hamcrest.MatcherAssert.assertThat
@@ -27,7 +33,7 @@ import static org.hamcrest.Matchers.*
 File resultsFile = new File(basedir, "results.csv")
 File userFile = new File(basedir, "users.csv")
 File predictFile = new File(basedir, "predictions.csv")
-File recommendFile = new File(basedir, "recommendations.csv")
+File recommendFile = new File(basedir, "recommendations.csv.gz")
 
 assertThat("output file existence",
            resultsFile, allOf(existingFile(),
@@ -41,3 +47,20 @@ assertThat("output file existence",
 
 assertThat(new File(basedir, 'train.1.csv.pack'),
            existingFile())
+
+// Verify that we have 5 distinct item-item models
+File cacheDir = new File(basedir, "cache")
+def objects = new HashMap<String,Integer>()
+cacheDir.eachFile { file ->
+    if (!file.name.matches(/^\./)) {
+        def obj = file.withInputStream {
+            def stream = new GZIPInputStream(it)
+            stream.withObjectInputStream(getClass().classLoader) {
+                it.readObject()
+            }
+        }
+        def cls = obj.class.name
+        objects[cls] = objects.get(cls, 0) + 1
+    }
+}
+assertThat objects[SimilarityMatrixModel.name], equalTo(5)

@@ -133,7 +133,7 @@ public class AlgorithmInstance implements Attributed {
      * @param defaults Additional configuration.  This configuration comes <em>before</em> the
      *                 algorithm's configuration, so it is overridden if appropriate.
      * @return The recommender graph.
-     * @throws RecommenderBuildException if there is an error configuring the recommender.
+     * @throws RecommenderConfigurationException if there is an error configuring the recommender.
      */
     public DAGNode<Component,Dependency> buildRecommenderGraph(LenskitConfiguration defaults) throws RecommenderConfigurationException {
         LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();

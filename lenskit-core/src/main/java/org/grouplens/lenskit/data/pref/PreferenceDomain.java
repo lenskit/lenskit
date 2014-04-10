@@ -184,7 +184,7 @@ public final class PreferenceDomain implements Serializable {
 
     /**
      * Parse a preference domain from a string specification.
-     * <p/>
+     * <p>
      * Continuous preference domains are specified as {@code [min, max]}; discrete domains
      * as {@code min:max[/prec/}.  For example, a 0.5-5.0 half-star rating scale is represented
      * as {@code [0.5, 5.0]/0.5}.

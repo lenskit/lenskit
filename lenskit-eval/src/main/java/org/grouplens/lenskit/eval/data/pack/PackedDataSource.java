@@ -21,13 +21,14 @@
 package org.grouplens.lenskit.eval.data.pack;
 
 import com.google.common.base.Supplier;
-import org.grouplens.grapht.util.Providers;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.util.MoreSuppliers;
+import org.grouplens.lenskit.util.io.Describable;
+import org.grouplens.lenskit.util.io.DescriptionWriter;
 
 import javax.inject.Provider;
 import java.io.File;
@@ -96,13 +97,25 @@ public class PackedDataSource implements DataSource {
     @Override
     public LenskitConfiguration getConfiguration() {
         LenskitConfiguration config = new LenskitConfiguration();
-        Provider<BinaryRatingDAO> provider = Providers.fromSupplier(packedDao, BinaryRatingDAO.class);
+        Provider<BinaryRatingDAO> provider = new DAOProvider();
         config.bind(BinaryRatingDAO.class).toProvider(provider);
         PreferenceDomain dom = getPreferenceDomain();
         if (dom != null) {
             config.addComponent(dom);
         }
         return config;
+    }
+
+    private class DAOProvider implements Provider<BinaryRatingDAO>, Describable {
+        @Override
+        public BinaryRatingDAO get() {
+            return packedDao.get();
+        }
+
+        @Override
+        public void describeTo(DescriptionWriter writer) {
+            writer.putField("dao", get());
+        }
     }
 
     private static class DAOSupplier implements Supplier<BinaryRatingDAO> {

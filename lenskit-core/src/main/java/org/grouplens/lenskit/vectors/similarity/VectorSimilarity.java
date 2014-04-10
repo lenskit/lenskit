@@ -25,8 +25,7 @@ import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 /**
- * Compute the similarity between two objects (typically rating vectors). It is often
- * composed with an {@link ItemVectorSimilarity} or {@link UserVectorSimilarity}.
+ * Compute the similarity between sparse vectors.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */

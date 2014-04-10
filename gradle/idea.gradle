@@ -1,0 +1,57 @@
+// IntelliJ IDEA configuration.
+allprojects {
+    apply plugin: 'idea'
+}
+subprojects {
+    rootProject.tasks['ideaProject'].dependsOn ideaModule
+    idea {
+        module {
+            outputDir = sourceSets.main.output.classesDir
+            testOutputDir = sourceSets.test.output.classesDir
+            downloadSources = true
+            downloadJavadoc = true
+            inheritOutputDirs = false
+        }
+    }
+}
+
+task ideaBuildSrcModule(type: GradleBuild) {
+    dir file('buildSrc')
+    tasks = ['ideaModule']
+}
+ideaProject {
+    dependsOn ideaBuildSrcModule
+}
+
+idea {
+    project {
+        ipr {
+            withXml {
+                Node ipr = it.asNode()
+                Node modules = ipr.depthFirst().find {
+                    it.name() == 'modules'
+                }
+                def bsm = modules.children().find { Node kid ->
+                    kid.attribute('fileurl').endsWith('buildSrc.iml')
+                }
+                if (bsm == null) {
+                    logger.info 'adding buildSrc module'
+                    def attrs = [
+                            fileurl: 'file://$PROJECT_DIR$/buildSrc/buildSrc.iml',
+                            filepath: '$PROJECT_DIR$/buildSrc/buildSrc.iml'
+                    ]
+                    modules.appendNode('module', attrs)
+                }
+
+                ipr.children().each { Node comp ->
+                    if (comp.name() == 'component' && comp.attribute('name') == 'ProjectRootManager') {
+                        def output = comp.get('output')
+                        if (output != null) {
+                            output.@url = 'file://$PROJECT_DIR$/build/classes'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

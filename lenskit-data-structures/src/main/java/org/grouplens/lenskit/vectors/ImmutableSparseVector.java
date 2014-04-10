@@ -93,7 +93,7 @@ public final class ImmutableSparseVector extends SparseVector implements Seriali
 
     /**
      * Construct a new sparse vector from a key set and a pre-existing array.  This array will copy
-     * the channels passed into it, but will <emph>not</emph> copy the key set or value array.
+     * the channels passed into it, but will <em>not</em> copy the key set or value array.
      *
      * @param ks          The key set.  Its active keys are the key set, and all keys form the
      *                    domain.  Not copied.

@@ -88,19 +88,18 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
         Matrix itemFeatures = Matrix.create(itemCount, featureCount);
         itemFeatures.fill(initialValue);
 
-        logger.debug("Setting up to build SVD recommender with {} features", featureCount);
         logger.debug("Learning rate is {}", rule.getLearningRate());
         logger.debug("Regularization term is {}", rule.getTrainingRegularization());
 
-        logger.debug("Building SVD with {} features for {} ratings",
-                     featureCount, snapshot.getRatings().size());
+        logger.info("Building SVD with {} features for {} ratings",
+                    featureCount, snapshot.getRatings().size());
 
         TrainingEstimator estimates = rule.makeEstimator(snapshot);
 
         List<FeatureInfo> featureInfo = new ArrayList<FeatureInfo>(featureCount);
 
         for (int f = 0; f < featureCount; f++) {
-            logger.trace("Training feature {}", f);
+            logger.debug("Training feature {}", f);
             StopWatch timer = new StopWatch();
             timer.start();
 
@@ -113,7 +112,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
             estimates.update(userFeatures.getColumn(f), itemFeatures.getColumn(f));
 
             timer.stop();
-            logger.debug("Finished feature {} in {}", f, timer);
+            logger.info("Finished feature {} in {}", f, timer);
         }
 
         // Wrap the user/item matrices because we won't use or modify them again

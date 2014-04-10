@@ -26,9 +26,7 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.SolverException;
-import org.grouplens.grapht.util.Providers;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.RecommenderConfigurationException;
+import org.grouplens.lenskit.core.*;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.graph.GraphDumper;
@@ -36,6 +34,7 @@ import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Provider;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -67,7 +66,7 @@ public class Graph implements Command {
 
     private LenskitConfiguration makeDataConfig() {
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).toProvider(Providers.<EventDAO>of(null, EventDAO.class));
+        config.bind(EventDAO.class).toProvider(new DAOProvider());
         String dspec = options.getString("domain");
         if (dspec != null) {
             PreferenceDomain domain = PreferenceDomain.fromString(dspec);
@@ -76,7 +75,32 @@ public class Graph implements Command {
         return config;
     }
 
-    private DAGNode<Component,Dependency> makeGraph() throws IOException, RecommenderConfigurationException {
+    /**
+     * Load a configuration graph from a recommender model.
+     * @param file The model file.
+     * @return The recommender graph.
+     * @throws IOException
+     * @throws RecommenderConfigurationException
+     */
+    private DAGNode<Component, Dependency> loadModel(File file) throws IOException, RecommenderConfigurationException {
+        logger.info("loading model from {}", file);
+        LenskitRecommenderEngineLoader loader = LenskitRecommenderEngine.newLoader();
+        loader.setValidationMode(EngineValidationMode.DEFERRED)
+              .addConfiguration(makeDataConfig());
+        for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
+            loader.addConfiguration(config);
+        }
+        LenskitRecommenderEngine engine = loader.load(file);
+        return engine.getGraph();
+    }
+
+    /**
+     * Build a configured recommender graph from the specified configurations.
+     * @return The configuration graph.
+     * @throws IOException
+     * @throws RecommenderConfigurationException
+     */
+    private DAGNode<Component,Dependency> makeNewGraph() throws IOException, RecommenderConfigurationException {
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
         rgb.addConfiguration(makeDataConfig());
         for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
@@ -92,7 +116,13 @@ public class Graph implements Command {
 
     @Override
     public void execute() throws IOException, RecommenderConfigurationException {
-        DAGNode<Component, Dependency> graph = makeGraph();
+        File modelFile = options.get("model_file");
+        DAGNode<Component, Dependency> graph;
+        if (modelFile != null) {
+            graph = loadModel(modelFile);
+        } else {
+            graph = makeNewGraph();
+        }
         File output = getOutputFile();
         logger.info("writing graph to {}", output);
         GraphDumper.renderGraph(graph, output);
@@ -108,10 +138,26 @@ public class Graph implements Command {
         parser.addArgument("--domain")
               .metavar("DOMAIN")
               .help("specify preference domain");
+        parser.addArgument("--model-file")
+              .metavar("FILE")
+              .type(File.class)
+              .help("load saved model from FILE");
         parser.addArgument("config")
               .type(File.class)
               .metavar("CONFIG")
               .nargs("*")
               .help("load algorithm configuration from file CONFIG");
+    }
+
+    private static class DAOProvider implements Provider<EventDAO> {
+        @Override
+        public EventDAO get() {
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return "Data";
+        }
     }
 }

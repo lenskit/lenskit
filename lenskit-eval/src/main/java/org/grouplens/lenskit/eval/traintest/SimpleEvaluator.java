@@ -56,7 +56,7 @@ public class SimpleEvaluator implements Callable<Table> {
      * @param props Properties for the eval configuration.
      */
     public SimpleEvaluator(Properties props) {
-        project = new EvalProject(props);
+        project = new EvalProject(props, null);
         result = new TrainTestEvalTask("simple-eval");
         result.setProject(project);
         result.setOutput((File) null);

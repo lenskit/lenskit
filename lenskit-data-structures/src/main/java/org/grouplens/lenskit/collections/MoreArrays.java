@@ -76,4 +76,34 @@ public final class MoreArrays {
         }
         return pos;
     }
+
+    /**
+     * Remove duplicate elements in the backing store. The array should be
+     * sorted.
+     *
+     * @param data  The data to deduplicate.
+     * @param start The beginning of the range to deduplicate (inclusive).
+     * @param end   The end of the range to deduplicate (exclusive).
+     * @return the new end index of the array
+     */
+    public static int deduplicate(final int[] data, final int start, final int end) {
+        if (start == end) {
+            return end;   // special-case empty arrays
+        }
+
+        // Since we have a non-empty array, the nextPos will always be where the
+        // end is if we find no more unique elements.
+        int pos = start + 1;
+        for (int i = pos; i < end; i++) {
+            if (data[i] != data[i - 1]) { // we have a non-duplicate item
+                if (i != pos) {           // indices out of alignment, must copy
+                    data[pos] = data[i];
+                }
+                pos++;                  // increment nextPos since we have a new non-dup
+            }
+            // if data[i] is a duplicate, then i steps forward and nextPos doesn't,
+            // thereby arranging for data[i] to be elided.
+        }
+        return pos;
+    }
 }

@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.metrics.topn;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
@@ -91,4 +92,37 @@ public class TopNLengthMetric extends AbstractTestUserMetric {
             }
         }
     }
+
+    /**
+     * Build a Top-N length metric to measure Top-N lists.
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+     */
+    public static class Builder extends TopNMetricBuilder<Builder, TopNLengthMetric> {
+        private String label = "TopN.ActualLength";
+
+        /**
+         * Get the column label for this metric.
+         * @return The column label.
+         */
+        public String getLabel() {
+            return label;
+        }
+
+        /**
+         * Set the column label for this metric.
+         * @param l The column label
+         * @return The builder (for chaining).
+         */
+        public Builder setLabel(String l) {
+            Preconditions.checkNotNull(l, "label cannot be null");
+            label = l;
+            return this;
+        }
+
+        @Override
+        public TopNLengthMetric build() {
+            return new TopNLengthMetric(label, listSize, candidates, exclude);
+        }
+    }
+
 }

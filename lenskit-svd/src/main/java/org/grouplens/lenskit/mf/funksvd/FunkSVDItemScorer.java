@@ -117,11 +117,13 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
             final long item = e.getKey();
             AVector ivec = model.getItemVector(item);
             if (ivec == null) {
-                continue;
+                // no item-vector, cannot make an informed prediction.
+                // unset the baseline to note that we are not predicting for this item.
+                output.unset(e);
+            } else {
+                double score = kernel.apply(e.getValue(), uprefs, ivec);
+                output.set(e, score);
             }
-
-            double score = kernel.apply(e.getValue(), uprefs, ivec);
-            output.set(e, score);
         }
     }
 
@@ -148,19 +150,19 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
             history = History.forUser(user);
         }
         SparseVector ratings = Ratings.userRatingVector(history);
-
-        MutableSparseVector estimates = initialEstimates(user, ratings, scores.keyDomain());
-        // propagate estimates to the output scores
-        scores.set(estimates);
-
+        
         AVector uprefs = model.getUserVector(user);
         if (uprefs == null) {
             if (ratings.isEmpty()) {
-                // no real work to do, stop with baseline predictions
+                // no real work to do.
                 return;
             }
             uprefs = model.getAverageUserVector();
         }
+
+        MutableSparseVector estimates = initialEstimates(user, ratings, scores.keyDomain());
+        // propagate estimates to the output scores
+        scores.set(estimates);
 
         if (!ratings.isEmpty() && rule != null) {
             AVector updated = Vector.create(uprefs);

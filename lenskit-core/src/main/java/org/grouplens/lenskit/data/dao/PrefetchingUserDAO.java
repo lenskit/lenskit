@@ -26,6 +26,8 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.util.io.Describable;
+import org.grouplens.lenskit.util.io.DescriptionWriter;
 
 import javax.inject.Inject;
 
@@ -36,7 +38,7 @@ import javax.inject.Inject;
  * @since 2.0
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class PrefetchingUserDAO implements UserDAO {
+public final class PrefetchingUserDAO implements UserDAO, Describable {
     private final EventDAO eventDAO;
     private final Supplier<LongSet> userCache;
 
@@ -49,6 +51,12 @@ public final class PrefetchingUserDAO implements UserDAO {
     @Override
     public LongSet getUserIds() {
         return userCache.get();
+    }
+
+    @Override
+    public void describeTo(DescriptionWriter writer) {
+        writer.putField("daoType", "User")
+              .putField("delegate", eventDAO);
     }
 
     private class UserScanner implements Supplier<LongSet> {

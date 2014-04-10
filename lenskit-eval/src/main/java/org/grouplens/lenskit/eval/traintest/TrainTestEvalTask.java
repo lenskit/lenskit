@@ -24,6 +24,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
@@ -116,8 +117,9 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return this;
     }
 
-    public TrainTestEvalTask setAlgorithm(Map<String,Object> attrs, String file) throws IOException, RecommenderConfigurationException {
-        algorithms.add(new AlgorithmInstanceBuilder().configureFromFile(attrs, new File(file))
+    public TrainTestEvalTask addAlgorithm(Map<String,Object> attrs, String file) throws IOException, RecommenderConfigurationException {
+        algorithms.add(new AlgorithmInstanceBuilder().setProject(getProject())
+                                                     .configureFromFile(attrs, new File(file))
                                                      .build());
         return this;
     }
@@ -377,7 +379,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             layout = ExperimentOutputLayout.create(experiments, measurements);
             TableBuilder resultsBuilder = new TableBuilder(layout.getResultsLayout());
 
-            logger.info("Starting evaluation");
+            logger.info("Starting evaluation of {} algorithms ({} from LensKit) on {} data sets",
+                        Iterables.size(experiments.getAllAlgorithms()),
+                        experiments.getAlgorithms().size(),
+                        experiments.getDataSets().size());
             Closer closer = Closer.create();
 
             try {
@@ -547,7 +552,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         MergePool<Component, Dependency> mergePool = MergePool.create();
         List<DAGNode<Component,Dependency>> graphs = Lists.newArrayList();
         Set<DAGNode<Component,Dependency>> allNodes = Sets.newHashSet();
-        ComponentCache cache = new ComponentCache(cacheDir);
+        ComponentCache cache = new ComponentCache(cacheDir, getProject().getClassLoader());
         for (AlgorithmInstance algo: experiments.getAlgorithms()) {
             logger.debug("building graph for algorithm {}", algo);
             // Build the graph
