@@ -496,7 +496,7 @@ public final class ItemSelectors {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
 
-            RandomSubsetItemSelector that = (RandomSubsetItemSelector) o;
+            PopularItemSelector that = (PopularItemSelector) o;
 
             if (count != that.count) return false;
 
