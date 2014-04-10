@@ -56,7 +56,7 @@ public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends 
     }
 
     /**
-     * Set the recommendation list size.  The default mean is 10.
+     * Set the recommendation list size.  The default size is 10.
      * @param n The recommendation list size.
      * @return The builder (for chaining).
      */

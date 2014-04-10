@@ -74,7 +74,7 @@ public class TableBuilder extends AbstractTableWriter implements Builder<Table> 
      * Add a row to the table.
      *
      * @param row The row to add.
-     * @throws IllegalArgumentException if the row has the wrong mean.
+     * @throws IllegalArgumentException if the row has the wrong length.
      * @since 1.1
      */
     public synchronized void addRow(List<?> row) {
@@ -85,7 +85,7 @@ public class TableBuilder extends AbstractTableWriter implements Builder<Table> 
      * Add a row to the table.
      *
      * @param row The row to add.
-     * @throws IllegalArgumentException if the row has the wrong mean.
+     * @throws IllegalArgumentException if the row has the wrong length.
      * @since 1.1
      */
     public synchronized void addRow(Object... row) {
