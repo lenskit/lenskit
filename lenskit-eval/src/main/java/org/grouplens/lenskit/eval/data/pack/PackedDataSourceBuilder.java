@@ -77,7 +77,7 @@ public class PackedDataSourceBuilder implements Builder<PackedDataSource> {
      * Set the input file. If unspecified, the name (see {@link #setName(String)}) is used
      * as the file name.
      *
-     * @param file The file to read ratings from.
+     * @param f The file to read ratings from.
      */
     public PackedDataSourceBuilder setFile(File f) {
         file = f;
