@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.util;
 
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
@@ -77,4 +78,10 @@ public interface ScoredItemAccumulator {
      * @return A MutableSparseVector of items.
      */
     MutableSparseVector finishVector();
+
+    /**
+     * Accumulate the scored items into a set.
+     * @return The set of items accumulated.
+     */
+    LongSet finishSet();
 }

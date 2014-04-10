@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.util;
 
 import it.unimi.dsi.fastutil.doubles.DoubleHeapIndirectPriorityQueue;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdListBuilder;
 import org.grouplens.lenskit.scored.ScoredIds;
@@ -134,5 +135,19 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         slot = 0;
 
         return MutableSparseVector.wrapUnsorted(keys, values);
+    }
+
+    @Override
+    public LongSet finishSet() {
+        assert size == heap.size();
+
+        LongSet longs = new LongOpenHashSet(size);
+        while (!heap.isEmpty()) {
+            longs.add(items[heap.dequeue()]);
+        }
+
+        size = 0;
+        slot = 0;
+        return longs;
     }
 }

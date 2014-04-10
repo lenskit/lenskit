@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.metrics.topn;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -31,14 +32,21 @@ import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.LenskitRecommender;
+import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.ItemDAO;
+import org.grouplens.lenskit.data.dao.ItemEventDAO;
+import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.eval.traintest.TestUser;
+import org.grouplens.lenskit.util.ScoredItemAccumulator;
+import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.hamcrest.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Random;
 
@@ -123,6 +131,15 @@ public final class ItemSelectors {
      */
     public static ItemSelector nRandom(final int n) {
         return randomSubset(allItems(), n);
+    }
+
+    /**
+     * Select the most popular items.
+     * @param n The number of items to select.
+     * @return A selector factory that will select the {@code n} items with the most events.
+     */
+    public static ItemSelector mostPopular(int n) {
+        return new PopularItemSelector(n);
     }
 
 
@@ -435,6 +452,60 @@ public final class ItemSelectors {
             int result = delegate.hashCode();
             result = 31 * result + count;
             return result;
+        }
+    }
+
+    private static class PopularItemSelector implements ItemSelector, Function<Recommender,LongSet> {
+        private final int count;
+        private final LoadingCache<Recommender,LongSet> cache;
+
+        public PopularItemSelector(int n) {
+            count = n;
+            cache = CacheBuilder.newBuilder()
+                                .weakKeys()
+                                .build(CacheLoader.from(this));
+        }
+
+        @Override
+        public LongSet select(TestUser user) {
+            return cache.getUnchecked(user.getRecommender());
+        }
+
+        @Nullable
+        @Override
+        public LongSet apply(@Nullable Recommender input) {
+            if (input == null) {
+                return LongSets.EMPTY_SET;
+            }
+            LenskitRecommender rec = (LenskitRecommender) input;
+            ItemEventDAO idao = rec.get(ItemEventDAO.class);
+            ScoredItemAccumulator accum = new TopNScoredItemAccumulator(count);
+            Cursor<ItemEventCollection<Event>> items = idao.streamEventsByItem();
+            try {
+                for (ItemEventCollection<Event> item: items) {
+                    accum.put(item.getItemId(), item.size());
+                }
+            } finally {
+                items.close();
+            }
+            return accum.finishSet();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            RandomSubsetItemSelector that = (RandomSubsetItemSelector) o;
+
+            if (count != that.count) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return count;
         }
     }
 }
