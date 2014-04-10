@@ -20,34 +20,44 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.eval.Attributed;
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * A metric that evaluates an algorithmInfo model.
- *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 1.1
  */
-public interface ModelMetric extends Metric<TrainTestEvalTask> {
-    /**
-     * Get the headers of the columns returned by this metric.
-     * @return The column headers.
-     */
-    List<String> getColumnLabels();
+public abstract class MetricFactory {
+    public abstract Metric createMetric(TrainTestEvalTask task);
 
-    /**
-     * Measure a model built by an algorithmInfo.
-     *
-     * @param algorithm The algorithm that the measurement comes from.
-     * @param data The data set built on.
-     * @param recommender The recommender built from this algorithm and data set.
-     */
-    List<Object> measureAlgorithm(Attributed algorithm, TTDataSet data,
-                                  @Nullable Recommender recommender);
+    public abstract List<String> getColumnLabels();
+
+    public abstract List<String> getUserColumnLabels();
+
+    public static MetricFactory forMetric(Metric m) {
+        return new Preinstantiated(m);
+    }
+
+    private static class Preinstantiated extends MetricFactory {
+        private final Metric metric;
+
+        private Preinstantiated(Metric m) {
+            this.metric = m;
+        }
+
+        @Override
+        public Metric createMetric(TrainTestEvalTask task) {
+            return metric;
+        }
+
+        @Override
+        public List<String> getColumnLabels() {
+            return metric.getColumnLabels();
+        }
+
+        @Override
+        public List<String> getUserColumnLabels() {
+            return metric.getUserColumnLabels();
+        }
+    }
 }

@@ -40,6 +40,7 @@ import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.eval.data.CSVDataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.util.DelimitedTextCursor;
@@ -153,11 +154,6 @@ class ExternalEvalJob extends TrainTestJob {
         }
 
         userPredictions = vectors;
-    }
-
-    @Override
-    protected List<Object> getModelMeasurements() {
-        return null;
     }
 
     @Override

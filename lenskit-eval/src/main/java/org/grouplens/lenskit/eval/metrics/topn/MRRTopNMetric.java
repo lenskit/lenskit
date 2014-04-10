@@ -29,6 +29,7 @@ import org.grouplens.lenskit.eval.metrics.AbstractMetric;
 import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.hamcrest.Matchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,41 +37,37 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * A metric to compute the precision and recall of a recommender given a 
- * set of candidate items to recommend from and a set of desired items.  The aggregate results are
- * means of the user results.
+ * Compute the mean reciprocal rank.
  * 
- * This can be used to compute metrics like fallout (probability that a 
- * recommendation is bad) by configuring bad items as the test item set.
- *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 2.1
  */
-public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTopNMetric.Context, PrecisionRecallTopNMetric.Result, PrecisionRecallTopNMetric.Result> {
-    private static final Logger logger = LoggerFactory.getLogger(PrecisionRecallTopNMetric.class);
+public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Context, MRRTopNMetric.AggregateResult, MRRTopNMetric.UserResult> {
+    private static final Logger logger = LoggerFactory.getLogger(MRRTopNMetric.class);
 
     private final String suffix;
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
-    private final ItemSelector queryItems;
+    private final ItemSelector goodItems;
 
     /**
      * Construct a new recall and precision top n metric
      * @param sfx The metric suffix, if any.
      * @param listSize The number of recommendations to fetch.
      * @param candidates The candidate selector, provides a list of items which can be recommended
-     * @param exclude The exclude selector, provides a list of items which must not be recommended 
+     * @param exclude The exclude selector, provides a list of items which must not be recommended
      *                (These items are removed from the candidate items to form the final candidate set)
      * @param goodItems The list of items to consider "true positives", all other items will be treated
      *                  as "false positives".
      */
-    public PrecisionRecallTopNMetric(String sfx, int listSize, ItemSelector candidates, ItemSelector exclude, ItemSelector goodItems) {
-        super(Result.class, Result.class);
+    public MRRTopNMetric(String sfx, int listSize, ItemSelector candidates, ItemSelector exclude, ItemSelector goodItems) {
+        super(AggregateResult.class, UserResult.class);
         suffix = sfx;
         this.listSize = listSize;
         this.candidates = candidates;
         this.exclude = exclude;
-        this.queryItems = goodItems;
+        this.goodItems = goodItems;
     }
 
     @Override
@@ -84,74 +81,81 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
     }
 
     @Override
-    public Result doMeasureUser(TestUser user, Context context) {
-        int tp = 0;
-        int fp = 0;
-
-        LongSet items = queryItems.select(user.getTrainHistory(),
-                                          user.getTestHistory(),
-                                          context.universe);
+    public UserResult doMeasureUser(TestUser user, Context context) {
+        LongSet good = goodItems.select(user.getTrainHistory(),
+                                        user.getTestHistory(),
+                                        context.universe);
+        if (good.isEmpty()) {
+            logger.warn("no good items for user {}", user.getUserId());
+        }
 
         List<ScoredId> recs = user.getRecommendations(listSize, candidates, exclude);
+        Integer rank = null;
+        int i = 0;
         for(ScoredId s : CollectionUtils.fast(recs)) {
-            if(items.contains(s.getId())) {
-                tp += 1;
-            } else {
-                fp += 1;
+            i++;
+            if(good.contains(s.getId())) {
+                rank = i;
+                break;
             }
         }
-        int fn = items.size() - tp;
 
-        if (items.size() > 0 && recs.size() > 0) {
-            // if both the items set and recommendations are non-empty (no division by 0).
-            double precision = (double) tp/(tp+fp);
-            double recall = (double) tp/(tp+fn);
-            context.addUser(precision, recall);
-            return new Result(precision, recall);
-        } else {
-            return null;
-        }
+        UserResult result = new UserResult(rank);
+        context.addUser(result);
+        return result;
     }
 
     @Override
-    protected Result getTypedResults(Context context) {
-        return context.finish();
+    protected AggregateResult getTypedResults(Context context) {
+        return new AggregateResult(context);
     }
 
-    public static class Result {
-        @ResultColumn("Precision")
-        public final double precision;
-        @ResultColumn("Recall")
-        public final double recall;
+    public static class UserResult {
+        @ResultColumn("Rank")
+        public final Integer rank;
 
-        public Result(double prec, double rec) {
-            precision = prec;
-            recall = rec;
+        public UserResult(Integer r) {
+            rank = r;
+        }
+
+        @ResultColumn("RecipRank")
+        public double getRecipRank() {
+            return rank == null ? 0 : 1.0 / rank;
         }
     }
 
-    public class Context {
-        private final LongSet universe;
+    public static class AggregateResult {
+        /**
+         * The MRR over all users.  Users for whom no good items are included, and have a reciprocal
+         * rank of 0.
+         */
+        @ResultColumn("MRR")
+        public final double mrr;
+        /**
+         * The MRR over those users for whom a good item could be recommended.
+         */
+        @ResultColumn("MRR.OfGood")
+        public final double goodMRR;
 
-        double totalPrecision = 0;
-        double totalRecall = 0;
-        int nusers = 0;
+        public AggregateResult(Context accum) {
+            this.mrr = accum.allMean.getMean();
+            this.goodMRR = accum.goodMean.getMean();
+        }
+    }
+
+    public static class Context {
+        private final LongSet universe;
+        private final MeanAccumulator allMean = new MeanAccumulator();
+        private final MeanAccumulator goodMean = new MeanAccumulator();
 
         Context(LongSet universe) {
             this.universe = universe;
         }
 
-        private void addUser(double prec, double rec) {
-            totalPrecision += prec;
-            totalRecall += rec;
-            nusers += 1;
-        }
-
-        public Result finish() {
-            if (nusers > 0) {
-                return new Result(totalPrecision / nusers, totalRecall / nusers);
-            } else {
-                return null;
+        void addUser(UserResult ur) {
+            allMean.add(ur.getRecipRank());
+            if (ur.rank != null) {
+                goodMean.add(ur.getRecipRank());
             }
         }
     }
@@ -159,7 +163,7 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
     /**
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Builder extends TopNMetricBuilder<Builder, PrecisionRecallTopNMetric>{
+    public static class Builder extends TopNMetricBuilder<Builder, MRRTopNMetric>{
         private String suffix;
         private ItemSelector goodItems = ItemSelectors.testRatingMatches(Matchers.greaterThanOrEqualTo(4.0d));
 
@@ -181,7 +185,7 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
          * @param sfx The suffix to apply to column labels.
          * @return The builder (for chaining).
          */
-        public Builder setLabels(String sfx) {
+        public Builder setSuffix(String sfx) {
             suffix = sfx;
             return this;
         }
@@ -196,8 +200,8 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
         }
 
         @Override
-        public PrecisionRecallTopNMetric build() {
-            return new PrecisionRecallTopNMetric(suffix, listSize, candidates, exclude, goodItems);
+        public MRRTopNMetric build() {
+            return new MRRTopNMetric(suffix, listSize, candidates, exclude, goodItems);
         }
     }
 

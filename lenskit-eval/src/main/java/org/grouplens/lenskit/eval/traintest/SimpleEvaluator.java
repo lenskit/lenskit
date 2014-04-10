@@ -32,7 +32,7 @@ import org.grouplens.lenskit.eval.data.GenericDataSource;
 import org.grouplens.lenskit.eval.data.crossfold.CrossfoldTask;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.TestUserMetric;
+import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.util.table.Table;
 
 import java.io.File;
@@ -216,13 +216,30 @@ public class SimpleEvaluator implements Callable<Table> {
                                           .build());
         return this;
     }
+
     /**
      * Adds a completed metric to the {@code TrainTestEvalCommand}
      * @param metric The metric to be added.
      * @return Itself for  method chaining.
      */
-    public SimpleEvaluator addMetric(TestUserMetric metric) {
+    public SimpleEvaluator addMetric(Metric<?> metric) {
         result.addMetric(metric);
+        return this;
+    }
+
+    /**
+     * Adds a completed metric to the {@code TrainTestEvalCommand}
+     * @param metric The metric to be added.
+     * @return Itself for  method chaining.
+     */
+    public SimpleEvaluator addMetric(Class<? extends Metric> metric) {
+        try {
+            result.addMetric(metric);
+        } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException(e);
+        } catch (InstantiationException e) {
+            throw new IllegalArgumentException(e);
+        }
         return this;
     }
 

@@ -65,7 +65,7 @@ public class OrdRecAccuracyTest extends CrossfoldTestSuite {
 
     @Override
     protected void checkResults(Table table) {
-        assertThat(table.column("MAE").average(),
+        assertThat(table.column("MAE.ByRating").average(),
                    closeTo(0.74, 0.025));
         assertThat(table.column("RMSE.ByUser").average(),
                    closeTo(0.92 , 0.05));
