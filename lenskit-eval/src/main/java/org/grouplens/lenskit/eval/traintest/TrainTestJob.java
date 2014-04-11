@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
 import com.google.common.io.Closer;
@@ -38,6 +39,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Run a single train-test evaluation of a single algorithmInfo.
@@ -129,8 +131,14 @@ abstract class TrainTestJob implements Callable<Void> {
                 }
                 long uid = iter.nextLong();
                 userRow.add(uid);
+                userRow.add(null); // placeholder for the per-user time
+                assert userRow.size() == 2;
 
+                Stopwatch userTimer = Stopwatch.createStarted();
                 TestUser test = getUserResults(uid);
+
+                userRow.add(test.getTrainHistory().size());
+                userRow.add(test.getTestHistory().size());
 
                 for (MetricWithAccumulator<?> accum : accumulators) {
                     List<Object> ures = accum.measureUser(test);
@@ -138,6 +146,8 @@ abstract class TrainTestJob implements Callable<Void> {
                         userRow.addAll(ures);
                     }
                 }
+                userTimer.stop();
+                userRow.set(1, userTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
                 if (userResults != null) {
                     try {
                         userResults.writeRow(userRow);

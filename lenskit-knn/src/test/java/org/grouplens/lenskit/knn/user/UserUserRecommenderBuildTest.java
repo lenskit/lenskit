@@ -58,7 +58,7 @@ public class UserUserRecommenderBuildTest {
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).to(dao);
         config.bind(ItemScorer.class).to(UserUserItemScorer.class);
-        config.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
+        config.bind(NeighborFinder.class).to(LiveNeighborFinder.class);
 
         engine = LenskitRecommenderEngine.build(config);
     }
@@ -91,7 +91,7 @@ public class UserUserRecommenderBuildTest {
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).to(dao);
         config.bind(ItemScorer.class).to(UserUserItemScorer.class);
-        config.bind(NeighborhoodFinder.class).to(SnapshotNeighborhoodFinder.class);
+        config.bind(NeighborFinder.class).to(SnapshotNeighborFinder.class);
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         Recommender rec = engine.createRecommender();

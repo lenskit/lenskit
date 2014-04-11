@@ -20,9 +20,12 @@
  */
 package org.grouplens.lenskit.knn.user;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Event;
@@ -30,9 +33,11 @@ import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.knn.MinNeighbors;
+import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorTransformation;
+import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -42,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.util.Collection;
+import java.util.PriorityQueue;
 
 import static java.lang.Math.abs;
 
@@ -57,18 +63,24 @@ public class UserUserItemScorer extends AbstractItemScorer {
             Symbol.of("org.grouplens.lenskit.knn.user.NeighborhoodWeight");
 
     private final UserEventDAO dao;
-    protected final NeighborhoodFinder neighborhoodFinder;
+    protected final NeighborFinder neighborFinder;
     protected final UserVectorNormalizer normalizer;
+    private final int neighborhoodSize;
     private final int minNeighborCount;
+    private final Threshold userThreshold;
 
     @Inject
-    public UserUserItemScorer(UserEventDAO dao, NeighborhoodFinder nbrf,
+    public UserUserItemScorer(UserEventDAO dao, NeighborFinder nf,
                               UserVectorNormalizer norm,
-                              @MinNeighbors int minNbrs) {
+                              @NeighborhoodSize int nnbrs,
+                              @MinNeighbors int minNbrs,
+                              @UserSimilarityThreshold Threshold thresh) {
         this.dao = dao;
-        neighborhoodFinder = nbrf;
+        neighborFinder = nf;
         normalizer = norm;
+        neighborhoodSize = nnbrs;
         minNeighborCount = minNbrs;
+        userThreshold = thresh;
     }
 
     /**
@@ -100,7 +112,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
                      scores.size(), user, history.size());
 
         Long2ObjectMap<? extends Collection<Neighbor>> neighborhoods =
-                neighborhoodFinder.findNeighbors(history, scores.keyDomain());
+                findNeighbors(history, scores.keyDomain());
         Long2ObjectMap<SparseVector> normedUsers =
                 normalizeNeighborRatings(neighborhoods.values());
 
@@ -137,5 +149,42 @@ public class UserUserItemScorer extends AbstractItemScorer {
         SparseVector urv = RatingVectorUserHistorySummarizer.makeRatingVector(history);
         VectorTransformation vo = normalizer.makeTransformation(history.getUserId(), urv);
         vo.unapply(scores);
+    }
+
+    /**
+     * Find the neighbors for a user with respect to a collection of items.
+     * For each item, the {@var neighborhoodSize} users closest to the
+     * provided user are returned.
+     *
+     * @param user  The user's rating vector.
+     * @param items The items for which neighborhoods are requested.
+     * @return A mapping of item IDs to neighborhoods.
+     */
+    protected Long2ObjectMap<? extends Collection<Neighbor>>
+    findNeighbors(@Nonnull UserHistory<? extends Event> user, @Nonnull LongSet items) {
+        Preconditions.checkNotNull(user, "user profile");
+        Preconditions.checkNotNull(user, "item set");
+
+        Long2ObjectMap<PriorityQueue<Neighbor>> heaps = new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items.size());
+        for (LongIterator iter = items.iterator(); iter.hasNext();) {
+            long item = iter.nextLong();
+            heaps.put(item, new PriorityQueue<Neighbor>(neighborhoodSize + 1,
+                                                        Neighbor.SIMILARITY_COMPARATOR));
+        }
+
+        for (Neighbor nbr: neighborFinder.getCandidateNeighbors(user, items)) {
+            for (VectorEntry e: nbr.vector.fast()) {
+                final long item = e.getKey();
+                PriorityQueue<Neighbor> heap = heaps.get(item);
+                if (heap != null) {
+                    heap.add(nbr);
+                    if (heap.size() > neighborhoodSize) {
+                        assert heap.size() == neighborhoodSize + 1;
+                        heap.remove();
+                    }
+                }
+            }
+        }
+        return heaps;
     }
 }

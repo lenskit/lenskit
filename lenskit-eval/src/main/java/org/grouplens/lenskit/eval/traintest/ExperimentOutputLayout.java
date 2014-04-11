@@ -166,6 +166,9 @@ class ExperimentOutputLayout {
     private static TableLayout layoutUserTable(TableLayoutBuilder master, MeasurementSuite measurements) {
         TableLayoutBuilder perUser = master.clone();
         perUser.addColumn("User");
+        perUser.addColumn("TestTime");
+        perUser.addColumn("TrainEvents");
+        perUser.addColumn("TestEvents");
 
         for (MetricFactory mf : measurements.getMetricFactories()) {
             List<String> userColumnLabels = mf.getUserColumnLabels();
