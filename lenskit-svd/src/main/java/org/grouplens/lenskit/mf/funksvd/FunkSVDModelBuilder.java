@@ -82,11 +82,9 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     public FunkSVDModel get() {
         int userCount = snapshot.getUserIds().size();
         Matrix userFeatures = Matrix.create(userCount, featureCount);
-        userFeatures.fill(initialValue);
 
         int itemCount = snapshot.getItemIds().size();
         Matrix itemFeatures = Matrix.create(itemCount, featureCount);
-        itemFeatures.fill(initialValue);
 
         logger.debug("Learning rate is {}", rule.getLearningRate());
         logger.debug("Regularization term is {}", rule.getTrainingRegularization());
@@ -98,6 +96,8 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
 
         List<FeatureInfo> featureInfo = new ArrayList<FeatureInfo>(featureCount);
 
+        // Use scratch vectors for each feature for better cache locality
+        // Per-feature vectors are strided in the output matrices
         AVector uvec = Vector.createLength(userCount);
         AVector ivec = Vector.createLength(itemCount);
 
