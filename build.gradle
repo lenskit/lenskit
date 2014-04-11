@@ -66,9 +66,13 @@ subprojects {
     }
 
     // don't package until testing
-    jar.mustRunAfter 'check'
     jar.mustRunAfter 'test'
-    javadoc.mustRunAfter 'jar'
+    tasks.withType(Upload) { task ->
+        // check before uploading. upload, not jar, waits in case a check requires the jar
+        task.mustRunAfter 'check'
+    }
+    // defer javadoc until after the build
+    javadoc.mustRunAfter 'classes'
 
     tasks.withType(JavaCompile).all { task ->
         task.options.encoding = 'UTF-8'
