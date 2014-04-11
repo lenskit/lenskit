@@ -22,11 +22,8 @@ package org.grouplens.lenskit.eval.metrics.topn;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongSortedSets;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
@@ -90,14 +87,11 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
     public Result doMeasureUser(TestUser user, Context context) {
         double score = 0;
 
-        SingletonSelector theItem = new SingletonSelector();
-        ItemSelector finalCandidates = ItemSelectors.union(candidates, theItem);
-
-        LongSet items = queryItems.select(user.getTrainHistory(), user.getTestHistory(), context.universe);
+        LongSet items = queryItems.select(user);
         LongIterator it = items.iterator();
         while (it.hasNext()) {
             final long l = it.nextLong();
-            theItem.setTheItem(l);
+            ItemSelector finalCandidates = ItemSelectors.union(ItemSelectors.fixed(l), candidates);
 
             List<ScoredId> recs = user.getRecommendations(listSize, finalCandidates, exclude);
             for (ScoredId s : CollectionUtils.fast(recs)) {
@@ -170,19 +164,6 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
 
         public IndependentRecallTopNMetric build() {
             return new IndependentRecallTopNMetric(suffix, goodItems, candidates, listSize, exclude);
-        }
-    }
-
-    private class SingletonSelector implements ItemSelector {
-        long theItem = 0;
-        
-        @Override
-        public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
-            return LongSortedSets.singleton(theItem);
-        }
-
-        private void setTheItem(long theItem) {
-            this.theItem = theItem;
         }
     }
 }

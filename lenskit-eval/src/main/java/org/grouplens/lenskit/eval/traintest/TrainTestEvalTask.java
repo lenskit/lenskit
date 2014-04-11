@@ -23,10 +23,7 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.common.io.Closer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.Component;
@@ -444,7 +441,15 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     MeasurementSuite createMeasurementSuite() {
-        return new MeasurementSuite(metrics, predictChannels);
+        ImmutableList.Builder<MetricFactory> activeMetrics = ImmutableList.builder();
+        activeMetrics.addAll(metrics);
+        if (recommendOutputFile != null) {
+            activeMetrics.add(new OutputTopNMetric.Factory());
+        }
+        if (predictOutputFile != null) {
+            activeMetrics.add(new OutputPredictMetric.Factory());
+        }
+        return new MeasurementSuite(activeMetrics.build(), predictChannels);
     }
 
     private void runEvaluations(DAGNode<JobGraph.Node, JobGraph.Edge> graph) throws TaskExecutionException, InterruptedException {
@@ -608,18 +613,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         if (userOutputFile != null) {
             user = closer.register(CSVWriter.open(userOutputFile, layouts.getUserLayout()));
         }
-        TableWriter predict = null;
-        if (predictOutputFile != null) {
-            predict = closer.register(CSVWriter.open(predictOutputFile, layouts.getPredictLayout()));
-        }
-        TableWriter recommend = null;
-        if (recommendOutputFile != null) {
-            recommend = closer.register(CSVWriter.open(recommendOutputFile, layouts.getRecommendLayout()));
-        }
         List<Metric<?>> metrics = Lists.newArrayList();
         for (MetricFactory metric : measures.getMetricFactories()) {
             metrics.add(closer.register(metric.createMetric(this)));
         }
-        return new ExperimentOutputs(layouts, allResults, user, predict, recommend, metrics);
+        return new ExperimentOutputs(layouts, allResults, user, metrics);
     }
 }
