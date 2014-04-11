@@ -98,8 +98,8 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
 
         // Use scratch vectors for each feature for better cache locality
         // Per-feature vectors are strided in the output matrices
-        AVector uvec = Vector.createLength(userCount);
-        AVector ivec = Vector.createLength(itemCount);
+        Vector uvec = Vector.createLength(userCount);
+        Vector ivec = Vector.createLength(itemCount);
 
         for (int f = 0; f < featureCount; f++) {
             logger.debug("Training feature {}", f);
@@ -139,7 +139,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      * Compute the trailing value to assume after a feature. The default implementation assumes
      * all remaining features containing {@link #initialValue}, returning {@code
      * (featureCount - feature - 1) * initialValue * initialValue}.  This is used by the default
-     * implementation of {@link #trainFeature(int, TrainingEstimator, AVector, AVector, FeatureInfo.Builder)}.
+     * implementation of {@link #trainFeature(int, TrainingEstimator, Vector, Vector, FeatureInfo.Builder)}.
      *
      * @param feature The feature number.
      * @return The trailing value to assume.
@@ -153,7 +153,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
 
     /**
      * Train a feature using a collection of ratings.  This method iteratively calls {@link
-     * #doFeatureIteration(TrainingEstimator, FastCollection, AVector, AVector, double)}  to train
+     * #doFeatureIteration(TrainingEstimator, FastCollection, Vector, Vector, double)}  to train
      * the feature.  It can be overridden to customize the feature training strategy.
      *
      * <p>We use the estimator to maintain the estimate up through a particular feature value,
@@ -172,11 +172,11 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      * @param fib       The feature info builder. This method is only expected to add information
      *                  about its training rounds to the builder; the caller takes care of feature
      *                  number and summary data.
-     * @see #doFeatureIteration(TrainingEstimator, FastCollection, AVector, AVector, double)
+     * @see #doFeatureIteration(TrainingEstimator, FastCollection, Vector, Vector, double)
      * @see #summarizeFeature(AVector, AVector, FeatureInfo.Builder)
      */
     protected void trainFeature(int feature, TrainingEstimator estimates,
-                                AVector userFeatureVector, AVector itemFeatureVector,
+                                Vector userFeatureVector, Vector itemFeatureVector,
                                 FeatureInfo.Builder fib) {
         double rmse = Double.MAX_VALUE;
         double trail = initialValue * initialValue * (featureCount - feature - 1);
@@ -202,7 +202,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      */
     protected double doFeatureIteration(TrainingEstimator estimates,
                                         FastCollection<IndexedPreference> ratings,
-                                        AVector userFeatureVector, AVector itemFeatureVector,
+                                        Vector userFeatureVector, Vector itemFeatureVector,
                                         double trail) {
         // We'll create a fresh updater for each feature iteration
         // Not much overhead, and prevents needing another parameter
