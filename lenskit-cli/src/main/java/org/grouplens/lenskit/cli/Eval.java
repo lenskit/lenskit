@@ -96,7 +96,6 @@ public class Eval implements Command {
 
     @Override
     public void execute() throws IOException, TaskExecutionException {
-        System.out.println(options);
         File file = getFile();
         if (!file.exists()) {
             logger.error("script file {} does not exist", file);
@@ -110,7 +109,9 @@ public class Eval implements Command {
         EvalProject project = engine.loadProject(file);
         if (getTargets().isEmpty()) {
             String dft = project.getDefaultTarget();
-            if (dft == null && !project.getAntProject().getTargets().isEmpty()) {
+            if (dft != null) {
+                project.executeTarget(dft);
+            } else if (!project.getAntProject().getTargets().isEmpty()) {
                 String targets = Joiner.on(", ")
                                        .join(Iterables.transform(
                                                project.getAntProject().getTargets().keySet(),
@@ -125,7 +126,6 @@ public class Eval implements Command {
                              targets);
                 System.exit(2);
             }
-            project.executeTarget(dft);
         } else {
             project.executeTargets(getTargets());
         }

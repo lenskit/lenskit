@@ -1,0 +1,15 @@
+apply from: "$rootDir/gradle/maven.gradle"
+
+dependencies {
+    compile group: 'it.unimi.dsi', name:'fastutil', version: '6.5.13'
+    compile group: 'com.google.guava', name: 'guava', version: '16.0.1'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3'
+
+    testCompile project(':lenskit-test')
+    testCompile group: 'net.java.quickcheck', name: 'quickcheck', version: '0.6'
+}
+
+meta {
+    name 'LensKit Data Structures'
+    description 'Data structures and related utilities used in LensKit.'
+}

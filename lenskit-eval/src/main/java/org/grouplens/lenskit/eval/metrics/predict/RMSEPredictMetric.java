@@ -20,19 +20,16 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import com.google.common.collect.ImmutableList;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
-import java.util.List;
 
 import static java.lang.Math.sqrt;
 
@@ -41,72 +38,91 @@ import static java.lang.Math.sqrt;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class RMSEPredictMetric extends AbstractTestUserMetric {
+public class RMSEPredictMetric extends AbstractMetric<RMSEPredictMetric.Context, RMSEPredictMetric.AggregateResult, RMSEPredictMetric.UserResult> {
     private static final Logger logger = LoggerFactory.getLogger(RMSEPredictMetric.class);
-    private static final ImmutableList<String> COLUMNS = ImmutableList.of("RMSE.ByRating", "RMSE.ByUser");
-    private static final ImmutableList<String> USER_COLUMNS = ImmutableList.of("RMSE");
 
-    @Override
-    public TestUserMetricAccumulator makeAccumulator(Attributed algo, TTDataSet ds) {
-        return new Accum();
+    public RMSEPredictMetric() {
+        super(AggregateResult.class, UserResult.class);
     }
 
     @Override
-    public List<String> getColumnLabels() {
-        return COLUMNS;
+    public Context createContext(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new Context();
     }
 
     @Override
-    public List<String> getUserColumnLabels() {
-        return USER_COLUMNS;
+    public UserResult doMeasureUser(TestUser user, Context context) {
+        SparseVector ratings = user.getTestRatings();
+        SparseVector predictions = user.getPredictions();
+        if (predictions == null) {
+            return null;
+        }
+        double sse = 0;
+        int n = 0;
+        for (VectorEntry e : predictions.fast()) {
+            if (Double.isNaN(e.getValue())) {
+                continue;
+            }
+
+            double err = e.getValue() - ratings.get(e.getKey());
+            sse += err * err;
+            n++;
+        }
+        if (n > 0) {
+            double rmse = sqrt(sse / n);
+            context.addUser(n, sse, rmse);
+            return new UserResult(rmse);
+        } else {
+            return null;
+        }
     }
 
-    class Accum implements TestUserMetricAccumulator {
-        private double sse = 0;
+    @Override
+    protected AggregateResult getTypedResults(Context context) {
+        return context.finish();
+    }
+
+    public static class UserResult {
+        @ResultColumn("RMSE")
+        public final double mae;
+
+        public UserResult(double err) {
+            mae = err;
+        }
+    }
+
+    public static class AggregateResult {
+        @ResultColumn("RMSE.ByUser")
+        public final double userRMSE;
+        @ResultColumn("RUSE.ByRating")
+        public final double globalRMSE;
+
+        public AggregateResult(double uerr, double gerr) {
+            userRMSE = uerr;
+            globalRMSE = gerr;
+        }
+    }
+
+    public class Context {
+        private double totalSSE = 0;
         private double totalRMSE = 0;
         private int nratings = 0;
         private int nusers = 0;
 
-        @Nonnull
-        @Override
-        public List<Object> evaluate(TestUser user) {
-            SparseVector ratings = user.getTestRatings();
-            SparseVector predictions = user.getPredictions();
-            if (predictions == null) {
-                return userRow();
-            }
-            double usse = 0;
-            int n = 0;
-            for (VectorEntry e : predictions.fast()) {
-                if (Double.isNaN(e.getValue())) {
-                    continue;
-                }
-
-                double err = e.getValue() - ratings.get(e.getKey());
-                usse += err * err;
-                n++;
-            }
-            sse += usse;
+        private void addUser(int n, double sse, double rmse) {
+            totalSSE += sse;
+            totalRMSE += rmse;
             nratings += n;
-            if (n > 0) {
-                double rmse = sqrt(usse / n);
-                totalRMSE += rmse;
-                nusers++;
-                return userRow(rmse);
-            } else {
-                return userRow();
-            }
+            nusers += 1;
         }
 
-        @Nonnull
-        @Override
-        public List<Object> finalResults() {
+        public AggregateResult finish() {
             if (nratings > 0) {
-                double v = sqrt(sse / nratings);
+                double v = sqrt(totalSSE / nratings);
                 logger.info("RMSE: {}", v);
-                return finalRow(v, totalRMSE / nusers);
+                return new AggregateResult(totalRMSE / nusers, v);
             } else {
-                return finalRow();
+                return null;
             }
         }
     }

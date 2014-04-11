@@ -23,7 +23,6 @@ package org.grouplens.lenskit.eval.traintest;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.table.TableLayout;
 import org.grouplens.lenskit.util.table.TableLayoutBuilder;
@@ -170,16 +169,10 @@ class ExperimentOutputLayout {
         output.addColumn("BuildTime");
         output.addColumn("TestTime");
 
-        for (ModelMetric ev: measurements.getModelMetrics()) {
-            for (String c: ev.getColumnLabels()) {
-                output.addColumn(c);
-            }
-        }
-
-        for (TestUserMetric ev : measurements.getTestUserMetrics()) {
-            List<String> columnLabels = ev.getColumnLabels();
-            if (columnLabels != null) {
-                for (String c : columnLabels) {
+        for (MetricFactory mf: measurements.getMetricFactories()) {
+            List<String> labels = mf.getColumnLabels();
+            if (labels != null) {
+                for (String c: labels) {
                     output.addColumn(c);
                 }
             }
@@ -192,8 +185,8 @@ class ExperimentOutputLayout {
         TableLayoutBuilder perUser = master.clone();
         perUser.addColumn("User");
 
-        for (TestUserMetric ev : measurements.getTestUserMetrics()) {
-            List<String> userColumnLabels = ev.getUserColumnLabels();
+        for (MetricFactory mf : measurements.getMetricFactories()) {
+            List<String> userColumnLabels = mf.getUserColumnLabels();
             if (userColumnLabels != null) {
                 for (String c : userColumnLabels) {
                     perUser.addColumn(c);

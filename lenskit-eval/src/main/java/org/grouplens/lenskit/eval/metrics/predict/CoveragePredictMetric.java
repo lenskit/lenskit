@@ -20,19 +20,16 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
-import com.google.common.collect.ImmutableList;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
-import java.util.List;
 
 /**
  * Simple evaluator that records user, rating and prediction counts and computes
@@ -40,67 +37,82 @@ import java.util.List;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class CoveragePredictMetric extends AbstractTestUserMetric {
+public class CoveragePredictMetric extends AbstractMetric<CoveragePredictMetric.Context, CoveragePredictMetric.AggregateCoverage, CoveragePredictMetric.Coverage> {
     private static final Logger logger = LoggerFactory.getLogger(CoveragePredictMetric.class);
-    private static final ImmutableList<String> COLUMNS =
-            ImmutableList.of("NUsers", "NAttempted", "NGood", "Coverage");
-    private static final ImmutableList<String> USER_COLUMNS =
-            ImmutableList.of("NAttempted", "NGood", "Coverage");
 
-    @Override
-    public TestUserMetricAccumulator makeAccumulator(Attributed algo, TTDataSet ds) {
-        return new Accum();
+    public CoveragePredictMetric() {
+        super(AggregateCoverage.class, Coverage.class);
     }
 
     @Override
-    public List<String> getColumnLabels() {
-        return COLUMNS;
+    public Context createContext(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new Context();
     }
 
     @Override
-    public List<String> getUserColumnLabels() {
-        return USER_COLUMNS;
+    public Coverage doMeasureUser(TestUser user, Context context) {
+        SparseVector ratings = user.getTestRatings();
+        SparseVector predictions = user.getPredictions();
+        if (predictions == null) {
+            return null;
+        }
+        int n = 0;
+        int good = 0;
+        for (VectorEntry e : ratings.fast()) {
+            n += 1;
+            if (predictions.containsKey(e.getKey())) {
+                good += 1;
+            }
+        }
+        context.addUser(n, good);
+        return new Coverage(n, good);
     }
 
-    class Accum implements TestUserMetricAccumulator {
+    @Override
+    protected AggregateCoverage getTypedResults(Context context) {
+        return new AggregateCoverage(context.nusers, context.npreds, context.ngood);
+    }
+
+    public static class Coverage {
+        @ResultColumn(value="NAttempted", order=1)
+        public final int nattempted;
+        @ResultColumn(value="NGood", order=2)
+        public final int ngood;
+
+        private Coverage(int na, int ng) {
+            nattempted = na;
+            ngood = ng;
+        }
+
+        @ResultColumn(value="Coverage", order=3)
+        public Double getCoverage() {
+            if (nattempted > 0) {
+                return ((double) ngood) / nattempted;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    public static class AggregateCoverage extends Coverage {
+        @ResultColumn(value="NUsers", order=0)
+        public final int nusers;
+
+        private AggregateCoverage(int nu, int na, int ng) {
+            super(na, ng);
+            nusers = nu;
+        }
+    }
+
+    public class Context {
         private int npreds = 0;
         private int ngood = 0;
         private int nusers = 0;
 
-        @Nonnull
-        @Override
-        public List<Object> evaluate(TestUser user) {
-            SparseVector ratings = user.getTestRatings();
-            SparseVector predictions = user.getPredictions();
-            if (predictions == null) {
-                userRow();
-            }
-            int n = 0;
-            int good = 0;
-            for (VectorEntry e : ratings.fast()) {
-                n += 1;
-                if (predictions.containsKey(e.getKey())) {
-                    good += 1;
-                }
-            }
-            npreds += n;
-            ngood += good;
+        private void addUser(int np, int ng) {
+            npreds += np;
+            ngood += ng;
             nusers += 1;
-            return userRow(n, good,
-                           n > 0 ? (((double) good) / n) : null);
         }
-
-        @Nonnull
-        @Override
-        public List<Object> finalResults() {
-            Double coverage = null;
-            if (npreds > 0) {
-                coverage = (double) ngood / npreds;
-            }
-            logger.info("Coverage: {}", coverage);
-
-            return finalRow(nusers, npreds, ngood, coverage);
-        }
-
     }
 }

@@ -20,8 +20,12 @@
  */
 package org.grouplens.lenskit.eval.metrics.predict;
 
+import org.grouplens.lenskit.eval.traintest.MockTestUser;
+import org.grouplens.lenskit.eval.traintest.TestUser;
+import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -45,6 +49,25 @@ public class HLUTest {
     SparseVector pv2 = MutableSparseVector.wrap(items, predictions2).freeze();
     SparseVector pv3 = MutableSparseVector.wrap(items, predictions3).freeze();
 
+    TestUser user1, user2, user3;
+
+    @Before
+    public void createTestUsers() {
+        MockTestUser.Builder b1, b2, b3;
+
+        b1 = MockTestUser.newBuilder().setUserId(1);
+        b2 = MockTestUser.newBuilder().setUserId(2);
+        b3 = MockTestUser.newBuilder().setUserId(3);
+        for (int i = 0; i < 10; i++) {
+            b1.addTestRating(items[i], ratings1[i]);
+            b2.addTestRating(items[i], ratings2[i]);
+            b3.addTestRating(items[i], ratings3[i]);
+        }
+        user1 = b1.setPredictions(pv1).build();
+        user2 = b2.setPredictions(pv2).build();
+        user3 = b3.setPredictions(pv3).build();
+    }
+
     @Test
     public void testComputeHLU() {
         HLUtilityPredictMetric eval = new HLUtilityPredictMetric(5);
@@ -62,19 +85,20 @@ public class HLUTest {
 
     @Test
     public void testAccumulator() {
-        HLUtilityPredictMetric eval = new HLUtilityPredictMetric(5);
-        HLUtilityPredictMetric.Accum acc = eval.makeAccumulator(null, null);
+        HLUtilityPredictMetric metric = new HLUtilityPredictMetric(5);
+        MeanAccumulator acc = metric.createContext(null, null, null);
+        assert acc != null;
 
-        acc.evaluatePredictions(rv1, pv1);
-        assertEquals(1, acc.nusers);
-        assertEquals(0.9517, acc.total, 0.0001);
+        metric.measureUser(user1, acc);
+        assertEquals(1, acc.getCount());
+        assertEquals(0.9517, acc.getTotal(), 0.0001);
 
-        acc.evaluatePredictions(rv2, pv2);
-        assertEquals(2, acc.nusers);
-        assertEquals(1.8883, acc.total, 0.0001);
+        metric.measureUser(user2, acc);
+        assertEquals(2, acc.getCount());
+        assertEquals(1.8883, acc.getTotal(), 0.0001);
 
-        acc.evaluatePredictions(rv3, pv3);
-        assertEquals(3, acc.nusers);
-        assertEquals(2.7866, acc.total, 0.0001);
+        metric.measureUser(user3, acc);
+        assertEquals(3, acc.getCount());
+        assertEquals(2.7866, acc.getTotal(), 0.0001);
     }
 }

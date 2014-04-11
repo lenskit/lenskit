@@ -4,6 +4,11 @@ target
 .settings
 /.idea
 /.idea_modules
+.gradle
+gradle.properties
+local.gradle
+/build
+/*/build
 *.iml
 *.ipr
 *.iws

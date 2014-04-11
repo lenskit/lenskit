@@ -20,15 +20,15 @@ LensKit is made available under the GNU Lesser General Public License
 
 ## Installation and Dependency Management
 
-LensKit is built and deployed via [Maven][].  To install it, check out
-this repository and run `mvn install`; it is then available to other
-projects by depending directly on it as above (consult `pom.xml` for
-the version to use; all LensKit modules share the same version).  The
-source code can also be checked out and used in most Java IDEs.
-NetBeans and IntelliJ both include Maven support, LensKit should
-import fine with no special tricks.
+LensKit is built and deployed with [Gradle][] and publishes its
+artifacts to Maven Central.  To install it to the local Maven
+repository, making it available to other projects using standard
+Java-based tools, check out this repository and run `./gradlew
+install`; it is then available to other projects by depending directly
+on it in your Maven, Gradle, Ivy, or SBT project.  The source code can
+also be checked out and used in most Java IDEs.
 
-[Maven]: http://maven.apache.org
+[Gradle]: http://www.gradle.org
 
 ## Modules
 
@@ -39,9 +39,6 @@ and dependencies.  The other modules are as follows:
 * `lenskit-api` -- the common, public recommender API exposed by LensKit, independent
   of its actual implementations.
 * `lenskit-test` -- infrastructure and helper code for testing.
-* `lenskit-parent` -- infrastructure module that is the parent of most modules other than
-  `lenskit-test`.  This is mostly to provide a common build and test environment for the
-  rest of LensKit.  If you create a new module, make this module its parent.
 * `lenskit-data-structures` -- common data structures used by LensKit.
   These are split from `-core` so the API can depend on them.
 * `lenskit-core` -- the core support code and configuration facilities for
@@ -53,11 +50,9 @@ and dependencies.  The other modules are as follows:
 * `lenskit-slopeone` -- Slope-One recommenders.
 * `lenskit-eval` -- the evaluation framework and APIs, along with a command line
   evaluation runner.
-* `lenskit-eval-maven-plugin` -- a Maven plugin for running LensKit algorithm evaluations
-  and experiments.
-* `lenskit-package` -- a metapackage for preparing binary distributions, including
-  scripts for running the evaluator.
-* `lenskit-archetype-fancy-analysis` and `lenskit-archetype-simple-analysis` -- archetypes for creating user projects using LensKit.
+* `lenskit-all` -- a metapackage you can depend on to pull in the rest of the LensKit packages.
+* `lenskit-cli` -- the LensKit command line interface.
+* `lenskit-integration-tests` -- additional integration tests for LensKit.
   
 ## Contributing to LensKit
   
@@ -75,21 +70,3 @@ do this:
 When submitting a pull request via GitHub, you warrant that you
 either own the code or have appropriate authority to submit it, and
 license your changes under LensKit's copyright license (LGPLv2.1+).
-
-## LensKit Archetypes
-
-These archetypes are to build simple
-(`lenskit-archetype-simple-analysis`) or more sophisticated
-(`lenskit-archetype-fancy-analysis`) projects for doing analysis of
-recommender algorithms.  Detailed information about using these
-archetypes are in the src/main/resources/archetype-resources/Readme.md
-file, which are installed in the top-level directory when a user uses
-this archetype to generate a project.
-
-* Be careful editing the pom in src/main/resources/archetype-resources, 
-  because its variables are substituted
-  at two different times.  Variables like ${project.version} are
-  substituted at the time the archetype is run by a user to create a
-  project.  Variables with backslashes in front of them like
-  \${version} are left as variables by the archetype, so they can be
-  substituted at project build time.

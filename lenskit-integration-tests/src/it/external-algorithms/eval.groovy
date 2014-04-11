@@ -61,5 +61,4 @@ trainTest {
     output 'results.csv'
     userOutput 'users.csv'
     predictOutput 'predictions.csv'
-    recommendOutput 'recommendations.csv'
 }

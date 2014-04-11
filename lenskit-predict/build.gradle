@@ -1,0 +1,13 @@
+apply from: "$rootDir/gradle/maven.gradle"
+apply plugin: 'groovy'
+
+dependencies {
+    compile project(':lenskit-core')
+    testCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
+    testCompile project(':lenskit-groovy')
+}
+
+meta {
+    name 'LensKit Rating Predictors'
+    description 'Advanced rating prediction support for LensKit.'
+}

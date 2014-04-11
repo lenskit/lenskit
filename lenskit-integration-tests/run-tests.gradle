@@ -1,0 +1,69 @@
+// Run some high-level integration tests
+file('src/it').eachDir { dir ->
+    if (file("$dir/ignore").exists()) {
+        return
+    }
+
+    def name = dir.name
+    def camelName = name.replaceAll(~/(?:^|-)(.)/) {
+        it[1].toUpperCase()
+    }
+    def prep = task("prep$camelName", type: Copy) {
+        from dir
+        into "$buildDir/it/$name"
+    }
+    task("run$camelName", type: JavaExec, group: 'verification') {
+        description "Run the $name tests."
+        dependsOn fetchData, "prep$camelName"
+        mustRunAfter test // run the JUnit-based tests first, less overhead
+    
+        ext.sourceDir = dir
+        ext.testDir = "$buildDir/it/$name"
+
+        inputs.files prep
+        inputs.dir mlDataDir
+        outputs.dir testDir
+        
+        doFirst {
+            // clean up outputs for a clean build
+            delete fileTree(testDir) {
+                include 'cache/**'
+                include '*.gz'
+                include '*.csv'
+                include '*.pack'
+                include '*.log'
+                include '*.out'
+            }
+        }
+
+        workingDir testDir
+        classpath configurations.testRuntime
+        main 'org.grouplens.lenskit.cli.Main'
+        args 'eval', '-j0'
+        // tell it where to find the data
+        args "-Dlenskit.movielens.100k=$mlDataDir"
+        
+        if (project.hasProperty('maxTestHeap')) {
+            maxHeapSize project.maxTestHeap
+        }
+    }
+
+    task("verify$camelName", type: JavaExec, group: 'verification') {
+        description "Verify the $name tests."
+        dependsOn "run$camelName"
+
+        ext.testDir = "$buildDir/it/$name"
+        inputs.dir testDir
+        
+        workingDir testDir
+        classpath sourceSets.test.runtimeClasspath
+        main 'org.grouplens.lenskit.test.VerifyTestRun'
+        args testDir
+    }
+
+    if (!skipSlowTests) {
+        check.dependsOn "verify$camelName"
+    }
+}
+
+test.onlyIf { !skipSlowTests }

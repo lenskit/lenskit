@@ -20,16 +20,20 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.LongKeyDomain;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
+import org.grouplens.lenskit.scored.ScoredIdListBuilder;
+import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -73,7 +77,7 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
         logger.debug("using summarizer {}", userSummarizer);
 
         logger.debug("Building item data");
-        Long2ObjectMap<Long2DoubleMap> itemData = new Long2ObjectOpenHashMap<Long2DoubleMap>(1000);
+        Long2ObjectMap<ScoredIdListBuilder> itemData = new Long2ObjectOpenHashMap<ScoredIdListBuilder>(1000);
         Long2ObjectMap<LongSortedSet> candidateData = new Long2ObjectOpenHashMap<LongSortedSet>(1000);
         buildItemRatings(itemData, candidateData);
 
@@ -85,12 +89,12 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
 
         for (int i = 0; i < n; i++) {
             final long item = items.getKey(i);
-            Long2DoubleMap ratings = itemData.get(item);
-            SparseVector v = ImmutableSparseVector.create(ratings);
+            ScoredIdListBuilder ratings = itemData.get(item);
+            SparseVector v = ratings.buildVector();
             assert v.size() == ratings.size();
             itemRatings[i] = v;
-            // clear the array so GC can free
-            itemData.put(item, null);
+            // release some memory
+            ratings.clear();
         }
 
         logger.debug("item data completed");
@@ -104,7 +108,7 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
      * @param ratings    mapping from item ids to (userId: rating) maps (to be filled)
      * @param candidates mapping of user IDs to rated item sets to be filled.
      */
-    private void buildItemRatings(Long2ObjectMap<Long2DoubleMap> ratings,
+    private void buildItemRatings(Long2ObjectMap<ScoredIdListBuilder> ratings,
                                   Long2ObjectMap<LongSortedSet> candidates) {
         // initialize the transposed array to collect item vector data
         Cursor<UserHistory<Event>> users = userEventDAO.streamEventsByUser();
@@ -117,19 +121,17 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
 
                 for (VectorEntry rating : normed.fast()) {
                     final long item = rating.getKey();
-                    // get the item's rating vector
-                    Long2DoubleMap ivect = ratings.get(item);
+                    // get the item's rating accumulator
+                    ScoredIdListBuilder ivect = ratings.get(item);
                     if (ivect == null) {
-                        ivect = new Long2DoubleOpenHashMap();
+                        ivect = ScoredIds.newListBuilder(100);
                         ratings.put(item, ivect);
                     }
-                    ivect.put(uid, rating.getValue());
+                    ivect.add(uid, rating.getValue());
                 }
 
                 // get the item's candidate set
-                if (candidates != null) {
-                    candidates.put(uid, normed.keySet());
-                }
+                candidates.put(uid, LongUtils.packedSet(summary.keySet()));
             }
         } finally {
             users.close();

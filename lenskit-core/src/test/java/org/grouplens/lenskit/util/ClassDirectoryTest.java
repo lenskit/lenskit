@@ -22,6 +22,7 @@ package org.grouplens.lenskit.util;
 
 import org.grouplens.lenskit.util.ClassDirectory;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.contains;
