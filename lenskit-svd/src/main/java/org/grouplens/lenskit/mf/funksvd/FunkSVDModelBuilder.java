@@ -20,10 +20,10 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import mikera.matrixx.AMatrix;
 import mikera.matrixx.Matrix;
 import mikera.matrixx.impl.ImmutableMatrix;
 import mikera.vectorz.AVector;
+import mikera.vectorz.Vector;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
@@ -98,18 +98,31 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
 
         List<FeatureInfo> featureInfo = new ArrayList<FeatureInfo>(featureCount);
 
+        AVector uvec = Vector.createLength(userCount);
+        AVector ivec = Vector.createLength(itemCount);
+
         for (int f = 0; f < featureCount; f++) {
             logger.debug("Training feature {}", f);
             StopWatch timer = new StopWatch();
             timer.start();
 
+            uvec.fill(initialValue);
+            ivec.fill(initialValue);
+
             FeatureInfo.Builder fib = new FeatureInfo.Builder(f);
-            trainFeature(f, estimates, userFeatures, itemFeatures, fib);
-            summarizeFeature(userFeatures.getColumn(f), itemFeatures.getColumn(f), fib);
+            trainFeature(f, estimates, uvec, ivec, fib);
+            summarizeFeature(uvec, ivec, fib);
             featureInfo.add(fib.build());
 
             // Update each rating's cached value to accommodate the feature values.
-            estimates.update(userFeatures.getColumn(f), itemFeatures.getColumn(f));
+            estimates.update(uvec, ivec);
+
+            // And store the data into the matrix
+            // Cannot use setColumn b/c of vectorz bug #26
+            // userFeatures.setColumn(f, uvec);
+            userFeatures.getColumn(f).set(uvec);
+            // itemFeatures.setColumn(f, ivec);
+            itemFeatures.getColumn(f).set(ivec);
 
             timer.stop();
             logger.info("Finished feature {} in {}", f, timer);
@@ -126,7 +139,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      * Compute the trailing value to assume after a feature. The default implementation assumes
      * all remaining features containing {@link #initialValue}, returning {@code
      * (featureCount - feature - 1) * initialValue * initialValue}.  This is used by the default
-     * implementation of {@link #trainFeature(int, TrainingEstimator, mikera.matrixx.AMatrix, mikera.matrixx.AMatrix, org.grouplens.lenskit.mf.funksvd.FeatureInfo.Builder)}.
+     * implementation of {@link #trainFeature(int, TrainingEstimator, AVector, AVector, FeatureInfo.Builder)}.
      *
      * @param feature The feature number.
      * @return The trailing value to assume.
@@ -152,9 +165,9 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      * @param feature   The number of the current feature.
      * @param estimates The current estimator.  This method is <b>not</b> expected to update the
      *                  estimator.
-     * @param userMatrix      The user feature values.  This has been initialized to the initial value,
+     * @param userFeatureVector      The user feature values.  This has been initialized to the initial value,
      *                  and may be reused between features.
-     * @param itemMatrix      The item feature values.  This has been initialized to the initial value,
+     * @param itemFeatureVector      The item feature values.  This has been initialized to the initial value,
      *                  and may be reused between features.
      * @param fib       The feature info builder. This method is only expected to add information
      *                  about its training rounds to the builder; the caller takes care of feature
@@ -163,16 +176,14 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      * @see #summarizeFeature(AVector, AVector, FeatureInfo.Builder)
      */
     protected void trainFeature(int feature, TrainingEstimator estimates,
-                                AMatrix userMatrix, AMatrix itemMatrix,
+                                AVector userFeatureVector, AVector itemFeatureVector,
                                 FeatureInfo.Builder fib) {
         double rmse = Double.MAX_VALUE;
-        AVector userFeatureValues = userMatrix.getColumn(feature);
-        AVector itemFeatureValues = itemMatrix.getColumn(feature);
         double trail = initialValue * initialValue * (featureCount - feature - 1);
         TrainingLoopController controller = rule.getTrainingLoopController();
         FastCollection<IndexedPreference> ratings = snapshot.getRatings();
         while (controller.keepTraining(rmse)) {
-            rmse = doFeatureIteration(estimates, ratings, userFeatureValues, itemFeatureValues, trail);
+            rmse = doFeatureIteration(estimates, ratings, userFeatureVector, itemFeatureVector, trail);
             fib.addTrainingRound(rmse);
             logger.trace("iteration {} finished with RMSE {}", controller.getIterationCount(), rmse);
         }
