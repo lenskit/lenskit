@@ -26,7 +26,6 @@ import mikera.vectorz.AVector;
 import mikera.vectorz.Vector;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
@@ -38,6 +37,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -57,9 +57,6 @@ import java.util.List;
 public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     private static Logger logger = LoggerFactory.getLogger(FunkSVDModelBuilder.class);
 
-    /**
-     * The feature count. This is used by {@link #get()} and {@link #computeTrailingValue(int)}.
-     */
     protected final int featureCount;
     protected final PreferenceSnapshot snapshot;
     protected final double initialValue;
@@ -136,24 +133,8 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     }
 
     /**
-     * Compute the trailing value to assume after a feature. The default implementation assumes
-     * all remaining features containing {@link #initialValue}, returning {@code
-     * (featureCount - feature - 1) * initialValue * initialValue}.  This is used by the default
-     * implementation of {@link #trainFeature(int, TrainingEstimator, Vector, Vector, FeatureInfo.Builder)}.
-     *
-     * @param feature The feature number.
-     * @return The trailing value to assume.
-     */
-    protected double computeTrailingValue(int feature) {
-        // We assume that all subsequent features have initialValue
-        // We can therefore pre-compute the "trailing" prediction value, as it
-        // will be the same for all ratings for this feature.
-        return (featureCount - feature - 1) * initialValue * initialValue;
-    }
-
-    /**
      * Train a feature using a collection of ratings.  This method iteratively calls {@link
-     * #doFeatureIteration(TrainingEstimator, FastCollection, Vector, Vector, double)}  to train
+     * #doFeatureIteration(TrainingEstimator, Collection, Vector, Vector, double)}  to train
      * the feature.  It can be overridden to customize the feature training strategy.
      *
      * <p>We use the estimator to maintain the estimate up through a particular feature value,
@@ -172,7 +153,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      * @param fib       The feature info builder. This method is only expected to add information
      *                  about its training rounds to the builder; the caller takes care of feature
      *                  number and summary data.
-     * @see #doFeatureIteration(TrainingEstimator, FastCollection, Vector, Vector, double)
+     * @see #doFeatureIteration(TrainingEstimator, Collection, Vector, Vector, double)
      * @see #summarizeFeature(AVector, AVector, FeatureInfo.Builder)
      */
     protected void trainFeature(int feature, TrainingEstimator estimates,
@@ -181,7 +162,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
         double rmse = Double.MAX_VALUE;
         double trail = initialValue * initialValue * (featureCount - feature - 1);
         TrainingLoopController controller = rule.getTrainingLoopController();
-        FastCollection<IndexedPreference> ratings = snapshot.getRatings();
+        Collection<IndexedPreference> ratings = snapshot.getRatings();
         while (controller.keepTraining(rmse)) {
             rmse = doFeatureIteration(estimates, ratings, userFeatureVector, itemFeatureVector, trail);
             fib.addTrainingRound(rmse);
@@ -193,6 +174,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      * Do a single feature iteration.
      *
      *
+     *
      * @param estimates The estimates.
      * @param ratings   The ratings to train on.
      * @param userFeatureVector The user column vector for the current feature.
@@ -201,7 +183,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      * @return The RMSE of the feature iteration.
      */
     protected double doFeatureIteration(TrainingEstimator estimates,
-                                        FastCollection<IndexedPreference> ratings,
+                                        Collection<IndexedPreference> ratings,
                                         Vector userFeatureVector, Vector itemFeatureVector,
                                         double trail) {
         // We'll create a fresh updater for each feature iteration
