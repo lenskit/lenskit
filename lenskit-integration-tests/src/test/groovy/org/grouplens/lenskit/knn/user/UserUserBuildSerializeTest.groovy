@@ -142,9 +142,9 @@ public class UserUserBuildSerializeTest extends ML100KTestSuite {
 
 
         UserUserItemScorer is = rec.itemScorer as UserUserItemScorer
-        assertThat is.neighborhoodFinder, instanceOf(SnapshotNeighborFinder)
+        assertThat is.neighborFinder, instanceOf(SnapshotNeighborFinder)
         def rec2 = loaded.createRecommender()
-        assertThat((rec2.itemScorer as UserUserItemScorer).neighborhoodFinder,
-                   sameInstance(is.neighborhoodFinder))
+        assertThat((rec2.itemScorer as UserUserItemScorer).neighborFinder.snapshot,
+                   sameInstance(is.neighborFinder.snapshot))
     }
 }

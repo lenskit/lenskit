@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.knn.user;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 
@@ -30,6 +31,7 @@ import org.grouplens.lenskit.data.history.UserHistory;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 2.1
  */
+@DefaultImplementation(LiveNeighborFinder.class)
 public interface NeighborFinder {
     /**
      * Get potential neighbors for a particular user.
