@@ -115,9 +115,9 @@ public class OutputTopNMetric extends AbstractMetric<OutputTopNMetric.Context, V
         }
     }
 
-    public static class Factory extends MetricFactory {
+    public static class Factory extends MetricFactory<Context> {
         @Override
-        public Metric createMetric(TrainTestEvalTask task) throws IOException {
+        public OutputTopNMetric createMetric(TrainTestEvalTask task) throws IOException {
             return new OutputTopNMetric(task.getOutputLayout(), task.getRecommendOutput(), -1,
                                         ItemSelectors.allItems(),
                                         ItemSelectors.trainingItems());

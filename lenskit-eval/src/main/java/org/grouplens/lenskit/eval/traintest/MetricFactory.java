@@ -26,28 +26,37 @@ import java.io.IOException;
 import java.util.List;
 
 /**
+ * Create a metric for a train-test evaluation.  This interface allows a metric to control
+ * its instantiation and lifecycle.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 2.1
  */
-public abstract class MetricFactory {
-    public abstract Metric createMetric(TrainTestEvalTask task) throws IOException;
+public abstract class MetricFactory<T> {
+    public abstract Metric<T> createMetric(TrainTestEvalTask task) throws IOException;
 
     public abstract List<String> getColumnLabels();
 
     public abstract List<String> getUserColumnLabels();
 
-    public static MetricFactory forMetric(Metric m) {
-        return new Preinstantiated(m);
+    /**
+     * Create a metric factory that returns the provided pre-instantiated metric.
+     * @param m The metric.
+     * @return A metric factory that returns {@code m}.
+     */
+    public static <T> MetricFactory<T> forMetric(Metric<T> m) {
+        return new Preinstantiated<T>(m);
     }
 
-    private static class Preinstantiated extends MetricFactory {
-        private final Metric metric;
+    private static class Preinstantiated<T> extends MetricFactory<T> {
+        private final Metric<T> metric;
 
-        private Preinstantiated(Metric m) {
+        private Preinstantiated(Metric<T> m) {
             this.metric = m;
         }
 
         @Override
-        public Metric createMetric(TrainTestEvalTask task) {
+        public Metric<T> createMetric(TrainTestEvalTask task) {
             return metric;
         }
 

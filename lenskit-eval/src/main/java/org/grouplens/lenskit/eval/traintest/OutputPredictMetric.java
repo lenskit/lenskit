@@ -28,7 +28,6 @@ import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
-import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.util.table.TableLayout;
 import org.grouplens.lenskit.util.table.TableLayoutBuilder;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
@@ -117,9 +116,9 @@ public class OutputPredictMetric extends AbstractMetric<OutputPredictMetric.Cont
         }
     }
 
-    public static class Factory extends MetricFactory {
+    public static class Factory extends MetricFactory<Context> {
         @Override
-        public Metric createMetric(TrainTestEvalTask task) throws IOException {
+        public OutputPredictMetric createMetric(TrainTestEvalTask task) throws IOException {
             return new OutputPredictMetric(task.getOutputLayout(), task.getPredictOutput());
         }
 

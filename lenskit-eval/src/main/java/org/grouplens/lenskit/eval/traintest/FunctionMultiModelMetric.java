@@ -112,7 +112,7 @@ public class FunctionMultiModelMetric implements Metric<Void> {
         writer.close();
     }
 
-    public static class Factory extends MetricFactory {
+    public static class Factory extends MetricFactory<Void> {
         private final File outputFile;
         private final List<String> columns;
         private final Function<Recommender, List<List<Object>>> function;
@@ -124,7 +124,7 @@ public class FunctionMultiModelMetric implements Metric<Void> {
         }
 
         @Override
-        public Metric createMetric(TrainTestEvalTask task) {
+        public Metric<Void> createMetric(TrainTestEvalTask task) {
             return new FunctionMultiModelMetric(outputFile, columns, function,
                                                 task.getOutputLayout());
         }
