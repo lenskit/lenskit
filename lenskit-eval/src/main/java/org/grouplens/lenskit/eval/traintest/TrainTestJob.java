@@ -137,6 +137,9 @@ abstract class TrainTestJob implements Callable<Void> {
                 Stopwatch userTimer = Stopwatch.createStarted();
                 TestUser test = getUserResults(uid);
 
+                userRow.add(test.getTrainHistory().size());
+                userRow.add(test.getTestHistory().size());
+
                 for (MetricWithAccumulator<?> accum : accumulators) {
                     List<Object> ures = accum.measureUser(test);
                     if (ures != null) {
