@@ -84,7 +84,9 @@ public class SnapshotNeighborFinder implements NeighborFinder {
         for (LongIterator iter = qset.iterator(); iter.hasNext();) {
             final long item = iter.nextLong();
             LongSet users = snapshot.getItemUsers(item);
-            candidates.addAll(users);
+            if (users != null) {
+                candidates.addAll(users);
+            }
         }
         candidates.remove(uid);
         logger.debug("Found {} candidate neighbors for user {}", candidates.size(), uid);
