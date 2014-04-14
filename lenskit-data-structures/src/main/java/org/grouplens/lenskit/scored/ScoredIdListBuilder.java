@@ -138,13 +138,10 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
             builtIds = ids;
             scores.trim();
             builtScores = scores;
+            clear();
         } else {
             builtIds = new CompactableLongArrayList(ids);
             builtScores = new DoubleArrayList(scores);
-        }
-        if (reuse) {
-            // invalidate the builder
-            clear();
         }
         return new PackedScoredIdList(builtIds, builtScores, typedChans, chans);
     }
