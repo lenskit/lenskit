@@ -115,11 +115,8 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
             estimates.update(uvec, ivec);
 
             // And store the data into the matrix
-            // Cannot use setColumn b/c of vectorz bug #26
-            // userFeatures.setColumn(f, uvec);
-            userFeatures.getColumn(f).set(uvec);
-            // itemFeatures.setColumn(f, ivec);
-            itemFeatures.getColumn(f).set(ivec);
+            userFeatures.setColumn(f, uvec);
+            itemFeatures.setColumn(f, ivec);
 
             timer.stop();
             logger.info("Finished feature {} in {}", f, timer);
