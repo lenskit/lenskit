@@ -24,15 +24,15 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.Swapper;
-import it.unimi.dsi.fastutil.doubles.DoubleArrays;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
-import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.collections.CollectionUtils;
+import org.grouplens.lenskit.collections.CompactableLongArrayList;
 import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.SymbolValue;
@@ -40,7 +40,6 @@ import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 import static it.unimi.dsi.fastutil.Arrays.quickSort;
@@ -56,10 +55,9 @@ import static it.unimi.dsi.fastutil.Arrays.quickSort;
 public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     // INVARIANT: all arrays (including channel arrays) have same size, which is capacity
     // INVARIANT: all arrays are non-null unless finish() has been called
-    private long[] ids;
-    private double[] scores;
+    private CompactableLongArrayList ids;
+    private DoubleArrayList scores;
     private boolean ignoreUnknown = false;
-    private int size;
     private Map<Symbol,ChannelStorage> channels;
     private Map<TypedSymbol<?>,TypedChannelStorage<?>> typedChannels;
 
@@ -72,9 +70,8 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     }
 
     private void initialize(int cap) {
-        ids = new long[cap];
-        scores = new double[cap];
-        size = 0;
+        ids = new CompactableLongArrayList(cap);
+        scores = new DoubleArrayList(cap);
         channels = new Reference2ObjectArrayMap<Symbol, ChannelStorage>();
         typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, TypedChannelStorage<?>>();
     }
@@ -96,28 +93,37 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
 
     /**
      * Implementation of {@link #build()} and {@link #finish()}.
-     * @param tryReuse Whether we should try to reuse the builder's storage for the packed list.
+     * @param reuse Whether we should try to reuse the builder's storage for the packed list.
      *                 If {@code true}, the builder will be invalid after finishing and the packed
      *                 list will use the same arrays as the builder if they are full.
      * @return The packed ID list.
      */
-    private PackedScoredIdList finish(boolean tryReuse) {
+    private PackedScoredIdList finish(boolean reuse) {
         Preconditions.checkState(ids != null, "builder has been finished");
-        // check if reuse is actually possible
-        final boolean reuse = tryReuse && size == capacity();
-        Map<Symbol, double[]> chans;
-        Map<TypedSymbol<?>, Object[]> typedChans;
-        if (size > 0) {
-            ImmutableMap.Builder<Symbol, double[]> cbld = ImmutableMap.builder();
+        Map<Symbol, DoubleList> chans;
+        Map<TypedSymbol<?>, List<?>> typedChans;
+        if (size() > 0) {
+            ImmutableMap.Builder<Symbol, DoubleList> cbld = ImmutableMap.builder();
             for (ChannelStorage chan: channels.values()) {
-                double[] built = reuse ? chan.values : Arrays.copyOf(chan.values, size);
+                DoubleArrayList built;
+                if (reuse) {
+                    built = chan.values;
+                    built.trim();
+                } else {
+                    built = new DoubleArrayList(chan.values);
+                }
                 cbld.put(chan.symbol, built);
             }
             chans = cbld.build();
-            ImmutableMap.Builder<TypedSymbol<?>, Object[]> tcbld = ImmutableMap.builder();
+            ImmutableMap.Builder<TypedSymbol<?>, List<?>> tcbld = ImmutableMap.builder();
             for (TypedChannelStorage<?> chan: typedChannels.values()) {
-                Object[] built = reuse ? chan.values : Arrays.copyOf(chan.values, size);
-                assert chan.symbol.getType().isAssignableFrom(built.getClass().getComponentType());
+                List<?> built;
+                if (reuse) {
+                    chan.values.trimToSize();
+                    built = chan.values;
+                } else {
+                    built = new ArrayList<Object>(chan.values);
+                }
                 tcbld.put(chan.symbol, built);
             }
             typedChans = tcbld.build();
@@ -125,9 +131,18 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
             chans = Collections.emptyMap();
             typedChans = Collections.emptyMap();
         }
-        long[] builtIds = reuse ? ids : Arrays.copyOf(ids, size);
-        double[] builtScores = reuse ? scores : Arrays.copyOf(scores, size);
-        if (tryReuse) {
+        LongList builtIds;
+        DoubleList builtScores;
+        if (reuse) {
+            ids.trim();
+            builtIds = ids;
+            scores.trim();
+            builtScores = scores;
+        } else {
+            builtIds = new CompactableLongArrayList(ids);
+            builtScores = new DoubleArrayList(scores);
+        }
+        if (reuse) {
             // invalidate the builder
             clear();
         }
@@ -152,23 +167,23 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
      * @return A sparse vector containing the data accumulated.
      */
     public ImmutableSparseVector buildVector() {
-        LongList idList = LongArrayList.wrap(ids, size);
-        MutableSparseVector msv = MutableSparseVector.create(idList);
+        MutableSparseVector msv = MutableSparseVector.create(ids);
+        final int size = size();
         for (int i = 0; i < size; i++) {
-            msv.set(ids[i], scores[i]);
+            msv.set(ids.get(i), scores.get(i));
         }
 
         for (ChannelStorage chan: channels.values()) {
             MutableSparseVector vchan = msv.getOrAddChannelVector(chan.symbol);
             for (int i = 0; i < size; i++) {
-                vchan.set(ids[i], chan.values[i]);
+                vchan.set(ids.get(i), chan.values.get(i));
             }
         }
 
         for (TypedChannelStorage<?> chan: typedChannels.values()) {
             Long2ObjectMap vchan = msv.getOrAddChannel(chan.symbol);
             for (int i = 0; i < size; i++) {
-                vchan.put(ids[i], chan.values[i]);
+                vchan.put(ids.get(i), chan.values.get(i));
             }
         }
 
@@ -176,39 +191,12 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     }
 
     /**
-     * Get the current capacity of the builder.
-     *
-     * @return The number of items the builder can hold without resizing.
-     */
-    private int capacity() {
-        return ids.length;
-    }
-
-    /**
      * Get the number of items currently in the builder.
      * @return The number of items in the builder.
      */
     public int size() {
-        return size;
-    }
-
-    /**
-     * Require the builder have a particular minimum capacity, resizing if necessary.
-     * @param sz The required capacity.
-     */
-    private void requireCapacity(int sz) {
-        if (sz > capacity()) {
-            int newCap = Math.max(sz, capacity() * 2);
-            ids = Arrays.copyOf(ids, newCap);
-            scores = Arrays.copyOf(scores, newCap);
-            for (ChannelStorage chan: channels.values()) {
-                chan.resize(newCap);
-            }
-            for (TypedChannelStorage<?> chan: typedChannels.values()) {
-                chan.resize(newCap);
-            }
-            assert capacity() == newCap;
-        }
+        assert ids.size() == scores.size();
+        return ids.size();
     }
 
     /**
@@ -219,11 +207,16 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
      */
     public ScoredIdListBuilder add(long id, double score) {
         Preconditions.checkState(ids != null, "builder has been finished");
-        final int idx = size;
-        requireCapacity(idx + 1);
-        ids[idx] = id;
-        scores[idx] = score;
-        size++;
+        ids.add(id);
+        scores.add(score);
+        for (ChannelStorage chan: channels.values()) {
+            assert chan.values.size() == ids.size() - 1;
+            chan.values.add(chan.defaultValue);
+        }
+        for (TypedChannelStorage chan: typedChannels.values()) {
+            assert chan.values.size() == ids.size() - 1;
+            chan.values.add(chan.defaultValue);
+        }
         return this;
     }
 
@@ -250,22 +243,26 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         }
 
         // now we're ready to add
-        final int idx = size;
+        int idx = ids.size();
         add(id.getId(), id.getScore());
+        assert ids.size() == idx + 1;
+        assert scores.size() == idx + 1;
         for (SymbolValue<?> sv: chans) {
             TypedSymbol<?> sym = sv.getSymbol();
             if (sym.getType().equals(Double.class) && channels.containsKey(sym.getRawSymbol())) {
                 ChannelStorage chan = channels.get(sym.getRawSymbol());
+                assert chan.values.size() == idx + 1;
                 if (sv instanceof DoubleSymbolValue) {
-                    chan.values[idx] = ((DoubleSymbolValue) sv).getDoubleValue();
+                    chan.values.set(idx, ((DoubleSymbolValue) sv).getDoubleValue());
                 } else {
                     Object v = sv.getValue();
-                    chan.values[idx] = (Double) v;
+                    chan.values.set(idx, (Double) v);
                 }
             } else {
                 TypedChannelStorage chan = typedChannels.get(sv.getSymbol());
                 if (chan != null) {
-                    chan.values[idx] = sv.getValue();
+                    assert chan.values.size() == idx + 1;
+                    chan.values.set(idx, sv.getValue());
                 }
             }
         }
@@ -279,10 +276,6 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
      */
     public ScoredIdListBuilder addAll(Iterable<ScoredId> ids) {
         Preconditions.checkState(ids != null, "builder has been finished");
-        if (ids instanceof Collection) {
-            // we know how big to expect it to be, avoid excess resizes.
-            requireCapacity(size + ((Collection<ScoredId>) ids).size());
-        }
         // fast iteration is safe since add() doesn't retain the id object
         for (ScoredId id: CollectionUtils.fast(ids)) {
             add(id);
@@ -404,7 +397,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
      */
     public ScoredIdListBuilder sort(Comparator<ScoredId> order) {
         Preconditions.checkState(ids != null, "builder has been finished");
-        quickSort(0, size, new SortComp(order), new SortSwap());
+        quickSort(0, size(), new SortComp(order), new SortSwap());
         return this;
     }
 
@@ -422,11 +415,11 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
             order = o;
 
             // make an internal list
-            Map<Symbol,double[]> chanMap = Maps.newHashMap();
+            Map<Symbol,DoubleList> chanMap = Maps.newHashMap();
             for (ChannelStorage chan: channels.values()) {
                 chanMap.put(chan.symbol, chan.values);
             }
-            Map<TypedSymbol<?>,Object[]> typedMap = Maps.newHashMap();
+            Map<TypedSymbol<?>,List<?>> typedMap = Maps.newHashMap();
             for (TypedChannelStorage<?> chan: typedChannels.values()) {
                 typedMap.put(chan.symbol, chan.values);
             }
@@ -461,20 +454,14 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         }
     }
 
-    private static void doSwap(long[] longs, int i, int j) {
-        final long tmp = longs[i];
-        longs[i] = longs[j];
-        longs[j] = tmp;
+    private static void doSwap(LongList longs, int i, int j) {
+        longs.set(i, longs.set(j, longs.get(i)));
     }
-    private static void doSwap(double[] doubles, int i, int j) {
-        final double tmp = doubles[i];
-        doubles[i] = doubles[j];
-        doubles[j] = tmp;
+    private static void doSwap(DoubleList doubles, int i, int j) {
+        doubles.set(i, doubles.set(j, doubles.get(i)));
     }
-    private static <T> void doSwap(T[] objs, int i, int j) {
-        final T tmp = objs[i];
-        objs[i] = objs[j];
-        objs[j] = tmp;
+    private static <T> void doSwap(List<T> objs, int i, int j) {
+        objs.set(i, objs .set(j, objs .get(i)));
     }
 
     /**
@@ -483,23 +470,14 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     private class ChannelStorage {
         private final Symbol symbol;
         private final double defaultValue;
-        private double[] values;
+        private DoubleArrayList values;
 
         public ChannelStorage(Symbol sym, double dft) {
             symbol = sym;
             defaultValue = dft;
-            values = new double[capacity()];
-            if (defaultValue != 0) {
-                DoubleArrays.fill(values, defaultValue);
-            }
-        }
-
-        void resize(int size) {
-            Preconditions.checkArgument(size > values.length);
-            int oldSize = values.length;
-            values = Arrays.copyOf(values, size);
-            if (defaultValue != 0) {
-                DoubleArrays.fill(values, oldSize, size, defaultValue);
+            values = new DoubleArrayList(scores.elements().length);
+            for (int i = size() - 1; i >= 0; i--) {
+                values.add(defaultValue);
             }
         }
     }
@@ -510,24 +488,15 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     private class TypedChannelStorage<T> {
         private final TypedSymbol<T> symbol;
         private final T defaultValue;
-        private T[] values;
+        private ArrayList<T> values;
 
         @SuppressWarnings("unchecked")
         private TypedChannelStorage(TypedSymbol<T> sym, T dft) {
             symbol = sym;
             defaultValue = dft;
-            values = (T[]) Array.newInstance(sym.getType(), capacity());
-            if (defaultValue != null) {
-                ObjectArrays.fill(values, defaultValue);
-            }
-        }
-
-        void resize(int size) {
-            Preconditions.checkArgument(size > values.length);
-            int oldSize = values.length;
-            values = Arrays.copyOf(values, size);
-            if (defaultValue != null) {
-                ObjectArrays.fill(values, oldSize, size, defaultValue);
+            values = new ArrayList<T>(scores.elements().length);
+            for (int i = size() - 1; i >= 0; i--) {
+                values.add(defaultValue);
             }
         }
     }

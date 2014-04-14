@@ -27,6 +27,8 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -51,15 +53,15 @@ import java.util.*;
  */
 public final class PackedScoredIdList extends AbstractList<ScoredId> implements FastCollection<ScoredId>, Serializable {
     private static final long serialVersionUID = 1L;
-    private final long[] ids;
-    private final double[] scores;
-    private final Map<Symbol,double[]> unboxedChannels;
-    private final Map<TypedSymbol<?>,Object[]> channels;
+    private final LongList ids;
+    private final DoubleList scores;
+    private final Map<Symbol, DoubleList> unboxedChannels;
+    private final Map<TypedSymbol<?>, List<?>> channels;
 
-    PackedScoredIdList(long[] ids, double[] scores,
-                       Map<TypedSymbol<?>, Object[]> chans,
-                       Map<Symbol, double[]> unboxedChans) {
-        assert ids.length == scores.length;
+    PackedScoredIdList(LongList ids, DoubleList scores,
+                       Map<TypedSymbol<?>, List<?>> chans,
+                       Map<Symbol, DoubleList> unboxedChans) {
+        assert ids.size() == scores.size();
         this.ids = ids;
         this.scores = scores;
         unboxedChannels = unboxedChans;
@@ -72,27 +74,24 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
      */
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        if (ids.length != scores.length) {
+        if (ids.size() != scores.size()) {
             throw new InvalidObjectException("score array has incorrect size");
         }
-        for (double[] chan: unboxedChannels.values()) {
-            if (chan.length != ids.length) {
+        for (DoubleList chan: unboxedChannels.values()) {
+            if (chan.size() != ids.size()) {
                 throw new InvalidObjectException("channel array has incorrect size");
             }
         }
-        for (Map.Entry<TypedSymbol<?>,Object[]> tc: channels.entrySet()) {
-            if (tc.getValue().length != ids.length) {
+        for (Map.Entry<TypedSymbol<?>,List<?>> tc: channels.entrySet()) {
+            if (tc.getValue().size() != ids.size()) {
                 throw new InvalidObjectException("channel array has incorrect size");
-            }
-            if (!tc.getKey().getType().isAssignableFrom(tc.getValue().getClass().getComponentType())) {
-                throw new InvalidObjectException("channel array has incorrect type");
             }
         }
     }
 
     @Override
     public int size() {
-        return ids.length;
+        return ids.size();
     }
 
     @Override
@@ -137,12 +136,12 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
 
         @Override
         public long getId() {
-            return ids[index];
+            return ids.get(index);
         }
 
         @Override
         public double getScore() {
-            return scores[index];
+            return scores.get(index);
         }
 
         @Override
@@ -156,8 +155,8 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
             for (Symbol s: unboxedChannels.keySet()) {
                 bld.add(s.withType(Double.class));
             }
-            for (Map.Entry<TypedSymbol<?>,Object[]> e: channels.entrySet()) {
-                if (e.getValue()[index] != null) {
+            for (Map.Entry<TypedSymbol<?>, List<?>> e: channels.entrySet()) {
+                if (e.getValue().get(index) != null) {
                     bld.add(e.getKey());
                 }
             }
@@ -170,13 +169,13 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
             // FIXME Make this fast
             List<SymbolValue<?>> channels = Lists.newArrayList();
             FluentIterable.from(PackedScoredIdList.this.channels.entrySet())
-                    .transform(new Function<Map.Entry<TypedSymbol<?>, Object[]>, SymbolValue<?>>() {
+                    .transform(new Function<Map.Entry<TypedSymbol<?>, List<?>>, SymbolValue<?>>() {
                         @SuppressWarnings({"rawtypes", "unchecked"})
                         @Nullable
                         @Override
-                        public SymbolValue<?> apply(@Nullable Map.Entry<TypedSymbol<?>, Object[]> input) {
+                        public SymbolValue<?> apply(@Nullable Map.Entry<TypedSymbol<?>, List<?>> input) {
                             assert input != null;
-                            Object obj = input.getValue()[index];
+                            Object obj = input.getValue().get(index);
                             if (obj != null) {
                                 TypedSymbol sym = input.getKey();
                                 assert sym.getType().isInstance(obj);
@@ -196,12 +195,12 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
         public Collection<DoubleSymbolValue> getUnboxedChannels() {
             return Collections2.transform(
                     unboxedChannels.entrySet(),
-                    new Function<Map.Entry<Symbol, double[]>, DoubleSymbolValue>() {
+                    new Function<Map.Entry<Symbol, DoubleList>, DoubleSymbolValue>() {
                         @Nullable
                         @Override
-                        public DoubleSymbolValue apply(@Nullable Map.Entry<Symbol, double[]> input) {
+                        public DoubleSymbolValue apply(@Nullable Map.Entry<Symbol, DoubleList> input) {
                             assert input != null;
-                            return SymbolValue.of(input.getKey(), input.getValue()[index]);
+                            return SymbolValue.of(input.getKey(), input.getValue().get(index));
                         }
                     });
         }
@@ -212,20 +211,20 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
             if (sym.getType().equals(Double.class) && hasUnboxedChannel(sym.getRawSymbol())) {
                 return sym.getType().cast(getUnboxedChannelValue(sym.getRawSymbol()));
             } else {
-                Object[] array = channels.get(sym);
+                List<?> array = channels.get(sym);
                 if (array == null) {
                     return null;
                 } else {
-                    return sym.getType().cast(array[index]);
+                    return sym.getType().cast(array.get(index));
                 }
             }
         }
 
         @Override
         public double getUnboxedChannelValue(Symbol sym) {
-            double[] array = unboxedChannels.get(sym);
+            DoubleList array = unboxedChannels.get(sym);
             if (array != null) {
-                return array[index];
+                return array.get(index);
             } else {
                 throw new NullPointerException("no symbol " + sym);
             }
@@ -241,8 +240,8 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
             if (s.getType().equals(Double.class) && hasUnboxedChannel(s.getRawSymbol())) {
                 return true;
             } else {
-                Object[] obj = channels.get(s);
-                return obj != null && obj[index] != null;
+                List<?> obj = channels.get(s);
+                return obj != null && obj.get(index) != null;
             }
         }
     }
@@ -256,12 +255,12 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
 
         @Override
         public boolean hasNext() {
-            return next < ids.length;
+            return next < ids.size();
         }
 
         @Override
         public ScoredId next() {
-            if (next < ids.length) {
+            if (next < ids.size()) {
                 id.setIndex(next);
                 next++;
                 return id;
