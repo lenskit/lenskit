@@ -27,70 +27,70 @@ import org.junit.Test;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
-public class AverageAccumulatorTest {
+public class MeanAccumulatorTest {
 
     private static final double PRECISION = 0.0001;
 
     @Test
     public void testInitialize() {
-        AverageAccumulator avg = new AverageAccumulator();
-        Assert.assertEquals(0, avg.getAverage(), PRECISION);
+        MeanAccumulator avg = new MeanAccumulator();
+        Assert.assertEquals(0, avg.getMean(), PRECISION);
         Assert.assertEquals(0, avg.getCount());
     }
 
     @Test
     public void testInitializeAdvanced() {
-        AverageAccumulator avg = new AverageAccumulator(4, 2);
-        Assert.assertEquals(2, avg.getAverage(), PRECISION);
+        MeanAccumulator avg = new MeanAccumulator(4, 2);
+        Assert.assertEquals(2, avg.getMean(), PRECISION);
         Assert.assertEquals(2, avg.getCount());
 
         avg.add(5);
-        Assert.assertEquals(3, avg.getAverage(), PRECISION);
+        Assert.assertEquals(3, avg.getMean(), PRECISION);
         Assert.assertEquals(3, avg.getCount());
     }
 
     @Test
     public void testAdd() {
-        AverageAccumulator avg = new AverageAccumulator();
-        Assert.assertEquals(0.0, avg.getAverage(), PRECISION);
+        MeanAccumulator avg = new MeanAccumulator();
+        Assert.assertEquals(0.0, avg.getMean(), PRECISION);
         Assert.assertEquals(0, avg.getCount());
 
         avg.add(10);
-        Assert.assertEquals(10, avg.getAverage(), PRECISION);
+        Assert.assertEquals(10, avg.getMean(), PRECISION);
         Assert.assertEquals(1, avg.getCount());
 
         avg.add(3);
-        Assert.assertEquals(6.5, avg.getAverage(), PRECISION);
+        Assert.assertEquals(6.5, avg.getMean(), PRECISION);
         Assert.assertEquals(2, avg.getCount());
 
         avg.add(7);
-        Assert.assertEquals(6.666666, avg.getAverage(), PRECISION);
+        Assert.assertEquals(6.666666, avg.getMean(), PRECISION);
         Assert.assertEquals(3, avg.getCount());
 
         avg.add(13);
-        Assert.assertEquals(8.25, avg.getAverage(), PRECISION);
+        Assert.assertEquals(8.25, avg.getMean(), PRECISION);
         Assert.assertEquals(4, avg.getCount());
 
         avg.add(21);
-        Assert.assertEquals(10.8, avg.getAverage(), PRECISION);
+        Assert.assertEquals(10.8, avg.getMean(), PRECISION);
         Assert.assertEquals(5, avg.getCount());
     }
 
     @Test
     public void testGetAverage() {
-        AverageAccumulator avg = new AverageAccumulator();
-        Assert.assertEquals(0.0, avg.getAverage(), PRECISION);
+        MeanAccumulator avg = new MeanAccumulator();
+        Assert.assertEquals(0.0, avg.getMean(), PRECISION);
 
         avg.add(5);
-        Assert.assertEquals(5.0, avg.getAverage(), PRECISION);
+        Assert.assertEquals(5.0, avg.getMean(), PRECISION);
 
         avg.add(13);
-        Assert.assertEquals(9, avg.getAverage(), PRECISION);
+        Assert.assertEquals(9, avg.getMean(), PRECISION);
     }
 
     @Test
     public void testGetCount() {
-        AverageAccumulator avg = new AverageAccumulator();
+        MeanAccumulator avg = new MeanAccumulator();
         Assert.assertEquals(0, avg.getCount());
 
         avg.add(5);

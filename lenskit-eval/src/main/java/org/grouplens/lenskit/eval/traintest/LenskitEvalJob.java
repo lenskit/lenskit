@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
@@ -32,11 +31,11 @@ import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.inject.RecommenderInstantiator;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -78,12 +77,8 @@ class LenskitEvalJob extends TrainTestJob {
     }
 
     @Override
-    protected List<Object> getModelMeasurements() {
-        List<Object> row = Lists.newArrayList();
-        for (ModelMetric metric: measurements.getModelMetrics()) {
-            row.addAll(metric.measureAlgorithm(algorithmInfo, dataSet, recommender));
-        }
-        return row;
+    protected <A> MetricWithAccumulator<A> makeMetricAccumulator(Metric<A> metric) {
+        return new MetricWithAccumulator<A>(metric, metric.createContext(algorithmInfo, dataSet, recommender));
     }
 
     @Override

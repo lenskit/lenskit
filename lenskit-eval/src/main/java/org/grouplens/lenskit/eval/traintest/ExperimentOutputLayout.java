@@ -20,11 +20,8 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.TestUserMetric;
-import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.table.TableLayout;
 import org.grouplens.lenskit.util.table.TableLayoutBuilder;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
@@ -45,21 +42,16 @@ class ExperimentOutputLayout {
     private Map<String, Integer> algoColumns;
     private final TableLayout resultsLayout;
     private final TableLayout userLayout;
-    private final TableLayout predictLayout;
-    private final TableLayout recommendLayout;
 
     public ExperimentOutputLayout(TableLayout common,
                                   Map<String, Integer> algoCols,
                                   Map<String, Integer> dataCols,
-                                  TableLayout results, TableLayout user,
-                                  TableLayout predict, TableLayout rec) {
+                                  TableLayout results, TableLayout user) {
         commonLayout = common;
         dataColumns = algoCols;
         algoColumns = dataCols;
         resultsLayout = results;
         userLayout = user;
-        predictLayout = predict;
-        recommendLayout = rec;
     }
 
     public TableLayout getCommonLayout() {
@@ -94,14 +86,6 @@ class ExperimentOutputLayout {
 
     public TableLayout getUserLayout() {
         return userLayout;
-    }
-
-    public TableLayout getPredictLayout() {
-        return predictLayout;
-    }
-
-    public TableLayout getRecommendLayout() {
-        return recommendLayout;
     }
 
     /**
@@ -158,11 +142,8 @@ class ExperimentOutputLayout {
 
         TableLayout results = layoutAggregateOutput(master, measurements);
         TableLayout user = layoutUserTable(master, measurements);
-        TableLayout predict = layoutPredictionTable(master, measurements);
-        TableLayout recommend = layoutRecommendTable(master);
 
-        return new ExperimentOutputLayout(common, dataColumns, algoColumns,
-                                          results, user, predict, recommend);
+        return new ExperimentOutputLayout(common, dataColumns, algoColumns, results, user);
     }
 
     private static TableLayout layoutAggregateOutput(TableLayoutBuilder master, MeasurementSuite measurements) {
@@ -170,16 +151,10 @@ class ExperimentOutputLayout {
         output.addColumn("BuildTime");
         output.addColumn("TestTime");
 
-        for (ModelMetric ev: measurements.getModelMetrics()) {
-            for (String c: ev.getColumnLabels()) {
-                output.addColumn(c);
-            }
-        }
-
-        for (TestUserMetric ev : measurements.getTestUserMetrics()) {
-            List<String> columnLabels = ev.getColumnLabels();
-            if (columnLabels != null) {
-                for (String c : columnLabels) {
+        for (MetricFactory mf: measurements.getMetricFactories()) {
+            List<String> labels = mf.getColumnLabels();
+            if (labels != null) {
+                for (String c: labels) {
                     output.addColumn(c);
                 }
             }
@@ -191,9 +166,12 @@ class ExperimentOutputLayout {
     private static TableLayout layoutUserTable(TableLayoutBuilder master, MeasurementSuite measurements) {
         TableLayoutBuilder perUser = master.clone();
         perUser.addColumn("User");
+        perUser.addColumn("TestTime");
+        perUser.addColumn("TrainEvents");
+        perUser.addColumn("TestEvents");
 
-        for (TestUserMetric ev : measurements.getTestUserMetrics()) {
-            List<String> userColumnLabels = ev.getUserColumnLabels();
+        for (MetricFactory mf : measurements.getMetricFactories()) {
+            List<String> userColumnLabels = mf.getUserColumnLabels();
             if (userColumnLabels != null) {
                 for (String c : userColumnLabels) {
                     perUser.addColumn(c);
@@ -202,28 +180,5 @@ class ExperimentOutputLayout {
         }
 
         return perUser.build();
-    }
-
-    private static TableLayout layoutPredictionTable(TableLayoutBuilder master, MeasurementSuite measurements) {
-        TableLayoutBuilder eachPred = master.clone();
-        eachPred.addColumn("User");
-        eachPred.addColumn("Item");
-        eachPred.addColumn("Rating");
-        eachPred.addColumn("Prediction");
-        for (Pair<Symbol,String> pair: measurements.getPredictionChannels()) {
-            eachPred.addColumn(pair.getRight());
-        }
-
-        return eachPred.build();
-    }
-
-    private static TableLayout layoutRecommendTable(TableLayoutBuilder master) {
-        TableLayoutBuilder eachReco = master.clone();
-        eachReco.addColumn("User");
-        eachReco.addColumn("Item");
-        eachReco.addColumn("Ranking");
-        eachReco.addColumn("Prediction");
-
-        return eachReco.build();
     }
 }

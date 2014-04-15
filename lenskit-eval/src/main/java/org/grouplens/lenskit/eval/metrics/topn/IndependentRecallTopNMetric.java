@@ -20,21 +20,18 @@
  */
 package org.grouplens.lenskit.eval.metrics.topn;
 
-import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongSortedSets;
+import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.AbstractTestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
+import org.grouplens.lenskit.eval.metrics.AbstractMetric;
+import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -51,23 +48,25 @@ import java.util.List;
  * 
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class IndependentRecallTopNMetric extends AbstractTestUserMetric {
+public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecallTopNMetric.Context, IndependentRecallTopNMetric.Result, IndependentRecallTopNMetric.Result> {
+    private final String suffix;
     private final int listSize;
     private final ItemSelector queryItems;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
-    private final ImmutableList<String> columns;
 
     /**
-     * @param lbl the label for the result column of this evaluation.
+     * @param sfx the label for this independent recall evaluation, or {@code null} for no label.
+     *            The label will be appended as a suffix, separated by a dot.
      * @param queryItems the "true positive" items that we compute the hit rate over
      * @param candidates items to add to the recommendation, should be a random selection
      * @param listSize The size of the recommendation list to evaluate
      * @param exclude Items which should not be included in the recommendations.
      *                Should not include test set.
      */
-    public IndependentRecallTopNMetric(String lbl, ItemSelector queryItems, ItemSelector candidates, int listSize, ItemSelector exclude) {
-        columns = ImmutableList.of(lbl);
+    public IndependentRecallTopNMetric(String sfx, ItemSelector queryItems, ItemSelector candidates, int listSize, ItemSelector exclude) {
+        super(Result.class, Result.class);
+        suffix = sfx;
         this.queryItems = queryItems;
         this.candidates = candidates;
         this.listSize = listSize;
@@ -75,71 +74,67 @@ public class IndependentRecallTopNMetric extends AbstractTestUserMetric {
     }
 
     @Override
-    public Accum makeAccumulator(Attributed algo, TTDataSet ds) {
-        return new Accum(ds.getTestData().getItemDAO().getItemIds());
+    protected String getSuffix() {
+        return suffix;
     }
 
     @Override
-    public List<String> getColumnLabels() {
-        return columns;
+    public Context createContext(Attributed algo, TTDataSet ds, Recommender rec) {
+        return new Context(ds.getTestData().getItemDAO().getItemIds());
     }
 
     @Override
-    public List<String> getUserColumnLabels() {
-        return columns;
-    }
+    public Result doMeasureUser(TestUser user, Context context) {
+        double score = 0;
 
-    class Accum implements TestUserMetricAccumulator {
-        private final LongSet universe;
-        
-        double total = 0;
-        int nusers = 0;
+        LongSet items = queryItems.select(user);
+        LongIterator it = items.iterator();
+        while (it.hasNext()) {
+            final long l = it.nextLong();
+            ItemSelector finalCandidates = ItemSelectors.union(ItemSelectors.fixed(l), candidates);
 
-        Accum(LongSet universe) {
-            this.universe = universe;
-        }
-
-        @Nonnull
-        @Override
-        public List<Object> evaluate(TestUser user) {
-            double score = 0;
-
-            SingletonSelector theItem = new SingletonSelector();
-            ItemSelector finalCandidates = ItemSelectors.union(candidates, theItem);
-            
-            LongSet items = queryItems.select(user.getTrainHistory(), user.getTestHistory(), universe);
-            LongIterator it = items.iterator();
-            while (it.hasNext()) {
-                final long l = it.nextLong();
-                theItem.setTheItem(l);
-                
-                List<ScoredId> recs = user.getRecommendations(listSize, finalCandidates, exclude);
-                for (ScoredId s : CollectionUtils.fast(recs)) {
-                    if (s.getId() == l) {
-                        score +=1;
-                    }
+            List<ScoredId> recs = user.getRecommendations(listSize, finalCandidates, exclude);
+            for (ScoredId s : CollectionUtils.fast(recs)) {
+                if (s.getId() == l) {
+                    score +=1;
                 }
             }
-            
-            int n = items.size();
-            if (n>0) {
-                score /= n;
-                total += score;
-                nusers += 1;
-                return userRow(score);
-            } else {
-                return userRow();
-            }
         }
 
-        @Nonnull
-        @Override
-        public List<Object> finalResults() {
-            if (nusers > 0) {
-                return finalRow(total / nusers);
-            } else {
-                return finalRow();
-            }
+        int n = items.size();
+        if (n>0) {
+            score /= n;
+            context.mean.add(score);
+            return new Result(score);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    protected Result getTypedResults(Context context) {
+        if (context.mean.getCount() > 0) {
+            return new Result(context.mean.getMean());
+        } else {
+            return null;
+        }
+    }
+
+    public static class Result {
+        @ResultColumn("IndepRecall")
+        public final double recall;
+
+        public Result(double r) {
+            recall = r;
+        }
+    }
+
+    public class Context {
+        private final LongSet universe;
+        private final MeanAccumulator mean = new MeanAccumulator();
+        
+        Context(LongSet universe) {
+            this.universe = universe;
         }
     }
 
@@ -147,41 +142,28 @@ public class IndependentRecallTopNMetric extends AbstractTestUserMetric {
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder extends TopNMetricBuilder<Builder, IndependentRecallTopNMetric> {
-        private String lbl = "TopN.Independent.Recall";
-        private ItemSelector queryItems = ItemSelectors.testItems();
+        private String suffix = null;
+        private ItemSelector goodItems = ItemSelectors.testItems();
 
-        public String getLbl() {
-            return lbl;
+        public String getSuffix() {
+            return suffix;
         }
 
-        public Builder setLbl(String lbl) {
-            this.lbl = lbl;
+        public Builder setSuffix(String lbl) {
+            this.suffix = lbl;
             return this;
         }
-        public ItemSelector getQueryItems() {
-            return queryItems;
+        public ItemSelector getGoodItems() {
+            return goodItems;
         }
 
-        public Builder setQueryItems(ItemSelector queryItems) {
-            this.queryItems = queryItems;
+        public Builder setGoodItems(ItemSelector goodItems) {
+            this.goodItems = goodItems;
             return this;
         }
 
         public IndependentRecallTopNMetric build() {
-            return new IndependentRecallTopNMetric(lbl, queryItems, candidates, listSize, exclude);
-        }
-    }
-
-    private class SingletonSelector implements ItemSelector {
-        long theItem = 0;
-        
-        @Override
-        public LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe) {
-            return LongSortedSets.singleton(theItem);
-        }
-
-        private void setTheItem(long theItem) {
-            this.theItem = theItem;
+            return new IndependentRecallTopNMetric(suffix, goodItems, candidates, listSize, exclude);
         }
     }
 }

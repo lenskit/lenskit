@@ -23,10 +23,7 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.common.io.Closer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.Component;
@@ -42,7 +39,6 @@ import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetric;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.parallel.TaskGraphExecutor;
 import org.grouplens.lenskit.util.table.Table;
@@ -74,8 +70,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private List<TTDataSet> dataSets;
     private List<AlgorithmInstance> algorithms;
     private List<ExternalAlgorithm> externalAlgorithms;
-    private List<TestUserMetric> metrics;
-    private List<ModelMetric> modelMetrics;
+    private List<MetricFactory> metrics;
     private List<Pair<Symbol,String>> predictChannels;
     private boolean isolate;
     private boolean separateAlgorithms;
@@ -101,7 +96,6 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         algorithms = Lists.newArrayList();
         externalAlgorithms = Lists.newArrayList();
         metrics = Lists.newArrayList();
-        modelMetrics = Lists.newArrayList();
         predictChannels = Lists.newArrayList();
         outputFile = new File("train-test-results.csv");
         isolate = false;
@@ -129,12 +123,12 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return this;
     }
 
-    public TrainTestEvalTask addMetric(TestUserMetric metric) {
-        metrics.add(metric);
+    public TrainTestEvalTask addMetric(Metric metric) {
+        metrics.add(MetricFactory.forMetric(metric));
         return this;
     }
 
-    public TrainTestEvalTask addMetric(Class<? extends TestUserMetric> metricClass) throws IllegalAccessException, InstantiationException {
+    public TrainTestEvalTask addMetric(Class<? extends Metric> metricClass) throws IllegalAccessException, InstantiationException {
         return addMetric(metricClass.newInstance());
     }
 
@@ -147,7 +141,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      * @return The command (for chaining).
      */
     public TrainTestEvalTask addMultiMetric(File file, List<String> columns, Function<Recommender,List<List<Object>>> metric) {
-        modelMetrics.add(new FunctionMultiModelMetric(file, columns, metric));
+        metrics.add(new FunctionMultiModelMetric.Factory(file, columns, metric));
         return this;
     }
 
@@ -159,7 +153,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      * @return The command (for chaining).
      */
     public TrainTestEvalTask addMetric(List<String> columns, Function<Recommender,List<Object>> metric) {
-        modelMetrics.add(new FunctionModelMetric(columns, metric));
+        addMetric(new FunctionModelMetric(columns, metric));
         return this;
     }
 
@@ -297,7 +291,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return externalAlgorithms;
     }
 
-    List<TestUserMetric> getMetrics() {
+    List<MetricFactory> getMetricFactories() {
         return metrics;
     }
 
@@ -386,7 +380,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             Closer closer = Closer.create();
 
             try {
-                ExperimentOutputs outputs = openExperimentOutputs(layout, resultsBuilder, closer);
+                ExperimentOutputs outputs = openExperimentOutputs(layout, measurements, resultsBuilder, closer);
                 DAGNode<JobGraph.Node,JobGraph.Edge> jobGraph =
                         makeJobGraph(experiments, measurements, outputs);
                 if (taskGraphFile != null) {
@@ -396,16 +390,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                 registerTaskListener(jobGraph);
 
                 // tell all metrics to get started
-                for (Metric<TrainTestEvalTask> metric : measurements.getAllMetrics()) {
-                    metric.startEvaluation(this);
-                }
-                try {
-                    runEvaluations(jobGraph);
-                } finally {
-                    for (Metric<TrainTestEvalTask> metric : measurements.getAllMetrics()) {
-                        metric.finishEvaluation();
-                    }
-                }
+                runEvaluations(jobGraph);
             } catch (Throwable th) {
                 throw closer.rethrow(th, TaskExecutionException.class, InterruptedException.class);
             } finally {
@@ -456,7 +441,15 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     MeasurementSuite createMeasurementSuite() {
-        return new MeasurementSuite(metrics, modelMetrics, predictChannels);
+        ImmutableList.Builder<MetricFactory> activeMetrics = ImmutableList.builder();
+        activeMetrics.addAll(metrics);
+        if (recommendOutputFile != null) {
+            activeMetrics.add(new OutputTopNMetric.Factory());
+        }
+        if (predictOutputFile != null) {
+            activeMetrics.add(new OutputPredictMetric.Factory());
+        }
+        return new MeasurementSuite(activeMetrics.build(), predictChannels);
     }
 
     private void runEvaluations(DAGNode<JobGraph.Node, JobGraph.Edge> graph) throws TaskExecutionException, InterruptedException {
@@ -609,7 +602,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     /**
      * Prepare the evaluation by opening all outputs and initializing metrics.
      */
-    ExperimentOutputs openExperimentOutputs(ExperimentOutputLayout layouts, TableWriter results, Closer closer) throws IOException {
+    ExperimentOutputs openExperimentOutputs(ExperimentOutputLayout layouts, MeasurementSuite measures, TableWriter results, Closer closer) throws IOException {
         TableLayout resultLayout = layouts.getResultsLayout();
         TableWriter allResults = results;
         if (outputFile != null) {
@@ -620,14 +613,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         if (userOutputFile != null) {
             user = closer.register(CSVWriter.open(userOutputFile, layouts.getUserLayout()));
         }
-        TableWriter predict = null;
-        if (predictOutputFile != null) {
-            predict = closer.register(CSVWriter.open(predictOutputFile, layouts.getPredictLayout()));
+        List<Metric<?>> metrics = Lists.newArrayList();
+        for (MetricFactory metric : measures.getMetricFactories()) {
+            metrics.add(closer.register(metric.createMetric(this)));
         }
-        TableWriter recommend = null;
-        if (recommendOutputFile != null) {
-            recommend = closer.register(CSVWriter.open(recommendOutputFile, layouts.getRecommendLayout()));
-        }
-        return new ExperimentOutputs(layouts, allResults, user, predict, recommend);
+        return new ExperimentOutputs(layouts, allResults, user, metrics);
     }
 }

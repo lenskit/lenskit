@@ -54,7 +54,7 @@ public class FunkSVDAccuracyTest extends CrossfoldTestSuite {
 
     @Override
     protected void checkResults(Table table) {
-        assertThat(table.column("MAE").average(),
+        assertThat(table.column("MAE.ByRating").average(),
                    closeTo(0.74d, 0.025d))
         assertThat(table.column("RMSE.ByUser").average(),
                    closeTo(0.92d, 0.05d))

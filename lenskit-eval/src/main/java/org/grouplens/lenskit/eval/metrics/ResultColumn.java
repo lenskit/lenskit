@@ -20,31 +20,28 @@
  */
 package org.grouplens.lenskit.eval.metrics;
 
-import org.grouplens.lenskit.eval.traintest.TestUser;
-
-import javax.annotation.Nonnull;
-import java.util.List;
+import java.lang.annotation.*;
 
 /**
+ * Specify the information for a column method in a metric response type.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 0.10
+ * @since 2.1
  */
-public interface TestUserMetricAccumulator {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.FIELD})
+public @interface ResultColumn {
     /**
-     * Evaluate the recommender output for a user.
-     *
-     * @param user The user to evaluate.
-     * @return The results of this user's evaluation, to be emitted in the
-     *         per-user table (if one is configured).
+     * The name of this column.
+     * @return The column name to use.
      */
-    @Nonnull
-    List<Object> evaluate(TestUser user);
+    String value();
 
     /**
-     * Finalize the evaluation and return the final values.
-     *
-     * @return The column values for the final evaluation.
+     * The order of this column.  A negative order indicates no preference.  All unordered columns
+     * come after all ordered columns.
+     * @return The column order.
      */
-    @Nonnull
-    List<Object> finalResults();
+    int order() default -1;
 }

@@ -75,7 +75,7 @@ public class UserUserRecommenderTest {
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).to(dao);
         config.bind(ItemScorer.class).to(UserUserItemScorer.class);
-        config.bind(NeighborhoodFinder.class).to(SimpleNeighborhoodFinder.class);
+        config.bind(NeighborFinder.class).to(LiveNeighborFinder.class);
         config.within(UserSimilarity.class)
               .bind(VectorSimilarity.class)
               .to(PearsonCorrelation.class);

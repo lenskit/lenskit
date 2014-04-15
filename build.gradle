@@ -60,16 +60,25 @@ task reportTests(type: TestReport) {
 subprojects {
     apply plugin: 'java'
     sourceCompatibility = '1.6'
+    sourceSets.all { ss ->
+        // generate resources & classes to same dir
+        ss.output.resourcesDir = ss.output.classesDir
+    }
 
     // don't package until testing
-    jar.mustRunAfter 'check'
     jar.mustRunAfter 'test'
+    tasks.withType(Upload) { task ->
+        // check before uploading. upload, not jar, waits in case a check requires the jar
+        task.mustRunAfter 'check'
+    }
+    // defer javadoc until after the build
+    javadoc.mustRunAfter 'classes'
 
     tasks.withType(JavaCompile).all { task ->
         task.options.encoding = 'UTF-8'
+        task.options.fork = true
     }
     compileJava {
-        options.fork = true
         options.deprecation = true
         options.compilerArgs << '-Xlint' << '-Xlint:-processing'
     }

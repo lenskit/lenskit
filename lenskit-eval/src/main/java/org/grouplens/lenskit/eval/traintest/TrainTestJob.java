@@ -20,26 +20,18 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.collect.Iterators;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
 import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.eval.metrics.TestUserMetric;
-import org.grouplens.lenskit.eval.metrics.TestUserMetricAccumulator;
-import org.grouplens.lenskit.eval.metrics.topn.ItemSelectors;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +39,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Run a single train-test evaluation of a single algorithmInfo.
@@ -119,25 +112,16 @@ abstract class TrainTestJob implements Callable<Void> {
             logger.info("Built {} in {}", algorithmInfo.getName(), buildTimer);
 
             logger.info("Measuring {} on {}", algorithmInfo.getName(), dataSet.getName());
-            List<Object> modelMeasures = getModelMeasurements();
-            if (modelMeasures != null) {
-                assert modelMeasures.size() == measurements.getModelColumnCount();
-                outputRow.addAll(modelMeasures);
-            } else {
-                Iterators.addAll(outputRow, Iterators.limit(Iterators.cycle((Object) null),
-                                                            measurements.getModelColumnCount()));
-            }
 
             logger.info("Testing {}", algorithmInfo.getName());
             StopWatch testTimer = new StopWatch();
             testTimer.start();
-            List<TestUserMetricAccumulator> evalAccums = Lists.newArrayList();
-
             List<Object> userRow = Lists.newArrayList();
 
-            for (TestUserMetric eval: measurements.getTestUserMetrics()) {
-                TestUserMetricAccumulator accum = eval.makeAccumulator(algorithmInfo, dataSet);
-                evalAccums.add(accum);
+            List<MetricWithAccumulator<?>> accumulators = Lists.newArrayList();
+
+            for (Metric<?> eval: output.getMetrics()) {
+                accumulators.add(makeMetricAccumulator(eval));
             }
 
             LongSet testUsers = dataSet.getTestData().getUserDAO().getUserIds();
@@ -147,15 +131,23 @@ abstract class TrainTestJob implements Callable<Void> {
                 }
                 long uid = iter.nextLong();
                 userRow.add(uid);
+                userRow.add(null); // placeholder for the per-user time
+                assert userRow.size() == 2;
 
+                Stopwatch userTimer = Stopwatch.createStarted();
                 TestUser test = getUserResults(uid);
 
-                for (TestUserMetricAccumulator accum : evalAccums) {
-                    List<Object> ures = accum.evaluate(test);
+                userRow.add(test.getTrainHistory().size());
+                userRow.add(test.getTestHistory().size());
+
+                for (MetricWithAccumulator<?> accum : accumulators) {
+                    List<Object> ures = accum.measureUser(test);
                     if (ures != null) {
                         userRow.addAll(ures);
                     }
                 }
+                userTimer.stop();
+                userRow.set(1, userTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
                 if (userResults != null) {
                     try {
                         userResults.writeRow(userRow);
@@ -164,14 +156,11 @@ abstract class TrainTestJob implements Callable<Void> {
                     }
                 }
                 userRow.clear();
-
-                writePredictions(test);
-                writeRecommendations(test);
             }
             testTimer.stop();
             logger.info("Tested {} in {}", algorithmInfo.getName(), testTimer);
 
-            writeMetricValues(buildTimer, testTimer, outputRow, evalAccums);
+            writeMetricValues(buildTimer, testTimer, outputRow, accumulators);
             bus.post(JobEvents.finished(this));
         } catch (Throwable th) {
             bus.post(JobEvents.failed(this, th));
@@ -183,17 +172,20 @@ abstract class TrainTestJob implements Callable<Void> {
     }
 
     /**
+     * Create an accumulator for a metric.
+     * @param metric The metric.
+     * @return The metric accumulator.
+     */
+    protected <A> MetricWithAccumulator<A> makeMetricAccumulator(Metric<A> metric) {
+        return new MetricWithAccumulator<A>(metric, metric.createContext(algorithmInfo, dataSet, null));
+    }
+
+    /**
      * Build the recommender.
      * @throws RecommenderBuildException if there is an error building the recommender.
      * @throws IllegalStateException if the recommender has already been built.
      */
     protected abstract void buildRecommender() throws RecommenderBuildException;
-
-    /**
-     * Get the measurements of the built recommender model.
-     * @return The model measurements, or {@code null} if there are none.
-     */
-    protected abstract List<Object> getModelMeasurements();
 
     /**
      * Get the results for a particular user.
@@ -209,73 +201,15 @@ abstract class TrainTestJob implements Callable<Void> {
      */
     protected abstract void cleanup();
 
-    private void writePredictions(TestUser user) throws IOException {
-        TableWriter predictTable = output.getPredictionWriter();
-        if (predictTable == null) return;
-
-        SparseVector predictions = user.getPredictions();
-        if (predictions == null) return;
-
-        SparseVector ratings = user.getTestRatings();
-
-        final int ncols = predictTable.getLayout().getColumnCount();
-        final Object[] row = new String[ncols];
-        row[0] = Long.toString(user.getUserId());
-        for (VectorEntry e : ratings.fast()) {
-            long iid = e.getKey();
-            row[1] = Long.toString(iid);
-            row[2] = Double.toString(e.getValue());
-            if (predictions.containsKey(iid)) {
-                row[3] = Double.toString(predictions.get(iid));
-            } else {
-                row[3] = null;
-            }
-            int i = 4;
-            for (Pair<Symbol,String> pair: measurements.getPredictionChannels()) {
-                Symbol c = pair.getLeft();
-                if (predictions.hasChannelVector(c) && predictions.getChannelVector(c).containsKey(iid)) {
-                    row[i] = Double.toString(predictions.getChannelVector(c).get(iid));
-                } else {
-                    row[i] = null;
-                }
-                i += 1;
-            }
-            predictTable.writeRow(row);
-        }
-    }
-
-    private void writeRecommendations(TestUser user) throws IOException {
-        TableWriter recommendTable = output.getRecommendationWriter();
-        if (recommendTable == null) return;
-
-        // FIXME: for now, the recommend ouput default to predict on all items excluding rated items
-        List<ScoredId> recs = user.getRecommendations(-1, ItemSelectors.allItems(),
-                                                      ItemSelectors.trainingItems());
-        if (recs == null) return;
-
-        final int ncols = recommendTable.getLayout().getColumnCount();
-        final String[] row = new String[ncols];
-        row[0] = Long.toString(user.getUserId());
-        int counter = 1;
-        for (ScoredId p : CollectionUtils.fast(recs)) {
-            long iid = p.getId();
-            row[1] = Long.toString(iid);
-            row[2] = String.valueOf(counter);
-            counter ++;
-            row[3] = Double.toString(p.getScore());
-            recommendTable.writeRow(row);
-        }
-    }
-
-    private void writeMetricValues(StopWatch build, StopWatch test, List<Object> measures, List<TestUserMetricAccumulator> accums) throws IOException {
+    private void writeMetricValues(StopWatch build, StopWatch test, List<Object> measures, List<MetricWithAccumulator<?>> accums) throws IOException {
         TableWriter results = output.getResultsWriter();
 
         List<Object> row = Lists.newArrayList();
         row.add(build.getTime());
         row.add(test.getTime());
         row.addAll(measures);
-        for (TestUserMetricAccumulator acc : accums) {
-            row.addAll(acc.finalResults());
+        for (MetricWithAccumulator<?> acc : accums) {
+            row.addAll(acc.getResults());
         }
         results.writeRow(row);
     }
@@ -283,5 +217,31 @@ abstract class TrainTestJob implements Callable<Void> {
     @Override
     public String toString() {
         return String.format("test %s on %s", algorithmInfo, dataSet);
+    }
+
+    protected static class MetricWithAccumulator<A> {
+        private final Metric<A> metric;
+        private final A accumulator;
+
+        public MetricWithAccumulator(Metric<A> m, A a) {
+            metric = m;
+            accumulator = a;
+        }
+
+        public List<Object> measureUser(TestUser user) {
+            return metric.measureUser(user, accumulator);
+        }
+
+        public Metric<A> getMetric() {
+            return metric;
+        }
+
+        public A getAccumulator() {
+            return accumulator;
+        }
+
+        public List<Object> getResults() {
+            return metric.getResults(accumulator);
+        }
     }
 }

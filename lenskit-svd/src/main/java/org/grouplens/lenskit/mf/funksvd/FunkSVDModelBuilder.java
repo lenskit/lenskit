@@ -20,13 +20,12 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import mikera.matrixx.AMatrix;
 import mikera.matrixx.Matrix;
 import mikera.matrixx.impl.ImmutableMatrix;
 import mikera.vectorz.AVector;
+import mikera.vectorz.Vector;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
@@ -38,6 +37,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -57,9 +57,6 @@ import java.util.List;
 public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     private static Logger logger = LoggerFactory.getLogger(FunkSVDModelBuilder.class);
 
-    /**
-     * The feature count. This is used by {@link #get()} and {@link #computeTrailingValue(int)}.
-     */
     protected final int featureCount;
     protected final PreferenceSnapshot snapshot;
     protected final double initialValue;
@@ -82,11 +79,9 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     public FunkSVDModel get() {
         int userCount = snapshot.getUserIds().size();
         Matrix userFeatures = Matrix.create(userCount, featureCount);
-        userFeatures.fill(initialValue);
 
         int itemCount = snapshot.getItemIds().size();
         Matrix itemFeatures = Matrix.create(itemCount, featureCount);
-        itemFeatures.fill(initialValue);
 
         logger.debug("Learning rate is {}", rule.getLearningRate());
         logger.debug("Regularization term is {}", rule.getTrainingRegularization());
@@ -98,18 +93,30 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
 
         List<FeatureInfo> featureInfo = new ArrayList<FeatureInfo>(featureCount);
 
+        // Use scratch vectors for each feature for better cache locality
+        // Per-feature vectors are strided in the output matrices
+        Vector uvec = Vector.createLength(userCount);
+        Vector ivec = Vector.createLength(itemCount);
+
         for (int f = 0; f < featureCount; f++) {
             logger.debug("Training feature {}", f);
             StopWatch timer = new StopWatch();
             timer.start();
 
+            uvec.fill(initialValue);
+            ivec.fill(initialValue);
+
             FeatureInfo.Builder fib = new FeatureInfo.Builder(f);
-            trainFeature(f, estimates, userFeatures, itemFeatures, fib);
-            summarizeFeature(userFeatures.getColumn(f), itemFeatures.getColumn(f), fib);
+            trainFeature(f, estimates, uvec, ivec, fib);
+            summarizeFeature(uvec, ivec, fib);
             featureInfo.add(fib.build());
 
             // Update each rating's cached value to accommodate the feature values.
-            estimates.update(userFeatures.getColumn(f), itemFeatures.getColumn(f));
+            estimates.update(uvec, ivec);
+
+            // And store the data into the matrix
+            userFeatures.setColumn(f, uvec);
+            itemFeatures.setColumn(f, ivec);
 
             timer.stop();
             logger.info("Finished feature {} in {}", f, timer);
@@ -123,24 +130,8 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     }
 
     /**
-     * Compute the trailing value to assume after a feature. The default implementation assumes
-     * all remaining features containing {@link #initialValue}, returning {@code
-     * (featureCount - feature - 1) * initialValue * initialValue}.  This is used by the default
-     * implementation of {@link #trainFeature(int, TrainingEstimator, mikera.matrixx.AMatrix, mikera.matrixx.AMatrix, org.grouplens.lenskit.mf.funksvd.FeatureInfo.Builder)}.
-     *
-     * @param feature The feature number.
-     * @return The trailing value to assume.
-     */
-    protected double computeTrailingValue(int feature) {
-        // We assume that all subsequent features have initialValue
-        // We can therefore pre-compute the "trailing" prediction value, as it
-        // will be the same for all ratings for this feature.
-        return (featureCount - feature - 1) * initialValue * initialValue;
-    }
-
-    /**
      * Train a feature using a collection of ratings.  This method iteratively calls {@link
-     * #doFeatureIteration(TrainingEstimator, FastCollection, AVector, AVector, double)}  to train
+     * #doFeatureIteration(TrainingEstimator, Collection, Vector, Vector, double)}  to train
      * the feature.  It can be overridden to customize the feature training strategy.
      *
      * <p>We use the estimator to maintain the estimate up through a particular feature value,
@@ -152,27 +143,25 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      * @param feature   The number of the current feature.
      * @param estimates The current estimator.  This method is <b>not</b> expected to update the
      *                  estimator.
-     * @param userMatrix      The user feature values.  This has been initialized to the initial value,
+     * @param userFeatureVector      The user feature values.  This has been initialized to the initial value,
      *                  and may be reused between features.
-     * @param itemMatrix      The item feature values.  This has been initialized to the initial value,
+     * @param itemFeatureVector      The item feature values.  This has been initialized to the initial value,
      *                  and may be reused between features.
      * @param fib       The feature info builder. This method is only expected to add information
      *                  about its training rounds to the builder; the caller takes care of feature
      *                  number and summary data.
-     * @see #doFeatureIteration(TrainingEstimator, FastCollection, AVector, AVector, double)
+     * @see #doFeatureIteration(TrainingEstimator, Collection, Vector, Vector, double)
      * @see #summarizeFeature(AVector, AVector, FeatureInfo.Builder)
      */
     protected void trainFeature(int feature, TrainingEstimator estimates,
-                                AMatrix userMatrix, AMatrix itemMatrix,
+                                Vector userFeatureVector, Vector itemFeatureVector,
                                 FeatureInfo.Builder fib) {
         double rmse = Double.MAX_VALUE;
-        AVector userFeatureValues = userMatrix.getColumn(feature);
-        AVector itemFeatureValues = itemMatrix.getColumn(feature);
         double trail = initialValue * initialValue * (featureCount - feature - 1);
         TrainingLoopController controller = rule.getTrainingLoopController();
-        FastCollection<IndexedPreference> ratings = snapshot.getRatings();
+        Collection<IndexedPreference> ratings = snapshot.getRatings();
         while (controller.keepTraining(rmse)) {
-            rmse = doFeatureIteration(estimates, ratings, userFeatureValues, itemFeatureValues, trail);
+            rmse = doFeatureIteration(estimates, ratings, userFeatureVector, itemFeatureVector, trail);
             fib.addTrainingRound(rmse);
             logger.trace("iteration {} finished with RMSE {}", controller.getIterationCount(), rmse);
         }
@@ -180,6 +169,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
 
     /**
      * Do a single feature iteration.
+     *
      *
      *
      * @param estimates The estimates.
@@ -190,8 +180,8 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      * @return The RMSE of the feature iteration.
      */
     protected double doFeatureIteration(TrainingEstimator estimates,
-                                        FastCollection<IndexedPreference> ratings,
-                                        AVector userFeatureVector, AVector itemFeatureVector,
+                                        Collection<IndexedPreference> ratings,
+                                        Vector userFeatureVector, Vector itemFeatureVector,
                                         double trail) {
         // We'll create a fresh updater for each feature iteration
         // Not much overhead, and prevents needing another parameter
