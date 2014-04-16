@@ -49,6 +49,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecallTopNMetric.Context, IndependentRecallTopNMetric.Result, IndependentRecallTopNMetric.Result> {
+    private final String prefix;
     private final String suffix;
     private final int listSize;
     private final ItemSelector queryItems;
@@ -56,21 +57,27 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
     private final ItemSelector exclude;
 
     /**
-     * @param sfx the label for this independent recall evaluation, or {@code null} for no label.
-     *            The label will be appended as a suffix, separated by a dot.
+     * @param pre the prefix label for this evaluation, or {@code null} for no prefix.
+     * @param sfx the suffix label for this evaluation, or {@code null} for no suffix.
      * @param queryItems the "true positive" items that we compute the hit rate over
      * @param candidates items to add to the recommendation, should be a random selection
      * @param listSize The size of the recommendation list to evaluate
      * @param exclude Items which should not be included in the recommendations.
      *                Should not include test set.
      */
-    public IndependentRecallTopNMetric(String sfx, ItemSelector queryItems, ItemSelector candidates, int listSize, ItemSelector exclude) {
+    public IndependentRecallTopNMetric(String pre, String sfx, ItemSelector queryItems, ItemSelector candidates, int listSize, ItemSelector exclude) {
         super(Result.class, Result.class);
+        prefix = pre;
         suffix = sfx;
         this.queryItems = queryItems;
         this.candidates = candidates;
         this.listSize = listSize;
         this.exclude = exclude;
+    }
+
+    @Override
+    protected String getPrefix() {
+        return prefix;
     }
 
     @Override
@@ -142,17 +149,8 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder extends TopNMetricBuilder<Builder, IndependentRecallTopNMetric> {
-        private String suffix = null;
         private ItemSelector goodItems = ItemSelectors.testItems();
 
-        public String getSuffix() {
-            return suffix;
-        }
-
-        public Builder setSuffix(String lbl) {
-            this.suffix = lbl;
-            return this;
-        }
         public ItemSelector getGoodItems() {
             return goodItems;
         }
@@ -163,7 +161,7 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
         }
 
         public IndependentRecallTopNMetric build() {
-            return new IndependentRecallTopNMetric(suffix, goodItems, candidates, listSize, exclude);
+            return new IndependentRecallTopNMetric(prefix, suffix, goodItems, candidates, listSize, exclude);
         }
     }
 }

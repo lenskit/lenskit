@@ -50,17 +50,21 @@ public class NDCGTopNMetric extends AbstractMetric<MeanAccumulator, NDCGTopNMetr
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
+    private final String prefix;
     private final String suffix;
 
     /**
      * Construct a new nDCG Top-N metric.
+     * @param pre the prefix label for this evaluation, or {@code null} for no prefix.
+     * @param sfx the suffix label for this evaluation, or {@code null} for no suffix.
      * @param listSize The number of recommendations to fetch.
      * @param candidates The candidate selector.
      * @param exclude The exclude selector.
      */
-    public NDCGTopNMetric(String lbl, int listSize, ItemSelector candidates, ItemSelector exclude) {
+    public NDCGTopNMetric(String pre, String sfx, int listSize, ItemSelector candidates, ItemSelector exclude) {
         super(Result.class, Result.class);
-        suffix = lbl;
+        suffix = sfx;
+        prefix = pre;
         this.listSize = listSize;
         this.candidates = candidates;
         this.exclude = exclude;
@@ -69,6 +73,11 @@ public class NDCGTopNMetric extends AbstractMetric<MeanAccumulator, NDCGTopNMetr
     @Override
     public MeanAccumulator createContext(Attributed algo, TTDataSet ds, Recommender rec) {
         return new MeanAccumulator();
+    }
+
+    @Override
+    protected String getPrefix() {
+        return prefix;
     }
 
     @Override
@@ -145,30 +154,9 @@ public class NDCGTopNMetric extends AbstractMetric<MeanAccumulator, NDCGTopNMetr
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder extends TopNMetricBuilder<Builder, NDCGTopNMetric>{
-        private String suffix;
-        
-        /**
-         * Get the column label for this metric.
-         * @return The column label.
-         */
-        public String getSuffix() {
-            return suffix;
-        }
-
-        /**
-         * Set the column label for this metric.
-         * @param l The column label
-         * @return The builder (for chaining).
-         */
-        public Builder setSuffix(String l) {
-            Preconditions.checkNotNull(l, "label cannot be null");
-            suffix = l;
-            return this;
-        }
-
         @Override
         public NDCGTopNMetric build() {
-            return new NDCGTopNMetric(suffix, listSize, candidates, exclude);
+            return new NDCGTopNMetric(prefix, suffix, listSize, candidates, exclude);
         }
     }
 

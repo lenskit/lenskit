@@ -40,17 +40,24 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Context, TopNPopularityMetric.Result, TopNPopularityMetric.Result> {
+    private final String prefix;
     private final String suffix;
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
 
-    public TopNPopularityMetric(String sfx, int listSize, ItemSelector candidates, ItemSelector exclude) {
+    public TopNPopularityMetric(String pre, String sfx, int listSize, ItemSelector candidates, ItemSelector exclude) {
         super(Result.class, Result.class);
+        prefix = pre;
         suffix = sfx;
         this.listSize = listSize;
         this.candidates = candidates;
         this.exclude = exclude;
+    }
+
+    @Override
+    protected String getPrefix() {
+        return prefix;
     }
 
     @Override
@@ -118,7 +125,7 @@ public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Co
             mean = mu;
         }
     }
-
+    
     public class Context {
         final Long2IntMap popularity;
         final MeanAccumulator mean = new MeanAccumulator();
@@ -132,29 +139,9 @@ public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Co
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder extends TopNMetricBuilder<Builder, TopNPopularityMetric> {
-        private String suffix;
-
-        /**
-         * Get the column suffix for this metric.
-         * @return The column suffix.
-         */
-        public String getSuffix() {
-            return suffix;
-        }
-
-        /**
-         * Set the column suffix for this metric.
-         * @param l The column suffix
-         * @return The builder (for chaining).
-         */
-        public Builder setSuffix(String l) {
-            suffix = l;
-            return this;
-        }
-
         @Override
         public TopNPopularityMetric build() {
-            return new TopNPopularityMetric(suffix, listSize, candidates, exclude);
+            return new TopNPopularityMetric(prefix, suffix, listSize, candidates, exclude);
         }
     }
 
