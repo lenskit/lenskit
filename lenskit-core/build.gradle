@@ -6,7 +6,7 @@ dependencies {
     compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.9.0-SNAPSHOT'
     compile group: 'com.google.guava', name: 'guava', version: '16.0.1'
 
-    compile group: 'net.mikera', name: 'vectorz', version: '0.29.0'
+    compile group: 'net.mikera', name: 'vectorz', version: '0.30.1'
 
     testCompile project(':lenskit-test')
     testCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion

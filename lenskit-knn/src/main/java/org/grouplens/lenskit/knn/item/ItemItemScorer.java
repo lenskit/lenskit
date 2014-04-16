@@ -81,7 +81,7 @@ public class ItemItemScorer extends AbstractItemScorer implements ItemScorer {
         this.scorer = scorer;
         algorithm = algo;
         normalizer = norm;
-        logger.info("building item-item scorer with scorer {}", scorer);
+        logger.debug("configured item-item scorer with scorer {}", scorer);
     }
 
     @Nonnull

@@ -21,6 +21,9 @@
 package org.grouplens.lenskit.util;
 
 import it.unimi.dsi.fastutil.doubles.DoubleHeapIndirectPriorityQueue;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.lenskit.collections.CompactableLongArrayList;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdListBuilder;
 import org.grouplens.lenskit.scored.ScoredIds;
@@ -34,10 +37,10 @@ import java.util.List;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
+public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
     private final int count;
     private double[] scores;
-    private long[] items;
+    private CompactableLongArrayList items;
     private int slot;
     private int size;
     private DoubleHeapIndirectPriorityQueue heap;
@@ -51,7 +54,7 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         this.count = n;
         // arrays must have n+1 slots to hold extra item before removing smallest
         scores = new double[n + 1];
-        items = new long[n + 1];
+        items = new CompactableLongArrayList();
         slot = 0;
         size = 0;
         heap = new DoubleHeapIndirectPriorityQueue(scores);
@@ -76,7 +79,11 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
          * Store the new item. The slot shows where the current item is, and
          * then we deal with it based on whether we're oversized.
          */
-        items[slot] = item;
+        if (slot == items.size()) {
+            items.add(item);
+        } else {
+            items.set(slot, item);
+        }
         scores[slot] = score;
         heap.enqueue(slot);
 
@@ -100,13 +107,15 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         }
         ScoredIdListBuilder bld = ScoredIds.newListBuilder(size);
         for (int i : indices) {
-            bld.add(items[i], scores[i]);
+            bld.add(items.get(i), scores[i]);
         }
 
         assert heap.isEmpty();
 
         size = 0;
         slot = 0;
+        items.clear();
+
         return bld.finish();
     }
 
@@ -127,12 +136,29 @@ final public class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         long[] keys = new long[indices.length];
         double[] values = new double[indices.length];
         for (int i = 0; i < indices.length; i++) {
-            keys[i] = items[indices[i]];
+            keys[i] = items.get(indices[i]);
             values[i] = scores[indices[i]];
         }
         size = 0;
         slot = 0;
+        items.clear();
 
         return MutableSparseVector.wrapUnsorted(keys, values);
+    }
+
+    @Override
+    public LongSet finishSet() {
+        assert size == heap.size();
+
+        LongSet longs = new LongOpenHashSet(size);
+        while (!heap.isEmpty()) {
+            longs.add(items.get(heap.dequeue()));
+        }
+
+        size = 0;
+        slot = 0;
+        items.clear();
+
+        return longs;
     }
 }

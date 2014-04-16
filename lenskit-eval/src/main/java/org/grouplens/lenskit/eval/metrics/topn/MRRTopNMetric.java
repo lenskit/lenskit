@@ -82,9 +82,7 @@ public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Context, MRRTopN
 
     @Override
     public UserResult doMeasureUser(TestUser user, Context context) {
-        LongSet good = goodItems.select(user.getTrainHistory(),
-                                        user.getTestHistory(),
-                                        context.universe);
+        LongSet good = goodItems.select(user);
         if (good.isEmpty()) {
             logger.warn("no good items for user {}", user.getUserId());
         }

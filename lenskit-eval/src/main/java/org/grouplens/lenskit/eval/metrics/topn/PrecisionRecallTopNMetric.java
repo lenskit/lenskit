@@ -88,9 +88,7 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
         int tp = 0;
         int fp = 0;
 
-        LongSet items = queryItems.select(user.getTrainHistory(),
-                                          user.getTestHistory(),
-                                          context.universe);
+        LongSet items = queryItems.select(user);
 
         List<ScoredId> recs = user.getRecommendations(listSize, candidates, exclude);
         for(ScoredId s : CollectionUtils.fast(recs)) {

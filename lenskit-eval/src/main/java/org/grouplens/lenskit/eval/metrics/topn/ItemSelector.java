@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.metrics.topn;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
+import org.grouplens.lenskit.eval.traintest.TestUser;
 
 /**
  * Interface for selecting items for various phases of Top-N evaluation.  These are used to
@@ -33,10 +34,8 @@ import org.grouplens.lenskit.data.history.UserHistory;
 public interface ItemSelector {
     /**
      * Select a set of items.
-     * @param trainingData The user's training data.
-     * @param testData The user's test data.
-     * @param universe The set of all items.
+     * @param user The user for whom items should be selected.
      * @return The set of items selected.
      */
-    LongSet select(UserHistory<Event> trainingData, UserHistory<Event> testData, LongSet universe);
+    LongSet select(TestUser user);
 }

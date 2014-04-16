@@ -151,8 +151,8 @@ public class LenskitTestUser extends AbstractTestUser {
             if (irec == null) {
                 return Optional.absent();
             }
-            LongSet candidates = key.candidates.select(getTrainHistory(), getTestHistory(), idao.getItemIds());
-            LongSet excludes = key.exclude.select(getTrainHistory(), getTestHistory(), idao.getItemIds());
+            LongSet candidates = key.candidates.select(LenskitTestUser.this);
+            LongSet excludes = key.exclude.select(LenskitTestUser.this);
             return Optional.of(irec.recommend(getUserId(), key.listSize, candidates, excludes));
         }
     }

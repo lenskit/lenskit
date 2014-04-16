@@ -60,6 +60,10 @@ import java.util.List;
  * and clean up and release resources or state in {@link #close()}.
  *
  * <p>
+ * Metrics may be used from multiple threads.  LensKit does not currently use multiple threads with
+ * the same context, but that may change in the future.
+ *
+ * <p>
  * {@link AbstractMetric} provides a base implementation of this interface that allows user and
  * aggregate measurements to be defined in plan Java objects, so metrics do not need to handle
  * creating table rows themselves.

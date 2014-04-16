@@ -41,13 +41,15 @@ public class MockTestUser extends AbstractTestUser {
     private final UserHistory<Event> testHistory;
     private final SparseVector predictions;
     private final List<ScoredId> recommendations;
+    private final Recommender recommender;
 
     public MockTestUser(UserHistory<Event> train, UserHistory<Event> test,
-                        SparseVector preds, List<ScoredId> recs) {
+                        SparseVector preds, List<ScoredId> recs, Recommender rec) {
         trainHistory = train;
         testHistory = test;
         predictions = preds;
         recommendations = recs;
+        recommender = rec;
     }
 
     @Override
@@ -75,7 +77,7 @@ public class MockTestUser extends AbstractTestUser {
     @Nullable
     @Override
     public Recommender getRecommender() {
-        return null;
+        return recommender;
     }
 
     public static Builder newBuilder() {
@@ -88,6 +90,7 @@ public class MockTestUser extends AbstractTestUser {
         private List<Event> testEvents = Lists.newArrayList();
         private SparseVector predictions;
         private List<ScoredId> recommendations;
+        private Recommender recommender;
 
         public Builder setUserId(long uid) {
             userId = uid;
@@ -130,10 +133,19 @@ public class MockTestUser extends AbstractTestUser {
             return this;
         }
 
+        public Recommender getRecommender() {
+            return recommender;
+        }
+
+        public Builder setRecommender(Recommender rec) {
+            recommender = rec;
+            return this;
+        }
+
         public MockTestUser build() {
             return new MockTestUser(History.forUser(userId, trainEvents),
                                     History.forUser(userId, testEvents),
-                                    predictions, recommendations);
+                                    predictions, recommendations, recommender);
         }
     }
 }

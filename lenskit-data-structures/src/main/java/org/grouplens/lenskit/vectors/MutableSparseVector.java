@@ -699,7 +699,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         double[] nvs;
         LongKeyDomain newDomain = keyDomain.clone();
         if (newDomain.isCompatibleWith(keys)) {
-            nvs = freeze ? values : java.util.Arrays.copyOf(values, newDomain.domainSize());
+            nvs = (freeze && values.length == newDomain.size())
+                    ? values
+                    : java.util.Arrays.copyOf(values, newDomain.domainSize());
             newDomain.setActive(keys.getActiveMask());
         } else {
             nvs = new double[newDomain.domainSize()];
