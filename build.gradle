@@ -84,6 +84,7 @@ subprojects {
     }
     test {
         maxHeapSize = '512m'
+        enableAssertions = true
     }
     reportTests.reportOn test
 
