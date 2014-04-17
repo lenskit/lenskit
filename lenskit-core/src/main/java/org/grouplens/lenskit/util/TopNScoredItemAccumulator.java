@@ -20,7 +20,10 @@
  */
 package org.grouplens.lenskit.util;
 
-import it.unimi.dsi.fastutil.doubles.DoubleHeapIndirectPriorityQueue;
+import com.google.common.primitives.Doubles;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
+import it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.collections.CompactableLongArrayList;
@@ -39,11 +42,15 @@ import java.util.List;
  */
 public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
     private final int count;
-    private double[] scores;
+    private DoubleArrayList scores;
     private CompactableLongArrayList items;
+
+    // The index of the empty space to use.  Once the accumulator is at capacity, this will be the
+    // index of the last-removed item.
     private int slot;
+    // The current size of the accumulator.
     private int size;
-    private DoubleHeapIndirectPriorityQueue heap;
+    private IntHeapPriorityQueue heap;
 
     /**
      * Create a new accumulator to accumulate the top {@var n} IDs.
@@ -52,12 +59,39 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
      */
     public TopNScoredItemAccumulator(int n) {
         this.count = n;
-        // arrays must have n+1 slots to hold extra item before removing smallest
-        scores = new double[n + 1];
-        items = new CompactableLongArrayList();
+
         slot = 0;
         size = 0;
-        heap = new DoubleHeapIndirectPriorityQueue(scores);
+
+        // heap must have n+1 slots to hold extra item before removing smallest
+        heap = new IntHeapPriorityQueue(n + 1, new SlotComparator());
+
+        // item lists are lazy-allocated
+    }
+
+    /**
+     * Find a good initial size to minimize the overhead when up to <em>n</em> items are added to a
+     * list.
+     *
+     * @param maxSize The maximum number of items expected.
+     * @return A size in the range [10,25] that, when used as the initial size of an array
+     *         list, minimizes the overhead when {@code maxSize} items have been added.
+     */
+    private static int findInitialSize(int maxSize) {
+        int best = 10;
+        int overhead = maxSize;
+        for (int i = 10; i <= 25; i++) {
+            int cap = i;
+            while (cap < maxSize) {
+                cap *= 2;
+            }
+            int ovh = maxSize - cap;
+            if (ovh < overhead) {
+                overhead = ovh;
+                best = i;
+            }
+        }
+        return best;
     }
 
     @Override
@@ -75,16 +109,26 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         assert slot <= count;
         assert heap.size() == size;
 
+        if (items == null) {
+            int isize = findInitialSize(count + 1);
+
+            scores = new DoubleArrayList(isize);
+            items = new CompactableLongArrayList(isize);
+        }
+
+        assert items.size() == scores.size();
+
         /*
          * Store the new item. The slot shows where the current item is, and
          * then we deal with it based on whether we're oversized.
          */
         if (slot == items.size()) {
             items.add(item);
+            scores.add(score);
         } else {
             items.set(slot, item);
+            scores.set(slot, score);
         }
-        scores[slot] = score;
         heap.enqueue(slot);
 
         if (size == count) {
@@ -107,14 +151,12 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         }
         ScoredIdListBuilder bld = ScoredIds.newListBuilder(size);
         for (int i : indices) {
-            bld.add(items.get(i), scores[i]);
+            bld.add(items.get(i), scores.get(i));
         }
 
         assert heap.isEmpty();
 
-        size = 0;
-        slot = 0;
-        items.clear();
+        clear();
 
         return bld.finish();
     }
@@ -137,11 +179,9 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         double[] values = new double[indices.length];
         for (int i = 0; i < indices.length; i++) {
             keys[i] = items.get(indices[i]);
-            values[i] = scores[indices[i]];
+            values[i] = scores.get(indices[i]);
         }
-        size = 0;
-        slot = 0;
-        items.clear();
+        clear();
 
         return MutableSparseVector.wrapUnsorted(keys, values);
     }
@@ -154,11 +194,25 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         while (!heap.isEmpty()) {
             longs.add(items.get(heap.dequeue()));
         }
-
-        size = 0;
-        slot = 0;
-        items.clear();
+        clear();
 
         return longs;
+    }
+
+    private void clear() {
+        size = 0;
+        slot = 0;
+        items = null;
+        scores = null;
+    }
+
+    /**
+     * Compare two positions by comparing their scores.
+     */
+    private class SlotComparator extends AbstractIntComparator {
+        @Override
+        public int compare(int i, int j) {
+            return Doubles.compare(scores.get(i), scores.get(j));
+        }
     }
 }
