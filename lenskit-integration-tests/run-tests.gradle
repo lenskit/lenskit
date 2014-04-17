@@ -36,6 +36,7 @@ file('src/it').eachDir { dir ->
             }
         }
 
+        enableAssertions = true
         workingDir testDir
         classpath configurations.testRuntime
         main 'org.grouplens.lenskit.cli.Main'
