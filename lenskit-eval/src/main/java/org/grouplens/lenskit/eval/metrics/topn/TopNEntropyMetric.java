@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
@@ -50,19 +51,25 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TopNEntropyMetric extends AbstractMetric<TopNEntropyMetric.Context, TopNEntropyMetric.Result, Void> {
+    
+    private final String prefix;
     private final String suffix;
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
-    private final ImmutableList<String> columns;
-
-    public TopNEntropyMetric(String sfx, int listSize, ItemSelector candidates, ItemSelector exclude) {
+    
+    public TopNEntropyMetric(String pre, String sfx, int listSize, ItemSelector candidates, ItemSelector exclude) {
         super(Result.class, Void.TYPE);
+        prefix = pre;
         suffix = sfx;
         this.listSize = listSize;
         this.candidates = candidates;
         this.exclude = exclude;
-        columns = ImmutableList.of(sfx);
+    }
+
+    @Override
+    protected String getPrefix() {
+        return prefix;
     }
 
     @Override
@@ -73,11 +80,6 @@ public class TopNEntropyMetric extends AbstractMetric<TopNEntropyMetric.Context,
     @Override
     public Context createContext(Attributed algo, TTDataSet ds, Recommender rec) {
         return new Context();
-    }
-
-    @Override
-    public List<String> getColumnLabels() {
-        return columns;
     }
 
     @Override
@@ -113,7 +115,7 @@ public class TopNEntropyMetric extends AbstractMetric<TopNEntropyMetric.Context,
         private int recCount = 0;
         
         private void addUser(List<ScoredId> recs) {
-            for (ScoredId s: recs) {
+            for (ScoredId s: CollectionUtils.fast(recs)) {
                 counts.put(s.getId(), counts.get(s.getId()) +1);
                 recCount +=1;
             }
@@ -137,29 +139,9 @@ public class TopNEntropyMetric extends AbstractMetric<TopNEntropyMetric.Context,
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder extends TopNMetricBuilder<Builder, TopNEntropyMetric> {
-        private String suffix;
-
-        /**
-         * Get the column suffix for this metric.
-         * @return The column suffix.
-         */
-        public String getSuffix() {
-            return suffix;
-        }
-
-        /**
-         * Set the column suffix for this metric.
-         * @param l The column suffix
-         * @return The builder (for chaining).
-         */
-        public Builder setSuffix(String l) {
-            suffix = l;
-            return this;
-        }
-
         @Override
         public TopNEntropyMetric build() {
-            return new TopNEntropyMetric(suffix, listSize, candidates, exclude);
+            return new TopNEntropyMetric(prefix, suffix, listSize, candidates, exclude);
         }
     }
 

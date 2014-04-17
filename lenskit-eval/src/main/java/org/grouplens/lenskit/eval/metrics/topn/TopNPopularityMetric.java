@@ -22,6 +22,7 @@ package org.grouplens.lenskit.eval.metrics.topn;
 
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.eval.Attributed;
@@ -39,17 +40,24 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Context, TopNPopularityMetric.Result, TopNPopularityMetric.Result> {
+    private final String prefix;
     private final String suffix;
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
 
-    public TopNPopularityMetric(String sfx, int listSize, ItemSelector candidates, ItemSelector exclude) {
+    public TopNPopularityMetric(String pre, String sfx, int listSize, ItemSelector candidates, ItemSelector exclude) {
         super(Result.class, Result.class);
+        prefix = pre;
         suffix = sfx;
         this.listSize = listSize;
         this.candidates = candidates;
         this.exclude = exclude;
+    }
+
+    @Override
+    protected String getPrefix() {
+        return prefix;
     }
 
     @Override
@@ -95,7 +103,7 @@ public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Co
             return null;
         }
         double pop = 0;
-        for (ScoredId s : recs) {
+        for (ScoredId s : CollectionUtils.fast(recs)) {
             pop += context.popularity.get(s.getId()); // default value should be 0 here.
         }
         pop = pop / recs.size();
@@ -117,7 +125,7 @@ public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Co
             mean = mu;
         }
     }
-
+    
     public class Context {
         final Long2IntMap popularity;
         final MeanAccumulator mean = new MeanAccumulator();
@@ -131,29 +139,9 @@ public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Co
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder extends TopNMetricBuilder<Builder, TopNPopularityMetric> {
-        private String suffix;
-
-        /**
-         * Get the column suffix for this metric.
-         * @return The column suffix.
-         */
-        public String getSuffix() {
-            return suffix;
-        }
-
-        /**
-         * Set the column suffix for this metric.
-         * @param l The column suffix
-         * @return The builder (for chaining).
-         */
-        public Builder setSuffix(String l) {
-            suffix = l;
-            return this;
-        }
-
         @Override
         public TopNPopularityMetric build() {
-            return new TopNPopularityMetric(suffix, listSize, candidates, exclude);
+            return new TopNPopularityMetric(prefix, suffix, listSize, candidates, exclude);
         }
     }
 

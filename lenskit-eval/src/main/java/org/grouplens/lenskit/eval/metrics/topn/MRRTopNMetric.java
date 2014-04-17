@@ -45,6 +45,7 @@ import java.util.List;
 public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Context, MRRTopNMetric.AggregateResult, MRRTopNMetric.UserResult> {
     private static final Logger logger = LoggerFactory.getLogger(MRRTopNMetric.class);
 
+    private final String prefix;
     private final String suffix;
     private final int listSize;
     private final ItemSelector candidates;
@@ -53,7 +54,8 @@ public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Context, MRRTopN
 
     /**
      * Construct a new recall and precision top n metric
-     * @param sfx The metric suffix, if any.
+     * @param pre the prefix label for this evaluation, or {@code null} for no prefix.
+     * @param sfx the suffix label for this evaluation, or {@code null} for no suffix.
      * @param listSize The number of recommendations to fetch.
      * @param candidates The candidate selector, provides a list of items which can be recommended
      * @param exclude The exclude selector, provides a list of items which must not be recommended
@@ -61,13 +63,19 @@ public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Context, MRRTopN
      * @param goodItems The list of items to consider "true positives", all other items will be treated
      *                  as "false positives".
      */
-    public MRRTopNMetric(String sfx, int listSize, ItemSelector candidates, ItemSelector exclude, ItemSelector goodItems) {
+    public MRRTopNMetric(String pre, String sfx, int listSize, ItemSelector candidates, ItemSelector exclude, ItemSelector goodItems) {
         super(AggregateResult.class, UserResult.class);
+        prefix = pre;
         suffix = sfx;
         this.listSize = listSize;
         this.candidates = candidates;
         this.exclude = exclude;
         this.goodItems = goodItems;
+    }
+
+    @Override
+    protected String getPrefix() {
+        return prefix;
     }
 
     @Override
@@ -162,30 +170,11 @@ public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Context, MRRTopN
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
     public static class Builder extends TopNMetricBuilder<Builder, MRRTopNMetric>{
-        private String suffix;
         private ItemSelector goodItems = ItemSelectors.testRatingMatches(Matchers.greaterThanOrEqualTo(4.0d));
 
         public Builder() {
             // override the default candidate items with a more reasonable set.
             setCandidates(ItemSelectors.allItems());
-        }
-
-        /**
-         * Get the suffix for this metric's labels.
-         * @return The column label.
-         */
-        public String getSuffix() {
-            return suffix;
-        }
-
-        /**
-         * Set the column label suffix for this metric.
-         * @param sfx The suffix to apply to column labels.
-         * @return The builder (for chaining).
-         */
-        public Builder setSuffix(String sfx) {
-            suffix = sfx;
-            return this;
         }
 
         public ItemSelector getGoodItems() {
@@ -199,7 +188,7 @@ public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Context, MRRTopN
 
         @Override
         public MRRTopNMetric build() {
-            return new MRRTopNMetric(suffix, listSize, candidates, exclude, goodItems);
+            return new MRRTopNMetric(prefix, suffix, listSize, candidates, exclude, goodItems);
         }
     }
 
