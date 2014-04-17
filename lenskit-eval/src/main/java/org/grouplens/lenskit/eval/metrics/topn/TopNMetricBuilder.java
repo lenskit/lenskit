@@ -58,7 +58,8 @@ public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends 
     }
 
     /**
-     * Get the prefix (or null if no prefix is set) to be applied to each column label
+     * Get the prefix (or null if no prefix is set) to be applied to each column label.
+     * If not null, this prefix will be added to the end of each column label, separated by a '.'
      * 
      * This property might not be supported by the built metric.
      * 
@@ -69,7 +70,8 @@ public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends 
     }
 
     /**
-     * Get the suffix (or null if no suffix is set) to be applied to each column label
+     * Get the suffix (or null if no suffix is set) to be applied to each column label.
+     * If not null, this suffix will be added to the end of each column label, separated by a '.'
      *
      * This property might not be supported by the built metric.
      * 
@@ -111,6 +113,7 @@ public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends 
 
     /**
      * Set the prefix to be applied to each column label.
+     * If not null, the prefix will be added to the beginning of each column label, separated by a '.'
      * 
      * @param prefix the prefix to apply or {@code null} to set no prefix.
      * @return the builder (for chaining)
@@ -122,6 +125,7 @@ public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends 
 
     /**
      * Set the suffix to be applied to each column label.
+     * If not null, the suffix will be added to the end of each column label, separated by a '.'
      *
      * @param suffix the suffix to apply or {@code null} to set no suffix.
      * @return the builder (for chaining)
