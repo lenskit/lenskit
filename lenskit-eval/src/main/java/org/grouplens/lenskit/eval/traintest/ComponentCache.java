@@ -189,11 +189,11 @@ class ComponentCache {
                             logger.debug("object description: {}", sdw.finish());
                         }
                         writeCompressedObject(cacheFile, obj);
-                        logger.info("cached object {} as {} ({} bytes)",
+                        logger.info("wrote object {} to cache as {} ({} bytes)",
                                     obj, getKey(node), cacheFile.length());
                     }
                 } else {
-                    logger.warn("unserializable object {} instantiated", result);
+                    logger.warn("object {} is unserializable, not caching", result);
                 }
             }
 
