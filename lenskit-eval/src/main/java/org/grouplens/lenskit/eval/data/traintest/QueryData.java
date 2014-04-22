@@ -20,18 +20,17 @@
  */
 package org.grouplens.lenskit.eval.data.traintest;
 
-import org.grouplens.grapht.annotation.AllowUnqualifiedMatch;
-
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
 /**
- * Qualifier to access query data available.
+ * Qualifier to access query data available.  When applied to {@link org.grouplens.lenskit.data.dao.UserDAO},
+ * the list of test users will be injected.  That is the only currently-supported use.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Documented
 @Qualifier
-@AllowUnqualifiedMatch
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.METHOD})
 public @interface QueryData {

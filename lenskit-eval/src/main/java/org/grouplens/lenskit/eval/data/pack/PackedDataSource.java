@@ -95,15 +95,13 @@ public class PackedDataSource implements DataSource {
     }
 
     @Override
-    public LenskitConfiguration getConfiguration() {
-        LenskitConfiguration config = new LenskitConfiguration();
+    public void configure(LenskitConfiguration config) {
         Provider<BinaryRatingDAO> provider = new DAOProvider();
         config.bind(BinaryRatingDAO.class).toProvider(provider);
         PreferenceDomain dom = getPreferenceDomain();
         if (dom != null) {
             config.addComponent(dom);
         }
-        return config;
     }
 
     private class DAOProvider implements Provider<BinaryRatingDAO>, Describable {

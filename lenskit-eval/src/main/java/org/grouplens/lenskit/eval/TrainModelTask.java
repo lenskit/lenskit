@@ -26,7 +26,6 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.util.LogContext;
@@ -117,7 +116,7 @@ public class TrainModelTask<T> extends AbstractTask<T> {
     public T perform() throws TaskExecutionException {
         Preconditions.checkState(algorithm != null, "no algorithm specified");
         Preconditions.checkState(inputData != null, "no input data specified");
-        Preconditions.checkState(inputData != null, "no action specified");
+        Preconditions.checkState(action != null, "no action specified");
         LogContext context = new LogContext();
         try {
             context.put("lenskit.eval.command.class", getName());
@@ -130,7 +129,9 @@ public class TrainModelTask<T> extends AbstractTask<T> {
             timer.start();
             try {
                 logger.info("{}: building recommender {}", getName(), algorithm.getName());
-                rec = algorithm.buildRecommender(inputData.getConfiguration());
+                LenskitConfiguration config = new LenskitConfiguration();
+                inputData.configure(config);
+                rec = algorithm.buildRecommender(config);
             } catch (RecommenderBuildException e) {
                 throw new TaskExecutionException(getName() + ": error building recommender", e);
             }

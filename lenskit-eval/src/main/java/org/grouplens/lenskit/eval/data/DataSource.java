@@ -90,10 +90,11 @@ public interface DataSource {
     UserDAO getUserDAO();
 
     /**
-     * Get a LensKit configuration for this data source.
-     * @return A LensKit configuration with this data source (and, if appropriate, preference domain).
+     * Configure LensKit to use this data set.
+     * @param config A LensKit configuration.  Bindings for this data source's data will be added
+     *               to this configuration.
      */
-    LenskitConfiguration getConfiguration();
+    void configure(LenskitConfiguration config);
 
     long lastModified();
 }

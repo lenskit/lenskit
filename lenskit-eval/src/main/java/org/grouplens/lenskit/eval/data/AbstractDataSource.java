@@ -137,9 +137,8 @@ public abstract class AbstractDataSource implements DataSource {
     }
 
     @Override
-    public LenskitConfiguration getConfiguration() {
+    public void configure(LenskitConfiguration config) {
         logger.debug("generating configuration for {}", this);
-        LenskitConfiguration config = new LenskitConfiguration();
         config.addComponent(getEventDAO());
         PreferenceDomain dom = getPreferenceDomain();
         if (dom != null) {
@@ -154,6 +153,5 @@ public abstract class AbstractDataSource implements DataSource {
               .toProvider(CachingDAOProvider.Item.class);
         config.bind(PrefetchingItemEventDAO.class)
               .toProvider(CachingDAOProvider.ItemEvent.class);
-        return config;
     }
 }
