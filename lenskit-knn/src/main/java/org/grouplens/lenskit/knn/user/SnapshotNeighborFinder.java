@@ -124,7 +124,7 @@ public class SnapshotNeighborFinder implements NeighborFinder {
             while (neighborIter.hasNext()) {
                 final long neighbor = neighborIter.nextLong();
                 SparseVector vector = snapshot.getNormalizedUserVector(neighbor);
-                double sim = similarity.similarity(user, vector, neighbor, vector);
+                double sim = similarity.similarity(user, userVector, neighbor, vector);
                 if (acceptSimilarity(sim)) {
                     return new Neighbor(neighbor, snapshot.getUserVector(neighbor), sim);
                 }
