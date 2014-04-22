@@ -27,7 +27,6 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.FallbackItemScorer;
 import org.grouplens.lenskit.baseline.ScoreSource;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.util.test.MockItemScorer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +44,7 @@ public class SimpleRatingPredictorTest {
 
     @Before
     public void setUp() throws Exception {
-        ItemScorer scorer = MockItemScorer.newBuilder()
+        ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                                           .addScore(40, 1, 4.0)
                                           .addScore(40, 2, 5.5)
                                           .addScore(40, 3, -1)
@@ -117,14 +116,14 @@ public class SimpleRatingPredictorTest {
      */
     @Test
     public void testDoubleFallback() {
-        ItemScorer primary = MockItemScorer.newBuilder()
+        ItemScorer primary = PrecomputedItemScorer.newBuilder()
                                            .addScore(42, 1, 3.5)
                                            .build();
-        ItemScorer base1 = MockItemScorer.newBuilder()
+        ItemScorer base1 = PrecomputedItemScorer.newBuilder()
                                          .addScore(42, 1, 2.5)
                                          .addScore(42, 2, 2.5)
                                          .build();
-        ItemScorer base2 = MockItemScorer.newBuilder()
+        ItemScorer base2 = PrecomputedItemScorer.newBuilder()
                                          .addScore(42, 1, 3.0)
                                          .addScore(42, 2, 3.0)
                                          .addScore(42, 3, 3.0)

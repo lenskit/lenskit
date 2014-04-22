@@ -18,31 +18,31 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.test;
+package org.grouplens.lenskit.basic;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
+import java.io.Serializable;
 
 /**
- * A mock item scorer that can be used in testing.
+ * An item scorer that stores a precomputed map of item scores.
  *
- * @since 1.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 2.1
  */
-public class MockItemScorer extends AbstractItemScorer {
+public class PrecomputedItemScorer extends AbstractItemScorer implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final Long2ObjectMap<ImmutableSparseVector> userData;
 
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
-    private MockItemScorer(Long2ObjectMap<? extends SparseVector> udat) {
+    private PrecomputedItemScorer(Long2ObjectMap<? extends SparseVector> udat) {
         userData = new Long2ObjectOpenHashMap<ImmutableSparseVector>(udat.size());
         for (Long2ObjectMap.Entry<? extends SparseVector> e: udat.long2ObjectEntrySet()) {
             userData.put(e.getLongKey(), e.getValue().immutable());
@@ -111,13 +111,14 @@ public class MockItemScorer extends AbstractItemScorer {
          * Construct the mock item scorer.
          * @return A mock item scorer that will return the configured scores.
          */
-        public MockItemScorer build() {
-            return new MockItemScorer(userData);
+        public PrecomputedItemScorer build() {
+            return new PrecomputedItemScorer(userData);
         }
     }
 
     /**
-     * Construct a new builder for mock item scorers.
+     * Construct a new builder for precomputed item scorers.  This is useful for building item
+     * scorers for mocks.
      *
      * @return A new builder for item scorers.
      */
