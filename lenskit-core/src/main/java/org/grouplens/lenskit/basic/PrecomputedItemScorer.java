@@ -20,13 +20,11 @@
  */
 package org.grouplens.lenskit.basic;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -62,10 +60,10 @@ public class PrecomputedItemScorer extends AbstractItemScorer implements Seriali
      * Builder for mock item scorers.
      */
     public static class Builder {
-        private final Long2ObjectOpenHashMap<MutableSparseVector> userData;
+        private final Long2ObjectMap<Long2DoubleMap> userData;
 
         public Builder() {
-            userData = new Long2ObjectOpenHashMap<MutableSparseVector>();
+            userData = new Long2ObjectOpenHashMap<Long2DoubleMap>();
         }
 
         /**
@@ -75,7 +73,14 @@ public class PrecomputedItemScorer extends AbstractItemScorer implements Seriali
          * @return The builder (for chaining).
          */
         public Builder addUser(long user, SparseVector usv) {
-            userData.put(user, usv.mutableCopy());
+            Long2DoubleMap msv = userData.get(user);
+            if (msv == null) {
+                msv = new Long2DoubleOpenHashMap();
+                userData.put(user, msv);
+            }
+            for (VectorEntry e: usv.fast()) {
+                msv.put(e.getKey(), e.getValue());
+            }
             return this;
         }
 
@@ -88,31 +93,27 @@ public class PrecomputedItemScorer extends AbstractItemScorer implements Seriali
          * @return The builder (for chaining).
          */
         public Builder addScore(long user, long item, double score) {
-            MutableSparseVector msv = userData.get(user);
-            if (msv == null || !msv.keyDomain().contains(item)) {
-                LongSet domain = new LongOpenHashSet();
-                if (msv == null) {
-                    domain.add(item);
-                    msv = MutableSparseVector.create(domain);
-                } else {
-                    domain.addAll(msv.keyDomain());
-                    domain.add(item);
-                    SparseVector save = msv;
-                    msv = MutableSparseVector.create(domain);
-                    msv.set(save);
-                }
+            Long2DoubleMap msv = userData.get(user);
+            if (msv == null) {
+                msv = new Long2DoubleOpenHashMap();
                 userData.put(user, msv);
             }
-            msv.set(item, score);
+            msv.put(item, score);
             return this;
         }
 
         /**
-         * Construct the mock item scorer.
+         * Construct the mock item scorer.  This will empty the builder.
          * @return A mock item scorer that will return the configured scores.
          */
         public PrecomputedItemScorer build() {
-            return new PrecomputedItemScorer(userData);
+            Long2ObjectMap<ImmutableSparseVector> vectors =
+                    new Long2ObjectOpenHashMap<ImmutableSparseVector>(userData.size());
+            for (Long2ObjectMap.Entry<Long2DoubleMap> entry: userData.long2ObjectEntrySet()) {
+                vectors.put(entry.getLongKey(), ImmutableSparseVector.create(entry.getValue()));
+            }
+            userData.clear();
+            return new PrecomputedItemScorer(vectors);
         }
     }
 
