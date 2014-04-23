@@ -28,10 +28,25 @@ algos = set(preds['Algorithm'])
 preds_wide = preds.pivot_table(rows=['User', 'Item', 'Rating'],
                                cols='Algorithm',
                                values='Prediction')
+nbrs_wide = preds.pivot_table(rows=['User', 'Item', 'Rating'],
+                              cols='Algorithm',
+                              values='NbrCount')
 pred_range = preds_wide.max(1) - preds_wide.min(1)
+
+code = 0
+
+mismatched = nbrs_wide.Normalizing.fillna(0) != nbrs_wide.Standard.fillna(0)
+if mismatched.any():
+    nmm = mismatched.value_counts()[True]
+    print >>sys.stderr, "%d items have mismatched neighbor counts" % (nmm,)
+    print nbrs_wide[mismatched]
+    code |= 1
+
 bad = preds_wide[pred_range >= 0.001]
 if len(bad) > 0:
     print >>sys.stderr, "Have %d bad predictions (of %d)" % (len(bad),len(preds_wide))
     print >>sys.stderr, "Maximum error is %.3f" % (pred_range.max(),)
     print bad
-    sys.exit(1)
+    code |= 2
+
+sys.exit(code)

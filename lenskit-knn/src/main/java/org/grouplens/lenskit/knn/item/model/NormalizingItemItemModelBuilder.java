@@ -115,6 +115,9 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
                 currentRow.set(colItem, similarity.similarity(rowItem, vec1, colItem, vec2));
             }
 
+            // Remove the current item (it is not its own neighbor)
+            currentRow.unset(rowItem);
+
             // Normalize and truncate the row
             MutableSparseVector normalized = rowNormalizer.normalize(rowItem, currentRow, null);
             truncator.truncate(normalized);
