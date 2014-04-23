@@ -33,23 +33,16 @@ import java.util.List;
  */
 class MeasurementSuite {
     private final List<MetricFactory> metricFactories;
-    private final List<Pair<Symbol, String>> predictionChannels;
 
     /**
      * Create a new measurement suite.
      * @param metrics The factories for the metrics to use.
-     * @param pChannels The channels to write.
      */
-    public MeasurementSuite(List<MetricFactory> metrics, List<Pair<Symbol, String>> pChannels) {
+    public MeasurementSuite(List<MetricFactory> metrics) {
         metricFactories = metrics;
-        predictionChannels = pChannels;
     }
 
     public List<MetricFactory> getMetricFactories() {
         return metricFactories;
-    }
-
-    public List<Pair<Symbol, String>> getPredictionChannels() {
-        return predictionChannels;
     }
 }
