@@ -20,15 +20,15 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import com.google.common.io.Closer;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.util.io.LKFileUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -58,32 +58,6 @@ public class UserListUserDAO implements UserDAO, Serializable {
      * @throws java.io.IOException if there is an error reading the list of users.
      */
     public static UserListUserDAO fromFile(File file) throws IOException {
-        LongList users = new LongArrayList();
-        Closer closer = Closer.create();
-        try {
-            FileReader fread = closer.register(new FileReader(file));
-            BufferedReader buf = closer.register(new BufferedReader(fread));
-            String line;
-            int lno = 0;
-            while ((line = buf.readLine()) != null) {
-                lno += 1;
-                if (line.trim().isEmpty()) {
-                    continue; // skip blank lines
-                }
-                long item;
-                try {
-                    item = Long.parseLong(line.trim());
-                } catch (IllegalArgumentException ex) {
-                    throw new IOException("invalid user ID on " + file + " line " + lno + ": " + line);
-                }
-                users.add(item);
-            }
-        } catch (Throwable th) {
-            throw closer.rethrow(th);
-        } finally {
-            closer.close();
-        }
-
-        return new UserListUserDAO(users);
+        return new UserListUserDAO(LKFileUtils.readIdList(file));
     }
 }
