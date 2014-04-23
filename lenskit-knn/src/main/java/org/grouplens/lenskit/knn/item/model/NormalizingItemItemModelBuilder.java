@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.knn.item.model;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
@@ -91,6 +92,7 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
 
         // working space for accumulating each row (reuse between rows)
         MutableSparseVector currentRow = MutableSparseVector.create(itemUniverse);
+        Stopwatch timer = Stopwatch.createStarted();
 
         for (int i = 0; i < nitems; i++) {
             assert matrix.size() == i;
@@ -128,6 +130,9 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
                                     .finish();
             matrix.add(row);
         }
+
+        timer.stop();
+        logger.info("built model for {} items in {}", nitems, timer);
 
         return new SimilarityMatrixModel(itemDomain, matrix);
     }
