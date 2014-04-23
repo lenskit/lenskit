@@ -54,6 +54,7 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
     private final ItemItemBuildContext buildContext;
     private final ItemVectorNormalizer rowNormalizer;
     private final VectorTruncator truncator;
+    private final NeighborIterationStrategy iterationStrategy;
 
     /**
      * Construct a normalizing item-item model builder.
@@ -64,16 +65,19 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
      * @param trunc   The truncator for truncating neighborhood vectors.  Bind this to the provider
      *                {@link StandardVectorTruncatorProvider} to get the same threshold and model
      *                size configuration behavior as {@link ItemItemModelBuilder}.
+     * @param iterStrat The neighbor iteration strategy.
      */
     @Inject
     public NormalizingItemItemModelBuilder(@Transient ItemSimilarity sim,
                                            @Transient ItemItemBuildContext context,
                                            @Transient ItemVectorNormalizer rowNorm,
-                                           @Transient VectorTruncator trunc) {
+                                           @Transient VectorTruncator trunc,
+                                           @Transient NeighborIterationStrategy iterStrat) {
         similarity = sim;
         buildContext = context;
         rowNormalizer = rowNorm;
         truncator = trunc;
+        iterationStrategy = iterStrat;
     }
 
 
@@ -100,19 +104,14 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
             final SparseVector vec1 = buildContext.itemVector(rowItem);
 
             // Take advantage of sparsity if we can
-            LongIterator neighbors;
-            if (similarity.isSparse()) {
-                neighbors = new AdaptiveSparseItemIterator(buildContext, vec1.keySet(), Long.MIN_VALUE);
-                currentRow.fill(0); // since we might not compute all similarities
-            } else {
-                neighbors = itemUniverse.iterator();
-                // no fill needed, neighbors is key domain of the row.
-            }
+            LongIterator neighbors = iterationStrategy.neighborIterator(buildContext, rowItem, false);
+            currentRow.fill(0);
 
             // Compute similarities and populate the vector
             while (neighbors.hasNext()) {
                 final long colItem = neighbors.nextLong();
                 final SparseVector vec2 = buildContext.itemVector(colItem);
+                assert currentRow.containsKey(colItem);
                 currentRow.set(colItem, similarity.similarity(rowItem, vec1, colItem, vec2));
             }
 
