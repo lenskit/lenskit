@@ -22,6 +22,10 @@ package org.grouplens.lenskit.util.io;
 
 import com.google.common.base.Throwables;
 import com.google.common.io.Closeables;
+import com.google.common.io.Closer;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -220,5 +224,39 @@ public final class LKFileUtils {
         }
 
         return buffered;
+    }
+
+    /**
+     * Read a list of long IDs from a file, one per line.
+     * @param file The file to read.
+     * @return A list of longs.
+     */
+    public static LongList readIdList(File file) throws IOException {
+        LongList items = new LongArrayList();
+        Closer closer = Closer.create();
+        try {
+            FileReader fread = closer.register(new FileReader(file));
+            BufferedReader buf = closer.register(new BufferedReader(fread));
+            String line;
+            int lno = 0;
+            while ((line = buf.readLine()) != null) {
+                lno += 1;
+                if (line.trim().isEmpty()) {
+                    continue; // skip blank lines
+                }
+                long item;
+                try {
+                    item = Long.parseLong(line.trim());
+                } catch (IllegalArgumentException ex) {
+                    throw new IOException("invalid ID on " + file + " line " + lno + ": " + line);
+                }
+                items.add(item);
+            }
+        } catch (Throwable th) {
+            throw closer.rethrow(th);
+        } finally {
+            closer.close();
+        }
+        return items;
     }
 }

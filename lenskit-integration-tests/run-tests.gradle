@@ -53,6 +53,17 @@ file('src/it').eachDir { testDir ->
         classpath sourceSets.test.runtimeClasspath
         main 'org.grouplens.lenskit.test.VerifyTestRun'
         args workDir
+
+        if (file("$workDir/verify.py").exists()) {
+            doLast {
+                logger.info 'running Python verification script'
+                exec {
+                    executable 'python'
+                    workingDir workDir
+                    args 'verify.py'
+                }
+            }
+        }
     }
 
     if (!skipSlowTests) {

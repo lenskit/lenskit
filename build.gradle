@@ -6,16 +6,24 @@ configurations {
     allDeps // collect all external dependencies of all modules
 }
 
-allprojects {
+allprojects { project ->
     group 'org.grouplens.lenskit'
     version '2.1-SNAPSHOT'
     
     ext.groovyVersion = '2.1.5'
     ext.logbackVersion = '1.0.13'
     ext.slf4jVersion = '1.7.6'
+    ext.getConfigProperty = { name, dft ->
+        if (project.hasProperty(name)) {
+            return project.getProperty(name)
+        } else {
+            return dft
+        }
+    }
 
     repositories {
-        if (properties.get('maven.useLocal', 'false').toBoolean()) {
+        if (getConfigProperty('maven.useLocal', 'false').toBoolean()) {
+            logger.info 'Using Maven local repository'
             mavenLocal()
         }
         mavenCentral()
@@ -50,7 +58,7 @@ allprojects {
         resolveAll.dependsOn resolve
     }
 
-    ext.skipSlowTests = project.properties.get('tests.skipSlow', 'false').toBoolean()
+    ext.skipSlowTests = project.getConfigProperty('tests.skipSlow', 'false').toBoolean()
 }
 
 task reportTests(type: TestReport) {

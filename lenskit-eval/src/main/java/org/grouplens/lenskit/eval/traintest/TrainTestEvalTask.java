@@ -32,6 +32,7 @@ import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.graph.DAGNodeBuilder;
 import org.grouplens.grapht.graph.MergePool;
 import org.grouplens.lenskit.Recommender;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
@@ -523,8 +524,9 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                           DAGNode<JobGraph.Node, JobGraph.Edge> commonDep) throws RecommenderConfigurationException {
         List<DAGNode<JobGraph.Node, JobGraph.Edge>> nodes = Lists.newArrayList();
         for (AlgorithmInstance algo: experiments.getAlgorithms()) {
-            DAGNode<Component,Dependency> graph =
-                    algo.buildRecommenderGraph(dataset.getTrainingData().getConfiguration());
+            LenskitConfiguration dataConfig = new LenskitConfiguration();
+            dataset.configure(dataConfig);
+            DAGNode<Component,Dependency> graph = algo.buildRecommenderGraph(dataConfig);
             TrainTestJob job = new LenskitEvalJob(this, algo, dataset, measurements,
                                                   outputs.getPrefixed(algo, dataset),
                                                   graph, null);
@@ -548,9 +550,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         ComponentCache cache = new ComponentCache(cacheDir, getProject().getClassLoader());
         for (AlgorithmInstance algo: experiments.getAlgorithms()) {
             logger.debug("building graph for algorithm {}", algo);
+            LenskitConfiguration dataConfig = new LenskitConfiguration();
+            dataset.configure(dataConfig);
             // Build the graph
-            DAGNode<Component, Dependency> graph =
-                    algo.buildRecommenderGraph(dataset.getTrainingData().getConfiguration());
+            DAGNode<Component, Dependency> graph = algo.buildRecommenderGraph(dataConfig);
             // Merge it with all previously-seen graphs
             graph = mergePool.merge(graph);
             logger.debug("algorithm {} has {} new configuration nodes", algo,

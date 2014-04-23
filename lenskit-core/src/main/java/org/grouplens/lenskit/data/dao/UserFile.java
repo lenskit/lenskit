@@ -18,47 +18,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data;
+package org.grouplens.lenskit.data.dao;
 
-import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.core.Parameter;
+
+import javax.inject.Qualifier;
+import java.io.File;
+import java.lang.annotation.*;
 
 /**
+ * User list file for {@link org.grouplens.lenskit.data.dao.SimpleFileUserDAOProvider}.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class GenericDataSource extends AbstractDataSource {
-    private String name;
-    private EventDAO dao;
-    private PreferenceDomain domain;
-
-    public GenericDataSource(String name, EventDAO dao) {
-        this(name, dao, null);
-    }
-
-    public GenericDataSource(String name, EventDAO dao, PreferenceDomain dom) {
-        this.name = name;
-        this.dao = dao;
-        domain = dom;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public PreferenceDomain getPreferenceDomain() {
-        return domain;
-    }
-
-    @Override
-    public EventDAO getEventDAO() {
-        return dao;
-    }
-
-    @Override
-    public long lastModified() {
-        return 0;
-    }
-
+@Qualifier
+@Parameter(File.class)
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.PARAMETER, ElementType.METHOD})
+@Documented
+public @interface UserFile {
 }

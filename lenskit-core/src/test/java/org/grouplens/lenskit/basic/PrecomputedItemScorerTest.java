@@ -18,9 +18,10 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.test;
+package org.grouplens.lenskit.basic;
 
 import org.grouplens.lenskit.ItemScorer;
+import org.grouplens.lenskit.basic.PrecomputedItemScorer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Test;
 
@@ -29,17 +30,17 @@ import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class MockItemScorerTest {
+public class PrecomputedItemScorerTest {
     @Test
     public void testEmptyScorer() {
-        ItemScorer scorer = MockItemScorer.newBuilder().build();
+        ItemScorer scorer = PrecomputedItemScorer.newBuilder().build();
         assertThat(scorer.score(42, 1),
                    notANumber());
     }
 
     @Test
     public void testAddScore() {
-        ItemScorer scorer = MockItemScorer.newBuilder()
+        ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                                           .addScore(42, 1, 4)
                                           .build();
         assertThat(scorer.score(42, 1),
@@ -50,7 +51,7 @@ public class MockItemScorerTest {
 
     @Test
     public void testVectorScore() {
-        ItemScorer scorer = MockItemScorer.newBuilder()
+        ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                                           .addScore(42, 1, 4)
                                           .build();
         MutableSparseVector msv = MutableSparseVector.create(1, 3);
@@ -62,7 +63,7 @@ public class MockItemScorerTest {
 
     @Test
     public void testAddMultipleScores() {
-        ItemScorer scorer = MockItemScorer.newBuilder()
+        ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                                           .addScore(42, 3, 4)
                                           .addScore(42, 7, 2)
                                           .build();
@@ -87,7 +88,7 @@ public class MockItemScorerTest {
         uv.set(2, 3);
         uv.set(3, 4);
         uv.set(5, 2);
-        ItemScorer scorer = MockItemScorer.newBuilder()
+        ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                                           .addUser(3, uv)
                                           .build();
         MutableSparseVector output = MutableSparseVector.create(2, 3, 4, 5);

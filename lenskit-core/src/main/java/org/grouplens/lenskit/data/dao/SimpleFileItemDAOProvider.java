@@ -18,47 +18,36 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data;
+package org.grouplens.lenskit.data.dao;
 
-import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+import java.io.File;
+import java.io.IOException;
 
 /**
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Provider for {@link org.grouplens.lenskit.data.dao.ItemListItemDAO} that reads a list of item IDs from a file, one per line.
+ *
+ * @since 2.1
  */
-public class GenericDataSource extends AbstractDataSource {
-    private String name;
-    private EventDAO dao;
-    private PreferenceDomain domain;
+public class SimpleFileItemDAOProvider implements Provider<ItemListItemDAO> {
+    private static final Logger logger = LoggerFactory.getLogger(SimpleFileItemDAOProvider.class);
+    private final File itemFile;
 
-    public GenericDataSource(String name, EventDAO dao) {
-        this(name, dao, null);
-    }
-
-    public GenericDataSource(String name, EventDAO dao, PreferenceDomain dom) {
-        this.name = name;
-        this.dao = dao;
-        domain = dom;
+    @Inject
+    public SimpleFileItemDAOProvider(@ItemFile File file) {
+        itemFile = file;
     }
 
     @Override
-    public String getName() {
-        return name;
+    public ItemListItemDAO get() {
+        try {
+            return ItemListItemDAO.fromFile(itemFile);
+        } catch (IOException e) {
+            throw new DataAccessException("error reading " + itemFile, e);
+        }
     }
-
-    @Override
-    public PreferenceDomain getPreferenceDomain() {
-        return domain;
-    }
-
-    @Override
-    public EventDAO getEventDAO() {
-        return dao;
-    }
-
-    @Override
-    public long lastModified() {
-        return 0;
-    }
-
 }

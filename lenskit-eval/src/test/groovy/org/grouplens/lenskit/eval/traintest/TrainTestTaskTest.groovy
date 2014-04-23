@@ -270,7 +270,8 @@ class TrainTestTaskTest {
             }
             dataset("badRatings") {
                 train "${folder.root.absolutePath}/noRatings.train.csv"
-                test "${folder.root.absolutePath}/noRatings.test.csv"
+                // grab a test file that actually exists
+                test file
             }
             algorithm {
                 bind ItemScorer to ItemMeanRatingItemScorer

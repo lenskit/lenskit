@@ -53,7 +53,7 @@ signing {
 }
 
 install {
-    def installUrl = project.properties.get('install.url', null)
+    def installUrl = project.getConfigProperty('install.url', null)
     if (installUrl != null) {
         logger.info 'installing to $installUrl'
         repositories.clear()
@@ -67,10 +67,10 @@ install {
 
 uploadArchives {
     repositories.mavenDeployer {
-        def user = System.getenv('DEPLOY_USER') ?: project.properties.get('deploy.user', null)
-        def password = System.getenv('DEPLOY_PASSWORD') ?: project.properties.get('deploy.password', null)
+        def user = System.getenv('DEPLOY_USER') ?: project.getConfigProperty('deploy.user', null)
+        def password = System.getenv('DEPLOY_PASSWORD') ?: project.getConfigProperty('deploy.password', null)
 
-        def deployUrl = project.properties.get('deploy.url', null)
+        def deployUrl = project.getConfigProperty('deploy.url', null)
         if (deployUrl != null) {
             deployUrl = rootProject.uri(deployUrl)
         }
@@ -97,7 +97,7 @@ uploadArchives {
         if (travis.active) {
             travis.publishingActive && !(git.headCommit.fullMessage.contains('[skip deploy]'))
         } else {
-            !(project.properties.get('deploy.skip', 'false').toBoolean())
+            !(project.getConfigProperty('deploy.skip', 'false').toBoolean())
         }
     }
 }

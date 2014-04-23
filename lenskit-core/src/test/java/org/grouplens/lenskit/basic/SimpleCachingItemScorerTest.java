@@ -24,7 +24,6 @@ package org.grouplens.lenskit.basic;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.collections.LongUtils;
-import org.grouplens.lenskit.util.test.MockItemScorer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,7 +37,7 @@ public class SimpleCachingItemScorerTest {
 
     @Before
     public void Setup() {
-        mockScorer = MockItemScorer.newBuilder()
+        mockScorer = PrecomputedItemScorer.newBuilder()
                                     .addScore(1, 3, 3.5)
                                     .addScore(2, 4, 5)
                                     .addScore(2, 6, 3)

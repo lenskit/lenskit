@@ -22,7 +22,6 @@ package org.grouplens.lenskit.predict.ordrec;
 
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.PrefetchingUserEventDAO;
@@ -31,7 +30,7 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.transform.quantize.Quantizer;
 import org.grouplens.lenskit.transform.quantize.ValueArrayQuantizer;
-import org.grouplens.lenskit.util.test.MockItemScorer;
+import org.grouplens.lenskit.basic.PrecomputedItemScorer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Before;
 import org.junit.Test;
@@ -81,7 +80,7 @@ public class OrdRecRatingPredictorTest {
      */
     @Test
     public void testOrdRecPrediction1() {
-        ItemScorer scorer = MockItemScorer.newBuilder()
+        ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                 .addScore(42, 1, 5)
                 .addScore(42, 2, 2)
                 .addScore(42, 3, 8)
@@ -113,7 +112,7 @@ public class OrdRecRatingPredictorTest {
      */
     @Test
     public void testOrdRecPrediction2() {
-        ItemScorer scorer = MockItemScorer.newBuilder()
+        ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                 .addScore(42, 1, 2)
                 .addScore(42, 2, 1)
                 .addScore(42, 3, 3)
@@ -145,7 +144,7 @@ public class OrdRecRatingPredictorTest {
      */
     @Test
     public void testOrdRecPrediction3() {
-        ItemScorer scorer = MockItemScorer.newBuilder()
+        ItemScorer scorer = PrecomputedItemScorer.newBuilder()
                 .addScore(42, 1, 1)
                 .addScore(42, 2, 0.2)
                 .addScore(42, 3, 1.8)
