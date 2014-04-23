@@ -22,6 +22,7 @@ package org.grouplens.lenskit.knn.item.model;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.core.Transient;
@@ -33,7 +34,6 @@ import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.truncate.VectorTruncator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,26 +80,45 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
     public SimilarityMatrixModel get() {
         logger.debug("building item-item model");
 
-        MutableSparseVector currentRow = MutableSparseVector.create(buildContext.getItems());
-
         LongSortedSet itemUniverse = buildContext.getItems();
+
         final int nitems = itemUniverse.size();
+
         LongKeyDomain itemDomain = LongKeyDomain.fromCollection(itemUniverse, true);
         assert itemDomain.size() == itemDomain.domainSize();
         assert itemDomain.domainSize() == nitems;
         List<List<ScoredId>> matrix = Lists.newArrayListWithCapacity(itemDomain.domainSize());
 
+        // working space for accumulating each row (reuse between rows)
+        MutableSparseVector currentRow = MutableSparseVector.create(itemUniverse);
+
         for (int i = 0; i < nitems; i++) {
             assert matrix.size() == i;
             final long rowItem = itemDomain.getKey(i);
             final SparseVector vec1 = buildContext.itemVector(rowItem);
-            for (VectorEntry e: currentRow.fast(VectorEntry.State.EITHER)) {
-                final long colItem = e.getKey();
-                final SparseVector vec2 = buildContext.itemVector(colItem);
-                currentRow.set(e, similarity.similarity(rowItem, vec1, colItem, vec2));
+
+            // Take advantage of sparsity if we can
+            LongIterator neighbors;
+            if (similarity.isSparse()) {
+                neighbors = new AdaptiveSparseItemIterator(buildContext, vec1.keySet(), Long.MIN_VALUE);
+                currentRow.fill(0); // since we might not compute all similarities
+            } else {
+                neighbors = itemUniverse.iterator();
+                // no fill needed, neighbors is key domain of the row.
             }
+
+            // Compute similarities and populate the vector
+            while (neighbors.hasNext()) {
+                final long colItem = neighbors.nextLong();
+                final SparseVector vec2 = buildContext.itemVector(colItem);
+                currentRow.set(colItem, similarity.similarity(rowItem, vec1, colItem, vec2));
+            }
+
+            // Normalize and truncate the row
             MutableSparseVector normalized = rowNormalizer.normalize(rowItem, currentRow, null);
             truncator.truncate(normalized);
+
+            // Build up and save the row
             ScoredIdListBuilder bld = new ScoredIdListBuilder(normalized.size());
             // TODO Allow the symbols in use to be customized
             List<ScoredId> row = bld.addChannels(normalized.getChannelVectorSymbols())
