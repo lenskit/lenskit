@@ -44,6 +44,7 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.util.DelimitedTextCursor;
+import org.grouplens.lenskit.util.io.LoggingStreamSlurper;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
@@ -53,7 +54,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -124,7 +127,8 @@ class ExternalEvalJob extends TrainTestJob {
         } catch (IOException e) {
             throw new RecommenderBuildException("error creating process", e);
         }
-        Thread listen = new ProcessErrorHandler(proc.getErrorStream());
+        Thread listen = new LoggingStreamSlurper("external-algo", proc.getErrorStream(),
+                                                 logger, "external: ");
         listen.run();
 
         int result = -1;
@@ -305,28 +309,6 @@ class ExternalEvalJob extends TrainTestJob {
         @Override
         public Recommender getRecommender() {
             return null;
-        }
-    }
-
-    private class ProcessErrorHandler extends Thread {
-        private final BufferedReader error;
-
-        public ProcessErrorHandler(InputStream err) {
-            super("external");
-            setDaemon(true);
-            error = new BufferedReader(new InputStreamReader(err));
-        }
-
-        @Override
-        public void run() {
-            String line;
-            try {
-                while ((line = error.readLine()) != null) {
-                    logger.info("external: " + line);
-                }
-            } catch (IOException e) {
-                logger.error("IO error reading error stream", e);
-            }
         }
     }
 }

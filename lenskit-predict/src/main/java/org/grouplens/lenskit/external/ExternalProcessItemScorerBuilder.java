@@ -36,6 +36,7 @@ import org.grouplens.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.util.DelimitedTextCursor;
+import org.grouplens.lenskit.util.io.LoggingStreamSlurper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -227,7 +228,8 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
             logger.error("could not start {}: {}", executable, e);
             throw new RuntimeException("could not start external process", e);
         }
-        ErrorSlurper slurp = new ErrorSlurper(proc.getErrorStream());
+        Thread slurp = new LoggingStreamSlurper("build-" + executable, proc.getErrorStream(),
+                                                logger, "");
         slurp.start();
 
         Cursor<String[]> rows = new DelimitedTextCursor(new BufferedReader(new InputStreamReader(proc.getInputStream())), ",");
@@ -375,27 +377,6 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
         @Override
         protected LongSet getIds() {
             return userDAO.getUserIds();
-        }
-    }
-
-    private class ErrorSlurper extends Thread {
-        private final BufferedReader reader;
-
-        public ErrorSlurper(InputStream stream) {
-            super("build-error");
-            reader = new BufferedReader(new InputStreamReader(stream));
-            setDaemon(true);
-        }
-
-        public void run() {
-            String line;
-            try {
-                while ((line = reader.readLine()) != null) {
-                    logger.info("{}: {}", executable, line);
-                }
-            } catch (IOException e) {
-                logger.error("error reading from standard error", e);
-            }
         }
     }
 }
