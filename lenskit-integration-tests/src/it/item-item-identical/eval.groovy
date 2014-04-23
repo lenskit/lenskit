@@ -19,31 +19,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-
 import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.RatingPredictor
 import org.grouplens.lenskit.baseline.BaselineScorer
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
-import org.grouplens.lenskit.core.Transient
-import org.grouplens.lenskit.data.dao.EventDAO
-import org.grouplens.lenskit.data.dao.UserDAO
-import org.grouplens.lenskit.eval.data.traintest.QueryData
 import org.grouplens.lenskit.eval.metrics.predict.*
-import org.grouplens.lenskit.external.ExternalProcessItemScorerBuilder
 import org.grouplens.lenskit.knn.NeighborhoodSize
 import org.grouplens.lenskit.knn.item.ItemItemScorer
 import org.grouplens.lenskit.knn.item.ModelSize
-import org.grouplens.lenskit.knn.item.model.ItemItemBuildContext
-import org.grouplens.lenskit.knn.item.model.ItemItemModel
-import org.grouplens.lenskit.knn.item.model.ItemwiseBuildContextProvider
-import org.grouplens.lenskit.knn.item.model.NormalizingItemItemModelBuilder
-import org.grouplens.lenskit.knn.item.model.StandardVectorTruncatorProvider
+import org.grouplens.lenskit.knn.item.model.*
 import org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer
 import org.grouplens.lenskit.transform.truncate.VectorTruncator
-
-import javax.inject.Inject
-import javax.inject.Provider
 
 def dataDir = config['lenskit.movielens.100k']
 
