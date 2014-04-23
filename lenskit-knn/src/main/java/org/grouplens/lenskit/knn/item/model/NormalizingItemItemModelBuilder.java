@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.LongKeyDomain;
@@ -53,15 +54,25 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
     private final ItemVectorNormalizer rowNormalizer;
     private final VectorTruncator truncator;
 
+    /**
+     * Construct a normalizing item-item model builder.
+     *
+     * @param sim     The item similarity function.
+     * @param context The item-item build context.
+     * @param rowNorm The normalizer for item neighborhood vectors.
+     * @param trunc   The truncator for truncating neighborhood vectors.  Bind this to the provider
+     *                {@link StandardVectorTruncatorProvider} to get the same threshold and model
+     *                size configuration behavior as {@link ItemItemModelBuilder}.
+     */
     @Inject
-    public NormalizingItemItemModelBuilder(@Transient ItemSimilarity similarity,
+    public NormalizingItemItemModelBuilder(@Transient ItemSimilarity sim,
                                            @Transient ItemItemBuildContext context,
-                                           @Transient ItemVectorNormalizer rowNormalizer,
-                                           @Transient VectorTruncator truncator) {
-        this.similarity = similarity;
+                                           @Transient ItemVectorNormalizer rowNorm,
+                                           @Transient VectorTruncator trunc) {
+        similarity = sim;
         buildContext = context;
-        this.rowNormalizer = rowNormalizer;
-        this.truncator = truncator;
+        rowNormalizer = rowNorm;
+        truncator = trunc;
     }
 
 
@@ -100,5 +111,14 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
         }
 
         return new SimilarityMatrixModel(itemDomain, matrix);
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(NormalizingItemItemModelBuilder.class)
+                      .add("similarity", similarity)
+                      .add("normalizer", rowNormalizer)
+                      .add("truncator", truncator)
+                      .toString();
     }
 }

@@ -24,6 +24,8 @@ import org.grouplens.lenskit.config.ConfigHelpers
 import org.grouplens.lenskit.core.LenskitConfiguration
 import org.grouplens.lenskit.knn.item.model.ItemItemModel
 import org.grouplens.lenskit.knn.item.model.NormalizingItemItemModelBuilder
+import org.grouplens.lenskit.knn.item.model.StandardVectorTruncatorProvider
+import org.grouplens.lenskit.transform.truncate.VectorTruncator
 
 public class NormalizingItemItemAccuracyTest extends ItemItemAccuracyTest {
     @SuppressWarnings("unchecked")
@@ -32,6 +34,9 @@ public class NormalizingItemItemAccuracyTest extends ItemItemAccuracyTest {
         super.configureAlgorithm(config)
         ConfigHelpers.configure(config) {
             bind ItemItemModel toProvider NormalizingItemItemModelBuilder
+            at (ItemItemModel) {
+                bind VectorTruncator toProvider StandardVectorTruncatorProvider
+            }
         }
     }
 }
