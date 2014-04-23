@@ -43,6 +43,17 @@ if (JavaVersion.current().java7Compatible) {
     }
 
     check.dependsOn licenseMain, licenseTest
+    // make license failures fail the build early
+    project.tasks.withType(JavaCompile) { task ->
+        switch (task.name) {
+            case 'compile':
+                task.mustRunAfter licenseMain;
+                break;
+            case 'compileTest':
+                task.mustRunAfter licenseTest;
+                break;
+        }
+    }
 } else {
     // The license plugin is not compatible with Java 6, so turn it off
     check.doFirst {
