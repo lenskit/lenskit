@@ -22,6 +22,7 @@
 
 import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
+import org.grouplens.lenskit.core.Transient
 import org.grouplens.lenskit.data.dao.EventDAO
 import org.grouplens.lenskit.data.dao.UserDAO
 import org.grouplens.lenskit.eval.data.traintest.QueryData
@@ -41,7 +42,8 @@ class ExternalItemMeanScorerBuilder implements Provider<ItemScorer> {
     UserDAO userDAO
 
     @Inject
-    public ExternalItemMeanScorerBuilder(EventDAO events, @QueryData UserDAO users) {
+    public ExternalItemMeanScorerBuilder(@Transient EventDAO events,
+                                         @Transient @QueryData UserDAO users) {
         eventDAO = events
         userDAO = users
     }
