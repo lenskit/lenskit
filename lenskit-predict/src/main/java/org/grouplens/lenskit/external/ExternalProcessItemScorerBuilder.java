@@ -60,6 +60,10 @@ import java.util.UUID;
  * <p>
  * The external process is expected to produce its scores on standard output in comma-separated
  * user, item, score format.
+ * <p>
+ * <strong>Warning:</strong> if you use this code to build item scorers in the evaluator, be careful
+ * with the file-based caching (<tt>componentCacheDirectory</tt>).  The cache will likely not rerun
+ * the external process.
  *
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
