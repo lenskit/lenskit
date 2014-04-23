@@ -13,7 +13,7 @@ cache:
   - $HOME/.gradle/wrapper
 before_install:
 - sudo apt-get -q update
-- sudo apt-get -q install --no-install-recommends pandoc
+- sudo apt-get -q install --no-install-recommends pandoc python-pandas
 - pip install --user pandocfilters
 - git fetch --depth=10000 origin
 install: ./gradlew ciPrep
