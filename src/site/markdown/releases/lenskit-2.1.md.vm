@@ -97,6 +97,9 @@ This release includes several improvements and additions to LensKit's selection 
     items the user has interacted with, not just the ones they have rated.  Baking the knowledge of
     ratings into the top-N recommender was arguably a mistake.
 
+-   Add `PrecomputedItemScorer`, an item scorer that has a precomputed set of scores it can return,
+    and the `ExternalProcessItemScorerBuilder` to build such a scorer by running an external process.
+
 ### User-user CF
 
 -   Updated user-user CF to be simpler & make better use of new DAOs (#issue(356)).
