@@ -448,9 +448,9 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             activeMetrics.add(new OutputTopNMetric.Factory());
         }
         if (predictOutputFile != null) {
-            activeMetrics.add(new OutputPredictMetric.Factory());
+            activeMetrics.add(new OutputPredictMetric.Factory(predictChannels));
         }
-        return new MeasurementSuite(activeMetrics.build(), predictChannels);
+        return new MeasurementSuite(activeMetrics.build());
     }
 
     private void runEvaluations(DAGNode<JobGraph.Node, JobGraph.Edge> graph) throws TaskExecutionException, InterruptedException {

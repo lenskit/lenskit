@@ -18,31 +18,21 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.traintest;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.symbols.Symbol;
 
-import java.util.List;
+import static org.grouplens.lenskit.util.test.ExtraMatchers.existingFile
+import static org.grouplens.lenskit.util.test.ExtraMatchers.hasLineCount
+import static org.hamcrest.MatcherAssert.assertThat
+import static org.hamcrest.Matchers.allOf
+import static org.hamcrest.Matchers.equalTo
 
-/**
- * A suite of metrics for a train-test evaluaiton.
- *
- * @since 2.1
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- */
-class MeasurementSuite {
-    private final List<MetricFactory> metricFactories;
+File resultsFile = new File(basedir, "results.csv")
+File userFile = new File(basedir, "users.csv")
+File predictFile = new File(basedir, "predictions.csv")
 
-    /**
-     * Create a new measurement suite.
-     * @param metrics The factories for the metrics to use.
-     */
-    public MeasurementSuite(List<MetricFactory> metrics) {
-        metricFactories = metrics;
-    }
-
-    public List<MetricFactory> getMetricFactories() {
-        return metricFactories;
-    }
-}
+assertThat("output file existence",
+           resultsFile, allOf(existingFile()))
+assertThat("user output file existence",
+           userFile, existingFile())
+assertThat("predict output file existence",
+           predictFile, existingFile())

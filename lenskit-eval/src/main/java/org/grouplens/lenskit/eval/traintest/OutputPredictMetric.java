@@ -21,14 +21,16 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
-import org.grouplens.lenskit.util.table.TableLayout;
+import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.table.TableLayoutBuilder;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
@@ -52,18 +54,24 @@ public class OutputPredictMetric extends AbstractMetric<OutputPredictMetric.Cont
 
     private final ExperimentOutputLayout outputLayout;
     private final TableWriter tableWriter;
+    private final List<Pair<Symbol, String>> channels;
 
-    public OutputPredictMetric(ExperimentOutputLayout layout, File file) throws IOException {
+    public OutputPredictMetric(ExperimentOutputLayout layout, File file,
+                               List<Pair<Symbol, String>> chans) throws IOException {
         super(Void.TYPE, Void.TYPE);
         outputLayout = layout;
+        channels = chans;
 
-        TableLayout recLayout = TableLayoutBuilder.copy(layout.getCommonLayout())
+        TableLayoutBuilder lb = TableLayoutBuilder.copy(layout.getCommonLayout())
                                                   .addColumn("User")
                                                   .addColumn("Item")
                                                   .addColumn("Rating")
-                                                  .addColumn("Prediction")
-                                                  .build();
-        tableWriter = CSVWriter.open(file, recLayout);
+                                                  .addColumn("Prediction");
+        for (Pair<Symbol, String> chan: channels) {
+            lb.addColumn(chan.getRight());
+        }
+
+        tableWriter = CSVWriter.open(file, lb.build());
     }
 
     @Override
@@ -90,7 +98,16 @@ public class OutputPredictMetric extends AbstractMetric<OutputPredictMetric.Cont
             Double rating = ratings.containsKey(item) ? ratings.get(item) : null;
             Double pred = predictions.containsKey(item) ? predictions.get(item) : null;
             try {
-                context.writer.writeRow(user.getUserId(), item, rating, pred);
+                List<Object> row = Lists.<Object>newArrayList(user.getUserId(), item, rating, pred);
+                for (Pair<Symbol, String> chan: channels) {
+                    SparseVector v = predictions.getChannelVector(chan.getLeft());
+                    if (v != null && v.containsKey(item)) {
+                        row.add(v.get(item));
+                    } else {
+                        row.add(null);
+                    }
+                }
+                context.writer.writeRow(row);
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
@@ -117,9 +134,16 @@ public class OutputPredictMetric extends AbstractMetric<OutputPredictMetric.Cont
     }
 
     public static class Factory extends MetricFactory<Context> {
+        private final List<Pair<Symbol, String>> predictChannels;
+
+        public Factory(List<Pair<Symbol, String>> pchans) {
+            predictChannels = pchans;
+        }
+
         @Override
         public OutputPredictMetric createMetric(TrainTestEvalTask task) throws IOException {
-            return new OutputPredictMetric(task.getOutputLayout(), task.getPredictOutput());
+            return new OutputPredictMetric(task.getOutputLayout(), task.getPredictOutput(),
+                                           predictChannels);
         }
 
         @Override
