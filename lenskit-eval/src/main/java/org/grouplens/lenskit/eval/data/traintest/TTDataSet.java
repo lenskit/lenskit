@@ -22,6 +22,7 @@ package org.grouplens.lenskit.eval.data.traintest;
 
 import java.util.Map;
 
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.data.DataSource;
@@ -106,4 +107,12 @@ public interface TTDataSet {
      * @return The last modification time, in milliseconds since the epoch.
      */
     long lastModified();
+
+    /**
+     * Configure LensKit to have the training data from this data source.
+     *
+     * @param config A configuration in which the training data for this data set should be
+     *               configured.
+     */
+    void configure(LenskitConfiguration config);
 }

@@ -1,42 +1,36 @@
 // Run some high-level integration tests
-file('src/it').eachDir { dir ->
-    if (file("$dir/ignore").exists()) {
+file('src/it').eachDir { testDir ->
+    if (file("$testDir/ignore").exists()) {
         return
     }
 
-    def name = dir.name
+    def name = testDir.name
     def camelName = name.replaceAll(~/(?:^|-)(.)/) {
         it[1].toUpperCase()
     }
-    def prep = task("prep$camelName", type: Copy) {
-        from dir
-        into "$buildDir/it/$name"
-    }
     task("run$camelName", type: JavaExec, group: 'verification') {
         description "Run the $name tests."
-        dependsOn fetchData, "prep$camelName"
+        dependsOn fetchData
         mustRunAfter test // run the JUnit-based tests first, less overhead
     
-        ext.sourceDir = dir
-        ext.testDir = "$buildDir/it/$name"
+        ext.testDir = testDir
+        ext.workDir = "$buildDir/it/$name"
 
-        inputs.files prep
+        inputs.files testDir, fetchData
         inputs.dir mlDataDir
-        outputs.dir testDir
+        outputs.dir workDir
         
         doFirst {
-            // clean up outputs for a clean build
-            delete fileTree(testDir) {
-                include 'cache/**'
-                include '*.gz'
-                include '*.csv'
-                include '*.pack'
-                include '*.log'
-                include '*.out'
+            // clean and re-sync test build
+            delete workDir
+            copy {
+                from testDir
+                into workDir
             }
         }
 
-        workingDir testDir
+        enableAssertions = true
+        workingDir workDir
         classpath configurations.testRuntime
         main 'org.grouplens.lenskit.cli.Main'
         args 'eval', '-j0'
@@ -52,13 +46,24 @@ file('src/it').eachDir { dir ->
         description "Verify the $name tests."
         dependsOn "run$camelName"
 
-        ext.testDir = "$buildDir/it/$name"
-        inputs.dir testDir
+        ext.workDir = "$buildDir/it/$name"
+        inputs.dir workDir
         
-        workingDir testDir
+        workingDir workDir
         classpath sourceSets.test.runtimeClasspath
         main 'org.grouplens.lenskit.test.VerifyTestRun'
-        args testDir
+        args workDir
+
+        if (file("$workDir/verify.py").exists()) {
+            doLast {
+                logger.info 'running Python verification script'
+                exec {
+                    executable 'python'
+                    workingDir workDir
+                    args 'verify.py'
+                }
+            }
+        }
     }
 
     if (!skipSlowTests) {

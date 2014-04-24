@@ -40,7 +40,7 @@ import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
 import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer
 import org.grouplens.lenskit.util.io.CompressionMode
-import org.grouplens.lenskit.util.test.MockItemScorer
+import org.grouplens.lenskit.basic.PrecomputedItemScorer
 import org.junit.Before
 import org.junit.Test
 
@@ -346,14 +346,14 @@ public class LenskitRecommenderEngineTest {
         config.bind(ItemScorer.class)
               .to(FallbackItemScorer.class)
         config.bind(PrimaryScorer.class, ItemScorer.class)
-                .to(MockItemScorer.newBuilder()
+                .to(PrecomputedItemScorer.newBuilder()
                                   .addScore(42, 15, 3.5)
                                   .build())
         config.bind(BaselineScorer.class, ItemScorer.class)
               .to(FallbackItemScorer.class)
         config.within(BaselineScorer.class, FallbackItemScorer.class)
               .bind(PrimaryScorer.class, ItemScorer.class)
-              .to(MockItemScorer.newBuilder()
+              .to(PrecomputedItemScorer.newBuilder()
                                 .addScore(38, 10, 4.0)
                                 .build())
         config.within(BaselineScorer.class, FallbackItemScorer.class)

@@ -20,11 +20,8 @@
  */
 package org.grouplens.lenskit.eval.data;
 
-import org.grouplens.grapht.util.Providers;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-
-import javax.inject.Provider;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

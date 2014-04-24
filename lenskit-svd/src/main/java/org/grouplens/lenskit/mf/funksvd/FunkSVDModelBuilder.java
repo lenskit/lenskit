@@ -116,7 +116,9 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
 
             // And store the data into the matrix
             userFeatures.setColumn(f, uvec);
+            assert Math.abs(userFeatures.getColumnView(f).elementSum() - uvec.elementSum()) < 1.0e-4 : "user column sum matches";
             itemFeatures.setColumn(f, ivec);
+            assert Math.abs(itemFeatures.getColumnView(f).elementSum() - ivec.elementSum()) < 1.0e-4 : "item column sum matches";
 
             timer.stop();
             logger.info("Finished feature {} in {}", f, timer);

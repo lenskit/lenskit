@@ -64,6 +64,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
 
         // Create a channel for recording the neighborhoodsize
         MutableSparseVector sizeChannel = scores.getOrAddChannelVector(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL);
+        sizeChannel.fill(0);
         // for each item, compute its prediction
         for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
@@ -86,7 +87,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
             if (score != null) {
                 scores.set(e, score.getScore());
                 for (TypedSymbol sym: score.getChannelSymbols()) {
-                    scores.getOrAddChannel(sym).put(e.getKey(),score.getChannelValue(sym));
+                    scores.getOrAddChannel(sym).put(e.getKey(), score.getChannelValue(sym));
                 }
             }
 

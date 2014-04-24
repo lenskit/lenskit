@@ -18,15 +18,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.grouplens.lenskit.data.dao;
 
+import org.grouplens.lenskit.core.Parameter;
 
-import static org.grouplens.lenskit.util.test.ExtraMatchers.existingFile
-import static org.hamcrest.MatcherAssert.assertThat
-import static org.hamcrest.Matchers.allOf
-import static org.hamcrest.Matchers.equalTo
+import javax.inject.Qualifier;
+import java.io.File;
+import java.lang.annotation.*;
 
-File outputFile = new File(basedir, "output.txt")
-
-assertThat("output file existence",
-           outputFile, allOf(existingFile()))
-assertThat(outputFile.text, equalTo("hello, verifier"))
+/**
+ * User list file for {@link org.grouplens.lenskit.data.dao.SimpleFileUserDAOProvider}.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ */
+@Qualifier
+@Parameter(File.class)
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.PARAMETER, ElementType.METHOD})
+@Documented
+public @interface UserFile {
+}

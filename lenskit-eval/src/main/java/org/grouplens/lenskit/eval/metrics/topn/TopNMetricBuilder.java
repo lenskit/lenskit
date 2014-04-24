@@ -30,6 +30,8 @@ public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends 
     protected int listSize = 5;
     protected ItemSelector candidates = ItemSelectors.testItems();
     protected ItemSelector exclude = ItemSelectors.trainingItems();
+    protected String prefix = null;
+    protected String suffix = null;
     
     /**
      * Get the list size.
@@ -53,6 +55,30 @@ public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends 
      */
     public ItemSelector getExclude() {
         return exclude;
+    }
+
+    /**
+     * Get the prefix (or null if no prefix is set) to be applied to each column label.
+     * If not null, this prefix will be added to the beginning of each column label, separated by a '.'
+     * 
+     * This property might not be supported by the built metric.
+     * 
+     * @return the prefix
+     */
+    public String getPrefix() {
+        return prefix;
+    }
+
+    /**
+     * Get the suffix (or null if no suffix is set) to be applied to each column label.
+     * If not null, this suffix will be added to the end of each column label, separated by a '.'
+     *
+     * This property might not be supported by the built metric.
+     * 
+     * @return
+     */
+    public String getSuffix() {
+        return suffix;
     }
 
     /**
@@ -83,6 +109,31 @@ public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends 
     public T setExclude(ItemSelector sel) {
         exclude = sel;
         return (T) this;
+    }
+
+    /**
+     * Set the prefix to be applied to each column label.
+     * If not null, the prefix will be added to the beginning of each column label, separated by a '.'
+     * 
+     * @param prefix the prefix to apply or {@code null} to set no prefix.
+     * @return the builder (for chaining)
+     */
+    public T setPrefix(String prefix) {
+        this.prefix = prefix;
+        return (T) this;
+    }
+
+    /**
+     * Set the suffix to be applied to each column label.
+     * If not null, the suffix will be added to the end of each column label, separated by a '.'
+     *
+     * @param suffix the suffix to apply or {@code null} to set no suffix.
+     * @return the builder (for chaining)
+     */
+    public T setSuffix(String suffix) {
+        this.suffix = suffix;
+        return (T) this;
+
     }
 
     public abstract K build();

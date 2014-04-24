@@ -125,7 +125,7 @@ public abstract class AbstractMetric<X, G, U> implements Metric<X> {
             sb.append(input);
             part = getSuffix();
             if (part != null) {
-                sb.append(part).append(".");
+                sb.append(".").append(part);
             }
             return sb.toString();
         }

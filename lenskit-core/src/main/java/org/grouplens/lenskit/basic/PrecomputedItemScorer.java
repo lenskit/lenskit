@@ -18,31 +18,29 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.test;
+package org.grouplens.lenskit.basic;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.basic.AbstractItemScorer;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
+import java.io.Serializable;
 
 /**
- * A mock item scorer that can be used in testing.
+ * An item scorer that stores a precomputed map of item scores.
  *
- * @since 1.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 2.1
  */
-public class MockItemScorer extends AbstractItemScorer {
+public class PrecomputedItemScorer extends AbstractItemScorer implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final Long2ObjectMap<ImmutableSparseVector> userData;
 
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
-    private MockItemScorer(Long2ObjectMap<? extends SparseVector> udat) {
+    private PrecomputedItemScorer(Long2ObjectMap<? extends SparseVector> udat) {
         userData = new Long2ObjectOpenHashMap<ImmutableSparseVector>(udat.size());
         for (Long2ObjectMap.Entry<? extends SparseVector> e: udat.long2ObjectEntrySet()) {
             userData.put(e.getLongKey(), e.getValue().immutable());
@@ -62,10 +60,10 @@ public class MockItemScorer extends AbstractItemScorer {
      * Builder for mock item scorers.
      */
     public static class Builder {
-        private final Long2ObjectOpenHashMap<MutableSparseVector> userData;
+        private final Long2ObjectMap<Long2DoubleMap> userData;
 
         public Builder() {
-            userData = new Long2ObjectOpenHashMap<MutableSparseVector>();
+            userData = new Long2ObjectOpenHashMap<Long2DoubleMap>();
         }
 
         /**
@@ -75,7 +73,14 @@ public class MockItemScorer extends AbstractItemScorer {
          * @return The builder (for chaining).
          */
         public Builder addUser(long user, SparseVector usv) {
-            userData.put(user, usv.mutableCopy());
+            Long2DoubleMap msv = userData.get(user);
+            if (msv == null) {
+                msv = new Long2DoubleOpenHashMap();
+                userData.put(user, msv);
+            }
+            for (VectorEntry e: usv.fast()) {
+                msv.put(e.getKey(), e.getValue());
+            }
             return this;
         }
 
@@ -88,36 +93,33 @@ public class MockItemScorer extends AbstractItemScorer {
          * @return The builder (for chaining).
          */
         public Builder addScore(long user, long item, double score) {
-            MutableSparseVector msv = userData.get(user);
-            if (msv == null || !msv.keyDomain().contains(item)) {
-                LongSet domain = new LongOpenHashSet();
-                if (msv == null) {
-                    domain.add(item);
-                    msv = MutableSparseVector.create(domain);
-                } else {
-                    domain.addAll(msv.keyDomain());
-                    domain.add(item);
-                    SparseVector save = msv;
-                    msv = MutableSparseVector.create(domain);
-                    msv.set(save);
-                }
+            Long2DoubleMap msv = userData.get(user);
+            if (msv == null) {
+                msv = new Long2DoubleOpenHashMap();
                 userData.put(user, msv);
             }
-            msv.set(item, score);
+            msv.put(item, score);
             return this;
         }
 
         /**
-         * Construct the mock item scorer.
+         * Construct the mock item scorer.  This will empty the builder.
          * @return A mock item scorer that will return the configured scores.
          */
-        public MockItemScorer build() {
-            return new MockItemScorer(userData);
+        public PrecomputedItemScorer build() {
+            Long2ObjectMap<ImmutableSparseVector> vectors =
+                    new Long2ObjectOpenHashMap<ImmutableSparseVector>(userData.size());
+            for (Long2ObjectMap.Entry<Long2DoubleMap> entry: userData.long2ObjectEntrySet()) {
+                vectors.put(entry.getLongKey(), ImmutableSparseVector.create(entry.getValue()));
+            }
+            userData.clear();
+            return new PrecomputedItemScorer(vectors);
         }
     }
 
     /**
-     * Construct a new builder for mock item scorers.
+     * Construct a new builder for precomputed item scorers.  This is useful for building item
+     * scorers for mocks.
      *
      * @return A new builder for item scorers.
      */

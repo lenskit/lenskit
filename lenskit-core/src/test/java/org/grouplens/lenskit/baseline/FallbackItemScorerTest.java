@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.baseline;
 
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.util.test.MockItemScorer;
+import org.grouplens.lenskit.basic.PrecomputedItemScorer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,10 +40,10 @@ public class FallbackItemScorerTest {
 
     @Before
     public void setupScorer() {
-        primary = MockItemScorer.newBuilder()
+        primary = PrecomputedItemScorer.newBuilder()
                                 .addScore(42, 39, 3.5)
                                 .build();
-        baseline = MockItemScorer.newBuilder()
+        baseline = PrecomputedItemScorer.newBuilder()
                                  .addScore(42, 39, 2.0)
                                  .addScore(42, 30, 4.0)
                                  .addScore(15, 30, 5.0)
