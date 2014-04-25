@@ -25,6 +25,7 @@ import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
+import javax.inject.Inject;
 import java.io.Serializable;
 
 /**
@@ -38,6 +39,7 @@ public class ThresholdTruncator implements VectorTruncator, Serializable {
 
     private final Threshold threshold;
 
+    @Inject
     public ThresholdTruncator(Threshold threshold) {
         this.threshold = threshold;
     }
