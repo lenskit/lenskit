@@ -88,8 +88,18 @@ class SiteUpload extends DefaultTask {
             content.addPart('hmac', new StringBody(hmacDigest))
             content.addPart('archive', new FileBody(siteArchive))
             req.setEntity(content)
+            logger.info 'Uploading to {}', req.URI
+            logger.info 'HMAC: {}', hmacDigest
             response.success = { res ->
                 logger.info 'Succeeded with code {}', res.statusLine.statusCode
+            }
+            response.failure = { res ->
+                logger.error 'upload failed: {}', res.statusLine
+                logger.info 'Response content type is {}', res.contentType
+                def data = res.data
+                if (data != null) {
+                    logger.error 'Response:\n{}', res.data
+                }
             }
         }
     }
