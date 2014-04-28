@@ -41,6 +41,7 @@ import org.apache.http.entity.mime.HttpMultipartMode
 import org.apache.http.entity.mime.MultipartEntity
 import org.apache.http.entity.mime.content.FileBody
 import org.apache.http.entity.mime.content.StringBody
+import org.apache.http.util.EntityUtils
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.TaskAction
@@ -96,9 +97,11 @@ class SiteUpload extends DefaultTask {
             response.failure = { res ->
                 logger.error 'upload failed: {}', res.statusLine
                 logger.info 'Response content type is {}', res.contentType
-                def data = res.data
-                if (data != null) {
-                    logger.error 'Response:\n{}', res.data
+                def str = EntityUtils.toString(res.entity)
+                if (str == null) {
+                    logger.info 'entity is null'
+                } else {
+                    logger.error 'Response:\n{}', str
                 }
             }
         }
