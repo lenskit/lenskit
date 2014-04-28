@@ -166,6 +166,7 @@ ext.masterProjects = ['lenskit-api', 'lenskit-core', 'lenskit-data-structures',
 task javadoc(type: Javadoc, group: 'build') {
     for (prj in masterProjects) {
         source project(prj).sourceSets.main.allJava
+        mustRunAfter ":$prj:javadoc"
     }
     destinationDir = file("$buildDir/docs/javadoc")
     classpath = configurations.allDeps
