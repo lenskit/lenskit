@@ -23,10 +23,10 @@ after_success:
 env:
   global:
   - TERM=dumb
-  # CI_DEPLOY_USER
-  - secure: D3tCdALkjsp9W1hs1A32FaIOB0VkGT6+dG8maFY+In7wAF2KQ/jkYkYG+uutPn01gjaZgQiaGzal+Ck97+kfHMnm4YrK41mCL6XbZy3O7x68e/VK0GUVOJf88L8/bH2OhS33KA9Bif73I1eBy4ZfuQhXeh/UXqh7zOyOnYV1sJQ=
-  # CI_DEPLOY_PASSwORD
-  - secure: IhWXB3LGdaEoiD7lgdaH83aVw/yK4T/f2lNalQn8skdA4nsLA1IWNgXU9MOFPTg50699oNiZOd39SptX5guZ25K0ov4nYXxPm1qCS6YpganfzeSiZ3sRZgBXKeTOnfzh8damVsDvebHYRMdPnjb1mELaoasNCHSfzprXL+PZois=
+  # DEPLOY_USER
+  - secure: "QUz7X25DVKDZic9H2gGOvsCREtSYPxz01eQgCrGOmq1Ad0z1xMq7BvppvqL4mSOqnGG3OW5zddNf1qn/dJAc6hP78ZwSqeKBXo8cuQzA/PsFb0OlKG+kCVM9b+lQQShCexDxsg5DVbnrewDwDOtSYvxbrnhgN0IjRUoHp92778A="
+  # DEPLOY_PASSWORD
+  - secure: "GbHF/yVGEmktYE6OLLdSoM5FQjwrVNhAPNQNhiu60Mrcs8e1v3DXR3oOTg0FIvIxW9u5fjh4HlnGJbZirDV+7DSgN0dRofzIc4DS3ciwtl+24ro8D/yBBNKROJqG73gv7nNH5MIcJXhSqtpzjt8STshPskDOqy1qsMpwbycxEVw="
   - SITE_UPLOAD_URL=http://dev.grouplens.org/cgi/lenskit/site_upload.py
   # UPLOAD_SECRET
   - secure: O3DZVMifyBuguxnoLHG9YiWyJd6tOjAXdT8Mve27iw3fT1T3yZ2Jfx/9RPYlvEfOYVXbpeEkR/aDb1d+4RiipF/77/1RIRl1Rh9c+sjsJPosc1zwJImHzeUBMFBBYzfI3X58qB7q0oRanUcA5bIBi9B7t+krybQZUWp9QEgnTIw=

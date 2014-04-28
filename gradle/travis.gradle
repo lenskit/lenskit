@@ -42,13 +42,6 @@ travis {
     releaseBranchPattern ~/^(master$|release\/)/
 }
 
-if (System.getenv('CI_DEPLOY_USER') != null) {
-    properties['deploy.user'] = System.getenv('CI_DEPLOY_USER')
-}
-if (System.getenv('CI_DEPLOY_PASSWORD') != null) {
-    properties['deploy.password'] = System.getenv('CI_DEPLOY_PASSWORD')
-}
-
 task ciPrep(group: 'deploy') {
     description 'Prepare CI build (travis install).'
 }
