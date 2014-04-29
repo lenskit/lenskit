@@ -55,9 +55,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -262,6 +260,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      * @return The task (for chaining).
      */
     public TrainTestEvalTask setIsolate(boolean iso) {
+        logger.warn("Eval task isolation is deprecated. Isolate data sets instead.");
         isolate = iso;
         return this;
     }
@@ -474,32 +473,38 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     DAGNode<JobGraph.Node,JobGraph.Edge> makeJobGraph(ExperimentSuite experiments, MeasurementSuite measurements, ExperimentOutputs outputs) throws TaskExecutionException {
         DAGNode<JobGraph.Node,JobGraph.Edge> graph = null;
         DAGNodeBuilder<JobGraph.Node,JobGraph.Edge> builder = DAGNode.newBuilder();
+        Multimap<UUID, TTDataSet> grouped = LinkedHashMultimap.create();
         for (TTDataSet dataset : experiments.getDataSets()) {
-            // Add LensKit algorithms
-            for (DAGNode<JobGraph.Node, JobGraph.Edge> node: makeAlgorithmNodes(experiments, measurements, dataset, outputs, graph)) {
-                builder.addEdge(node, JobGraph.edge());
-            }
-
-            // Add external algorithms
-            for (ExternalAlgorithm algo: experiments.getExternalAlgorithms()) {
-                TrainTestJob job = new ExternalEvalJob(this, algo, dataset, measurements,
-                                                       outputs.getPrefixed(algo, dataset));
-                DAGNode<JobGraph.Node, JobGraph.Edge> node =
-                        DAGNode.singleton(JobGraph.jobNode(job));
-                builder.addEdge(node, JobGraph.edge());
-            }
-
-            // Use dependencies to encode data set isolation
+            UUID grp = dataset.getIsolationGroup();
             if (isolate) {
-                builder.setLabel(JobGraph.noopNode("group " + dataset.toString()));
-                graph = builder.build();
-                builder = DAGNode.newBuilder();
+                // force isolation
+                grp = UUID.randomUUID();
             }
+            grouped.put(grp, dataset);
         }
-        if (graph == null) {
-            assert !isolate;
-            builder.setLabel(JobGraph.noopNode("root"));
+        for (UUID groupId: grouped.keySet()) {
+            Collection<TTDataSet> dss = grouped.get(groupId);
+            String groupName = dss.size() == 1 ? dss.iterator().next().getName() : groupId.toString();
+            for (TTDataSet dataset: dss) {
+                // Add LensKit algorithms
+                for (DAGNode<JobGraph.Node, JobGraph.Edge> node: makeAlgorithmNodes(experiments, measurements, dataset, outputs, graph)) {
+                    builder.addEdge(node, JobGraph.edge());
+                }
+
+                // Add external algorithms
+                for (ExternalAlgorithm algo: experiments.getExternalAlgorithms()) {
+                    TrainTestJob job = new ExternalEvalJob(this, algo, dataset, measurements,
+                                                           outputs.getPrefixed(algo, dataset));
+                    DAGNode<JobGraph.Node, JobGraph.Edge> node =
+                            DAGNode.singleton(JobGraph.jobNode(job));
+                    builder.addEdge(node, JobGraph.edge());
+                }
+            }
+
+            // use dependencies to encode isolation - queue up this group to be depended on bhy the previous.
+            builder.setLabel(JobGraph.noopNode("group " + groupName));
             graph = builder.build();
+            builder = DAGNode.newBuilder();
         }
         return graph;
     }
