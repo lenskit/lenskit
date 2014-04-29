@@ -32,6 +32,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * A train-test data set backed by a pair of factories.
@@ -48,12 +49,15 @@ public class GenericTTDataSet implements TTDataSet {
     private final DataSource queryData;
     @Nonnull
     private final DataSource testData;
+    @Nonnull
+    private final UUID group;
     private final Map<String, Object> attributes;
 
     public GenericTTDataSet(@Nonnull String name,
                             @Nonnull DataSource train,
                             @Nullable DataSource query,
                             @Nonnull DataSource test,
+                            UUID grp,
                             Map<String, Object> attrs) {
         Preconditions.checkNotNull(train, "no training data");
         Preconditions.checkNotNull(test, "no test data");
@@ -61,6 +65,7 @@ public class GenericTTDataSet implements TTDataSet {
         trainData = train;
         queryData = query;
         testData = test;
+        group = grp;
         if (attrs == null) {
             attributes = Collections.emptyMap();
         } else {
@@ -77,6 +82,11 @@ public class GenericTTDataSet implements TTDataSet {
     @Override
     public Map<String, Object> getAttributes() {
         return attributes;
+    }
+
+    @Override
+    public UUID getIsolationGroup() {
+        return group;
     }
 
     @Override
@@ -162,7 +172,8 @@ public class GenericTTDataSet implements TTDataSet {
         GenericTTDataBuilder builder = newBuilder(data.getName());
         builder.setTest(data.getTestData())
                .setQuery(data.getQueryData())
-               .setTrain(data.getTrainingData());
+               .setTrain(data.getTrainingData())
+               .setIsolationGroup(data.getIsolationGroup());
         for (Map.Entry<String,Object> attr: data.getAttributes().entrySet()) {
             builder.setAttribute(attr.getKey(), attr.getValue());
         }
