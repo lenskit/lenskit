@@ -20,10 +20,13 @@
  */
 package org.grouplens.lenskit.eval.data;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.traintest.CachingDAOProvider;
+import org.grouplens.lenskit.util.MoreSuppliers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,106 +37,73 @@ import org.slf4j.LoggerFactory;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class AbstractDataSource implements DataSource {
-    private transient volatile UserDAO userDAO;
-    private transient volatile UserEventDAO userEventDAO;
-    private transient volatile ItemDAO itemDAO;
-    private transient volatile ItemEventDAO itemEventDAO;
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final Supplier<EventDAO> eventDAOSupplier = new Supplier<EventDAO>() {
+        @Override
+        public EventDAO get() {
+            return getEventDAO();
+        }
+    };
+    private final Supplier<UserDAO> userDAOCache =
+            MoreSuppliers.softMemoize(Suppliers.compose(PrefetchingUserDAO.wrapper(),
+                                                        eventDAOSupplier));
+    private final Supplier<UserEventDAO> userEventDAOCache =
+            MoreSuppliers.softMemoize(Suppliers.compose(PrefetchingUserEventDAO.wrapper(),
+                                                        eventDAOSupplier));
+    private final Supplier<ItemDAO> itemDAOCache =
+            MoreSuppliers.softMemoize(Suppliers.compose(PrefetchingItemDAO.wrapper(),
+                                                        eventDAOSupplier));
+    private final Supplier<ItemEventDAO> itemEventDAOCache =
+            MoreSuppliers.softMemoize(Suppliers.compose(PrefetchingItemEventDAO.wrapper(),
+                                                        eventDAOSupplier));
 
     /**
      * Default user-event DAO implementation.  If the {@linkplain #getEventDAO() event DAO}
-     * implements {@link UserEventDAO}, it is returned directly; otherwise, a new {@link org.grouplens.lenskit.data.dao.PrefetchingUserEventDAO}
+     * implements {@link UserEventDAO}, it is returned directly; otherwise, a new {@link PrefetchingUserEventDAO}
      * is created.
      *
      * @return The user-event DAO.
      */
     @Override
     public UserEventDAO getUserEventDAO() {
-        if (userEventDAO == null) {
-            synchronized(this) {
-                if (userEventDAO == null) {
-                    EventDAO dao = getEventDAO();
-                    if (dao instanceof UserEventDAO) {
-                        userEventDAO = (UserEventDAO) dao;
-                    } else {
-                        userEventDAO = new PrefetchingUserEventDAO(dao);
-                    }
-                }
-            }
-        }
-        return userEventDAO;
+        return userEventDAOCache.get();
     }
 
     /**
      * Default item-event DAO implementation.  If the {@linkplain #getEventDAO() event DAO}
-     * implements {@link ItemEventDAO}, it is returned directly; otherwise, a new {@link org.grouplens.lenskit.data.dao.PrefetchingItemEventDAO}
+     * implements {@link ItemEventDAO}, it is returned directly; otherwise, a new {@link PrefetchingItemEventDAO}
      * is created.
      *
      * @return The item-event DAO.
      */
     @Override
     public ItemEventDAO getItemEventDAO() {
-        if (itemEventDAO == null) {
-            synchronized(this) {
-                if (itemEventDAO == null) {
-                    EventDAO dao = getEventDAO();
-                    if (dao instanceof ItemEventDAO) {
-                        itemEventDAO = (ItemEventDAO) dao;
-                    } else {
-                        itemEventDAO = new PrefetchingItemEventDAO(dao);
-                    }
-                }
-            }
-        }
-        return itemEventDAO;
+        return itemEventDAOCache.get();
     }
 
     /**
      * Default item DAO implementation.  If the {@linkplain #getEventDAO() event DAO}
-     * implements {@link ItemDAO}, it is returned directly; otherwise, a new {@link org.grouplens.lenskit.data.dao.PrefetchingItemDAO}
+     * implements {@link ItemDAO}, it is returned directly; otherwise, a new {@link PrefetchingItemDAO}
      * is created.
      *
      * @return The user-event DAO.
      */
     @Override
     public ItemDAO getItemDAO() {
-        if (itemDAO == null) {
-            synchronized(this) {
-                if (itemDAO == null) {
-                    EventDAO dao = getEventDAO();
-                    if (dao instanceof ItemDAO) {
-                        itemDAO = (ItemDAO) dao;
-                    } else {
-                        itemDAO = new PrefetchingItemDAO(dao);
-                    }
-                }
-            }
-        }
-        return itemDAO;
+        return itemDAOCache.get();
     }
 
     /**
      * Default user DAO implementation.  If the {@linkplain #getEventDAO() event DAO}
-     * implements {@link UserDAO}, it is returned directly; otherwise, a new {@link org.grouplens.lenskit.data.dao.PrefetchingUserDAO}
+     * implements {@link UserDAO}, it is returned directly; otherwise, a new {@link PrefetchingUserDAO}
      * is created.
      *
      * @return The user-event DAO.
      */
     @Override
     public UserDAO getUserDAO() {
-        if (userDAO == null) {
-            synchronized(this) {
-                if (userDAO == null) {
-                    EventDAO dao = getEventDAO();
-                    if (dao instanceof UserDAO) {
-                        userDAO = (UserDAO) dao;
-                    } else {
-                        userDAO = new PrefetchingUserDAO(dao);
-                    }
-                }
-            }
-        }
-        return userDAO;
+        return userDAOCache.get();
     }
 
     @Override
