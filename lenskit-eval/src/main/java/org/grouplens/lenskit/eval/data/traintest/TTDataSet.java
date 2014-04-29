@@ -55,12 +55,6 @@ public interface TTDataSet {
     Map<String, Object> getAttributes();
 
     /**
-     * Release the data set. Called when the train-test job group using this
-     * data set is finished.
-     */
-    void release();
-
-    /**
      * Get the training data.
      *
      * @return A data source containing the training data.

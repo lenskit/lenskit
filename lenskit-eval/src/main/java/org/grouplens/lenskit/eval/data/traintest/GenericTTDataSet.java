@@ -86,11 +86,6 @@ public class GenericTTDataSet implements TTDataSet {
     }
 
     @Override
-    public void release() {
-        /* no-op */
-    }
-
-    @Override
     public EventDAO getTrainingDAO() {
         return trainData.getEventDAO();
     }
