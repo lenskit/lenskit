@@ -20,6 +20,10 @@
  */
 package org.grouplens.lenskit.util.io;
 
+import org.apache.commons.compress.compressors.CompressorStreamFactory;
+import org.apache.commons.compress.compressors.gzip.GzipUtils;
+import org.apache.commons.compress.compressors.xz.XZUtils;
+
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -34,9 +38,36 @@ public enum CompressionMode {
      * @see java.util.zip.GZIPInputStream
      * @see java.util.zip.GZIPOutputStream
      */
-    GZIP,
+    GZIP(CompressorStreamFactory.GZIP),
     /**
      * Automatically infer compression from file extension.
      */
-    AUTO
+    AUTO {
+        @Override
+        public CompressionMode getEffectiveCompressionMode(String filename) {
+            if (GzipUtils.isCompressedFilename(filename)) {
+                return GZIP;
+            } else {
+                return NONE;
+            }
+        }
+    };
+
+    private String compName;
+
+    private CompressionMode() {
+        this(null);
+    }
+
+    private CompressionMode(String name) {
+        compName = name;
+    }
+
+    public String getCompressorName() {
+        return compName;
+    }
+
+    public CompressionMode getEffectiveCompressionMode(String filename) {
+        return this;
+    }
 }

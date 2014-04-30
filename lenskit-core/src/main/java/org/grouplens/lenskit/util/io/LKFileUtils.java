@@ -25,17 +25,14 @@ import com.google.common.io.Closeables;
 import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.WillCloseWhenClosed;
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * File utilities for LensKit. Called LKFileUtils to avoid conflict with FileUtils
@@ -71,20 +68,13 @@ public final class LKFileUtils {
      * @throws IOException if there is an error opening the file.
      */
     public static Reader openInput(File file, Charset charset, CompressionMode compression) throws IOException {
+        CompressionMode effComp = compression.getEffectiveCompressionMode(file.getName());
+        String comp = effComp.getCompressorName();
         InputStream istream = new FileInputStream(file);
         try {
             InputStream wrapped = istream;
-            switch (compression) {
-            case GZIP:
-                wrapped = new GZIPInputStream(istream);
-                break;
-            case AUTO:
-                if (isCompressed(file)) {
-                    wrapped = new GZIPInputStream(istream);
-                }
-                break;
-            default:
-                break;
+            if (comp != null) {
+                wrapped = new CompressorStreamFactory().createCompressorInputStream(comp, istream);
             }
             return new InputStreamReader(wrapped, charset);
         } catch (Exception ex) {
@@ -132,20 +122,13 @@ public final class LKFileUtils {
      * @throws IOException if there is an error opening the file.
      */
     public static Writer openOutput(File file, Charset charset, CompressionMode compression) throws IOException {
+        CompressionMode effComp = compression.getEffectiveCompressionMode(file.getName());
+        String comp = effComp.getCompressorName();
         OutputStream ostream = new FileOutputStream(file);
         try {
             OutputStream wrapped = ostream;
-            switch (compression) {
-            case GZIP:
-                wrapped = new GZIPOutputStream(ostream);
-                break;
-            case AUTO:
-                if (isCompressed(file)) {
-                    wrapped = new GZIPOutputStream(ostream);
-                }
-                break;
-            default:
-                break;
+            if (comp != null) {
+                wrapped = new CompressorStreamFactory().createCompressorOutputStream(comp, ostream);
             }
             return new OutputStreamWriter(wrapped, charset);
         } catch (Exception ex) {
