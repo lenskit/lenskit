@@ -71,6 +71,10 @@ allprojects { project ->
         support
     }
 
+    tasks.withType(Javadoc).all { task ->
+        task.options.encoding = 'UTF-8'
+    }
+
     extensions.create('git', GitExtension)
     apply from: "$rootDir/gradle/travis.gradle"
 
