@@ -35,6 +35,7 @@ import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.eval.AbstractTask;
+import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceBuilder;
@@ -525,6 +526,13 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         List<DAGNode<JobGraph.Node, JobGraph.Edge>> nodes = Lists.newArrayList();
         for (AlgorithmInstance algo: experiments.getAlgorithms()) {
             LenskitConfiguration dataConfig = new LenskitConfiguration();
+            ExecutionInfo info =ExecutionInfo.newBuilder()
+                    .setAlgoName(algo.getName())
+                    .setAlgoAttributes(algo.getAttributes())
+                    .setDataName(dataset.getName())
+                    .setDataAttributes(dataset.getAttributes())
+                    .build();
+            dataConfig.addComponent(info);
             dataset.configure(dataConfig);
             DAGNode<Component,Dependency> graph = algo.buildRecommenderGraph(dataConfig);
             TrainTestJob job = new LenskitEvalJob(this, algo, dataset, measurements,
@@ -551,6 +559,13 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         for (AlgorithmInstance algo: experiments.getAlgorithms()) {
             logger.debug("building graph for algorithm {}", algo);
             LenskitConfiguration dataConfig = new LenskitConfiguration();
+            ExecutionInfo info =ExecutionInfo.newBuilder()
+                    .setAlgoName(algo.getName())
+                    .setAlgoAttributes(algo.getAttributes())
+                    .setDataName(dataset.getName())
+                    .setDataAttributes(dataset.getAttributes())
+                    .build();
+            dataConfig.addComponent(info);
             dataset.configure(dataConfig);
             // Build the graph
             DAGNode<Component, Dependency> graph = algo.buildRecommenderGraph(dataConfig);
