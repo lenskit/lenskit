@@ -53,7 +53,9 @@ public final class LKFileUtils {
      *
      * @param file The file to query.
      * @return {@code true} if the file name ends in “.gz”.
+     * @deprecated Use {@link CompressionMode} or commons-compress facilities instead.
      */
+    @Deprecated
     public static boolean isCompressed(File file) {
         return file.getName().endsWith(".gz");
     }

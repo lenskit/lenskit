@@ -32,6 +32,7 @@ public enum CompressionMode {
      * No compression.
      */
     NONE,
+
     /**
      * GZip compression.
      *
@@ -39,6 +40,12 @@ public enum CompressionMode {
      * @see java.util.zip.GZIPOutputStream
      */
     GZIP(CompressorStreamFactory.GZIP),
+
+    /**
+     * XZ compression.
+     */
+    XZ(CompressorStreamFactory.XZ),
+
     /**
      * Automatically infer compression from file extension.
      */
@@ -47,6 +54,8 @@ public enum CompressionMode {
         public CompressionMode getEffectiveCompressionMode(String filename) {
             if (GzipUtils.isCompressedFilename(filename)) {
                 return GZIP;
+            } else if (XZUtils.isCompressedFilename(filename)) {
+                return XZ;
             } else {
                 return NONE;
             }
