@@ -25,7 +25,6 @@ import com.google.common.io.Closeables;
 import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,13 +70,9 @@ public final class LKFileUtils {
      */
     public static Reader openInput(File file, Charset charset, CompressionMode compression) throws IOException {
         CompressionMode effComp = compression.getEffectiveCompressionMode(file.getName());
-        String comp = effComp.getCompressorName();
         InputStream istream = new FileInputStream(file);
         try {
-            InputStream wrapped = istream;
-            if (comp != null) {
-                wrapped = new CompressorStreamFactory().createCompressorInputStream(comp, istream);
-            }
+            InputStream wrapped = effComp.wrapInput(istream);
             return new InputStreamReader(wrapped, charset);
         } catch (Exception ex) {
             Closeables.close(istream, true);
@@ -125,13 +120,9 @@ public final class LKFileUtils {
      */
     public static Writer openOutput(File file, Charset charset, CompressionMode compression) throws IOException {
         CompressionMode effComp = compression.getEffectiveCompressionMode(file.getName());
-        String comp = effComp.getCompressorName();
         OutputStream ostream = new FileOutputStream(file);
         try {
-            OutputStream wrapped = ostream;
-            if (comp != null) {
-                wrapped = new CompressorStreamFactory().createCompressorOutputStream(comp, ostream);
-            }
+            OutputStream wrapped = effComp.wrapOutput(ostream);
             return new OutputStreamWriter(wrapped, charset);
         } catch (Exception ex) {
             Closeables.close(ostream, true);
