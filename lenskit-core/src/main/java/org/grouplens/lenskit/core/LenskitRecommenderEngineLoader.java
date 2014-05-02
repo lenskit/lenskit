@@ -31,6 +31,7 @@ import org.grouplens.grapht.util.ClassLoaderContext;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
+import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.CustomClassLoaderObjectInputStream;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
@@ -51,6 +52,7 @@ public class LenskitRecommenderEngineLoader {
     private ClassLoader classLoader;
     private List<LenskitConfiguration> configurations = Lists.newArrayList();
     private EngineValidationMode validationMode = EngineValidationMode.IMMEDIATE;
+    private CompressionMode compressionMode = CompressionMode.AUTO;
 
     /**
      * Get the configured class loader.
@@ -98,7 +100,21 @@ public class LenskitRecommenderEngineLoader {
     }
 
     /**
-     * Load a recommender engine from an input stream.  The input data can be gzip-compressed.
+     * Set the compression mode to use.  The default is {@link CompressionMode#AUTO}.
+     * @param comp The compression mode.
+     */
+    public void setCompressionMode(CompressionMode comp) {
+        compressionMode = comp;
+    }
+
+    /**
+     * Load a recommender engine from an input stream.
+     * <p>
+     * <strong>Note:</strong> this method is only capable of auto-detecting gzip-compressed data.
+     * If the {@linkplain #setCompressionMode(CompressionMode) compression mode} is {@link CompressionMode#AUTO},
+     * only gzip-compressed streams are supported.  Set the compression mode manually if you are
+     * using XZ compression.
+     * </p>
      *
      * @param stream The input stream.
      * @return The deserialized recommender.
@@ -108,6 +124,38 @@ public class LenskitRecommenderEngineLoader {
      *                     the configurations applied to it.
      */
     public LenskitRecommenderEngine load(@WillClose InputStream stream) throws IOException, RecommenderConfigurationException {
+        InputStream decomp;
+        if (compressionMode == CompressionMode.AUTO) {
+            decomp = LKFileUtils.transparentlyDecompress(stream);
+        } else {
+            decomp = compressionMode.wrapInput(stream);
+        }
+        return loadInternal(decomp);
+    }
+
+    /**
+     * Load a recommender from a file.
+     *
+     * @param file The recommender model file to load.
+     * @return The recommender engine.
+     * @throws IOException if there is an error reading the input data.
+     * @throws RecommenderConfigurationException
+     *                     if there is a configuration error with the deserialized recommender or
+     *                     the configurations applied to it.
+     */
+    public LenskitRecommenderEngine load(File file) throws IOException, RecommenderConfigurationException {
+        logger.info("Loading recommender engine from {}", file);
+        FileInputStream input = new FileInputStream(file);
+        try {
+            CompressionMode effComp = compressionMode.getEffectiveCompressionMode(file.getName());
+            logger.info("using {} compression", effComp);
+            return loadInternal(effComp.wrapInput(input));
+        } finally {
+            input.close();
+        }
+    }
+
+    private LenskitRecommenderEngine loadInternal(InputStream stream) throws IOException, RecommenderConfigurationException {
         logger.debug("using classloader {}", classLoader);
         DAGNode<Component, Dependency> graph;
 
@@ -160,15 +208,5 @@ public class LenskitRecommenderEngineLoader {
         }
 
         return new LenskitRecommenderEngine(graph, instantiable);
-    }
-
-    public LenskitRecommenderEngine load(File file) throws IOException, RecommenderConfigurationException {
-        logger.info("Loading recommender engine from {}", file);
-        FileInputStream input = new FileInputStream(file);
-        try {
-            return load(input);
-        } finally {
-            input.close();
-        }
     }
 }
