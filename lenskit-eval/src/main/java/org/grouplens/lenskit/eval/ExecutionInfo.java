@@ -113,6 +113,10 @@ public class ExecutionInfo implements Serializable {
                   .hashCode();
     }
 
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
     public static class Builder implements org.apache.commons.lang3.builder.Builder<ExecutionInfo> {
         private String algoName;
         private Map<String, Object> algoAttributes = new HashMap<String, Object>();
