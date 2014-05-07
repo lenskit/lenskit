@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -29,6 +30,7 @@ import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -41,6 +43,29 @@ import javax.inject.Inject;
 public final class PrefetchingItemDAO implements ItemDAO, Describable {
     private final EventDAO eventDAO;
     private final Supplier<LongSet> itemCache;
+
+    /**
+     * A function that wraps an event DAO in a prefetching item DAO.  If the DAO already
+     * implements {@link ItemDAO}, it is returned unwrapped.
+     * @return A wrapper function to make item DAOs from event DAOs.
+     */
+    public static Function<EventDAO,ItemDAO> wrapper() {
+        return WrapperFunction.INSTANCE;
+    }
+
+    private static enum WrapperFunction implements Function<EventDAO,ItemDAO> {
+        INSTANCE;
+
+        @Nullable
+        @Override
+        public ItemDAO apply(@Nullable EventDAO input) {
+            if (input instanceof ItemDAO) {
+                return (ItemDAO) input;
+            } else {
+                return new PrefetchingItemDAO(input);
+            }
+        }
+    }
 
     @Inject
     public PrefetchingItemDAO(EventDAO events) {

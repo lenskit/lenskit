@@ -20,8 +20,10 @@
  */
 package org.grouplens.lenskit.util;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import org.grouplens.grapht.util.TypedProvider;
 
 import javax.inject.Provider;
@@ -59,6 +61,10 @@ public final class MoreSuppliers {
         return new SoftMemoizingSupplier<T>(supplier);
     }
 
+    public static <X,T> Supplier<T> curry(Function<? super X,T> func, X arg) {
+        return Suppliers.compose(func, Suppliers.ofInstance(arg));
+    }
+
     private abstract static class MemoizingSupplier<T> implements Supplier<T>, Serializable {
         private static final long serialVersionUID = 1L;
 
@@ -78,7 +84,7 @@ public final class MoreSuppliers {
             }
             if (obj == null) {
                 obj = delegate.get();
-                Preconditions.checkNotNull(obj, "cannot return object");
+                Preconditions.checkNotNull(obj, "cannot return null");
                 cache = makeReference(obj);
             }
             return obj;

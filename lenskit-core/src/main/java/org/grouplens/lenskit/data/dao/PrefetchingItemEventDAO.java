@@ -55,6 +55,29 @@ public final class PrefetchingItemEventDAO implements ItemEventDAO, Describable 
     private final EventDAO eventDAO;
     private final Supplier<Long2ObjectMap<List<Event>>> cache;
 
+    /**
+     * A function that wraps an event DAO in a prefetching item event DAO.  If the DAO already
+     * implements {@link ItemEventDAO}, it is returned unwrapped.
+     * @return A wrapper function to make item event DAOs from event DAOs.
+     */
+    public static Function<EventDAO,ItemEventDAO> wrapper() {
+        return WrapperFunction.INSTANCE;
+    }
+
+    private static enum WrapperFunction implements Function<EventDAO,ItemEventDAO> {
+        INSTANCE;
+
+        @Nullable
+        @Override
+        public ItemEventDAO apply(@Nullable EventDAO input) {
+            if (input instanceof ItemEventDAO) {
+                return (ItemEventDAO) input;
+            } else {
+                return new PrefetchingItemEventDAO(input);
+            }
+        }
+    }
+
     @Inject
     public PrefetchingItemEventDAO(EventDAO dao) {
         eventDAO = dao;
