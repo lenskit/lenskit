@@ -33,6 +33,7 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.History;
@@ -69,6 +70,8 @@ class ExternalEvalJob extends TrainTestJob {
     private final ExternalAlgorithm algorithm;
     private final UUID key;
     private Long2ObjectMap<SparseVector> userPredictions;
+    // References to hold on to the user event DAOs for test users
+    private UserEventDAO userTrainingEvents, userTestEvents;
 
     public ExternalEvalJob(TrainTestEvalTask task,
                            @Nonnull ExternalAlgorithm algo,
@@ -158,6 +161,9 @@ class ExternalEvalJob extends TrainTestJob {
         }
 
         userPredictions = vectors;
+
+        userTrainingEvents = dataSet.getTrainingData().getUserEventDAO();
+        userTestEvents = dataSet.getTestData().getUserEventDAO();
     }
 
     @Override
@@ -169,6 +175,8 @@ class ExternalEvalJob extends TrainTestJob {
     @Override
     protected void cleanup() {
         userPredictions = null;
+        userTrainingEvents = null;
+        userTestEvents = null;
     }
 
     private File getStagingDir() {
@@ -283,7 +291,7 @@ class ExternalEvalJob extends TrainTestJob {
 
         @Override
         public UserHistory<Event> getTrainHistory() {
-            UserHistory<Event> events = dataSet.getTrainingData().getUserEventDAO().getEventsForUser(userId);
+            UserHistory<Event> events = userTrainingEvents.getEventsForUser(userId);
             if(events == null){
                 return History.forUser(userId); //Creates an empty history for this particular user.
             } else {
@@ -293,7 +301,7 @@ class ExternalEvalJob extends TrainTestJob {
 
         @Override
         public UserHistory<Event> getTestHistory() {
-            return dataSet.getTestData().getUserEventDAO().getEventsForUser(userId);
+            return userTestEvents.getEventsForUser(userId);
         }
 
         @Override

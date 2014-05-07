@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.eval.data.traintest;
 
 import java.util.Map;
+import java.util.UUID;
 
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
@@ -55,10 +56,12 @@ public interface TTDataSet {
     Map<String, Object> getAttributes();
 
     /**
-     * Release the data set. Called when the train-test job group using this
-     * data set is finished.
+     * Get the isolation group ID for this data set.  Data sets in the same group will be allowed to
+     * run in parallel.  This is used to implement data set isolation.
+     *
+     * @return The group ID for this data set.
      */
-    void release();
+    UUID getIsolationGroup();
 
     /**
      * Get the training data.

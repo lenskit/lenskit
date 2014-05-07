@@ -48,6 +48,29 @@ public final class PrefetchingUserEventDAO implements UserEventDAO, Describable 
     private final EventDAO eventDAO;
     private final Supplier<Long2ObjectMap<UserHistory<Event>>> cache;
 
+    /**
+     * A function that wraps an event DAO in a prefetching user event DAO.  If the DAO already
+     * implements {@link UserEventDAO}, it is returned unwrapped.
+     * @return A wrapper function to make user event DAOs from event DAOs.
+     */
+    public static Function<EventDAO,UserEventDAO> wrapper() {
+        return WrapperFunction.INSTANCE;
+    }
+
+    private static enum WrapperFunction implements Function<EventDAO,UserEventDAO> {
+        INSTANCE;
+
+        @Nullable
+        @Override
+        public UserEventDAO apply(@Nullable EventDAO input) {
+            if (input instanceof UserEventDAO) {
+                return (UserEventDAO) input;
+            } else {
+                return new PrefetchingUserEventDAO(input);
+            }
+        }
+    }
+
     @Inject
     public PrefetchingUserEventDAO(EventDAO dao) {
         eventDAO = dao;

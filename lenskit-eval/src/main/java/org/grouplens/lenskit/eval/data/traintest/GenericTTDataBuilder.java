@@ -24,8 +24,10 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.eval.data.DataSource;
 
+import javax.annotation.Nonnull;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Builder for generic train-test data sets.
@@ -39,6 +41,7 @@ public class GenericTTDataBuilder implements Builder<GenericTTDataSet> {
     private DataSource testData;
     private Map<String, Object> attributes = new LinkedHashMap<String, Object>();
     private DataSource queryData;
+    private UUID isoGroup = new UUID(0, 0);
 
     public GenericTTDataBuilder() {
         this(null);
@@ -73,6 +76,17 @@ public class GenericTTDataBuilder implements Builder<GenericTTDataSet> {
         return this;
     }
 
+    /**
+     * Set the group ID for this data set.  The default is the all-0 UUID.
+     * @param group The group ID.
+     * @return The builder (for chaining).
+     */
+    public GenericTTDataBuilder setIsolationGroup(@Nonnull UUID group) {
+        Preconditions.checkNotNull(group, "group ID");
+        isoGroup = group;
+        return this;
+    }
+
     public String getName() {
         if (name != null) {
             return name;
@@ -96,6 +110,6 @@ public class GenericTTDataBuilder implements Builder<GenericTTDataSet> {
             attributes.put("DataSet", getName());
         }
         Preconditions.checkNotNull(trainingData, "train data is Null");
-        return new GenericTTDataSet(getName(), trainingData, queryData, testData, attributes);
+        return new GenericTTDataSet(getName(), trainingData, queryData, testData, isoGroup, attributes);
     }
 }
