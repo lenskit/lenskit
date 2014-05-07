@@ -258,7 +258,9 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      *
      * @param iso Whether to isolate data sets.
      * @return The task (for chaining).
+     * @deprecated Isolate data sets instead.
      */
+    @Deprecated
     public TrainTestEvalTask setIsolate(boolean iso) {
         logger.warn("Eval task isolation is deprecated. Isolate data sets instead.");
         isolate = iso;
@@ -501,7 +503,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                 }
             }
 
-            // use dependencies to encode isolation - queue up this group to be depended on bhy the previous.
+            // use dependencies to encode isolation - queue up this group to be depended on by the previous.
             builder.setLabel(JobGraph.noopNode("group " + groupName));
             graph = builder.build();
             builder = DAGNode.newBuilder();
