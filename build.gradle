@@ -231,7 +231,6 @@ task report(group: 'verification') {
     description 'Run all enabled quality reports.'
 }
 
-apply plugin: 'build-dashboard'
 apply from: "$rootDir/gradle/website.gradle"
 apply from: "$rootDir/gradle/idea.gradle"
 if (getConfigProperty('lint', 'false').toBoolean()) {

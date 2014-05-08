@@ -24,7 +24,3 @@ task jacocoMergedReport(type: JacocoReport) {
 }
 
 report.dependsOn jacocoMergedReport
-
-buildDashboard {
-    aggregate jacocoMergedReport
-}
