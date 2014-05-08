@@ -1,0 +1,30 @@
+allprojects {
+    apply plugin: 'jacoco'
+    jacoco {
+        toolVersion = '0.7.0.201403182114'
+    }
+}
+
+task jacocoMergedReport(type: JacocoReport) {
+    for (prj in subprojects) {
+        dependsOn prj.test
+        sourceSets prj.sourceSets.test
+        if (prj.sourceSets.test.allSource.files.isEmpty()) {
+            logger.info '{} has no tests', prj.name
+        } else {
+            logger.info 'aggregating tests from {}', prj.name
+            executionData prj.test
+        }
+    }
+    reports {
+        csv.enabled = false
+        xml.enabled = false
+        html.destination = "$reportsDir/jacoco"
+    }
+}
+
+report.dependsOn jacocoMergedReport
+
+buildDashboard {
+    aggregate jacocoMergedReport
+}

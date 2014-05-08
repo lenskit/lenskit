@@ -39,6 +39,7 @@ ext.webUrl = 'http://lenskit.grouplens.org'
 
 configurations {
     allDeps // collect all external dependencies of all modules
+    buildTools
 }
 
 allprojects { project ->
@@ -132,6 +133,7 @@ subprojects {
     test {
         maxHeapSize = '512m'
         enableAssertions = true
+        reports.junitXml.enabled = false
     }
     reportTests.reportOn test
 
@@ -225,8 +227,16 @@ allprojects {
     }
 }
 
+task report(group: 'verification') {
+    description 'Run all enabled quality reports.'
+}
+
+apply plugin: 'build-dashboard'
 apply from: "$rootDir/gradle/website.gradle"
 apply from: "$rootDir/gradle/idea.gradle"
+if (getConfigProperty('lint', 'false').toBoolean()) {
+    apply from: "$rootDir/gradle/lint.gradle"
+}
 
 if (file('local.gradle').exists()) {
     apply from: 'local.gradle'
