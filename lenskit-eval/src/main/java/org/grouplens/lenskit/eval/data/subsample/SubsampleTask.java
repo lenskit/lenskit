@@ -26,9 +26,9 @@ import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.data.CSVDataSourceBuilder;
 import org.grouplens.lenskit.eval.data.DataSource;
+import org.grouplens.lenskit.eval.data.RatingWriter;
+import org.grouplens.lenskit.eval.data.RatingWriters;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
-import org.grouplens.lenskit.util.table.writer.CSVWriter;
-import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -190,7 +190,7 @@ public class SubsampleTask extends AbstractTask<DataSource> {
             logger.info("sampling {} of {}",
                         subsampleFraction, source.getName());
             Closer closer = Closer.create();
-            TableWriter subsampleWriter = closer.register(CSVWriter.open(subsampleFile, null));
+            RatingWriter subsampleWriter = closer.register(RatingWriters.csv(subsampleFile));
             try {
                 mode.doSample(source, subsampleWriter, subsampleFraction, getProject().getRandom());
             } catch (Throwable th) {
