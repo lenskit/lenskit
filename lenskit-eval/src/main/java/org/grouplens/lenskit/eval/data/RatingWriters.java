@@ -20,10 +20,13 @@
  */
 package org.grouplens.lenskit.eval.data;
 
+import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
+import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.EnumSet;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -39,5 +42,25 @@ public final class RatingWriters {
      */
     public static RatingWriter csv(File file) throws IOException {
         return new CSVRatingWriter(CSVWriter.open(file, null));
+    }
+
+    /**
+     * Write ratings to a packed file.
+     * @param file The file to write to.
+     * @return The rating writer.
+     * @throws IOException if there is an error opening the file.
+     */
+    public static RatingWriter packed(File file, BinaryFormatFlag... flags) throws IOException {
+        return new PackedRatingWriter(BinaryRatingPacker.open(file, flags));
+    }
+
+    /**
+     * Write ratings to a packed file.
+     * @param file The file to write to.
+     * @return The rating writer.
+     * @throws IOException if there is an error opening the file.
+     */
+    public static RatingWriter packed(File file, EnumSet<BinaryFormatFlag> flags) throws IOException {
+        return new PackedRatingWriter(BinaryRatingPacker.open(file, flags));
     }
 }
