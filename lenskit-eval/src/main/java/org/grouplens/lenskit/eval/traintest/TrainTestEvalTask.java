@@ -533,12 +533,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         List<DAGNode<JobGraph.Node, JobGraph.Edge>> nodes = Lists.newArrayList();
         for (AlgorithmInstance algo: experiments.getAlgorithms()) {
             LenskitConfiguration dataConfig = new LenskitConfiguration();
-            ExecutionInfo info =ExecutionInfo.newBuilder()
-                    .setAlgoName(algo.getName())
-                    .setAlgoAttributes(algo.getAttributes())
-                    .setDataName(dataset.getName())
-                    .setDataAttributes(dataset.getAttributes())
-                    .build();
+            ExecutionInfo info = ExecutionInfo.newBuilder()
+                                              .setAlgorithm(algo)
+                                              .setDataSet(dataset)
+                                              .build();
             dataConfig.addComponent(info);
             dataset.configure(dataConfig);
             DAGNode<Component,Dependency> graph = algo.buildRecommenderGraph(dataConfig);
@@ -566,12 +564,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         for (AlgorithmInstance algo: experiments.getAlgorithms()) {
             logger.debug("building graph for algorithm {}", algo);
             LenskitConfiguration dataConfig = new LenskitConfiguration();
-            ExecutionInfo info =ExecutionInfo.newBuilder()
-                    .setAlgoName(algo.getName())
-                    .setAlgoAttributes(algo.getAttributes())
-                    .setDataName(dataset.getName())
-                    .setDataAttributes(dataset.getAttributes())
-                    .build();
+            ExecutionInfo info = ExecutionInfo.newBuilder()
+                                              .setAlgorithm(algo)
+                                              .setDataSet(dataset)
+                                              .build();
             dataConfig.addComponent(info);
             dataset.configure(dataConfig);
             // Build the graph

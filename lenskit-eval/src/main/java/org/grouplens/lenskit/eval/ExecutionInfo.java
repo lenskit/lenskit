@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -43,15 +44,12 @@ public class ExecutionInfo implements Serializable {
 
     private final String algoName;
     private final Map<String, Object> algoAttributes;
-    private final String dataName;
-    private final Map<String, Object> dataAttributes;
+    private final TTDataSet dataSet;
 
-    private ExecutionInfo(String aName, Map<String, Object> aAttrs,
-                          String dsName, Map<String, Object> dsAttrs) {
+    private ExecutionInfo(String aName, Map<String, Object> aAttrs, TTDataSet data) {
         algoName = aName;
         algoAttributes = ImmutableMap.copyOf(aAttrs);
-        dataName = dsName;
-        dataAttributes = ImmutableMap.copyOf(dsAttrs);
+        dataSet = data;
     }
 
     /**
@@ -75,7 +73,7 @@ public class ExecutionInfo implements Serializable {
      * @return The data set name.
      */
     public String getDataName() {
-        return dataName;
+        return dataSet.getName();
     }
 
     /**
@@ -83,7 +81,16 @@ public class ExecutionInfo implements Serializable {
      * @return The data set attributes.
      */
     public Map<String, Object> getDataAttributes() {
-        return dataAttributes;
+        return dataSet.getAttributes();
+    }
+
+    /**
+     * Get the active train-test data set.  Note that this method provides access to the test
+     * data, enabling an algorithm to cheat.  <strong>Be careful not to cheat.</strong>
+     * @return The active train-test data set.
+     */
+    public TTDataSet getDataSet() {
+        return dataSet;
     }
 
     @Override
@@ -95,8 +102,7 @@ public class ExecutionInfo implements Serializable {
             EqualsBuilder eqb = new EqualsBuilder();
             return eqb.append(algoName, eo.algoName)
                       .append(algoAttributes, eo.algoAttributes)
-                      .append(dataName, eo.dataName)
-                      .append(dataAttributes, eo.dataAttributes)
+                      .append(dataSet, eo.dataSet)
                       .isEquals();
         } else {
             return false;
@@ -108,46 +114,51 @@ public class ExecutionInfo implements Serializable {
         HashCodeBuilder hcb = new HashCodeBuilder();
         return hcb.append(algoName)
                   .append(algoAttributes)
-                  .append(dataName)
-                  .append(dataAttributes)
+                  .append(dataSet)
                   .hashCode();
     }
 
+    /**
+     * Create a new builder to build instances.
+     * @return A new builder for execution info instances.
+     */
     public static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Builder for {@link ExecutionInfo} instances.
+     */
     public static class Builder implements org.apache.commons.lang3.builder.Builder<ExecutionInfo> {
         private String algoName;
         private Map<String, Object> algoAttributes = new HashMap<String, Object>();
-        private String dataName;
-        private Map<String, Object> dataAttributes = new HashMap<String, Object>();
+        private TTDataSet dataSet;
 
+        @SuppressWarnings("deprecation")
+        public Builder setAlgorithm(Attributed algorithm) {
+            return setAlgoName(algorithm.getName()).setAlgoAttributes(algorithm.getAttributes());
+        }
+
+        @Deprecated
         public Builder setAlgoName(String algoName) {
             this.algoName = algoName;
             return this;
         }
 
+        @Deprecated
         public Builder setAlgoAttributes(Map<String, Object> attrs) {
             algoAttributes = new HashMap<String,Object>(attrs);
             return this;
         }
 
-        public Builder setDataName(String dataName) {
-            this.dataName = dataName;
-            return this;
-        }
-
-        public Builder setDataAttributes(Map<String, Object> attrs) {
-            dataAttributes = new HashMap<String, Object>(attrs);
+        public Builder setDataSet(TTDataSet data) {
+            dataSet = data;
             return this;
         }
 
         @Override
         public ExecutionInfo build() {
-            return new ExecutionInfo(algoName, algoAttributes,
-                                     dataName, dataAttributes
-            );
+            return new ExecutionInfo(algoName, algoAttributes, dataSet);
         }
     }
 }
