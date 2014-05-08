@@ -35,17 +35,15 @@ import org.grouplens.lenskit.knn.item.ModelSize
 def dataDir = config['lenskit.movielens.100k']
 
 trainTest {
-    dataset pack {
-        dataset crossfold("ML100K") {
-            source csvfile("$dataDir/u.data") {
-                delimiter "\t"
-            }
-            partitions 5
-            holdout 5
-            train 'train.%d.csv'
-            test 'test.%d.csv'
+    dataset crossfold("ML100K") {
+        source csvfile("$dataDir/u.data") {
+            delimiter "\t"
         }
-        includeTimestamps false
+        partitions 5
+        holdout 5
+        train 'train.%d.pack'
+        test 'test.%d.pack'
+        writeTimestamps false
     }
 
     componentCacheDirectory "cache"

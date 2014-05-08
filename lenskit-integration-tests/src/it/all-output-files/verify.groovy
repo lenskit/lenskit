@@ -45,7 +45,7 @@ assertThat("output file existence",
 assertThat("output file existence",
            recommendFile, existingFile());
 
-assertThat(new File(basedir, 'train.1.csv.pack'),
+assertThat(new File(basedir, 'train.1.pack'),
            existingFile())
 
 // Verify that we have 5 distinct item-item models
