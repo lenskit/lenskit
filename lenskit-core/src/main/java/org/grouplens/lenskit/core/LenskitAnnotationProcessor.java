@@ -55,16 +55,13 @@ public class LenskitAnnotationProcessor extends AbstractProcessor {
     @Override
     public SourceVersion getSupportedSourceVersion() {
         // support version 6 or 7
-        // we can't compile against RELEASE_6 and maintain Java 7 compatibility, but the
+        // we can't compile against RELEASE_7 and maintain Java 6 compatibility, but the
         // processor is Java 7-compatible. We have not tested against Java 8, however.
         SourceVersion[] versions = SourceVersion.values();
         SourceVersion v6 = SourceVersion.RELEASE_6;
-        if (versions.length > v6.ordinal() + 1) {
-            // the runtime supports release 7, let's use it
-            return versions[v6.ordinal() + 1];
-        } else {
-            return v6;
-        }
+        assert v6.ordinal() < versions.length;
+        // we support up through Java 8
+        return versions[Math.min(v6.ordinal() + 2, versions.length - 1)];
     }
 
     private Messager getLog() {
