@@ -98,6 +98,10 @@ allprojects {
                 links 'http://fastutil.dsi.unimi.it/docs/'
                 links 'http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/'
                 links 'http://dev.grouplens.org/grapht/apidocs/'
+
+                footer "<script type=\"text/javascript\"\n" +
+                               "   src=\"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTMLorMML\">\n" +
+                               "</script>"
             }
         }
     }
