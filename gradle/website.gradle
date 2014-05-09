@@ -48,6 +48,14 @@ task webZip(type: Zip) {
     from(reportTests) {
         into 'tests'
     }
+
+    def cov = tasks.findByName('jacocoMergedReport')
+    if (cov != null) {
+        dependsOn cov
+        from (cov) {
+            into 'coverage'
+        }
+    }
 }
 
 task uploadWeb(type: SiteUpload, group: 'upload', dependsOn: webZip) {
