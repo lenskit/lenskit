@@ -1,3 +1,5 @@
+logger.lifecycle 'Enabling lint support in LensKit build'
+
 allprojects {
     apply plugin: 'jacoco'
     jacoco {
