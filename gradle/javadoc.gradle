@@ -1,0 +1,104 @@
+/*
+ * Build system for LensKit, and open-source recommender systems toolkit.
+ * Copyright 2010-2013 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * - Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the
+ *   distribution.
+ *
+ * - Neither the name of the University of Minnesota nor the names of
+ *   its contributors may be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+// Aggregate documentation
+ext.masterProjects = ['lenskit-api', 'lenskit-core', 'lenskit-data-structures',
+                      'lenskit-groovy', 'lenskit-eval', 'lenskit-cli',
+                      'lenskit-knn', 'lenskit-svd',
+                      'lenskit-slopeone', 'lenskit-predict']
+task javadoc(type: Javadoc, group: 'build') {
+    for (prj in masterProjects) {
+        source project(prj).sourceSets.main.allJava
+        mustRunAfter ":$prj:javadoc"
+    }
+    destinationDir = file("$buildDir/docs/javadoc")
+    classpath = configurations.allDeps
+    title = "LensKit $version"
+}
+
+// Set up JavaDoc configuration
+allprojects {
+    if (name == 'build-support') {
+        logger.info 'not configurationg JavaDoc for build-support'
+        return;
+    }
+    logger.info 'configuring JavaDoc for {}', name
+    dependencies {
+        // We need the GroupLens taglets
+        support project(':build-support')
+    }
+    tasks.withType(Javadoc) { task ->
+        task.configure {
+            dependsOn ':build-support:jar'
+            options {
+                tags 'todo:a:To Do:', 'review:a:Review:'
+
+                // grab the taglets from the support classpath
+                tagletPath configurations.support.files.toList()
+                taglets 'org.grouplens.javadoc.taglets.ExtraInlineTaglet'
+                taglets 'org.grouplens.javadoc.taglets.CompatTaglet'
+
+                jFlags "-Dgrouplens.javadoc.versioning.url=$webUrl/versioning.html"
+
+                group 'General API', 'org.grouplens.lenskit'
+                group('Core', 'org.grouplens.lenskit.core',
+                      'org.grouplens.lenskit.basic', 'org.grouplens.lenskit.config')
+                group('Data Structures', 'org.grouplens.lenskit.vectors',
+                      'org.grouplens.lenskit.collections', 'org.grouplens.lenskit.symbols',
+                      'org.grouplens.lenskit.scored', 'org.grouplens.lenskit.indexes')
+                group('Data Access', 'org.grouplens.lenskit.data*',
+                      'org.grouplens.lenskit.cursors')
+                group('Data Transformation',
+                      'org.grouplens.lenskit.baseline*', 'org.grouplens.lenskit.transform*',
+                      'org.grouplens.lenskit.vectors.*')
+                group('Recommender Implementations',
+                      'org.grouplens.lenskit.predict*', 'org.grouplens.lenskit.knn*',
+                      'org.grouplens.lenskit.mf*', 'org.grouplens.lenskit.slopeone*')
+                group('Recommender Evaluation and Tooling',
+                      'org.grouplens.lenskit.eval*',
+                      'org.grouplens.lenskit.cli*')
+                group('Utility Classes',
+                      'org.grouplens.lenskit.util*',
+                      'org.grouplens.lenskit.test*',
+                      'org.grouplens.lenskit.inject',
+                      'org.grouplens.lenskit.iterative')
+
+                links 'http://fastutil.dsi.unimi.it/docs/'
+                links 'http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/'
+                links 'http://dev.grouplens.org/grapht/apidocs/'
+            }
+        }
+    }
+}
