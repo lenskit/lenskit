@@ -99,9 +99,7 @@ allprojects {
                 links 'http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/'
                 links 'http://dev.grouplens.org/grapht/apidocs/'
 
-                footer "<script type=\"text/javascript\"\n" +
-                               "   src=\"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTMLorMML\">\n" +
-                               "</script>"
+                footer "<script type=\"text/javascript\" src=\"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTMLorMML\"></script>"
             }
         }
     }
