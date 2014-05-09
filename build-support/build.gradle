@@ -33,15 +33,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-rootProject.name = 'lenskit'
+/*
+ * This package provides build support for LensKit (e.g. custom JavaDoc
+ * configuration).
+ */
 
-include 'build-support'
-include 'lenskit-test'
-include 'lenskit-data-structures'
-include 'lenskit-api'
-include 'lenskit-core', 'lenskit-groovy'
-include 'lenskit-eval'
-include 'lenskit-knn', 'lenskit-svd', 'lenskit-slopeone', 'lenskit-predict'
-include 'lenskit-all'
-include 'lenskit-cli'
-include 'lenskit-integration-tests'
+apply plugin: 'java'
+
+def findToolsJar() {
+    logger.info 'looking for tools.jar'
+    def jdkHome = System.getenv('JAVA_HOME')
+    if (jdkHome != null) {
+        logger.info 'tools.jar: looking in {} (from $JAVA_HOME)', jdkHome
+        File jar = file("$jdkHome/lib/tools.jar")
+        if (jar.exists()) {
+            logger.info 'found {}', jar
+            return jar
+        } else {
+            logger.warn 'JAVA_HOME={} does not have tools.jar', jdkHome
+        }
+    }
+    jdkHome = file(System.properties['java.home'] + '/..')
+    logger.info 'tools.jar: looking in {} (from java.home)', jdkHome
+    File jar = file("$jdkHome/lib/tools.jar")
+    if (jar.exists()) {
+        logger.info 'found {}', jar
+        return jar
+    } else {
+        logger.warn 'java.home={} does not have tools.jar', jdkHome
+    }
+}
+
+dependencies {
+    def toolsJar = findToolsJar()
+    if (toolsJar != null) {
+        compile files(toolsJar)
+    } else {
+        logger.error 'could not find tools.jar'
+    }
+}

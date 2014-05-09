@@ -179,13 +179,20 @@ task javadoc(type: Javadoc, group: 'build') {
     title = "LensKit $version"
 }
 
+// Set up JavaDoc configuration
 allprojects {
+    if (name == 'build-support') {
+        logger.info 'not configurationg JavaDoc for build-support'
+        return;
+    }
+    logger.info 'configuring JavaDoc for {}', name
     dependencies {
         // We need the GroupLens taglets
-        support group: 'org.grouplens.common', name: 'common-javadoc', version: '0.8'
+        support project(':build-support')
     }
     tasks.withType(Javadoc) { task ->
         task.configure {
+            dependsOn ':build-support:jar'
             options {
                 tags 'todo:a:To Do:', 'review:a:Review:'
 
