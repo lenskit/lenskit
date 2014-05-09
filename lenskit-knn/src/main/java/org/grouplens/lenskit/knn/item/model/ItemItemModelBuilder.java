@@ -161,6 +161,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
             return rows[idx];
         }
 
+        @SuppressWarnings("deprecation")
         public SimilarityMatrixModel build() {
             ArrayList<List<ScoredId>> dataBuilder = Lists.newArrayListWithCapacity(rows.length);
             for (int i = 0; i < rows.length; i++) {
