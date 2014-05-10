@@ -73,6 +73,8 @@ dependencies {
     }
 }
 
-license {
-    header rootProject.file('etc/build-header.txt')
+if (plugins.hasPlugin('license')) {
+    license {
+        header rootProject.file('etc/build-header.txt')
+    }
 }
