@@ -32,16 +32,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-rootProject.name = 'lenskit'
-
-include 'build-support'
-include 'lenskit-test'
-include 'lenskit-data-structures'
-include 'lenskit-api'
-include 'lenskit-core', 'lenskit-groovy'
-include 'lenskit-eval'
-include 'lenskit-knn', 'lenskit-svd', 'lenskit-slopeone', 'lenskit-predict'
-include 'lenskit-all'
-include 'lenskit-cli'
-include 'lenskit-integration-tests'
+/**
+ * Custom taglets for LensKit.
+ */
+package org.grouplens.javadoc.taglets;

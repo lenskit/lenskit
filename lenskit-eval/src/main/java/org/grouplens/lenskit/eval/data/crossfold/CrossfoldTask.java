@@ -22,6 +22,7 @@ package org.grouplens.lenskit.eval.data.crossfold;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
+import com.google.common.io.Files;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
@@ -30,6 +31,7 @@ import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.UserDAO;
+import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.UserHistory;
@@ -38,20 +40,19 @@ import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.data.CSVDataSourceBuilder;
 import org.grouplens.lenskit.eval.data.DataSource;
+import org.grouplens.lenskit.eval.data.RatingWriter;
+import org.grouplens.lenskit.eval.data.RatingWriters;
+import org.grouplens.lenskit.eval.data.pack.PackedDataSourceBuilder;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
-import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * The command to build and run a crossfold on the data source file and output the partition files
@@ -71,6 +72,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     private CrossfoldMethod method = CrossfoldMethod.PARTITION_USERS;
     private int sampleSize = 1000;
     private boolean isolate = false;
+    private boolean writeTimestamps = true;
 
     public CrossfoldTask() {
         super(null);
@@ -274,7 +276,25 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     public boolean getIsolate() {
         return isolate;
     }
-    
+
+    /**
+     * Configure whether to include timestamps in the output file.
+     * @param pack {@code true} to include timestamps (the default), {@code false} otherwise.
+     * @return The task (for chaining).
+     */
+    public CrossfoldTask setWriteTimestamps(boolean pack) {
+        writeTimestamps = pack;
+        return this;
+    }
+
+    /**
+     * Query whether timestamps will be written.
+     * @return {@code true} if output will include timestamps.
+     */
+    public boolean getWriteTimestamps() {
+        return writeTimestamps;
+    }
+
     /**
      * Get the visible name of this crossfold split.
      *
@@ -405,15 +425,15 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     protected void createTTFiles() throws IOException {
         File[] trainFiles = getFiles(getTrainPattern());
         File[] testFiles = getFiles(getTestPattern());
-        TableWriter[] trainWriters = new TableWriter[partitionCount];
-        TableWriter[] testWriters = new TableWriter[partitionCount];
+        RatingWriter[] trainWriters = new RatingWriter[partitionCount];
+        RatingWriter[] testWriters = new RatingWriter[partitionCount];
         Closer closer = Closer.create();
         try {
             for (int i = 0; i < partitionCount; i++) {
                 File train = trainFiles[i];
                 File test = testFiles[i];
-                trainWriters[i] = closer.register(CSVWriter.open(train, null));
-                testWriters[i] = closer.register(CSVWriter.open(test, null));
+                trainWriters[i] = closer.register(makeWriter(train));
+                testWriters[i] = closer.register(makeWriter(test));
             }
             switch (method) {
             case PARTITION_USERS:
@@ -434,11 +454,12 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     /**
      * Write the split files by Users from the DAO using specified holdout method
      * 
+     *
      * @param trainWriters The tableWriter that write train files
      * @param testWriters  The tableWriter that writ test files
      * @throws org.grouplens.lenskit.eval.TaskExecutionException
      */
-    protected void writeTTFilesByUsers(TableWriter[] trainWriters, TableWriter[] testWriters) throws TaskExecutionException {
+    protected void writeTTFilesByUsers(RatingWriter[] trainWriters, RatingWriter[] testWriters) throws TaskExecutionException {
         logger.info("splitting data source {} to {} partitions by users",
                     getName(), partitionCount);
         Long2IntMap splits = splitUsers(source.getUserDAO());
@@ -455,14 +476,14 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
                     if (f == foldNum) {
                         final int p = mode.partition(ratings, getProject().getRandom());
                         for (int j = 0; j < p; j++) {
-                            writeRating(trainWriters[f], ratings.get(j));
+                            trainWriters[f].writeRating(ratings.get(j));
                         }
                         for (int j = p; j < n; j++) {
-                            writeRating(testWriters[f], ratings.get(j));
+                            testWriters[f].writeRating(ratings.get(j));
                         }
                     } else {
                         for (Rating rating : CollectionUtils.fast(ratings)) {
-                            writeRating(trainWriters[f], rating);
+                            trainWriters[f].writeRating(rating);
                         }
                     }
                 }
@@ -478,11 +499,12 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     /**
      * Write the split files by Ratings from the DAO
      * 
+     *
      * @param trainWriters The tableWriter that write train files
      * @param testWriters  The tableWriter that writ test files
      * @throws org.grouplens.lenskit.eval.TaskExecutionException
      */
-    protected void writeTTFilesByRatings(TableWriter[] trainWriters, TableWriter[] testWriters) throws TaskExecutionException {
+    protected void writeTTFilesByRatings(RatingWriter[] trainWriters, RatingWriter[] testWriters) throws TaskExecutionException {
         logger.info("splitting data source {} to {} partitions by ratings",
                     getName(), partitionCount);
         ArrayList<Rating> ratings = Cursors.makeList(source.getEventDAO().streamEvents(Rating.class));
@@ -493,9 +515,9 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
                 for (int f = 0; f < partitionCount; f++) {
                     int foldNum = i % partitionCount;
                     if (f == foldNum) {
-                        writeRating(testWriters[f], ratings.get(i));
+                        testWriters[f].writeRating(ratings.get(i));
                     } else {
-                        writeRating(trainWriters[f], ratings.get(i));
+                        trainWriters[f].writeRating(ratings.get(i));
                     }
                 }
             }
@@ -585,24 +607,45 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
         File[] trainFiles = getFiles(getTrainPattern());
         File[] testFiles = getFiles(getTestPattern());
         for (int i = 0; i < partitionCount; i++) {
-            CSVDataSourceBuilder trainBuilder = new CSVDataSourceBuilder()
-                    .setDomain(source.getPreferenceDomain())
-                    .setFile(trainFiles[i]);
-            CSVDataSourceBuilder testBuilder = new CSVDataSourceBuilder()
-                    .setDomain(source.getPreferenceDomain())
-                    .setFile(testFiles[i]);
             GenericTTDataBuilder ttBuilder = new GenericTTDataBuilder(getName() + "." + i);
             if (isolate) {
                 ttBuilder.setIsolationGroup(UUID.randomUUID());
             }
 
-            dataSets.add(ttBuilder.setTest(testBuilder.build())
-                                  .setTrain(trainBuilder.build())
+            dataSets.add(ttBuilder.setTest(makeDataSource(testFiles[i]))
+                                  .setTrain(makeDataSource(trainFiles[i]))
                                   .setAttribute("DataSet", getName())
                                   .setAttribute("Partition", i)
                                   .build());
         }
         return dataSets;
+    }
+
+    protected RatingWriter makeWriter(File file) throws IOException {
+        if (Files.getFileExtension(file.getName()).equals("pack")) {
+            EnumSet<BinaryFormatFlag> flags = BinaryFormatFlag.makeSet();
+            if (writeTimestamps) {
+                flags.add(BinaryFormatFlag.TIMESTAMPS);
+            }
+            return RatingWriters.packed(file, flags);
+        } else {
+            // FIXME Support writeTimestamps in CSV output
+            return RatingWriters.csv(file);
+        }
+    }
+
+    protected DataSource makeDataSource(File file) {
+        if (Files.getFileExtension(file.getName()).equals("pack")) {
+            return new PackedDataSourceBuilder()
+                    .setDomain(source.getPreferenceDomain())
+                    .setFile(file)
+                    .build();
+        } else {
+            return new CSVDataSourceBuilder()
+                    .setDomain(source.getPreferenceDomain())
+                    .setFile(file)
+                    .build();
+        }
     }
 
     @Override

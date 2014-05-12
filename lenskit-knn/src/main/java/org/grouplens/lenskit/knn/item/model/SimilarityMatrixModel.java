@@ -21,9 +21,11 @@
 package org.grouplens.lenskit.knn.item.model;
 
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.LongKeyDomain;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.scored.ScoredId;
 
@@ -31,6 +33,7 @@ import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Item-item similarity model using an in-memory similarity matrix.
@@ -57,10 +60,28 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
      *
      * @param items The item domain.
      * @param nbrs  The item neighborhoods.
+     * @deprecated This is deprecated for public usage.  It is better to use the other constructor.
      */
+    @Deprecated
     public SimilarityMatrixModel(LongKeyDomain items, List<List<ScoredId>> nbrs) {
         itemDomain = items.clone();
         neighborhoods = ImmutableList.copyOf(nbrs);
+    }
+
+    /**
+     * Construct a new item-item model.
+     *
+     * @param nbrs  The item neighborhoods.
+     */
+    public SimilarityMatrixModel(Map<Long,List<ScoredId>> nbrs) {
+        itemDomain = LongKeyDomain.fromCollection(nbrs.keySet(), true);
+        int n = itemDomain.domainSize();
+        assert n == nbrs.size();
+        ImmutableList.Builder<List<ScoredId>> neighbors = ImmutableList.builder();
+        for (int i = 0; i < n; i++) {
+            neighbors.add(nbrs.get(itemDomain.getKey(i)));
+        }
+        neighborhoods = neighbors.build();
     }
 
     @Override

@@ -77,7 +77,11 @@ public class StaticInjector implements Injector, Function<DAGNode<Component,Depe
     }
 
     public <T> T getInstance(Class<? extends Annotation> qual, Class<T> type) {
-        DAGNode<Component, Dependency> node = findSatisfyingNode(Qualifiers.match(qual), type);
+        return getInstance(Qualifiers.match(qual), type);
+    }
+
+    public <T> T getInstance(QualifierMatcher qmatch, Class<T> type) {
+        DAGNode<Component, Dependency> node = findSatisfyingNode(qmatch, type);
         if (node != null) {
             return type.cast(instantiate(node));
         } else {
@@ -163,7 +167,7 @@ public class StaticInjector implements Injector, Function<DAGNode<Component,Depe
 
     @Override
     public <T> T getInstance(Annotation qualifier, Class<T> type) {
-        throw new UnsupportedOperationException();
+        return getInstance(Qualifiers.match(qualifier), type);
     }
 
     private class DepSrc implements ProviderSource {

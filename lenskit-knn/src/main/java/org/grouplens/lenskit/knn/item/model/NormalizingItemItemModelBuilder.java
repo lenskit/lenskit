@@ -81,6 +81,7 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
     }
 
 
+    @SuppressWarnings("deprecation")
     @Override
     public SimilarityMatrixModel get() {
         logger.debug("building item-item model");

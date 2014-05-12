@@ -33,6 +33,7 @@ import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.eval.data.DataSource;
+import org.grouplens.lenskit.eval.data.RatingWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 
 import java.io.IOException;
@@ -49,7 +50,7 @@ import java.util.Random;
 public enum SubsampleMode {
     RATING {
         @Override
-        public void doSample(DataSource source, TableWriter output, double fraction, Random rng) throws IOException {
+        public void doSample(DataSource source, RatingWriter output, double fraction, Random rng) throws IOException {
             List<Rating> ratings = Cursors.makeList(source.getEventDAO().streamEvents(Rating.class));
             final int n = ratings.size();
             final int m = (int)(fraction * n);
@@ -57,13 +58,13 @@ public enum SubsampleMode {
                 int j = rng.nextInt(n-1-i) + i;
                 final Rating rating = ratings.get(j);
                 ratings.set(j, ratings.get(i));        
-                writeRating(output, rating);     
+                output.writeRating(rating);
             }
         }
     },
     ITEM {
         @Override
-        public void doSample(DataSource source, TableWriter output, double fraction, Random rng) throws IOException {
+        public void doSample(DataSource source, RatingWriter output, double fraction, Random rng) throws IOException {
             ItemDAO idao = source.getItemDAO();
             ItemEventDAO edao = source.getItemEventDAO();
             LongArrayList itemList = new LongArrayList(idao.getItemIds());
@@ -75,14 +76,14 @@ public enum SubsampleMode {
                 final long item = iter.nextLong();
                 List<Rating> events = edao.getEventsForItem(item, Rating.class);
                 for (Rating rating: CollectionUtils.fast(events)) {
-                    writeRating(output, rating);
+                    output.writeRating(rating);
                 }
             }
         }
     },
     USER {
         @Override
-        public void doSample(DataSource source, TableWriter output, double fraction, Random rng) throws IOException {
+        public void doSample(DataSource source, RatingWriter output, double fraction, Random rng) throws IOException {
             UserDAO udao = source.getUserDAO();
             UserEventDAO edao = source.getUserEventDAO();
             LongArrayList userList = new LongArrayList(udao.getUserIds());
@@ -94,7 +95,7 @@ public enum SubsampleMode {
                 final long user = iter.nextLong();
                 List<Rating> events = edao.getEventsForUser(user, Rating.class);
                 for (Rating rating: CollectionUtils.fast(events)) {
-                    writeRating(output, rating);
+                    output.writeRating(rating);
                 }
             }
         }
@@ -109,23 +110,5 @@ public enum SubsampleMode {
      * @param fraction The fraction of data to keep.
      * @throws IOException if there is an error sampling the data set.
      */
-    public abstract void doSample(DataSource source, TableWriter output, double fraction, Random rng) throws IOException;
-
-    /**
-     * Writing a rating event to the file using table output
-     *
-     * @param output The table output to output the rating
-     * @param rating The rating event to output
-     * @throws IOException The output IO error
-     */
-    private static void writeRating(TableWriter output, Rating rating) throws IOException {
-        Preference pref = rating.getPreference();
-        Object[] row = {
-                Long.toString(rating.getUserId()),
-                Long.toString(rating.getItemId()),
-                pref != null ? Double.toString(pref.getValue()) : "NaN",
-                Long.toString(rating.getTimestamp())
-        };
-        output.writeRow(row);
-    }
+    public abstract void doSample(DataSource source, RatingWriter output, double fraction, Random rng) throws IOException;
 }

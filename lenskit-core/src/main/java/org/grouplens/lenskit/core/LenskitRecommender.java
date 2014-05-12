@@ -83,6 +83,21 @@ public class LenskitRecommender implements Recommender {
         return injector.getInstance(qual, cls);
     }
 
+    /**
+     * Get a particular qualified component from the recommender session.  Generally you
+     * want to use one of the type-specific getters; this method only exists for
+     * specialized applications which need deep access to the recommender
+     * components.
+     *
+     * @param <T> The type of component to get.
+     * @param qual The qualifying annotation of the component class.
+     * @param cls The component class to get.
+     * @return The instance of the specified component.
+     */
+    public <T> T get(Annotation qual, Class<T> cls) {
+        return injector.getInstance(qual, cls);
+    }
+
     @Override
     public ItemScorer getItemScorer() {
         return get(ItemScorer.class);
