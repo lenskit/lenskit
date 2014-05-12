@@ -160,19 +160,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     public void write(@Nonnull File file, CompressionMode compressed) throws IOException {
         OutputStream out = new FileOutputStream(file);
         try {
-            switch (compressed) {
-            case GZIP:
-                out = new GZIPOutputStream(out);
-                break;
-            case AUTO:
-                if (LKFileUtils.isCompressed(file)) {
-                    out = new GZIPOutputStream(out);
-                }
-                break;
-            case NONE:
-            default:
-                break;
-            }
+            out = compressed.getEffectiveCompressionMode(file.getName()).wrapOutput(out);
             write(out);
         } finally {
             out.close();

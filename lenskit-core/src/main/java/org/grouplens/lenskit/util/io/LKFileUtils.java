@@ -25,17 +25,13 @@ import com.google.common.io.Closeables;
 import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.WillCloseWhenClosed;
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * File utilities for LensKit. Called LKFileUtils to avoid conflict with FileUtils
@@ -56,7 +52,9 @@ public final class LKFileUtils {
      *
      * @param file The file to query.
      * @return {@code true} if the file name ends in “.gz”.
+     * @deprecated Use {@link CompressionMode} or commons-compress facilities instead.
      */
+    @Deprecated
     public static boolean isCompressed(File file) {
         return file.getName().endsWith(".gz");
     }
@@ -71,21 +69,10 @@ public final class LKFileUtils {
      * @throws IOException if there is an error opening the file.
      */
     public static Reader openInput(File file, Charset charset, CompressionMode compression) throws IOException {
+        CompressionMode effComp = compression.getEffectiveCompressionMode(file.getName());
         InputStream istream = new FileInputStream(file);
         try {
-            InputStream wrapped = istream;
-            switch (compression) {
-            case GZIP:
-                wrapped = new GZIPInputStream(istream);
-                break;
-            case AUTO:
-                if (isCompressed(file)) {
-                    wrapped = new GZIPInputStream(istream);
-                }
-                break;
-            default:
-                break;
-            }
+            InputStream wrapped = effComp.wrapInput(istream);
             return new InputStreamReader(wrapped, charset);
         } catch (Exception ex) {
             Closeables.close(istream, true);
@@ -132,21 +119,10 @@ public final class LKFileUtils {
      * @throws IOException if there is an error opening the file.
      */
     public static Writer openOutput(File file, Charset charset, CompressionMode compression) throws IOException {
+        CompressionMode effComp = compression.getEffectiveCompressionMode(file.getName());
         OutputStream ostream = new FileOutputStream(file);
         try {
-            OutputStream wrapped = ostream;
-            switch (compression) {
-            case GZIP:
-                wrapped = new GZIPOutputStream(ostream);
-                break;
-            case AUTO:
-                if (isCompressed(file)) {
-                    wrapped = new GZIPOutputStream(ostream);
-                }
-                break;
-            default:
-                break;
-            }
+            OutputStream wrapped = effComp.wrapOutput(ostream);
             return new OutputStreamWriter(wrapped, charset);
         } catch (Exception ex) {
             Closeables.close(ostream, true);
