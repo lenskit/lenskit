@@ -622,6 +622,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     }
 
     protected RatingWriter makeWriter(File file) throws IOException {
+        Files.createParentDirs(file);
         if (Files.getFileExtension(file.getName()).equals("pack")) {
             EnumSet<BinaryFormatFlag> flags = BinaryFormatFlag.makeSet();
             if (writeTimestamps) {
