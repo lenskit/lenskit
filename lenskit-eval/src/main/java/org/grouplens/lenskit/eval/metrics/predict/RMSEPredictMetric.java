@@ -94,7 +94,7 @@ public class RMSEPredictMetric extends AbstractMetric<RMSEPredictMetric.Context,
     public static class AggregateResult {
         @ResultColumn("RMSE.ByUser")
         public final double userRMSE;
-        @ResultColumn("RUSE.ByRating")
+        @ResultColumn("RMSE.ByRating")
         public final double globalRMSE;
 
         public AggregateResult(double uerr, double gerr) {
