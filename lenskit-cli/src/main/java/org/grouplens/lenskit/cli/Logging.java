@@ -55,6 +55,10 @@ public final class Logging {
                .type(File.class)
                .metavar("FILE")
                .help("write logging output to FILE");
+        logging.addArgument("--log-level")
+               .type(String.class)
+               .metavar("LEVEL")
+               .help("include logging messages at LEVEL in log file");
         logging.addArgument("-d", "--debug")
                .action(Arguments.storeTrue())
                .help("include debug logging in console output");
@@ -88,6 +92,8 @@ public final class Logging {
         root.addAppender(console);
 
         if (logFile != null) {
+            String lstr = options.getString("log_level");
+            Level logLevel = Level.toLevel(lstr, Level.INFO);
             FileAppender<ILoggingEvent> fileOutput = new FileAppender<ILoggingEvent>();
             fileOutput.setContext(context);
             fileOutput.setFile(logFile.getAbsolutePath());
@@ -98,7 +104,7 @@ public final class Logging {
             fileOutput.setEncoder(filePat);
             fileOutput.start();
             root.addAppender(fileOutput);
-            root.setLevel(Level.DEBUG);
+            root.setLevel(logLevel);
             if (!debug) {
                 ThresholdFilter filter = new ThresholdFilter();
                 filter.setContext(context);
