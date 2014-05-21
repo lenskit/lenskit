@@ -66,5 +66,3 @@ task uploadWeb(type: SiteUpload, group: 'upload', dependsOn: webZip) {
     branch travis.branch
     onlyIf { travis.publishingActive && hmacDigest != null && uploadUrl != null }
 }
-
-ciPublish.addTask uploadWeb
