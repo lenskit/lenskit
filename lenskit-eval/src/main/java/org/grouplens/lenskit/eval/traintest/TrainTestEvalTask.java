@@ -400,6 +400,8 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                 closer.close();
             }
 
+            logger.info("evaluation {} completed", getName());
+
             return resultsBuilder.build();
         } catch (IOException e) {
             throw new TaskExecutionException("I/O error", e);
