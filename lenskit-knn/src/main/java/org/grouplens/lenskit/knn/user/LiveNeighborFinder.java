@@ -137,7 +137,7 @@ public class LiveNeighborFinder implements NeighborFinder {
         return !Double.isNaN(sim) && !Double.isInfinite(sim) && threshold.retain(sim);
     }
 
-    private SparseVector getUserRatingVector(long user) {
+    private MutableSparseVector getUserRatingVector(long user) {
         List<Rating> ratings = userDAO.getEventsForUser(user, Rating.class);
         if (ratings == null){
             return null;
@@ -159,14 +159,14 @@ public class LiveNeighborFinder implements NeighborFinder {
         protected Neighbor computeNext() {
             while (neighborIter.hasNext()) {
                 final long neighbor = neighborIter.nextLong();
-                SparseVector nbrRatings = getUserRatingVector(neighbor);
+                MutableSparseVector nbrRatings = getUserRatingVector(neighbor);
                 if (nbrRatings != null) {
-                    MutableSparseVector nbrNormed = nbrRatings.mutableCopy();
-                    normalizer.normalize(neighbor, nbrRatings, nbrNormed);
-                    final double sim = similarity.similarity(user, userVector, neighbor, nbrNormed);
+                    ImmutableSparseVector rawRatings = nbrRatings.immutable();
+                    normalizer.normalize(neighbor, rawRatings, nbrRatings);
+                    final double sim = similarity.similarity(user, userVector, neighbor, nbrRatings);
                     if (acceptSimilarity(sim)) {
                         // we have found a neighbor
-                        return new Neighbor(neighbor, nbrRatings, sim);
+                        return new Neighbor(neighbor, rawRatings, sim);
                     }
                 }
             }
