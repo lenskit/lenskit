@@ -172,6 +172,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
                                                         Neighbor.SIMILARITY_COMPARATOR));
         }
 
+        int neighborsUsed = 0;
         for (Neighbor nbr: neighborFinder.getCandidateNeighbors(user, items)) {
             for (VectorEntry e: nbr.vector.fast()) {
                 final long item = e.getKey();
@@ -181,10 +182,14 @@ public class UserUserItemScorer extends AbstractItemScorer {
                     if (heap.size() > neighborhoodSize) {
                         assert heap.size() == neighborhoodSize + 1;
                         heap.remove();
+                    } else {
+                        neighborsUsed += 1;
                     }
                 }
             }
         }
+        logger.debug("using {} neighbors across {} items",
+                     neighborsUsed, items.size());
         return heaps;
     }
 }
