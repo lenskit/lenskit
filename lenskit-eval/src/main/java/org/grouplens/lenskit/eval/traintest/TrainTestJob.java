@@ -26,6 +26,7 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.eval.Attributed;
@@ -37,6 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -113,7 +115,6 @@ abstract class TrainTestJob implements Callable<Void> {
 
             logger.info("Measuring {} on {}", algorithmInfo.getName(), dataSet.getName());
 
-            logger.info("Testing {}", algorithmInfo.getName());
             StopWatch testTimer = new StopWatch();
             testTimer.start();
             List<Object> userRow = Lists.newArrayList();
@@ -125,6 +126,12 @@ abstract class TrainTestJob implements Callable<Void> {
             }
 
             LongSet testUsers = dataSet.getTestData().getUserDAO().getUserIds();
+            final NumberFormat pctFormat = NumberFormat.getPercentInstance();
+            pctFormat.setMaximumFractionDigits(2);
+            pctFormat.setMinimumFractionDigits(2);
+            final int nusers = testUsers.size();
+            logger.info("Testing {} on {} ({} users)", algorithmInfo, dataSet, nusers);
+            int ndone = 0;
             for (LongIterator iter = testUsers.iterator(); iter.hasNext();) {
                 if (Thread.interrupted()) {
                     throw new InterruptedException("eval job interrupted");
@@ -156,6 +163,17 @@ abstract class TrainTestJob implements Callable<Void> {
                     }
                 }
                 userRow.clear();
+
+                ndone += 1;
+                if (ndone % 100 == 0) {
+                    testTimer.split();
+                    double time = testTimer.getSplitTime();
+                    double tpu = time / ndone;
+                    double tleft = (nusers - ndone) * tpu;
+                    logger.info("tested {} of {} users ({}), ETA {}",
+                                ndone, nusers, pctFormat.format(((double) ndone) / nusers),
+                                DurationFormatUtils.formatDurationHMS((long) tleft));
+                }
             }
             testTimer.stop();
             logger.info("Tested {} in {}", algorithmInfo.getName(), testTimer);
