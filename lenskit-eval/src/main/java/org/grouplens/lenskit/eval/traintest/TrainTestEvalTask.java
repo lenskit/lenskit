@@ -543,6 +543,9 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                 graph = mergePool.merge(graph);
                 logger.debug("algorithm {} has {} new configuration nodes", algo,
                              Sets.difference(graph.getReachableNodes(), allNodes).size());
+            } else {
+                // there should be no common nodes
+                assert Sets.intersection(allNodes, graph.getReachableNodes()).isEmpty();
             }
             allNodes.addAll(graph.getReachableNodes());
 
@@ -557,29 +560,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                 nb.addEdge(commonDep, JobGraph.edge());
             }
 
-            // Scan for all nodes we depend on. The first to introduce a node gets it.
-            assert nodes.size() == graphs.size();
-            Set<DAGNode<Component,Dependency>> seen = Sets.newHashSet();
-            logger.debug("finding dependencies of {}", job);
-            for (int i = 0; i < nodes.size(); i++) {
-                DAGNode<Component, Dependency> other = graphs.get(i);
-                Set<DAGNode<Component,Dependency>> freshCommon = Sets.newHashSet();
-                freshCommon.addAll(graph.getReachableNodes());
-                freshCommon.retainAll(other.getReachableNodes());
-                freshCommon.removeAll(seen);
-                if (!freshCommon.isEmpty()) {
-                    // new nodes, make a dependency
-                    logger.debug("{} depends on {} for {} nodes",
-                                 job, nodes.get(i).getLabel(),
-                                 freshCommon.size());
-                    for (DAGNode<Component, Dependency> shared: freshCommon) {
-                        logger.debug("it will reuse {}",
-                                     shared.getLabel().getSatisfaction());
-                    }
-                    nb.addEdge(nodes.get(i), JobGraph.edge(freshCommon));
-                }
-                seen.addAll(freshCommon);
+            if (!separateAlgorithms) {
+                addJobDependencies(nodes, graphs, graph, nb);
             }
+
             graphs.add(graph);
             DAGNode<JobGraph.Node, JobGraph.Edge> jobNode = nb.build();
             logger.debug("{} has {} dependencies", job, jobNode.getAdjacentNodes().size());
@@ -592,6 +576,35 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             nodes.add(jobNode);
         }
         return nodes;
+    }
+
+    private void addJobDependencies(List<DAGNode<JobGraph.Node, JobGraph.Edge>> priorJobs,
+                                    List<DAGNode<Component, Dependency>> priorGraphs,
+                                    DAGNode<Component, Dependency> graph,
+                                    DAGNodeBuilder<JobGraph.Node, JobGraph.Edge> jobNode) {
+        assert priorJobs.size() == priorGraphs.size();
+        Set<DAGNode<Component,Dependency>> seen = Sets.newHashSet();
+        logger.debug("finding dependencies of {}", jobNode.getLabel());
+        // Scan for all nodes we depend on. The first to introduce a node gets it.
+        for (int i = 0; i < priorJobs.size(); i++) {
+            DAGNode<Component, Dependency> other = priorGraphs.get(i);
+            Set<DAGNode<Component,Dependency>> freshCommon = Sets.newHashSet();
+            freshCommon.addAll(graph.getReachableNodes());
+            freshCommon.retainAll(other.getReachableNodes());
+            freshCommon.removeAll(seen);
+            if (!freshCommon.isEmpty()) {
+                // new nodes, make a dependency
+                logger.debug("{} depends on {} for {} nodes",
+                             jobNode.getLabel(), priorJobs.get(i).getLabel(),
+                             freshCommon.size());
+                for (DAGNode<Component, Dependency> shared: freshCommon) {
+                    logger.debug("it will reuse {}",
+                                 shared.getLabel().getSatisfaction());
+                }
+                jobNode.addEdge(priorJobs.get(i), JobGraph.edge(freshCommon));
+            }
+            seen.addAll(freshCommon);
+        }
     }
 
     /**
