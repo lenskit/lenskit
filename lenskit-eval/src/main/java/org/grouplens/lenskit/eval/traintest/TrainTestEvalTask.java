@@ -384,8 +384,12 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
             try {
                 ExperimentOutputs outputs = openExperimentOutputs(layout, measurements, resultsBuilder, closer);
-                DAGNode<JobGraph.Node,JobGraph.Edge> jobGraph =
-                        makeJobGraph(experiments, measurements, outputs);
+                DAGNode<JobGraph.Node,JobGraph.Edge> jobGraph;
+                try {
+                    jobGraph = makeJobGraph(experiments, measurements, outputs);
+                } catch (RecommenderConfigurationException ex) {
+                    throw new TaskExecutionException("Recommender configuration error", ex);
+                }
                 if (taskGraphFile != null) {
                     logger.info("writing task graph to {}", taskGraphFile);
                     JobGraph.writeGraphDescription(jobGraph, taskGraphFile);
@@ -475,7 +479,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         }
     }
 
-    DAGNode<JobGraph.Node,JobGraph.Edge> makeJobGraph(ExperimentSuite experiments, MeasurementSuite measurements, ExperimentOutputs outputs) throws TaskExecutionException {
+    DAGNode<JobGraph.Node,JobGraph.Edge> makeJobGraph(ExperimentSuite experiments, MeasurementSuite measurements, ExperimentOutputs outputs) throws RecommenderConfigurationException {
         DAGNode<JobGraph.Node,JobGraph.Edge> graph = null;
         DAGNodeBuilder<JobGraph.Node,JobGraph.Edge> builder = DAGNode.newBuilder();
         Multimap<UUID, TTDataSet> grouped = LinkedHashMultimap.create();
@@ -514,49 +518,8 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return graph;
     }
 
-    public List<DAGNode<JobGraph.Node,JobGraph.Edge>>
-    makeAlgorithmNodes(ExperimentSuite experiments, MeasurementSuite measurements,
-                       TTDataSet dataset, ExperimentOutputs outputs,
-                       DAGNode<JobGraph.Node, JobGraph.Edge> commonDep) throws TaskExecutionException {
-        try {
-            if (separateAlgorithms) {
-                return makeSeparateAlgoNodes(experiments, measurements, dataset, outputs, commonDep);
-            } else {
-                return makeMergedAlgoNodes(experiments, measurements, dataset, outputs, commonDep);
-            }
-        } catch (RecommenderConfigurationException ex) {
-            throw new TaskExecutionException("error configuring recommender", ex);
-        }
-    }
-
     private List<DAGNode<JobGraph.Node, JobGraph.Edge>>
-    makeSeparateAlgoNodes(ExperimentSuite experiments, MeasurementSuite measurements, TTDataSet dataset, ExperimentOutputs outputs,
-                          DAGNode<JobGraph.Node, JobGraph.Edge> commonDep) throws RecommenderConfigurationException {
-        List<DAGNode<JobGraph.Node, JobGraph.Edge>> nodes = Lists.newArrayList();
-        for (AlgorithmInstance algo: experiments.getAlgorithms()) {
-            LenskitConfiguration dataConfig = new LenskitConfiguration();
-            ExecutionInfo info = ExecutionInfo.newBuilder()
-                                              .setAlgorithm(algo)
-                                              .setDataSet(dataset)
-                                              .build();
-            dataConfig.addComponent(info);
-            dataset.configure(dataConfig);
-            DAGNode<Component,Dependency> graph = algo.buildRecommenderGraph(dataConfig);
-            TrainTestJob job = new LenskitEvalJob(this, algo, dataset, measurements,
-                                                  outputs.getPrefixed(algo, dataset),
-                                                  graph, null);
-            DAGNodeBuilder<JobGraph.Node, JobGraph.Edge> nb = DAGNode.newBuilder();
-            nb.setLabel(JobGraph.jobNode(job));
-            if (commonDep != null) {
-                nb.addEdge(commonDep, JobGraph.edge());
-            }
-            nodes.add(nb.build());
-        }
-        return nodes;
-    }
-
-    private List<DAGNode<JobGraph.Node, JobGraph.Edge>>
-    makeMergedAlgoNodes(ExperimentSuite experiments, MeasurementSuite measurements, TTDataSet dataset, ExperimentOutputs outputs,
+    makeAlgorithmNodes(ExperimentSuite experiments, MeasurementSuite measurements, TTDataSet dataset, ExperimentOutputs outputs,
                         DAGNode<JobGraph.Node, JobGraph.Edge> commonDep) throws RecommenderConfigurationException {
         List<DAGNode<JobGraph.Node, JobGraph.Edge>> nodes = Lists.newArrayList();
         MergePool<Component, Dependency> mergePool = MergePool.create();
@@ -574,10 +537,13 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             dataset.configure(dataConfig);
             // Build the graph
             DAGNode<Component, Dependency> graph = algo.buildRecommenderGraph(dataConfig);
-            // Merge it with all previously-seen graphs
-            graph = mergePool.merge(graph);
-            logger.debug("algorithm {} has {} new configuration nodes", algo,
-                         Sets.difference(graph.getReachableNodes(), allNodes).size());
+
+            if (!separateAlgorithms) {
+                logger.debug("merging algorithm {} with previous graphs", algo);
+                graph = mergePool.merge(graph);
+                logger.debug("algorithm {} has {} new configuration nodes", algo,
+                             Sets.difference(graph.getReachableNodes(), allNodes).size());
+            }
             allNodes.addAll(graph.getReachableNodes());
 
             // Create the job
@@ -617,6 +583,12 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             graphs.add(graph);
             DAGNode<JobGraph.Node, JobGraph.Edge> jobNode = nb.build();
             logger.debug("{} has {} dependencies", job, jobNode.getAdjacentNodes().size());
+
+            // make sure that the job is separated properly, if requested
+            assert !separateAlgorithms ||
+                   (commonDep == null && jobNode.getAdjacentNodes().isEmpty()) ||
+                   (jobNode.getAdjacentNodes().size() == 1 && jobNode.getAdjacentNodes().contains(commonDep));
+
             nodes.add(jobNode);
         }
         return nodes;
