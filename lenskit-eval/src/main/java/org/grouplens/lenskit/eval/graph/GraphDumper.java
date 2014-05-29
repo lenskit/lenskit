@@ -36,7 +36,7 @@ import org.grouplens.grapht.reflect.Satisfaction;
 import org.grouplens.grapht.reflect.SatisfactionVisitor;
 import org.grouplens.lenskit.core.Parameter;
 import org.grouplens.lenskit.inject.GraphtUtils;
-import org.grouplens.lenskit.inject.GraphSharingProcessor;
+import org.grouplens.lenskit.inject.RecommenderInstantiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -333,7 +333,7 @@ public class GraphDumper {
                                    File graphvizFile) throws IOException {
         logger.debug("graph has {} nodes", graph.getReachableNodes().size());
         logger.debug("simulating instantiation");
-        GraphSharingProcessor instantiator = GraphSharingProcessor.create(graph);
+        RecommenderInstantiator instantiator = RecommenderInstantiator.create(graph);
         DAGNode<Component, Dependency> unshared = instantiator.simulate();
         logger.debug("unshared graph has {} nodes", unshared.getReachableNodes().size());
         Closer close = Closer.create();

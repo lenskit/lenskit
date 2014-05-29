@@ -20,11 +20,8 @@
  */
 package org.grouplens.lenskit.inject;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
-import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
@@ -32,9 +29,6 @@ import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -44,27 +38,27 @@ import java.util.Set;
  * @compat Experimental
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class GraphSharingProcessor {
-    private static final Logger logger = LoggerFactory.getLogger(GraphSharingProcessor.class);
+public final class RecommenderInstantiator {
+    private static final Logger logger = LoggerFactory.getLogger(RecommenderInstantiator.class);
     private final DAGNode<Component, Dependency> graph;
     private final NodeInstantiator instantiator;
 
 
-    public static GraphSharingProcessor create(DAGNode<Component,Dependency> g) {
-        return new GraphSharingProcessor(g, NodeInstantiator.create());
+    public static RecommenderInstantiator create(DAGNode<Component,Dependency> g) {
+        return new RecommenderInstantiator(g, NodeInstantiator.create());
     }
 
-    public static GraphSharingProcessor create(DAGNode<Component,Dependency> g,
+    public static RecommenderInstantiator create(DAGNode<Component,Dependency> g,
                                                NodeInstantiator instantiator) {
-        return new GraphSharingProcessor(g, instantiator);
+        return new RecommenderInstantiator(g, instantiator);
     }
 
     @Deprecated
-    public static GraphSharingProcessor forConfig(LenskitConfiguration config) throws RecommenderConfigurationException {
+    public static RecommenderInstantiator forConfig(LenskitConfiguration config) throws RecommenderConfigurationException {
         return create(config.buildGraph());
     }
 
-    private GraphSharingProcessor(DAGNode<Component, Dependency> g, NodeInstantiator inst) {
+    private RecommenderInstantiator(DAGNode<Component, Dependency> g, NodeInstantiator inst) {
         graph = g;
         instantiator = inst;
     }
@@ -108,60 +102,12 @@ public final class GraphSharingProcessor {
      */
     private DAGNode<Component,Dependency> replaceShareableNodes(NodeProcessor replace) {
         logger.debug("replacing nodes in graph with {} nodes", graph.getReachableNodes().size());
-        Set<DAGNode<Component,Dependency>> toReplace = getShareableNodes(graph);
+        Set<DAGNode<Component,Dependency>> toReplace = GraphtUtils.getShareableNodes(graph);
         logger.debug("found {} shared nodes", toReplace.size());
 
-        Map<DAGNode<Component,Dependency>,DAGNode<Component,Dependency>> memory = Maps.newHashMap();
-        DAGNode<Component, Dependency> newGraph = graph;
-        for (DAGNode<Component,Dependency> original : toReplace) {
-            // look up this node in case it's already been replaced due to edge modifications
-            DAGNode<Component, Dependency> node = original;
-            while (memory.containsKey(node)) {
-                node = memory.get(node);
-            }
-
-            // now look up and replace this node
-            DAGNode<Component,Dependency> repl = replace.processNode(node, original);
-            if (repl != node) {
-                newGraph = newGraph.replaceNode(node, repl, memory);
-            }
-        }
-
-        logger.debug("final graph has {} nodes", newGraph.getReachableNodes().size());
-        return newGraph;
-    }
-
-    /**
-     * Find the set of shareable nodes (objects that will be replaced with instance satisfactions in
-     * the final graph).
-     *
-     *
-     * @param graph The graph to analyze.
-     * @return The set of root nodes - nodes that need to be instantiated and removed. These nodes
-     *         are in topologically sorted order.
-     */
-    private LinkedHashSet<DAGNode<Component, Dependency>> getShareableNodes(DAGNode<Component, Dependency> graph) {
-        LinkedHashSet<DAGNode<Component, Dependency>> shared = Sets.newLinkedHashSet();
-
-        List<DAGNode<Component, Dependency>> nodes = graph.getSortedNodes();
-        for (DAGNode<Component, Dependency> node : nodes) {
-            if (!GraphtUtils.isShareable(node)) {
-                continue;
-            }
-
-            // see if we depend on any non-shared nodes
-            // since nodes are sorted, all shared nodes will have been seen
-            boolean isShared = true;
-            for (DAGEdge<Component,Dependency> edge: node.getOutgoingEdges()) {
-                if (!GraphtUtils.edgeIsTransient(edge)) {
-                    isShared &= shared.contains(edge.getTail());
-                }
-            }
-            if (isShared) {
-                shared.add(node);
-            }
-        }
-
-        return shared;
+        DAGNode<Component, Dependency> result =
+                NodeProcessors.processNodes(graph, toReplace, replace);
+        logger.debug("final graph has {} nodes", result.getReachableNodes().size());
+        return result;
     }
 }

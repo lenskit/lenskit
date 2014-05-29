@@ -24,6 +24,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 import org.grouplens.grapht.CachePolicy;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
@@ -45,6 +46,7 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -252,4 +254,37 @@ public final class GraphtUtils {
             Ordering.<String>natural()
                     .lexicographical()
                     .onResultOf(ORDER_KEY);
+
+    /**
+     * Find the set of shareable nodes (objects that will be replaced with instance satisfactions in
+     * the final graph).
+     *
+     * @param graph The graph to analyze.
+     * @return The set of root nodes - nodes that need to be instantiated and removed. These nodes
+     *         are in topologically sorted order.
+     */
+    static LinkedHashSet<DAGNode<Component, Dependency>> getShareableNodes(DAGNode<Component, Dependency> graph) {
+        LinkedHashSet<DAGNode<Component, Dependency>> shared = Sets.newLinkedHashSet();
+
+        List<DAGNode<Component, Dependency>> nodes = graph.getSortedNodes();
+        for (DAGNode<Component, Dependency> node : nodes) {
+            if (!isShareable(node)) {
+                continue;
+            }
+
+            // see if we depend on any non-shared nodes
+            // since nodes are sorted, all shared nodes will have been seen
+            boolean isShared = true;
+            for (DAGEdge<Component,Dependency> edge: node.getOutgoingEdges()) {
+                if (!edgeIsTransient(edge)) {
+                    isShared &= shared.contains(edge.getTail());
+                }
+            }
+            if (isShared) {
+                shared.add(node);
+            }
+        }
+
+        return shared;
+    }
 }

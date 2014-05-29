@@ -31,7 +31,7 @@ import org.grouplens.grapht.util.Types;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
-import org.grouplens.lenskit.inject.GraphSharingProcessor;
+import org.grouplens.lenskit.inject.RecommenderInstantiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,9 +113,9 @@ public class LenskitRecommenderEngineBuilder {
         for (Pair<LenskitConfiguration,ModelDisposition> cfg: configurations) {
             rgb.addConfiguration(cfg.getLeft());
         }
-        GraphSharingProcessor inst;
+        RecommenderInstantiator inst;
         try {
-            inst = GraphSharingProcessor.create(rgb.buildGraph());
+            inst = RecommenderInstantiator.create(rgb.buildGraph());
         } catch (SolverException e) {
             throw new RecommenderBuildException("Cannot resolve recommender graph", e);
         }
