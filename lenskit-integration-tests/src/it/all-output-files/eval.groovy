@@ -47,6 +47,7 @@ trainTest {
     }
 
     componentCacheDirectory "cache"
+    cacheAllComponents true
 
     algorithm("Baseline") {
         bind ItemScorer to UserMeanItemScorer

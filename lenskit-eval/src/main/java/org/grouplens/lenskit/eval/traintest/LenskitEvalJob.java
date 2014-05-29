@@ -91,7 +91,8 @@ class LenskitEvalJob extends TrainTestJob {
     @Override
     protected void cleanup() {
         recommender = null;
-        recommenderGraph = null;
         userEvents = null;
+        // why do we clear the graph?
+        recommenderGraph = null;
     }
 }

@@ -29,6 +29,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.grouplens.grapht.Component;
@@ -48,6 +49,7 @@ import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Provider;
 import java.io.*;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.GZIPInputStream;
@@ -77,6 +79,11 @@ class ComponentCache {
     private final Cache<DAGNode<Component,Dependency>,Optional<Object>> objectCache;
 
     /**
+     * The set of cacheable nodes.
+     */
+    private final Set<DAGNode<Component,Dependency>> sharedNodes;
+
+    /**
      * Construct a new component cache.
      *
      * @param dir The cache directory (or {@code null} to disable disk-based caching).
@@ -92,6 +99,7 @@ class ComponentCache {
                                   .weakKeys()
                                   .softValues()
                                   .build();
+        sharedNodes = Sets.newHashSet();
     }
 
     @SuppressWarnings("unused")
@@ -106,6 +114,23 @@ class ComponentCache {
             return keyCache.get(node);
         } catch (ExecutionException e) {
             throw Throwables.propagate(e.getCause());
+        }
+    }
+
+    /**
+     * Register nodes that are shared (needed by multiple graphs) and should therefore be cached.
+     *
+     * @param nodes A collection of nodes that should be cached.
+     */
+    public void registerSharedNodes(Iterable<DAGNode<Component, Dependency>> nodes) {
+        for (DAGNode<Component,Dependency> node: nodes) {
+            if (GraphtUtils.isShareable(node)) {
+                if (sharedNodes.add(node)) {
+                    logger.debug("enabling caching for {}", node);
+                }
+            } else {
+                logger.debug("node {} not shareable, caching not enabled", node);
+            }
         }
     }
 
@@ -127,6 +152,9 @@ class ComponentCache {
             Satisfaction sat = node.getLabel().getSatisfaction();
             if (sat.hasInstance()) {
                 logger.debug("{} already instantiated", sat);
+                return injector.apply(node);
+            } else if (!sharedNodes.contains(node)) {
+                logger.debug("{} not a shared node", sat);
                 return injector.apply(node);
             }
 

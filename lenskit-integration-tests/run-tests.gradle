@@ -33,6 +33,7 @@ file('src/it').eachDir { testDir ->
         workingDir workDir
         classpath configurations.testRuntime
         main 'org.grouplens.lenskit.cli.Main'
+        args '--log-file', 'eval.log', '--log-level=DEBUG'
         args 'eval', '-j0'
         // tell it where to find the data
         args "-Dlenskit.movielens.100k=$mlDataDir"

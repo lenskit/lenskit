@@ -1,4 +1,4 @@
-/*
+    /*
  * LensKit, an open source recommender systems toolkit.
  * Copyright 2010-2013 Regents of the University of Minnesota and contributors
  * Work on LensKit has been funded by the National Science Foundation under
@@ -60,6 +60,7 @@ cacheDir.eachFile { file ->
             }
         }
         def cls = obj.class.name
+        println "$file.name: $cls"
         objects[cls] = objects.get(cls, 0) + 1
     }
 }

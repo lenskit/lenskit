@@ -69,6 +69,7 @@ class ComponentCacheTest {
     @Test
     public void testCacheObject() {
         def graph = config.buildGraph()
+        cache.registerSharedNodes(graph.reachableNodes)
         def node = graph.reachableNodes.find {
             it.label.satisfaction.type == ItemMeanRatingItemScorer
         }
@@ -83,6 +84,7 @@ class ComponentCacheTest {
     @Test
     public void testReadDiskCache() {
         def graph = config.buildGraph()
+        cache.registerSharedNodes(graph.reachableNodes)
         def node = graph.reachableNodes.find {
             it.label.satisfaction.type == ItemMeanRatingItemScorer
         }

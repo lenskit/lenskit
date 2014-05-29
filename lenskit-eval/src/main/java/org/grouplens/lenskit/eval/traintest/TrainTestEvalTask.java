@@ -81,6 +81,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private File cacheDir;
     private File taskGraphFile;
     private File taskStatusFile;
+    private boolean cacheAll = false;
 
     private ExperimentSuite experiments;
     private MeasurementSuite measurements;
@@ -248,6 +249,22 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
     public File getComponentCacheDirectory() {
         return cacheDir;
+    }
+
+    /**
+     * Control whether all components are cached.  Caching all components will use more disk space,
+     * but may allow future evaluations to re-use component instances from prior runs.
+     *
+     * @param flag {@code true} to cache all components.
+     * @return The task (for chaining).
+     */
+    public TrainTestEvalTask setCacheAllComponents(boolean flag) {
+        cacheAll = flag;
+        return this;
+    }
+
+    public boolean getCacheAllComponents() {
+        return cacheAll;
     }
 
     /**
@@ -479,7 +496,9 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         }
     }
 
-    DAGNode<JobGraph.Node,JobGraph.Edge> makeJobGraph(ExperimentSuite experiments, MeasurementSuite measurements, ExperimentOutputs outputs) throws RecommenderConfigurationException {
+    DAGNode<JobGraph.Node,JobGraph.Edge> makeJobGraph(ExperimentSuite experiments,
+                                                      MeasurementSuite measurements,
+                                                      ExperimentOutputs outputs) throws RecommenderConfigurationException {
         DAGNode<JobGraph.Node,JobGraph.Edge> graph = null;
         DAGNodeBuilder<JobGraph.Node,JobGraph.Edge> builder = DAGNode.newBuilder();
         Multimap<UUID, TTDataSet> grouped = LinkedHashMultimap.create();
@@ -491,12 +510,15 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             }
             grouped.put(grp, dataset);
         }
+
+        ComponentCache cache = new ComponentCache(cacheDir, getProject().getClassLoader());
+
         for (UUID groupId: grouped.keySet()) {
             Collection<TTDataSet> dss = grouped.get(groupId);
             String groupName = dss.size() == 1 ? dss.iterator().next().getName() : groupId.toString();
             for (TTDataSet dataset: dss) {
                 // Add LensKit algorithms
-                for (DAGNode<JobGraph.Node, JobGraph.Edge> node: makeAlgorithmNodes(experiments, measurements, dataset, outputs, graph)) {
+                for (DAGNode<JobGraph.Node, JobGraph.Edge> node: makeAlgorithmNodes(experiments, measurements, dataset, outputs, cache, graph)) {
                     builder.addEdge(node, JobGraph.edge());
                 }
 
@@ -518,14 +540,28 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return graph;
     }
 
+    /**
+     * Make the nodes for a set of algorithms over a given data set.
+     * @param experiments The experiment suite.
+     * @param measurements The measurement suite.
+     * @param dataset The data set to use.
+     * @param outputs The outputs.
+     * @param cache The component cache to use.
+     * @param commonDep A node that all nodes should depend on (optional).
+     * @return A list of nodes running the algorithms over the specified data set.
+     * @throws RecommenderConfigurationException if there is an error configuring a node.
+     */
     private List<DAGNode<JobGraph.Node, JobGraph.Edge>>
-    makeAlgorithmNodes(ExperimentSuite experiments, MeasurementSuite measurements, TTDataSet dataset, ExperimentOutputs outputs,
-                        DAGNode<JobGraph.Node, JobGraph.Edge> commonDep) throws RecommenderConfigurationException {
+    makeAlgorithmNodes(ExperimentSuite experiments, MeasurementSuite measurements,
+                       TTDataSet dataset,
+                       ExperimentOutputs outputs,
+                       ComponentCache cache,
+                       DAGNode<JobGraph.Node, JobGraph.Edge> commonDep) throws RecommenderConfigurationException {
         List<DAGNode<JobGraph.Node, JobGraph.Edge>> nodes = Lists.newArrayList();
         MergePool<Component, Dependency> mergePool = MergePool.create();
         List<DAGNode<Component,Dependency>> graphs = Lists.newArrayList();
         Set<DAGNode<Component,Dependency>> allNodes = Sets.newHashSet();
-        ComponentCache cache = new ComponentCache(cacheDir, getProject().getClassLoader());
+
         for (AlgorithmInstance algo: experiments.getAlgorithms()) {
             logger.debug("building graph for algorithm {}", algo);
             LenskitConfiguration dataConfig = new LenskitConfiguration();
@@ -561,7 +597,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             }
 
             if (!separateAlgorithms) {
-                addJobDependencies(nodes, graphs, graph, nb);
+                addJobDependencies(nodes, graphs, cache, graph, nb);
+            }
+            if (cacheAll) {
+                cache.registerSharedNodes(graph.getReachableNodes());
             }
 
             graphs.add(graph);
@@ -580,6 +619,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
     private void addJobDependencies(List<DAGNode<JobGraph.Node, JobGraph.Edge>> priorJobs,
                                     List<DAGNode<Component, Dependency>> priorGraphs,
+                                    ComponentCache cache,
                                     DAGNode<Component, Dependency> graph,
                                     DAGNodeBuilder<JobGraph.Node, JobGraph.Edge> jobNode) {
         assert priorJobs.size() == priorGraphs.size();
@@ -588,11 +628,14 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         // Scan for all nodes we depend on. The first to introduce a node gets it.
         for (int i = 0; i < priorJobs.size(); i++) {
             DAGNode<Component, Dependency> other = priorGraphs.get(i);
+            // find the nodes shared between this prior graph & new graph, that weren't seen before
             Set<DAGNode<Component,Dependency>> freshCommon =
                     Sets.difference(Sets.intersection(graph.getReachableNodes(),
                                                       other.getReachableNodes()),
                                     seen);
+
             if (!freshCommon.isEmpty()) {
+                cache.registerSharedNodes(freshCommon);
                 // new nodes, make a dependency
                 logger.debug("{} depends on {} for {} nodes",
                              jobNode.getLabel(), priorJobs.get(i).getLabel(),
