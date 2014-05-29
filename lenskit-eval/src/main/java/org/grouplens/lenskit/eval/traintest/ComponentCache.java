@@ -100,7 +100,7 @@ class ComponentCache {
         return cacheDir;
     }
 
-    public String getKey(final DAGNode<Component,Dependency> node) {
+    String getKey(final DAGNode<Component,Dependency> node) {
         Preconditions.checkNotNull(node, "cached node");
         try {
             return keyCache.get(node);
