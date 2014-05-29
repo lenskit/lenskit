@@ -22,47 +22,44 @@ package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.io.Closer;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.graph.DAGNodeBuilder;
 import org.grouplens.grapht.reflect.Satisfaction;
 import org.grouplens.grapht.reflect.SatisfactionVisitor;
+import org.grouplens.grapht.reflect.Satisfactions;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.NodeInstantiator;
+import org.grouplens.lenskit.inject.NodeProcessor;
 import org.grouplens.lenskit.util.io.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Provider;
 import java.io.*;
+import java.lang.ref.SoftReference;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * Shared cache for components in merged compilations.
+ * Shared cache for components in merged compilations.  This is a node processor, instantiating
+ * objects using the cache.
  *
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @ThreadSafe
-class ComponentCache {
+class ComponentCache implements NodeProcessor {
     private static final Logger logger = LoggerFactory.getLogger(ComponentCache.class);
 
     @Nullable
@@ -70,18 +67,13 @@ class ComponentCache {
     
     @Nullable
     private final ClassLoader classLoader;
-    
-    private final LoadingCache<DAGNode<Component,Dependency>,String> keyCache;
 
-    /**
-     * In-memory cache of shared components.
-     */
-    private final Cache<DAGNode<Component,Dependency>,Optional<Object>> objectCache;
+    private NodeInstantiator instantiator;
 
     /**
      * The set of cacheable nodes.
      */
-    private final Set<DAGNode<Component,Dependency>> sharedNodes;
+    private final Map<DAGNode<Component,Dependency>,CacheEntry> cache;
 
     /**
      * Construct a new component cache.
@@ -92,14 +84,8 @@ class ComponentCache {
     public ComponentCache(@Nullable File dir, @Nullable ClassLoader loader) {
         cacheDir = dir;
         classLoader = loader;
-        keyCache = CacheBuilder.newBuilder()
-                               .weakKeys()
-                               .build(CacheLoader.from(new NodeKeyGenerator()));
-        objectCache = CacheBuilder.newBuilder()
-                                  .weakKeys()
-                                  .softValues()
-                                  .build();
-        sharedNodes = Sets.newHashSet();
+        instantiator = NodeInstantiator.create();
+        cache = new WeakHashMap<DAGNode<Component, Dependency>, CacheEntry>();
     }
 
     @SuppressWarnings("unused")
@@ -108,114 +94,153 @@ class ComponentCache {
         return cacheDir;
     }
 
-    String getKey(final DAGNode<Component,Dependency> node) {
-        Preconditions.checkNotNull(node, "cached node");
-        try {
-            return keyCache.get(node);
-        } catch (ExecutionException e) {
-            throw Throwables.propagate(e.getCause());
-        }
-    }
-
     /**
      * Register nodes that are shared (needed by multiple graphs) and should therefore be cached.
      *
      * @param nodes A collection of nodes that should be cached.
      */
     public void registerSharedNodes(Iterable<DAGNode<Component, Dependency>> nodes) {
-        for (DAGNode<Component,Dependency> node: nodes) {
-            if (GraphtUtils.isShareable(node)) {
-                if (sharedNodes.add(node)) {
-                    logger.debug("enabling caching for {}", node);
+        synchronized (cache) {
+            for (DAGNode<Component,Dependency> node: nodes) {
+                if (GraphtUtils.isShareable(node)) {
+                    if (!cache.containsKey(node)) {
+                        logger.debug("enabling caching for {}", node);
+                        cache.put(node, new CacheEntry(node));
+                    } else {
+                        logger.debug("{} already has a cache entry", node);
+                    }
+                } else {
+                    logger.debug("node {} not shareable, caching not enabled", node);
                 }
-            } else {
-                logger.debug("node {} not shareable, caching not enabled", node);
             }
         }
     }
 
-    public NodeInstantiator makeInstantiator(DAGNode<Component,Dependency> graph) {
-        return new Instantiator(NodeInstantiator.create());
-    }
-
-    private class Instantiator extends NodeInstantiator {
-        private final NodeInstantiator injector;
-
-        public Instantiator(NodeInstantiator inj) {
-            injector = inj;
+    Object instantiate(@Nonnull DAGNode<Component, Dependency> node) {
+        CacheEntry entry;
+        synchronized (cache) {
+            entry = cache.get(node);
         }
-
-        @Nullable
-        @Override
-        public Object instantiate(DAGNode<Component, Dependency> node) {
-            // shortcut - if it has an instance, don't bother caching
-            Satisfaction sat = node.getLabel().getSatisfaction();
-            if (sat.hasInstance()) {
-                logger.debug("{} already instantiated", sat);
-                return injector.apply(node);
-            } else if (!sharedNodes.contains(node)) {
-                logger.debug("{} not a shared node", sat);
-                return injector.apply(node);
-            }
-
+        if (entry == null) {
+            return instantiator.instantiate(node);
+        } else {
             try {
-                logger.debug("satisfying instantiation request for {}", sat);
-                Optional<Object> result = objectCache.get(node, new CachingInstantiator(injector, node));
-                return result.orNull();
-            } catch (ExecutionException e) {
-                Throwables.propagateIfPossible(e.getCause());
-                throw new UncheckedExecutionException(e.getCause());
-            } catch (UncheckedExecutionException e) {
-                Throwables.propagateIfPossible(e.getCause());
-                throw e;
+                return entry.getObject(node);
+            } catch (IOException e) {
+                throw new RuntimeException("Cache I/O error", e);
             }
         }
     }
 
-    private class CachingInstantiator implements Callable<Optional<Object>> {
-        private final Function<DAGNode<Component, Dependency>, Object> delegate;
-        private final DAGNode<Component,Dependency> node;
-
-        public CachingInstantiator(Function<DAGNode<Component, Dependency>, Object> dlg,
-                                   DAGNode<Component, Dependency> n) {
-            delegate = dlg;
-            node = n;
+    @Nonnull
+    @Override
+    public DAGNode<Component, Dependency> processNode(@Nonnull DAGNode<Component, Dependency> node,
+                                                      @Nonnull DAGNode<Component, Dependency> original) {
+        CacheEntry entry;
+        synchronized (cache) {
+            entry = cache.get(original);
+        }
+        if (entry == null) {
+            return node;
         }
 
-        @Override
-        public Optional<Object> call() throws IOException {
+        Component label = node.getLabel();
+        Satisfaction satisfaction = label.getSatisfaction();
+        if (satisfaction.hasInstance()) {
+            return node;
+        }
+        Object obj;
+        try {
+            obj = entry.getObject(node);
+        } catch (IOException e) {
+            throw new RuntimeException("Cache I/O error", e);
+        }
+
+        Satisfaction instanceSat;
+        if (obj == null) {
+            instanceSat = Satisfactions.nullOfType(satisfaction.getErasedType());
+        } else {
+            instanceSat = Satisfactions.instance(obj);
+        }
+        Component newLabel = Component.create(instanceSat, label.getCachePolicy());
+        // build new node with replacement label
+        DAGNodeBuilder<Component,Dependency> bld = DAGNode.newBuilder(newLabel);
+        // retain all non-transient edges
+        for (DAGEdge<Component, Dependency> edge: node.getOutgoingEdges()) {
+            if (!GraphtUtils.edgeIsTransient(edge)) {
+                bld.addEdge(edge.getTail(), edge.getLabel());
+            }
+        }
+        return bld.build();
+    }
+
+    private class CacheEntry {
+        private final String key;
+        // reference *inside* optional so we don't GC the optional while keeping the object
+        // this is null for uncached, empty for cached null
+        private Optional<SoftReference<Object>> cachedObject;
+
+        public CacheEntry(DAGNode<Component, Dependency> n) {
+            key = makeNodeKey(n);
+        }
+
+        /**
+         * Get the object.
+         * @param node The live version of the node.  It must be compatible with the node used
+         *             to create this object!  That means that it should be the same node, or a
+         *             mutation of the node.
+         * @return The object loaded from the cache, or from instantiating {@code node}.
+         * @throws IOException If there is an I/O error with the cache.
+         */
+        public synchronized Object getObject(DAGNode<Component, Dependency> node) throws IOException {
+            // check soft-reference cache
+            if (cachedObject != null) {
+                if (cachedObject.isPresent()) {
+                    Object obj = cachedObject.get().get();
+                    if (obj != null) {
+                        return obj;
+                    }
+                } else {
+                    return null;
+                }
+            }
+
             File cacheFile = null;
             if (cacheDir != null) {
-                String key = getKey(node);
                 cacheFile = new File(cacheDir, key + ".dat.gz");
                 if (cacheFile.exists()) {
                     logger.debug("reading object for {} from cache (key {})",
                                  node.getLabel().getSatisfaction(), key);
                     Object obj = readCompressedObject(cacheFile, node.getLabel().getSatisfaction().getErasedType());
                     logger.debug("read object {} from key {}", obj, key);
-                    return Optional.fromNullable(obj);
+                    return obj;
                 }
             }
 
             // No object from the serialization stream, let's try to make one
             logger.debug("instantiating object for {}", node.getLabel().getSatisfaction());
-            Optional<Object> result = Optional.fromNullable(delegate.apply(node));
+            Object result = instantiator.instantiate(node);
+            if (result == null) {
+                // cache the result
+                cachedObject = Optional.absent();
+            } else {
+                cachedObject = Optional.of(new SoftReference<Object>(result));
+            }
 
             // now save it to disk, if possible and non-null
-            if (result.isPresent()) {
-                Object obj = result.get();
-                if (obj instanceof Serializable) {
+            if (result != null) {
+                if (result instanceof Serializable) {
                     if (cacheFile != null) {
                         logger.debug("writing object {} to cache (key {})",
-                                     obj, getKey(node));
+                                     result, key);
                         if (logger.isDebugEnabled()) {
                             StringDescriptionWriter sdw = Descriptions.stringWriter();
                             NodeDescriber.INSTANCE.describe(node, sdw);
                             logger.debug("object description: {}", sdw.finish());
                         }
-                        writeCompressedObject(cacheFile, obj);
+                        writeCompressedObject(cacheFile, result);
                         logger.info("wrote object {} to cache as {} ({} bytes)",
-                                    obj, getKey(node), cacheFile.length());
+                                    result, key, cacheFile.length());
                     }
                 } else {
                     logger.warn("object {} is unserializable, not caching", result);
@@ -274,17 +299,10 @@ class ComponentCache {
 
     //region Node key generation
 
-    /**
-     * Function to generate a key for a graph node.
-     */
-    private class NodeKeyGenerator implements Function<DAGNode<Component, Dependency>, String> {
-        @Nullable
-        @Override
-        public String apply(@Nullable DAGNode<Component, Dependency> node) {
-            HashDescriptionWriter descr = Descriptions.sha1Writer();
-            NodeDescriber.INSTANCE.describe(node, descr);
-            return descr.finish().toString();
-        }
+    static String makeNodeKey(DAGNode<Component, Dependency> node) {
+        HashDescriptionWriter descr = Descriptions.sha1Writer();
+        NodeDescriber.INSTANCE.describe(node, descr);
+        return descr.finish().toString();
     }
 
     /**

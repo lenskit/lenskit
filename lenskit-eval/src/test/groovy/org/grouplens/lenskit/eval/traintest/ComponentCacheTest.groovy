@@ -73,11 +73,11 @@ class ComponentCacheTest {
         def node = graph.reachableNodes.find {
             it.label.satisfaction.type == ItemMeanRatingItemScorer
         }
-        def object = cache.makeInstantiator(graph).apply(node)
-        def other = cache.makeInstantiator(graph).apply(node)
+        def object = cache.instantiate(node)
+        def other = cache.instantiate(node)
         assertThat object,
                    sameInstance(other)
-        assertThat new File(folder.root, "${cache.getKey(node)}.dat.gz"),
+        assertThat new File(folder.root, "${cache.makeNodeKey(node)}.dat.gz"),
                    existingFile()
     }
 
@@ -88,9 +88,9 @@ class ComponentCacheTest {
         def node = graph.reachableNodes.find {
             it.label.satisfaction.type == ItemMeanRatingItemScorer
         }
-        def object = cache.makeInstantiator(graph).apply(node)
-        cache.objectCache.invalidateAll()
-        def other = cache.makeInstantiator(graph).apply(node)
+        def object = cache.instantiate(node)
+        cache.cache[node].cachedObject = null
+        def other = cache.instantiate(node)
         // this doesn't really test that it was actually read from the file
         // that involves more custom classes
         assertThat other, notNullValue()
@@ -107,7 +107,7 @@ class ComponentCacheTest {
         def node = graph.reachableNodes.find {
             it.label.satisfaction.type == ItemMeanRatingItemScorer
         }
-        def object = cache.makeInstantiator(graph).apply(node)
+        def object = cache.instantiate(node)
         assertThat object, nullValue()
     }
 
@@ -119,7 +119,7 @@ class ComponentCacheTest {
         def node2 = DAGNode.newBuilder(Component.create(Satisfactions.instance("bar"),
                                                         CachePolicy.MEMOIZE))
                            .build()
-        assertThat cache.getKey(node1), not(equalTo(cache.getKey(node2)))
+        assertThat cache.makeNodeKey(node1), not(equalTo(cache.makeNodeKey(node2)))
     }
 
     @Test
@@ -130,7 +130,7 @@ class ComponentCacheTest {
         def node2 = DAGNode.newBuilder(Component.create(Satisfactions.instance("foo"),
                                                         CachePolicy.MEMOIZE))
         .build()
-        assertThat cache.getKey(node1), equalTo(cache.getKey(node2))
+        assertThat cache.makeNodeKey(node1), equalTo(cache.makeNodeKey(node2))
     }
 
     @Test
@@ -141,6 +141,6 @@ class ComponentCacheTest {
         def node2 = DAGNode.newBuilder(Component.create(Satisfactions.instance("foo"),
                                                         CachePolicy.NEW_INSTANCE))
                            .build()
-        assertThat cache.getKey(node1), not(equalTo(cache.getKey(node2)))
+        assertThat cache.makeNodeKey(node1), not(equalTo(cache.makeNodeKey(node2)))
     }
 }

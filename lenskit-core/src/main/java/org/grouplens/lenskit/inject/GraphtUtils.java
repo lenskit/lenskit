@@ -263,7 +263,7 @@ public final class GraphtUtils {
      * @return The set of root nodes - nodes that need to be instantiated and removed. These nodes
      *         are in topologically sorted order.
      */
-    static LinkedHashSet<DAGNode<Component, Dependency>> getShareableNodes(DAGNode<Component, Dependency> graph) {
+    public static LinkedHashSet<DAGNode<Component, Dependency>> getShareableNodes(DAGNode<Component, Dependency> graph) {
         LinkedHashSet<DAGNode<Component, Dependency>> shared = Sets.newLinkedHashSet();
 
         List<DAGNode<Component, Dependency>> nodes = graph.getSortedNodes();
