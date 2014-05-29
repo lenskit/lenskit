@@ -110,9 +110,31 @@ public class PackedDataSource implements DataSource {
             return packedDao.get();
         }
 
+        private PackedDataSource getSource() {
+            return PackedDataSource.this;
+        }
+
         @Override
         public void describeTo(DescriptionWriter writer) {
-            writer.putField("dao", get());
+            writer.putField("file", file.getAbsolutePath())
+                  .putField("mtime", file.lastModified())
+                  .putField("domain", domain);
+            // FIXME Include the binary file header too
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other instanceof DAOProvider) {
+                DAOProvider dp = (DAOProvider) other;
+                return getSource().equals(dp.getSource());
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return getSource().hashCode();
         }
     }
 
@@ -130,6 +152,23 @@ public class PackedDataSource implements DataSource {
             } catch (IOException ex) {
                 throw new RuntimeException("error opening " + packedFile, ex);
             }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            DAOSupplier that = (DAOSupplier) o;
+
+            if (!packedFile.equals(that.packedFile)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return packedFile.hashCode();
         }
     }
 }

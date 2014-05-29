@@ -24,9 +24,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import org.grouplens.grapht.util.TypedProvider;
 
-import javax.inject.Provider;
 import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -91,6 +89,22 @@ public final class MoreSuppliers {
         }
 
         protected abstract Reference<T> makeReference(T obj);
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            } else if (obj.getClass().equals(getClass())) {
+                return delegate.equals(((MemoizingSupplier) obj).delegate);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return delegate.hashCode();
+        }
     }
 
     private static class WeakMemoizingSupplier<T> extends MemoizingSupplier<T> {

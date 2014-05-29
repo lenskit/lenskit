@@ -41,6 +41,7 @@ import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
+import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.parallel.TaskGraphExecutor;
 import org.grouplens.lenskit.util.table.Table;
@@ -629,13 +630,19 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         for (int i = 0; i < priorJobs.size(); i++) {
             DAGNode<Component, Dependency> other = priorGraphs.get(i);
             // find the nodes shared between this prior graph & new graph, that weren't seen before
-            Set<DAGNode<Component,Dependency>> freshCommon =
-                    Sets.difference(Sets.intersection(graph.getReachableNodes(),
-                                                      other.getReachableNodes()),
-                                    seen);
+            Set<DAGNode<Component,Dependency>> freshCommon = Sets.newHashSet();
+
+            for (DAGNode<Component,Dependency> node: graph.getReachableNodes()) {
+                // skip shareable and pre-instantiated nodes
+                if (GraphtUtils.isShareable(node)
+                    && node.getLabel().getSatisfaction().hasInstance()
+                    && other.getReachableNodes().contains(node)
+                    && !seen.contains(node)) {
+                    freshCommon.add(node);
+                }
+            }
 
             if (!freshCommon.isEmpty()) {
-                cache.registerSharedNodes(freshCommon);
                 // new nodes, make a dependency
                 logger.debug("{} depends on {} for {} nodes",
                              jobNode.getLabel(), priorJobs.get(i).getLabel(),
@@ -644,6 +651,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                     logger.debug("it will reuse {}",
                                  shared.getLabel().getSatisfaction());
                 }
+                cache.registerSharedNodes(freshCommon);
                 jobNode.addEdge(priorJobs.get(i), JobGraph.edge(freshCommon));
             }
             seen.addAll(freshCommon);
