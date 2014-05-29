@@ -38,7 +38,7 @@ import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.Satisfaction;
 import org.grouplens.grapht.reflect.SatisfactionVisitor;
 import org.grouplens.lenskit.inject.GraphtUtils;
-import org.grouplens.lenskit.inject.StaticInjector;
+import org.grouplens.lenskit.inject.NodeInstantiator;
 import org.grouplens.lenskit.util.io.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,13 +110,13 @@ class ComponentCache {
     }
 
     public Function<DAGNode<Component,Dependency>,Object> makeInstantiator(DAGNode<Component,Dependency> graph) {
-        return new Instantiator(new StaticInjector(graph));
+        return new Instantiator(NodeInstantiator.create());
     }
 
     private class Instantiator implements Function<DAGNode<Component,Dependency>,Object> {
-        private final StaticInjector injector;
+        private final NodeInstantiator injector;
 
-        public Instantiator(StaticInjector inj) {
+        public Instantiator(NodeInstantiator inj) {
             injector = inj;
         }
 
@@ -135,7 +135,7 @@ class ComponentCache {
 
             try {
                 logger.debug("satisfying instantiation request for {}", sat);
-                Optional<Object> result = objectCache.get(node, new NodeInstantiator(injector, node));
+                Optional<Object> result = objectCache.get(node, new CachingInstantiator(injector, node));
                 return result.orNull();
             } catch (ExecutionException e) {
                 Throwables.propagateIfPossible(e.getCause());
@@ -147,12 +147,12 @@ class ComponentCache {
         }
     }
 
-    private class NodeInstantiator implements Callable<Optional<Object>> {
+    private class CachingInstantiator implements Callable<Optional<Object>> {
         private final Function<DAGNode<Component, Dependency>, Object> delegate;
         private final DAGNode<Component,Dependency> node;
 
-        public NodeInstantiator(Function<DAGNode<Component,Dependency>,Object> dlg,
-                                DAGNode<Component,Dependency> n) {
+        public CachingInstantiator(Function<DAGNode<Component, Dependency>, Object> dlg,
+                                   DAGNode<Component, Dependency> n) {
             delegate = dlg;
             node = n;
         }

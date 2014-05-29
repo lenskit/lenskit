@@ -20,33 +20,28 @@
  */
 package org.grouplens.lenskit.inject;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Maps;
-import org.grouplens.grapht.CachePolicy;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.Injector;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.reflect.*;
-import org.grouplens.grapht.util.MemoizingProvider;
+import org.grouplens.grapht.reflect.Desire;
+import org.grouplens.grapht.reflect.Desires;
+import org.grouplens.grapht.reflect.QualifierMatcher;
+import org.grouplens.grapht.reflect.Qualifiers;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.inject.Provider;
 import java.lang.annotation.Annotation;
-import java.util.Map;
 
 /**
  * A Grapht injector that uses a precomputed graph.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class StaticInjector implements Injector, Function<DAGNode<Component,Dependency>,Object> {
+public class StaticInjector implements Injector {
+    private final NodeInstantiator instantiator;
     private DAGNode<Component, Dependency> graph;
-    private Map<DAGNode<Component,Dependency>, Provider<?>> providerCache;
 
     /**
      * Create a new static injector.
@@ -55,7 +50,7 @@ public class StaticInjector implements Injector, Function<DAGNode<Component,Depe
      */
     public StaticInjector(DAGNode<Component,Dependency> g) {
         graph = g;
-        providerCache = Maps.newHashMap();
+        instantiator = new NodeInstantiator();
     }
 
     @Override
@@ -65,11 +60,11 @@ public class StaticInjector implements Injector, Function<DAGNode<Component,Depe
                 graph.getOutgoingEdgeWithLabel(Dependency.hasInitialDesire(d));
 
         if (e != null) {
-            return type.cast(instantiate(e.getTail()));
+            return type.cast(instantiator.instantiate(e.getTail()));
         } else {
             DAGNode<Component, Dependency> node = findSatisfyingNode(Qualifiers.matchDefault(), type);
             if (node != null) {
-                return type.cast(instantiate(node));
+                return type.cast(instantiator.instantiate(node));
             } else {
                 return null;
             }
@@ -83,7 +78,7 @@ public class StaticInjector implements Injector, Function<DAGNode<Component,Depe
     public <T> T getInstance(QualifierMatcher qmatch, Class<T> type) {
         DAGNode<Component, Dependency> node = findSatisfyingNode(qmatch, type);
         if (node != null) {
-            return type.cast(instantiate(node));
+            return type.cast(instantiator.instantiate(node));
         } else {
             return null;
         }
@@ -121,73 +116,9 @@ public class StaticInjector implements Injector, Function<DAGNode<Component,Depe
         }
     }
 
-    /**
-     * Instantiate a particular node in the graph.
-     *
-     *
-     * @param node The node to instantiate.
-     * @return The instantiation of the node.
-     */
-    public Object instantiate(DAGNode<Component, Dependency> node) {
-        Provider<?> p = getProvider(node);
-
-        return p.get();
-    }
-
-    @Nonnull
-    @Override
-    public Object apply(@Nullable DAGNode<Component, Dependency> input) {
-        Preconditions.checkNotNull(input, "input node");
-        return instantiate(input);
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private synchronized Provider<?> getProvider(DAGNode<Component, Dependency> node) {
-        Provider<?> provider = providerCache.get(node);
-        if (provider == null) {
-            Component lbl = node.getLabel();
-            assert lbl != null;
-            provider = lbl.getSatisfaction().makeProvider(new DepSrc(node));
-            CachePolicy pol = lbl.getCachePolicy();
-            if (pol == CachePolicy.NO_PREFERENCE) {
-                pol = lbl.getSatisfaction().getDefaultCachePolicy();
-            }
-            switch (pol) {
-            case NEW_INSTANCE:
-                break;
-            default:
-                // TODO allow default policy to be specified
-                provider = new MemoizingProvider(provider);
-                break;
-            }
-            providerCache.put(node, provider);
-        }
-        return provider;
-    }
 
     @Override
     public <T> T getInstance(Annotation qualifier, Class<T> type) {
         return getInstance(Qualifiers.match(qualifier), type);
-    }
-
-    private class DepSrc implements ProviderSource {
-        private DAGNode<Component, Dependency> node;
-
-        private DepSrc(DAGNode<Component, Dependency> n) {
-            this.node = n;
-        }
-
-        @Override
-        @SuppressWarnings("rawtypes")
-        public Provider<?> apply(Desire desire) {
-            final DAGNode<Component, Dependency> dep =
-                    node.getOutgoingEdgeWithLabel(Dependency.hasInitialDesire(desire)).getTail();
-            return new Provider() {
-                @Override
-                public Object get() {
-                    return instantiate(dep);
-                }
-            };
-        }
     }
 }

@@ -58,7 +58,7 @@ public final class RecommenderInstantiator {
 
 
     public static RecommenderInstantiator create(DAGNode<Component,Dependency> g) {
-        return new RecommenderInstantiator(g, new StaticInjector(g));
+        return new RecommenderInstantiator(g, NodeInstantiator.create());
     }
 
     public static RecommenderInstantiator create(DAGNode<Component,Dependency> g,
