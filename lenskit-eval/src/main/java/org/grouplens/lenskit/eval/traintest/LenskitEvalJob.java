@@ -32,7 +32,7 @@ import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
-import org.grouplens.lenskit.inject.RecommenderInstantiator;
+import org.grouplens.lenskit.inject.GraphSharingProcessor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -63,12 +63,12 @@ class LenskitEvalJob extends TrainTestJob {
     @Override
     protected void buildRecommender() throws RecommenderBuildException {
         Preconditions.checkState(recommender == null, "recommender already built");
-        RecommenderInstantiator ri;
+        GraphSharingProcessor ri;
         if (cache == null) {
-            ri = RecommenderInstantiator.create(recommenderGraph);
+            ri = GraphSharingProcessor.create(recommenderGraph);
         } else {
-            ri = RecommenderInstantiator.create(recommenderGraph,
-                                                cache.makeInstantiator(recommenderGraph));
+            ri = GraphSharingProcessor.create(recommenderGraph,
+                                              cache.makeInstantiator(recommenderGraph));
         }
         DAGNode<Component, Dependency> graph = ri.instantiate();
         recommender = new LenskitRecommender(graph);

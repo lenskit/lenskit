@@ -109,11 +109,11 @@ class ComponentCache {
         }
     }
 
-    public Function<DAGNode<Component,Dependency>,Object> makeInstantiator(DAGNode<Component,Dependency> graph) {
+    public NodeInstantiator makeInstantiator(DAGNode<Component,Dependency> graph) {
         return new Instantiator(NodeInstantiator.create());
     }
 
-    private class Instantiator implements Function<DAGNode<Component,Dependency>,Object> {
+    private class Instantiator extends NodeInstantiator {
         private final NodeInstantiator injector;
 
         public Instantiator(NodeInstantiator inj) {
@@ -122,10 +122,7 @@ class ComponentCache {
 
         @Nullable
         @Override
-        public Object apply(@Nullable DAGNode<Component, Dependency> node) {
-            Preconditions.checkNotNull(node, "input node");
-            assert node != null;
-
+        public Object instantiate(DAGNode<Component, Dependency> node) {
             // shortcut - if it has an instance, don't bother caching
             Satisfaction sat = node.getLabel().getSatisfaction();
             if (sat.hasInstance()) {

@@ -50,7 +50,7 @@ public class StaticInjector implements Injector {
      */
     public StaticInjector(DAGNode<Component,Dependency> g) {
         graph = g;
-        instantiator = new NodeInstantiator();
+        instantiator = NodeInstantiator.create();
     }
 
     @Override

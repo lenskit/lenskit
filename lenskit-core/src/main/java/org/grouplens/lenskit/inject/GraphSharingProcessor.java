@@ -20,58 +20,51 @@
  */
 package org.grouplens.lenskit.inject;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.graph.DAGNodeBuilder;
-import org.grouplens.grapht.reflect.Satisfaction;
-import org.grouplens.grapht.reflect.Satisfactions;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * Build a recommender engine.
+ * Process a recommender graph to deal with its shareable nodes.
  *
  * @since 1.2
  * @compat Experimental
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class RecommenderInstantiator {
-    private static final Logger logger = LoggerFactory.getLogger(RecommenderInstantiator.class);
+public final class GraphSharingProcessor {
+    private static final Logger logger = LoggerFactory.getLogger(GraphSharingProcessor.class);
     private final DAGNode<Component, Dependency> graph;
-    private final Function<? super DAGNode<Component, Dependency>, Object> instantiator;
+    private final NodeInstantiator instantiator;
 
 
-    public static RecommenderInstantiator create(DAGNode<Component,Dependency> g) {
-        return new RecommenderInstantiator(g, NodeInstantiator.create());
+    public static GraphSharingProcessor create(DAGNode<Component,Dependency> g) {
+        return new GraphSharingProcessor(g, NodeInstantiator.create());
     }
 
-    public static RecommenderInstantiator create(DAGNode<Component,Dependency> g,
-                                                 Function<? super DAGNode<Component,Dependency>, Object> instantiator) {
-        return new RecommenderInstantiator(g, instantiator);
+    public static GraphSharingProcessor create(DAGNode<Component,Dependency> g,
+                                               NodeInstantiator instantiator) {
+        return new GraphSharingProcessor(g, instantiator);
     }
 
     @Deprecated
-    public static RecommenderInstantiator forConfig(LenskitConfiguration config) throws RecommenderConfigurationException {
+    public static GraphSharingProcessor forConfig(LenskitConfiguration config) throws RecommenderConfigurationException {
         return create(config.buildGraph());
     }
 
-    private RecommenderInstantiator(DAGNode<Component, Dependency> g, Function<? super DAGNode<Component, Dependency>, Object> inst) {
+    private GraphSharingProcessor(DAGNode<Component, Dependency> g, NodeInstantiator inst) {
         graph = g;
         instantiator = inst;
     }
@@ -89,44 +82,13 @@ public final class RecommenderInstantiator {
     /**
      * Instantiate the recommender graph.  This requires the graph to have been resolved with a real
      * DAO instance, not just a class, if anything references the DAO.  Use {@link
-     * LenskitConfiguration#buildGraph()} to get such
-     * a graph.
+     * LenskitConfiguration#buildGraph()} to get such a graph.
      *
-     * @return A new instantiated recommender graph.
+     * @return A new recommender graph with all shareable nodes pre-instantiated.
      * @throws RecommenderBuildException If there is an error instantiating the graph.
      */
     public DAGNode<Component,Dependency> instantiate() throws RecommenderBuildException {
-        return replaceShareableNodes(new Function<DAGNode<Component,Dependency>, DAGNode<Component,Dependency>>() {
-            @Nullable
-            @Override
-            @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
-            public DAGNode<Component, Dependency> apply(@Nullable DAGNode<Component, Dependency> node) {
-                Preconditions.checkNotNull(node);
-                assert node != null;
-                if (node.getLabel().getSatisfaction().hasInstance()) {
-                    return node;
-                }
-                Object obj = instantiator.apply(node);
-                Component label = node.getLabel();
-                Satisfaction instanceSat;
-                if (obj == null) {
-                    instanceSat = Satisfactions.nullOfType(label.getSatisfaction().getErasedType());
-                } else {
-                    instanceSat = Satisfactions.instance(obj);
-                }
-                Component newLabel = Component.create(instanceSat,
-                                                      label.getCachePolicy());
-                // build new node with replacement label
-                DAGNodeBuilder<Component,Dependency> bld = DAGNode.newBuilder(newLabel);
-                // retain all non-transient edges
-                for (DAGEdge<Component, Dependency> edge: node.getOutgoingEdges()) {
-                    if (!GraphtUtils.edgeIsTransient(edge)) {
-                        bld.addEdge(edge.getTail(), edge.getLabel());
-                    }
-                }
-                return bld.build();
-            }
-        });
+        return replaceShareableNodes(NodeProcessors.instantiate(instantiator));
     }
 
     /**
@@ -134,34 +96,7 @@ public final class RecommenderInstantiator {
      * @return The simulated graph.
      */
     public DAGNode<Component,Dependency> simulate() {
-        return replaceShareableNodes(new Function<DAGNode<Component,Dependency>, DAGNode<Component,Dependency>>() {
-            @Nullable
-            @Override
-            @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
-            public DAGNode<Component,Dependency> apply(@Nullable DAGNode<Component,Dependency> node) {
-                Preconditions.checkNotNull(node);
-                assert node != null;
-                Component label = node.getLabel();
-                if (!label.getSatisfaction().hasInstance()) {
-                    Satisfaction instanceSat = Satisfactions.nullOfType(label.getSatisfaction().getErasedType());
-                    Component newLbl = Component.create(instanceSat,
-                                                        label.getCachePolicy());
-                    // build new node with replacement label
-                    DAGNodeBuilder<Component,Dependency> bld = DAGNode.newBuilder(newLbl);
-                    // retain all non-transient edges
-                    for (DAGEdge<Component,Dependency> edge: node.getOutgoingEdges()) {
-                        if (!GraphtUtils.edgeIsTransient(edge)) {
-                            bld.addEdge(edge.getTail(), edge.getLabel());
-                        }
-                    }
-                    DAGNode<Component,Dependency> repl = bld.build();
-                    logger.debug("simulating instantiation of {}", node);
-                    return repl;
-                } else {
-                    return node;
-                }
-            }
-        });
+        return replaceShareableNodes(NodeProcessors.simulateInstantiation());
     }
 
     /**
@@ -171,21 +106,22 @@ public final class RecommenderInstantiator {
      *                  be called; if it returns a node different from its input node, the
      *                  new node will be used as a replacement for the old.
      */
-    private DAGNode<Component,Dependency> replaceShareableNodes(Function<DAGNode<Component,Dependency>,DAGNode<Component,Dependency>> replace) {
+    private DAGNode<Component,Dependency> replaceShareableNodes(NodeProcessor replace) {
         logger.debug("replacing nodes in graph with {} nodes", graph.getReachableNodes().size());
         Set<DAGNode<Component,Dependency>> toReplace = getShareableNodes(graph);
         logger.debug("found {} shared nodes", toReplace.size());
 
         Map<DAGNode<Component,Dependency>,DAGNode<Component,Dependency>> memory = Maps.newHashMap();
         DAGNode<Component, Dependency> newGraph = graph;
-        for (DAGNode<Component,Dependency> node : toReplace) {
+        for (DAGNode<Component,Dependency> original : toReplace) {
             // look up this node in case it's already been replaced due to edge modifications
+            DAGNode<Component, Dependency> node = original;
             while (memory.containsKey(node)) {
                 node = memory.get(node);
             }
 
             // now look up and replace this node
-            DAGNode<Component,Dependency> repl = replace.apply(node);
+            DAGNode<Component,Dependency> repl = replace.processNode(node, original);
             if (repl != node) {
                 newGraph = newGraph.replaceNode(node, repl, memory);
             }
