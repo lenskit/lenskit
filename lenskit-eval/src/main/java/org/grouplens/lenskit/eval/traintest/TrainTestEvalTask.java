@@ -588,10 +588,10 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         // Scan for all nodes we depend on. The first to introduce a node gets it.
         for (int i = 0; i < priorJobs.size(); i++) {
             DAGNode<Component, Dependency> other = priorGraphs.get(i);
-            Set<DAGNode<Component,Dependency>> freshCommon = Sets.newHashSet();
-            freshCommon.addAll(graph.getReachableNodes());
-            freshCommon.retainAll(other.getReachableNodes());
-            freshCommon.removeAll(seen);
+            Set<DAGNode<Component,Dependency>> freshCommon =
+                    Sets.difference(Sets.intersection(graph.getReachableNodes(),
+                                                      other.getReachableNodes()),
+                                    seen);
             if (!freshCommon.isEmpty()) {
                 // new nodes, make a dependency
                 logger.debug("{} depends on {} for {} nodes",
