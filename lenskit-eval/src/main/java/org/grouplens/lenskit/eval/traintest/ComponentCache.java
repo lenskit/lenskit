@@ -218,6 +218,7 @@ class ComponentCache implements NodeProcessor {
                 if (cachedObject.isPresent()) {
                     Object obj = cachedObject.get().get();
                     if (obj != null) {
+                        logger.debug("object for {} cached in memory", node);
                         return obj;
                     }
                 } else {
