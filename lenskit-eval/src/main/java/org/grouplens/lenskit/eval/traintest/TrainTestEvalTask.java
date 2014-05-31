@@ -87,6 +87,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private ExperimentSuite experiments;
     private MeasurementSuite measurements;
     private ExperimentOutputLayout layout;
+    private ExperimentOutputs outputs;
 
     public TrainTestEvalTask() {
         this("train-test");
@@ -401,7 +402,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             Closer closer = Closer.create();
 
             try {
-                ExperimentOutputs outputs = openExperimentOutputs(layout, measurements, resultsBuilder, closer);
+                outputs = openExperimentOutputs(layout, measurements, resultsBuilder, closer);
                 DAGNode<JobGraph.Node,JobGraph.Edge> jobGraph;
                 try {
                     jobGraph = makeJobGraph(experiments, measurements, outputs);
@@ -430,6 +431,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         } finally {
             experiments = null;
             measurements = null;
+            outputs = null;
             layout = null;
         }
     }
@@ -461,6 +463,11 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     public ExperimentOutputLayout getOutputLayout() {
         Preconditions.checkState(layout != null, "evaluation not in progress");
         return layout;
+    }
+
+    public ExperimentOutputs getOutputs() {
+        Preconditions.checkState(outputs != null, "evaluation not in progress");
+        return outputs;
     }
 
     ExperimentSuite createExperimentSuite() {
@@ -525,8 +532,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
                 // Add external algorithms
                 for (ExternalAlgorithm algo: experiments.getExternalAlgorithms()) {
-                    TrainTestJob job = new ExternalEvalJob(this, algo, dataset, measurements,
-                                                           outputs.getPrefixed(algo, dataset));
+                    TrainTestJob job = new ExternalEvalJob(this, algo, dataset);
                     DAGNode<JobGraph.Node, JobGraph.Edge> node =
                             DAGNode.singleton(JobGraph.jobNode(job));
                     builder.addEdge(node, JobGraph.edge());
@@ -587,9 +593,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             allNodes.addAll(graph.getReachableNodes());
 
             // Create the job
-            LenskitEvalJob job = new LenskitEvalJob(this, algo, dataset, measurements,
-                                                    outputs.getPrefixed(algo, dataset),
-                                                    graph, cache);
+            LenskitEvalJob job = new LenskitEvalJob(this, algo, dataset, graph, cache);
 
             DAGNodeBuilder<JobGraph.Node, JobGraph.Edge> nb = DAGNode.newBuilder();
             nb.setLabel(JobGraph.jobNode(job));

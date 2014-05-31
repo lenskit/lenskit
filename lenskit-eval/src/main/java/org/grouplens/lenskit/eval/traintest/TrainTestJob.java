@@ -54,32 +54,22 @@ abstract class TrainTestJob implements Callable<Void> {
 
     protected final Attributed algorithmInfo;
     protected final TTDataSet dataSet;
-
-    protected final MeasurementSuite measurements;
-    private final ExperimentOutputs output;
     private final TrainTestEvalTask task;
+    private ExperimentOutputs outputs;
 
     /**
      * Create a new train-test eval job.
      *
+     * @param task     The task this jbo belongs to.
      * @param algo     The algorithmInfo to test.
      * @param ds       The data set to use.
-     * @param out      The table writer to receive output. This writer is expected to be prefixed
-     *                 with algorithmInfo and group ID data, so only the times and eval outputProvider
-     *                 needs to be written.
-     * @param measures The measurements to take.
-     * @param out      The evaluator outputs.
      */
     public TrainTestJob(TrainTestEvalTask task,
                         @Nonnull Attributed algo,
-                        @Nonnull TTDataSet ds,
-                        @Nonnull MeasurementSuite measures,
-                        @Nonnull ExperimentOutputs out) {
+                        @Nonnull TTDataSet ds) {
         this.task = task;
         algorithmInfo = algo;
         dataSet = ds;
-        measurements = measures;
-        output = out;
     }
 
     /**
@@ -103,7 +93,8 @@ abstract class TrainTestJob implements Callable<Void> {
         bus.post(JobEvents.started(this));
         Closer closer = Closer.create();
         try {
-            TableWriter userResults = output.getUserWriter();
+            outputs = task.getOutputs().getPrefixed(algorithmInfo, dataSet);
+            TableWriter userResults = outputs.getUserWriter();
             List<Object> outputRow = Lists.newArrayList();
 
             logger.info("Building {} on {}", algorithmInfo, dataSet);
@@ -121,7 +112,7 @@ abstract class TrainTestJob implements Callable<Void> {
 
             List<MetricWithAccumulator<?>> accumulators = Lists.newArrayList();
 
-            for (Metric<?> eval: output.getMetrics()) {
+            for (Metric<?> eval: outputs.getMetrics()) {
                 accumulators.add(makeMetricAccumulator(eval));
             }
 
@@ -184,8 +175,12 @@ abstract class TrainTestJob implements Callable<Void> {
             bus.post(JobEvents.failed(this, th));
             throw closer.rethrow(th, RecommenderBuildException.class);
         } finally {
-            cleanup();
-            closer.close();
+            try {
+                cleanup();
+            } finally {
+                outputs = null;
+                closer.close();
+            }
         }
     }
 
@@ -220,7 +215,7 @@ abstract class TrainTestJob implements Callable<Void> {
     protected abstract void cleanup();
 
     private void writeMetricValues(StopWatch build, StopWatch test, List<Object> measures, List<MetricWithAccumulator<?>> accums) throws IOException {
-        TableWriter results = output.getResultsWriter();
+        TableWriter results = outputs.getResultsWriter();
 
         List<Object> row = Lists.newArrayList();
         row.add(build.getTime());

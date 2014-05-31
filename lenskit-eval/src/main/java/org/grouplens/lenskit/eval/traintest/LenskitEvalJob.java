@@ -53,11 +53,9 @@ class LenskitEvalJob extends TrainTestJob {
     LenskitEvalJob(TrainTestEvalTask task,
                    @Nonnull AlgorithmInstance algo,
                    @Nonnull TTDataSet ds,
-                   @Nonnull MeasurementSuite measures,
-                   @Nonnull ExperimentOutputs out,
                    DAGNode<Component,Dependency> graph,
                    @Nullable ComponentCache cache) {
-        super(task, algo, ds, measures, out);
+        super(task, algo, ds);
         recommenderGraph = graph;
         this.cache = cache;
     }

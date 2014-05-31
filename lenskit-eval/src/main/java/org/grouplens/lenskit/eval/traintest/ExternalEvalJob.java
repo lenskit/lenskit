@@ -75,10 +75,8 @@ class ExternalEvalJob extends TrainTestJob {
 
     public ExternalEvalJob(TrainTestEvalTask task,
                            @Nonnull ExternalAlgorithm algo,
-                           @Nonnull TTDataSet ds,
-                           @Nonnull MeasurementSuite measures,
-                           @Nonnull ExperimentOutputs out) {
-        super(task, algo, ds, measures, out);
+                           @Nonnull TTDataSet ds) {
+        super(task, algo, ds);
         algorithm = algo;
         key = UUID.randomUUID();
     }
