@@ -29,7 +29,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.graph.DAGNodeBuilder;
 import org.grouplens.grapht.graph.MergePool;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
@@ -41,7 +40,6 @@ import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
-import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.parallel.TaskGraphExecutor;
 import org.grouplens.lenskit.util.table.Table;
@@ -405,7 +403,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                 outputs = openExperimentOutputs(layout, measurements, resultsBuilder, closer);
                 DAGNode<JobGraph.Node,JobGraph.Edge> jobGraph;
                 try {
-                    jobGraph = makeJobGraph(experiments, measurements, outputs);
+                    jobGraph = makeJobGraph(experiments);
                 } catch (RecommenderConfigurationException ex) {
                     throw new TaskExecutionException("Recommender configuration error", ex);
                 }
@@ -504,11 +502,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         }
     }
 
-    DAGNode<JobGraph.Node,JobGraph.Edge> makeJobGraph(ExperimentSuite experiments,
-                                                      MeasurementSuite measurements,
-                                                      ExperimentOutputs outputs) throws RecommenderConfigurationException {
-        DAGNode<JobGraph.Node,JobGraph.Edge> graph = null;
-        DAGNodeBuilder<JobGraph.Node,JobGraph.Edge> builder = DAGNode.newBuilder();
+    DAGNode<JobGraph.Node,JobGraph.Edge> makeJobGraph(ExperimentSuite experiments) throws RecommenderConfigurationException {
         Multimap<UUID, TTDataSet> grouped = LinkedHashMultimap.create();
         for (TTDataSet dataset : experiments.getDataSets()) {
             UUID grp = dataset.getIsolationGroup();
@@ -520,56 +514,32 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         }
 
         ComponentCache cache = new ComponentCache(cacheDir, getProject().getClassLoader());
+        JobGraphBuilder builder = new JobGraphBuilder(this, cache);
 
         for (UUID groupId: grouped.keySet()) {
             Collection<TTDataSet> dss = grouped.get(groupId);
             String groupName = dss.size() == 1 ? dss.iterator().next().getName() : groupId.toString();
             for (TTDataSet dataset: dss) {
                 // Add LensKit algorithms
-                for (DAGNode<JobGraph.Node, JobGraph.Edge> node: makeAlgorithmNodes(experiments, measurements, dataset, outputs, cache, graph)) {
-                    builder.addEdge(node, JobGraph.edge());
-                }
+                addAlgorithmNodes(builder, dataset, experiments.getAlgorithms(), cache);
 
                 // Add external algorithms
                 for (ExternalAlgorithm algo: experiments.getExternalAlgorithms()) {
-                    TrainTestJob job = new ExternalEvalJob(this, algo, dataset);
-                    DAGNode<JobGraph.Node, JobGraph.Edge> node =
-                            DAGNode.singleton(JobGraph.jobNode(job));
-                    builder.addEdge(node, JobGraph.edge());
+                    builder.addExternalJob(algo, dataset);
                 }
             }
 
-            // use dependencies to encode isolation - queue up this group to be depended on by the previous.
-            builder.setLabel(JobGraph.noopNode("group " + groupName));
-            graph = builder.build();
-            builder = DAGNode.newBuilder();
+            builder.fence(groupName);
         }
-        return graph;
+        return builder.getGraph();
     }
 
-    /**
-     * Make the nodes for a set of algorithms over a given data set.
-     * @param experiments The experiment suite.
-     * @param measurements The measurement suite.
-     * @param dataset The data set to use.
-     * @param outputs The outputs.
-     * @param cache The component cache to use.
-     * @param commonDep A node that all nodes should depend on (optional).
-     * @return A list of nodes running the algorithms over the specified data set.
-     * @throws RecommenderConfigurationException if there is an error configuring a node.
-     */
-    private List<DAGNode<JobGraph.Node, JobGraph.Edge>>
-    makeAlgorithmNodes(ExperimentSuite experiments, MeasurementSuite measurements,
-                       TTDataSet dataset,
-                       ExperimentOutputs outputs,
-                       ComponentCache cache,
-                       DAGNode<JobGraph.Node, JobGraph.Edge> commonDep) throws RecommenderConfigurationException {
-        List<DAGNode<JobGraph.Node, JobGraph.Edge>> nodes = Lists.newArrayList();
-        MergePool<Component, Dependency> mergePool = MergePool.create();
-        List<DAGNode<Component,Dependency>> graphs = Lists.newArrayList();
-        Set<DAGNode<Component,Dependency>> allNodes = Sets.newHashSet();
+    private void addAlgorithmNodes(JobGraphBuilder builder, TTDataSet dataset,
+                                   List<AlgorithmInstance> algorithms,
+                                   ComponentCache cache) throws RecommenderConfigurationException {
+        MergePool<Component,Dependency> pool = MergePool.create();
 
-        for (AlgorithmInstance algo: experiments.getAlgorithms()) {
+        for (AlgorithmInstance algo: algorithms) {
             logger.debug("building graph for algorithm {}", algo);
             LenskitConfiguration dataConfig = new LenskitConfiguration();
             ExecutionInfo info = ExecutionInfo.newBuilder()
@@ -583,82 +553,13 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
             if (!separateAlgorithms) {
                 logger.debug("merging algorithm {} with previous graphs", algo);
-                graph = mergePool.merge(graph);
-                logger.debug("algorithm {} has {} new configuration nodes", algo,
-                             Sets.difference(graph.getReachableNodes(), allNodes).size());
-            } else {
-                // there should be no common nodes
-                assert Sets.intersection(allNodes, graph.getReachableNodes()).isEmpty();
+                graph = pool.merge(graph);
             }
-            allNodes.addAll(graph.getReachableNodes());
-
-            // Create the job
-            LenskitEvalJob job = new LenskitEvalJob(this, algo, dataset, graph, cache);
-
-            DAGNodeBuilder<JobGraph.Node, JobGraph.Edge> nb = DAGNode.newBuilder();
-            nb.setLabel(JobGraph.jobNode(job));
-            if (commonDep != null) {
-                nb.addEdge(commonDep, JobGraph.edge());
-            }
-
-            if (!separateAlgorithms) {
-                addJobDependencies(nodes, graphs, cache, graph, nb);
-            }
-            if (cacheAll) {
+            if (cacheAll && cache != null) {
                 cache.registerSharedNodes(graph.getReachableNodes());
             }
 
-            graphs.add(graph);
-            DAGNode<JobGraph.Node, JobGraph.Edge> jobNode = nb.build();
-            logger.debug("{} has {} dependencies", job, jobNode.getAdjacentNodes().size());
-
-            // make sure that the job is separated properly, if requested
-            assert !separateAlgorithms ||
-                   (commonDep == null && jobNode.getAdjacentNodes().isEmpty()) ||
-                   (jobNode.getAdjacentNodes().size() == 1 && jobNode.getAdjacentNodes().contains(commonDep));
-
-            nodes.add(jobNode);
-        }
-        return nodes;
-    }
-
-    private void addJobDependencies(List<DAGNode<JobGraph.Node, JobGraph.Edge>> priorJobs,
-                                    List<DAGNode<Component, Dependency>> priorGraphs,
-                                    ComponentCache cache,
-                                    DAGNode<Component, Dependency> graph,
-                                    DAGNodeBuilder<JobGraph.Node, JobGraph.Edge> jobNode) {
-        assert priorJobs.size() == priorGraphs.size();
-        Set<DAGNode<Component,Dependency>> seen = Sets.newHashSet();
-        logger.debug("finding dependencies of {}", jobNode.getLabel());
-        // Scan for all nodes we depend on. The first to introduce a node gets it.
-        for (int i = 0; i < priorJobs.size(); i++) {
-            DAGNode<Component, Dependency> other = priorGraphs.get(i);
-            // find the nodes shared between this prior graph & new graph, that weren't seen before
-            Set<DAGNode<Component,Dependency>> freshCommon = Sets.newHashSet();
-
-            for (DAGNode<Component,Dependency> node: graph.getReachableNodes()) {
-                // skip shareable and pre-instantiated nodes
-                if (GraphtUtils.isShareable(node)
-                    && node.getLabel().getSatisfaction().hasInstance()
-                    && other.getReachableNodes().contains(node)
-                    && !seen.contains(node)) {
-                    freshCommon.add(node);
-                }
-            }
-
-            if (!freshCommon.isEmpty()) {
-                // new nodes, make a dependency
-                logger.debug("{} depends on {} for {} nodes",
-                             jobNode.getLabel(), priorJobs.get(i).getLabel(),
-                             freshCommon.size());
-                for (DAGNode<Component, Dependency> shared: freshCommon) {
-                    logger.debug("it will reuse {}",
-                                 shared.getLabel().getSatisfaction());
-                }
-                cache.registerSharedNodes(freshCommon);
-                jobNode.addEdge(priorJobs.get(i), JobGraph.edge(freshCommon));
-            }
-            seen.addAll(freshCommon);
+            builder.addLenskitJob(algo, dataset, graph);
         }
     }
 

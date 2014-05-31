@@ -110,7 +110,7 @@ class JobGraphBuilderTest {
                 .setCommand(['cat'])
                 .build()
         builder.addExternalJob(algo, dataSet)
-        builder.fence(UUID.randomUUID())
+        builder.fence("fence")
         builder.addExternalJob(algo, dataSet)
         def graph = builder.getGraph()
         assertThat graph, notNullValue()

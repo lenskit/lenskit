@@ -63,12 +63,12 @@ class JobGraphBuilder {
 
     /**
      * Create a job fence - any previous jobs should be isolated from subsequent jobs.
-     * @param groupId The fence ID.
+     * @param name The fence name.
      */
-    public void fence(UUID groupId) {
-        graphBuilder.setLabel(JobGraph.noopNode("group " + groupId));
+    public void fence(String name) {
+        graphBuilder.setLabel(JobGraph.noopNode(name));
         DAGNode<JobGraph.Node, JobGraph.Edge> node = graphBuilder.build();
-        logger.debug("fencing {} nodes with {}", node.getReachableNodes().size(), groupId);
+        logger.debug("fencing {} nodes with {}", node.getReachableNodes().size(), name);
         assert previousRoot == null || node.getReachableNodes().contains(previousRoot);
         previousRoot = node;
         graphBuilder = DAGNode.newBuilder(JobGraph.noopNode("root"));
