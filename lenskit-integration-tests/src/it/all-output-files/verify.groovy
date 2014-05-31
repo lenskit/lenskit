@@ -60,7 +60,6 @@ cacheDir.eachFile { file ->
             }
         }
         def cls = obj.class.name
-        println "$file.name: $cls"
         objects[cls] = objects.get(cls, 0) + 1
     }
 }
