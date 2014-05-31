@@ -105,6 +105,10 @@ public final class Descriptions {
 
         @Override
         public void describe(Object obj, DescriptionWriter description) {
+            if (obj == null) {
+                description.putField("type", "null");
+                return;
+            }
             description.putField("type", obj.getClass().getName());
             if (obj instanceof String) {
                 // FIXME Do something saner here - just write the string somehow
