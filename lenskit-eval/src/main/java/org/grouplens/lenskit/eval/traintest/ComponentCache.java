@@ -116,6 +116,26 @@ class ComponentCache implements NodeProcessor {
         }
     }
 
+    /**
+     * Register a node that is shared (needed by multiple graphs) and should therefore be cached.
+     *
+     * @param node A node that should be cached.
+     */
+    public void registerSharedNode(DAGNode<Component, Dependency> node) {
+        synchronized (cache) {
+            if (GraphtUtils.isShareable(node)) {
+                if (!cache.containsKey(node)) {
+                    logger.debug("enabling caching for {}", node);
+                    cache.put(node, new CacheEntry(node));
+                } else {
+                    logger.debug("{} already has a cache entry", node);
+                }
+            } else {
+                logger.debug("node {} not shareable, caching not enabled", node);
+            }
+        }
+    }
+
     Object instantiate(@Nonnull DAGNode<Component, Dependency> node) {
         CacheEntry entry;
         synchronized (cache) {

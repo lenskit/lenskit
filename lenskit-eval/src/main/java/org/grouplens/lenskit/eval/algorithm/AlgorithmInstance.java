@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.eval.algorithm;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
@@ -62,8 +63,8 @@ public class AlgorithmInstance implements Attributed {
 
     public AlgorithmInstance(String name, LenskitConfiguration cfg, Map<String, Object> attrs, boolean preload) {
         algoName = name;
-        config = cfg;
-        attributes = attrs;
+        config = new LenskitConfiguration(cfg);
+        attributes = ImmutableMap.copyOf(attrs);
         this.preload = preload;
     }
 
