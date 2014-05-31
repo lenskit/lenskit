@@ -116,6 +116,7 @@ class JobGraphBuilder {
 
     private void addSharedNodeDependencies(DAGNode<Component, Dependency> graph,
                                            DAGNodeBuilder<JobGraph.Node, JobGraph.Edge> builder) {
+        logger.debug("scanning for dependencies of {}", builder.getLabel());
         SetMultimap<DAGNode<JobGraph.Node,JobGraph.Edge>,DAGNode<Component,Dependency>> edges;
         edges = HashMultimap.create();
         for (DAGNode<Component, Dependency> node: graph.getReachableNodes()) {
@@ -124,6 +125,12 @@ class JobGraphBuilder {
             }
         }
         for (DAGNode<JobGraph.Node,JobGraph.Edge> dep: edges.keySet()) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("depends on {} for {} nodes", dep, edges.get(dep).size());
+                for (DAGNode<Component, Dependency> shared: edges.get(dep)) {
+                    logger.debug("reuses {}", shared);
+                }
+            }
             builder.addEdge(dep, JobGraph.edge(edges.get(dep)));
         }
     }
