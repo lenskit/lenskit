@@ -32,7 +32,6 @@ import java.io.Serializable;
  * @since 0.11
  */
 @Shareable
-@Singleton
 public final class IdentityClampingFunction implements ClampingFunction, Serializable {
     private static final long serialVersionUID = 1L;
 

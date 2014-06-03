@@ -36,7 +36,6 @@ import java.io.Serializable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
-@Singleton
 public class UnitVectorNormalizer extends AbstractVectorNormalizer implements Serializable {
     private final static long serialVersionUID = 1L;
     private final double tolerance;

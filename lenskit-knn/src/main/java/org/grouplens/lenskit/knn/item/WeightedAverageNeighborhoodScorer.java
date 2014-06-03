@@ -36,7 +36,6 @@ import static java.lang.Math.abs;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
-@Singleton
 public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Serializable {
     private static final long serialVersionUID = 1L;
 

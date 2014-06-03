@@ -40,7 +40,6 @@ import java.io.Serializable;
  */
 @Shareable
 @ThreadSafe
-@Singleton
 public final class RatingVectorUserHistorySummarizer implements UserHistorySummarizer, Serializable {
     private static final RatingVectorUserHistorySummarizer INSTANCE = new RatingVectorUserHistorySummarizer();
 
