@@ -23,25 +23,16 @@ package org.grouplens.lenskit.data.snapshot;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.dao.SortOrder;
-import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.indexes.IdIndexMapping;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.inject.Inject;
-import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -55,94 +46,18 @@ import java.util.Random;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultProvider(PackedPreferenceSnapshot.Builder.class)
+@DefaultProvider(PackedPreferenceSnapshotBuilder.class)
 @Shareable
 public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
-    private static final Logger logger = LoggerFactory.getLogger(PackedPreferenceSnapshot.class);
-
-    /**
-     * A Factory that creates PackedRatingBuildSnapshots from an opened
-     * DataAccessObject.
-     */
-    public static class Builder implements Provider<PackedPreferenceSnapshot> {
-        private final EventDAO dao;
-        private Random random;
-
-        @Inject
-        public Builder(@Transient EventDAO dao, Random random) {
-            this.dao = dao;
-            this.random = random;
-        }
-
-        @Override
-        public PackedPreferenceSnapshot get() {
-            logger.debug("Packing build context");
-
-            PackedPreferenceDataBuilder bld = new PackedPreferenceDataBuilder();
-
-            // Track the indices where everything appears for finding previous
-            // rating info for a user-item pair
-            Long2ObjectMap<Long2IntMap> uiIndexes =
-                    new Long2ObjectOpenHashMap<Long2IntMap>(2000);
-
-            // Since we iterate in timestamp order, we can just overwrite
-            // old data for a user-item pair with new data.
-            Cursor<Rating> ratings = dao.streamEvents(Rating.class, SortOrder.TIMESTAMP);
-            try {
-                for (Rating r : ratings.fast()) {
-                    final long user = r.getUserId();
-                    final long item = r.getItemId();
-                    final Preference p = r.getPreference();
-
-                    // get the item -> index map for this user
-                    Long2IntMap imap = uiIndexes.get(user);
-                    if (imap == null) {
-                        imap = new Long2IntOpenHashMap();
-                        imap.defaultReturnValue(-1);
-                        uiIndexes.put(user, imap);
-                    }
-
-                    // have we seen the item?
-                    final int index = imap.get(item);
-                    if (index < 0) {    // we've never seen (user,item) before
-                        // if this is not an unrate (a no-op), add the pref
-                        if (p != null) {
-                            int idx = bld.add(p);
-                            imap.put(item, idx);
-                        }
-                    } else {            // we have seen this rating before
-                        if (p == null) {
-                            // free the entry, no rating here
-                            bld.release(index);
-                            imap.put(item, -1);
-                        } else {
-                            // just overwrite the previous value
-                            bld.set(index, p);
-                        }
-                    }
-                }
-
-                logger.debug("Packed {} ratings", bld.size());
-            } finally {
-                ratings.close();
-            }
-
-            bld.shuffle(random);
-            PackedPreferenceData data = bld.build();
-
-            return new PackedPreferenceSnapshot(data);
-        }
-    }
-
     public static PreferenceSnapshot pack(EventDAO dao) {
-        Builder p = new Builder(dao, new Random());
+        PackedPreferenceSnapshotBuilder p = new PackedPreferenceSnapshotBuilder(dao, new Random());
         return p.get();
     }
 
     private PackedPreferenceData data;
     private Supplier<List<FastCollection<IndexedPreference>>> userIndexLists;
 
-    protected PackedPreferenceSnapshot(PackedPreferenceData data) {
+    PackedPreferenceSnapshot(PackedPreferenceData data) {
         super();
         this.data = data;
         userIndexLists = Suppliers.memoize(new UserPreferenceSupplier());

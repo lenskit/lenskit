@@ -25,6 +25,7 @@ import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
+import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshotBuilder;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -66,7 +67,7 @@ public class LeastSquareItemScorerTest {
         rs.add(Ratings.make(3, 6, 4));
 
         final EventDAO dao = EventCollectionDAO.create(rs);
-        final Provider<PackedPreferenceSnapshot> provider = new PackedPreferenceSnapshot.Builder(dao, new Random());
+        final Provider<PackedPreferenceSnapshot> provider = new PackedPreferenceSnapshotBuilder(dao, new Random());
         snapshot = provider.get();
         final StoppingCondition stop = new ThresholdStoppingCondition(0.1, 10);
 

@@ -82,7 +82,7 @@ public class PackedPreferenceSnapshotTest {
         rs.add(rating(3, 11, 5, 2));
         rs.add(rating(4, 11, 5, 1));
         EventDAO dao = EventCollectionDAO.create(rs);
-        snap = new PackedPreferenceSnapshot.Builder(dao, new Random()).get();
+        snap = new PackedPreferenceSnapshotBuilder(dao, new Random()).get();
     }
 
     @Test
