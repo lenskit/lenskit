@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Build job graphs.
