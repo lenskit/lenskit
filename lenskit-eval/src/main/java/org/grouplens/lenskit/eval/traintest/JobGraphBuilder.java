@@ -78,7 +78,7 @@ class JobGraphBuilder {
      * @return The graph that has been built.
      */
     public DAGNode<JobGraph.Node,JobGraph.Edge> getGraph() {
-        if (graphBuilder.build().getOutgoingEdges().isEmpty() && previousRoot != null) {
+        if (graphBuilder.getEdges().isEmpty() && previousRoot != null) {
             logger.debug("no new nodes since last fence, using fence root");
             return previousRoot;
         } else {
@@ -115,7 +115,7 @@ class JobGraphBuilder {
 
     private void addSharedNodeDependencies(DAGNode<Component, Dependency> graph,
                                            DAGNodeBuilder<JobGraph.Node, JobGraph.Edge> builder) {
-        logger.debug("scanning for dependencies of {}", builder.build().getLabel());
+        logger.debug("scanning for dependencies of {}", builder.getLabel());
         SetMultimap<DAGNode<JobGraph.Node,JobGraph.Edge>,DAGNode<Component,Dependency>> edges;
         edges = HashMultimap.create();
         for (DAGNode<Component, Dependency> node: graph.getReachableNodes()) {
