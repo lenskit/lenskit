@@ -22,6 +22,7 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
@@ -44,6 +45,20 @@ public final class BinaryUtils {
     }
 
     /**
+     * Read a buffer completely from a position in a file.
+     * @param chan The channel.
+     * @param buf The buffer.
+     * @param pos The position from which to read.
+     * @throws java.io.IOException If an error occurs while read the buffer.
+     */
+    public static void readBuffer(FileChannel chan, ByteBuffer buf, long pos) throws IOException {
+        long cpos = pos;
+        while (buf.hasRemaining()) {
+            cpos += chan.read(buf, pos);
+        }
+    }
+
+    /**
      * Write a buffer completely to the channel.
      * @param buf The buffer.
      * @throws java.io.IOException If an error occurs while writing the buffer.
@@ -51,6 +66,20 @@ public final class BinaryUtils {
     public static void writeBuffer(WritableByteChannel chan, ByteBuffer buf) throws IOException {
         while (buf.hasRemaining()) {
             chan.write(buf);
+        }
+    }
+
+    /**
+     * Write a buffer completely to a position in a file.
+     * @param chan The channel.
+     * @param buf The buffer.
+     * @param pos The position from which to read.
+     * @throws java.io.IOException If an error occurs while read the buffer.
+     */
+    public static void writeBuffer(FileChannel chan, ByteBuffer buf, long pos) throws IOException {
+        long cpos = pos;
+        while (buf.hasRemaining()) {
+            cpos += chan.write(buf, pos);
         }
     }
 }

@@ -26,6 +26,7 @@ import org.grouplens.lenskit.data.dao.PrefetchingItemDAO
 import org.grouplens.lenskit.data.dao.PrefetchingUserDAO
 import org.grouplens.lenskit.data.dao.SortOrder
 import org.grouplens.lenskit.data.dao.UserDAO
+import org.grouplens.lenskit.data.event.Event
 import org.grouplens.lenskit.data.event.Rating
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.junit.Rule
@@ -93,5 +94,40 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
         def binDao = BinaryRatingDAO.open(file)
         assertThat binDao.itemIds, hasSize(items.itemIds.size())
         assertThat binDao.userIds, hasSize(users.userIds.size())
+    }
+
+    @Test
+    public void testPackWithOutOfOrderTimestamps() {
+        def file = tempDir.newFile()
+        BinaryRatingPacker packer = BinaryRatingPacker.open(file, BinaryFormatFlag.TIMESTAMPS)
+        try {
+            Cursor<Rating> ratings = dao.streamEvents(Rating)
+            try {
+                packer.writeRatings(ratings)
+            } finally {
+                ratings.close()
+            }
+        } finally {
+            packer.close()
+        }
+
+        def users = userDAO
+        def items = itemDAO
+
+        def binDao = BinaryRatingDAO.open(file)
+        assertThat binDao.itemIds, hasSize(items.itemIds.size())
+        assertThat binDao.userIds, hasSize(users.userIds.size())
+
+        long lastTS = Long.MIN_VALUE;
+        for (Event r: binDao.streamEvents()) {
+            long ts = r.timestamp
+            assertThat ts, greaterThanOrEqualTo(lastTS)
+        }
+        // try sorted!
+        lastTS = Long.MIN_VALUE
+        for (Rating r: binDao.streamEvents(Rating, SortOrder.TIMESTAMP)) {
+            long ts = r.timestamp
+            assertThat ts, greaterThanOrEqualTo(lastTS)
+        }
     }
 }

@@ -20,6 +20,9 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
+import it.unimi.dsi.fastutil.Arrays;
+import it.unimi.dsi.fastutil.Swapper;
+import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -29,6 +32,8 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongUtils;
+import org.grouplens.lenskit.data.event.Events;
+import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,7 +166,8 @@ public class BinaryRatingPacker implements Closeable {
         try {
             logger.debug("closing binary pack file {}", outputFile);
             if (needsSorting) {
-                throw new UnsupportedOperationException("sorting not yet supported");
+                logger.info("sorting {} ratings", index);
+                sortRatings();
             }
             writeIndex(userMap);
             writeIndex(itemMap);
@@ -233,5 +239,66 @@ public class BinaryRatingPacker implements Closeable {
         headerBuf.flip();
         BinaryUtils.writeBuffer(channel, headerBuf);
         channel.position(endOfTable);
+    }
+
+    /**
+     * Sort the ratings.
+     */
+    private void sortRatings() {
+        Arrays.quickSort(0, index, new SortComparator(), new SortSwapper());
+    }
+
+    private long ratingPos(int idx) {
+        long offset = format.getHeaderSize();
+        return offset + idx * format.getRatingSize();
+    }
+
+    private class SortComparator extends AbstractIntComparator {
+        private ByteBuffer buf = ByteBuffer.allocateDirect(format.getRatingSize());
+        private MutableRating r1 = new MutableRating();
+        private MutableRating r2 = new MutableRating();
+
+        @Override
+        public int compare(int i1, int i2) {
+            try {
+                BinaryUtils.readBuffer(channel, buf, ratingPos(i1));
+                buf.flip();
+                format.readRating(buf, r1);
+                buf.clear();
+
+                BinaryUtils.readBuffer(channel, buf, ratingPos(i2));
+                buf.flip();
+                format.readRating(buf, r2);
+                buf.clear();
+            } catch (IOException ex) {
+                throw new RuntimeException("I/O error while sorting", ex);
+            }
+            return Events.TIMESTAMP_COMPARATOR.compare(r1, r2);
+        }
+    }
+
+    private class SortSwapper implements Swapper {
+        private ByteBuffer b1 = ByteBuffer.allocateDirect(format.getRatingSize());
+        private ByteBuffer b2 = ByteBuffer.allocateDirect(format.getRatingSize());
+
+        @Override
+        public void swap(int i1, int i2) {
+            long p1 = ratingPos(i1);
+            long p2 = ratingPos(i2);
+            try {
+                BinaryUtils.readBuffer(channel, b1, p1);
+                b1.flip();
+                BinaryUtils.readBuffer(channel, b2, p2);
+                b2.flip();
+
+                BinaryUtils.writeBuffer(channel, b1, p2);
+                BinaryUtils.writeBuffer(channel, b2, p1);
+
+                b1.clear();
+                b2.clear();
+            } catch (IOException ex) {
+                throw new RuntimeException("I/O error while sorting", ex);
+            }
+        }
     }
 }

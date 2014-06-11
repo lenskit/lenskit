@@ -48,10 +48,17 @@ final class BinaryFormat {
 
     private final EnumSet<PackHeaderFlag> formatFlags;
     private final boolean includeTimestamps;
+    private final int ratingSize;
 
     private BinaryFormat(Set<PackHeaderFlag> flags) {
         formatFlags = EnumSet.copyOf(flags);
         includeTimestamps = flags.contains(PackHeaderFlag.TIMESTAMPS);
+
+        int rsz = 2 * LONG_SIZE + DOUBLE_SIZE;
+        if (hasTimestamps()) {
+            rsz += LONG_SIZE;
+        }
+        ratingSize = rsz;
     }
 
     /**
@@ -110,11 +117,11 @@ final class BinaryFormat {
     }
 
     public int getRatingSize() {
-        int size = 2 * LONG_SIZE + DOUBLE_SIZE;
-        if (hasTimestamps()) {
-            size += LONG_SIZE;
-        }
-        return size;
+        return ratingSize;
+    }
+
+    public int getHeaderSize() {
+        return BinaryHeader.HEADER_SIZE;
     }
 
     /**

@@ -35,6 +35,7 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
@@ -91,6 +92,26 @@ public class BinaryRatingDAOTest {
         BinaryRatingPacker packer = BinaryRatingPacker.open(file, BinaryFormatFlag.TIMESTAMPS);
         try {
             packer.writeRatings(ratings);
+        } finally {
+            packer.close();
+        }
+
+        BinaryRatingDAO dao = BinaryRatingDAO.open(file);
+        assertThat(Cursors.makeList(dao.streamEvents(Rating.class)),
+                   equalTo(ratings));
+    }
+
+    @Test
+    public void testOutOfOrderDAO() throws IOException {
+        List<Rating> reordered = new ArrayList<Rating>();
+        for (int i = 0; i < ratings.size(); i++) {
+            reordered.add(ratings.get((i + 1) % ratings.size()));
+        }
+
+        File file = folder.newFile("ratings.bin");
+        BinaryRatingPacker packer = BinaryRatingPacker.open(file, BinaryFormatFlag.TIMESTAMPS);
+        try {
+            packer.writeRatings(reordered);
         } finally {
             packer.close();
         }
