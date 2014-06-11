@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
 import org.grouplens.lenskit.data.event.MutableRating;
@@ -29,7 +30,7 @@ import org.grouplens.lenskit.data.event.RatingBuilder;
 import org.grouplens.lenskit.data.pref.Preference;
 
 import java.nio.ByteBuffer;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -45,12 +46,12 @@ final class BinaryFormat {
     static final int LONG_SIZE = 8;
     static final int DOUBLE_SIZE = 8;
 
-    private final EnumSet<BinaryFormatFlag> formatFlags;
+    private final EnumSet<PackHeaderFlag> formatFlags;
     private final boolean includeTimestamps;
 
-    public BinaryFormat(EnumSet<BinaryFormatFlag> flags) {
+    private BinaryFormat(Set<PackHeaderFlag> flags) {
         formatFlags = EnumSet.copyOf(flags);
-        includeTimestamps = flags.contains(BinaryFormatFlag.TIMESTAMPS);
+        includeTimestamps = flags.contains(PackHeaderFlag.TIMESTAMPS);
     }
 
     /**
@@ -58,22 +59,37 @@ final class BinaryFormat {
      * @param flags The flags.
      * @return The new binary format.
      */
-    public static BinaryFormat create(BinaryFormatFlag... flags) {
-        return new BinaryFormat(BinaryFormatFlag.makeSet(flags));
+    public static BinaryFormat create(PackHeaderFlag... flags) {
+        return new BinaryFormat(Sets.newEnumSet(Arrays.asList(flags),  PackHeaderFlag.class));
+    }
+
+    /**
+     * Create a new binary format with some externally-facing flags and the default header
+     * settings.
+     * @param flags The format flags.
+     * @return A new format.
+     */
+    public static BinaryFormat create(Set<BinaryFormatFlag> flags) {
+        return new BinaryFormat(PackHeaderFlag.fromFormatFlags(flags));
     }
 
     public static BinaryFormat fromFlags(short flagWord) {
-        EnumSet<BinaryFormatFlag> flags;
-        switch (flagWord) {
-        case 0:
-            flags = EnumSet.noneOf(BinaryFormatFlag.class);
-            break;
-        case 1:
-            flags = EnumSet.of(BinaryFormatFlag.TIMESTAMPS);
-            break;
-        default:
-            throw new IllegalArgumentException("unparsable flag word " + flagWord);
+        EnumSet<PackHeaderFlag> flags = EnumSet.noneOf(PackHeaderFlag.class);
+
+        int word = ((int) flagWord) & 0x0000FFFF;
+        int n = 0;
+        while (word != 0 && n < PackHeaderFlag.values().length) {
+            if ((word & 0x01) != 0) {
+                flags.add(PackHeaderFlag.values()[n]);
+            }
+            n++;
+            word = word >>> 1;
         }
+
+        if (word != 0) {
+            throw new IllegalArgumentException(String.format("unparseable flag word %x", flagWord));
+        }
+
         return new BinaryFormat(flags);
     }
 
@@ -81,13 +97,13 @@ final class BinaryFormat {
         return includeTimestamps;
     }
 
-    public Set<BinaryFormatFlag> getFlags() {
-        return Collections.unmodifiableSet(formatFlags);
+    public Set<PackHeaderFlag> getFlags() {
+        return Sets.newEnumSet(formatFlags, PackHeaderFlag.class);
     }
 
     public short getFlagWord() {
         short word = 0;
-        for (BinaryFormatFlag flag: formatFlags) {
+        for (PackHeaderFlag flag: formatFlags) {
             word |= 1 << flag.ordinal();
         }
         return word;

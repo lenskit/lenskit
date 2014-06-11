@@ -40,7 +40,7 @@ public class BinaryFormatTest {
 
     @Test
     public void testTimestampFlag() {
-        BinaryFormat format = BinaryFormat.create(BinaryFormatFlag.TIMESTAMPS);
+        BinaryFormat format = BinaryFormat.create(PackHeaderFlag.TIMESTAMPS);
         assertThat(format.getFlagWord(), equalTo((short) 1));
         assertThat(format.hasTimestamps(), equalTo(true));
         assertThat(format.getRatingSize(), equalTo(32));
@@ -49,9 +49,9 @@ public class BinaryFormatTest {
     @Test
     public void testEqual() {
         assertThat(BinaryFormat.create(), equalTo(BinaryFormat.create()));
-        assertThat(BinaryFormat.create(BinaryFormatFlag.TIMESTAMPS),
-                   equalTo(BinaryFormat.create(BinaryFormatFlag.TIMESTAMPS)));
-        assertThat(BinaryFormat.create(BinaryFormatFlag.TIMESTAMPS),
+        assertThat(BinaryFormat.create(PackHeaderFlag.TIMESTAMPS),
+                   equalTo(BinaryFormat.create(PackHeaderFlag.TIMESTAMPS)));
+        assertThat(BinaryFormat.create(PackHeaderFlag.TIMESTAMPS),
                    not(equalTo(BinaryFormat.create())));
     }
 }

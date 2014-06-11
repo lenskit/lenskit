@@ -20,13 +20,11 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.hash.PrimitiveSink;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;

@@ -56,7 +56,7 @@ public class BinaryHeaderTest {
 
     @Test
     public void testWriteReadHeaderWithTimestamps() {
-        BinaryFormat format = BinaryFormat.create(BinaryFormatFlag.TIMESTAMPS);
+        BinaryFormat format = BinaryFormat.create(PackHeaderFlag.TIMESTAMPS);
         BinaryHeader header = BinaryHeader.create(format, 100, 42, 12);
         ByteBuffer buf = ByteBuffer.allocate(BinaryHeader.HEADER_SIZE);
         header.render(buf);
@@ -64,7 +64,7 @@ public class BinaryHeaderTest {
         BinaryHeader h2 = BinaryHeader.fromHeader(buf);
         assertThat(h2.getFormat(), equalTo(format));
         assertThat(h2.getFormat().getFlags(),
-                   hasItem(BinaryFormatFlag.TIMESTAMPS));
+                   hasItem(PackHeaderFlag.TIMESTAMPS));
         assertThat(h2.getRatingCount(), equalTo(header.getRatingCount()));
         assertThat(h2.getUserCount(), equalTo(header.getUserCount()));
         assertThat(h2.getItemCount(), equalTo(header.getItemCount()));
