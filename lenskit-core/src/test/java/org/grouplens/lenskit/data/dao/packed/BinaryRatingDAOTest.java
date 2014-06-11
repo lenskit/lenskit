@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.SerializationUtils;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.SortOrder;
@@ -27,6 +28,7 @@ import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.UserHistory;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -44,6 +46,17 @@ import static org.junit.Assert.assertThat;
 public class BinaryRatingDAOTest {
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
+
+    List<Rating> ratings;
+
+    @Before
+    public void createRatingList() {
+        ImmutableList.Builder<Rating> bld = ImmutableList.builder();
+        bld.add(Ratings.make(42, 105, 3.5, 100L))
+           .add(Ratings.make(42, 120, 2.5, 110L))
+           .add(Ratings.make(39, 120, 4.5, 120L));
+        ratings = bld.build();
+    }
 
     @Test
     public void testEmptyDAO() throws IOException {
@@ -63,7 +76,7 @@ public class BinaryRatingDAOTest {
         File file = folder.newFile("ratings.bin");
         BinaryRatingPacker packer = BinaryRatingPacker.open(file);
         try {
-            populateSimpleDAO(packer);
+            packer.writeRatings(ratings);
         } finally {
             packer.close();
         }
@@ -73,11 +86,26 @@ public class BinaryRatingDAOTest {
     }
 
     @Test
+    public void testTimestampedDAO() throws IOException {
+        File file = folder.newFile("ratings.bin");
+        BinaryRatingPacker packer = BinaryRatingPacker.open(file, BinaryFormatFlag.TIMESTAMPS);
+        try {
+            packer.writeRatings(ratings);
+        } finally {
+            packer.close();
+        }
+
+        BinaryRatingDAO dao = BinaryRatingDAO.open(file);
+        assertThat(Cursors.makeList(dao.streamEvents(Rating.class)),
+                   equalTo(ratings));
+    }
+
+    @Test
     public void testSerializedDAO() throws IOException {
         File file = folder.newFile("ratings.bin");
         BinaryRatingPacker packer = BinaryRatingPacker.open(file);
         try {
-            populateSimpleDAO(packer);
+            packer.writeRatings(ratings);
         } finally {
             packer.close();
         }
@@ -85,12 +113,6 @@ public class BinaryRatingDAOTest {
         BinaryRatingDAO dao = BinaryRatingDAO.open(file);
         BinaryRatingDAO clone = SerializationUtils.clone(dao);
         verifySimpleDAO(clone);
-    }
-
-    private void populateSimpleDAO(BinaryRatingPacker packer) throws IOException {
-        packer.writeRating(Ratings.make(42, 105, 3.5));
-        packer.writeRating(Ratings.make(42, 120, 2.5));
-        packer.writeRating(Ratings.make(39, 120, 4.5));
     }
 
     private void verifySimpleDAO(BinaryRatingDAO dao) {
