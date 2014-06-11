@@ -20,13 +20,12 @@
  */
 package org.grouplens.lenskit.test;
 
-import org.grouplens.lenskit.core.LenskitConfigContext;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
+import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.junit.Before;
 
@@ -73,8 +72,6 @@ public class ML100KTestSuite {
             throw new FileNotFoundException("ML data set at " + inputFile + ". " +
                                             "See <http://lenskit.grouplens.org/ML100K>.");
         }
-        EventDAO fileDao = SimpleFileRatingDAO.create(inputFile, "\t", CompressionMode.NONE);
-        List<Event> events = Cursors.makeList(fileDao.streamEvents());
-        dao = EventCollectionDAO.create(events);
+        dao = SimpleFileRatingDAO.create(inputFile, "\t", CompressionMode.NONE);
     }
 }
