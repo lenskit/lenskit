@@ -43,6 +43,8 @@ import java.util.Iterator;
  */
 @ThreadSafe
 class BinaryIndexTable implements Serializable {
+    static final int TABLE_ENTRY_SIZE = BinaryFormat.LONG_SIZE + 2 * BinaryFormat.INT_SIZE;
+
     private static final long serialVersionUID = -1L;
     private static final Logger logger = LoggerFactory.getLogger(BinaryIndexTable.class);
     private final LongKeyDomain keys;

@@ -80,7 +80,8 @@ final class BinaryFormat {
      * @return A new format.
      */
     public static BinaryFormat create(Set<BinaryFormatFlag> flags) {
-        return new BinaryFormat(PackHeaderFlag.fromFormatFlags(flags));
+        Set<PackHeaderFlag> hflags = PackHeaderFlag.fromFormatFlags(flags);
+        return new BinaryFormat(hflags);
     }
 
     public static BinaryFormat fromFlags(short flagWord) {
@@ -140,6 +141,22 @@ final class BinaryFormat {
 
     public int getItemIdSize() {
         return compactUsers ? INT_SIZE : LONG_SIZE;
+    }
+
+    public boolean userIdIsValid(long id) {
+        if (compactUsers) {
+            return id >= Integer.MIN_VALUE && id <= Integer.MAX_VALUE;
+        } else {
+            return true;
+        }
+    }
+
+    public boolean itemIdIsValid(long id) {
+        if (compactItems) {
+            return id >= Integer.MIN_VALUE && id <= Integer.MAX_VALUE;
+        } else {
+            return true;
+        }
     }
 
     public long readUserId(ByteBuffer buf) {

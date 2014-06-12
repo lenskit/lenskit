@@ -28,7 +28,15 @@ import java.util.EnumSet;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public enum BinaryFormatFlag {
-    TIMESTAMPS;
+    /**
+     * Include timestamps in the packed data.
+     */
+    TIMESTAMPS,
+    /**
+     * Do not use compact user and item IDs.  This can make packing more efficient if you know that
+     * some user or item IDs do not fit in ints.
+     */
+    NO_COMPACT;
 
     public static EnumSet<BinaryFormatFlag> makeSet(BinaryFormatFlag... flags) {
         EnumSet<BinaryFormatFlag> flagSet = EnumSet.noneOf(BinaryFormatFlag.class);

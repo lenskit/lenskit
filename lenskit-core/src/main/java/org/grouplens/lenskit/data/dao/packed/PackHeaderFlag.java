@@ -35,6 +35,9 @@ enum PackHeaderFlag {
         EnumSet<PackHeaderFlag> set = EnumSet.noneOf(PackHeaderFlag.class);
         if (flags.contains(BinaryFormatFlag.TIMESTAMPS)) {
             set.add(PackHeaderFlag.TIMESTAMPS);
+        } if (!flags.contains(BinaryFormatFlag.NO_COMPACT)) {
+            set.add(PackHeaderFlag.COMPACT_ITEMS);
+            set.add(PackHeaderFlag.COMPACT_USERS);
         }
         return set;
     }

@@ -54,7 +54,7 @@ public final class BinaryUtils {
     public static void readBuffer(FileChannel chan, ByteBuffer buf, long pos) throws IOException {
         long cpos = pos;
         while (buf.hasRemaining()) {
-            cpos += chan.read(buf, pos);
+            cpos += chan.read(buf, cpos);
         }
     }
 
@@ -79,7 +79,7 @@ public final class BinaryUtils {
     public static void writeBuffer(FileChannel chan, ByteBuffer buf, long pos) throws IOException {
         long cpos = pos;
         while (buf.hasRemaining()) {
-            cpos += chan.write(buf, pos);
+            cpos += chan.write(buf, cpos);
         }
     }
 }

@@ -196,7 +196,8 @@ public class BinaryRatingPacker implements Closeable {
     private void writeIndex(Long2ObjectMap<IntList> map) throws IOException {
         LongSortedSet keys = LongUtils.packedSet(map.keySet());
         // allocate header buffer
-        int headerSize = keys.size() * (8 + 4 + 4);
+        // we do not pack the IDs in these headers
+        int headerSize = keys.size() * BinaryIndexTable.TABLE_ENTRY_SIZE;
         ByteBuffer headerBuf = ByteBuffer.allocateDirect(headerSize);
         // temporary buffer for each entry
         ByteBuffer buf = null;
@@ -224,7 +225,7 @@ public class BinaryRatingPacker implements Closeable {
             offset += indexes.size();
 
             // write the index entries
-            int size = indexes.size() * 4;
+            int size = indexes.size() * BinaryFormat.INT_SIZE;
             if (buf == null || buf.capacity() < size) {
                 buf = ByteBuffer.allocateDirect(size);
             }
@@ -241,12 +242,8 @@ public class BinaryRatingPacker implements Closeable {
             buf.clear();
         }
 
-        long endOfTable = channel.position();
-        // write back the header buffer
-        channel.position(indexPosition);
         headerBuf.flip();
-        BinaryUtils.writeBuffer(channel, headerBuf);
-        channel.position(endOfTable);
+        BinaryUtils.writeBuffer(channel, headerBuf, indexPosition);
     }
 
     /**
