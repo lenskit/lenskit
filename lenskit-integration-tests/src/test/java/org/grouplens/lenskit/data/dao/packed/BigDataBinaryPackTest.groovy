@@ -20,14 +20,15 @@
  */
 package org.grouplens.lenskit.data.dao.packed
 
+import com.google.common.collect.Iterables
+import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap
+import it.unimi.dsi.fastutil.longs.LongSet
+import org.grouplens.lenskit.collections.LongUtils
 import org.grouplens.lenskit.cursors.Cursor
-import org.grouplens.lenskit.data.dao.ItemDAO
-import org.grouplens.lenskit.data.dao.PrefetchingItemDAO
-import org.grouplens.lenskit.data.dao.PrefetchingUserDAO
-import org.grouplens.lenskit.data.dao.SortOrder
-import org.grouplens.lenskit.data.dao.UserDAO
+import org.grouplens.lenskit.data.dao.*
 import org.grouplens.lenskit.data.event.Event
 import org.grouplens.lenskit.data.event.Rating
+import org.grouplens.lenskit.data.event.Ratings
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.junit.Rule
 import org.junit.Test
@@ -139,7 +140,75 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
         }
     }
 
-    private void checkSorted(Iterable<? extends Event> events) {
+    @Test
+    public void testPackUpgrade() {
+        def rng = new Random()
+        def users = userDAO.userIds
+        def items = itemDAO.itemIds
+        def userMap = new Long2LongOpenHashMap(users.size())
+        for (long u in users) {
+            long up = u
+            if (rng.nextFloat() < 0.05) {
+                up += Integer.MAX_VALUE
+            }
+            userMap.put(u, up)
+        }
+        def itemMap = new Long2LongOpenHashMap(items.size())
+        for (long i in items) {
+            long ip = i
+            if (rng.nextFloat() < 0.05) {
+                ip += Integer.MAX_VALUE
+            }
+            itemMap.put(i, ip)
+        }
+        LongSet newUserSet = LongUtils.packedSet(userMap.values())
+        LongSet newItemSet = LongUtils.packedSet(itemMap.values())
+
+        int n = 0
+        def file = tempDir.newFile()
+        BinaryRatingPacker packer = BinaryRatingPacker.open(file)
+        try {
+            Cursor<Rating> ratings = dao.streamEvents(Rating)
+            try {
+                for (Rating r: ratings) {
+                    packer.writeRating(Ratings.make(userMap[r.userId],
+                                                    itemMap[r.itemId],
+                                                    r.value))
+                    n += 1
+                }
+            } finally {
+                ratings.close()
+            }
+        } finally {
+            packer.close()
+        }
+
+        def binDao = BinaryRatingDAO.open(file)
+
+        assertThat(Iterables.size(binDao.streamEvents()), equalTo(n))
+        assertThat binDao.userIds, equalTo(newUserSet)
+        assertThat binDao.itemIds, equalTo(newItemSet)
+
+        // and scan users
+        for (long user: binDao.getUserIds()) {
+            checkSorted(binDao.getEventsForUser(user))
+            for (Event e: binDao.getEventsForUser(user)) {
+                assertThat e.userId, equalTo(user)
+                assertThat e.itemId, isIn(newItemSet)
+            }
+        }
+
+        // and items
+        for (long item: binDao.getItemIds()) {
+            checkSorted(binDao.getEventsForItem(item))
+            for (Event e: binDao.getEventsForItem(item)) {
+                assertThat e.itemId, equalTo(item)
+                assertThat e.userId, isIn(newUserSet)
+            }
+        }
+    }
+
+    private static void checkSorted(Iterable<? extends Event> events) {
         long last = Long.MIN_VALUE;
         for (Event e: events) {
             long ts = e.timestamp

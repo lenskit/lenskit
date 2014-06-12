@@ -29,6 +29,7 @@ import org.grouplens.lenskit.data.pref.Preference;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
@@ -74,11 +75,21 @@ final class BinaryFormat {
     }
 
     /**
+     * Create a new binary format with some flags.
+     * @param flags The flags.
+     * @return The new binary format.
+     */
+    public static BinaryFormat createWithFlags(Set<PackHeaderFlag> flags) {
+        return new BinaryFormat(Sets.newEnumSet(flags,  PackHeaderFlag.class));
+    }
+
+    /**
      * Create a new binary format with some externally-facing flags and the default header
      * settings.
      * @param flags The format flags.
      * @return A new format.
      */
+    @Deprecated
     public static BinaryFormat create(Set<BinaryFormatFlag> flags) {
         Set<PackHeaderFlag> hflags = PackHeaderFlag.fromFormatFlags(flags);
         return new BinaryFormat(hflags);
@@ -102,8 +113,12 @@ final class BinaryFormat {
         return compactUsers;
     }
 
+    public boolean isCompact() {
+        return compactUsers || compactItems;
+    }
+
     public Set<PackHeaderFlag> getFlags() {
-        return Sets.newEnumSet(formatFlags, PackHeaderFlag.class);
+        return Collections.unmodifiableSet(formatFlags);
     }
 
     public short getFlagWord() {

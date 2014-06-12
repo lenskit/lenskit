@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
@@ -46,6 +47,7 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * Creates rating pack files for the {@link BinaryRatingDAO}.
@@ -61,7 +63,7 @@ public class BinaryRatingPacker implements Closeable {
     private FileChannel channel;
     private Long2ObjectMap<IntList> userMap;
     private Long2ObjectMap<IntList> itemMap;
-    private final BinaryFormat format;
+    private BinaryFormat format;
     private ByteBuffer ratingBuffer;
     private long lastTimestamp;
     private boolean needsSorting;
@@ -122,6 +124,8 @@ public class BinaryRatingPacker implements Closeable {
         assert ratingBuffer.position() == 0;
         assert ratingBuffer.limit() == ratingBuffer.capacity();
 
+        checkUpgrade(rating.getUserId(), rating.getItemId());
+
         // and use it
         format.renderRating(rating, ratingBuffer);
         ratingBuffer.flip();
@@ -181,12 +185,11 @@ public class BinaryRatingPacker implements Closeable {
     }
 
     private void writeHeader() throws IOException {
-        channel.position(0);
         ByteBuffer buf = ByteBuffer.allocateDirect(BinaryHeader.HEADER_SIZE);
         BinaryHeader header = BinaryHeader.create(format, index, userMap.size(), itemMap.size());
         header.render(buf);
         buf.flip();
-        BinaryUtils.writeBuffer(channel, buf);
+        BinaryUtils.writeBuffer(channel, buf, 0);
     }
 
     /**
@@ -244,6 +247,68 @@ public class BinaryRatingPacker implements Closeable {
 
         headerBuf.flip();
         BinaryUtils.writeBuffer(channel, headerBuf, indexPosition);
+    }
+
+    private void checkUpgrade(long uid, long iid) throws IOException {
+        Set<PackHeaderFlag> toRemove = null;
+        if (!format.userIdIsValid(uid)) {
+            assert format.hasCompactUsers();
+            toRemove = EnumSet.of(PackHeaderFlag.COMPACT_USERS);
+        }
+        if (!format.itemIdIsValid(iid)) {
+            assert format.hasCompactItems();
+            if (toRemove == null) {
+                toRemove = EnumSet.of(PackHeaderFlag.COMPACT_ITEMS);
+            } else {
+                toRemove.add(PackHeaderFlag.COMPACT_ITEMS);
+            }
+        }
+
+        if (toRemove != null) {
+            Set<PackHeaderFlag> newFlags = EnumSet.copyOf(format.getFlags());
+            newFlags.removeAll(toRemove);
+            BinaryFormat newFormat = BinaryFormat.createWithFlags(newFlags);
+            if (newFormat != format) {
+                upgradeRatings(newFormat);
+            }
+        }
+    }
+
+    private void upgradeRatings(BinaryFormat newFormat) throws IOException {
+        Preconditions.checkArgument(newFormat.getRatingSize() > format.getRatingSize(),
+                                    "new format is not wider than old");
+        logger.info("upgrading {} ratings from {} to {}", index, format, newFormat);
+
+        ByteBuffer oldBuffer = ByteBuffer.allocateDirect(format.getRatingSize());
+        ByteBuffer newBuffer = ByteBuffer.allocateDirect(newFormat.getRatingSize());
+        MutableRating scratch = new MutableRating();
+
+        long oldPos = BinaryHeader.HEADER_SIZE + index * format.getRatingSize();
+        Preconditions.checkState(channel.position() == oldPos,
+                                 "channel is at the wrong position");
+        long newPos = BinaryHeader.HEADER_SIZE + index * newFormat.getRatingSize();
+        channel.position(newPos);
+        // loop backwards, coping each rating to later in the file
+        for (int i = index - 1; i >= 0; i--) {
+            oldPos -= format.getRatingSize();
+            newPos -= newFormat.getRatingSize();
+
+            // read the old rating
+            BinaryUtils.readBuffer(channel, oldBuffer, oldPos);
+            oldBuffer.flip();
+            format.readRating(oldBuffer, scratch);
+            oldBuffer.clear();
+
+            // write the new rating
+            newFormat.renderRating(scratch, newBuffer);
+            newBuffer.flip();
+            BinaryUtils.writeBuffer(channel, newBuffer, newPos);
+            newBuffer.clear();
+        }
+        assert oldPos == BinaryHeader.HEADER_SIZE;
+        assert newPos == BinaryHeader.HEADER_SIZE;
+        format = newFormat;
+        ratingBuffer = ByteBuffer.allocateDirect(newFormat.getRatingSize());
     }
 
     /**

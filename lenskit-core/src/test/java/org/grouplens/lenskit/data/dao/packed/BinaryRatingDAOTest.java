@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.SerializationUtils;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.SortOrder;
@@ -125,6 +126,30 @@ public class BinaryRatingDAOTest {
         assertThat(dao.getEventsForUser(39), hasSize(1));
         assertThat(dao.getEventsForUser(39, Rating.class),
                    contains(ratings.get(2)));
+    }
+
+    @Test
+    public void testUpgradedDAO() throws IOException {
+        List<Rating> all = Lists.newArrayList(ratings);
+        all.add(Ratings.make(39L, Integer.MAX_VALUE + 100L, Math.PI, 23049L));
+
+        File file = folder.newFile("ratings.bin");
+        BinaryRatingPacker packer = BinaryRatingPacker.open(file, BinaryFormatFlag.TIMESTAMPS);
+        try {
+            packer.writeRatings(all);
+        } finally {
+            packer.close();
+        }
+
+        BinaryRatingDAO dao = BinaryRatingDAO.open(file);
+        assertThat(Cursors.makeList(dao.streamEvents(Rating.class)),
+                   equalTo(all));
+        assertThat(dao.getEventsForUser(42), hasSize(2));
+        assertThat(dao.getEventsForUser(42, Rating.class),
+                   contains(ratings.get(0), ratings.get(1)));
+        assertThat(dao.getEventsForUser(39), hasSize(2));
+        assertThat(dao.getEventsForUser(39, Rating.class),
+                   contains(ratings.get(2), all.get(3)));
     }
 
     @Test
