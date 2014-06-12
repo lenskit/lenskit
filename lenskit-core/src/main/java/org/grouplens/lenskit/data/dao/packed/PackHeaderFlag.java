@@ -29,7 +29,7 @@ import java.util.Set;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 enum PackHeaderFlag {
-    TIMESTAMPS;
+    TIMESTAMPS, COMPACT_ITEMS, COMPACT_USERS;
 
     public static EnumSet<PackHeaderFlag> fromFormatFlags(Set<BinaryFormatFlag> flags) {
         EnumSet<PackHeaderFlag> set = EnumSet.noneOf(PackHeaderFlag.class);
@@ -37,5 +37,32 @@ enum PackHeaderFlag {
             set.add(PackHeaderFlag.TIMESTAMPS);
         }
         return set;
+    }
+
+    public static EnumSet<PackHeaderFlag> unpackWord(short flagWord) {
+        EnumSet<PackHeaderFlag> flags = EnumSet.noneOf(PackHeaderFlag.class);
+
+        int word = ((int) flagWord) & 0x0000FFFF;
+        int n = 0;
+        while (word != 0 && n < values().length) {
+            if ((word & 0x01) != 0) {
+                flags.add(values()[n]);
+            }
+            n++;
+            word = word >>> 1;
+        }
+
+        if (word != 0) {
+            throw new IllegalArgumentException(String.format("unparseable flag word %x", flagWord));
+        }
+        return flags;
+    }
+
+    public static short packWord(EnumSet<PackHeaderFlag> flags) {
+        short word = 0;
+        for (PackHeaderFlag flag: flags) {
+            word |= 1 << flag.ordinal();
+        }
+        return word;
     }
 }

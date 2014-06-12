@@ -22,8 +22,6 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
-import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.ints.IntList;
 import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.RatingBuilder;
@@ -48,13 +46,18 @@ final class BinaryFormat {
 
     private final EnumSet<PackHeaderFlag> formatFlags;
     private final boolean includeTimestamps;
+    private final boolean compactItems, compactUsers;
     private final int ratingSize;
 
     private BinaryFormat(Set<PackHeaderFlag> flags) {
         formatFlags = EnumSet.copyOf(flags);
         includeTimestamps = flags.contains(PackHeaderFlag.TIMESTAMPS);
+        compactItems = flags.contains(PackHeaderFlag.COMPACT_ITEMS);
+        compactUsers = flags.contains(PackHeaderFlag.COMPACT_USERS);
 
-        int rsz = 2 * LONG_SIZE + DOUBLE_SIZE;
+        int rsz = DOUBLE_SIZE;
+        rsz += compactItems ? INT_SIZE : LONG_SIZE;
+        rsz += compactUsers ? INT_SIZE : LONG_SIZE;
         if (hasTimestamps()) {
             rsz += LONG_SIZE;
         }
@@ -81,21 +84,7 @@ final class BinaryFormat {
     }
 
     public static BinaryFormat fromFlags(short flagWord) {
-        EnumSet<PackHeaderFlag> flags = EnumSet.noneOf(PackHeaderFlag.class);
-
-        int word = ((int) flagWord) & 0x0000FFFF;
-        int n = 0;
-        while (word != 0 && n < PackHeaderFlag.values().length) {
-            if ((word & 0x01) != 0) {
-                flags.add(PackHeaderFlag.values()[n]);
-            }
-            n++;
-            word = word >>> 1;
-        }
-
-        if (word != 0) {
-            throw new IllegalArgumentException(String.format("unparseable flag word %x", flagWord));
-        }
+        EnumSet<PackHeaderFlag> flags = PackHeaderFlag.unpackWord(flagWord);
 
         return new BinaryFormat(flags);
     }
@@ -104,16 +93,20 @@ final class BinaryFormat {
         return includeTimestamps;
     }
 
+    public boolean hasCompactItems() {
+        return compactItems;
+    }
+
+    public boolean hasCompactUsers() {
+        return compactUsers;
+    }
+
     public Set<PackHeaderFlag> getFlags() {
         return Sets.newEnumSet(formatFlags, PackHeaderFlag.class);
     }
 
     public short getFlagWord() {
-        short word = 0;
-        for (PackHeaderFlag flag: formatFlags) {
-            word |= 1 << flag.ordinal();
-        }
-        return word;
+        return PackHeaderFlag.packWord(formatFlags);
     }
 
     public int getRatingSize() {
@@ -124,14 +117,55 @@ final class BinaryFormat {
         return BinaryHeader.HEADER_SIZE;
     }
 
+    static long readId(ByteBuffer buf, boolean compact) {
+        if (compact) {
+            return buf.getInt();
+        } else {
+            return buf.getLong();
+        }
+    }
+
+    static void writeId(ByteBuffer buf, long id, boolean compact) {
+        if (compact) {
+            assert id >= Integer.MIN_VALUE && id <= Integer.MAX_VALUE;
+            buf.putInt((int) id);
+        } else {
+            buf.putLong(id);
+        }
+    }
+
+    public int getUserIdSize() {
+        return compactUsers ? INT_SIZE : LONG_SIZE;
+    }
+
+    public int getItemIdSize() {
+        return compactUsers ? INT_SIZE : LONG_SIZE;
+    }
+
+    public long readUserId(ByteBuffer buf) {
+        return readId(buf, compactUsers);
+    }
+
+    public long readItemId(ByteBuffer buf) {
+        return readId(buf, compactItems);
+    }
+
+    public void writeUserId(ByteBuffer buf, long id) {
+        writeId(buf, id, compactUsers);
+    }
+
+    public void writeItemId(ByteBuffer buf, long id) {
+        writeId(buf, id, compactItems);
+    }
+
     /**
      * Render a rating to a byte buffer.
      * @param rating The rating.
      * @param buf The buffer.
      */
     public void renderRating(Rating rating, ByteBuffer buf) {
-        buf.putLong(rating.getUserId());
-        buf.putLong(rating.getItemId());
+        writeUserId(buf, rating.getUserId());
+        writeItemId(buf, rating.getItemId());
         Preference pref = rating.getPreference();
         if (pref == null) {
             buf.putDouble(Double.NaN);
@@ -150,8 +184,8 @@ final class BinaryFormat {
      */
     public Rating readRating(ByteBuffer buf) {
         RatingBuilder rb = new RatingBuilder();
-        rb.setUserId(buf.getLong());
-        rb.setItemId(buf.getLong());
+        rb.setUserId(readUserId(buf));
+        rb.setItemId(readItemId(buf));
         double rating = buf.getDouble();
         if (!Double.isNaN(rating)) {
             rb.setRating(rating);
@@ -168,26 +202,13 @@ final class BinaryFormat {
      * @param rating The rating to populate.
      */
     public void readRating(ByteBuffer buf, MutableRating rating) {
-        rating.setUserId(buf.getLong());
-        rating.setItemId(buf.getLong());
+        rating.setUserId(readUserId(buf));
+        rating.setItemId(readItemId(buf));
         rating.setRating(buf.getDouble());
         if (hasTimestamps()) {
             rating.setTimestamp(buf.getLong());
-        }
-    }
-
-    /**
-     * Render a user or item index entry.
-     * @param key The user or item ID.
-     * @param positions The list of indexes to record.
-     * @param buf The byte buffer to receive the entry.
-     */
-    public void renderIndexEntry(long key, IntList positions, ByteBuffer buf) {
-        buf.putLong(key);
-        buf.putInt(positions.size());
-        IntIterator iter = positions.iterator();
-        while (iter.hasNext()) {
-            buf.putInt(iter.nextInt());
+        } else {
+            rating.setTimestamp(-1);
         }
     }
 

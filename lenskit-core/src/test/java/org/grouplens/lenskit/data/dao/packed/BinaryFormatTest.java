@@ -47,6 +47,33 @@ public class BinaryFormatTest {
     }
 
     @Test
+    public void testCompactItemFlag() {
+        BinaryFormat format = BinaryFormat.create(PackHeaderFlag.COMPACT_ITEMS);
+        assertThat(format.getFlagWord(), equalTo((short) 2));
+        assertThat(format.hasCompactItems(), equalTo(true));
+        assertThat(format.hasCompactUsers(), equalTo(false));
+        assertThat(format.getRatingSize(), equalTo(20));
+    }
+
+    @Test
+    public void testCompactUserFlag() {
+        BinaryFormat format = BinaryFormat.create(PackHeaderFlag.COMPACT_USERS);
+        assertThat(format.getFlagWord(), equalTo((short) 4));
+        assertThat(format.hasCompactUsers(), equalTo(true));
+        assertThat(format.hasCompactItems(), equalTo(false));
+        assertThat(format.getRatingSize(), equalTo(20));
+    }
+
+    @Test
+    public void testBothCompact() {
+        BinaryFormat format = BinaryFormat.create(PackHeaderFlag.COMPACT_USERS, PackHeaderFlag.COMPACT_ITEMS);
+        assertThat(format.getFlagWord(), equalTo((short) 6));
+        assertThat(format.hasCompactUsers(), equalTo(true));
+        assertThat(format.hasCompactItems(), equalTo(true));
+        assertThat(format.getRatingSize(), equalTo(16));
+    }
+
+    @Test
     public void testEqual() {
         assertThat(BinaryFormat.create(), equalTo(BinaryFormat.create()));
         assertThat(BinaryFormat.create(PackHeaderFlag.TIMESTAMPS),

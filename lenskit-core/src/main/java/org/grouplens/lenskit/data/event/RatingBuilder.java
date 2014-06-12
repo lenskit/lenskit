@@ -36,7 +36,7 @@ public class RatingBuilder implements Builder<Rating> {
     private long itemId;
     private boolean hasRating;
     private double rating;
-    private long timestamp;
+    private long timestamp = -1;
 
     /**
      * Create an uninitialized rating builder.
