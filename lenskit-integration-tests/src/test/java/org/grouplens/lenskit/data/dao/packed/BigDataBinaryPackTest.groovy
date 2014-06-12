@@ -118,16 +118,32 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
         assertThat binDao.itemIds, hasSize(items.itemIds.size())
         assertThat binDao.userIds, hasSize(users.userIds.size())
 
-        long lastTS = Long.MIN_VALUE;
-        for (Event r: binDao.streamEvents()) {
-            long ts = r.timestamp
-            assertThat ts, greaterThanOrEqualTo(lastTS)
-        }
+        checkSorted(binDao.streamEvents());
         // try sorted!
-        lastTS = Long.MIN_VALUE
-        for (Rating r: binDao.streamEvents(Rating, SortOrder.TIMESTAMP)) {
-            long ts = r.timestamp
-            assertThat ts, greaterThanOrEqualTo(lastTS)
+        checkSorted(binDao.streamEvents(Rating, SortOrder.TIMESTAMP));
+
+        // and scan users
+        for (long user: binDao.getUserIds()) {
+            checkSorted(binDao.getEventsForUser(user))
+            for (Event e: binDao.getEventsForUser(user)) {
+                assertThat e.userId, equalTo(user)
+            }
+        }
+
+        // and items
+        for (long item: binDao.getItemIds()) {
+            checkSorted(binDao.getEventsForItem(item))
+            for (Event e: binDao.getEventsForItem(item)) {
+                assertThat e.itemId, equalTo(item)
+            }
+        }
+    }
+
+    private void checkSorted(Iterable<? extends Event> events) {
+        long last = Long.MIN_VALUE;
+        for (Event e: events) {
+            long ts = e.timestamp
+            assertThat ts, greaterThanOrEqualTo(last)
         }
     }
 }

@@ -66,6 +66,7 @@ public class BinaryRatingPacker implements Closeable {
     private long lastTimestamp;
     private boolean needsSorting;
     private int index;
+    private int[] translationMap;
 
     /**
      * Create a new binary rating packer.
@@ -212,6 +213,9 @@ public class BinaryRatingPacker implements Closeable {
         while (iter.hasNext()) {
             final long key = iter.nextLong();
             IntList indexes = map.get(key);
+            if (needsSorting) {
+                indexes.sort(new SortComparator());
+            }
 
             // write into the header buffer
             headerBuf.putLong(key);
@@ -226,7 +230,11 @@ public class BinaryRatingPacker implements Closeable {
             }
             IntIterator iiter = indexes.iterator();
             while (iiter.hasNext()) {
-                buf.putInt(iiter.nextInt());
+                int idx = iiter.nextInt();
+                if (translationMap != null) {
+                    idx = translationMap[idx];
+                }
+                buf.putInt(idx);
             }
             buf.flip();
             BinaryUtils.writeBuffer(channel, buf);
@@ -245,7 +253,17 @@ public class BinaryRatingPacker implements Closeable {
      * Sort the ratings.
      */
     private void sortRatings() {
-        Arrays.quickSort(0, index, new SortComparator(), new SortSwapper());
+        int[] invMap = new int[index];
+        for (int i = index - 1; i >= 0; i--) {
+            invMap[i] = i;
+        }
+
+        Arrays.quickSort(0, index, new SortComparator(), new SortSwapper(invMap));
+
+        translationMap = new int[index];
+        for (int i = 0; i < invMap.length; i++) {
+            translationMap[invMap[i]] = i;
+        }
     }
 
     private long ratingPos(int idx) {
@@ -260,6 +278,10 @@ public class BinaryRatingPacker implements Closeable {
 
         @Override
         public int compare(int i1, int i2) {
+            if (translationMap != null) {
+                i1 = translationMap[i1];
+                i2 = translationMap[i2];
+            }
             try {
                 BinaryUtils.readBuffer(channel, buf, ratingPos(i1));
                 buf.flip();
@@ -278,8 +300,13 @@ public class BinaryRatingPacker implements Closeable {
     }
 
     private class SortSwapper implements Swapper {
+        private final int[] inverseTranslationMap;
         private ByteBuffer b1 = ByteBuffer.allocateDirect(format.getRatingSize());
         private ByteBuffer b2 = ByteBuffer.allocateDirect(format.getRatingSize());
+
+        SortSwapper(int[] map) {
+            inverseTranslationMap = map;
+        }
 
         @Override
         public void swap(int i1, int i2) {
@@ -296,6 +323,10 @@ public class BinaryRatingPacker implements Closeable {
 
                 b1.clear();
                 b2.clear();
+
+                int j = inverseTranslationMap[i1];
+                inverseTranslationMap[i1] = inverseTranslationMap[i2];
+                inverseTranslationMap[i2] = j;
             } catch (IOException ex) {
                 throw new RuntimeException("I/O error while sorting", ex);
             }

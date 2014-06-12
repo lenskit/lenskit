@@ -119,6 +119,12 @@ public class BinaryRatingDAOTest {
         BinaryRatingDAO dao = BinaryRatingDAO.open(file);
         assertThat(Cursors.makeList(dao.streamEvents(Rating.class)),
                    equalTo(ratings));
+        assertThat(dao.getEventsForUser(42), hasSize(2));
+        assertThat(dao.getEventsForUser(42, Rating.class),
+                   contains(ratings.get(0), ratings.get(1)));
+        assertThat(dao.getEventsForUser(39), hasSize(1));
+        assertThat(dao.getEventsForUser(39, Rating.class),
+                   contains(ratings.get(2)));
     }
 
     @Test
