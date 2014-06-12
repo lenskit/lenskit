@@ -30,6 +30,7 @@ import org.grouplens.lenskit.data.event.Event
 import org.grouplens.lenskit.data.event.Rating
 import org.grouplens.lenskit.data.event.Ratings
 import org.grouplens.lenskit.test.ML100KTestSuite
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -43,12 +44,26 @@ import static org.junit.Assert.assertThat
 class BigDataBinaryPackTest extends ML100KTestSuite {
     @Rule
     public TemporaryFolder tempDir = new TemporaryFolder();
+    private UserDAO udao
+    private ItemDAO idao
 
     UserDAO getUserDAO() {
-        return new PrefetchingUserDAO(dao)
+        if (udao == null) {
+            udao = new PrefetchingUserDAO(dao)
+        }
+        return udao
     }
     ItemDAO getItemDAO() {
-        return new PrefetchingItemDAO(dao)
+        if (idao == null) {
+            idao = new PrefetchingItemDAO(dao)
+        }
+        return idao
+    }
+
+    @After
+    public void clearCaches() {
+        udao = null
+        idao = null
     }
 
     @Test
@@ -112,16 +127,16 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
             packer.close()
         }
 
-        def users = userDAO
-        def items = itemDAO
-
         def binDao = BinaryRatingDAO.open(file)
-        assertThat binDao.itemIds, hasSize(items.itemIds.size())
-        assertThat binDao.userIds, hasSize(users.userIds.size())
+        assertThat binDao.userIds, equalTo(userDAO.userIds)
+        assertThat binDao.itemIds, equalTo(itemDAO.itemIds)
 
         checkSorted(binDao.streamEvents());
         // try sorted!
         checkSorted(binDao.streamEvents(Rating, SortOrder.TIMESTAMP));
+
+        def uedao = new PrefetchingUserEventDAO(dao)
+        def iedao = new PrefetchingItemEventDAO(dao)
 
         // and scan users
         for (long user: binDao.getUserIds()) {
@@ -129,6 +144,8 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
             for (Event e: binDao.getEventsForUser(user)) {
                 assertThat e.userId, equalTo(user)
             }
+            assertThat(binDao.getEventsForUser(user),
+                       equalTo(uedao.getEventsForUser(user)))
         }
 
         // and items
@@ -137,6 +154,8 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
             for (Event e: binDao.getEventsForItem(item)) {
                 assertThat e.itemId, equalTo(item)
             }
+            assertThat(binDao.getEventsForItem(item).toSet(),
+                       equalTo(iedao.getEventsForItem(item).toSet()))
         }
     }
 
