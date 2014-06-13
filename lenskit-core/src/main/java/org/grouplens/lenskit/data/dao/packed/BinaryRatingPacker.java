@@ -198,22 +198,10 @@ public class BinaryRatingPacker implements Closeable {
      */
     private void writeIndex(Long2ObjectMap<IntList> map) throws IOException {
         LongSortedSet keys = LongUtils.packedSet(map.keySet());
-        // allocate header buffer
-        // we do not pack the IDs in these headers
-        int headerSize = keys.size() * BinaryIndexTable.TABLE_ENTRY_SIZE;
-        ByteBuffer headerBuf = ByteBuffer.allocateDirect(headerSize);
-        // temporary buffer for each entry
-        ByteBuffer buf = null;
+        BinaryIndexTableWriter tableWriter =
+                BinaryIndexTableWriter.create(format, channel, keys.size());
 
         SortComparator indexComparator = new SortComparator();
-
-        // save the position
-        long indexPosition = channel.position();
-        // and skip the header table for now
-        channel.position(indexPosition + headerSize);
-
-        // track the offset into the index entries
-        int offset = 0;
 
         LongIterator iter = keys.iterator();
         while (iter.hasNext()) {
@@ -223,30 +211,15 @@ public class BinaryRatingPacker implements Closeable {
                 IntArrays.quickSort(indexes, indexComparator);
             }
 
-            // write into the header buffer
-            headerBuf.putLong(key);
-            headerBuf.putInt(offset);
-            headerBuf.putInt(indexes.length);
-            offset += indexes.length;
-
-            // write the index entries
-            int size = indexes.length * BinaryFormat.INT_SIZE;
-            if (buf == null || buf.capacity() < size) {
-                buf = ByteBuffer.allocateDirect(size);
-            }
-            for (int idx: indexes) {
-                if (translationMap != null) {
-                    idx = translationMap[idx];
+            if (translationMap != null) {
+                for (int i = 0; i < indexes.length; i++) {
+                    indexes[i] = translationMap[indexes[i]];
                 }
-                buf.putInt(idx);
             }
-            buf.flip();
-            BinaryUtils.writeBuffer(channel, buf);
-            buf.clear();
-        }
 
-        headerBuf.flip();
-        BinaryUtils.writeBuffer(channel, headerBuf, indexPosition);
+            logger.debug("writing {} indices for id {}", key, indexes.length);
+            tableWriter.writeEntry(key, indexes);
+        }
     }
 
     private void checkUpgrade(long uid, long iid) throws IOException {

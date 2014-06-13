@@ -244,6 +244,10 @@ final class BinaryFormat {
         }
     }
 
+    public int indexTableEntrySize() {
+        return BinaryIndexTable.TABLE_ENTRY_SIZE;
+    }
+
     @Override
     public String toString() {
         return "BinFormat" + formatFlags.toString();

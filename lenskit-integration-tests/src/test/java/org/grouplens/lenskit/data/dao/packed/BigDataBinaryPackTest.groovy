@@ -144,8 +144,8 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
             for (Event e: binDao.getEventsForUser(user)) {
                 assertThat e.userId, equalTo(user)
             }
-            assertThat(binDao.getEventsForUser(user),
-                       equalTo(uedao.getEventsForUser(user)))
+            assertThat(binDao.getEventsForUser(user).toSet(),
+                       equalTo(uedao.getEventsForUser(user).toSet()))
         }
 
         // and items
