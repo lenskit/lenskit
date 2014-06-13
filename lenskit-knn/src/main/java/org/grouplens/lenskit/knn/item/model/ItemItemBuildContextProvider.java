@@ -77,19 +77,19 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
         logger.debug("using summarizer {}", userSummarizer);
 
         logger.debug("Building item data");
-        Long2ObjectMap<ScoredIdListBuilder> itemData = new Long2ObjectOpenHashMap<ScoredIdListBuilder>(1000);
-        Long2ObjectMap<LongSortedSet> candidateData = new Long2ObjectOpenHashMap<LongSortedSet>(1000);
-        buildItemRatings(itemData, candidateData);
+        Long2ObjectMap<ScoredIdListBuilder> itemRatingData = new Long2ObjectOpenHashMap<ScoredIdListBuilder>(1000);
+        Long2ObjectMap<LongSortedSet> userItems = new Long2ObjectOpenHashMap<LongSortedSet>(1000);
+        buildItemRatings(itemRatingData, userItems);
 
-        LongKeyDomain items = LongKeyDomain.fromCollection(itemData.keySet(), true);
+        LongKeyDomain items = LongKeyDomain.fromCollection(itemRatingData.keySet(), true);
         final int n = items.domainSize();
-        assert n == itemData.size();
+        assert n == itemRatingData.size();
         // finalize the item data into vectors
         SparseVector[] itemRatings = new SparseVector[n];
 
         for (int i = 0; i < n; i++) {
             final long item = items.getKey(i);
-            ScoredIdListBuilder ratings = itemData.get(item);
+            ScoredIdListBuilder ratings = itemRatingData.get(item);
             SparseVector v = ratings.buildVector();
             assert v.size() == ratings.size();
             itemRatings[i] = v;
@@ -98,18 +98,18 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
         }
 
         logger.debug("item data completed");
-        return new ItemItemBuildContext(items, itemRatings, candidateData);
+        return new ItemItemBuildContext(items, itemRatings, userItems);
     }
 
     /**
      * Transpose the user matrix so we have a matrix of item ids to ratings. Accumulate user item vectors into
      * the candidate sets for each item
      *
-     * @param ratings    mapping from item ids to (userId: rating) maps (to be filled)
-     * @param candidates mapping of user IDs to rated item sets to be filled.
+     * @param itemRatings    mapping from item ids to (userId: rating) maps (to be filled)
+     * @param userItems mapping of user IDs to rated item sets to be filled.
      */
-    private void buildItemRatings(Long2ObjectMap<ScoredIdListBuilder> ratings,
-                                  Long2ObjectMap<LongSortedSet> candidates) {
+    private void buildItemRatings(Long2ObjectMap<ScoredIdListBuilder> itemRatings,
+                                  Long2ObjectMap<LongSortedSet> userItems) {
         // initialize the transposed array to collect item vector data
         Cursor<UserHistory<Event>> users = userEventDAO.streamEventsByUser();
         try {
@@ -122,16 +122,16 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
                 for (VectorEntry rating : normed.fast()) {
                     final long item = rating.getKey();
                     // get the item's rating accumulator
-                    ScoredIdListBuilder ivect = ratings.get(item);
+                    ScoredIdListBuilder ivect = itemRatings.get(item);
                     if (ivect == null) {
                         ivect = ScoredIds.newListBuilder(100);
-                        ratings.put(item, ivect);
+                        itemRatings.put(item, ivect);
                     }
                     ivect.add(uid, rating.getValue());
                 }
 
                 // get the item's candidate set
-                candidates.put(uid, LongUtils.packedSet(summary.keySet()));
+                userItems.put(uid, LongUtils.packedSet(summary.keySet()));
             }
         } finally {
             users.close();
