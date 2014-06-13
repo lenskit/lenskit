@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -205,6 +205,8 @@ public class BinaryRatingPacker implements Closeable {
         // temporary buffer for each entry
         ByteBuffer buf = null;
 
+        SortComparator indexComparator = new SortComparator();
+
         // save the position
         long indexPosition = channel.position();
         // and skip the header table for now
@@ -216,25 +218,23 @@ public class BinaryRatingPacker implements Closeable {
         LongIterator iter = keys.iterator();
         while (iter.hasNext()) {
             final long key = iter.nextLong();
-            IntList indexes = map.get(key);
+            int[] indexes = map.get(key).toIntArray();
             if (needsSorting) {
-                indexes.sort(new SortComparator());
+                IntArrays.quickSort(indexes, indexComparator);
             }
 
             // write into the header buffer
             headerBuf.putLong(key);
             headerBuf.putInt(offset);
-            headerBuf.putInt(indexes.size());
-            offset += indexes.size();
+            headerBuf.putInt(indexes.length);
+            offset += indexes.length;
 
             // write the index entries
-            int size = indexes.size() * BinaryFormat.INT_SIZE;
+            int size = indexes.length * BinaryFormat.INT_SIZE;
             if (buf == null || buf.capacity() < size) {
                 buf = ByteBuffer.allocateDirect(size);
             }
-            IntIterator iiter = indexes.iterator();
-            while (iiter.hasNext()) {
-                int idx = iiter.nextInt();
+            for (int idx: indexes) {
                 if (translationMap != null) {
                     idx = translationMap[idx];
                 }
