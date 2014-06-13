@@ -33,7 +33,6 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 
-import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 

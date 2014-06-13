@@ -23,7 +23,6 @@ package org.grouplens.lenskit.knn.item.model;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.collections.LongUtils;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
 

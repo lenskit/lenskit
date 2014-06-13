@@ -20,13 +20,12 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import java.util.Collection;
-
 import it.unimi.dsi.fastutil.longs.LongSet;
-
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.GlobalItemScorer;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
+
+import java.util.Collection;
 
 /**
  * The  global scorer for the global recommendation backed by a item-item model.

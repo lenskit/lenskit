@@ -20,16 +20,11 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import javax.inject.Qualifier;
-
 import org.grouplens.grapht.annotation.DefaultInteger;
 import org.grouplens.lenskit.core.Parameter;
+
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
  * Number of neighbors to retain in the similarity matrix.  Only the <i>n</i> most
