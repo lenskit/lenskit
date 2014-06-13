@@ -64,7 +64,7 @@ and dependencies.  The other modules are as follows:
 
 LensKit is under the following copyright and license:
 
-Copyright 2010-2013 Regents of the University of Minnesota and contributors
+Copyright 2010-2014 Regents of the University of Minnesota and contributors
 Work on LensKit has been funded by the National Science Foundation under
 grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
 
@@ -87,7 +87,7 @@ Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 To ease reuse, the LensKit build system (all `.gradle` files and the contents
 of the `buildSrc` directory) are licensed under the 3-clause BSD license:
 
-Copyright 2010-2013 Regents of the University of Minnesota and contributors.
+Copyright 2010-2014 Regents of the University of Minnesota and contributors.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions

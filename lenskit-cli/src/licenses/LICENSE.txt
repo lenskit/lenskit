@@ -1,5 +1,5 @@
 LensKit, an open source recommender systems toolkit.
-Copyright 2010-2013 Regents of the University of Minnesota and contributors
+Copyright 2010-2014 Regents of the University of Minnesota and contributors
 Work on LensKit has been funded by the National Science Foundation under
 grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
 
@@ -22,7 +22,7 @@ this license is in the file APL.txt.
 
 SLF4J carries the following copyright:
 
-    Copyright (c) 2004-2013 QOS.ch
+    Copyright (c) 2004-2014 QOS.ch
     All rights reserved.
 
     Permission is hereby granted, free of charge, to any person obtaining a copy of this software
