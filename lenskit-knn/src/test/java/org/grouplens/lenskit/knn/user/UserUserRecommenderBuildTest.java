@@ -84,7 +84,7 @@ public class UserUserRecommenderBuildTest {
         rs.add(Ratings.make(8, 4, 5));
         rs.add(Ratings.make(8, 5, 4));
 
-        EventDAO dao = new EventCollectionDAO(rs);
+        EventDAO dao = EventCollectionDAO.create(rs);
 
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).to(dao);

@@ -113,6 +113,7 @@ public class ItemItemBuildContextTest {
         testRatingIntegrity(items, ratingMap, context);
     }
 
+    @SuppressWarnings("deprecation")
     private void testRatingIntegrity(LongKeyDomain items, SparseVector[] trueRatings, ItemItemBuildContext context) {
         for (long itemId : context.getItems()) {
             assertEquals(trueRatings[items.getIndex(itemId)], context.itemVector(itemId));
