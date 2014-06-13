@@ -71,7 +71,7 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
     /**
      * Construct a new item-item model.
      *
-     * @param nbrs  The item neighborhoods.
+     * @param nbrs  The item neighborhoods.  The item neighborhood lists are not copied.
      */
     public SimilarityMatrixModel(Map<Long,List<ScoredId>> nbrs) {
         itemDomain = LongKeyDomain.fromCollection(nbrs.keySet(), true);
