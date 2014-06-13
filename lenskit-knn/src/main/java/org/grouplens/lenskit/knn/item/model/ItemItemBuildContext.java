@@ -121,7 +121,9 @@ public class ItemItemBuildContext implements Serializable {
      *
      * @return An Iterable over ItemVecPairs, objects
      *         pairing item ids and their corresponding vectors.
+     * @deprecated This will go away in LensKit 3.0.
      */
+    @Deprecated
     public Iterable<ItemVecPair> getItemPairs() {
         return new Iterable<ItemVecPair>() {
             @Override
@@ -137,7 +139,9 @@ public class ItemItemBuildContext implements Serializable {
      * @return An Iterator over ItemVecPairs, an object
      *         offering public access to the item ids and their
      *         corresponding vectors.
+     * @deprecated This will go away in LensKit 3.0.
      */
+    @Deprecated
     public Iterator<ItemVecPair> getItemPairIterator() {
         return new FastIteratorImpl(items.activeSetView(), items.activeSetView());
     }
