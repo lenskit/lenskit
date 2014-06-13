@@ -21,8 +21,8 @@
 package org.grouplens.lenskit.knn.user;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
 
 import javax.inject.Inject;
 import java.io.Serializable;
