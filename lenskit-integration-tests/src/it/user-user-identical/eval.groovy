@@ -72,6 +72,5 @@ trainTest {
     metric HLUtilityPredictMetric
 
     output 'results.csv'
-    userOutput 'users.csv'
     predictOutput 'predictions.csv'
 }

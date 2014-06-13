@@ -78,7 +78,6 @@ trainTest {
     metric HLUtilityPredictMetric
 
     output 'results.csv'
-    userOutput 'users.csv'
     predictOutput 'predictions.csv'
     writePredictionChannel ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL, "NbrCount"
 }
