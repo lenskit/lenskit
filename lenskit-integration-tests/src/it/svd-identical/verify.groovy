@@ -19,20 +19,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-
-import static org.grouplens.lenskit.util.test.ExtraMatchers.existingFile
-import static org.grouplens.lenskit.util.test.ExtraMatchers.hasLineCount
-import static org.hamcrest.MatcherAssert.assertThat
-import static org.hamcrest.Matchers.allOf
-import static org.hamcrest.Matchers.equalTo
+import static org.junit.Assert.assertTrue
 
 File resultsFile = new File(basedir, "results.csv")
-File userFile = new File(basedir, "users.csv")
 File predictFile = new File(basedir, "predictions.csv")
 
-assertThat("output file existence",
-           resultsFile, allOf(existingFile()))
-assertThat("user output file existence",
-           userFile, existingFile())
-assertThat("predict output file existence",
-           predictFile, existingFile())
+assertTrue("output file exists", resultsFile.exists())
+assertTrue("predict file exists", predictFile.exists())
