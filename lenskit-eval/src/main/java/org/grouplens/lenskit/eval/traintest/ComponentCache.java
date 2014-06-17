@@ -20,12 +20,12 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.graph.DAGNodeBuilder;
@@ -136,7 +136,7 @@ class ComponentCache implements NodeProcessor {
         }
     }
 
-    Object instantiate(@Nonnull DAGNode<Component, Dependency> node) {
+    Object instantiate(@Nonnull DAGNode<Component, Dependency> node) throws InjectionException {
         CacheEntry entry;
         synchronized (cache) {
             entry = cache.get(node);
@@ -155,7 +155,7 @@ class ComponentCache implements NodeProcessor {
     @Nonnull
     @Override
     public DAGNode<Component, Dependency> processNode(@Nonnull DAGNode<Component, Dependency> node,
-                                                      @Nonnull DAGNode<Component, Dependency> original) {
+                                                      @Nonnull DAGNode<Component, Dependency> original) throws InjectionException {
         CacheEntry entry;
         synchronized (cache) {
             entry = cache.get(original);
@@ -212,7 +212,7 @@ class ComponentCache implements NodeProcessor {
          * @return The object loaded from the cache, or from instantiating {@code node}.
          * @throws IOException If there is an I/O error with the cache.
          */
-        public synchronized Object getObject(DAGNode<Component, Dependency> node) throws IOException {
+        public synchronized Object getObject(DAGNode<Component, Dependency> node) throws IOException, InjectionException {
             // check soft-reference cache
             if (cachedObject != null) {
                 if (cachedObject.isPresent()) {

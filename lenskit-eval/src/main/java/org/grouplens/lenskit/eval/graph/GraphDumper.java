@@ -34,6 +34,7 @@ import org.grouplens.grapht.reflect.AbstractSatisfactionVisitor;
 import org.grouplens.grapht.reflect.Desire;
 import org.grouplens.grapht.reflect.Satisfaction;
 import org.grouplens.grapht.reflect.SatisfactionVisitor;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.Parameter;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.RecommenderInstantiator;
@@ -330,7 +331,7 @@ public class GraphDumper {
      * @throws IOException
      */
     public static void renderGraph(DAGNode<Component,Dependency> graph,
-                                   File graphvizFile) throws IOException {
+                                   File graphvizFile) throws IOException, RecommenderBuildException {
         logger.debug("graph has {} nodes", graph.getReachableNodes().size());
         logger.debug("simulating instantiation");
         RecommenderInstantiator instantiator = RecommenderInstantiator.create(graph);

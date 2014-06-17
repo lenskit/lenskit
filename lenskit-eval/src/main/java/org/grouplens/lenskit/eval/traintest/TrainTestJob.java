@@ -50,7 +50,7 @@ import java.util.concurrent.TimeUnit;
  * @since 0.8
  */
 abstract class TrainTestJob implements Callable<Void> {
-    private static final Logger logger = LoggerFactory.getLogger(TrainTestJob.class);
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final Attributed algorithmInfo;
     protected final TTDataSet dataSet;

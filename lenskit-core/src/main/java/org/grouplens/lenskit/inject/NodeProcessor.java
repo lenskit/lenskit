@@ -22,6 +22,7 @@ package org.grouplens.lenskit.inject;
 
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.graph.DAGNode;
 
 import javax.annotation.Nonnull;
@@ -44,5 +45,5 @@ public interface NodeProcessor {
      */
     @Nonnull
     DAGNode<Component, Dependency> processNode(@Nonnull DAGNode<Component, Dependency> node,
-                                               @Nonnull DAGNode<Component, Dependency> original);
+                                               @Nonnull DAGNode<Component, Dependency> original) throws InjectionException;
 }

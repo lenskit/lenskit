@@ -26,6 +26,7 @@ import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.util.Providers;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.data.dao.EventDAO;
@@ -148,6 +149,8 @@ public class DumpGraphTask extends AbstractTask<File> {
             GraphDumper.renderGraph(graph, output);
         } catch (IOException e) {
             throw new TaskExecutionException("error writing graph", e);
+        } catch (RecommenderBuildException e) {
+            throw new TaskExecutionException("error processing graph", e);
         }
 
         // TODO Support dumping the instantiated graph again

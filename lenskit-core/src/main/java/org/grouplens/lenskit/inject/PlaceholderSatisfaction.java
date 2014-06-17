@@ -21,19 +21,19 @@
 package org.grouplens.lenskit.inject;
 
 import org.grouplens.grapht.CachePolicy;
+import org.grouplens.grapht.Instantiator;
 import org.grouplens.grapht.reflect.Desire;
-import org.grouplens.grapht.reflect.ProviderSource;
 import org.grouplens.grapht.reflect.Satisfaction;
 import org.grouplens.grapht.reflect.SatisfactionVisitor;
 import org.grouplens.grapht.util.ClassProxy;
 
-import javax.inject.Provider;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A placeholder satisfaction for graph rewriting.
@@ -55,7 +55,7 @@ public class PlaceholderSatisfaction implements Satisfaction, Serializable {
     }
 
     @Override
-    public List<? extends Desire> getDependencies() {
+    public List<Desire> getDependencies() {
         return Collections.emptyList();
     }
 
@@ -85,8 +85,8 @@ public class PlaceholderSatisfaction implements Satisfaction, Serializable {
     }
 
     @Override
-    public Provider<?> makeProvider(ProviderSource dependencies) {
-        throw new UnsupportedOperationException("placeholder node cannot create providers");
+    public Instantiator makeInstantiator(Map<Desire,Instantiator> dependencies) {
+        throw new UnsupportedOperationException("placeholder node cannot create instantiators");
     }
 
     @Override

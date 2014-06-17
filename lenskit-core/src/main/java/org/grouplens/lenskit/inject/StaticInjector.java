@@ -23,6 +23,7 @@ package org.grouplens.lenskit.inject;
 import com.google.common.base.Predicate;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.Injector;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
@@ -54,7 +55,7 @@ public class StaticInjector implements Injector {
     }
 
     @Override
-    public <T> T getInstance(Class<T> type) {
+    public <T> T getInstance(Class<T> type) throws InjectionException {
         Desire d = Desires.create(null, type, true);
         DAGEdge<Component, Dependency> e =
                 graph.getOutgoingEdgeWithLabel(Dependency.hasInitialDesire(d));
@@ -71,11 +72,11 @@ public class StaticInjector implements Injector {
         }
     }
 
-    public <T> T getInstance(Class<? extends Annotation> qual, Class<T> type) {
+    public <T> T getInstance(Class<? extends Annotation> qual, Class<T> type) throws InjectionException {
         return getInstance(Qualifiers.match(qual), type);
     }
 
-    public <T> T getInstance(QualifierMatcher qmatch, Class<T> type) {
+    public <T> T getInstance(QualifierMatcher qmatch, Class<T> type) throws InjectionException {
         DAGNode<Component, Dependency> node = findSatisfyingNode(qmatch, type);
         if (node != null) {
             return type.cast(instantiator.instantiate(node));
@@ -118,7 +119,7 @@ public class StaticInjector implements Injector {
 
 
     @Override
-    public <T> T getInstance(Annotation qualifier, Class<T> type) {
+    public <T> T getInstance(Annotation qualifier, Class<T> type) throws InjectionException {
         return getInstance(Qualifiers.match(qualifier), type);
     }
 }

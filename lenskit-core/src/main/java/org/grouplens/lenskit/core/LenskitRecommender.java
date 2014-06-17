@@ -22,6 +22,7 @@ package org.grouplens.lenskit.core;
 
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.inject.StaticInjector;
@@ -65,7 +66,11 @@ public class LenskitRecommender implements Recommender {
      * @return The instance of the specified component.
      */
     public <T> T get(Class<T> cls) {
-        return injector.getInstance(cls);
+        try {
+            return injector.getInstance(cls);
+        } catch (InjectionException e) {
+            throw new RuntimeException("error instantiating component", e);
+        }
     }
 
     /**
@@ -80,7 +85,11 @@ public class LenskitRecommender implements Recommender {
      * @return The instance of the specified component.
      */
     public <T> T get(Class<? extends Annotation> qual, Class<T> cls) {
-        return injector.getInstance(qual, cls);
+        try {
+            return injector.getInstance(qual, cls);
+        } catch (InjectionException e) {
+            throw new RuntimeException("error instantiating component", e);
+        }
     }
 
     /**
@@ -95,7 +104,11 @@ public class LenskitRecommender implements Recommender {
      * @return The instance of the specified component.
      */
     public <T> T get(Annotation qual, Class<T> cls) {
-        return injector.getInstance(qual, cls);
+        try {
+            return injector.getInstance(qual, cls);
+        } catch (InjectionException e) {
+            throw new RuntimeException("error instantiating component", e);
+        }
     }
 
     @Override

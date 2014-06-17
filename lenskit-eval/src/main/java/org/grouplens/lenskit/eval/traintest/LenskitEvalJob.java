@@ -23,6 +23,7 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.base.Preconditions;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitRecommender;
@@ -68,9 +69,14 @@ class LenskitEvalJob extends TrainTestJob {
             RecommenderInstantiator ri = RecommenderInstantiator.create(recommenderGraph);
             graph = ri.instantiate();
         } else {
-            graph = NodeProcessors.processNodes(recommenderGraph,
-                                                GraphtUtils.getShareableNodes(recommenderGraph),
-                                                cache);
+            try {
+                graph = NodeProcessors.processNodes(recommenderGraph,
+                                                    GraphtUtils.getShareableNodes(recommenderGraph),
+                                                    cache);
+            } catch (InjectionException e) {
+                logger.error("Error encountered while pre-processing algorithm components for sharing", e);
+                throw new RecommenderBuildException("Pre-processing of algorithm components for sharing failed.", e);
+            }
         }
         recommender = new LenskitRecommender(graph);
         // pre-fetch the test DAO

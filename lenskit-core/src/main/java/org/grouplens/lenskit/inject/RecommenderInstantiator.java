@@ -22,6 +22,7 @@ package org.grouplens.lenskit.inject;
 
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
@@ -82,15 +83,23 @@ public final class RecommenderInstantiator {
      * @throws RecommenderBuildException If there is an error instantiating the graph.
      */
     public DAGNode<Component,Dependency> instantiate() throws RecommenderBuildException {
-        return replaceShareableNodes(NodeProcessors.instantiate(instantiator));
+        try {
+            return replaceShareableNodes(NodeProcessors.instantiate(instantiator));
+        } catch (InjectionException e) {
+            throw new RecommenderBuildException("Recommender instantiation failed", e);
+        }
     }
 
     /**
      * Simulate instantiating a graph.
      * @return The simulated graph.
      */
-    public DAGNode<Component,Dependency> simulate() {
-        return replaceShareableNodes(NodeProcessors.simulateInstantiation());
+    public DAGNode<Component,Dependency> simulate() throws RecommenderBuildException {
+        try {
+            return replaceShareableNodes(NodeProcessors.simulateInstantiation());
+        } catch (InjectionException e) {
+            throw new RecommenderBuildException("Simulated instantiation failed", e);
+        }
     }
 
     /**
@@ -100,7 +109,7 @@ public final class RecommenderInstantiator {
      *                  be called; if it returns a node different from its input node, the
      *                  new node will be used as a replacement for the old.
      */
-    private DAGNode<Component,Dependency> replaceShareableNodes(NodeProcessor replace) {
+    private DAGNode<Component,Dependency> replaceShareableNodes(NodeProcessor replace) throws InjectionException {
         logger.debug("replacing nodes in graph with {} nodes", graph.getReachableNodes().size());
         Set<DAGNode<Component,Dependency>> toReplace = GraphtUtils.getShareableNodes(graph);
         logger.debug("found {} shared nodes", toReplace.size());

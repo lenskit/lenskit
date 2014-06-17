@@ -22,8 +22,7 @@ package org.grouplens.lenskit.inject;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import org.grouplens.grapht.Component;
-import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.*;
 import org.grouplens.grapht.graph.DAGNode;
 
 import javax.annotation.Nonnull;
@@ -37,7 +36,7 @@ import javax.annotation.Nullable;
  */
 public abstract class NodeInstantiator implements Function<DAGNode<Component,Dependency>,Object> {
     public static NodeInstantiator create() {
-        return new DefaultNodeInstantiator();
+        return new DefaultImpl();
     }
 
     /**
@@ -46,12 +45,36 @@ public abstract class NodeInstantiator implements Function<DAGNode<Component,Dep
      * @param node The node to instantiate.
      * @return The instantiation of the node.
      */
-    public abstract Object instantiate(DAGNode<Component, Dependency> node);
+    public abstract Object instantiate(DAGNode<Component, Dependency> node) throws InjectionException;
 
     @Nonnull
     @Override
     public Object apply(@Nullable DAGNode<Component, Dependency> input) {
         Preconditions.checkNotNull(input, "input node");
-        return instantiate(input);
+        assert input != null;
+        try {
+            return instantiate(input);
+        } catch (InjectionException e) {
+            throw new RuntimeException("Instantiation error on " + input.getLabel(), e);
+        }
+    }
+
+    /**
+     * Default implementation of the {@link org.grouplens.lenskit.inject.NodeInstantiator} interface.
+     *
+     * @since 2.1
+     * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+     */
+    static class DefaultImpl extends NodeInstantiator {
+        private final InjectionContainer container;
+
+        DefaultImpl() {
+            container = InjectionContainer.create(CachePolicy.MEMOIZE);
+        }
+
+        @Override
+        public Object instantiate(DAGNode<Component, Dependency> node) throws InjectionException {
+            return container.makeInstantiator(node).instantiate();
+        }
     }
 }

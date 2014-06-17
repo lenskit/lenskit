@@ -23,6 +23,7 @@ package org.grouplens.lenskit.inject;
 import com.google.common.collect.Maps;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.graph.DAGNode;
 
 import java.util.Collection;
@@ -74,7 +75,7 @@ public class NodeProcessors {
      */
     public static DAGNode<Component,Dependency> processNodes(DAGNode<Component, Dependency> graph,
                                                              Collection<DAGNode<Component, Dependency>> toReplace,
-                                                             NodeProcessor proc) {
+                                                             NodeProcessor proc) throws InjectionException {
         Map<DAGNode<Component,Dependency>,DAGNode<Component,Dependency>> memory = Maps.newHashMap();
         DAGNode<Component, Dependency> newGraph = graph;
         for (DAGNode<Component,Dependency> original : toReplace) {

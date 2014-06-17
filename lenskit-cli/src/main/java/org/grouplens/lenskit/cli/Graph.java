@@ -26,6 +26,7 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.SolverException;
+import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.*;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
@@ -115,7 +116,7 @@ public class Graph implements Command {
     }
 
     @Override
-    public void execute() throws IOException, RecommenderConfigurationException {
+    public void execute() throws IOException, RecommenderBuildException {
         File modelFile = options.get("model_file");
         DAGNode<Component, Dependency> graph;
         if (modelFile != null) {
