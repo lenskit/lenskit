@@ -41,7 +41,7 @@ dependencies {
     compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.9.0-SNAPSHOT'
     compile group: 'com.google.guava', name: 'guava', version: '16.0.1'
 
-    compile group: 'net.mikera', name: 'vectorz', version: '0.30.1'
+    compile group: 'net.mikera', name: 'vectorz', version: '0.36.0'
 
     compile group: 'org.apache.commons', name: 'commons-compress', version: '1.8'
 
