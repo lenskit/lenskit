@@ -33,36 +33,137 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.grouplens.lenskit.build.SiteUpload
+import org.slf4j.LoggerFactory
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.api.TransportConfigCallback
+import org.eclipse.jgit.util.FS
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder
+import org.eclipse.jgit.transport.*
+import com.jcraft.jsch.JSch
+import com.jcraft.jsch.Session
 
-task webZip(type: Zip) {
-    dependsOn javadoc
-    dependsOn reportTests
+class GitDeploySessionFactory extends JschConfigSessionFactory {
+    final Project project
 
-    destinationDir = file("$buildDir/distributions")
-    classifier = 'website'
-
-    from(javadoc) {
-        into 'apidocs'
+    GitDeploySessionFactory(Project prj) {
+        project = prj
     }
-    from(reportTests) {
-        into 'tests'
+
+    void configure(OpenSshConfig.Host host, Session session) { }
+
+    JSch createDefaultJSch(FS fs) {
+        def sch = super.createDefaultJSch(fs)
+        sch.removeAllIdentity()
+        sch.addIdentity(project.file('etc/deploy.rsa').absolutePath)
+        return sch
+    }
+}
+
+class HeadlessCredentialsProvider extends CredentialsProvider {
+    def logger = LoggerFactory.getLogger(getClass())
+
+    boolean isInteractive() {
+        return false;
     }
 
-    def cov = tasks.findByName('jacocoMergedReport')
-    if (cov != null) {
-        dependsOn cov
-        from (cov) {
-            into 'coverage'
+    boolean get(URIish uri, CredentialItem... items) {
+        for (item in items) {
+            logger.info('want credential type {} w/ prompt {}',
+                        item.class, item.promptText)
+            if (item instanceof CredentialItem.StringType) {
+                item.value = System.getenv('DEPLOY_KEY_PASSPHRASE')
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    boolean supports(CredentialItem... items) {
+        return true
+    }
+}
+
+class DeployConfigCallback implements TransportConfigCallback {
+    final Project project
+
+    DeployConfigCallback(Project prj) {
+        project = prj
+    }
+
+    void configure(Transport transport) {
+        if (transport instanceof SshTransport) {
+            transport.sshSessionFactory = new GitDeploySessionFactory(project)
+        }
+        transport.credentialsProvider = new HeadlessCredentialsProvider()
+    }
+}
+
+class Website {
+    def String repo = 'lenskit/lenskit.github.io'
+    def Project project
+
+    def getPublishable() {
+        project.travis.publishingActive && project.travis.branch == 'master'
+    }
+
+    def getDirectory() {
+        project.file("$project.buildDir/website")
+    }
+
+    def getGitTransport() {
+        return new DeployConfigCallback(project)
+    }
+}
+extensions.create('website', Website)
+website.project = project
+
+task fetchSite {
+    onlyIf { website.publishable }
+    mustRunAfter javadoc
+
+    doLast {
+        def cmd = Git.cloneRepository()
+        cmd.setURI "git@github.com:${website.repo}.git"
+        cmd.directory = website.directory
+        cmd.transportConfigCallback = website.gitTransport
+        cmd.branch = 'master'
+        try {
+            cmd.call()
+        } catch (Exception ex) {
+            logger.error 'Git error {}', ex
+            throw new RuntimeException('git error', ex)
         }
     }
 }
 
-task uploadWeb(type: SiteUpload, group: 'upload', dependsOn: webZip) {
-    description 'Upload the web site to the web'
-    siteArchive webZip.archivePath
-    uploadUrl System.getenv('SITE_UPLOAD_URL')
-    authSecret System.getenv('UPLOAD_SECRET')
-    branch travis.branch
-    onlyIf { travis.publishingActive && hmacDigest != null && uploadUrl != null }
+task copyJavadoc(type: Sync, dependsOn: [javadoc, fetchSite]) {
+    from javadoc.destinationDir
+    into "$website.directory/master/apidocs"
 }
+
+task uploadWeb {
+    dependsOn copyJavadoc
+    onlyIf {
+        website.publishable
+    }
+}
+uploadWeb << {
+    def repo = new FileRepositoryBuilder().findGitDir(website.directory).build()
+    def git = new Git(repo)
+    exec {
+        workingDir website.directory
+        executable 'git'
+        args 'add', '-A', 'master/apidocs'
+    }
+    git.commit()
+       .setAuthor('LensKit CI', 'travis@lenskit.org>')
+       .setMessage("Results of build $travis.buildNumber")
+       .call()
+    git.push()
+       .setRemote('origin')
+       .setRefSpecs(new RefSpec('master:master'))
+       .setTransportConfigCallback(website.gitTransport)
+       .call()
+}
+ciPublish.dependsOn uploadWeb

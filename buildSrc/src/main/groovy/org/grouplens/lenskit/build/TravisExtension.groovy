@@ -92,6 +92,10 @@ class TravisExtension {
         System.getenv('CI_PUBLISH') == 'true' || (inMasterRepo && onReleaseBranch && pullRequest == null && activeJdk == masterJdk)
     }
 
+    Integer getBuildNumber() {
+        return System.getenv('TRAVIS_BUILD_NUMBER')?.toInteger()
+    }
+
     void call(Closure block) {
         ConfigureUtil.configure(block, this)
     }
