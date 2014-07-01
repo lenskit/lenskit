@@ -151,13 +151,13 @@ task uploadWeb {
     }
 }
 uploadWeb << {
-    def repo = new FileRepositoryBuilder().findGitDir(website.directory).build()
-    def git = new Git(repo)
     exec {
         workingDir website.directory
         executable 'git'
         args 'add', '-A', 'master/apidocs'
     }
+    def repo = new FileRepositoryBuilder().findGitDir(website.directory).build()
+    def git = new Git(repo)
     git.commit()
        .setAuthor('LensKit CI', 'travis@lenskit.org>')
        .setMessage("Results of build $travis.buildNumber")
