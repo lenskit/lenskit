@@ -41,6 +41,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.eclipse.jgit.transport.*
 import com.jcraft.jsch.JSch
 import com.jcraft.jsch.Session
+import org.grouplens.lenskit.build.SshLogger
 
 class GitDeploySessionFactory extends JschConfigSessionFactory {
     final Project project
@@ -53,6 +54,7 @@ class GitDeploySessionFactory extends JschConfigSessionFactory {
 
     JSch createDefaultJSch(FS fs) {
         def sch = super.createDefaultJSch(fs)
+        sch.logger = new SshLogger();
         sch.removeAllIdentity()
         sch.addIdentity(project.file('etc/deploy.rsa').absolutePath)
         return sch
