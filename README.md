@@ -28,8 +28,7 @@ install`; it is then available to other projects by depending directly
 on it in your Maven, Gradle, Ivy, or SBT project.  The source code can
 also be checked out and used in most Java IDEs.
 
-Some of the tests require the [Pandas][] library for Python; if you want
-to run all the tests (`./gradlew check`), install it with:
+Some of the tests require the [Pandas][] library for Python; if you want to run all the tests (`./gradlew check`), install it with with your operating system's package manager (yum, apt-get, brew, etc.), or use `pip`:
 
     pip install --user pandas
 
