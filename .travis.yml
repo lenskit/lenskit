@@ -19,7 +19,7 @@ before_install:
 install: ./gradlew ciPrep
 script: ./gradlew ciBuild
 after_success:
-- ./gradlew ciPublish
+  - ./gradlew ciPublish --info
 env:
   global:
   - TERM=dumb
