@@ -38,7 +38,7 @@ import org.grouplens.lenskit.build.*
 extensions.create('travis', TravisExtension)
 travis {
     masterJdk 'oraclejdk7'
-    masterRepo 'grouplens/lenskit'
+    masterRepo 'lenskit/lenskit'
     releaseBranchPattern ~/^(master$|release\/)/
 }
 
