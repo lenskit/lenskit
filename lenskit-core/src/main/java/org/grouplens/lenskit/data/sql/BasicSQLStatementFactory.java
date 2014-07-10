@@ -20,12 +20,12 @@
  */
 package org.grouplens.lenskit.data.sql;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import org.grouplens.lenskit.data.dao.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Default implementation of the SQL statement factory.
@@ -50,8 +50,9 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Get the name of the rating table.
      *
-     * @return the tableName
+     * @return The rating table name.
      */
+    @Nonnull
     public String getTableName() {
         return tableName;
     }
@@ -59,7 +60,9 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Set the name of the rating table.
      *
-     * @param name The name of the rating table.
+     * @param name The name of the rating table.  This table name is used without escaping to build
+     *             SQL queries, so include whatever escaping or quotations are needed to make the
+     *             name valid in the backing DBMS in the name here.
      */
     public void setTableName(@Nonnull String name) {
         tableName = name;
@@ -68,8 +71,9 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Get the name of the user ID column in the rating table.
      *
-     * @return the userColumn
+     * @return The user column name.
      */
+    @Nonnull
     public String getUserColumn() {
         return userColumn;
     }
@@ -77,7 +81,9 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Set the name of the user ID column in the rating table.
      *
-     * @param col The name of the user column.
+     * @param col The name of the user column.  This column name is used without escaping to build
+     *            SQL queries, so include whatever escaping or quotations are needed to make the
+     *            name valid in the backing DBMS in the name here.
      */
     public void setUserColumn(@Nonnull String col) {
         userColumn = col;
@@ -86,8 +92,9 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Get the name of the item ID column in the rating table.
      *
-     * @return the itemColumn
+     * @return The item column name.
      */
+    @Nonnull
     public String getItemColumn() {
         return itemColumn;
     }
@@ -95,7 +102,9 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Set the name of the item ID column in the rating table.
      *
-     * @param col The name of the item column.
+     * @param col The name of the item column.  This column name is used without escaping to build
+     *            SQL queries, so include whatever escaping or quotations are needed to make the
+     *            name valid in the backing DBMS in the name here.
      */
     public void setItemColumn(@Nonnull String col) {
         itemColumn = col;
@@ -104,8 +113,9 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Get the name of the rating column in the rating table.
      *
-     * @return the ratingColumn
+     * @return The rating column name.
      */
+    @Nonnull
     public String getRatingColumn() {
         return ratingColumn;
     }
@@ -113,27 +123,32 @@ public class BasicSQLStatementFactory implements SQLStatementFactory {
     /**
      * Set the name of the rating column in the rating table.
      *
-     * @param col The name of the rating column.
+     * @param col The name of the rating column.  This column name is used without escaping to build
+     *            SQL queries, so include whatever escaping or quotations are needed to make the
+     *            name valid in the backing DBMS in the name here.
      */
     public void setRatingColumn(@Nonnull String col) {
         ratingColumn = col;
     }
 
     /**
-     * Get the name of the timestamp column in the rating table (or
-     * {@code null} if there is no timestamp column).
+     * Get the name of the timestamp column in the rating table (or {@code null} if there is no
+     * timestamp column).
      *
-     * @return the timestampColumn
+     * @return The timestamp column name, or {@code null} if no timestamp is used.
      */
+    @Nullable
     public String getTimestampColumn() {
         return timestampColumn;
     }
 
     /**
-     * Set the name of the timestamp column in the rating table. Set to
-     * {@code null} if there is no timestamp column.
+     * Set the name of the timestamp column in the rating table. Set to {@code null} if there is no
+     * timestamp column.
      *
-     * @param col The name of the timestamp column, or {@code null}.
+     * @param col The name of the timestamp column, or {@code null}.  This column name is used
+     *            without escaping to build SQL queries, so include whatever escaping or quotations
+     *            are needed to make the name valid in the backing DBMS in the name here.
      */
     public void setTimestampColumn(@Nullable String col) {
         timestampColumn = col;
