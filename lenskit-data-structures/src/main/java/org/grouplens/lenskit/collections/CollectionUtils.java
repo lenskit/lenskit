@@ -156,7 +156,9 @@ public final class CollectionUtils {
      *
      * @param <E> The type of fast collection.
      * @return An empty fast collection.
+     * @deprecated Just use a standard empty collection.
      */
+    @Deprecated
     public static <E> FastCollection<E> emptyFastCollection() {
         return new EmptyFastCollection<E>();
     }

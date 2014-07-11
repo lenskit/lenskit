@@ -53,6 +53,7 @@ public final class ScoredIds {
      * @param id The scored ID to copy.
      * @return A new builder that will copy the ID.
      */
+    @SuppressWarnings("unchecked")
     public static ScoredIdBuilder copyBuilder(ScoredId id) {
         ScoredIdBuilder bld = new ScoredIdBuilder(id.getId(), id.getScore());
         for (Symbol chan: id.getUnboxedChannelSymbols()) {
@@ -249,6 +250,7 @@ public final class ScoredIds {
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         protected ScoredId copy(ScoredId elt) {
             ScoredIdBuilder builder = new ScoredIdBuilder();
             builder.setId(elt.getId());
