@@ -27,7 +27,7 @@ package org.grouplens.lenskit.data.sql;
  */
 public class QueryKey {
     public static enum Type {
-        USER, ITEM
+        USER, ITEM, USER_LIST, ITEM_LIST
     }
 
     private final Type queryType;
@@ -52,6 +52,14 @@ public class QueryKey {
 
     public static QueryKey item(long id) {
         return new QueryKey(Type.ITEM, id);
+    }
+
+    public static QueryKey itemList() {
+        return new QueryKey(Type.ITEM_LIST, 0);
+    }
+
+    public static QueryKey userList() {
+        return new QueryKey(Type.USER_LIST, 0);
     }
 
     @Override

@@ -88,7 +88,7 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
     private final CachedPreparedStatement userEventStatement;
     private final CachedPreparedStatement itemEventStatement;
     private final CachedPreparedStatement itemUserStatement;
-    private final Cache<QueryKey, List<Rating>> queryCache;
+    private final Cache<QueryKey, Object> queryCache;
 
     /**
      * Create a new JDBC DAO builder.
@@ -122,11 +122,11 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
     @Deprecated
     public JDBCRatingDAO(Connection dbc, SQLStatementFactory sfac, boolean close) {
         this(dbc, sfac, close,
-             CacheBuilder.from(CacheBuilderSpec.disableCaching()).<QueryKey, List<Rating>>build());
+             CacheBuilder.from(CacheBuilderSpec.disableCaching()).<QueryKey, Object>build());
     }
 
     JDBCRatingDAO(Connection dbc, SQLStatementFactory factory, boolean close,
-                  Cache<QueryKey, List<Rating>> cache) {
+                  Cache<QueryKey, Object> cache) {
         connection = dbc;
         closeConnection = close;
         statementFactory = factory;
@@ -194,18 +194,28 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
     @Override
     public LongSet getUserIds() {
         try {
-            return getIdSet(userStatement.call());
-        } catch (SQLException e) {
-            throw new DatabaseAccessException(e);
+            return (LongSet) queryCache.get(QueryKey.userList(), new Callable<Object>() {
+                @Override
+                public Object call() throws SQLException {
+                    return getIdSet(userStatement.call());
+                }
+            });
+        } catch (ExecutionException e) {
+            throw new DatabaseAccessException("Error getting user list", e.getCause());
         }
     }
 
     @Override
     public LongSet getItemIds() {
         try {
-            return getIdSet(itemStatement.call());
-        } catch (SQLException e) {
-            throw new DatabaseAccessException(e);
+            return (LongSet) queryCache.get(QueryKey.itemList(), new Callable<Object>() {
+                @Override
+                public Object call() throws SQLException {
+                    return getIdSet(itemStatement.call());
+                }
+            });
+        } catch (ExecutionException e) {
+            throw new DatabaseAccessException("Error getting item list", e.getCause());
         }
     }
 
@@ -234,11 +244,12 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public UserHistory<Event> getEventsForUser(final long userId) {
         List<Rating> cached;
         try {
-            cached = queryCache.get(QueryKey.user(userId), new Callable<List<Rating>>() {
+            cached = (List) queryCache.get(QueryKey.user(userId), new Callable<List<Rating>>() {
                 @Override
                 public List<Rating> call() throws Exception {
                     PreparedStatement s = userEventStatement.call();
@@ -276,11 +287,12 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<Event> getEventsForItem(final long itemId) {
         List<Rating> events;
         try {
-            events = queryCache.get(QueryKey.item(itemId), new Callable<List<Rating>>() {
+            events = (List) queryCache.get(QueryKey.item(itemId), new Callable<List<Rating>>() {
                 @Override
                 public List<Rating> call() throws Exception {
                     PreparedStatement s = itemEventStatement.call();
@@ -321,7 +333,7 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
 
     @Override
     public LongSet getUsersForItem(long item) {
-        PreparedStatement s = null;
+        PreparedStatement s;
         try {
             s = itemUserStatement.call();
             s.setLong(1, item);

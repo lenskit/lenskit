@@ -24,12 +24,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheBuilderSpec;
-import org.grouplens.lenskit.data.event.Rating;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.Connection;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,8 +40,8 @@ public class JDBCRatingDAOBuilder {
     private SQLStatementFactory factory;
     private BasicSQLStatementFactory basicFactory;
     private boolean closeWhenClosed = true;
-    private CacheBuilder<? super QueryKey, ? super List<?>> cacheBuilder;
-    private Cache<QueryKey, List<Rating>> queryCache;
+    private CacheBuilder<? super QueryKey, Object> cacheBuilder;
+    private Cache<QueryKey, Object> queryCache;
 
     JDBCRatingDAOBuilder() {
         factory = basicFactory = new BasicSQLStatementFactory();
@@ -154,7 +152,7 @@ public class JDBCRatingDAOBuilder {
      * @param cb The cache builder.
      * @return The builder (for chaining).
      */
-    public JDBCRatingDAOBuilder setCacheBuilder(CacheBuilder<? super QueryKey, ? super List<?>> cb) {
+    public JDBCRatingDAOBuilder setCacheBuilder(CacheBuilder<? super QueryKey, Object> cb) {
         cacheBuilder = cb;
         return this;
     }
@@ -183,7 +181,7 @@ public class JDBCRatingDAOBuilder {
      * @param cache The cache to use.
      * @return The builder (for chaining).
      */
-    public JDBCRatingDAOBuilder setCache(Cache<QueryKey,List<Rating>> cache) {
+    public JDBCRatingDAOBuilder setCache(Cache<QueryKey,Object> cache) {
         queryCache = cache;
         return this;
     }
@@ -195,7 +193,7 @@ public class JDBCRatingDAOBuilder {
      */
     @SuppressWarnings("deprecation")
     public JDBCRatingDAO build(Connection con) {
-        Cache<QueryKey, List<Rating>> cache = queryCache;
+        Cache<QueryKey, Object> cache = queryCache;
         if (cache == null) {
             cache = cacheBuilder.build();
         }
