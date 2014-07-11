@@ -23,6 +23,7 @@ after_success:
 env:
   global:
   - TERM=dumb
+  - TZ=CST6CDT
   # DEPLOY_USER
   - secure: "QUz7X25DVKDZic9H2gGOvsCREtSYPxz01eQgCrGOmq1Ad0z1xMq7BvppvqL4mSOqnGG3OW5zddNf1qn/dJAc6hP78ZwSqeKBXo8cuQzA/PsFb0OlKG+kCVM9b+lQQShCexDxsg5DVbnrewDwDOtSYvxbrnhgN0IjRUoHp92778A="
   # DEPLOY_PASSWORD
