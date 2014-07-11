@@ -172,7 +172,7 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
         }
 
         /**
-         * Set the set of items that will be considered &lquo;good&rquo; by the evaluation.
+         * Set the set of items that will be considered &lsquo;good&rsquo; by the evaluation.
          *
          * @param goodItems A selector for good items.
          */
