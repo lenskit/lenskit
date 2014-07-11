@@ -75,8 +75,7 @@ public class Recommend implements Command {
 
         logger.info("recommending for {} users", users.size());
         Symbol pchan = getPrintChannel();
-        Stopwatch timer = new Stopwatch();
-        timer.start();
+        Stopwatch timer = Stopwatch.createStarted();
         for (long user: users) {
             List<ScoredId> recs = irec.recommend(user, n);
             System.out.format("recommendations for user %d:\n", user);
@@ -101,8 +100,7 @@ public class Recommend implements Command {
                 builder.addConfiguration(config);
             }
             builder.addConfiguration(input.getConfiguration());
-            Stopwatch timer = new Stopwatch();
-            timer.start();
+            Stopwatch timer = Stopwatch.createStarted();
             LenskitRecommenderEngine engine = builder.build();
             timer.stop();
             logger.info("built recommender in {}", timer);
@@ -114,8 +112,7 @@ public class Recommend implements Command {
                 loader.addConfiguration(config);
             }
             loader.addConfiguration(input.getConfiguration());
-            Stopwatch timer = new Stopwatch();
-            timer.start();
+            Stopwatch timer = Stopwatch.createStarted();
             LenskitRecommenderEngine engine;
             InputStream input = new FileInputStream(modelFile);
             try {

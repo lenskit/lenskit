@@ -60,7 +60,7 @@ public class EvalTarget extends Target implements ListenableFuture<Object> {
     public void execute() throws BuildException {
         try {
             logger.info("beginning execution of {}", getName());
-            Stopwatch watch = new Stopwatch().start();
+            Stopwatch watch = Stopwatch.createStarted();
             super.execute();
             watch.stop();
             logger.info("{} finished in {}", getName(), watch);

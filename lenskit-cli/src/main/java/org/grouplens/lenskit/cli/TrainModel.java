@@ -73,8 +73,7 @@ public class TrainModel implements Command {
         }
         builder.addConfiguration(dataConfig, ModelDisposition.EXCLUDED);
 
-        Stopwatch timer = new Stopwatch();
-        timer.start();
+        Stopwatch timer = Stopwatch.createStarted();
         LenskitRecommenderEngine engine = builder.build();
         timer.stop();
         logger.info("built model in {}", timer);

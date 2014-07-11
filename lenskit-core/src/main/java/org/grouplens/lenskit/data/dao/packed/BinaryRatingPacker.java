@@ -77,7 +77,7 @@ public class BinaryRatingPacker implements Closeable {
      * @throws IOException The output exception.
      */
     BinaryRatingPacker(File file, EnumSet<BinaryFormatFlag> flags) throws IOException {
-        format = BinaryFormat.create(flags);
+        format = BinaryFormat.createWithFlags(PackHeaderFlag.fromFormatFlags(flags));
         outputFile = file;
 
         logger.debug("opening binary pack file {}", outputFile);

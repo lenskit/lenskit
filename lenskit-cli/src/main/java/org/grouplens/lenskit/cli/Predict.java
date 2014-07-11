@@ -78,8 +78,7 @@ public class Predict implements Command {
 
         logger.info("predicting {} items", items.size());
         Symbol pchan = getPrintChannel();
-        Stopwatch timer = new Stopwatch();
-        timer.start();
+        Stopwatch timer = Stopwatch.createStarted();
         SparseVector preds = pred.predict(user, items);
         Long2ObjectMap channel = null;
         if (pchan != null) {
@@ -109,8 +108,7 @@ public class Predict implements Command {
                 builder.addConfiguration(config);
             }
             builder.addConfiguration(input.getConfiguration());
-            Stopwatch timer = new Stopwatch();
-            timer.start();
+            Stopwatch timer = Stopwatch.createStarted();
             LenskitRecommenderEngine engine = builder.build();
             timer.stop();
             logger.info("built recommender in {}", timer);
@@ -122,8 +120,7 @@ public class Predict implements Command {
                 loader.addConfiguration(config);
             }
             loader.addConfiguration(input.getConfiguration());
-            Stopwatch timer = new Stopwatch();
-            timer.start();
+            Stopwatch timer = Stopwatch.createStarted();
             LenskitRecommenderEngine engine;
             InputStream input = new FileInputStream(modelFile);
             try {

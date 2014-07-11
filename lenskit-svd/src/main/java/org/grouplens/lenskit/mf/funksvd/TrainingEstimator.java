@@ -25,12 +25,13 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import mikera.vectorz.AVector;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+
+import java.util.Collection;
 
 /**
  * Rating estimates used while training the predictor.  An estimator can be constructed
@@ -40,7 +41,7 @@ import org.grouplens.lenskit.vectors.SparseVector;
  * @since 1.1
  */
 public final class TrainingEstimator {
-    private final FastCollection<IndexedPreference> ratings;
+    private final Collection<IndexedPreference> ratings;
     private final double[] estimates;
     private final PreferenceDomain domain;
 
