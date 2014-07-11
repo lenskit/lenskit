@@ -21,7 +21,7 @@ task jacocoMergedReport(type: JacocoReport) {
     reports {
         csv.enabled = false
         xml.enabled = false
-        html.destination = "$reportsDir/jacoco"
+        html.destination = "$reporting.baseDir/jacoco"
     }
 }
 
