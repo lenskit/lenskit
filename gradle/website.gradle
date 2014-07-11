@@ -151,6 +151,7 @@ task uploadWeb {
     }
 }
 uploadWeb << {
+    logger.info 'adding files'
     exec {
         workingDir website.directory
         executable 'git'
@@ -158,14 +159,21 @@ uploadWeb << {
     }
     def repo = new FileRepositoryBuilder().findGitDir(website.directory).build()
     def git = new Git(repo)
-    git.commit()
-       .setAuthor('LensKit CI', 'travis@lenskit.org>')
-       .setMessage("Results of build $travis.buildNumber")
-       .call()
-    git.push()
-       .setRemote('origin')
-       .setRefSpecs(new RefSpec('master:master'))
-       .setTransportConfigCallback(website.gitTransport)
-       .call()
+    try {
+        logger.info 'committing'
+        git.commit()
+           .setAuthor('LensKit CI', 'travis@lenskit.org')
+           .setCommitter('LensKit CI', 'travis@lenskit.org')
+           .setMessage("Results of build $travis.buildNumber")
+           .call()
+        logger.info 'pushing'
+        git.push()
+           .setRemote('origin')
+           .setRefSpecs(new RefSpec('master:master'))
+           .setTransportConfigCallback(website.gitTransport)
+           .call()
+    } finally {
+        git.close()
+    }
 }
 ciPublish.dependsOn uploadWeb
