@@ -27,7 +27,7 @@ import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.grapht.solver.SolverException;
-import org.grouplens.grapht.util.Types;
+import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
@@ -54,7 +54,7 @@ import java.util.List;
  */
 public class LenskitRecommenderEngineBuilder {
     private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngineBuilder.class);
-    private ClassLoader classLoader = Types.getDefaultClassLoader();
+    private ClassLoader classLoader = ClassLoaders.inferDefault(getClass());
     private List<Pair<LenskitConfiguration,ModelDisposition>> configurations = Lists.newArrayList();
 
     /**
