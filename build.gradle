@@ -44,7 +44,7 @@ configurations {
 
 allprojects { project ->
     group 'org.grouplens.lenskit'
-    version '2.1'
+    version '2.2-SNAPSHOT'
     
     ext.groovyVersion = '2.1.5'
     ext.logbackVersion = '1.0.13'
