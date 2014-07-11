@@ -630,8 +630,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
             }
             return RatingWriters.packed(file, flags);
         } else {
-            // FIXME Support writeTimestamps in CSV output
-            return RatingWriters.csv(file);
+            return RatingWriters.csv(file, writeTimestamps);
         }
     }
 

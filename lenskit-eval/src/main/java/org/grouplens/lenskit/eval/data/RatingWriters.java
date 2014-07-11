@@ -45,6 +45,19 @@ public final class RatingWriters {
     }
 
     /**
+     * Write ratings to a CSV file.
+     * @param file The file to write to.
+     * @param ts Whether or not to include timestamps.
+     * @return The rating writer.
+     * @throws IOException if there is an error opening the file.
+     */
+    public static RatingWriter csv(File file, boolean ts) throws IOException {
+        CSVRatingWriter writer = new CSVRatingWriter(CSVWriter.open(file, null));
+        writer.setIncludeTimestamps(ts);
+        return writer;
+    }
+
+    /**
      * Write ratings to a packed file.
      * @param file The file to write to.
      * @return The rating writer.

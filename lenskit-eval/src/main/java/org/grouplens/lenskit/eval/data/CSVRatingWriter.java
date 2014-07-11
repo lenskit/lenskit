@@ -33,9 +33,26 @@ import java.util.List;
  */
 class CSVRatingWriter implements RatingWriter {
     private final CSVWriter tableWriter;
+    private boolean includeTimestamps = true;
 
     public CSVRatingWriter(CSVWriter tw) {
         tableWriter = tw;
+    }
+
+    /**
+     * Query whether this writer includes timestamps.
+     * @return {@code true} if timestamps are written.
+     */
+    boolean isIncludeTimestamps() {
+        return includeTimestamps;
+    }
+
+    /**
+     * Set whether this writer writes timestamps.
+     * @param val Whether or not to write timestamps.
+     */
+    void setIncludeTimestamps(boolean val) {
+        includeTimestamps = val;
     }
 
     @Override
@@ -49,7 +66,9 @@ class CSVRatingWriter implements RatingWriter {
         } else {
             row.add(p.getValue());
         }
-        row.add(r.getTimestamp());
+        if (includeTimestamps) {
+            row.add(r.getTimestamp());
+        }
         tableWriter.writeRow(row);
     }
 
