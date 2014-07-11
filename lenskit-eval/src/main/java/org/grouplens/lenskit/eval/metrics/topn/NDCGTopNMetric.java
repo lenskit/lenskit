@@ -153,7 +153,7 @@ public class NDCGTopNMetric extends AbstractMetric<MeanAccumulator, NDCGTopNMetr
     /**
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Builder extends TopNMetricBuilder<Builder, NDCGTopNMetric>{
+    public static class Builder extends TopNMetricBuilder<NDCGTopNMetric>{
         @Override
         public NDCGTopNMetric build() {
             return new NDCGTopNMetric(prefix, suffix, listSize, candidates, exclude);

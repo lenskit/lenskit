@@ -30,8 +30,6 @@ import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.hamcrest.Matchers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -46,8 +44,6 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTopNMetric.Context, PrecisionRecallTopNMetric.Result, PrecisionRecallTopNMetric.Result> {
-    private static final Logger logger = LoggerFactory.getLogger(PrecisionRecallTopNMetric.class);
-
     private final String prefix;
     private final String suffix;
     private final int listSize;
@@ -77,13 +73,18 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
     }
 
     @Override
+    protected String getPrefix() {
+        return prefix;
+    }
+
+    @Override
     protected String getSuffix() {
         return suffix;
     }
 
     @Override
     public Context createContext(Attributed algo, TTDataSet ds, Recommender rec) {
-        return new Context(ds.getTestData().getItemDAO().getItemIds());
+        return new Context();
     }
 
     @Override
@@ -94,6 +95,10 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
         LongSet items = queryItems.select(user);
 
         List<ScoredId> recs = user.getRecommendations(listSize, candidates, exclude);
+        if (recs == null) {
+            return null;
+        }
+
         for(ScoredId s : CollectionUtils.fast(recs)) {
             if(items.contains(s.getId())) {
                 tp += 1;
@@ -132,15 +137,9 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
     }
 
     public class Context {
-        private final LongSet universe;
-
         double totalPrecision = 0;
         double totalRecall = 0;
         int nusers = 0;
-
-        Context(LongSet universe) {
-            this.universe = universe;
-        }
 
         private void addUser(double prec, double rec) {
             totalPrecision += prec;
@@ -160,7 +159,7 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
     /**
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Builder extends TopNMetricBuilder<Builder, PrecisionRecallTopNMetric>{
+    public static class Builder extends TopNMetricBuilder<PrecisionRecallTopNMetric>{
         private ItemSelector goodItems = ItemSelectors.testRatingMatches(Matchers.greaterThanOrEqualTo(4.0d));
 
         public Builder() {
@@ -172,9 +171,13 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
             return goodItems;
         }
 
-        public Builder setGoodItems(ItemSelector goodItems) {
+        /**
+         * Set the set of items that will be considered &lquo;good&rquo; by the evaluation.
+         *
+         * @param goodItems A selector for good items.
+         */
+        public void setGoodItems(ItemSelector goodItems) {
             this.goodItems = goodItems;
-            return this;
         }
 
         @Override

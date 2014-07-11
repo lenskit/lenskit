@@ -45,10 +45,11 @@ class MRRTopNMetricTest {
 
     @Before
     public void createMetric() {
-        metric = new MRRTopNMetric.Builder()
-                .setGoodItems(ItemSelectors.fixed(3, 7, 9, 42))
-                .setListSize(0)
-                .build();
+        def mb = new MRRTopNMetric.Builder()
+        mb.goodItems = ItemSelectors.fixed(3, 7, 9, 42)
+        mb.listSize = 0
+        metric = mb.build()
+
         accum = new MRRTopNMetric.Context(universe)
     }
 

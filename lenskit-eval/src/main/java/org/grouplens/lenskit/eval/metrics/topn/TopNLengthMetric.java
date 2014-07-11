@@ -96,7 +96,7 @@ public class TopNLengthMetric extends AbstractMetric<MeanAccumulator, TopNLength
      * Build a Top-N length metric to measure Top-N lists.
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Builder extends TopNMetricBuilder<Builder, TopNLengthMetric> {
+    public static class Builder extends TopNMetricBuilder<TopNLengthMetric> {
         @Override
         public TopNLengthMetric build() {
             return new TopNLengthMetric(prefix, suffix, listSize, candidates, exclude);

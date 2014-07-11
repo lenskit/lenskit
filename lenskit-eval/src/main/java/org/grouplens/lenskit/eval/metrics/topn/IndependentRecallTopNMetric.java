@@ -148,16 +148,20 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
     /**
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Builder extends TopNMetricBuilder<Builder, IndependentRecallTopNMetric> {
+    public static class Builder extends TopNMetricBuilder<IndependentRecallTopNMetric> {
         private ItemSelector goodItems = ItemSelectors.testItems();
 
         public ItemSelector getGoodItems() {
             return goodItems;
         }
 
-        public Builder setGoodItems(ItemSelector goodItems) {
+        /**
+         * Set the set of items that will be considered &lquo;good&rquo; by the evaluation.
+         *
+         * @param goodItems A selector for good items.
+         */
+        public void setGoodItems(ItemSelector goodItems) {
             this.goodItems = goodItems;
-            return this;
         }
 
         public IndependentRecallTopNMetric build() {

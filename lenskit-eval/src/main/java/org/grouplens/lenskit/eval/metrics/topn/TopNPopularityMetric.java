@@ -138,7 +138,7 @@ public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Co
     /**
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Builder extends TopNMetricBuilder<Builder, TopNPopularityMetric> {
+    public static class Builder extends TopNMetricBuilder<TopNPopularityMetric> {
         @Override
         public TopNPopularityMetric build() {
             return new TopNPopularityMetric(prefix, suffix, listSize, candidates, exclude);

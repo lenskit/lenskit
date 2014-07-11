@@ -169,7 +169,7 @@ public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Context, MRRTopN
     /**
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Builder extends TopNMetricBuilder<Builder, MRRTopNMetric>{
+    public static class Builder extends TopNMetricBuilder<MRRTopNMetric>{
         private ItemSelector goodItems = ItemSelectors.testRatingMatches(Matchers.greaterThanOrEqualTo(4.0d));
 
         public Builder() {
@@ -181,9 +181,13 @@ public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Context, MRRTopN
             return goodItems;
         }
 
-        public Builder setGoodItems(ItemSelector goodItems) {
+        /**
+         * Set the set of items that will be considered &lquo;good&rquo; by the evaluation.
+         *
+         * @param goodItems A selector for good items.
+         */
+        public void setGoodItems(ItemSelector goodItems) {
             this.goodItems = goodItems;
-            return this;
         }
 
         @Override

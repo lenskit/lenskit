@@ -26,7 +26,7 @@ import org.grouplens.lenskit.eval.metrics.Metric;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends Metric> implements Builder<K> {
+public abstract class TopNMetricBuilder <K extends Metric> implements Builder<K> {
     protected int listSize = 5;
     protected ItemSelector candidates = ItemSelectors.testItems();
     protected ItemSelector exclude = ItemSelectors.trainingItems();
@@ -84,31 +84,25 @@ public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends 
     /**
      * Set the recommendation list size.  The default size is 10.
      * @param n The recommendation list size.
-     * @return The builder (for chaining).
      */
-    public T setListSize(int n) {
+    public void setListSize(int n) {
         listSize = n;
-        return (T) this;
     }
 
     /**
      * Set the candidate selector.  The default is {@link org.grouplens.lenskit.eval.metrics.topn.ItemSelectors#testItems()}.
      * @param sel The candidate item selector.
-     * @return The builder (for chaining).
      */
-    public T setCandidates(ItemSelector sel) {
+    public void setCandidates(ItemSelector sel) {
         candidates = sel;
-        return (T) this;
     }
 
     /**
      * Set the exclude item selector.  The default is {@link org.grouplens.lenskit.eval.metrics.topn.ItemSelectors#trainingItems()}.
      * @param sel The exclude item selector.
-     * @return The builder (for chaining).
      */
-    public T setExclude(ItemSelector sel) {
+    public void setExclude(ItemSelector sel) {
         exclude = sel;
-        return (T) this;
     }
 
     /**
@@ -116,11 +110,9 @@ public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends 
      * If not null, the prefix will be added to the beginning of each column label, separated by a '.'
      * 
      * @param prefix the prefix to apply or {@code null} to set no prefix.
-     * @return the builder (for chaining)
      */
-    public T setPrefix(String prefix) {
+    public void setPrefix(String prefix) {
         this.prefix = prefix;
-        return (T) this;
     }
 
     /**
@@ -128,11 +120,9 @@ public abstract class TopNMetricBuilder <T extends TopNMetricBuilder, K extends 
      * If not null, the suffix will be added to the end of each column label, separated by a '.'
      *
      * @param suffix the suffix to apply or {@code null} to set no suffix.
-     * @return the builder (for chaining)
      */
-    public T setSuffix(String suffix) {
+    public void setSuffix(String suffix) {
         this.suffix = suffix;
-        return (T) this;
 
     }
 

@@ -138,7 +138,7 @@ public class TopNEntropyMetric extends AbstractMetric<TopNEntropyMetric.Context,
     /**
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>
      */
-    public static class Builder extends TopNMetricBuilder<Builder, TopNEntropyMetric> {
+    public static class Builder extends TopNMetricBuilder<TopNEntropyMetric> {
         @Override
         public TopNEntropyMetric build() {
             return new TopNEntropyMetric(prefix, suffix, listSize, candidates, exclude);
