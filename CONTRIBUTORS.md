@@ -15,3 +15,5 @@ the Regents of the University of Minnesota, unless otherwise noted.
 - Jack Kolb
 - Michael Ludwig
 - Yilin He
+
+These contributions do not represent the position of the University of Minnesota.
