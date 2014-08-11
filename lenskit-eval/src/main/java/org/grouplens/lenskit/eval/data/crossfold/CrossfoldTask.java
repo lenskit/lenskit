@@ -467,13 +467,16 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
         Holdout mode = this.getHoldout();
         try {
             for (UserHistory<Event> history : historyCursor) {
+                // get the corresponding fold number given a user's Id, fold number is the partition group given to a user
                 int foldNum = splits.get(history.getUserId());
                 // FIXME Use filtered streaming
+                // get a list of user's rating history
                 List<Rating> ratings = new ArrayList<Rating>(history.filter(Rating.class));
                 final int n = ratings.size();
 
                 for (int f = 0; f < partitionCount; f++) {
                     if (f == foldNum) {
+                        // get the cut off number that separates the user's ratings into train or test data. It uses the specified partition method to get cut off number
                         final int p = mode.partition(ratings, getProject().getRandom());
                         for (int j = 0; j < p; j++) {
                             trainWriters[f].writeRating(ratings.get(j));
@@ -481,13 +484,8 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
                         for (int j = p; j < n; j++) {
                             testWriters[f].writeRating(ratings.get(j));
                         }
-                    } else {
-                        for (Rating rating : CollectionUtils.fast(ratings)) {
-                            trainWriters[f].writeRating(rating);
-                        }
                     }
                 }
-
             }
         } catch (IOException e) {
             throw new TaskExecutionException("Error writing to the train test files", e);
