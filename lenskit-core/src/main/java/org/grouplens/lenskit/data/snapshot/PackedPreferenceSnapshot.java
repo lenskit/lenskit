@@ -109,7 +109,7 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
 
     @Override
     public void close() {
-        // FIXME Close is kinda pointless
+        // FIXME Close is never called, because there is no lifecycle support.
         super.close();
         data = null;
         userIndexLists = null;

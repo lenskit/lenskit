@@ -66,7 +66,6 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
     public SimpleRatingPredictor(@PrimaryScorer ItemScorer scorer,
                                  @Nullable @BaselineScorer ItemScorer baseline,
                                  @Nullable PreferenceDomain domain) {
-        // TODO Make abstract rating predictors & item scorers not need the DAO
         this.scorer = scorer;
         baselineScorer = baseline;
         preferenceDomain = domain;
