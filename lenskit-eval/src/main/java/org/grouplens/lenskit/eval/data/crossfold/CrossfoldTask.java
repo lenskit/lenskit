@@ -463,13 +463,12 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
         logger.info("splitting data source {} to {} partitions by users",
                     getName(), partitionCount);
         Long2IntMap splits = splitUsers(source.getUserDAO());
-        Cursor<UserHistory<Event>> historyCursor = source.getUserEventDAO().streamEventsByUser();
+        Cursor<UserHistory<Rating>> historyCursor = source.getUserEventDAO().streamEventsByUser(Rating.class);
         Holdout mode = this.getHoldout();
         try {
-            for (UserHistory<Event> history : historyCursor) {
+            for (UserHistory<Rating> history : historyCursor) {
                 int foldNum = splits.get(history.getUserId());
-                // FIXME Use filtered streaming
-                List<Rating> ratings = new ArrayList<Rating>(history.filter(Rating.class));
+                List<Rating> ratings = new ArrayList<Rating>(history);
                 final int n = ratings.size();
 
                 for (int f = 0; f < partitionCount; f++) {
