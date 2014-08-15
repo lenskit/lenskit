@@ -84,14 +84,16 @@ allprojects { project ->
     apply from: "$rootDir/gradle/travis.gradle"
 
     // Provide support for forcing configuration deps to be resolved
-    task resolveAll
+    task resolveAll(group: 'build setup') {
+        description 'Resolves and downloads all dependencies'
+    }
     ciPrep.dependsOn resolveAll
 
     configurations.all { cfg ->
         def resolve = task("resolve${cfg.name.capitalize()}") {
             description "Resolve dependencies in the $cfg.name configuration."
             doLast {
-                logger.info 'resolving {}', cfg.name
+                logger.info 'resolving {}#{}', project.path, cfg.name
                 def result = cfg.resolvedConfiguration
                 result.rethrowFailure()
                 for (f in result.resolvedArtifacts*.file) {
