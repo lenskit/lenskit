@@ -35,6 +35,16 @@ Some of the tests require the [Pandas][] library for Python; if you want to run 
 [Gradle]: http://www.gradle.org
 [Pandas]: http://pandas.pydata.org/
 
+## Working with the Code
+
+To work with the LensKit code, import the Gradle project into your IDE.
+IntelliJ IDEA includes support for Gradle projects, and this support works well
+for LensKit in version 13 and later.  Gradle plugins are available for other
+IDEs such as Eclipse.
+
+No particular setup is needed for IntelliJ, which is what most of the LensKit
+developers use.
+
 ## Modules
 
 LensKit is comprised of several modules.  The top-level `lenskit`
@@ -63,7 +73,7 @@ and dependencies.  The other modules are as follows:
 
 LensKit is under the following copyright and license:
 
-Copyright 2010-2014 Regents of the University of Minnesota and contributors
+Copyright 2010-2014 [LensKit Contributors](CONTRIBUTORS.md).  
 Work on LensKit has been funded by the National Science Foundation under
 grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
 
@@ -86,7 +96,7 @@ Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 To ease reuse, the LensKit build system (all `.gradle` files and the contents
 of the `buildSrc` directory) are licensed under the 3-clause BSD license:
 
-Copyright 2010-2014 Regents of the University of Minnesota and contributors.
+Copyright 2010-2014 LensKit Contributors
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
