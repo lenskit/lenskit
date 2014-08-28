@@ -69,6 +69,17 @@ and dependencies.  The other modules are as follows:
 * `lenskit-cli` -- the LensKit command line interface.
 * `lenskit-integration-tests` -- additional integration tests for LensKit.
 
+## Running the Tests
+
+After you make changes, it's good to run the unit tests.  You can run many of
+them from your IDE; run all tests in the `org.grouplens.lenskit` package (and
+subpackages) across all modules.
+
+To run the full test suite, including data-driven unit tests and integration
+tests, use Gradle:
+
+    $ ./gradlew check
+
 ## Copyright
 
 LensKit is under the following copyright and license:
