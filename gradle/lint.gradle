@@ -26,3 +26,17 @@ task jacocoMergedReport(type: JacocoReport) {
 }
 
 report.dependsOn jacocoMergedReport
+
+apply plugin: 'sonar-runner'
+
+sonarRunner {
+    sonarProperties {
+        property "sonar.host.url", "https://sonar.cs.txstate.edu"
+        property "sonar.jdbc.driverClassName", "org.postgresql.Driver"
+        for (prop in project.properties.entrySet()) {
+            if (prop.key.startsWith("sonar.")) {
+                property prop.key, prop.value
+            }
+        }
+    }
+}

@@ -139,7 +139,8 @@ subprojects {
     test {
         maxHeapSize = '512m'
         enableAssertions = true
-        reports.junitXml.enabled = false
+        reports.junitXml.enabled = true
+        reports.html.enabled = false
     }
     reportTests.reportOn test
 
