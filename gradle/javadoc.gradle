@@ -70,7 +70,7 @@ allprojects {
                 taglets 'org.grouplens.javadoc.taglets.ExtraInlineTaglet'
                 taglets 'org.grouplens.javadoc.taglets.CompatTaglet'
 
-                jFlags "-Dgrouplens.javadoc.versioning.url=$webUrl/versioning/"
+                jFlags "-Dgrouplens.javadoc.versioning.url=$webUrl/documentation/versioning/"
 
                 group 'General API', 'org.grouplens.lenskit'
                 group('Core', 'org.grouplens.lenskit.core',
