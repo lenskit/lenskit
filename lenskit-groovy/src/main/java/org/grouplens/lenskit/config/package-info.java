@@ -28,8 +28,8 @@
  * <pre>{@code
  * // configure the item scorer
  * bind ItemScorer to ItemItemScorer
- * // set up a baseline predictor
- * bind BaselinePredictor to ItemUserMeanPredictor
+ * // set up a baseline scorer
+ * bind (BaselineScorer, ItemScorer) to ItemMeanRatingPredictor
  * // use the baseline for normalizing user ratings
  * bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
  * // the default neighborhood size is 20, so the next line isn't technically needed
