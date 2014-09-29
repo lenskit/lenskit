@@ -35,7 +35,7 @@
 
 import org.grouplens.lenskit.build.*
 
-ext.webUrl = 'http://lenskit.grouplens.org'
+ext.webUrl = 'http://lenskit.org'
 
 configurations {
     allDeps // collect all external dependencies of all modules
