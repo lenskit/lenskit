@@ -1,3 +1,5 @@
+import org.gradle.process.internal.ExecException
+
 /*
  * Build system for LensKit, and open-source recommender systems toolkit.
  * Copyright 2010-2014 Regents of the University of Minnesota and contributors
@@ -69,6 +71,26 @@ fetchData << {
 test {
     dependsOn fetchData
     systemProperties 'lenskit.movielens.100k': mlDataDir
+}
+
+task checkPythonInstall {
+    description 'Checks whether the Python install is valid'
+    ext.isValid = false
+
+    doLast {
+        try {
+            exec {
+                executable 'python'
+                args 'check-python-deps.py'
+            }
+            logger.info 'Your Python kit seems good'
+            isValid = true
+        } catch (IOException e) {
+            logger.warn "Cannot run Python, assuming you don't have one"
+        } catch (ExecException e) {
+            logger.warn "Python starts, but is not usable"
+        }
+    }
 }
 
 // import code to run the integration tests

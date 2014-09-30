@@ -12,6 +12,13 @@ file('src/it').eachDir { testDir ->
         description "Run the $name tests."
         dependsOn fetchData
         mustRunAfter test // run the JUnit-based tests first, less overhead
+
+        if (file("$testDir/verify.py").exists()) {
+            dependsOn "checkPythonInstall"
+            onlyIf {
+                checkPythonInstall.isValid
+            }
+        }
     
         ext.testDir = testDir
         ext.workDir = "$buildDir/it/$name"
@@ -46,6 +53,9 @@ file('src/it').eachDir { testDir ->
     task("verify$camelName", type: JavaExec, group: 'verification') {
         description "Verify the $name tests."
         dependsOn "run$camelName"
+        onlyIf {
+            tasks["run$camelName"].didWork
+        }
 
         ext.workDir = "$buildDir/it/$name"
         inputs.dir workDir

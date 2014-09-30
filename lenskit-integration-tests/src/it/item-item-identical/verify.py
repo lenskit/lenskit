@@ -21,7 +21,11 @@
 # Uses Pandas.
 
 import sys
-import pandas as pd
+try:
+    import pandas as pd
+except ImportError:
+    print >>sys.stderr, "WARNING: pandas not installed. Skipping tests."
+    sys.exit(0)
 
 preds = pd.read_csv('predictions.csv')
 algos = set(preds['Algorithm'])
