@@ -39,7 +39,7 @@ import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 
-public class LeastSquareItemScorerTest {
+public class LeastSquaresItemScorerTest {
 
     private static final double EPSILON = 1.0e-2;
     private PackedPreferenceSnapshot snapshot;
