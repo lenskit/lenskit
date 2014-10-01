@@ -135,8 +135,8 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
                     final int iidx = r.getItemIndex();
                     final double p = mean + uoff[uidx] + ioff[iidx];
                     final double err = r.getValue() - p;
-                    uoff[uidx] += learningRate * (err - regularizationFactor * uoff[uidx]);
-                    ioff[iidx] += learningRate * (err - regularizationFactor * ioff[iidx]);
+                    uoff[uidx] += learningRate * (err - regularizationFactor * Math.abs(uoff[uidx]));
+                    ioff[iidx] += learningRate * (err - regularizationFactor * Math.abs(ioff[iidx]));
                     sse += err * err;
                 }
                 rmse = Math.sqrt(sse / ratings.size());
