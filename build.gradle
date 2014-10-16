@@ -169,6 +169,7 @@ subprojects {
 
 task ciPublish {
     description "Runs CI publication tasks (not on Travis)"
+    dependsOn uploadArchives
 }
 
 apply from: "$rootDir/gradle/javadoc.gradle"
