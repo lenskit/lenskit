@@ -166,7 +166,7 @@ afterEvaluate {
             developer {
                 id 'ekstrand'
                 name 'Michael Ekstrand'
-                email 'ekstrand@cs.umn.edu'
+                email 'ekstrand@txstate.edu'
             }
         }
     }
