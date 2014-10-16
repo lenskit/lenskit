@@ -42,6 +42,10 @@ configurations {
     buildTools
 }
 
+task ciPublish {
+    description "Runs CI publication tasks (not on Travis)."
+}
+
 allprojects { project ->
     group 'org.grouplens.lenskit'
     version '2.2-SNAPSHOT'
@@ -165,11 +169,6 @@ subprojects {
             rootProject.configurations.allDeps.dependencies << dep
         }
     }
-}
-
-task ciPublish {
-    description "Runs CI publication tasks (not on Travis)"
-    dependsOn uploadArchives
 }
 
 apply from: "$rootDir/gradle/javadoc.gradle"

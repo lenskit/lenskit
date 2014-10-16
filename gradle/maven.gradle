@@ -133,6 +133,8 @@ uploadArchives {
     }
 }
 
+rootProject.ciPublish.dependsOn uploadArchives
+
 // set up the Maven metadata at the end of configuration
 afterEvaluate {
     uploadArchives.repositories.mavenDeployer.pom.project {
