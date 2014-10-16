@@ -42,22 +42,6 @@ import java.util.regex.Pattern
  * Extension object providing Travis environment utilities.
  */
 class TravisExtension {
-    def masterJdk
-    String masterRepo
-    private Pattern releaseBranchPattern
-
-    Pattern getReleaseBranchPattern() {
-        return releaseBranchPattern
-    }
-
-    void setReleaseBranchPattern(Pattern pat) {
-        releaseBranchPattern = pat
-    }
-
-    void setReleaseBranchPattern(String pat) {
-        releaseBranchPattern = Pattern.compile(pat)
-    }
-
     boolean isActive() {
         return System.getenv('CI') == 'true'
     }
@@ -77,19 +61,6 @@ class TravisExtension {
 
     String getActiveJdk() {
         return System.getenv('TRAVIS_JDK_VERSION')
-    }
-
-    boolean isInMasterRepo() {
-        return repo == masterRepo
-    }
-
-    boolean isOnReleaseBranch() {
-        def b = branch
-        return b =~ releaseBranchPattern
-    }
-
-    boolean isPublishingActive() {
-        System.getenv('CI_PUBLISH') == 'true' || (inMasterRepo && onReleaseBranch && pullRequest == null && activeJdk == masterJdk)
     }
 
     Integer getBuildNumber() {

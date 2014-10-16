@@ -129,16 +129,9 @@ uploadArchives {
     }
     // allow deploy to be skipped on the command line
     onlyIf {
-        if (travis.active) {
-            travis.publishingActive && !(git.headCommit.fullMessage.contains('[skip deploy]'))
-        } else {
-            !(project.getConfigProperty('deploy.skip', 'false').toBoolean())
-        }
+        !(project.getConfigProperty('deploy.skip', 'false').toBoolean())
     }
 }
-
-// Publish the archives on CI builds
-ciPublish.addTask uploadArchives
 
 // set up the Maven metadata at the end of configuration
 afterEvaluate {

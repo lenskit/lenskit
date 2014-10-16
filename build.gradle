@@ -179,7 +179,6 @@ task report(group: 'verification') {
 apply from: "$rootDir/gradle/website.gradle"
 apply from: "$rootDir/gradle/idea.gradle"
 ext.enableLint = getConfigProperty('lint', 'false').toBoolean()
-enableLint |= travis.active && travis.publishingActive
 if (enableLint) {
     apply from: "$rootDir/gradle/lint.gradle"
 }

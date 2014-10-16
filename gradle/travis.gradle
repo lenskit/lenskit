@@ -36,11 +36,6 @@
 import org.grouplens.lenskit.build.*
 
 extensions.create('travis', TravisExtension)
-travis {
-    masterJdk 'oraclejdk7'
-    masterRepo 'lenskit/lenskit'
-    releaseBranchPattern ~/^(master$|release\/)/
-}
 
 task ciPrep(group: 'deploy') {
     description 'Prepare CI build (travis install).'
@@ -57,10 +52,4 @@ tasks.all { task ->
             ciBuild.dependsOn task
             break;
     }
-}
-
-// the publish task will run other tasks recursively
-task ciPublish(group: 'deploy') {
-    description 'Publish the results of a CI build.'
-    ext.addTask = { task -> dependsOn task }
 }

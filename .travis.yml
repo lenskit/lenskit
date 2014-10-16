@@ -18,8 +18,6 @@ before_install:
 - git fetch --depth=10000 origin
 install: ./gradlew ciPrep
 script: ./gradlew ciBuild
-after_success:
-  - ./gradlew ciPublish
 env:
   global:
   - TERM=dumb

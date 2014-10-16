@@ -105,10 +105,6 @@ class Website {
     def String repo = 'lenskit/lenskit.github.io'
     def Project project
 
-    def getPublishable() {
-        project.travis.publishingActive && project.travis.branch == 'master'
-    }
-
     def getDirectory() {
         project.file("$project.buildDir/website")
     }
@@ -121,7 +117,6 @@ extensions.create('website', Website)
 website.project = project
 
 task fetchSite {
-    onlyIf { website.publishable }
     mustRunAfter javadoc
 
     doLast {
@@ -146,10 +141,8 @@ task copyJavadoc(type: Sync, dependsOn: [javadoc, fetchSite]) {
 
 task uploadWeb {
     dependsOn copyJavadoc
-    onlyIf {
-        website.publishable
-    }
 }
+
 uploadWeb << {
     logger.info 'adding files'
     exec {
@@ -176,4 +169,3 @@ uploadWeb << {
         git.close()
     }
 }
-ciPublish.dependsOn uploadWeb
