@@ -56,7 +56,6 @@ allprojects { project ->
             return dft
         }
     }
-    ext.skips = new HashSet(getConfigProperty('skip', '').split(/\s*,\s*/).toList())
 
     repositories {
         if (getConfigProperty('maven.useLocal', 'false').toBoolean()) {
