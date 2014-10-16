@@ -33,74 +33,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.slf4j.LoggerFactory
-import org.eclipse.jgit.api.Git
-import org.eclipse.jgit.api.TransportConfigCallback
-import org.eclipse.jgit.util.FS
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder
-import org.eclipse.jgit.transport.*
-import com.jcraft.jsch.JSch
-import com.jcraft.jsch.Session
-import org.grouplens.lenskit.build.SshLogger
-
-class GitDeploySessionFactory extends JschConfigSessionFactory {
-    final Project project
-
-    GitDeploySessionFactory(Project prj) {
-        project = prj
-    }
-
-    void configure(OpenSshConfig.Host host, Session session) { }
-
-    JSch createDefaultJSch(FS fs) {
-        def sch = super.createDefaultJSch(fs)
-        sch.logger = new SshLogger();
-        sch.removeAllIdentity()
-        sch.addIdentity(project.file('etc/deploy.rsa').absolutePath)
-        return sch
-    }
-}
-
-class HeadlessCredentialsProvider extends CredentialsProvider {
-    def logger = LoggerFactory.getLogger(getClass())
-
-    boolean isInteractive() {
-        return false;
-    }
-
-    boolean get(URIish uri, CredentialItem... items) {
-        for (item in items) {
-            logger.info('want credential type {} w/ prompt {}',
-                        item.class, item.promptText)
-            if (item instanceof CredentialItem.StringType) {
-                item.value = System.getenv('DEPLOY_KEY_PASSPHRASE')
-            } else {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    boolean supports(CredentialItem... items) {
-        return true
-    }
-}
-
-class DeployConfigCallback implements TransportConfigCallback {
-    final Project project
-
-    DeployConfigCallback(Project prj) {
-        project = prj
-    }
-
-    void configure(Transport transport) {
-        if (transport instanceof SshTransport) {
-            transport.sshSessionFactory = new GitDeploySessionFactory(project)
-        }
-        transport.credentialsProvider = new HeadlessCredentialsProvider()
-    }
-}
-
 class Website {
     def String repo = 'lenskit/lenskit.github.io'
     def Project project
@@ -108,28 +40,31 @@ class Website {
     def getDirectory() {
         project.file("$project.buildDir/website")
     }
-
-    def getGitTransport() {
-        return new DeployConfigCallback(project)
-    }
 }
 extensions.create('website', Website)
 website.project = project
 
-task fetchSite {
+task fetchSite(type: Exec) {
     mustRunAfter javadoc
 
     doLast {
-        def cmd = Git.cloneRepository()
-        cmd.setURI "git@github.com:${website.repo}.git"
-        cmd.directory = website.directory
-        cmd.transportConfigCallback = website.gitTransport
-        cmd.branch = 'master'
-        try {
-            cmd.call()
-        } catch (Exception ex) {
-            logger.error 'Git error {}', ex
-            throw new RuntimeException('git error', ex)
+        if (website.directory.exists()) {
+            exec {
+                executable 'git'
+                args "git@github.com:${website.repo}.git"
+                args website.directory
+            }
+        } else {
+            exec {
+                executable 'git'
+                args 'checkout', '--', '.'
+                workingDir website.directory
+            }
+            exec {
+                executable 'git'
+                args 'pull'
+                workingDir website.directory
+            }
         }
     }
 }
@@ -141,31 +76,22 @@ task copyJavadoc(type: Sync, dependsOn: [javadoc, fetchSite]) {
 
 task uploadWeb {
     dependsOn copyJavadoc
-}
 
-uploadWeb << {
-    logger.info 'adding files'
-    exec {
-        workingDir website.directory
-        executable 'git'
-        args 'add', '-A', 'master/apidocs'
-    }
-    def repo = new FileRepositoryBuilder().findGitDir(website.directory).build()
-    def git = new Git(repo)
-    try {
-        logger.info 'committing'
-        git.commit()
-           .setAuthor('LensKit CI', 'travis@lenskit.org')
-           .setCommitter('LensKit CI', 'travis@lenskit.org')
-           .setMessage("Results of build $travis.buildNumber")
-           .call()
-        logger.info 'pushing'
-        git.push()
-           .setRemote('origin')
-           .setRefSpecs(new RefSpec('master:master'))
-           .setTransportConfigCallback(website.gitTransport)
-           .call()
-    } finally {
-        git.close()
+    doLast {
+        exec {
+            executable 'git'
+            args 'add', '-A', 'master/apidocs'
+            workingDir website.directory
+        }
+        exec {
+            executable 'git'
+            args 'commit', '-m', "rebuild website for $git.headRevision"
+            workingDir website.directory
+        }
+        exec {
+            executable 'git'
+            args 'push'
+            workingDir website.directory
+        }
     }
 }
