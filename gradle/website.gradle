@@ -95,3 +95,4 @@ task uploadWeb {
         }
     }
 }
+ciPublish.dependsOn uploadWeb
