@@ -40,4 +40,4 @@ sonarRunner {
         }
     }
 }
-ciPublish.dependsOn sonarRunner
+ciPublish.dependsOn 'sonarRunner'
