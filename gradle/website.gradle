@@ -44,14 +44,14 @@ class Website {
 extensions.create('website', Website)
 website.project = project
 
-task fetchSite(type: Exec) {
+task fetchSite {
     mustRunAfter javadoc
 
     doLast {
-        if (website.directory.exists()) {
+        if (!website.directory.exists()) {
             exec {
                 executable 'git'
-                args "git@github.com:${website.repo}.git"
+                args 'clone', "git@github.com:${website.repo}.git"
                 args website.directory
             }
         } else {
