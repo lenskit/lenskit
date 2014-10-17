@@ -110,6 +110,7 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
         return copy;
     }
 
+    @SuppressWarnings("unchecked")
     private V[] adjustStorage(LongKeyDomain domain, boolean reuseIfPossible) {
         V[] nvs;
         if (domain.isCompatibleWith(keys)) {

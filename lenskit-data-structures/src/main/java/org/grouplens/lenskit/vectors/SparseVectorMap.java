@@ -33,6 +33,8 @@ import java.util.Iterator;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class SparseVectorMap extends AbstractLong2ObjectMap<Double> {
+    private static final long serialVersionUID = 1L;
+
     final SparseVector vector;
 
     /**

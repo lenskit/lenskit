@@ -240,6 +240,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      * @param domain The domain (active key mask is ignored and reset).
      * @return The vector.
      */
+    @SuppressWarnings("unchecked")
     MutableSparseVector withDomain(LongKeyDomain domain) {
         MutableSparseVector msvNew = new MutableSparseVector(domain.clone());
         msvNew.set(this); // copy appropriate elements from "this"

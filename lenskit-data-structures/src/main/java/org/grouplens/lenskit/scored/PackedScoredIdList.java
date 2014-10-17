@@ -51,6 +51,7 @@ import java.util.*;
  * @compat Public
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@SuppressWarnings("deprecation")
 public final class PackedScoredIdList extends AbstractList<ScoredId> implements FastCollection<ScoredId>, Serializable {
     private static final long serialVersionUID = 1L;
     private final LongList ids;
@@ -120,6 +121,8 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
      * Flyweight implementation of {@link ScoredId} backed by the list's storage.
      */
     class IndirectScoredId extends AbstractScoredId implements Serializable {
+        private static final long serialVersionUID = 1L;
+
         private int index;
 
         public IndirectScoredId(int idx) {

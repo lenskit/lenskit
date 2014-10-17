@@ -33,6 +33,8 @@ import java.util.Collection;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class IdIndexMapping implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     /**
      * Get the index of an ID.
      *

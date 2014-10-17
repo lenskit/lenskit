@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+@SuppressWarnings("deprecation")
 public class VecTest {
     final Vec empty = ImmutableVec.create(new double[0]);
     final Vec single = ImmutableVec.create(new double[]{3.5});

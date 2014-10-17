@@ -39,6 +39,7 @@ import java.util.Map;
  */
 public final class TypedSymbol<K> implements Serializable {
     private static final long serialVersionUID = 1L;
+    @SuppressWarnings("rawtypes")
     private static Map<Pair<Class,Symbol>,TypedSymbol> symbolCache = Maps.newHashMap();
 
     private final Class<K> type;
@@ -67,7 +68,7 @@ public final class TypedSymbol<K> implements Serializable {
         return of(type, Symbol.of(name));
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static synchronized <T> TypedSymbol<T> of(Class<T> type, Symbol sym) {
         Pair<Class,Symbol> key;
         if (type.isPrimitive()) {

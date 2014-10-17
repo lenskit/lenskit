@@ -237,6 +237,7 @@ public final class ScoredIds {
      * {@link ScoredId} objects.
      * @param vector The vector to view as a collection of {@link ScoredId}s
      */
+    @SuppressWarnings("deprecation")
     public static FastCollection<ScoredId> collectionFromVector(SparseVector vector) {
         return new VectorIdCollection(vector);
     }
@@ -250,7 +251,7 @@ public final class ScoredIds {
         }
 
         @Override
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({"unchecked", "rawtypes"})
         protected ScoredId copy(ScoredId elt) {
             ScoredIdBuilder builder = new ScoredIdBuilder();
             builder.setId(elt.getId());

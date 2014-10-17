@@ -163,6 +163,7 @@ public final class CollectionUtils {
         return new EmptyFastCollection<E>();
     }
 
+    @SuppressWarnings("deprecation")
     private static class EmptyFastCollection<E> extends AbstractCollection<E> implements FastCollection<E> {
         @Override
         public Iterator<E> fastIterator() {

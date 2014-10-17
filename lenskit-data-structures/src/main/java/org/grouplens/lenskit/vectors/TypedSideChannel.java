@@ -44,6 +44,7 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      * @param ks The key set backing this channel.  The key set will be referenced and modified,
      *           not copied.  Its mask is ignored (all keys will be initially deactivated).
      */
+    @SuppressWarnings("unchecked")
     TypedSideChannel(LongKeyDomain ks) {
         this(ks, (V[]) new Object[ks.domainSize()]);
         ks.setAllActive(false);
