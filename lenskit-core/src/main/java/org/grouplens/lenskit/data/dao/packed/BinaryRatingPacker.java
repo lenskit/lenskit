@@ -303,7 +303,7 @@ public class BinaryRatingPacker implements Closeable {
 
     private long ratingPos(int idx) {
         long offset = format.getHeaderSize();
-        return offset + idx * format.getRatingSize();
+        return offset + idx * (long) format.getRatingSize();
     }
 
     private class SortComparator extends AbstractIntComparator {

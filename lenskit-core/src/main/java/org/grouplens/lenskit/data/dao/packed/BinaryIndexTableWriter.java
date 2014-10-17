@@ -51,7 +51,7 @@ class BinaryIndexTableWriter {
 
         entryBuffer = ByteBuffer.allocateDirect(BinaryIndexTable.TABLE_ENTRY_SIZE);
 
-        channel.position(tableStartPosition + nkeys * format.indexTableEntrySize());
+        channel.position(tableStartPosition + nkeys * (long) format.indexTableEntrySize());
     }
 
     public static BinaryIndexTableWriter create(BinaryFormat fmt, FileChannel chan, int nkeys) throws IOException {
