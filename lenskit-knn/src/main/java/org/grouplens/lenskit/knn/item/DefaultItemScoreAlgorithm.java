@@ -55,6 +55,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
         minNeighbors = min <= 0 ? 1 : min;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void scoreItems(ItemItemModel model, SparseVector userData,
                            MutableSparseVector scores,
@@ -85,6 +86,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
 
             if (score != null) {
                 scores.set(e, score.getScore());
+                // FIXME Scorers should not need to do this.
                 for (TypedSymbol sym: score.getChannelSymbols()) {
                     scores.getOrAddChannel(sym).put(e.getKey(), score.getChannelValue(sym));
                 }
