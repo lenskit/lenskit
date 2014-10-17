@@ -30,7 +30,7 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.*;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
-import org.grouplens.lenskit.util.io.LKFileUtils;
+import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
@@ -41,7 +41,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Predict item ratings for a user.
@@ -63,6 +62,7 @@ public class Predict implements Command {
     }
 
     @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public void execute() throws IOException, RecommenderBuildException {
         LenskitRecommenderEngine engine = loadEngine();
 
@@ -122,11 +122,10 @@ public class Predict implements Command {
             loader.addConfiguration(input.getConfiguration());
             Stopwatch timer = Stopwatch.createStarted();
             LenskitRecommenderEngine engine;
+            CompressionMode comp = CompressionMode.autodetect(modelFile);
             InputStream input = new FileInputStream(modelFile);
             try {
-                if (LKFileUtils.isCompressed(modelFile)) {
-                    input = new GZIPInputStream(input);
-                }
+                input = comp.wrapInput(input);
                 engine = loader.load(input);
             } finally {
                 input.close();

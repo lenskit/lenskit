@@ -21,14 +21,15 @@
 package org.grouplens.lenskit.cli;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.config.ConfigurationLoader;
-import org.grouplens.lenskit.core.*;
-import org.grouplens.lenskit.util.io.LKFileUtils;
+import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.grouplens.lenskit.core.LenskitRecommenderEngine;
+import org.grouplens.lenskit.core.LenskitRecommenderEngineBuilder;
+import org.grouplens.lenskit.core.ModelDisposition;
+import org.grouplens.lenskit.util.io.CompressionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,9 +37,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collections;
 import java.util.List;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -78,13 +77,12 @@ public class TrainModel implements Command {
         timer.stop();
         logger.info("built model in {}", timer);
         File output = getOutputFile();
+        CompressionMode comp = CompressionMode.autodetect(output);
         logger.info("writing model to {}", output);
         Closer closer = Closer.create();
         try {
             OutputStream stream = closer.register(new FileOutputStream(output));
-            if (LKFileUtils.isCompressed(output)) {
-                stream = closer.register(new GZIPOutputStream(stream));
-            }
+            stream = closer.register(comp.wrapOutput(stream));
             engine.write(stream);
         } catch (Throwable th) {
             throw closer.rethrow(th);

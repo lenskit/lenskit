@@ -25,6 +25,7 @@ import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.compress.compressors.gzip.GzipUtils;
 import org.apache.commons.compress.compressors.xz.XZUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -138,5 +139,24 @@ public enum CompressionMode {
                 throw new IOException("Error setting up decompressor", e);
             }
         }
+    }
+
+    /**
+     * Auto-detect a compression mode from a file name.
+     * @param name The file name.
+     * @return The compression mode.  Will never be {@link #AUTO}.
+     */
+    public static CompressionMode autodetect(String name) {
+        return AUTO.getEffectiveCompressionMode(name);
+    }
+
+    /**
+     * Auto-detect a compression mode from a file's name.
+     * @param file The file.
+     * @return The compression mode.  Will never be {@link #AUTO}.
+     */
+    public static CompressionMode autodetect(File file) {
+        return AUTO.getEffectiveCompressionMode(file.getName()
+        );
     }
 }

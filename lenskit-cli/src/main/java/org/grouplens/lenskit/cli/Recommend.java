@@ -29,6 +29,7 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.*;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,9 +117,7 @@ public class Recommend implements Command {
             LenskitRecommenderEngine engine;
             InputStream input = new FileInputStream(modelFile);
             try {
-                if (LKFileUtils.isCompressed(modelFile)) {
-                    input = new GZIPInputStream(input);
-                }
+                input = CompressionMode.autodetect(modelFile).wrapInput(input);
                 engine = loader.load(input);
             } finally {
                 input.close();

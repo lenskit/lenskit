@@ -113,15 +113,7 @@ public class Eval implements Command {
                 project.executeTarget(dft);
             } else if (!project.getAntProject().getTargets().isEmpty()) {
                 String targets = Joiner.on(", ")
-                                       .join(Iterables.transform(
-                                               project.getAntProject().getTargets().keySet(),
-                                               new Function() {
-                                                   @Nullable
-                                                   @Override
-                                                   public Object apply(@Nullable Object input) {
-                                                       return input == null ? null : input;
-                                                   }
-                                               }));
+                                       .join(project.getAntProject().getTargets().keySet());
                 logger.error("No targets specified and no default provided (try one of: {})",
                              targets);
                 System.exit(2);
