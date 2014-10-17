@@ -78,6 +78,7 @@ task uploadWeb {
     dependsOn copyJavadoc
 
     doLast {
+        def commit = git.headRevision.abbreviate().name()
         exec {
             executable 'git'
             args 'add', '-A', 'master/apidocs'
@@ -85,7 +86,7 @@ task uploadWeb {
         }
         exec {
             executable 'git'
-            args 'commit', '-m', "rebuild website for $git.headRevision"
+            args 'commit', '-m', "rebuild website for $commit"
             workingDir website.directory
         }
         exec {
