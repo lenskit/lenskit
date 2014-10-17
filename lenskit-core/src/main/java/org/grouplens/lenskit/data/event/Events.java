@@ -67,4 +67,49 @@ public final class Events {
         }
     };
 
+    /**
+     * Create a new {@link Plus} event with no timestamp.
+     *
+     * @param user The user ID.
+     * @param item The item ID.
+     * @return A {@link Plus} with a {@linkplain Plus#getCount() count} of 1.
+     */
+    public static Plus plus(long user, long item) {
+        return plus(user, item, -1);
+    }
+
+    /**
+     * Create a new {@link Plus} event.
+     *
+     * @param user The user ID.
+     * @param item The item ID.
+     * @param ts The timestamp.
+     * @return A {@link Plus} with a {@linkplain Plus#getCount() count} of 1.
+     */
+    public static Plus plus(long user, long item, long ts) {
+        return new SimplePlus(user, item, 1, ts);
+    }
+
+    /**
+     * Create a {@link Plus} event with a nonzero count.
+     * @param user The user ID.
+     * @param item The item ID.
+     * @param count The count.
+     * @return The new event.
+     */
+    public static Plus multiPlus(long user, long item, int count) {
+        return multiPlus(user, item, count, -1);
+    }
+
+    /**
+     * Create a {@link Plus} event with a nonzero count.
+     * @param user The user ID.
+     * @param item The item ID.
+     * @param count The count.
+     * @param ts The event timestamp.
+     * @return The new event.
+     */
+    public static Plus multiPlus(long user, long item, int count, long ts) {
+        return new SimplePlus(user, item, count, ts);
+    }
 }
