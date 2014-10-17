@@ -46,17 +46,6 @@ import java.util.concurrent.ExecutionException;
 public class EvalCLI {
     private static final Logger logger = LoggerFactory.getLogger(EvalCLI.class);
 
-    /**
-     * Run the evaluator from the command line.
-     *
-     * @param args The command line arguments to the evaluator.
-     */
-    public static void main(String[] args) {
-        EvalCLIOptions options = EvalCLIOptions.parse(args);
-        EvalCLI cli = new EvalCLI(options);
-        cli.run();
-    }
-
     private final EvalCLIOptions options;
 
     public EvalCLI(EvalCLIOptions opts) {
@@ -71,7 +60,7 @@ public class EvalCLI {
         File f = options.getScriptFile();
         if (!f.exists()) {
             logger.error("script file {} does not exist", f);
-            System.err.format("%s: file does not exist\n", f);
+            System.err.format("%s: file does not exist%n", f);
             System.err.println("lenskit-eval requires an eval script to execute (default: eval.groovy)");
             System.err.println("run lenskit-eval --help for more information");
             System.exit(1);
@@ -123,5 +112,17 @@ public class EvalCLI {
             }
             System.exit(2);
         }
+    }
+
+    /**
+     * Run the evaluator from the command line.
+     *
+     * @param args The command line arguments to the evaluator.
+     */
+    @SuppressWarnings("deprecation")
+    public static void main(String[] args) {
+        EvalCLIOptions options = EvalCLIOptions.parse(args);
+        EvalCLI cli = new EvalCLI(options);
+        cli.run();
     }
 }
