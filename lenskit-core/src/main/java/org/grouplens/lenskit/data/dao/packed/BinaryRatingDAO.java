@@ -44,6 +44,7 @@ import org.grouplens.lenskit.util.io.DescriptionWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
@@ -304,25 +305,26 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     }
 
     private class EntryToCursorTransformer implements Function<Pair<Long, IntList>, Cursor<Rating>> {
-        @Nullable
+        @Nonnull
         @Override
-        public Cursor<Rating> apply(@Nullable Pair<Long, IntList> input) {
+        public Cursor<Rating> apply(Pair<Long, IntList> input) {
+            Preconditions.checkNotNull(input, "input entry");
             return Cursors.wrap(getRatingList(input.getRight()));
         }
     }
 
     private class ItemEntryTransformer implements Function<Pair<Long, IntList>, ItemEventCollection<Rating>> {
-        @Nullable
+        @Nonnull
         @Override
-        public ItemEventCollection<Rating> apply(@Nullable Pair<Long, IntList> input) {
+        public ItemEventCollection<Rating> apply(Pair<Long, IntList> input) {
             return new BinaryItemCollection(input.getLeft(), getRatingList(input.getRight()));
         }
     }
 
     private class UserEntryTransformer implements Function<Pair<Long, IntList>, UserHistory<Rating>> {
-        @Nullable
+        @Nonnull
         @Override
-        public UserHistory<Rating> apply(@Nullable Pair<Long, IntList> input) {
+        public UserHistory<Rating> apply(Pair<Long, IntList> input) {
             return new BinaryUserHistory(input.getLeft(), getRatingList(input.getRight()));
         }
     }
