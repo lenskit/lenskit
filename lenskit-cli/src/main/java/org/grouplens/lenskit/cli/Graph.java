@@ -24,8 +24,8 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.*;
 import org.grouplens.lenskit.data.dao.EventDAO;
@@ -110,7 +110,7 @@ public class Graph implements Command {
 
         try {
             return rgb.buildGraph();
-        } catch (SolverException e) {
+        } catch (ResolutionException e) {
             throw new RecommenderConfigurationException("Cannot configure recommender", e);
         }
     }

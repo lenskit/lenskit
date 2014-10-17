@@ -24,8 +24,8 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.*;
 import org.grouplens.lenskit.eval.Attributed;
@@ -147,7 +147,7 @@ public class AlgorithmInstance implements Attributed {
         rgb.addConfiguration(config);
         try {
             return rgb.buildGraph();
-        } catch (SolverException e) {
+        } catch (ResolutionException e) {
             throw new RecommenderConfigurationException("error configuring recommender", e);
         }
     }
