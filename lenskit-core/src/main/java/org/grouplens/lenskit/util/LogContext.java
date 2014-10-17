@@ -30,6 +30,7 @@ import java.util.Map;
  * to be set, and popped back off when the context is finished.
  */
 public class LogContext {
+    @SuppressWarnings("rawtypes")
     private final Map memory = MDC.getCopyOfContextMap();
 
     /**

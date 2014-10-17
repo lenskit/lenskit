@@ -106,21 +106,26 @@ public class EventCollectionDAO implements EventDAO {
         return streamEvents(type, SortOrder.ANY);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <E extends Event> Cursor<E> streamEvents(Class<E> type, SortOrder order) {
+        // We need to filter if there are any event types that are not subtypes of `type`.
         boolean needFilter = Iterables.any(types, Predicates.not(TypeUtils.subtypePredicate(type)));
 
         Comparator<Event> comp = order.getEventComparator();
 
         if (!needFilter) {
+            // no need to filter - just wrap up our events and cast.
             if (comp == null) {
                 return (Cursor<E>) Cursors.wrap(events);
             } else {
+                @SuppressWarnings("rawtypes")
                 List evts = Lists.newArrayList(events);
                 Collections.sort(evts, comp);
                 return Cursors.wrap(evts);
             }
         } else {
+            // Now we must filter our events.
             if (comp == null) {
                 return Cursors.filter(streamEvents(), type);
             } else {

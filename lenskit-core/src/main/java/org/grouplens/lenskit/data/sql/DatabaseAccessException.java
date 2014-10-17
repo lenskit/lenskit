@@ -26,6 +26,8 @@ import org.grouplens.lenskit.data.dao.DataAccessException;
  * A database error occurred in the database-backed DAO.
  */
 public class DatabaseAccessException extends DataAccessException {
+    private static final long serialVersionUID = 1L;
+
     public DatabaseAccessException() {
     }
 

@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.data.snapshot;
 
 import it.unimi.dsi.fastutil.longs.LongCollection;
-import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
@@ -35,6 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -159,7 +159,7 @@ public class PackedPreferenceSnapshotTest {
 
     @Test
     public void testGetRatings() {
-        FastCollection<IndexedPreference> ratings = snap.getRatings();
+        Collection<IndexedPreference> ratings = snap.getRatings();
         assertEquals(20, ratings.size());
         assertTrue(ratings.contains(preference(1, 7, 4)));
         assertTrue(ratings.contains(preference(3, 7, 3)));
@@ -185,7 +185,7 @@ public class PackedPreferenceSnapshotTest {
 
     @Test
     public void testGetUserRatings() {
-        FastCollection<IndexedPreference> ratings = snap.getUserRatings(1);
+        Collection<IndexedPreference> ratings = snap.getUserRatings(1);
         assertThat(ratings, hasSize(4));
         assertTrue(ratings.contains(preference(1, 7, 4)));
         assertTrue(ratings.contains(preference(1, 8, 5)));

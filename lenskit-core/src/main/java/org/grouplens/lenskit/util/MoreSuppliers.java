@@ -108,6 +108,8 @@ public final class MoreSuppliers {
     }
 
     private static class WeakMemoizingSupplier<T> extends MemoizingSupplier<T> {
+        private static final long serialVersionUID = 1954598028486505283L;
+
         private WeakMemoizingSupplier(Supplier<T> delegate) {
             super(delegate);
         }
@@ -119,6 +121,8 @@ public final class MoreSuppliers {
     }
 
     private static class SoftMemoizingSupplier<T> extends MemoizingSupplier<T> {
+        private static final long serialVersionUID = -4085101080943471251L;
+
         private SoftMemoizingSupplier(Supplier<T> delegate) {
             super(delegate);
         }

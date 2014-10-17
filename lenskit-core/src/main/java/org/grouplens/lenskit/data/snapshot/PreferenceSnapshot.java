@@ -52,6 +52,7 @@ import java.io.Closeable;
  */
 @ThreadSafe
 @DefaultImplementation(PackedPreferenceSnapshot.class)
+@SuppressWarnings("deprecation")
 public interface PreferenceSnapshot extends Closeable {
     /**
      * Get the set of user IDs in the snapshot.

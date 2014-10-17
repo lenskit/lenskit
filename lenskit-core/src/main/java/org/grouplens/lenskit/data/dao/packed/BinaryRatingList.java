@@ -23,6 +23,7 @@ package org.grouplens.lenskit.data.dao.packed;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
 import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.collections.FastIterable;
 import org.grouplens.lenskit.cursors.AbstractCursor;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.event.MutableRating;
@@ -37,7 +38,7 @@ import java.util.Iterator;
  * A list of ratings backed by a buffer.  This is not thread-safe.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class BinaryRatingList extends AbstractList<Rating> implements FastCollection<Rating> {
+class BinaryRatingList extends AbstractList<Rating> implements FastIterable<Rating> {
     private final BinaryFormat format;
     private final ByteBuffer buffer;
     private final IntList positions;

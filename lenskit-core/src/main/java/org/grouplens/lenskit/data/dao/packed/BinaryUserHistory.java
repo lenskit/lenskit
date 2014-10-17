@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
-import org.grouplens.lenskit.collections.FastCollection;
+import org.grouplens.lenskit.collections.FastIterable;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.AbstractUserHistory;
@@ -34,7 +34,7 @@ import java.util.Iterator;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class BinaryUserHistory extends AbstractUserHistory<Rating> implements FastCollection<Rating> {
+class BinaryUserHistory extends AbstractUserHistory<Rating> implements FastIterable<Rating> {
     private final long userId;
     private final BinaryRatingList ratings;
 
@@ -69,9 +69,10 @@ class BinaryUserHistory extends AbstractUserHistory<Rating> implements FastColle
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends Event> UserHistory<T> filter(Class<T> type) {
         if (type.isAssignableFrom(Rating.class)) {
-            return (UserHistory<T>) this;
+            return (UserHistory<T>) this; // safe b/c we only hold ratings, are immutable
         } else {
             return History.forUser(userId);
         }

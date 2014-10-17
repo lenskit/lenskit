@@ -218,6 +218,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         return getEventsForItem(item, Event.class);
     }
 
+    @SuppressWarnings("unchecked")
     @Nullable
     @Override
     public <E extends Event> List<E> getEventsForItem(long item, Class<E> type) {
@@ -227,6 +228,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         }
 
         if (!type.isAssignableFrom(Rating.class)) {
+            // we only have ratings
             return ImmutableList.of();
         }
 

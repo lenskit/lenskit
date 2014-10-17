@@ -23,12 +23,12 @@ package org.grouplens.lenskit.data.snapshot;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.Preferences;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.util.Collection;
 
 /**
  * Base class for implementing preference snapshots.
@@ -54,7 +54,7 @@ public abstract class AbstractPreferenceSnapshot implements PreferenceSnapshot {
             if (data != null) {
                 return data;
             } else {
-                FastCollection<IndexedPreference> prefs = this.getUserRatings(userId);
+                Collection<IndexedPreference> prefs = this.getUserRatings(userId);
                 data = Preferences.userPreferenceVector(prefs).freeze();
                 cache.put(userId, data);
                 return data;

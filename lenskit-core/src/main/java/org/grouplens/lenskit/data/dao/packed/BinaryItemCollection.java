@@ -20,8 +20,7 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
-import org.grouplens.lenskit.collections.FastCollection;
-import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.collections.FastIterable;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 
@@ -31,7 +30,7 @@ import java.util.Iterator;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class BinaryItemCollection extends AbstractCollection<Rating> implements ItemEventCollection<Rating>, FastCollection<Rating> {
+class BinaryItemCollection extends AbstractCollection<Rating> implements ItemEventCollection<Rating>, FastIterable<Rating> {
     private final long itemId;
     private final BinaryRatingList ratings;
 

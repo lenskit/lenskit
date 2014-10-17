@@ -28,6 +28,8 @@ import org.grouplens.lenskit.RecommenderBuildException;
  * @since 1.0
  */
 public class RecommenderConfigurationException extends RecommenderBuildException {
+    private static final long serialVersionUID = 1L;
+
     public RecommenderConfigurationException() {
     }
 

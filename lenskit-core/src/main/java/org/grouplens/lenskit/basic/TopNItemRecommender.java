@@ -104,6 +104,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      * @return The top {@var n} items from {@var scores}, in descending
      *         order of score.
      */
+    @SuppressWarnings("unchecked")
     protected List<ScoredId> recommend(int n, SparseVector scores) {
         if (scores.isEmpty()) {
             return Collections.emptyList();
