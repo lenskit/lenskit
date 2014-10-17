@@ -23,22 +23,20 @@ package org.grouplens.lenskit.core;
 import com.google.common.base.Preconditions;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.DependencySolver;
-import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
 import org.grouplens.lenskit.util.io.CompressionMode;
-import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillClose;
 import java.io.*;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * LensKit implementation of a recommender engine.  It uses containers set up by
@@ -128,6 +126,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      *                     If the configuration cannot be used.
      * @deprecated Use {@link LenskitRecommenderEngineLoader} for sophisticated loading.
      */
+    @Deprecated
     public static LenskitRecommenderEngine load(InputStream input, ClassLoader loader) throws IOException, RecommenderConfigurationException {
         return newLoader().setClassLoader(loader).load(input);
     }
@@ -208,7 +207,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
         DependencySolver solver = rgb.buildDependencySolver();
         try {
             toBuild = solver.rewrite(graph);
-        } catch (SolverException ex) {
+        } catch (ResolutionException ex) {
             throw new RecommenderConfigurationException("error reconfiguring recommender", ex);
         }
         GraphtUtils.checkForPlaceholders(toBuild, logger);

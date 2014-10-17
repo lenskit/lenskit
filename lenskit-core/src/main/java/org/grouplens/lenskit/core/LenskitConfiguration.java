@@ -24,11 +24,9 @@ import com.google.common.collect.ImmutableSet;
 import org.grouplens.grapht.BindingFunctionBuilder;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.context.ContextPattern;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.reflect.Desires;
-import org.grouplens.grapht.solver.DependencySolver;
-import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.inject.AbstractConfigContext;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
@@ -135,10 +133,6 @@ public class LenskitConfiguration extends AbstractConfigContext {
         return wrapContext(bindings.getRootContext().at(qualifier, type));
     }
 
-    private void resolve(Class<?> type, DependencySolver solver) throws SolverException {
-        solver.resolve(Desires.create(null, type, true));
-    }
-
     public BindingFunctionBuilder getBindings() {
         return bindings;
     }
@@ -161,7 +155,7 @@ public class LenskitConfiguration extends AbstractConfigContext {
         rgb.addRoots(roots);
         try {
             return rgb.buildGraph();
-        } catch (SolverException e) {
+        } catch (ResolutionException e) {
             throw new RecommenderConfigurationException("Cannot resolve configuration graph", e);
         }
     }

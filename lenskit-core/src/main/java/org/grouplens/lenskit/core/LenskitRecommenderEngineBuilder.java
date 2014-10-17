@@ -24,9 +24,9 @@ import com.google.common.collect.Lists;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.DependencySolver;
-import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.inject.GraphtUtils;
@@ -116,7 +116,7 @@ public class LenskitRecommenderEngineBuilder {
         RecommenderInstantiator inst;
         try {
             inst = RecommenderInstantiator.create(rgb.buildGraph());
-        } catch (SolverException e) {
+        } catch (ResolutionException e) {
             throw new RecommenderBuildException("Cannot resolve recommender graph", e);
         }
         DAGNode<Component, Dependency> graph = inst.instantiate();
@@ -145,7 +145,7 @@ public class LenskitRecommenderEngineBuilder {
             DependencySolver rewriter = rewriteBuilder.buildDependencyUnsolver();
             try {
                 graph = rewriter.rewrite(graph);
-            } catch (SolverException e) {
+            } catch (ResolutionException e) {
                 throw new RecommenderConfigurationException("Resolution error while rewriting graph", e);
             }
         }

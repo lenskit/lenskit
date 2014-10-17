@@ -26,6 +26,8 @@ package org.grouplens.lenskit;
  * @since 1.0
  */
 public class RecommenderBuildException extends Exception {
+    private static final long serialVersionUID = 1L;
+
     /**
      * Consruct a new recommender build exception.
      */

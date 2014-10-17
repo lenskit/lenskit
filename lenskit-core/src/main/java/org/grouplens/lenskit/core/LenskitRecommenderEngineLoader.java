@@ -24,9 +24,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.solver.DependencySolver;
-import org.grouplens.grapht.solver.SolverException;
 import org.grouplens.grapht.util.ClassLoaderContext;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.inject.GraphtUtils;
@@ -190,7 +190,7 @@ public class LenskitRecommenderEngineLoader {
             DependencySolver solver = rgb.buildDependencySolver();
             try {
                 graph = solver.rewrite(graph);
-            } catch (SolverException e) {
+            } catch (ResolutionException e) {
                 throw new RecommenderConfigurationException("resolution error occured while rewriting recommender", e);
             }
         }

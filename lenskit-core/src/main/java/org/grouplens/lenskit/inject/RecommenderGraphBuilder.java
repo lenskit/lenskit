@@ -23,10 +23,7 @@ package org.grouplens.lenskit.inject;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
-import org.grouplens.grapht.BindingFunctionBuilder;
-import org.grouplens.grapht.CachePolicy;
-import org.grouplens.grapht.Component;
-import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.*;
 import org.grouplens.grapht.context.ContextMatcher;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.Desires;
@@ -40,6 +37,7 @@ import java.util.Set;
 /**
  * Build recommender graphs.  You probably don't want to use this class.
  *
+ * @compat private
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -120,7 +118,7 @@ public class RecommenderGraphBuilder {
         return dsb.build();
     }
 
-    public DAGNode<Component,Dependency> buildGraph() throws SolverException {
+    public DAGNode<Component,Dependency> buildGraph() throws ResolutionException {
         DependencySolver solver = buildDependencySolver();
         for (Class<?> root: roots) {
             solver.resolve(Desires.create(null, root, true));
