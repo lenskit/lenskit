@@ -125,7 +125,6 @@ public class PackTask extends AbstractTask<List<Object>> {
     private DataSource packDataSource(DataSource data) throws TaskExecutionException {
         File outFile = packFileFunction.apply(data);
         Preconditions.checkNotNull(outFile, "output file");
-        assert outFile != null;
 
         PackedDataSource source = new PackedDataSource(data.getName(), outFile,
                                                        data.getPreferenceDomain());

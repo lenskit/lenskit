@@ -51,7 +51,6 @@ public abstract class NodeInstantiator implements Function<DAGNode<Component,Dep
     @Override
     public Object apply(@Nullable DAGNode<Component, Dependency> input) {
         Preconditions.checkNotNull(input, "input node");
-        assert input != null;
         try {
             return instantiate(input);
         } catch (InjectionException e) {
