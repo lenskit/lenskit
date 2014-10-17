@@ -111,11 +111,7 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
 
         @Override
         public LeastSquaresItemScorer get() {
-            double rmse = 0.0;
-            double uoff[] = new double[snapshot.getUserIds().size()];
-            double ioff[] = new double[snapshot.getItemIds().size()];
             FastCollection<IndexedPreference> ratings = snapshot.getRatings();
-
             logger.debug("training predictor on {} ratings", ratings.size());
 
             double sum = 0.0;
@@ -127,7 +123,12 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
             final double mean = sum / n;
             logger.debug("mean rating is {}", mean);
 
+            // TODO Use vectorz vectors instead of raw arrays
+            double uoff[] = new double[snapshot.getUserIds().size()];
+            double ioff[] = new double[snapshot.getItemIds().size()];
+
             final TrainingLoopController trainingController = stoppingCondition.newLoop();
+            double rmse = 0.0;
             while (trainingController.keepTraining(rmse)) {
                 double sse = 0;
                 for (IndexedPreference r : CollectionUtils.fast(ratings)) {
@@ -135,8 +136,8 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
                     final int iidx = r.getItemIndex();
                     final double p = mean + uoff[uidx] + ioff[iidx];
                     final double err = r.getValue() - p;
-                    uoff[uidx] += learningRate * (err - regularizationFactor * uoff[uidx]);
-                    ioff[iidx] += learningRate * (err - regularizationFactor * ioff[iidx]);
+                    uoff[uidx] += learningRate * (err - regularizationFactor * Math.abs(uoff[uidx]));
+                    ioff[iidx] += learningRate * (err - regularizationFactor * Math.abs(ioff[iidx]));
                     sse += err * err;
                 }
                 rmse = Math.sqrt(sse / ratings.size());
