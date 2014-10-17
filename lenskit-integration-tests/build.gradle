@@ -71,6 +71,9 @@ fetchData << {
 test {
     dependsOn fetchData
     systemProperties 'lenskit.movielens.100k': mlDataDir
+    onlyIf {
+        System.getenv("SONAR_BUILD") != 'true'
+    }
 }
 
 task checkPythonInstall {
