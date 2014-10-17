@@ -74,7 +74,7 @@ public class TrainModelTask<T> extends AbstractTask<T> {
      * @param algo The algorithmInfo to configure.
      * @return The command (for chaining).
      */
-    public TrainModelTask setAlgorithm(AlgorithmInstance algo) {
+    public TrainModelTask<T> setAlgorithm(AlgorithmInstance algo) {
         algorithm = algo;
         return this;
     }
@@ -85,7 +85,7 @@ public class TrainModelTask<T> extends AbstractTask<T> {
      * @param file The file name.
      * @return The command (for chaining).
      */
-    public TrainModelTask setWriteFile(File file) {
+    public TrainModelTask<T> setWriteFile(File file) {
         writeFile = file;
         return this;
     }
@@ -95,7 +95,7 @@ public class TrainModelTask<T> extends AbstractTask<T> {
      * @param data The input data source.
      * @return The builder (for chaining).
      */
-    public TrainModelTask setInput(DataSource data) {
+    public TrainModelTask<T> setInput(DataSource data) {
         inputData = data;
         return this;
     }
@@ -106,7 +106,7 @@ public class TrainModelTask<T> extends AbstractTask<T> {
      * @param act The action to invoke.
      * @return The command (for chaining).
      */
-    public TrainModelTask setAction(Function<LenskitRecommender,T> act) {
+    public TrainModelTask<T> setAction(Function<LenskitRecommender,T> act) {
         action = act;
         return this;
     }

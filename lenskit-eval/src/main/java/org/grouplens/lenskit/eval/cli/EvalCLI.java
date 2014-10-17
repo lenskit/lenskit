@@ -52,6 +52,7 @@ public class EvalCLI {
         options = opts;
     }
 
+    @SuppressWarnings("unchecked")
     public void run() {
         logger.warn("lenskit-eval is deprecated, use lenskit eval instead");
         ClassLoader loader = options.getClassLoader();
@@ -74,7 +75,7 @@ public class EvalCLI {
                     String targets = Joiner.on(", ")
                                            .join(Iterables.transform(
                                                    project.getAntProject().getTargets().keySet(),
-                                                   new Function() {
+                                                   new Function<Object,Object>() {
                                                        @Nullable
                                                        @Override
                                                        public Object apply(@Nullable Object input) {

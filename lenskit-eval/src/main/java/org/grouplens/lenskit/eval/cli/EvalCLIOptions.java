@@ -128,7 +128,7 @@ public class EvalCLIOptions {
         return props.getProperty("lenskit.version");
     }
 
-    @SuppressWarnings({"static-access", "AccessStaticViaInstance"})
+    @SuppressWarnings("all")
     private static Options makeOptions() {
         Options opts = new Options();
         opts.addOption(OptionBuilder.withDescription("print this help")

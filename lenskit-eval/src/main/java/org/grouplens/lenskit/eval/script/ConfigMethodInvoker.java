@@ -129,6 +129,7 @@ public class ConfigMethodInvoker {
         }
     }
 
+    @SuppressWarnings("unchecked")
     Object transform(Object obj, Function<Object,?> function) {
         if (obj instanceof Future) {
             return Futures.transform(listenInPoolThread((Future) obj), function);

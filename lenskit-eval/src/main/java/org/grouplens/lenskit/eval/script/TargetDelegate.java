@@ -55,7 +55,7 @@ public class TargetDelegate {
     }
 
     public <K> void perform(Closure<K> cl) {
-        GroovyActionTask<K> evalTask = new GroovyActionTask(cl);
+        GroovyActionTask<K> evalTask = new GroovyActionTask<K>(cl);
         EvalAntTask task = new EvalAntTask(evalTask);
         task.setProject(target.getProject());
         target.addTask(task);
