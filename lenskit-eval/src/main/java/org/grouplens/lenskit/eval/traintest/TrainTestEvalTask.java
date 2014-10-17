@@ -69,7 +69,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private List<TTDataSet> dataSets;
     private List<AlgorithmInstance> algorithms;
     private List<ExternalAlgorithm> externalAlgorithms;
-    private List<MetricFactory> metrics;
+    private List<MetricFactory<?>> metrics;
     private List<Pair<Symbol,String>> predictChannels;
     private boolean isolate;
     private boolean separateAlgorithms;
@@ -124,12 +124,12 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return this;
     }
 
-    public TrainTestEvalTask addMetric(Metric metric) {
+    public TrainTestEvalTask addMetric(Metric<?> metric) {
         metrics.add(MetricFactory.forMetric(metric));
         return this;
     }
 
-    public TrainTestEvalTask addMetric(Class<? extends Metric> metricClass) throws IllegalAccessException, InstantiationException {
+    public TrainTestEvalTask addMetric(Class<? extends Metric<?>> metricClass) throws IllegalAccessException, InstantiationException {
         return addMetric(metricClass.newInstance());
     }
 
@@ -311,7 +311,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return externalAlgorithms;
     }
 
-    List<MetricFactory> getMetricFactories() {
+    List<MetricFactory<?>> getMetricFactories() {
         return metrics;
     }
 
@@ -473,7 +473,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     MeasurementSuite createMeasurementSuite() {
-        ImmutableList.Builder<MetricFactory> activeMetrics = ImmutableList.builder();
+        ImmutableList.Builder<MetricFactory<?>> activeMetrics = ImmutableList.builder();
         activeMetrics.addAll(metrics);
         if (recommendOutputFile != null) {
             activeMetrics.add(new OutputTopNMetric.Factory());
@@ -578,7 +578,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
             user = closer.register(CSVWriter.open(userOutputFile, layouts.getUserLayout()));
         }
         List<Metric<?>> metrics = Lists.newArrayList();
-        for (MetricFactory metric : measures.getMetricFactories()) {
+        for (MetricFactory<?> metric : measures.getMetricFactories()) {
             metrics.add(closer.register(metric.createMetric(this)));
         }
         return new ExperimentOutputs(layouts, allResults, user, metrics);

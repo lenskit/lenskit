@@ -151,7 +151,7 @@ class ExperimentOutputLayout {
         output.addColumn("BuildTime");
         output.addColumn("TestTime");
 
-        for (MetricFactory mf: measurements.getMetricFactories()) {
+        for (MetricFactory<?> mf: measurements.getMetricFactories()) {
             List<String> labels = mf.getColumnLabels();
             if (labels != null) {
                 for (String c: labels) {
@@ -170,7 +170,7 @@ class ExperimentOutputLayout {
         perUser.addColumn("TrainEvents");
         perUser.addColumn("TestEvents");
 
-        for (MetricFactory mf : measurements.getMetricFactories()) {
+        for (MetricFactory<?> mf : measurements.getMetricFactories()) {
             List<String> userColumnLabels = mf.getUserColumnLabels();
             if (userColumnLabels != null) {
                 for (String c : userColumnLabels) {

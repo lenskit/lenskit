@@ -26,7 +26,7 @@ import org.grouplens.lenskit.eval.metrics.Metric;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public abstract class TopNMetricBuilder <K extends Metric> implements Builder<K> {
+public abstract class TopNMetricBuilder<K extends Metric<?>> implements Builder<K> {
     protected int listSize = 5;
     protected ItemSelector candidates = ItemSelectors.testItems();
     protected ItemSelector exclude = ItemSelectors.trainingItems();

@@ -20,9 +20,6 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.symbols.Symbol;
-
 import java.util.List;
 
 /**
@@ -32,17 +29,17 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class MeasurementSuite {
-    private final List<MetricFactory> metricFactories;
+    private final List<MetricFactory<?>> metricFactories;
 
     /**
      * Create a new measurement suite.
      * @param metrics The factories for the metrics to use.
      */
-    public MeasurementSuite(List<MetricFactory> metrics) {
+    public MeasurementSuite(List<MetricFactory<?>> metrics) {
         metricFactories = metrics;
     }
 
-    public List<MetricFactory> getMetricFactories() {
+    public List<MetricFactory<?>> getMetricFactories() {
         return metricFactories;
     }
 }
