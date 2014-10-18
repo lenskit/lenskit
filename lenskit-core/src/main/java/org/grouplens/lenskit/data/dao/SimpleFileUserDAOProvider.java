@@ -20,34 +20,17 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.inject.Inject;
-import javax.inject.Provider;
 import java.io.File;
-import java.io.IOException;
 
 /**
- * Provider for {@link UserListUserDAO} that reads a list of user IDs from a file, one per line.
- *
- * @since 2.1
+ * Deprecated alias for {@link org.grouplens.lenskit.data.text.SimpleFileUserDAOProvider}.
+ * @deprecated Use {@link org.grouplens.lenskit.data.text.SimpleFileUserDAOProvider} instead.
  */
-public class SimpleFileUserDAOProvider implements Provider<UserListUserDAO> {
-    private static final Logger logger = LoggerFactory.getLogger(SimpleFileUserDAOProvider.class);
-    private final File userFile;
-
+@Deprecated
+public class SimpleFileUserDAOProvider extends org.grouplens.lenskit.data.text.SimpleFileUserDAOProvider {
     @Inject
     public SimpleFileUserDAOProvider(@UserFile File file) {
-        userFile = file;
-    }
-
-    @Override
-    public UserListUserDAO get() {
-        try {
-            return UserListUserDAO.fromFile(userFile);
-        } catch (IOException e) {
-            throw new DataAccessException("error reading " + userFile, e);
-        }
+        super(file);
     }
 }
