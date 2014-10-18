@@ -38,13 +38,10 @@ import java.io.BufferedReader;
  * Cursor that parses arbitrary delimited text.
  *
  * @compat Public
+ * @deprecated Deprecated alias for {@link org.grouplens.lenskit.data.text.DelimitedTextRatingCursor}.
  */
-public class DelimitedTextRatingCursor extends AbstractPollingCursor<Rating> {
-    protected Logger logger = LoggerFactory.getLogger(getClass());
-    private final String fileName;
-    private MutableRating rating;
-    private DelimitedTextCursor rowCursor;
-
+@Deprecated
+public class DelimitedTextRatingCursor extends org.grouplens.lenskit.data.text.DelimitedTextRatingCursor {
     /**
      * Construct a rating cursor from a reader.
      *
@@ -55,46 +52,6 @@ public class DelimitedTextRatingCursor extends AbstractPollingCursor<Rating> {
     public DelimitedTextRatingCursor(@WillCloseWhenClosed @Nonnull BufferedReader s,
                                      @Nullable String name,
                                      @Nonnull String delimiter) {
-        fileName = name;
-        rating = new MutableRating();
-        rowCursor = new DelimitedTextCursor(s, delimiter);
+        super(s, name, delimiter);
     }
-
-    @Override
-    public void close() {
-        rowCursor.close();
-        rating = null;
-    }
-
-    //CHECKSTYLE:OFF MagicNumber
-    @Override
-    public Rating poll() {
-        Preconditions.checkState(rating != null, "cursor is closed");
-        while (rowCursor.hasNext()) {
-            String[] fields = rowCursor.next();
-            if (fields.length < 3) {
-                logger.error("{}:{}: invalid input, skipping line",
-                             fileName, rowCursor.getLineNumber());
-                continue;
-            }
-
-            rating.setUserId(Long.parseLong(fields[0].trim()));
-            rating.setItemId(Long.parseLong(fields[1].trim()));
-            rating.setRating(Double.parseDouble(fields[2].trim()));
-            rating.setTimestamp(-1);
-            if (fields.length >= 4) {
-                rating.setTimestamp(Long.parseLong(fields[3].trim()));
-            }
-
-            return rating;
-        }
-
-        return null;
-    }
-
-    @Override
-    public Rating copy(Rating r) {
-        return Ratings.copyBuilder(r).build();
-    }
-    //CHECKSTYLE:ON
 }
