@@ -68,6 +68,19 @@ public final class History {
     }
 
     /**
+     * Create an empty history for a particular user.
+     * @param id The user ID.
+     * @param events The events.
+     * @param <E> The type of event in the history.
+     * @return An empty history for the user.
+     */
+    @Nonnull
+    public static <E extends Event> UserHistory<E> forUser(long id, E... events) {
+        List<E> list = ImmutableList.copyOf(events);
+        return new BasicUserHistory<E>(id, list);
+    }
+
+    /**
      * Create an event collection for a particular item.
      * @param id The item ID.
      * @param events The events.
