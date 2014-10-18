@@ -27,9 +27,10 @@ import java.io.File;
 import java.lang.annotation.*;
 
 /**
- * Item list file for {@link SimpleFileItemDAOProvider}.
+ * Item list file for {@link org.grouplens.lenskit.data.text.SimpleFileItemDAOProvider}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 2.1
  */
 @Qualifier
 @Parameter(File.class)

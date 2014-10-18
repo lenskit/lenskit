@@ -30,6 +30,7 @@ import java.lang.annotation.*;
  * Rating file for {@link SimpleFileRatingDAO}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 2.1
  */
 @Qualifier
 @Parameter(File.class)
