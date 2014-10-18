@@ -31,6 +31,7 @@ import java.lang.annotation.*;
  * Field separator for delimited text files.  Controls, for example, {@link org.grouplens.lenskit.data.dao.SimpleFileRatingDAO}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 2.1
  */
 @Qualifier
 @Parameter(String.class)
