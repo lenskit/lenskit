@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+import org.grouplens.grapht.annotation.AliasFor;
 import org.grouplens.lenskit.core.Parameter;
 
 import javax.inject.Qualifier;
@@ -31,9 +32,11 @@ import java.lang.annotation.*;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 2.1
+ * @deprecated Use {@link org.grouplens.lenskit.data.text} instead.
  */
 @Qualifier
-@Parameter(File.class)
+@AliasFor(org.grouplens.lenskit.data.text.ItemFile.class)
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.METHOD})
 @Documented

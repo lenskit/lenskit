@@ -18,27 +18,39 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.dao;
+package org.grouplens.lenskit.data.text;
 
-import org.grouplens.grapht.annotation.AliasFor;
-import org.grouplens.lenskit.core.Parameter;
+import org.grouplens.lenskit.data.dao.DataAccessException;
+import org.grouplens.lenskit.data.dao.ItemFile;
+import org.grouplens.lenskit.data.dao.ItemListItemDAO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.inject.Qualifier;
+import javax.inject.Inject;
+import javax.inject.Provider;
 import java.io.File;
-import java.lang.annotation.*;
+import java.io.IOException;
 
 /**
- * User list file for {@link org.grouplens.lenskit.data.text.SimpleFileUserDAOProvider}.
+ * Provider for {@link org.grouplens.lenskit.data.dao.ItemListItemDAO} that reads a list of item IDs from a file, one per line.
  *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 2.1
- * @deprecated Use {@link org.grouplens.lenskit.data.text} instead.
  */
-@Qualifier
-@AliasFor(org.grouplens.lenskit.data.text.UserFile.class)
-@Deprecated
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER, ElementType.METHOD})
-@Documented
-public @interface UserFile {
+public class SimpleFileItemDAOProvider implements Provider<ItemListItemDAO> {
+    private static final Logger logger = LoggerFactory.getLogger(SimpleFileItemDAOProvider.class);
+    private final File itemFile;
+
+    @Inject
+    public SimpleFileItemDAOProvider(@ItemFile File file) {
+        itemFile = file;
+    }
+
+    @Override
+    public ItemListItemDAO get() {
+        try {
+            return ItemListItemDAO.fromFile(itemFile);
+        } catch (IOException e) {
+            throw new DataAccessException("error reading " + itemFile, e);
+        }
+    }
 }
