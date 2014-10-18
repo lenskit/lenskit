@@ -46,6 +46,8 @@ task ciPublish {
     description "Runs CI publication tasks (not on Travis)."
 }
 
+apply plugin: 'base'
+
 allprojects { project ->
     group 'org.grouplens.lenskit'
     version '2.2-SNAPSHOT'
