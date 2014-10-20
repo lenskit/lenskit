@@ -21,20 +21,15 @@
 package org.grouplens.lenskit.test;
 
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
-import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.text.SimpleFileRatingDAO;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.junit.Before;
 import org.junit.internal.AssumptionViolatedException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.List;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
 

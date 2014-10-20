@@ -20,22 +20,21 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import org.grouplens.grapht.annotation.DefaultString;
-import org.grouplens.lenskit.core.Parameter;
+import org.grouplens.grapht.annotation.AliasFor;
 
 import javax.inject.Qualifier;
-import java.io.File;
 import java.lang.annotation.*;
 
 /**
- * Field separator for delimited text files.  Controls, for example, {@link org.grouplens.lenskit.data.dao.SimpleFileRatingDAO}.
+ * Field separator for delimited text files.  Controls, for example, {@link org.grouplens.lenskit.data.text.SimpleFileRatingDAO}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 2.1
+ * @deprecated Use {@link org.grouplens.lenskit.data.text} instead.
  */
 @Qualifier
-@Parameter(String.class)
-@DefaultString("\t")
+@AliasFor(org.grouplens.lenskit.data.text.FieldSeparator.class)
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.METHOD})
 @Documented

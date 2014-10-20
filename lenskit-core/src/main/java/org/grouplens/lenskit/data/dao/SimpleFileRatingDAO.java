@@ -20,66 +20,40 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
-import com.google.common.hash.PrimitiveSink;
-import com.google.common.io.Closeables;
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.CompressionMode;
-import org.grouplens.lenskit.util.io.DescriptionWriter;
-import org.grouplens.lenskit.util.io.LKFileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.Comparator;
 
 /**
- * Rating-only data source backed by a simple delimited file.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @compat Public
+ * Deprecated alias for {@link org.grouplens.lenskit.data.text.SimpleFileRatingDAO}.
+ * @deprecated Use {@link org.grouplens.lenskit.data.text.SimpleFileRatingDAO} instead.
  */
-public class SimpleFileRatingDAO implements EventDAO, Describable {
-    private static final Logger logger = LoggerFactory.getLogger(SimpleFileRatingDAO.class);
-
-    private final File sourceFile;
-    private final String delimiter;
-    private final CompressionMode compression;
-
-    /**
-     * Create a DAO reading from the specified file/URL and delimiter.
-     *
-     * @param file      The file.
-     * @param delim     The delimiter to look for in the file.
-     * @param comp      Whether the input is compressed.
-     * @deprecated      use {@link #create(File, String, CompressionMode)} instead.
-     */
+@Deprecated
+@SuppressWarnings("deprecation")
+public class SimpleFileRatingDAO extends org.grouplens.lenskit.data.text.SimpleFileRatingDAO {
     @Deprecated
     public SimpleFileRatingDAO(File file, String delim, CompressionMode comp) {
-        sourceFile = file;
-        delimiter = delim;
-        compression = comp;
+        super(file, delim, comp);
     }
 
+    @Inject
+    public SimpleFileRatingDAO(@RatingFile File file, @FieldSeparator String delim) {
+        super(file, delim);
+    }
 
     /**
      * Create a DAO reading from the specified file/URL and delimiter.
+
      * Instead of a constructor, use a static constructor method.
      *
      * @param file      The file.
      * @param delim     The delimiter to look for in the file.
      * @param comp      Whether the input is compressed.
      * @return          A SimpleFileRatingDao Object
+     * @deprecated Use {@link org.grouplens.lenskit.data.text.SimpleFileRatingDAO#create(File, String, CompressionMode)} instead.
      */
+    @Deprecated
     public static SimpleFileRatingDAO create(File file, String delim, CompressionMode comp){
         SimpleFileRatingDAO sfrd = new SimpleFileRatingDAO(file,delim,comp);
         return sfrd;
@@ -87,87 +61,15 @@ public class SimpleFileRatingDAO implements EventDAO, Describable {
 
     /**
      * Create a DAO reading from the specified file and delimiter.
-     *
-     * @param file      The file.
-     * @param delim     The delimiter to look for in the file.
-     */
-    @Inject
-    public SimpleFileRatingDAO(@RatingFile File file, @FieldSeparator String delim) {
-        this(file, delim, CompressionMode.AUTO);
-    }
-
-    /**
-     * Create a DAO reading from the specified file and delimiter.
      * Instead of a constructor, use a static constructor method.
      *
      * @param file      The file.
      * @param delim     The delimiter to look for in the file.
      * @return          A SimpleFileRatingDao Object
+     * @deprecated Use {@link org.grouplens.lenskit.data.text.SimpleFileRatingDAO#create(File, String)} instead.
      */
+    @Deprecated
     public static SimpleFileRatingDAO create(File file, String delim){
         return create(file, delim, CompressionMode.AUTO);
-    }
-
-    public File getSourceFile() {
-        return sourceFile;
-    }
-
-    @Override
-    public Cursor<Event> streamEvents() {
-        return streamEvents(Event.class, SortOrder.ANY);
-    }
-
-    @Override
-    public <E extends Event> Cursor<E> streamEvents(Class<E> type) {
-        return streamEvents(type, SortOrder.ANY);
-    }
-
-    @SuppressWarnings({"PMD.AvoidCatchingThrowable", "unchecked"})
-    @Override
-    public <E extends Event> Cursor<E> streamEvents(Class<E> type, SortOrder order) {
-        // if they don't want ratings, they get nothing
-        if (!type.isAssignableFrom(Rating.class)) {
-            return Cursors.empty();
-        }
-
-        Comparator<Event> comp = order.getEventComparator();
-
-        Reader input = null;
-        final String name = sourceFile.getPath();
-        logger.debug("Opening {}", sourceFile.getPath());
-        try {
-            input = LKFileUtils.openInput(sourceFile, compression);
-
-            // failing to close buffer & cursor in event of unlikely errors is OK
-            BufferedReader buf;
-            buf = new BufferedReader(input);
-            Cursor<Rating> cursor;
-            cursor = new DelimitedTextRatingCursor(buf, name, delimiter);
-            if (comp == null) {
-                return (Cursor<E>) cursor;
-            } else {
-                return (Cursor<E>) Cursors.sort(cursor, comp);
-            }
-        } catch (Throwable th) {
-            // we got an exception, make sure we close the underlying reader since we won't be
-            // returning a closeable. Otherwise we might leak file handles.
-            if (input != null) {
-                try {
-                    Closeables.close(input, true);
-                } catch (IOException ioe) {
-                    // should never happen, we suppress exceptions
-                    throw new DataAccessException(ioe);
-                }
-            }
-            Throwables.propagateIfPossible(th);
-            throw new DataAccessException(th);
-        }
-    }
-
-    @Override
-    public void describeTo(DescriptionWriter descr) {
-        descr.putField("file", sourceFile.getAbsolutePath())
-             .putField("length", sourceFile.length())
-             .putField("mtime", sourceFile.lastModified());
     }
 }
