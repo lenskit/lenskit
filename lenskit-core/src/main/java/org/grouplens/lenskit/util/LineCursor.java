@@ -20,71 +20,52 @@
  */
 package org.grouplens.lenskit.util;
 
-import org.grouplens.lenskit.cursors.AbstractCursor;
+import com.google.common.base.Throwables;
+import org.grouplens.lenskit.cursors.AbstractPollingCursor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillCloseWhenClosed;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.util.regex.Pattern;
+import java.io.*;
 
 /**
- * Cursor that reads rows of delimited text from a scanner.
+ * Cursor that reads lines from a file.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-public class DelimitedTextCursor extends AbstractCursor<String[]> {
-    private LineCursor lines;
-    private Pattern delimiter;
+public class LineCursor extends AbstractPollingCursor<String> {
+    private BufferedReader input;
+    private int lineNumber = 0;
 
     /**
      * Construct a cursor reading text from a scanner with a regex delimiter.
      *
      * @param in    The input scanner.
-     * @param delim The delimiter.
      */
-    public DelimitedTextCursor(@WillCloseWhenClosed @Nonnull BufferedReader in,
-                               @Nonnull Pattern delim) {
-        lines = new LineCursor(in);
-        delimiter = delim;
-    }
-
-    /**
-     * Construct a cursor reading text from a scanner with a fixed delimiter.
-     *
-     * @param in    The scanner to read from.
-     * @param delim The delimiter string.
-     */
-    public DelimitedTextCursor(@WillCloseWhenClosed @Nonnull BufferedReader in,
-                               @Nonnull String delim) {
-        this(in, Pattern.compile(Pattern.quote(delim)));
+    public LineCursor(@WillCloseWhenClosed @Nonnull BufferedReader in) {
+        input = in;
     }
 
     /**
      * Construct a delimited text cursor from a file.
      *
      * @param file  The name of the file to read.
-     * @param delim The delimiter.
-     * @throws FileNotFoundException if {@var file} is not found.
+     * @throws java.io.FileNotFoundException if {@var file} is not found.
      */
-    public DelimitedTextCursor(File file, @Nonnull String delim) throws FileNotFoundException {
+    public LineCursor(File file) throws FileNotFoundException {
         // REVIEW This doesn't handle an error constructing the BufferedReader
-        this(new BufferedReader(new FileReader(file)), delim);
+        this(new BufferedReader(new FileReader(file)));
     }
 
     @Override
-    public boolean hasNext() {
-        return lines.hasNext();
-    }
-
-    @Nonnull
-    @Override
-    public String[] next() {
-        String str = lines.next();
-        return delimiter.split(str);
+    public String poll() {
+        try {
+            String line = input.readLine();
+            lineNumber++;
+            return line;
+        } catch (IOException e) {
+            throw new RuntimeException("error reading line", e);
+        }
     }
 
     /**
@@ -93,11 +74,15 @@ public class DelimitedTextCursor extends AbstractCursor<String[]> {
      * @return The number of the last line retrieved.
      */
     public int getLineNumber() {
-        return lines.getLineNumber();
+        return lineNumber;
     }
 
     @Override
     public void close() {
-        lines.close();
+        try {
+            input.close();
+        } catch (IOException ex) {
+            throw Throwables.propagate(ex);
+        }
     }
 }
