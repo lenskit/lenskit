@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.core;
 
+import org.grouplens.grapht.annotation.AliasFor;
+
 import javax.annotation.processing.*;
 import javax.inject.Qualifier;
 import javax.lang.model.SourceVersion;
@@ -125,6 +127,10 @@ public class LenskitAnnotationProcessor extends AbstractProcessor {
             Qualifier q = param.getAnnotation(Qualifier.class);
             if (q == null) {
                 warning(param, "parameter %s is not annotated as a qualifier", param);
+            }
+            AliasFor alias = param.getAnnotation(AliasFor.class);
+            if (alias != null) {
+                warning(param, "parameter %s is an alias (@Parameter should be on target)", param);
             }
         }
     }
