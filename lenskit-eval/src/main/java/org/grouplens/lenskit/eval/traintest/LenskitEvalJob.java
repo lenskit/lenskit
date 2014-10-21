@@ -39,6 +39,8 @@ import org.grouplens.lenskit.inject.RecommenderInstantiator;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -64,15 +66,21 @@ class LenskitEvalJob extends TrainTestJob {
     @Override
     protected void buildRecommender() throws RecommenderBuildException {
         Preconditions.checkState(recommender == null, "recommender already built");
+        logger.debug("Starting recommender build");
         DAGNode<Component, Dependency> graph;
         if (cache == null) {
+            logger.debug("Building directly without a cache");
             RecommenderInstantiator ri = RecommenderInstantiator.create(recommenderGraph);
             graph = ri.instantiate();
         } else {
+            logger.debug("Instantiating graph with a cache");
             try {
-                graph = NodeProcessors.processNodes(recommenderGraph,
-                                                    GraphtUtils.getShareableNodes(recommenderGraph),
-                                                    cache);
+                Set<DAGNode<Component, Dependency>> nodes = GraphtUtils.getShareableNodes(recommenderGraph);
+                logger.debug("resolving {} nodes", nodes.size());
+                graph = NodeProcessors.processNodes(recommenderGraph, nodes, cache);
+                logger.debug("graph went from {} to {} nodes",
+                             recommenderGraph.getReachableNodes().size(),
+                             graph.getReachableNodes().size());
             } catch (InjectionException e) {
                 logger.error("Error encountered while pre-processing algorithm components for sharing", e);
                 throw new RecommenderBuildException("Pre-processing of algorithm components for sharing failed.", e);
