@@ -80,6 +80,9 @@ allprojects { project ->
 
     tasks.withType(Javadoc).all { task ->
         task.options.encoding = 'UTF-8'
+        task.onlyIf {
+            !project.getConfigProperty('javadoc.skip', 'false').toBoolean()
+        }
     }
 
     extensions.create('git', GitExtension)
