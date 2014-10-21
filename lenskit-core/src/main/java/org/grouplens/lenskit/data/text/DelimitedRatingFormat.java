@@ -63,10 +63,7 @@ public class DelimitedRatingFormat implements EventFormat {
         return Rating.class;
     }
 
-    @Override
-    public Rating parse(String line) {
-        StrTokenizer tok = new StrTokenizer(line, delimiter);
-        RatingBuilder rb = Ratings.newBuilder();
+    private Rating parse(StrTokenizer tok, RatingBuilder rb) {
         rb.setUserId(Long.parseLong(tok.next()));
         rb.setItemId(Long.parseLong(tok.next()));
         rb.setRating(Double.parseDouble(tok.next()));
@@ -88,17 +85,31 @@ public class DelimitedRatingFormat implements EventFormat {
     }
 
     @Override
+    public Rating parse(String line) {
+        StrTokenizer tok = new StrTokenizer(line, delimiter);
+        RatingBuilder rb = Ratings.newBuilder();
+        return parse(tok, rb);
+    }
+
+    @Override
     public Object newContext() {
-        return null;
+        return new Context();
     }
 
     @Override
     public Rating parse(String line, Object context) {
-        return parse(line);
+        Context ctx = (Context) context;
+        ctx.tokenizer.reset(line);
+        return parse(ctx.tokenizer, ctx.builder);
     }
 
     @Override
     public Event copy(Event evt) {
         return evt;
+    }
+
+    private static class Context {
+        public final StrTokenizer tokenizer = new StrTokenizer();
+        public final RatingBuilder builder = new RatingBuilder();
     }
 }

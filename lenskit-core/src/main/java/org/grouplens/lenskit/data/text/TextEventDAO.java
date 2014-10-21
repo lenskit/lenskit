@@ -115,7 +115,7 @@ public class TextEventDAO implements EventDAO {
         @Nonnull
         @Override
         public Event next() {
-            return eventFormat.copy(fastNext());
+            return eventFormat.parse(lines.next());
         }
 
         @Nonnull
