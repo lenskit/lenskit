@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
 import org.grouplens.grapht.Component;
@@ -122,18 +123,7 @@ class ComponentCache implements NodeProcessor {
      * @param node A node that should be cached.
      */
     public void registerSharedNode(DAGNode<Component, Dependency> node) {
-        synchronized (cache) {
-            if (GraphtUtils.isShareable(node)) {
-                if (!cache.containsKey(node)) {
-                    logger.debug("enabling caching for {}", node);
-                    cache.put(node, new CacheEntry(node));
-                } else {
-                    logger.debug("{} already has a cache entry", node);
-                }
-            } else {
-                logger.debug("node {} not shareable, caching not enabled", node);
-            }
-        }
+        registerSharedNodes(ImmutableList.of(node));
     }
 
     Object instantiate(@Nonnull DAGNode<Component, Dependency> node) throws InjectionException {
@@ -161,7 +151,7 @@ class ComponentCache implements NodeProcessor {
             entry = cache.get(original);
         }
         if (entry == null) {
-            return node;
+            entry = new CacheEntry(node);
         }
 
         Component label = node.getLabel();
