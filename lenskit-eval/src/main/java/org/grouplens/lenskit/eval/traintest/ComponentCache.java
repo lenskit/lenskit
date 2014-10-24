@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
 import org.grouplens.grapht.Component;
@@ -105,7 +106,7 @@ class ComponentCache implements NodeProcessor {
                 if (GraphtUtils.isShareable(node)) {
                     if (!cache.containsKey(node)) {
                         logger.debug("enabling caching for {}", node);
-                        cache.put(node, new CacheEntry(node));
+                        cache.put(node, new CacheEntry(node, true));
                     } else {
                         logger.debug("{} already has a cache entry", node);
                     }
@@ -122,18 +123,7 @@ class ComponentCache implements NodeProcessor {
      * @param node A node that should be cached.
      */
     public void registerSharedNode(DAGNode<Component, Dependency> node) {
-        synchronized (cache) {
-            if (GraphtUtils.isShareable(node)) {
-                if (!cache.containsKey(node)) {
-                    logger.debug("enabling caching for {}", node);
-                    cache.put(node, new CacheEntry(node));
-                } else {
-                    logger.debug("{} already has a cache entry", node);
-                }
-            } else {
-                logger.debug("node {} not shareable, caching not enabled", node);
-            }
-        }
+        registerSharedNodes(ImmutableList.of(node));
     }
 
     Object instantiate(@Nonnull DAGNode<Component, Dependency> node) throws InjectionException {
@@ -161,7 +151,8 @@ class ComponentCache implements NodeProcessor {
             entry = cache.get(original);
         }
         if (entry == null) {
-            return node;
+            // don't save to disk if it isn't shared
+            entry = new CacheEntry(node, false);
         }
 
         Component label = node.getLabel();
@@ -196,12 +187,19 @@ class ComponentCache implements NodeProcessor {
 
     private class CacheEntry {
         private final String key;
+        private final boolean tryDisk;
         // reference *inside* optional so we don't GC the optional while keeping the object
         // this is null for uncached, empty for cached null
         private Optional<SoftReference<Object>> cachedObject;
 
-        public CacheEntry(DAGNode<Component, Dependency> n) {
+        /**
+         * Createa a cache entry.
+         * @param n The node.
+         * @param disk Whether to try to store on disk.
+         */
+        public CacheEntry(DAGNode<Component, Dependency> n, boolean disk) {
             key = makeNodeKey(n);
+            tryDisk = disk;
         }
 
         /**
@@ -227,7 +225,7 @@ class ComponentCache implements NodeProcessor {
             }
 
             File cacheFile = null;
-            if (cacheDir != null) {
+            if (tryDisk && cacheDir != null) {
                 cacheFile = new File(cacheDir, key + ".dat.gz");
                 if (cacheFile.exists()) {
                     logger.debug("reading object for {} from cache (key {})",

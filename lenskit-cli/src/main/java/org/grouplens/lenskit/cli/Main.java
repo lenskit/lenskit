@@ -22,8 +22,11 @@ package org.grouplens.lenskit.cli;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.*;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -34,6 +37,7 @@ import java.lang.reflect.InvocationTargetException;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class Main {
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
     public static void main(String[] args) {
         ArgumentParser parser =
                 ArgumentParsers.newArgumentParser("lenskit")
@@ -54,6 +58,16 @@ public class Main {
         try {
             Namespace options = parser.parseArgs(args);
             Logging.configureLogging(options);
+            Runtime rt = Runtime.getRuntime();
+            logger.info("Starting LensKit on Java {} from {}",
+                        SystemUtils.JAVA_VERSION, SystemUtils.JAVA_VENDOR);
+            logger.debug("Using VM '{}' version {} from {}",
+                         SystemUtils.JAVA_VM_NAME,
+                         SystemUtils.JAVA_VM_VERSION,
+                         SystemUtils.JAVA_VM_VENDOR);
+            logger.debug("Memory limit of {} MiB",
+                         rt.maxMemory() >> 20);
+            logger.debug("Have {} processors", rt.availableProcessors());
             Command cmd = getCommand(options);
             cmd.execute();
         } catch (ArgumentParserException e) {

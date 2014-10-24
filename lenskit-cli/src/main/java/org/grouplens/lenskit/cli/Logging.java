@@ -95,6 +95,7 @@ public final class Logging {
             String lstr = options.getString("log_level");
             Level logLevel = Level.toLevel(lstr, Level.INFO);
             FileAppender<ILoggingEvent> fileOutput = new FileAppender<ILoggingEvent>();
+            fileOutput.setAppend(false);
             fileOutput.setContext(context);
             fileOutput.setFile(logFile.getAbsolutePath());
             PatternLayoutEncoder filePat = new PatternLayoutEncoder();

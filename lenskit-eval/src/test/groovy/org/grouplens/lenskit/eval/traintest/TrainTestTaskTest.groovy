@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.traintest
 
+import com.google.common.base.Throwables
 import com.google.common.collect.Sets
 import com.google.common.io.Closer
 import org.apache.commons.lang3.tuple.Pair
@@ -287,8 +288,11 @@ class TrainTestTaskTest {
             command.execute()
             fail("command with bad ratings should fail");
         } catch (TaskExecutionException e) {
-            assertThat(e.cause, anyOf(instanceOf(DataAccessException),
-                                      instanceOf(IOException)))
+            def chain = Throwables.getCausalChain(e)
+            // must have a data access exception involved
+            assertThat(chain, hasItem(instanceOf(DataAccessException)))
+            // and a file-not-found exception
+            assertThat(chain, hasItem(instanceOf(FileNotFoundException)))
         }
     }
 
