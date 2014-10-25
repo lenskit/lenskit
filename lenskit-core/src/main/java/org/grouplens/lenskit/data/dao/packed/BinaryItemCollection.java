@@ -46,7 +46,7 @@ class BinaryItemCollection extends AbstractCollection<Rating> implements ItemEve
 
     @Override
     public Iterator<Rating> fastIterator() {
-        return ratings.fastIterator();
+        return iterator();
     }
 
     @Override

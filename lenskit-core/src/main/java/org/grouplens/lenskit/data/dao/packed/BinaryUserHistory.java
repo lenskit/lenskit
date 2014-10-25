@@ -60,7 +60,7 @@ class BinaryUserHistory extends AbstractUserHistory<Rating> implements FastItera
 
     @Override
     public Iterator<Rating> fastIterator() {
-        return ratings.fastIterator();
+        return iterator();
     }
 
     @Override

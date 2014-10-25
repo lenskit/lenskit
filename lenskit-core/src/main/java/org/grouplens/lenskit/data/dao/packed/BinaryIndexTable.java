@@ -22,17 +22,18 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.collections.CopyingFastCollection;
+import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -136,26 +137,27 @@ class BinaryIndexTable implements Serializable {
         throw new InvalidObjectException("index table must use serial proxy");
     }
 
-    private class EntryCollection extends CopyingFastCollection<Pair<Long,IntList>> {
+    @SuppressWarnings("deprecation")
+    private class EntryCollection extends AbstractCollection<Pair<Long, IntList>> implements FastCollection<Pair<Long,IntList>> {
         @Override
         public int size() {
             return keys.domainSize();
         }
 
         @Override
-        public Iterator<Pair<Long, IntList>> fastIterator() {
-            return new FastIterImpl();
+        @Nonnull
+        public Iterator<Pair<Long, IntList>> iterator() {
+            return new IterImpl();
         }
 
         @Override
-        protected Pair<Long, IntList> copy(Pair<Long, IntList> elt) {
-            return Pair.of(elt.getLeft(), elt.getRight());
+        public Iterator<Pair<Long, IntList>> fastIterator() {
+            return iterator();
         }
     }
 
-    private class FastIterImpl implements Iterator<Pair<Long,IntList>> {
+    private class IterImpl implements Iterator<Pair<Long,IntList>> {
         int pos = 0;
-        MutablePair<Long,IntList> pair = new MutablePair<Long, IntList>();
 
         @Override
         public boolean hasNext() {
@@ -166,9 +168,7 @@ class BinaryIndexTable implements Serializable {
         public Pair<Long, IntList> next() {
             int i = pos;
             pos += 1;
-            pair.setLeft(keys.getKey(i));
-            pair.setRight(getEntryInternal(i));
-            return pair;
+            return Pair.of(keys.getKey(i), getEntryInternal(i));
         }
 
         @Override

@@ -82,7 +82,7 @@ class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
 
     @Override
     public Iterator<IndexedPreference> fastIterator() {
-        return new FastIteratorImpl();
+        return iterator();
     }
 
     private final class IteratorImpl implements Iterator<IndexedPreference> {
@@ -101,33 +101,6 @@ class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
         public IndexedPreference next() {
             final int index = iter.nextInt();
             return data.preference(index);
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    private final class FastIteratorImpl implements Iterator<IndexedPreference> {
-        private final IntIterator iter;
-        private PackedPreferenceData.IndirectPreference preference;
-
-        FastIteratorImpl() {
-            iter = indices.iterator();
-            preference = data.preference(0);
-        }
-
-        @Override
-        public boolean hasNext() {
-            return iter.hasNext();
-        }
-
-        @Override
-        public IndexedPreference next() {
-            preference.setIndex(iter.nextInt());
-            assert preference.isValid();
-            return preference;
         }
 
         @Override

@@ -84,33 +84,11 @@ class BinaryRatingList extends AbstractList<Rating> implements FastIterable<Rati
 
     @Override
     public Iterator<Rating> fastIterator() {
-        return new FastIterImpl();
+        return iterator();
     }
 
     public Cursor<Rating> cursor() {
         return new CursorImpl();
-    }
-
-    private class FastIterImpl implements Iterator<Rating> {
-        private MutableRating rating = new MutableRating();
-        private IntIterator posIter = positions.iterator();
-
-        @Override
-        public boolean hasNext() {
-            return posIter.hasNext();
-        }
-
-        @Override
-        public Rating next() {
-            int position = posIter.nextInt();
-            populateRating(position, rating);
-            return rating;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("remove not supported");
-        }
     }
 
     private class CursorImpl extends AbstractCursor<Rating> {
