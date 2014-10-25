@@ -97,7 +97,7 @@ public class Indexer implements Index {
         }
 
         MutableSparseVector newSparseVector = MutableSparseVector.create(ids);
-        for(VectorEntry e : newSparseVector.fast(State.EITHER)){
+        for(VectorEntry e : newSparseVector.view(State.EITHER)){
             final int iid = getIndex(e.getKey());
             newSparseVector.set(e, values[iid]);
         }

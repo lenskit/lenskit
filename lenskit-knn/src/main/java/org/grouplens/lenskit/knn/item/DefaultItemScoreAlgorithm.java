@@ -66,7 +66,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
         MutableSparseVector sizeChannel = scores.getOrAddChannelVector(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL);
         sizeChannel.fill(0);
         // for each item, compute its prediction
-        for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
+        for (VectorEntry e : scores.view(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
 
             // find all potential neighbors

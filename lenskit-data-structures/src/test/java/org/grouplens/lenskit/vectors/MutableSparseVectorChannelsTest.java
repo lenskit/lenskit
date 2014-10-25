@@ -255,11 +255,11 @@ public class MutableSparseVectorChannelsTest {
 
         // The channel should shrink to only 2 items total, one of
         // which is set
-        assertThat(Iterators.size(msvShrunk.getChannelVector(fooSymbol).fast(VectorEntry.State.EITHER).iterator()), equalTo(2));
+        assertThat(Iterators.size(msvShrunk.getChannelVector(fooSymbol).view(VectorEntry.State.EITHER).iterator()), equalTo(2));
 
-        assertThat(Iterators.size(msvShrunk.getChannelVector(fooSymbol).fast(VectorEntry.State.UNSET).iterator()), equalTo(1));
-        assertThat(Iterators.size(simple.getChannelVector(fooSymbol).fast(VectorEntry.State.UNSET).iterator()), equalTo(1));
-        assertThat(Iterators.size(simple.getChannelVector(fooSymbol).fast(VectorEntry.State.SET).iterator()), equalTo(2));
+        assertThat(Iterators.size(msvShrunk.getChannelVector(fooSymbol).view(VectorEntry.State.UNSET).iterator()), equalTo(1));
+        assertThat(Iterators.size(simple.getChannelVector(fooSymbol).view(VectorEntry.State.UNSET).iterator()), equalTo(1));
+        assertThat(Iterators.size(simple.getChannelVector(fooSymbol).view(VectorEntry.State.SET).iterator()), equalTo(2));
     }
 
     // Test that VectorEntrys can safely set values in a channel

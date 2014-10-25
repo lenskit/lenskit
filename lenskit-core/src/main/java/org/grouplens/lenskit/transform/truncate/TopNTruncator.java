@@ -59,7 +59,7 @@ public class TopNTruncator implements VectorTruncator, Serializable {
         }
 
         TopNScoredItemAccumulator accumulator = new TopNScoredItemAccumulator(n);
-        for (VectorEntry e : v.fast(VectorEntry.State.SET)) {
+        for (VectorEntry e : v.view(VectorEntry.State.SET)) {
             accumulator.put(e.getKey(), e.getValue());
         }
         MutableSparseVector truncated = accumulator.finishVector();

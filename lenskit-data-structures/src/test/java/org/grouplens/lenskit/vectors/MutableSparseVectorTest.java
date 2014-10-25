@@ -494,17 +494,17 @@ public class MutableSparseVectorTest extends SparseVectorTestCommon {
 
         simple.unset(8);
         assertThat(Iterators.size(simple.iterator()), equalTo(2));
-        assertThat(Iterators.size(simple.fast(VectorEntry.State.EITHER)
+        assertThat(Iterators.size(simple.view(VectorEntry.State.EITHER)
             .iterator()), equalTo(3));
-        assertThat(Iterators.size(simple.fast(VectorEntry.State.UNSET)
+        assertThat(Iterators.size(simple.view(VectorEntry.State.UNSET)
                                         .iterator()), equalTo(1));
 
         MutableSparseVector msvShrunk = simple.shrinkDomain();
-        assertThat(Iterators.size(msvShrunk.fast(VectorEntry.State.UNSET)
+        assertThat(Iterators.size(msvShrunk.view(VectorEntry.State.UNSET)
                                            .iterator()), equalTo(0));
-        assertThat(Iterators.size(msvShrunk.fast(VectorEntry.State.EITHER)
+        assertThat(Iterators.size(msvShrunk.view(VectorEntry.State.EITHER)
                                            .iterator()), equalTo(2));
-        assertThat(Iterators.size(msvShrunk.fast(VectorEntry.State.SET)
+        assertThat(Iterators.size(msvShrunk.view(VectorEntry.State.SET)
                                            .iterator()), equalTo(2));
     }
 

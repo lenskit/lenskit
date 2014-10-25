@@ -186,7 +186,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         int tailSize = featureCount - feature - 1;
         AVector utail = uprefs.subVector(tailStart, tailSize);
         MutableSparseVector tails = MutableSparseVector.create(ratings.keySet());
-        for (VectorEntry e: tails.fast(VectorEntry.State.EITHER)) {
+        for (VectorEntry e: tails.view(VectorEntry.State.EITHER)) {
             AVector ivec = model.getItemVector(e.getKey());
             if (ivec == null) {
                 // FIXME Do this properly

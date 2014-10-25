@@ -43,7 +43,7 @@ public class ThresholdTruncatorTest {
         truncator.truncate(v);
 
         int numSeen = 0;
-        for (VectorEntry e : v.fast(VectorEntry.State.SET)) {
+        for (VectorEntry e : v.view(VectorEntry.State.SET)) {
             assertThat(e.getKey(), equalTo(4L));
             assertThat(e.getValue(), closeTo(4.0, EPSILON));
             numSeen++;

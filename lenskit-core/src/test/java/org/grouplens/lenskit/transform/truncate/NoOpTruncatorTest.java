@@ -42,7 +42,7 @@ public class NoOpTruncatorTest {
         truncator.truncate(v);
 
         long i = 1;
-        for (VectorEntry e : v.fast(VectorEntry.State.SET)) {
+        for (VectorEntry e : v.view(VectorEntry.State.SET)) {
             assertThat(e.getKey(), equalTo(i));
             assertThat(e.getValue(), closeTo(i, EPSILON));
             i++;

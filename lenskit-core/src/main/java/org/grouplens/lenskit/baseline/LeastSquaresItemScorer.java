@@ -76,7 +76,7 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
 
     @Override
     public void score(long user, MutableSparseVector output) {
-        for (VectorEntry e : output.fast(State.EITHER)) {
+        for (VectorEntry e : output.view(State.EITHER)) {
             double score = mean + userOffsets.get(user, 0) + itemOffsets.get(e.getKey(), 0);
             output.set(e, score);
         }

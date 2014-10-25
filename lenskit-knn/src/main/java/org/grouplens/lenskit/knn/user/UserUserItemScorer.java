@@ -118,7 +118,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
 
         MutableSparseVector sizeChan = scores.addChannelVector(NEIGHBORHOOD_SIZE_SYMBOL);
         MutableSparseVector weightChan = scores.addChannelVector(NEIGHBORHOOD_WEIGHT_SYMBOL);
-        for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
+        for (VectorEntry e : scores.view(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
             double sum = 0;
             double weight = 0;

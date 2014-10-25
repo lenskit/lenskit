@@ -88,7 +88,7 @@ public final class Vectors {
         Preconditions.checkArgument(values.length == map.size(),
                                     "values array longer than id mapping");
         MutableSparseVector msv = MutableSparseVector.create(map.getIdList());
-        for (VectorEntry e: msv.fast(VectorEntry.State.EITHER)) {
+        for (VectorEntry e: msv.view(VectorEntry.State.EITHER)) {
             msv.set(e, values[map.getIndex(e.getKey())]);
         }
         return msv;

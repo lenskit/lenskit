@@ -333,7 +333,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
             distChannel = predictions.addChannel(RATING_PROBABILITY_CHANNEL);
         }
 
-        for (VectorEntry e: predictions.fast(VectorEntry.State.EITHER)) {
+        for (VectorEntry e: predictions.view(VectorEntry.State.EITHER)) {
             long iid = e.getKey();
             double score = scores.get(iid);
             params.getProbDistribution(score, probabilities);

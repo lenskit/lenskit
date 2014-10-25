@@ -53,7 +53,7 @@ public class WeightedSlopeOneItemScorer extends SlopeOneItemScorer {
         }
         SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
-        for (VectorEntry e : scores.fast(VectorEntry.State.EITHER)) {
+        for (VectorEntry e : scores.view(VectorEntry.State.EITHER)) {
             final long predicteeItem = e.getKey();
             if (!ratings.containsKey(predicteeItem)) {
                 double total = 0;
