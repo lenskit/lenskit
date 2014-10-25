@@ -23,10 +23,6 @@ package org.grouplens.lenskit.scored;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import it.unimi.dsi.fastutil.objects.Reference2DoubleArrayMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
@@ -34,9 +30,7 @@ import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import javax.annotation.Nonnull;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Use a {@code ScoredId.Builder} to instantiate new {@code ScoredId} objects.

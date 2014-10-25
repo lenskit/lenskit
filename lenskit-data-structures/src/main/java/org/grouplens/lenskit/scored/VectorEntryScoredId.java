@@ -51,8 +51,9 @@ class VectorEntryScoredId extends AbstractScoredId {
      * Construct a new vector entry scored ID.
      * @param v The vector whose entries will back this scored ID.
      */
-    public VectorEntryScoredId(SparseVector v) {
+    public VectorEntryScoredId(SparseVector v, VectorEntry e) {
         vector = v;
+        ent = e;
     }
 
     @Override
@@ -128,14 +129,5 @@ class VectorEntryScoredId extends AbstractScoredId {
     @Override
     public boolean hasChannel(TypedSymbol<?> s) {
         return vector.hasChannel(s) && vector.getChannel(s).containsKey(ent.getKey());
-    }
-
-    /**
-     * Set the entry backing this scored ID.
-     * @param e The entry backing the scored ID.
-     */
-    public void setEntry(VectorEntry e) {
-        Preconditions.checkArgument(e.getVector() == vector, "entry must be associated with vector");
-        ent = e;
     }
 }
