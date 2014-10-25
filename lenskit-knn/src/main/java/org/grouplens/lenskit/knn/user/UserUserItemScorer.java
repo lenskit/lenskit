@@ -174,7 +174,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
 
         int neighborsUsed = 0;
         for (Neighbor nbr: neighborFinder.getCandidateNeighbors(user, items)) {
-            for (VectorEntry e: nbr.vector.fast()) {
+            for (VectorEntry e: nbr.vector) {
                 final long item = e.getKey();
                 PriorityQueue<Neighbor> heap = heaps.get(item);
                 if (heap != null) {

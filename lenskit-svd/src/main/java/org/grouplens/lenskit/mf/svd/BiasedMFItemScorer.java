@@ -79,7 +79,7 @@ public class BiasedMFItemScorer extends AbstractItemScorer {
         }
 
         // scores is now prepopulated with biases, vector is loaded
-        for (VectorEntry e: scores.fast()) {
+        for (VectorEntry e: scores) {
             long item = e.getKey();
             AVector ivec = model.getItemVector(item);
             if (ivec != null) {

@@ -119,7 +119,7 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
                 MutableSparseVector normed = summary.mutableCopy();
                 normalizer.normalize(uid, summary, normed);
 
-                for (VectorEntry rating : normed.fast()) {
+                for (VectorEntry rating : normed) {
                     final long item = rating.getKey();
                     // get the item's rating accumulator
                     ScoredIdListBuilder ivect = itemRatings.get(item);

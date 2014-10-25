@@ -78,7 +78,7 @@ public class PrecomputedItemScorer extends AbstractItemScorer implements Seriali
                 msv = new Long2DoubleOpenHashMap();
                 userData.put(user, msv);
             }
-            for (VectorEntry e: usv.fast()) {
+            for (VectorEntry e: usv) {
                 msv.put(e.getKey(), e.getValue());
             }
             return this;

@@ -239,7 +239,7 @@ public abstract class SparseVectorTestCommon {
 
     @Test
     public void testFast() {
-        assertThat(emptyVector().fast(), notNullValue());
+        assertThat(emptyVector(), notNullValue());
     }
 
     @Test

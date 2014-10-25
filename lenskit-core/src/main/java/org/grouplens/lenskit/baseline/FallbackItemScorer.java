@@ -66,7 +66,7 @@ public class FallbackItemScorer extends AbstractItemScorer {
 
         // FIXME Make this faster
         Long2ObjectMap<ScoreSource> chan = output.getOrAddChannel(SCORE_SOURCE_SYMBOL);
-        for (VectorEntry e: output.fast()) {
+        for (VectorEntry e: output) {
             long key = e.getKey();
             ScoreSource source = ScoreSource.PRIMARY;
             if (fallbackKeys.contains(key)) {

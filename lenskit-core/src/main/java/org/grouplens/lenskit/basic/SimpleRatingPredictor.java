@@ -113,7 +113,7 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
 
         // FIXME Make this faster
         Long2ObjectMap<ScoreSource> chan = scores.getOrAddChannel(PREDICTION_SOURCE_SYMBOL);
-        for (VectorEntry e: scores.fast()) {
+        for (VectorEntry e: scores) {
             long key = e.getKey();
             ScoreSource source = ScoreSource.PRIMARY;
             if (fallbackKeys.contains(key)) {

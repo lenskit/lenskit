@@ -220,7 +220,7 @@ class ExternalEvalJob extends TrainTestJob {
         try {
             Cursor<Rating> ratings = dao.streamEvents(Rating.class);
             try {
-                for (Rating r: ratings.fast()) {
+                for (Rating r: ratings) {
                     Preference p = r.getPreference();
                     if (p != null) {
                         row[0] = r.getUserId();

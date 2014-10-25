@@ -65,7 +65,7 @@ public class MAEPredictMetric extends AbstractMetric<MAEPredictMetric.Context, M
         }
         double err = 0;
         int n = 0;
-        for (VectorEntry e : predictions.fast()) {
+        for (VectorEntry e : predictions) {
             if (Double.isNaN(e.getValue())) {
                 continue;
             }

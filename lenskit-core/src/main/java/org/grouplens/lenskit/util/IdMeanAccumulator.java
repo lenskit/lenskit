@@ -90,7 +90,7 @@ public final class IdMeanAccumulator {
      */
     public ImmutableSparseVector computeIdMeans(double offset, double damping) {
         MutableSparseVector v = MutableSparseVector.create(sums);
-        for (VectorEntry e: v.fast()) {
+        for (VectorEntry e: v) {
             final int n = counts.get(e.getKey());
             // if n <= 0, how did we get this item?
             assert n > 0;

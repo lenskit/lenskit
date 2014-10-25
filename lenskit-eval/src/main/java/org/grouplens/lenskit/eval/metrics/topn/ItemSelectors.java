@@ -247,7 +247,7 @@ public final class ItemSelectors {
         public LongSet select(TestUser user) {
             LongSet items = new LongOpenHashSet();
             SparseVector vec = user.getTestRatings();
-            for (VectorEntry e: vec.fast()) {
+            for (VectorEntry e: vec) {
                 if (matcher.matches(e.getValue())) {
                     items.add(e.getKey());
                 }

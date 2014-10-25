@@ -88,7 +88,7 @@ public class Predict implements Command {
                 }
             }
         }
-        for (VectorEntry e: preds.fast()) {
+        for (VectorEntry e: preds) {
             System.out.format("  %d: %.3f", e.getKey(), e.getValue());
             if (channel != null) {
                 System.out.format(" (%s)", channel.get(e.getKey()));

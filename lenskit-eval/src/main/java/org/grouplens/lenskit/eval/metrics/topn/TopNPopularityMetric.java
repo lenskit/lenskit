@@ -72,7 +72,7 @@ public class TopNPopularityMetric extends AbstractMetric<TopNPopularityMetric.Co
     private Long2IntMap computePop(EventDAO dao) {
 
         Long2ObjectOpenHashMap<LongSet> watchingUsers = new Long2ObjectOpenHashMap<LongSet>();
-        for (Rating r : dao.streamEvents(Rating.class).fast()) {
+        for (Rating r : dao.streamEvents(Rating.class)) {
             long item = r.getItemId();
             long user = r.getUserId();
             if (! watchingUsers.containsKey(item)) {

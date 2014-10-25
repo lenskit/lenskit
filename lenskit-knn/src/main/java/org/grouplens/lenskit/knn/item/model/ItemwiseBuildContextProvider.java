@@ -89,7 +89,7 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
         Long2ObjectMap<SparseVector> itemVectors = new Long2ObjectOpenHashMap<SparseVector>(1000);
         Cursor<ItemEventCollection<Event>> itemCursor = itemEventDAO.streamEventsByItem();
         try {
-            for (ItemEventCollection<Event> item: itemCursor.fast()) {
+            for (ItemEventCollection<Event> item: itemCursor) {
                 if (logger.isTraceEnabled()) {
                     logger.trace("processing {} ratings for item {}", item.size(), item);
                 }
@@ -98,7 +98,7 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
                                                      .toList();
                 MutableSparseVector vector = Ratings.itemRatingVector(ratings);
                 normalizer.normalize(item.getItemId(), vector, vector);
-                for (VectorEntry e: vector.fast()) {
+                for (VectorEntry e: vector) {
                     long user = e.getKey();
                     LongList uis = userItems.get(user);
                     if (uis == null) {

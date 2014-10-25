@@ -84,7 +84,7 @@ public final class PrefetchingItemDAO implements ItemDAO, Describable {
             LongSet items = new LongOpenHashSet();
             Cursor<Event> events = eventDAO.streamEvents();
             try {
-                for (Event e: events.fast()) {
+                for (Event e: events) {
                     items.add(e.getItemId());
                 }
             } finally {

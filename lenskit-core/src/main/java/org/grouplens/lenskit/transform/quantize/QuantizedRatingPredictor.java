@@ -59,7 +59,7 @@ public class QuantizedRatingPredictor extends AbstractRatingPredictor implements
     }
 
     private void quantize(MutableSparseVector scores) {
-        for (VectorEntry e: scores.fast()) {
+        for (VectorEntry e: scores) {
             scores.set(e, quantizer.getIndexValue(quantizer.index(e.getValue())));
         }
     }

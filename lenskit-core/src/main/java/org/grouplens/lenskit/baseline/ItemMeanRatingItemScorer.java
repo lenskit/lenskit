@@ -88,7 +88,7 @@ public class ItemMeanRatingItemScorer extends AbstractItemScorer implements Seri
             Cursor<Rating> ratings = dao.streamEvents(Rating.class);
             try {
                 IdMeanAccumulator accum = new IdMeanAccumulator();
-                for (Rating r: ratings.fast()) {
+                for (Rating r: ratings) {
                     Preference p = r.getPreference();
                     if (p != null) {
                         accum.put(p.getItemId(), p.getValue());

@@ -94,7 +94,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
 
                 Cursor<Rating> ratings = dao.streamEvents(Rating.class);
                 int numRatings = 0;
-                for (Rating r : ratings.fast()) {
+                for (Rating r : ratings) {
                     Preference p = r.getPreference();
                     if (p != null) {
                         sum += p.getValue();
@@ -107,7 +107,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
                 ratings = dao.streamEvents(Rating.class);
                 sum = 0;
 
-                for (Rating r : ratings.fast()) {
+                for (Rating r : ratings) {
                     Preference p = r.getPreference();
                     if (p != null) {
                         double delta = mean - p.getValue();

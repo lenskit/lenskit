@@ -59,7 +59,7 @@ public class RMSEPredictMetric extends AbstractMetric<RMSEPredictMetric.Context,
         }
         double sse = 0;
         int n = 0;
-        for (VectorEntry e : predictions.fast()) {
+        for (VectorEntry e : predictions) {
             if (Double.isNaN(e.getValue())) {
                 continue;
             }

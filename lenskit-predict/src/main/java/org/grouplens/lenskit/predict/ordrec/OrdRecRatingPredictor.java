@@ -209,7 +209,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
             double dt1;
             // n is the number of iteration;
             for (int j = 0; j < iterationCount; j++ ) {
-                for (VectorEntry rating: ratings.fast()) {
+                for (VectorEntry rating: ratings) {
                     long iid = rating.getKey();
                     double score = scores.get(iid);
                     int r = quantizer.index(rating.getValue());

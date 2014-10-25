@@ -135,7 +135,7 @@ public final class PreferenceDomain implements Serializable {
     }
 
     public void clampVector(MutableSparseVector vec) {
-        for (VectorEntry ve : vec.fast()) {
+        for (VectorEntry ve : vec) {
             final double v = ve.getValue();
             vec.set(ve, clampValue(v));
         }

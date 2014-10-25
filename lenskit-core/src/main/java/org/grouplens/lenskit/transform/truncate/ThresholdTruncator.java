@@ -46,7 +46,7 @@ public class ThresholdTruncator implements VectorTruncator, Serializable {
 
     @Override
     public void truncate(MutableSparseVector v) {
-        for (VectorEntry e : v.fast()) {
+        for (VectorEntry e : v) {
             if (!threshold.retain(e.getValue())) {
                 v.unset(e);
             }

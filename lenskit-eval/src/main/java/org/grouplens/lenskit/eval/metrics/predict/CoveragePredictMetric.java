@@ -58,7 +58,7 @@ public class CoveragePredictMetric extends AbstractMetric<CoveragePredictMetric.
         }
         int n = 0;
         int good = 0;
-        for (VectorEntry e : ratings.fast()) {
+        for (VectorEntry e : ratings) {
             n += 1;
             if (predictions.containsKey(e.getKey())) {
                 good += 1;

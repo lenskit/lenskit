@@ -90,7 +90,7 @@ public final class PrefetchingUserDAO implements UserDAO, Describable {
             LongSet us = new LongOpenHashSet();
             Cursor<Event> events = eventDAO.streamEvents();
             try {
-                for (Event e: events.fast()) {
+                for (Event e: events) {
                     us.add(e.getUserId());
                 }
             } finally {

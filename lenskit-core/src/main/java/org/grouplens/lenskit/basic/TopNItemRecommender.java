@@ -114,7 +114,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
         }
 
         ScoredItemAccumulator accum = new TopNScoredItemAccumulator(n);
-        for (VectorEntry pred : scores.fast()) {
+        for (VectorEntry pred : scores) {
             final double v = pred.getValue();
             accum.put(pred.getKey(), v);
         }

@@ -68,7 +68,7 @@ public class PackedPreferenceSnapshotBuilder implements Provider<PackedPreferenc
         // old data for a user-item pair with new data.
         Cursor<Rating> ratings = dao.streamEvents(Rating.class, SortOrder.TIMESTAMP);
         try {
-            for (Rating r : ratings.fast()) {
+            for (Rating r : ratings) {
                 final long user = r.getUserId();
                 final long item = r.getItemId();
                 final Preference p = r.getPreference();
