@@ -30,6 +30,7 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 
 class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
@@ -93,7 +94,8 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
         return false;
     }
 
-    private class EntrySetImpl extends AbstractObjectSet<Entry<V>> implements FastEntrySet<V> {
+    private class EntrySetImpl extends AbstractObjectSet<Entry<V>> implements ObjectSet<Entry<V>> {
+        @Nonnull
         @Override
         public ObjectIterator<Entry<V>> iterator() {
             return new AbstractObjectIterator<Entry<V>>() {
@@ -116,25 +118,6 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
         public int size() {
             return Iterators.size(iterator());
         }
-
-        @Override
-        public ObjectIterator<Entry<V>> fastIterator() {
-            return new AbstractObjectIterator<Entry<V>>() {
-                IntIterator iter = keys.activeIndexIterator(false);
-                EntryImpl entry = new EntryImpl(-1);
-
-                @Override
-                public boolean hasNext() {
-                    return iter.hasNext();
-                }
-
-                @Override
-                public Entry<V> next() {
-                    entry.setIndex(iter.nextInt());
-                    return entry;
-                }
-            };
-        }
     }
 
     private class EntryImpl implements Entry<V> {
@@ -142,11 +125,6 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
 
         private EntryImpl(int idx) {
             assert idx < 0 || keys.indexIsActive(idx);
-            index = idx;
-        }
-
-        private void setIndex(int idx) {
-            assert keys.indexIsActive(idx);
             index = idx;
         }
 

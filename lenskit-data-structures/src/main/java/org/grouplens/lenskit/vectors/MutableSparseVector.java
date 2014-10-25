@@ -481,8 +481,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void addScaled(SparseVector v, double scale){
         checkFrozen();
-        Iterator<VectorEntry> i1 = fastIterator();
-        Iterator<VectorEntry> i2 = v.fastIterator();
+        Iterator<VectorEntry> i1 = iterator();
+        Iterator<VectorEntry> i2 = v.iterator();
 
         VectorEntry e1 = i1.hasNext() ? i1.next() : null;
         VectorEntry e2 = i2.hasNext() ? i2.next() : null;
@@ -518,8 +518,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void set(final SparseVector other) {
         checkFrozen();
-        Iterator<VectorEntry> i1 = fastIterator(VectorEntry.State.EITHER);
-        Iterator<VectorEntry> i2 = other.fastIterator();
+        Iterator<VectorEntry> i1 = iterator(VectorEntry.State.EITHER);
+        Iterator<VectorEntry> i2 = other.iterator();
 
         VectorEntry e1 = i1.hasNext() ? i1.next() : null;
         VectorEntry e2 = i2.hasNext() ? i2.next() : null;
@@ -561,8 +561,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void multiply(SparseVector other) {
         checkFrozen();
-        Iterator<VectorEntry> i1 = fastIterator();
-        Iterator<VectorEntry> i2 = other.fastIterator();
+        Iterator<VectorEntry> i1 = iterator();
+        Iterator<VectorEntry> i2 = other.iterator();
 
         VectorEntry e1 = i1.hasNext() ? i1.next() : null;
         VectorEntry e2 = i2.hasNext() ? i2.next() : null;

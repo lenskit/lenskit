@@ -36,6 +36,8 @@ import org.grouplens.lenskit.symbols.TypedSymbol;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.util.AbstractCollection;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -216,9 +218,11 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @see #fastIterator(VectorEntry.State)
      * @see it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet#fastIterator()
      *      Long2DoubleMap.FastEntrySet.fastIterator()
+     * @deprecated Fast iteration is going away.
      */
+    @Deprecated
     public Iterator<VectorEntry> fastIterator() {
-        return fastIterator(VectorEntry.State.SET);
+        return iterator();
     }
 
     boolean isMutable() {
@@ -233,25 +237,11 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @see it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet#fastIterator()
      *      Long2DoubleMap.FastEntrySet.fastIterator()
      * @since 0.11
+     * @deprecated Fast iteration is going away.
      */
+    @Deprecated
     public Iterator<VectorEntry> fastIterator(VectorEntry.State state) {
-        IntIterator iter;
-        switch (state) {
-        case SET:
-            iter = keys.activeIndexIterator(isMutable());
-            break;
-        case UNSET: {
-            iter = keys.clone().invert().activeIndexIterator(false);
-            break;
-        }
-        case EITHER: {
-            iter = IntIterators.fromTo(0, keys.domainSize());
-            break;
-        }
-        default: // should be impossible
-            throw new IllegalArgumentException("invalid entry state");
-        }
-        return new FastIterImpl(iter, state);
+        return iterator(state);
     }
 
     /**
@@ -260,9 +250,11 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      *
      * @return This object wrapped in an iterable that returns a fast iterator.
      * @see #fastIterator()
+     * @deprecated Fast iteration is going away.
      */
+    @Deprecated
     public Iterable<VectorEntry> fast() {
-        return fast(VectorEntry.State.SET);
+        return view(VectorEntry.State.SET);
     }
 
     /**
@@ -272,14 +264,11 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      * @return This object wrapped in an iterable that returns a fast iterator.
      * @see #fastIterator(VectorEntry.State)
      * @since 0.11
+     * @deprecated Fast iteration is going away.
      */
+    @Deprecated
     public Iterable<VectorEntry> fast(final VectorEntry.State state) {
-        return new Iterable<VectorEntry>() {
-            @Override
-            public Iterator<VectorEntry> iterator() {
-                return fastIterator(state);
-            }
-        };
+        return view(state);
     }
 
     // The default iterator for this SparseVector iterates over
@@ -289,43 +278,43 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     // they will mutate, at some cost in speed.
     @Override
     public Iterator<VectorEntry> iterator() {
-        return new IterImpl();
+        return new IterImpl(VectorEntry.State.SET);
+    }
+
+    public Iterator<VectorEntry> iterator(final VectorEntry.State state) {
+        return new IterImpl(state);
+    }
+
+    /**
+     * Get a collection view of a vector entry.
+     * @param state The state of entries to view.
+     * @return A collection of vector entries.
+     */
+    public Collection<VectorEntry> view(VectorEntry.State state) {
+        return new View(state);
     }
 
     private class IterImpl implements Iterator<VectorEntry> {
-        private IntIterator iter = keys.activeIndexIterator(isMutable());
-
-        @Override
-        public boolean hasNext() {
-            return iter.hasNext();
-        }
-
-        @Override
-        @Nonnull
-        public VectorEntry next() {
-            int pos = iter.nextInt();
-            return new VectorEntry(SparseVector.this, pos,
-                                   keys.getKey(pos), values[pos], true);
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    // Given an int iterator, iterates over the elements of the <key,
-    // value> pairs indexed by the int iterator.  For efficiency, may
-    // reuse the VectorEntry returned at one step for a later step, so
-    // the client should not keep around old VectorEntrys.
-    private class FastIterImpl implements Iterator<VectorEntry> {
         private final VectorEntry.State state;
-        private VectorEntry entry = new VectorEntry(SparseVector.this, -1, 0, 0, false);
-        private IntIterator iter;
+        private final IntIterator iter;
 
-        public FastIterImpl(IntIterator positions, VectorEntry.State st) {
-            iter = positions;
+        IterImpl(VectorEntry.State st) {
             state = st;
+            switch (state) {
+            case SET:
+                iter = keys.activeIndexIterator(isMutable());
+                break;
+            case UNSET: {
+                iter = keys.clone().invert().activeIndexIterator(false);
+                break;
+            }
+            case EITHER: {
+                iter = IntIterators.fromTo(0, keys.domainSize());
+                break;
+            }
+            default:
+                throw new IllegalArgumentException();
+            }
         }
 
         @Override
@@ -339,13 +328,40 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
             int pos = iter.nextInt();
             boolean isSet = state == VectorEntry.State.SET || keys.indexIsActive(pos);
             double v = isSet ? values[pos] : Double.NaN;
-            entry.set(pos, keys.getKey(pos), v, isSet);
-            return entry;
+            return new VectorEntry(SparseVector.this, pos,
+                                   keys.getKey(pos), v, isSet);
         }
 
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    private class View extends AbstractCollection<VectorEntry> {
+        private final VectorEntry.State state;
+
+        public View(VectorEntry.State st) {
+            state = st;
+        }
+
+        @Override
+        public Iterator<VectorEntry> iterator() {
+            return new IterImpl(state);
+        }
+
+        @Override
+        public int size() {
+            switch (state) {
+            case SET:
+                return SparseVector.this.size();
+            case EITHER:
+                return keys.domainSize();
+            case UNSET:
+                return SparseVector.this.size() - keys.domainSize();
+            default:
+                throw new IllegalStateException();
+            }
         }
     }
     //endregion
@@ -553,8 +569,8 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     private double slowDotProduct(SparseVector o) {
         // FIXME This code was tested, but no longer is.  Add relevant tests.
         double dot = 0;
-        Iterator<VectorEntry> i1 = fastIterator();
-        Iterator<VectorEntry> i2 = o.fastIterator();
+        Iterator<VectorEntry> i1 = iterator();
+        Iterator<VectorEntry> i2 = o.iterator();
 
         VectorEntry e1 = i1.hasNext() ? i1.next() : null;
         VectorEntry e2 = i2.hasNext() ? i2.next() : null;
@@ -583,8 +599,8 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
      */
     public int countCommonKeys(SparseVector o) {
         int count = 0;
-        Iterator<VectorEntry> i1 = fastIterator();
-        Iterator<VectorEntry> i2 = o.fastIterator();
+        Iterator<VectorEntry> i1 = iterator();
+        Iterator<VectorEntry> i2 = o.iterator();
 
         VectorEntry e1 = i1.hasNext() ? i1.next() : null;
         VectorEntry e2 = i2.hasNext() ? i2.next() : null;
@@ -625,7 +641,7 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
                 return String.format("%d: %.3f", e.getKey(), e.getValue());
             }
         };
-        return "{" + StringUtils.join(Iterators.transform(fastIterator(), label), ", ") + "}";
+        return "{" + StringUtils.join(Iterators.transform(iterator(), label), ", ") + "}";
     }
 
     @Override
