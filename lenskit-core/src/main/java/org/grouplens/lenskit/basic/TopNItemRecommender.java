@@ -28,7 +28,6 @@ import it.unimi.dsi.fastutil.longs.LongSets;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
@@ -135,7 +134,7 @@ public class TopNItemRecommender extends AbstractItemRecommender {
                     channels.add((Pair) Pair.of(sym, scores.getChannel(sym)));
                 }
             }
-            for (ScoredId id: CollectionUtils.fast(results)) {
+            for (ScoredId id: results) {
                 ScoredIdBuilder copy = ScoredIds.copyBuilder(id);
                 for (Pair<Symbol,SparseVector> pair: cvs) {
                     if (pair.getRight().containsKey(id.getId())) {

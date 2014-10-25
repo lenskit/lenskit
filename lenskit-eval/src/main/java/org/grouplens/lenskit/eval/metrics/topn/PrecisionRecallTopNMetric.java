@@ -22,7 +22,6 @@ package org.grouplens.lenskit.eval.metrics.topn;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
@@ -99,7 +98,7 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
             return null;
         }
 
-        for(ScoredId s : CollectionUtils.fast(recs)) {
+        for(ScoredId s : recs) {
             if(items.contains(s.getId())) {
                 tp += 1;
             } else {

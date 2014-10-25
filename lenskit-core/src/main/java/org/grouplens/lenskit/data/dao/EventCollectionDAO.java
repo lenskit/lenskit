@@ -35,8 +35,6 @@ import javax.annotation.WillClose;
 
 import java.util.*;
 
-import static org.grouplens.lenskit.collections.CollectionUtils.fast;
-
 /**
  * Data source backed by a collection of events.
  *
@@ -60,7 +58,7 @@ public class EventCollectionDAO implements EventDAO {
         events = evts;
 
         // Scan for the types in the data source.
-        types = TypeUtils.findTypes(fast(evts), Event.class);
+        types = TypeUtils.findTypes(evts, Event.class);
     }
 
     /**

@@ -27,12 +27,10 @@ import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
-import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.pref.Preference;
@@ -481,7 +479,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
                             testWriters[f].writeRating(ratings.get(j));
                         }
                     } else {
-                        for (Rating rating : CollectionUtils.fast(ratings)) {
+                        for (Rating rating : ratings) {
                             trainWriters[f].writeRating(rating);
                         }
                     }

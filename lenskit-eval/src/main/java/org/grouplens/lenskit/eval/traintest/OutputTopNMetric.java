@@ -22,11 +22,9 @@ package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Throwables;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
-import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelectors;
 import org.grouplens.lenskit.scored.ScoredId;
@@ -86,7 +84,7 @@ public class OutputTopNMetric extends AbstractMetric<OutputTopNMetric.Context, V
         recs = user.getRecommendations(listSize, candidates, exclude);
         logger.debug("outputting {} recommendations for user {}", recs.size(), user.getUserId());
         int counter = 1;
-        for (ScoredId rec: CollectionUtils.fast(recs)) {
+        for (ScoredId rec: recs) {
             try {
                 context.writer.writeRow(user.getUserId(), rec.getId(),
                                         counter, rec.getScore());

@@ -24,7 +24,6 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.junit.Before;
@@ -280,7 +279,7 @@ public class PackedScoredIdListTest {
         PackedScoredIdList list = builder.build();
         assertThat(list, hasSize(25));
         int i = 0;
-        for (ScoredId id: CollectionUtils.fast(list)) {
+        for (ScoredId id: list) {
             assertThat(id, equalTo(ids.get(i)));
             i++;
         }

@@ -116,7 +116,7 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
 
             double sum = 0.0;
             double n = 0;
-            for (IndexedPreference r : CollectionUtils.fast(ratings)) {
+            for (IndexedPreference r : ratings) {
                 sum += r.getValue();
                 n += 1;
             }
@@ -131,7 +131,7 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
             double rmse = 0.0;
             while (trainingController.keepTraining(rmse)) {
                 double sse = 0;
-                for (IndexedPreference r : CollectionUtils.fast(ratings)) {
+                for (IndexedPreference r : ratings) {
                     final int uidx = r.getUserIndex();
                     final int iidx = r.getItemIndex();
                     final double p = mean + uoff[uidx] + ioff[iidx];

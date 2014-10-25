@@ -22,7 +22,6 @@ package org.grouplens.lenskit.knn.item.model;
 
 import com.google.common.base.Stopwatch;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
 import org.grouplens.lenskit.knn.item.ItemSimilarityThreshold;
@@ -147,7 +146,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
 
     private Long2ObjectMap<List<ScoredId>> finishRows(Long2ObjectMap<ScoredItemAccumulator> rows) {
         Long2ObjectMap<List<ScoredId>> results = new Long2ObjectOpenHashMap<List<ScoredId>>(rows.size());
-        for (Long2ObjectMap.Entry<ScoredItemAccumulator> e: CollectionUtils.fast(rows.long2ObjectEntrySet())) {
+        for (Long2ObjectMap.Entry<ScoredItemAccumulator> e: rows.long2ObjectEntrySet()) {
             results.put(e.getLongKey(), e.getValue().finish());
         }
         return results;

@@ -24,7 +24,6 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import mikera.vectorz.AVector;
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
@@ -65,7 +64,7 @@ public final class TrainingEstimator {
             MutableSparseVector blpreds = MutableSparseVector.create(rvector.keySet());
             baseline.score(uid, blpreds);
 
-            for (IndexedPreference r : CollectionUtils.fast(snap.getUserRatings(uid))) {
+            for (IndexedPreference r : snap.getUserRatings(uid)) {
                 estimates[r.getIndex()] = blpreds.get(r.getItemId());
             }
         }
@@ -86,7 +85,7 @@ public final class TrainingEstimator {
      * @param ifvs The item feature values.
      */
     public void update(AVector ufvs, AVector ifvs) {
-        for (IndexedPreference r : CollectionUtils.fast(ratings)) {
+        for (IndexedPreference r : ratings) {
             int idx = r.getIndex();
             double est = estimates[idx];
             est += ufvs.get(r.getUserIndex()) * ifvs.get(r.getItemIndex());

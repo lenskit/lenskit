@@ -23,7 +23,6 @@ package org.grouplens.lenskit.scored;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.SerializationUtils;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.junit.Before;
@@ -111,7 +110,7 @@ public class RandomScoredIdListTest {
         PackedScoredIdList list = builder.build();
         assertThat(list, hasSize(size));
         int i = 0;
-        for (ScoredId id: CollectionUtils.fast(list)) {
+        for (ScoredId id: list) {
             assertThat(id, equalTo(idsWithDefaults.get(i)));
             i++;
         }

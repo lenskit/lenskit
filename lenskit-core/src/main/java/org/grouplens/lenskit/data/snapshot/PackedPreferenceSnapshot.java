@@ -130,7 +130,7 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
             for (int i = 0; i < nusers; i++) {
                 userLists.add(new IntArrayList());
             }
-            for (IndexedPreference pref : CollectionUtils.fast(getRatings())) {
+            for (IndexedPreference pref : getRatings()) {
                 final int uidx = pref.getUserIndex();
                 final int idx = pref.getIndex();
                 userLists.get(uidx).add(idx);

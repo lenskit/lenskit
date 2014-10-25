@@ -22,7 +22,6 @@ package org.grouplens.lenskit.knn.item.model;
 
 import com.google.common.collect.FluentIterable;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Transient;
@@ -116,7 +115,7 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
         }
 
         Long2ObjectMap<LongSortedSet> userItemSets = new Long2ObjectOpenHashMap<LongSortedSet>();
-        for (Long2ObjectMap.Entry<LongList> entry: CollectionUtils.fast(userItems.long2ObjectEntrySet())) {
+        for (Long2ObjectMap.Entry<LongList> entry: userItems.long2ObjectEntrySet()) {
             userItemSets.put(entry.getLongKey(), LongUtils.packedSet(entry.getValue()));
         }
 

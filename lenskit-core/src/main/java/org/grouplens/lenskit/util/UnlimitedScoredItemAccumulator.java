@@ -23,7 +23,6 @@ package org.grouplens.lenskit.util;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdListBuilder;
 import org.grouplens.lenskit.scored.ScoredIds;
@@ -89,7 +88,7 @@ public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulat
         }
 
         LongSet set = new LongOpenHashSet(scores.size());
-        for (ScoredId id: CollectionUtils.fast(finish())) {
+        for (ScoredId id: finish()) {
             set.add(id.getId());
         }
         return set;

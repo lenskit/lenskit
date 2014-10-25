@@ -22,7 +22,6 @@ package org.grouplens.lenskit.eval.metrics.topn;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
@@ -98,7 +97,7 @@ public class MRRTopNMetric extends AbstractMetric<MRRTopNMetric.Context, MRRTopN
         List<ScoredId> recs = user.getRecommendations(listSize, candidates, exclude);
         Integer rank = null;
         int i = 0;
-        for(ScoredId s : CollectionUtils.fast(recs)) {
+        for(ScoredId s : recs) {
             i++;
             if(good.contains(s.getId())) {
                 rank = i;

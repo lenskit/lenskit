@@ -244,7 +244,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         }
 
         LongSet users = new LongOpenHashSet(ratings.size());
-        for (Rating rating: CollectionUtils.fast(ratings)) {
+        for (Rating rating: ratings) {
             users.add(rating.getUserId());
         }
         return users;

@@ -20,11 +20,9 @@
  */
 package org.grouplens.lenskit.eval.metrics.topn;
 
-import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
@@ -115,7 +113,7 @@ public class TopNEntropyMetric extends AbstractMetric<TopNEntropyMetric.Context,
         private int recCount = 0;
         
         private void addUser(List<ScoredId> recs) {
-            for (ScoredId s: CollectionUtils.fast(recs)) {
+            for (ScoredId s: recs) {
                 counts.put(s.getId(), counts.get(s.getId()) +1);
                 recCount +=1;
             }

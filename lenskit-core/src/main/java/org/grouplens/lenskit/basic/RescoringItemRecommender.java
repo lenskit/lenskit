@@ -24,7 +24,6 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdListBuilder;
 import org.grouplens.lenskit.scored.ScoredIds;
@@ -86,14 +85,14 @@ public class RescoringItemRecommender implements ItemRecommender {
         }
 
         LongList items = new LongArrayList(recs.size());
-        for (ScoredId sid: CollectionUtils.fast(recs)) {
+        for (ScoredId sid: recs) {
             items.add(sid.getId());
         }
 
         SparseVector scores = scorer.score(user, items);
         ScoredIdListBuilder builder = ScoredIds.newListBuilder(recs.size());
         builder.addChannel(ORIGINAL_SCORE_SYMBOL);
-        for (ScoredId sid: CollectionUtils.fast(recs)) {
+        for (ScoredId sid: recs) {
             // FIXME Make this not allocate so much memory
             builder.add(ScoredIds.copyBuilder(sid)
                                  .setScore(scores.get(sid.getId(), Double.NaN))

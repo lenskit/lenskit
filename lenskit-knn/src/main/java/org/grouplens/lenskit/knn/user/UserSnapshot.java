@@ -24,7 +24,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Shareable;
@@ -147,7 +146,7 @@ public class UserSnapshot implements Serializable {
             }
 
             Long2ObjectMap<LongSortedSet> itemUserSets = new Long2ObjectOpenHashMap<LongSortedSet>();
-            for (Long2ObjectMap.Entry<LongList> entry: CollectionUtils.fast(itemUserLists.long2ObjectEntrySet())) {
+            for (Long2ObjectMap.Entry<LongList> entry: itemUserLists.long2ObjectEntrySet()) {
                 itemUserSets.put(entry.getLongKey(), LongUtils.packedSet(entry.getValue()));
             }
             return new UserSnapshot(domain.unowned(), vecs.build(), nvecs.build(), itemUserSets);

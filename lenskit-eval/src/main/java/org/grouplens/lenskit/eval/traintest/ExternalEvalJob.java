@@ -30,7 +30,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
@@ -270,7 +269,7 @@ class ExternalEvalJob extends TrainTestJob {
             cursor.close();
         }
         Long2ObjectMap<SparseVector> vectors = new Long2ObjectOpenHashMap<SparseVector>(data.size());
-        for (Long2ObjectMap.Entry<Long2DoubleMap> entry: CollectionUtils.fast(data.long2ObjectEntrySet())) {
+        for (Long2ObjectMap.Entry<Long2DoubleMap> entry: data.long2ObjectEntrySet()) {
             vectors.put(entry.getLongKey(), ImmutableSparseVector.create(entry.getValue()));
         }
         return vectors;

@@ -23,8 +23,6 @@ package org.grouplens.lenskit.data.pref;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 import java.util.Collection;
@@ -68,7 +66,7 @@ public final class Preferences {
         // find keys and pre-validate data
         Long2DoubleOpenHashMap prefMap = new Long2DoubleOpenHashMap(prefs.size());
         long user = 0;
-        for (Preference p : CollectionUtils.fast(prefs)) {
+        for (Preference p : prefs) {
             final long iid = p.getItemId();
             if (prefMap.isEmpty()) {
                 user = p.getUserId();

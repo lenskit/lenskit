@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdBuilder;
@@ -48,7 +47,7 @@ public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Se
         double sum = 0;
         double weight = 0;
         int n = 0;
-        for (ScoredId id: CollectionUtils.fast(neighbors)) {
+        for (ScoredId id: neighbors) {
             long oi = id.getId();
             double sim = id.getScore();
             weight += abs(sim);

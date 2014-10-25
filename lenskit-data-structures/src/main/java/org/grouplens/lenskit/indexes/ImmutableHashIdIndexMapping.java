@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.indexes;
 
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.collections.CollectionUtils;
 
 /**
  * Immutable hash-based implementation index mapping implementation.
@@ -41,7 +40,7 @@ final class ImmutableHashIdIndexMapping extends IdIndexMapping {
         indexes = new Long2IntOpenHashMap(map);
         indexes.defaultReturnValue(-1);
         ids = new long[indexes.size()];
-        for (Long2IntMap.Entry e: CollectionUtils.fast(map.long2IntEntrySet())) {
+        for (Long2IntMap.Entry e: map.long2IntEntrySet()) {
             ids[e.getIntValue()] = e.getLongKey();
         }
     }

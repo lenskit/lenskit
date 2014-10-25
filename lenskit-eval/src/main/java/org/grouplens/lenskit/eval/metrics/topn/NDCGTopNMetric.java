@@ -20,12 +20,10 @@
  */
 package org.grouplens.lenskit.eval.metrics.topn;
 
-import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
@@ -125,7 +123,7 @@ public class NDCGTopNMetric extends AbstractMetric<MeanAccumulator, NDCGTopNMetr
         double idealGain = computeDCG(ideal, ratings);
 
         LongList actual = new LongArrayList(recommendations.size());
-        for (ScoredId id: CollectionUtils.fast(recommendations)) {
+        for (ScoredId id: recommendations) {
             actual.add(id.getId());
         }
         double gain = computeDCG(actual, ratings);

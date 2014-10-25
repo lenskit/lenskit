@@ -26,7 +26,6 @@ import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
@@ -100,7 +99,7 @@ public final class Ratings {
         // collect the list of unique IDs
         // use a list since we'll be sorting anyway
         LongList ids = new LongArrayList(ratings.size());
-        for (Rating r: CollectionUtils.fast(ratings)) {
+        for (Rating r: ratings) {
             ids.add(dimension.getId(r));
         }
 
@@ -112,7 +111,7 @@ public final class Ratings {
             timestamps = new long[keys.domainSize()];
         }
 
-        for (Rating r: CollectionUtils.fast(ratings)) {
+        for (Rating r: ratings) {
             long id = dimension.getId(r);
             if (timestamps != null) {
                 int idx = keys.getIndex(id);

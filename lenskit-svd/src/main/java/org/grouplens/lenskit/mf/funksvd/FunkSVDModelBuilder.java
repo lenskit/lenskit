@@ -25,7 +25,6 @@ import mikera.matrixx.impl.ImmutableMatrix;
 import mikera.vectorz.AVector;
 import mikera.vectorz.Vector;
 import org.apache.commons.lang3.time.StopWatch;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
@@ -189,7 +188,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
         // Not much overhead, and prevents needing another parameter
         FunkSVDUpdater updater = rule.createUpdater();
 
-        for (IndexedPreference r : CollectionUtils.fast(ratings)) {
+        for (IndexedPreference r : ratings) {
             final int uidx = r.getUserIndex();
             final int iidx = r.getItemIndex();
 

@@ -23,7 +23,6 @@ package org.grouplens.lenskit.eval.metrics.topn;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
@@ -101,7 +100,7 @@ public class IndependentRecallTopNMetric extends AbstractMetric<IndependentRecal
             ItemSelector finalCandidates = ItemSelectors.union(ItemSelectors.fixed(l), candidates);
 
             List<ScoredId> recs = user.getRecommendations(listSize, finalCandidates, exclude);
-            for (ScoredId s : CollectionUtils.fast(recs)) {
+            for (ScoredId s : recs) {
                 if (s.getId() == l) {
                     score +=1;
                 }

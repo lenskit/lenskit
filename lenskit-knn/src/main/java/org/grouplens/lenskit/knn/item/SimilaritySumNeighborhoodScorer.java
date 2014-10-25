@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIds;
@@ -41,7 +40,7 @@ public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Seri
     public ScoredId score(long item, Iterable<ScoredId> neighbors, SparseVector scores) {
         double sum = 0;
         int n = 0;
-        for (ScoredId id: CollectionUtils.fast(neighbors)) {
+        for (ScoredId id: neighbors) {
             sum += id.getScore();
             n++;
         }
