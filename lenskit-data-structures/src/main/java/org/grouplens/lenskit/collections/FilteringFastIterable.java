@@ -42,13 +42,7 @@ class FilteringFastIterable<E> implements FastIterable<E> {
 
     @Override
     public Iterator<E> fastIterator() {
-        if (delegate instanceof FastIterable) {
-            // REVIEW Is Iterators.filter really reasonable?
-            Iterator<E> iter = Iterators.filter(((FastIterable<E>) delegate).fastIterator(), predicate);
-            return limit(iter);
-        } else {
-            return iterator();
-        }
+        return iterator();
     }
 
     @Override
