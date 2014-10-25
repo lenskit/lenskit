@@ -37,8 +37,9 @@ import java.util.Iterator;
  * @param <E> The type of value in the fast collection.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
- * @see CollectionUtils#fast(Iterable)
+ * @deprecated Fast iteration has gone away.
  */
+@Deprecated
 public interface FastIterable<E> extends Iterable<E> {
     /**
      * Return a fast iterator.  The iterator may not actually be fast; if the
@@ -48,6 +49,8 @@ public interface FastIterable<E> extends Iterable<E> {
      * overhead is introduced.
      *
      * @return An iterator that may not return distinct objects.
+     * @deprecated Fast iteration has gone away.
      */
+    @Deprecated
     Iterator<E> fastIterator();
 }

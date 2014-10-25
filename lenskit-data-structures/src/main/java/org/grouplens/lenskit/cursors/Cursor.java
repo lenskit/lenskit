@@ -83,7 +83,9 @@ public interface Cursor<T> extends Iterable<T>, Closeable {
      *
      * @return The next element from the cursor, reusing objects if possible.
      * @see Cursor#next()
+     * @deprecated Fast iteration is going away
      */
+    @Deprecated
     @Nonnull
     T fastNext();
 
@@ -92,7 +94,9 @@ public interface Cursor<T> extends Iterable<T>, Closeable {
      * implemented in terms of {@link #fastNext()}.
      *
      * @return An iterable for fast iteration.
+     * @deprecated Fast iteration is going away.
      */
+    @Deprecated
     Iterable<T> fast();
 
     /**

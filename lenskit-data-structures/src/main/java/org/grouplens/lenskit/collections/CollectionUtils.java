@@ -23,21 +23,12 @@
  */
 package org.grouplens.lenskit.collections;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.base.Throwables;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
-import org.apache.commons.lang3.reflect.MethodUtils;
-import org.grouplens.lenskit.cursors.Cursor;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
@@ -64,38 +55,12 @@ public final class CollectionUtils {
      * @return An iterable using the underlying iterable's fast iterator, if present,
      *         to do iteration. Fast iteration is detected by looking for a {@code fastIterator()}
      *         method, like is present in {@link FastEntrySet}.
+     * @deprecated Fast iteration has gone away.  This method now does nothing.
      */
+    @Deprecated
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static <E> Iterable<E> fast(final Iterable<E> iter) {
-        if (iter instanceof FastIterable) {
-            return new Iterable<E>() {
-                @Override
-                public Iterator<E> iterator() {
-                    return ((FastIterable) iter).fastIterator();
-                }
-            };
-        } else if (iter instanceof Cursor) {
-            return ((Cursor<E>) iter).fast();
-        } else {
-            Optional<Method> fastMethod = fastIteratorMethods.getUnchecked(iter.getClass());
-            if (fastMethod.isPresent()) {
-                final Method method = fastMethod.get();
-                return new Iterable<E>() {
-                    @Override
-                    public Iterator<E> iterator() {
-                        try {
-                            return (Iterator<E>) method.invoke(iter);
-                        } catch (IllegalAccessException e) {
-                            return iter.iterator();
-                        } catch (InvocationTargetException e) {
-                            throw Throwables.propagate(e.getCause());
-                        }
-                    }
-                };
-            } else {
-                return iter;
-            }
-        }
+        return iter;
     }
 
     /**
@@ -108,22 +73,12 @@ public final class CollectionUtils {
      * @param limit The maximum number of items to return (negative for unlimited).
      * @param <E> The type of data in the iterable.
      * @return A fast iterable filtering and limiting.
+     * @deprecated Fast iteration has gone away.
      */
+    @Deprecated
     public static <E> FastIterable<E> fastFilterAndLimit(Iterable<E> iter, Predicate<? super E> pred, int limit) {
         return new FilteringFastIterable<E>(iter, pred, limit);
     }
-
-    /**
-     * Cache of fast iterator methods for various classes.
-     */
-    private static final LoadingCache<Class<?>,Optional<Method>> fastIteratorMethods =
-            CacheBuilder.newBuilder()
-                        .build(new CacheLoader<Class<?>,Optional<Method>>() {
-                            @Override
-                            public Optional<Method> load(Class<?> key) {
-                                return Optional.fromNullable(MethodUtils.getAccessibleMethod(key, "fastIterator"));
-                            }
-                        });
 
     /**
      * Wrap a {@link Collection} in an {@link ObjectCollection}.
