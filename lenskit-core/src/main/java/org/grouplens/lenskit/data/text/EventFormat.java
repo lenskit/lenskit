@@ -42,7 +42,7 @@ public interface EventFormat {
      * @param line The line to parse.
      * @return The event resulting from parsing the line.
      */
-    Event parse(String line);
+    Event parse(String line) throws InvalidRowException;
 
     /**
      * Create a new context that may speed up parsing.  This will be passed to {@link #parse(String, Object)};
@@ -65,7 +65,7 @@ public interface EventFormat {
      * @param context The parsing context.
      * @return
      */
-    Event parse(String line, Object context);
+    Event parse(String line, Object context) throws InvalidRowException;
 
     /**
      * Copy an event.  This only needs to copy the event if events returned by this layout are

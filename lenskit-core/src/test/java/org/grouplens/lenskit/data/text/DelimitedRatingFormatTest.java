@@ -36,7 +36,7 @@ public class DelimitedRatingFormatTest {
     }
 
     @Test
-    public void parseBasicTSV() {
+    public void parseBasicTSV() throws InvalidRowException {
         Rating r = format.parse("42\t39\t3.5");
         assertThat(r.getUserId(), equalTo(42L));
         assertThat(r.getItemId(), equalTo(39L));
@@ -46,7 +46,7 @@ public class DelimitedRatingFormatTest {
     }
 
     @Test
-    public void parseBasicCSV() {
+    public void parseBasicCSV() throws InvalidRowException {
         format.setDelimiter(",");
         Rating r = format.parse("42,39,3.5");
         assertThat(r.getUserId(), equalTo(42L));
@@ -57,7 +57,7 @@ public class DelimitedRatingFormatTest {
     }
 
     @Test
-    public void parseBasicDoubleColon() {
+    public void parseBasicDoubleColon() throws InvalidRowException {
         format.setDelimiter("::");
         Rating r = format.parse("42::39::3.5");
         assertThat(r.getUserId(), equalTo(42L));
@@ -68,7 +68,7 @@ public class DelimitedRatingFormatTest {
     }
 
     @Test
-    public void parseTimestamp() {
+    public void parseTimestamp() throws InvalidRowException {
         format.setDelimiter("::");
         Rating r = format.parse("42::39::3.5::3490298");
         assertThat(r.getUserId(), equalTo(42L));

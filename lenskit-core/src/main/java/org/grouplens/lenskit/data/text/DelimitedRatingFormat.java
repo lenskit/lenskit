@@ -25,15 +25,15 @@ import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.RatingBuilder;
 import org.grouplens.lenskit.data.event.Ratings;
-import org.grouplens.lenskit.util.OptionFlag;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 public class DelimitedRatingFormat implements EventFormat {
     @Nonnull
     private String delimiter = "\t";
-    @Nonnull
-    private OptionFlag hasTimestamp = OptionFlag.MAYBE;
+    private FieldList<RatingBuilder> fieldList =
+            FieldList.create(Fields.user(), Fields.item(), Fields.rating(), Fields.timestamp(false));
 
     @Nonnull
     public String getDelimiter() {
@@ -45,17 +45,48 @@ public class DelimitedRatingFormat implements EventFormat {
         return this;
     }
 
-    public OptionFlag getHasTimestamp() {
-        return hasTimestamp;
-    }
-
-    public DelimitedRatingFormat setHasTimestamp(OptionFlag ts) {
-        hasTimestamp = ts;
+    /**
+     * Set the fields to be parsed.  The default fields are:
+     *
+     * <ol>
+     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#user() User ID}</li>
+     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#item() Item ID}</li>
+     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#rating() Rating}</li>
+     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#timestamp(boolean) Optional timestamp}</li>
+     * </ol>
+     *
+     * @param fields The fields to be parsed by this format.
+     * @return The format (for chaining).
+     */
+    public DelimitedRatingFormat setFields(Field<? super RatingBuilder>... fields) {
+        fieldList = FieldList.create(fields);
         return this;
     }
 
-    public DelimitedRatingFormat setHasTimestamp(boolean hasTS) {
-        return setHasTimestamp(OptionFlag.fromBoolean(hasTS));
+    /**
+     * Set the fields to be parsed.  The default fields are:
+     *
+     * <ol>
+     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#user() User ID}</li>
+     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#item() Item ID}</li>
+     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#rating() Rating}</li>
+     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#timestamp(boolean) Optional timestamp}</li>
+     * </ol>
+     *
+     * @param fields The fields to be parsed by this format.
+     * @return The format (for chaining).
+     */
+    public DelimitedRatingFormat setFields(List<Field<? super RatingBuilder>> fields) {
+        fieldList = FieldList.create(fields);
+        return this;
+    }
+
+    /**
+     * Get the field list.
+     * @return
+     */
+    public FieldList<RatingBuilder> getFields() {
+        return fieldList;
     }
 
     @Override
@@ -63,29 +94,13 @@ public class DelimitedRatingFormat implements EventFormat {
         return Rating.class;
     }
 
-    private Rating parse(StrTokenizer tok, RatingBuilder rb) {
-        rb.setUserId(Long.parseLong(tok.next()));
-        rb.setItemId(Long.parseLong(tok.next()));
-        rb.setRating(Double.parseDouble(tok.next()));
-
-        String ts = null;
-        switch (hasTimestamp) {
-        case YES:
-            ts = tok.next();
-            break;
-        case MAYBE:
-            ts = tok.nextToken();
-            break;
-        }
-        if (ts != null) {
-            rb.setTimestamp(Long.parseLong(ts));
-        }
-
+    private Rating parse(StrTokenizer tok, RatingBuilder rb) throws InvalidRowException {
+        fieldList.parse(tok, rb);
         return rb.build();
     }
 
     @Override
-    public Rating parse(String line) {
+    public Rating parse(String line) throws InvalidRowException {
         StrTokenizer tok = new StrTokenizer(line, delimiter);
         RatingBuilder rb = Ratings.newBuilder();
         return parse(tok, rb);
@@ -97,7 +112,7 @@ public class DelimitedRatingFormat implements EventFormat {
     }
 
     @Override
-    public Rating parse(String line, Object context) {
+    public Rating parse(String line, Object context) throws InvalidRowException {
         Context ctx = (Context) context;
         ctx.tokenizer.reset(line);
         return parse(ctx.tokenizer, ctx.builder);

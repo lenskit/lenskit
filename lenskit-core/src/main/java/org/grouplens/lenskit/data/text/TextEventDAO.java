@@ -99,10 +99,10 @@ public class TextEventDAO implements EventDAO {
     }
 
     private final class EventCursor extends AbstractCursor<Event> {
-        private final Cursor<String> lines;
+        private final LineCursor lines;
         private Object context;
 
-        EventCursor(Cursor<String> lc) {
+        EventCursor(LineCursor lc) {
             lines = lc;
             context = eventFormat.newContext();
         }
@@ -115,14 +115,11 @@ public class TextEventDAO implements EventDAO {
         @Nonnull
         @Override
         public Event next() {
-            return eventFormat.parse(lines.next());
-        }
-
-        @Nonnull
-        @Override
-        public Event fastNext() {
-            String line = lines.next();
-            return eventFormat.parse(line, context);
+            try {
+                return eventFormat.parse(lines.next());
+            } catch (InvalidRowException e) {
+                throw new DataAccessException("malformed input on line " + lines.getLineNumber(), e);
+            }
         }
 
         @Override
