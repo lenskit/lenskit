@@ -22,6 +22,7 @@ package org.grouplens.lenskit.data.text;
 
 import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.data.event.EventBuilder;
+import org.grouplens.lenskit.data.event.PlusBuilder;
 import org.grouplens.lenskit.data.event.RatingBuilder;
 
 import java.util.Collections;
@@ -61,7 +62,7 @@ public final class Fields {
      * @return A field definition for a rating field.
      */
     public static Field rating() {
-        return RatingFields.RATING;
+        return ValueFields.RATING;
     }
 
     /**
@@ -93,6 +94,14 @@ public final class Fields {
         } else {
             return CommonFields.OPTIONAL_TIMESTAMP;
         }
+    }
+
+    /**
+     * A plus count field.
+     * @return A field definition for a required plus count field.
+     */
+    public static Field plusCount() {
+        return ValueFields.PLUS;
     }
 
     private static enum CommonFields implements Field {
@@ -149,7 +158,7 @@ public final class Fields {
 
     }
 
-    private static enum RatingFields implements Field {
+    private static enum ValueFields implements Field {
         RATING {
             @Override
             public boolean isOptional() {
@@ -165,6 +174,23 @@ public final class Fields {
             public void apply(String token, EventBuilder builder) {
                 // TODO Add support for unrate events
                 ((RatingBuilder) builder).setRating(Double.parseDouble(token));
+            }
+        },
+
+        PLUS {
+            @Override
+            public boolean isOptional() {
+                return false;
+            }
+
+            @Override
+            public Set<Class<? extends EventBuilder>> getExpectedBuilderTypes() {
+                return Collections.<Class<? extends EventBuilder>>singleton(PlusBuilder.class);
+            }
+
+            @Override
+            public void apply(String token, EventBuilder builder) {
+                ((PlusBuilder) builder).setCount(Integer.parseInt(token));
             }
         }
     }
