@@ -68,6 +68,10 @@ public class TextEventDAO implements EventDAO {
         return new TextEventDAO(file, fmt);
     }
 
+    public static TextEventDAO create(File inputFile, DelimitedColumnEventFormat format) {
+        return new TextEventDAO(inputFile, format);
+    }
+
     @Override
     public Cursor<Event> streamEvents() {
         try {

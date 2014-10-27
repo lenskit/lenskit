@@ -26,9 +26,10 @@ import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingFile;
+import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
+import org.grouplens.lenskit.data.text.TextEventDAO;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,20 +48,24 @@ public class InputData {
     }
 
     Source getSource() {
+        String type = options.get("event_type");
         File ratingFile = options.get("csv_file");
         if (ratingFile != null) {
-            return new TextInput(ratingFile, ",");
+            return new TextInput(ratingFile, ",", type);
         }
 
         ratingFile = options.get("tsv_file");
         if (ratingFile != null) {
-            return new TextInput(ratingFile, "\t");
+            return new TextInput(ratingFile, "\t", type);
         }
 
         ratingFile = options.get("ratings_file");
+        if (ratingFile == null) {
+            ratingFile = options.get("events_file");
+        }
         if (ratingFile != null) {
             String delim = options.getString("delimiter");
-            return new TextInput(ratingFile, delim);
+            return new TextInput(ratingFile, delim, type);
         }
 
         File packFile = options.get("pack_file");
@@ -92,15 +97,19 @@ public class InputData {
     static class TextInput implements Source {
         final File inputFile;
         final String delimiter;
+        final String type;
 
-        public TextInput(File file, String delim) {
+        public TextInput(File file, String delim, String et) {
             inputFile = file;
             delimiter = delim;
+            type = et;
         }
 
         @Override
         public EventDAO getEventDAO() {
-            return SimpleFileRatingDAO.create(inputFile, delimiter);
+            DelimitedColumnEventFormat format = DelimitedColumnEventFormat.create(type);
+            format.setDelimiter(delimiter);
+            return TextEventDAO.create(inputFile, format);
         }
 
         @Override
@@ -162,10 +171,18 @@ public class InputData {
              .type(File.class)
              .metavar("FILE")
              .help("read from delimited text FILE");
+        group.addArgument("--events-file")
+             .type(File.class)
+             .metavar("FILE")
+             .help("read from delimited text FILE");
         options.addArgument("-d", "--delimiter")
                .setDefault(",")
                .metavar("DELIM")
                .help("input file is delimited by DELIM");
+        options.addArgument("-t", "--event-type")
+               .setDefault("rating")
+               .metavar("TYPE")
+               .help("input file contains TYPE data");
         group.addArgument("--pack-file")
              .type(File.class)
              .metavar("FILE")

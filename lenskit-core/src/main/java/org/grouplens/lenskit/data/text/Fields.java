@@ -23,7 +23,6 @@ package org.grouplens.lenskit.data.text;
 import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.data.event.EventBuilder;
 import org.grouplens.lenskit.data.event.RatingBuilder;
-import sun.jvm.hotspot.debugger.win32.coff.COFFException;
 
 import java.util.Collections;
 import java.util.List;
