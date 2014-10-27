@@ -22,13 +22,14 @@ package org.grouplens.lenskit.data.text;
 
 import org.grouplens.lenskit.data.event.EventBuilder;
 
+import java.util.Set;
+
 /**
  * Identifiers for fields in a delimited/columnar database.
  *
- * @param <B> The type of event builder.
  * @since 2.2
  */
-public interface Field<B extends EventBuilder> {
+public interface Field {
 
     /**
      * Query whether this field is optional.
@@ -43,5 +44,11 @@ public interface Field<B extends EventBuilder> {
      * @param token   The field value (or {@code null} if this is a nonexistent optional field).
      * @param builder The builder into which to set the value.
      */
-    void apply(String token, B builder);
+    void apply(String token, EventBuilder builder);
+
+    /**
+     * Get the set of event builder types that this field can apply to.
+     * @return A set of classes representing event builder types to which this field can apply.”
+     */
+    Set<Class<? extends EventBuilder>> getExpectedBuilderTypes();
 }

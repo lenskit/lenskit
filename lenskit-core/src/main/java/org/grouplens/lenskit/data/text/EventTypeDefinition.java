@@ -32,7 +32,7 @@ import java.util.Set;
  *
  * @since 2.2
  */
-public interface EventTypeDefinition<B extends EventBuilder> {
+public interface EventTypeDefinition {
     /**
      * A simple name for this event
      * @return The name of this event type (used to refer to it from various UI entry points).
@@ -40,20 +40,25 @@ public interface EventTypeDefinition<B extends EventBuilder> {
     String getName();
 
     /**
+     * Get the builder type used by this type definition.
+     */
+    Class<? extends EventBuilder> getBuilderType();
+
+    /**
      * Construct a new builder for this event type.
      * @return The builder.
      */
-    B newBuilder();
+    EventBuilder newBuilder();
 
     /**
      * Get the set of required fields for this event type.
      * @return The fields without which events cannot be built.
      */
-    Set<Field<? super B>> getRequiredFields();
+    Set<Field> getRequiredFields();
 
     /**
      * Get the default field list for loading this event from text fields.
      * @return The default field list for parsing events of this type.
      */
-    List<Field<? super B>> getDefaultFields();
+    List<Field> getDefaultFields();
 }

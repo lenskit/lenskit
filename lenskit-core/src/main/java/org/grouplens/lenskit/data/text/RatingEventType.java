@@ -23,6 +23,7 @@ package org.grouplens.lenskit.data.text;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSet;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.data.event.EventBuilder;
 import org.grouplens.lenskit.data.event.RatingBuilder;
 import org.grouplens.lenskit.data.event.Ratings;
 
@@ -37,12 +38,17 @@ import java.util.Set;
  */
 @AutoService(EventTypeDefinition.class)
 @Shareable
-public class RatingEventType implements EventTypeDefinition<RatingBuilder>, Serializable {
-    private static long serialVersionUID = 1L;
+public class RatingEventType implements EventTypeDefinition, Serializable {
+    private static final long serialVersionUID = 1L;
 
     @Override
     public String getName() {
         return "rating";
+    }
+
+    @Override
+    public Class<? extends EventBuilder> getBuilderType() {
+        return RatingBuilder.class;
     }
 
     @Override
@@ -51,12 +57,12 @@ public class RatingEventType implements EventTypeDefinition<RatingBuilder>, Seri
     }
 
     @Override
-    public Set<Field<? super RatingBuilder>> getRequiredFields() {
-        return ImmutableSet.<Field<? super RatingBuilder>>of(Fields.user(), Fields.item(), Fields.rating());
+    public Set<Field> getRequiredFields() {
+        return ImmutableSet.of(Fields.user(), Fields.item(), Fields.rating());
     }
 
     @Override
-    public List<Field<? super RatingBuilder>> getDefaultFields() {
+    public List<Field> getDefaultFields() {
         return Fields.list(Fields.user(),
                            Fields.item(),
                            Fields.rating(),

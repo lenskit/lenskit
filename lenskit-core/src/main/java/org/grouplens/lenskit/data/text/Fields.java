@@ -23,8 +23,11 @@ package org.grouplens.lenskit.data.text;
 import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.data.event.EventBuilder;
 import org.grouplens.lenskit.data.event.RatingBuilder;
+import sun.jvm.hotspot.debugger.win32.coff.COFFException;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public final class Fields {
     private Fields() {}
@@ -33,7 +36,7 @@ public final class Fields {
      * The user ID field.
      * @return A field definition for the user ID.
      */
-    public static Field<EventBuilder> user() {
+    public static Field user() {
         return CommonFields.USER;
     }
 
@@ -41,7 +44,7 @@ public final class Fields {
      * The item ID field.
      * @return A field definition for the item ID.
      */
-    public static Field<EventBuilder> item() {
+    public static Field item() {
         return CommonFields.ITEM;
     }
 
@@ -50,7 +53,7 @@ public final class Fields {
      * A required timestamp field.
      * @return A field definition for a required timestamp field.
      */
-    public static Field<EventBuilder> timestamp() {
+    public static Field timestamp() {
         return timestamp(true);
     }
 
@@ -58,7 +61,7 @@ public final class Fields {
      * The rating field.
      * @return A field definition for a rating field.
      */
-    public static Field<RatingBuilder> rating() {
+    public static Field rating() {
         return RatingFields.RATING;
     }
 
@@ -66,7 +69,7 @@ public final class Fields {
      * A field that is ignored.
      * @return A field definition for a field to ignore.
      */
-    public static Field<EventBuilder> ignored() {
+    public static Field ignored() {
         return CommonFields.IGNORED;
     }
 
@@ -74,10 +77,9 @@ public final class Fields {
      * Create a list of fields.  This helper is structured to aid in type inference.
      *
      * @param fields The fields to put in the list.
-     * @param <B> The builder type.
      * @return The field list.
      */
-    public static <B extends EventBuilder> List<Field<? super B>> list(Field<? super B>... fields) {
+    public static List<Field> list(Field... fields) {
         return ImmutableList.copyOf(fields);
     }
 
@@ -86,15 +88,15 @@ public final class Fields {
      * @param required {@code true} if the timestamp is required, {@code false} if it is optional.
      * @return A field definition for a required timestamp field.
      */
-    public static Field<EventBuilder> timestamp(boolean required) {
+    public static Field timestamp(boolean required) {
         if (required) {
-            return TimestampFieldDefs.REQUIRED;
+            return CommonFields.TIMESTAMP;
         } else {
-            return TimestampFieldDefs.OPTIONAL;
+            return CommonFields.OPTIONAL_TIMESTAMP;
         }
     }
 
-    private static enum CommonFields implements Field<EventBuilder> {
+    private static enum CommonFields implements Field {
         IGNORED {
             @Override
             public void apply(String token, EventBuilder builder) {
@@ -113,22 +115,23 @@ public final class Fields {
             public void apply(String token, EventBuilder builder) {
                 builder.setItemId(Long.parseLong(token));
             }
-        };
-
-        @Override
-        public boolean isOptional() {
-            return false;
-        }
-    }
-
-    private static enum TimestampFieldDefs implements Field<EventBuilder> {
-        REQUIRED {
+        },
+        TIMESTAMP {
             @Override
-            public boolean isOptional() {
-                return false;
+            public void apply(String token, EventBuilder builder) {
+                builder.setTimestamp(Long.parseLong(token));
             }
         },
-        OPTIONAL {
+        OPTIONAL_TIMESTAMP {
+            @Override
+            public void apply(String token, EventBuilder builder) {
+                if (token == null) {
+                    builder.setTimestamp(-1);
+                } else {
+                    builder.setTimestamp(Long.parseLong(token));
+                }
+            }
+
             @Override
             public boolean isOptional() {
                 return true;
@@ -136,16 +139,18 @@ public final class Fields {
         };
 
         @Override
-        public void apply(String token, EventBuilder builder) {
-            if (token == null) {
-                builder.setTimestamp(-1);
-            } else {
-                builder.setTimestamp(Long.parseLong(token));
-            }
+        public boolean isOptional() {
+            return false;
         }
+
+        @Override
+        public Set<Class<? extends EventBuilder>> getExpectedBuilderTypes() {
+            return Collections.<Class<? extends EventBuilder>>singleton(EventBuilder.class);
+        }
+
     }
 
-    private static enum RatingFields implements Field<RatingBuilder> {
+    private static enum RatingFields implements Field {
         RATING {
             @Override
             public boolean isOptional() {
@@ -153,9 +158,14 @@ public final class Fields {
             }
 
             @Override
-            public void apply(String token, RatingBuilder builder) {
+            public Set<Class<? extends EventBuilder>> getExpectedBuilderTypes() {
+                return Collections.<Class<? extends EventBuilder>>singleton(RatingBuilder.class);
+            }
+
+            @Override
+            public void apply(String token, EventBuilder builder) {
                 // TODO Add support for unrate events
-                builder.setRating(Double.parseDouble(token));
+                ((RatingBuilder) builder).setRating(Double.parseDouble(token));
             }
         }
     }

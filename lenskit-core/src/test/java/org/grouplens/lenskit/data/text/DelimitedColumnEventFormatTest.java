@@ -21,19 +21,18 @@
 package org.grouplens.lenskit.data.text;
 
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.RatingBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 
 public class DelimitedColumnEventFormatTest {
-    DelimitedColumnEventFormat<Rating,RatingBuilder> format;
+    DelimitedColumnEventFormat format;
 
     @Before
     public void createFormat() {
-        format = new DelimitedColumnEventFormat<Rating,RatingBuilder>(new RatingEventType());
+        format = new DelimitedColumnEventFormat(new RatingEventType());
     }
 
     @Test
@@ -46,7 +45,7 @@ public class DelimitedColumnEventFormatTest {
 
     @Test
     public void parseBasicTSV() throws InvalidRowException {
-        Rating r = format.parse("42\t39\t3.5");
+        Rating r = (Rating) format.parse("42\t39\t3.5");
         assertThat(r.getUserId(), equalTo(42L));
         assertThat(r.getItemId(), equalTo(39L));
         assertThat(r.getPreference(), notNullValue());
@@ -57,7 +56,7 @@ public class DelimitedColumnEventFormatTest {
     @Test
     public void parseBasicCSV() throws InvalidRowException {
         format.setDelimiter(",");
-        Rating r = format.parse("42,39,3.5");
+        Rating r = (Rating) format.parse("42,39,3.5");
         assertThat(r.getUserId(), equalTo(42L));
         assertThat(r.getItemId(), equalTo(39L));
         assertThat(r.getPreference(), notNullValue());
@@ -68,7 +67,7 @@ public class DelimitedColumnEventFormatTest {
     @Test
     public void parseBasicDoubleColon() throws InvalidRowException {
         format.setDelimiter("::");
-        Rating r = format.parse("42::39::3.5");
+        Rating r = (Rating) format.parse("42::39::3.5");
         assertThat(r.getUserId(), equalTo(42L));
         assertThat(r.getItemId(), equalTo(39L));
         assertThat(r.getPreference(), notNullValue());
@@ -79,7 +78,7 @@ public class DelimitedColumnEventFormatTest {
     @Test
     public void parseTimestamp() throws InvalidRowException {
         format.setDelimiter("::");
-        Rating r = format.parse("42::39::3.5::3490298");
+        Rating r = (Rating) format.parse("42::39::3.5::3490298");
         assertThat(r.getUserId(), equalTo(42L));
         assertThat(r.getItemId(), equalTo(39L));
         assertThat(r.getPreference(), notNullValue());

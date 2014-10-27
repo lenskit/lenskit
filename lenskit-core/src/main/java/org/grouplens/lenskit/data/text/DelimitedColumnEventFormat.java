@@ -21,13 +21,16 @@
 package org.grouplens.lenskit.data.text;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.EventBuilder;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -37,19 +40,19 @@ import java.util.ServiceLoader;
  *
  * @since 2.2
  */
-public class DelimitedColumnEventFormat<E extends Event, B extends EventBuilder<E>> implements EventFormat {
+public final class DelimitedColumnEventFormat implements EventFormat {
     @Nonnull
-    private final EventTypeDefinition<B> eventTypeDef;
+    private final EventTypeDefinition eventTypeDef;
 
     @Nonnull
     private String delimiter = "\t";
     @Nonnull
-    private List<Field<? super B>> fieldList;
+    private List<Field> fieldList;
 
     @Inject
-    public DelimitedColumnEventFormat(@Nonnull EventTypeDefinition<B> etd) {
+    public DelimitedColumnEventFormat(@Nonnull EventTypeDefinition etd) {
         eventTypeDef = etd;
-        fieldList = eventTypeDef.getDefaultFields();
+        setFields(etd.getDefaultFields());
     }
 
     /**
@@ -58,9 +61,9 @@ public class DelimitedColumnEventFormat<E extends Event, B extends EventBuilder<
      * @return The column format.
      */
     @Nonnull
-    public static <E extends Event, B extends EventBuilder<E>> DelimitedColumnEventFormat<E,B> create(@Nonnull EventTypeDefinition<B> etd) {
+    public static DelimitedColumnEventFormat create(@Nonnull EventTypeDefinition etd) {
         Preconditions.checkNotNull(etd, "type definition");
-        return new DelimitedColumnEventFormat<E,B>(etd);
+        return new DelimitedColumnEventFormat(etd);
     }
 
     /**
@@ -125,7 +128,7 @@ public class DelimitedColumnEventFormat<E extends Event, B extends EventBuilder<
      * @param fields The fields to be parsed by this format.
      * @return The format (for chaining).
      */
-    public DelimitedColumnEventFormat setFields(@Nonnull Field<? super B>... fields) {
+    public DelimitedColumnEventFormat setFields(@Nonnull Field... fields) {
         return setFields(ImmutableList.copyOf(fields));
     }
 
@@ -135,9 +138,21 @@ public class DelimitedColumnEventFormat<E extends Event, B extends EventBuilder<
      * @param fields The fields to be parsed by this format.
      * @return The format (for chaining).
      */
-    public DelimitedColumnEventFormat setFields(@Nonnull List<Field<? super B>> fields) {
+    public DelimitedColumnEventFormat setFields(@Nonnull List<Field> fields) {
         if (!fields.containsAll(eventTypeDef.getRequiredFields())) {
             throw new IllegalArgumentException("missing fields");
+        }
+
+        Predicate<Class<? extends EventBuilder>> canConfigBuilderType = new Predicate<Class<? extends EventBuilder>>() {
+            @Override
+            public boolean apply(@Nullable Class<? extends EventBuilder> input) {
+                return input != null && input.isAssignableFrom(eventTypeDef.getBuilderType());
+            }
+        };
+        for (Field fld: fields) {
+            if (!Iterables.any(fld.getExpectedBuilderTypes(), canConfigBuilderType)) {
+                throw new IllegalArgumentException("Field " + fld + " cannot configure builder " + eventTypeDef.getBuilderType());
+            }
         }
         fieldList = ImmutableList.copyOf(fields);
         return this;
@@ -147,12 +162,12 @@ public class DelimitedColumnEventFormat<E extends Event, B extends EventBuilder<
      * Get the field list.
      * @return The list of fields.
      */
-    public List<Field<? super B>> getFields() {
+    public List<Field> getFields() {
         return fieldList;
     }
 
-    private E parse(StrTokenizer tok, B builder) throws InvalidRowException {
-        for (Field<? super B> field: fieldList) {
+    private Event parse(StrTokenizer tok, EventBuilder<?> builder) throws InvalidRowException {
+        for (Field field: fieldList) {
             String token = tok.nextToken();
             if (token == null && field != null && !field.isOptional()) {
                 // fixme make nulls optional if they are at the end
@@ -166,7 +181,7 @@ public class DelimitedColumnEventFormat<E extends Event, B extends EventBuilder<
     }
 
     @Override
-    public E parse(String line) throws InvalidRowException {
+    public Event parse(String line) throws InvalidRowException {
         StrTokenizer tok = new StrTokenizer(line, delimiter);
         return parse(tok, eventTypeDef.newBuilder());
     }
@@ -177,7 +192,7 @@ public class DelimitedColumnEventFormat<E extends Event, B extends EventBuilder<
     }
 
     @Override
-    public E parse(String line, Object context) throws InvalidRowException {
+    public Event parse(String line, Object context) throws InvalidRowException {
         Context ctx = (Context) context;
         ctx.builder.reset();
         ctx.tokenizer.reset(line);
@@ -186,6 +201,6 @@ public class DelimitedColumnEventFormat<E extends Event, B extends EventBuilder<
 
     private class Context {
         public final StrTokenizer tokenizer = new StrTokenizer();
-        public final B builder = eventTypeDef.newBuilder();
+        public final EventBuilder<?> builder = eventTypeDef.newBuilder();
     }
 }
