@@ -53,7 +53,7 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
     }
 
     @Override
-    public void clear() {
+    public void reset() {
         hasUserId = hasItemId = hasRating = false;
         timestamp = -1;
     }

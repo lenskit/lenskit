@@ -37,7 +37,7 @@ public class PlusBuilder implements EventBuilder<Plus> {
     private boolean hasUserId, hasItemId;
 
     @Override
-    public void clear() {
+    public void reset() {
         hasUserId = hasItemId = false;
         timestamp = -1;
         count = 1;
