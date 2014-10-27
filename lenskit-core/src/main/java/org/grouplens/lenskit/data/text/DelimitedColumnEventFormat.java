@@ -179,6 +179,7 @@ public class DelimitedColumnEventFormat<E extends Event, B extends EventBuilder<
     @Override
     public E parse(String line, Object context) throws InvalidRowException {
         Context ctx = (Context) context;
+        ctx.builder.reset();
         ctx.tokenizer.reset(line);
         return parse(ctx.tokenizer, ctx.builder);
     }

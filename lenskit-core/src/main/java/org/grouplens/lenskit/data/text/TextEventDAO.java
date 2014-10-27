@@ -117,7 +117,7 @@ public class TextEventDAO implements EventDAO {
         @Override
         public Event next() {
             try {
-                return eventFormat.parse(lines.next());
+                return eventFormat.parse(lines.next(), context);
             } catch (InvalidRowException e) {
                 throw new DataAccessException("malformed input on line " + lines.getLineNumber(), e);
             }
