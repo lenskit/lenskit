@@ -27,8 +27,14 @@ import org.grouplens.lenskit.data.event.RatingBuilder;
 import org.grouplens.lenskit.data.event.Ratings;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
+/**
+ * Event type for {@link org.grouplens.lenskit.data.event.Rating}s.
+ *
+ * @since 2.2
+ */
 @AutoService(EventTypeDefinition.class)
 @Shareable
 public class RatingEventType implements EventTypeDefinition<RatingBuilder>, Serializable {
@@ -50,8 +56,10 @@ public class RatingEventType implements EventTypeDefinition<RatingBuilder>, Seri
     }
 
     @Override
-    public FieldList<RatingBuilder> getDefaultFields() {
-        return FieldList.create(Fields.user(), Fields.item(),
-                                Fields.rating(), Fields.timestamp(false));
+    public List<Field<? super RatingBuilder>> getDefaultFields() {
+        return Fields.list(Fields.user(),
+                           Fields.item(),
+                           Fields.rating(),
+                           Fields.timestamp(false));
     }
 }

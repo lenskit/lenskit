@@ -22,6 +22,7 @@ package org.grouplens.lenskit.data.text;
 
 import org.grouplens.lenskit.data.event.EventBuilder;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -54,5 +55,5 @@ public interface EventTypeDefinition<B extends EventBuilder> {
      * Get the default field list for loading this event from text fields.
      * @return The default field list for parsing events of this type.
      */
-    FieldList<B> getDefaultFields();
+    List<Field<? super B>> getDefaultFields();
 }

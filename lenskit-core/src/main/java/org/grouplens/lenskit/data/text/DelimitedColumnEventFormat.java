@@ -44,7 +44,7 @@ public class DelimitedColumnEventFormat<E extends Event, B extends EventBuilder<
     @Nonnull
     private String delimiter = "\t";
     @Nonnull
-    private FieldList<B> fieldList;
+    private List<Field<? super B>> fieldList;
 
     @Inject
     public DelimitedColumnEventFormat(@Nonnull EventTypeDefinition<B> etd) {
@@ -120,14 +120,7 @@ public class DelimitedColumnEventFormat<E extends Event, B extends EventBuilder<
     }
 
     /**
-     * Set the fields to be parsed.  The default fields are:
-     *
-     * <ol>
-     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#user() User ID}</li>
-     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#item() Item ID}</li>
-     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#rating() Rating}</li>
-     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#timestamp(boolean) Optional timestamp}</li>
-     * </ol>
+     * Set the fields to be parsed.
      *
      * @param fields The fields to be parsed by this format.
      * @return The format (for chaining).
@@ -137,24 +130,16 @@ public class DelimitedColumnEventFormat<E extends Event, B extends EventBuilder<
     }
 
     /**
-     * Set the fields to be parsed.  The default fields are:
-     *
-     * <ol>
-     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#user() User ID}</li>
-     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#item() Item ID}</li>
-     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#rating() Rating}</li>
-     *     <li>{@linkplain org.grouplens.lenskit.data.text.Fields#timestamp(boolean) Optional timestamp}</li>
-     * </ol>
+     * Set the fields to be parsed.
      *
      * @param fields The fields to be parsed by this format.
      * @return The format (for chaining).
      */
     public DelimitedColumnEventFormat setFields(@Nonnull List<Field<? super B>> fields) {
-        FieldList<B> fl = FieldList.create(fields);
-        if (!fl.containsAll(eventTypeDef.getRequiredFields())) {
+        if (!fields.containsAll(eventTypeDef.getRequiredFields())) {
             throw new IllegalArgumentException("missing fields");
         }
-        fieldList = fl;
+        fieldList = ImmutableList.copyOf(fields);
         return this;
     }
 
@@ -162,13 +147,22 @@ public class DelimitedColumnEventFormat<E extends Event, B extends EventBuilder<
      * Get the field list.
      * @return The list of fields.
      */
-    public FieldList<B> getFields() {
+    public List<Field<? super B>> getFields() {
         return fieldList;
     }
 
-    private E parse(StrTokenizer tok, B rb) throws InvalidRowException {
-        fieldList.parse(tok, rb);
-        return rb.build();
+    private E parse(StrTokenizer tok, B builder) throws InvalidRowException {
+        for (Field<? super B> field: fieldList) {
+            String token = tok.nextToken();
+            if (token == null && field != null && !field.isOptional()) {
+                // fixme make nulls optional if they are at the end
+                throw new InvalidRowException("Non-optional field " + field.toString() + " missing");
+            }
+            if (field != null) {
+                field.apply(token, builder);
+            }
+        }
+        return builder.build();
     }
 
     @Override

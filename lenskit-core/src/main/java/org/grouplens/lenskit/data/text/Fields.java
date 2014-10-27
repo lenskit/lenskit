@@ -20,8 +20,11 @@
  */
 package org.grouplens.lenskit.data.text;
 
+import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.data.event.EventBuilder;
 import org.grouplens.lenskit.data.event.RatingBuilder;
+
+import java.util.List;
 
 public final class Fields {
     private Fields() {}
@@ -65,6 +68,17 @@ public final class Fields {
      */
     public static Field<EventBuilder> ignored() {
         return CommonFields.IGNORED;
+    }
+
+    /**
+     * Create a list of fields.  This helper is structured to aid in type inference.
+     *
+     * @param fields The fields to put in the list.
+     * @param <B> The builder type.
+     * @return The field list.
+     */
+    public static <B extends EventBuilder> List<Field<? super B>> list(Field<? super B>... fields) {
+        return ImmutableList.copyOf(fields);
     }
 
     /**
