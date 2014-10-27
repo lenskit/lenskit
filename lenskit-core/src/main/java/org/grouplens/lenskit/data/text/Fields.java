@@ -60,6 +60,14 @@ public final class Fields {
     }
 
     /**
+     * A field that is ignored.
+     * @return A field definition for a field to ignore.
+     */
+    public static Field<EventBuilder> ignored() {
+        return CommonFields.IGNORED;
+    }
+
+    /**
      * A timestamp field.
      * @param required {@code true} if the timestamp is required, {@code false} if it is optional.
      * @return A field definition for a required timestamp field.
@@ -73,6 +81,12 @@ public final class Fields {
     }
 
     private static enum CommonFields implements Field<EventBuilder> {
+        IGNORED {
+            @Override
+            public void apply(String token, EventBuilder builder) {
+                /* do nothing */
+            }
+        },
         USER {
             @Override
             public void apply(String token, EventBuilder builder) {

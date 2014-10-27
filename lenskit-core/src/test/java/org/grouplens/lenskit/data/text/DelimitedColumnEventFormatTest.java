@@ -21,18 +21,27 @@
 package org.grouplens.lenskit.data.text;
 
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.RatingBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
 
-public class DelimitedRatingFormatTest {
-    DelimitedRatingFormat format;
+public class DelimitedColumnEventFormatTest {
+    DelimitedColumnEventFormat<Rating,RatingBuilder> format;
 
     @Before
     public void createFormat() {
-        format = new DelimitedRatingFormat();
+        format = new DelimitedColumnEventFormat<Rating,RatingBuilder>(new RatingEventType());
+    }
+
+    @Test
+    public void testCreateForRatings() {
+        DelimitedColumnEventFormat fmt =
+                DelimitedColumnEventFormat.create("rating");
+        assertThat(fmt.getEventTypeDefinition(),
+                   instanceOf(RatingEventType.class));
     }
 
     @Test

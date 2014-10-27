@@ -60,10 +60,11 @@ public class TextEventDAO implements EventDAO {
      * Open a rating DAO.
      * @param file The file.
      * @param delim The delimiter.
-     * @return A DAO that parses ratings from {@code file} using {@link DelimitedRatingFormat}.
+     * @return A DAO that parses ratings from {@code file} using {@link DelimitedColumnEventFormat}.
      */
     public static TextEventDAO ratings(File file, String delim) {
-        EventFormat fmt = new DelimitedRatingFormat().setDelimiter(delim);
+        EventFormat fmt = DelimitedColumnEventFormat.create(new RatingEventType())
+                                                    .setDelimiter(delim);
         return new TextEventDAO(file, fmt);
     }
 

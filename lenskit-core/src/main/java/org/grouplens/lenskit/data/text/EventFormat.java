@@ -31,12 +31,6 @@ import org.grouplens.lenskit.data.event.Event;
  */
 public interface EventFormat {
     /**
-     * Return the type of event that this class returns.
-     * @return The event type returned by this class.
-     */
-    Class<? extends Event> getEventType();
-
-    /**
      * Parse a line into an event.
      *
      * @param line The line to parse.
@@ -46,7 +40,7 @@ public interface EventFormat {
 
     /**
      * Create a new context that may speed up parsing.  This will be passed to {@link #parse(String, Object)};
-     * it may be a builder to be reused, or a mutable object.
+     * will usually be a builder to be reused.
      * <p>
      * The context will only ever be used from one thread.
      * </p>
@@ -58,21 +52,11 @@ public interface EventFormat {
     /**
      * Parse using a context.  It is permitted for {@code context} to be a mutable event, and for
      * this method to return that event.  Cursors using this format will use {@link #copy(Event)}
-     * to copy the event if needed.  This method will only be used without {@code copy} in order to
-     * provide fast iteration.
+     * to copy the event if needed.
      *
      * @param line The line to parse.
      * @param context The parsing context.
      * @return
      */
     Event parse(String line, Object context) throws InvalidRowException;
-
-    /**
-     * Copy an event.  This only needs to copy the event if events returned by this layout are
-     * mutable.
-     *
-     * @param evt The event to copy.
-     * @return A copy of the event (can be the same event if events are not mutable).
-     */
-    Event copy(Event evt);
 }

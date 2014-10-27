@@ -68,10 +68,13 @@ public class FieldList<B extends EventBuilder> extends AbstractList<Field<? supe
     public void parse(StrTokenizer tokens, B builder) throws InvalidRowException {
         for (Field<? super B> field: fields) {
             String token = tokens.nextToken();
-            if (token == null && !field.isOptional()) {
+            if (token == null && field != null && !field.isOptional()) {
+                // fixme make nulls optional if they are at the end
                 throw new InvalidRowException("Non-optional field " + field.toString() + " missing");
             }
-            field.apply(token, builder);
+            if (field != null) {
+                field.apply(token, builder);
+            }
         }
     }
 

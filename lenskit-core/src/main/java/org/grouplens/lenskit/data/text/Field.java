@@ -25,19 +25,22 @@ import org.grouplens.lenskit.data.event.EventBuilder;
 /**
  * Identifiers for fields in a delimited/columnar database.
  *
- * @since 2.2
  * @param <B> The type of event builder.
+ * @since 2.2
  */
 public interface Field<B extends EventBuilder> {
+
     /**
      * Query whether this field is optional.
+     *
      * @return {@code true} if the field is optional.
      */
     boolean isOptional();
 
     /**
      * Apply the field's value to the builder.
-     * @param token The field value (or {@code null} if this is a nonexistent optional field).
+     *
+     * @param token   The field value (or {@code null} if this is a nonexistent optional field).
      * @param builder The builder into which to set the value.
      */
     void apply(String token, B builder);
