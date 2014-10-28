@@ -22,7 +22,6 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
-import org.grouplens.lenskit.collections.FastIterable;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.AbstractUserHistory;
@@ -34,7 +33,8 @@ import java.util.Iterator;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class BinaryUserHistory extends AbstractUserHistory<Rating> implements FastIterable<Rating> {
+@SuppressWarnings("deprecation")
+class BinaryUserHistory extends AbstractUserHistory<Rating> {
     private final long userId;
     private final BinaryRatingList ratings;
 
@@ -56,11 +56,6 @@ class BinaryUserHistory extends AbstractUserHistory<Rating> implements FastItera
     @Override
     public long getUserId() {
         return userId;
-    }
-
-    @Override
-    public Iterator<Rating> fastIterator() {
-        return iterator();
     }
 
     @Override

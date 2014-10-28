@@ -23,7 +23,6 @@ package org.grouplens.lenskit.data.dao.packed;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,7 +137,7 @@ class BinaryIndexTable implements Serializable {
     }
 
     @SuppressWarnings("deprecation")
-    private class EntryCollection extends AbstractCollection<Pair<Long, IntList>> implements FastCollection<Pair<Long,IntList>> {
+    private class EntryCollection extends AbstractCollection<Pair<Long, IntList>> {
         @Override
         public int size() {
             return keys.domainSize();
@@ -148,11 +147,6 @@ class BinaryIndexTable implements Serializable {
         @Nonnull
         public Iterator<Pair<Long, IntList>> iterator() {
             return new IterImpl();
-        }
-
-        @Override
-        public Iterator<Pair<Long, IntList>> fastIterator() {
-            return iterator();
         }
     }
 
