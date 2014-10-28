@@ -21,20 +21,18 @@
 package org.grouplens.lenskit.test;
 
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
-import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
+import org.grouplens.lenskit.data.text.Fields;
+import org.grouplens.lenskit.data.text.TextEventDAO;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.junit.Before;
 import org.junit.internal.AssumptionViolatedException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.List;
 
-import static org.hamcrest.Matchers.*;
 import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
 
@@ -46,23 +44,25 @@ public class ML100KTestSuite {
     protected final String ML100K_PROPERTY = "lenskit.movielens.100k";
     protected final String INPUT_FILE_NAME = "u.data";
 
-    protected EventDAO dao;
+    protected File inputFile;
+    protected EventDAO ratingDAO;
+    protected EventDAO implicitDAO;
 
     protected LenskitConfiguration getDaoConfig() {
         LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).to(dao);
+        config.bind(EventDAO.class).to(ratingDAO);
         return config;
     }
 
     @Before
-    public void createDAOFactory() throws FileNotFoundException {
+    public void createDAO() throws FileNotFoundException {
         String skip = System.getProperty("lenskit.integration.skip");
         if (skip != null && !skip.equalsIgnoreCase("true")) {
             throw new AssumptionViolatedException("Integration test skip requested");
         }
         final String dataProp = System.getProperty(ML100K_PROPERTY);
         final File dataDir = dataProp != null ? new File(dataProp) : new File("data/ml-100k");
-        final File inputFile = new File(dataDir, INPUT_FILE_NAME);
+        inputFile = new File(dataDir, INPUT_FILE_NAME);
         if (dataProp == null) {
             assumeTrue("MovieLens should be available. To correct this, unpack the" +
                        " MovieLens 100K data set into data/ml-100k, or set the" +
@@ -74,6 +74,10 @@ public class ML100KTestSuite {
             throw new FileNotFoundException("ML data set at " + inputFile + ". " +
                                             "See <http://lenskit.grouplens.org/ML100K>.");
         }
-        dao = SimpleFileRatingDAO.create(inputFile, "\t", CompressionMode.NONE);
+        ratingDAO = SimpleFileRatingDAO.create(inputFile, "\t", CompressionMode.NONE);
+        DelimitedColumnEventFormat format = DelimitedColumnEventFormat.create("plus");
+        format.setDelimiter("\t")
+              .setFields(Fields.user(), Fields.item(), Fields.ignored(), Fields.timestamp());
+        implicitDAO = TextEventDAO.create(inputFile, format);
     }
 }
