@@ -73,6 +73,7 @@ class SequencedCursor<T> extends AbstractCursor<T> {
 
     @Nonnull
     @Override
+    @Deprecated
     public T fastNext() {
         if (hasNext()) {
             assert current != null && current.hasNext();

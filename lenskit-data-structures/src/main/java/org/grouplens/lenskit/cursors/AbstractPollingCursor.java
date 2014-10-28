@@ -63,6 +63,7 @@ public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
 
     @Nonnull
     @Override
+    @Deprecated
     public T fastNext() {
         if (!hasNextCalled) {
             polled = poll();

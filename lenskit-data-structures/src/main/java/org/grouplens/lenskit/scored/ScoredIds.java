@@ -241,6 +241,7 @@ public final class ScoredIds {
         return new VectorIdCollection(vector);
     }
 
+    @SuppressWarnings("deprecation")
     private static class VectorIdCollection extends AbstractCollection<ScoredId> implements FastCollection<ScoredId> {
 
         private final SparseVector vector;
@@ -259,6 +260,7 @@ public final class ScoredIds {
             return new VectorIdIter(vector);
         }
 
+        @Deprecated
         @Override
         public Iterator<ScoredId> fastIterator() {
             return iterator();

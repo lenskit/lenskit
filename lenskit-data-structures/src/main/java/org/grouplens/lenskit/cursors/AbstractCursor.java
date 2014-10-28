@@ -68,11 +68,13 @@ public abstract class AbstractCursor<T> implements Cursor<T> {
      */
     @Nonnull
     @Override
+    @Deprecated
     public T fastNext() {
         return next();
     }
 
     @Override
+    @Deprecated
     public Iterable<T> fast() {
         return new FastIterable();
     }

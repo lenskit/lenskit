@@ -29,6 +29,7 @@ import java.util.Iterator;
  * Implementation of {@link CollectionUtils#fastFilterAndLimit(Iterable, Predicate, int)}.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@Deprecated
 class FilteringFastIterable<E> implements FastIterable<E> {
     private final Iterable<E> delegate;
     private final Predicate<? super E> predicate;
@@ -41,11 +42,13 @@ class FilteringFastIterable<E> implements FastIterable<E> {
     }
 
     @Override
+    @Deprecated
     public Iterator<E> fastIterator() {
         return iterator();
     }
 
     @Override
+    @Deprecated
     public Iterator<E> iterator() {
         return limit(Iterators.filter(delegate.iterator(), predicate));
     }
