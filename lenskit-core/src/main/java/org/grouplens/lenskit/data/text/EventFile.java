@@ -18,10 +18,9 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.dao;
+package org.grouplens.lenskit.data.text;
 
 import org.grouplens.lenskit.core.Parameter;
-import org.grouplens.lenskit.data.text.EventFile;
 
 import javax.inject.Qualifier;
 import java.io.File;
@@ -38,5 +37,5 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.METHOD})
 @Documented
-public @interface RatingFile {
+public @interface EventFile {
 }
