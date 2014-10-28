@@ -49,6 +49,7 @@ public class EventCollectionDAOTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testRatingStream() {
         List<Rating> ratings = Lists.newArrayList(
                 Ratings.make(1, 2, 3.5),

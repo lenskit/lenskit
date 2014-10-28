@@ -31,6 +31,7 @@ import static org.junit.Assert.assertThat;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  *
  */
+@SuppressWarnings("deprecation")
 public class IndexerTest {
 
     @Test
