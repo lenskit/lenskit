@@ -27,7 +27,7 @@ import java.io.File;
 import java.lang.annotation.*;
 
 /**
- * Rating file for {@link SimpleFileRatingDAO}.
+ * Rating file for {@link TextEventDAO}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 2.1

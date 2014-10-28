@@ -51,8 +51,7 @@ public interface EventFormat {
 
     /**
      * Parse using a context.  It is permitted for {@code context} to be a mutable event, and for
-     * this method to return that event.  Cursors using this format will use {@link #copy(Event)}
-     * to copy the event if needed.
+     * this method to return that event.
      *
      * @param line The line to parse.
      * @param context The parsing context.
