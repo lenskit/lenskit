@@ -47,11 +47,10 @@ task ciBuild(group: 'deploy') {
 tasks.all { task ->
     switch (task.name) {
         case 'check':
-        case 'assemble':
             ciBuild.dependsOn task
             break;
-        case 'javadoc':
-            if (JavaVersion.current() >= JavaVersion.VERSION_1_7) {
+        case 'assemble':
+            if (travis.activeJdk != "openjdk6") {
                 ciBuild.dependsOn task
             }
             break
