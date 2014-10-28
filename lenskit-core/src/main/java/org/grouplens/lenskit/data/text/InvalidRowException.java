@@ -28,6 +28,8 @@ import java.io.IOException;
  * @since 2.2
  */
 public class InvalidRowException extends IOException {
+    private static final long serialVersionUID = 8282534709484877314L;
+
     public InvalidRowException() {
     }
 

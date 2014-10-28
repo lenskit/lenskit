@@ -55,7 +55,7 @@ public final class PlusSumUserHistorySummarizer implements UserHistorySummarizer
     @Override @Nonnull
     public SparseVector summarize(@Nonnull UserHistory<? extends Event> history) {
         Long2DoubleMap map = new Long2DoubleOpenHashMap();
-        for (Event e : CollectionUtils.fast(history)) {
+        for (Event e : history) {
             if (e instanceof Plus) {
                 Plus pe = (Plus) e;
                 final long iid = pe.getItemId();
