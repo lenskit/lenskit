@@ -110,6 +110,7 @@ public class GroupingCursorTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testSameLetter() {
         List<String> items = Lists.newArrayList("foo", "frob", "fizzle");
         FirstLetterCursor cur = new FirstLetterCursor(items);
@@ -117,6 +118,7 @@ public class GroupingCursorTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testSeveralGroups() {
         FirstLetterCursor cur = new FirstLetterCursor(Arrays.asList("foo", "frob", "bar", "wombat", "woozle"));
         Assert.assertThat(cur, Matchers.contains(Arrays.asList("foo", "frob"),

@@ -76,6 +76,7 @@ public class ScoredIdImplTest {
 
     @Test
     public void testHasTypedChannel() {
+        @SuppressWarnings("unchecked")
         ScoredIdImpl sid = new ScoredIdImpl(1, 10.5, Lists.newArrayList(SymbolValue.of(fooIntSym, 1)));
         assertTrue(sid.hasChannel(fooIntSym));
         assertFalse(sid.hasChannel(barStrSym));
@@ -93,6 +94,7 @@ public class ScoredIdImplTest {
 
     @Test
     public void testTypedChannel() {
+        @SuppressWarnings("unchecked")
         ScoredIdImpl sid = new ScoredIdImpl(1, 10.5, Lists.newArrayList(SymbolValue.of(fooIntSym, 1)));
         assertEquals(new Integer(1), sid.getChannelValue(fooIntSym));
         assertNull(sid.getChannelValue(barStrSym));
@@ -108,6 +110,7 @@ public class ScoredIdImplTest {
     
     @Test
     public void testGetTypedChannels() {
+        @SuppressWarnings("unchecked")
         ScoredIdImpl sid = new ScoredIdImpl(1, 10.5, Lists.newArrayList(SymbolValue.of(fooIntSym, 1)));
         assertEquals(Collections.singleton(fooIntSym),sid.getChannelSymbols());
     }
@@ -152,6 +155,7 @@ public class ScoredIdImplTest {
     }
     
     @Test
+    @SuppressWarnings("unchecked")
     public void testEqualsDifferentTypedChannels() {
         ScoredIdImpl sid = new ScoredIdImpl(1,10.5, Lists.newArrayList(SymbolValue.of(fooIntSym, 1)));
         ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, Lists.newArrayList(SymbolValue.of(barStrSym, "hat")));
@@ -166,6 +170,7 @@ public class ScoredIdImplTest {
     }
     
     @Test
+    @SuppressWarnings("unchecked")
     public void testEqualsDifferentTypedChannelValues() {
         ScoredIdImpl sid = new ScoredIdImpl(1,10.5, Lists.newArrayList(SymbolValue.of(fooIntSym, 1)));
         ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5, Lists.newArrayList(SymbolValue.of(fooIntSym, 2)));
@@ -180,6 +185,7 @@ public class ScoredIdImplTest {
     }
     
     @Test
+    @SuppressWarnings("unchecked")
     public void testEqualsTypedChanneltoNoChannel() {
         ScoredIdImpl sid = new ScoredIdImpl(1,10.5, Lists.newArrayList(SymbolValue.of(fooIntSym, 1)));
         ScoredIdImpl sid2 = new ScoredIdImpl(1,10.5);

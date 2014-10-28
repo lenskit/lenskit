@@ -149,6 +149,7 @@ public class AbstractPollingCursorTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testCopyingCursorFast() {
         Cursor<Number> nums = new NumPC(3);
         try {

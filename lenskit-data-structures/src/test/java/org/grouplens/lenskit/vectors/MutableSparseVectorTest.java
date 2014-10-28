@@ -711,6 +711,7 @@ public class MutableSparseVectorTest extends SparseVectorTestCommon {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testVectorEntryIsSet() {
         MutableSparseVector msv = simpleVector();
         VectorEntry entry = msv.iterator().next();

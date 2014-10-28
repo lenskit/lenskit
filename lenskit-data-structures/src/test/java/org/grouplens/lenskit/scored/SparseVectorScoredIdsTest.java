@@ -20,16 +20,16 @@
  */
 package org.grouplens.lenskit.scored;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Test;
+
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.junit.Assert.*;
 
 public class SparseVectorScoredIdsTest {
@@ -59,8 +59,7 @@ public class SparseVectorScoredIdsTest {
         wombat.put(4, "goodbye");
         
         // check that the hasUnboxedChannel function is correct.
-        for(Iterator<ScoredId> it = ScoredIds.collectionFromVector(sv).fastIterator(); it.hasNext();) {
-            ScoredId sid = it.next();
+        for (ScoredId sid: ScoredIds.collectionFromVector(sv)) {
             assertTrue(sid.hasUnboxedChannel(fooSym));
             assertFalse(sid.hasUnboxedChannel(bazSym));
             assertTrue(sid.hasChannel(tsym));

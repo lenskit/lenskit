@@ -58,6 +58,7 @@ public class CursorsTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testEmptyCursorFastNext() {
         Cursor<String> cur = Cursors.empty();
         try {
@@ -131,6 +132,7 @@ public class CursorsTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void testWrapCollectionFastNext() {
         Cursor<String> cursor = Cursors.wrap(Lists.newArrayList("foo", "bar"));
         try {
@@ -210,6 +212,7 @@ public class CursorsTest {
     //region Concat
     @Test
     public void testEmptyConcat() {
+        @SuppressWarnings("unchecked")
         Cursor<String> cursor = Cursors.concat();
         assertThat(cursor.hasNext(), equalTo(false));
         try {
@@ -219,6 +222,7 @@ public class CursorsTest {
             /* expected */
         }
     }
+    @SuppressWarnings("unchecked")
     @Test
     public void testConcatEmpty() {
         Cursor<String> cursor = Cursors.concat(Cursors.<String>empty());
@@ -233,6 +237,7 @@ public class CursorsTest {
 
     @Test
     public void testConcatOne() {
+        @SuppressWarnings("unchecked")
         Cursor<String> cursor = Cursors.concat(Cursors.of("foo"));
         assertThat(cursor.hasNext(), equalTo(true));
         assertThat(cursor.next(), equalTo("foo"));
@@ -247,6 +252,7 @@ public class CursorsTest {
 
     @Test
     public void testConcatTwo() {
+        @SuppressWarnings("unchecked")
         Cursor<String> cursor = Cursors.concat(Cursors.of("foo", "bar"));
         assertThat(cursor.hasNext(), equalTo(true));
         assertThat(cursor.next(), equalTo("foo"));
@@ -262,6 +268,7 @@ public class CursorsTest {
 
     @Test
     public void testConcatTwoCursors() {
+        @SuppressWarnings("unchecked")
         Cursor<String> cursor = Cursors.concat(Cursors.of("foo"), Cursors.of("bar"));
         assertThat(cursor.hasNext(), equalTo(true));
         assertThat(cursor.next(), equalTo("foo"));
@@ -277,6 +284,7 @@ public class CursorsTest {
 
     @Test
     public void testConcatWithEmpty() {
+        @SuppressWarnings("unchecked")
         Cursor<String> cursor = Cursors.concat(Cursors.of("foo"),
                                                Cursors.<String>empty(),
                                                Cursors.of("bar"));
