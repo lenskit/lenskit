@@ -195,7 +195,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
-            for (VectorEntry rating : vector.fast()) {
+            for (VectorEntry rating : vector) {
                 vector.set(rating.getKey(), /* r' = (r - u) / s */
                            stdev == 0 ? 0 : // edge case
                                    (rating.getValue() - mean) / stdev);
@@ -205,7 +205,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
 
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
-            for (VectorEntry rating : vector.fast()) {
+            for (VectorEntry rating : vector) {
                 vector.set(rating.getKey(), /* r = r' * s + u */
                            stdev == 0 ? mean : // edge case
                                    (rating.getValue() * stdev) + mean);
