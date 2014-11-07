@@ -20,41 +20,40 @@
  */
 package org.grouplens.lenskit.data.event;
 
-/**
- * Basic implementation of {@link Plus}.
- */
-class SimplePlus implements Plus {
-    private final long userId;
-    private final long itemId;
-    private final int count;
-    private final long timestamp;
+import org.junit.Before;
+import org.junit.Test;
 
-    SimplePlus(long uid, long iid, int ct, long ts) {
-        userId = uid;
-        itemId = iid;
-        count = ct;
-        timestamp = ts;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+
+public class LikeBuilderTest {
+    LikeBuilder builder;
+
+    @Before
+    public void createBuilder() {
+        builder = new LikeBuilder();
     }
 
-    @Override
-    public int getCount() {
-        return count;
+    @Test
+    public void testBasicBuild() {
+        Like evt = builder.setUserId(42)
+                          .setItemId(39)
+                          .build();
+        assertThat(evt, notNullValue());
+        assertThat(evt.getUserId(), equalTo(42L));
+        assertThat(evt.getItemId(), equalTo(39L));
+        assertThat(evt.getTimestamp(), equalTo(-1L));
     }
 
-    @Override
-    public long getUserId() {
-        return userId;
+    @Test
+    public void testTimestampBuild() {
+        Like evt = builder.setUserId(42)
+                          .setItemId(39)
+                          .setTimestamp(1000)
+                          .build();
+        assertThat(evt, notNullValue());
+        assertThat(evt.getUserId(), equalTo(42L));
+        assertThat(evt.getItemId(), equalTo(39L));
+        assertThat(evt.getTimestamp(), equalTo(1000L));
     }
-
-    @Override
-    public long getItemId() {
-        return itemId;
-    }
-
-    @Override
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    // FIXME Add equals/hashcode
 }

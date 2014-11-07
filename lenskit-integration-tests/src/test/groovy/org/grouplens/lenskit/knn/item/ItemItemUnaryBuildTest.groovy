@@ -26,18 +26,15 @@ import org.grouplens.lenskit.baseline.BaselineScorer
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.baseline.UserMeanBaseline
 import org.grouplens.lenskit.baseline.UserMeanItemScorer
-import org.grouplens.lenskit.basic.SimpleRatingPredictor
 import org.grouplens.lenskit.config.ConfigHelpers
 import org.grouplens.lenskit.core.LenskitRecommender
 import org.grouplens.lenskit.core.LenskitRecommenderEngine
-import org.grouplens.lenskit.core.ModelDisposition
 import org.grouplens.lenskit.data.event.EventType
-import org.grouplens.lenskit.data.event.Plus
+import org.grouplens.lenskit.data.event.Like
 import org.grouplens.lenskit.data.history.EventCountUserHistorySummarizer
 import org.grouplens.lenskit.data.history.UserHistorySummarizer
 import org.grouplens.lenskit.knn.item.model.ItemItemModel
 import org.grouplens.lenskit.test.ML100KTestSuite
-import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UnitVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer
@@ -59,7 +56,7 @@ public class ItemItemUnaryBuildTest extends ML100KTestSuite {
                 bind VectorNormalizer to UnitVectorNormalizer
             }
             bind UserHistorySummarizer to EventCountUserHistorySummarizer
-            set EventType toInstance Plus
+            set EventType toInstance Like
             bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
             bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
         }

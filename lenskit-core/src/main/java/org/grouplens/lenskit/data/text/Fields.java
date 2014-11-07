@@ -22,7 +22,8 @@ package org.grouplens.lenskit.data.text;
 
 import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.data.event.EventBuilder;
-import org.grouplens.lenskit.data.event.PlusBuilder;
+import org.grouplens.lenskit.data.event.LikeBatchBuilder;
+import org.grouplens.lenskit.data.event.LikeBuilder;
 import org.grouplens.lenskit.data.event.RatingBuilder;
 
 import java.util.Collections;
@@ -100,8 +101,8 @@ public final class Fields {
      * A plus count field.
      * @return A field definition for a required plus count field.
      */
-    public static Field plusCount() {
-        return ValueFields.PLUS;
+    public static Field likeCount() {
+        return ValueFields.LIKE_COUNT;
     }
 
     private static enum CommonFields implements Field {
@@ -177,7 +178,7 @@ public final class Fields {
             }
         },
 
-        PLUS {
+        LIKE_COUNT {
             @Override
             public boolean isOptional() {
                 return false;
@@ -185,12 +186,12 @@ public final class Fields {
 
             @Override
             public Set<Class<? extends EventBuilder>> getExpectedBuilderTypes() {
-                return Collections.<Class<? extends EventBuilder>>singleton(PlusBuilder.class);
+                return Collections.<Class<? extends EventBuilder>>singleton(LikeBuilder.class);
             }
 
             @Override
             public void apply(String token, EventBuilder builder) {
-                ((PlusBuilder) builder).setCount(Integer.parseInt(token));
+                ((LikeBatchBuilder) builder).setCount(Integer.parseInt(token));
             }
         }
     }

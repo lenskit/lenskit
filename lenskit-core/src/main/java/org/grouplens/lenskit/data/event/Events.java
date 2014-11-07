@@ -68,48 +68,36 @@ public final class Events {
     };
 
     /**
-     * Create a new {@link Plus} event with no timestamp.
+     * Create a new {@link Like} event with no timestamp.
      *
      * @param user The user ID.
      * @param item The item ID.
-     * @return A {@link Plus} with a {@linkplain Plus#getCount() count} of 1.
+     * @return A {@link Like}.
      */
-    public static Plus plus(long user, long item) {
-        return plus(user, item, -1);
+    public static Like like(long user, long item) {
+        return like(user, item, -1);
     }
 
     /**
-     * Create a new {@link Plus} event.
+     * Create a new {@link Like} event.
      *
      * @param user The user ID.
      * @param item The item ID.
      * @param ts The timestamp.
-     * @return A {@link Plus} with a {@linkplain Plus#getCount() count} of 1.
+     * @return A {@link Like}.
      */
-    public static Plus plus(long user, long item, long ts) {
-        return new SimplePlus(user, item, 1, ts);
+    public static Like like(long user, long item, long ts) {
+        return new SimpleLike(user, item, ts);
     }
 
     /**
-     * Create a {@link Plus} event with a nonzero count.
+     * Create a {@link LikeBatch} event with a nonzero count.
      * @param user The user ID.
      * @param item The item ID.
      * @param count The count.
      * @return The new event.
      */
-    public static Plus multiPlus(long user, long item, int count) {
-        return multiPlus(user, item, count, -1);
-    }
-
-    /**
-     * Create a {@link Plus} event with a nonzero count.
-     * @param user The user ID.
-     * @param item The item ID.
-     * @param count The count.
-     * @param ts The event timestamp.
-     * @return The new event.
-     */
-    public static Plus multiPlus(long user, long item, int count, long ts) {
-        return new SimplePlus(user, item, count, ts);
+    public static LikeBatch likeBatch(long user, long item, int count) {
+        return new SimpleLikeBatch(user, item, count);
     }
 }

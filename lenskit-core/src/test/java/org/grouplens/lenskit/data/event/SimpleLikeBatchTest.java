@@ -20,21 +20,18 @@
  */
 package org.grouplens.lenskit.data.event;
 
-/**
- * Generic interface representing a unary interaction.  This provides a basic, generic representation
- * of likes, clicks, purchases, and other unary interactions.  Applications may want to implement
- * their own events to represent such interactions.
- *
- * @since 2.2
- * @see Events#plus(long, long)
- * @see Events#plus(long, long, long)
- */
-public interface Plus extends Event {
-    /**
-     * Plus events can be batched or amplified.  One example of this is with a summary data set
-     * of play counts.  A single interaction will have a count of 1.
-     *
-     * @return The count associated with this event.
-     */
-    int getCount();
+import org.junit.Test;
+
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+
+public class SimpleLikeBatchTest {
+    @Test
+    public void testSimpleLikeBatch() {
+        LikeBatch like = Events.likeBatch(42, 67, 39);
+        assertThat(like.getUserId(), equalTo(42L));
+        assertThat(like.getItemId(), equalTo(67L));
+        assertThat(like.getTimestamp(), equalTo(-1L));
+        assertThat(like.getCount(), equalTo(39));
+    }
 }

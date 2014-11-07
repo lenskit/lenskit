@@ -23,22 +23,23 @@ package org.grouplens.lenskit.data.event;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
-public class PlusBuilderTest {
-    PlusBuilder builder;
+public class LikeBatchBuilderTest {
+    LikeBatchBuilder builder;
 
     @Before
     public void createBuilder() {
-        builder = new PlusBuilder();
+        builder = new LikeBatchBuilder();
     }
 
     @Test
     public void testBasicBuild() {
-        Plus evt = builder.setUserId(42)
-                          .setItemId(39)
-                          .build();
+        LikeBatch evt = builder.setUserId(42)
+                               .setItemId(39)
+                               .build();
         assertThat(evt, notNullValue());
         assertThat(evt.getUserId(), equalTo(42L));
         assertThat(evt.getItemId(), equalTo(39L));
@@ -47,29 +48,15 @@ public class PlusBuilderTest {
     }
 
     @Test
-    public void testTimestampBuild() {
-        Plus evt = builder.setUserId(42)
-                          .setItemId(39)
-                          .setTimestamp(1000)
-                          .build();
-        assertThat(evt, notNullValue());
-        assertThat(evt.getUserId(), equalTo(42L));
-        assertThat(evt.getItemId(), equalTo(39L));
-        assertThat(evt.getCount(), equalTo(1));
-        assertThat(evt.getTimestamp(), equalTo(1000L));
-    }
-
-    @Test
     public void testCountBuild() {
-        Plus evt = builder.setUserId(42)
-                          .setItemId(39)
-                          .setCount(50)
-                          .setTimestamp(1000)
-                          .build();
+        LikeBatch evt = builder.setUserId(42)
+                               .setItemId(39)
+                               .setCount(50)
+                               .build();
         assertThat(evt, notNullValue());
         assertThat(evt.getUserId(), equalTo(42L));
         assertThat(evt.getItemId(), equalTo(39L));
         assertThat(evt.getCount(), equalTo(50));
-        assertThat(evt.getTimestamp(), equalTo(1000L));
+        assertThat(evt.getTimestamp(), equalTo(-1L));
     }
 }

@@ -24,36 +24,36 @@ import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSet;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.event.EventBuilder;
-import org.grouplens.lenskit.data.event.PlusBuilder;
+import org.grouplens.lenskit.data.event.LikeBatchBuilder;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Event type for {@link org.grouplens.lenskit.data.event.Plus}, reading plus events with optional
- * timestamps.
+ * Event type for {@link org.grouplens.lenskit.data.event.Like}, reading plus counts without
+ * timestamps (by default).
  *
  * @since 2.2
  */
-@AutoService(EventTypeDefinition.class)
+@AutoService(EventTypeDefinition.class) // register this class to be locatable as an event type
 @Shareable
-public class PlusEventType implements EventTypeDefinition, Serializable {
+public class LikeBatchEventType implements EventTypeDefinition, Serializable {
     private static final long serialVersionUID = 1L;
 
     @Override
     public String getName() {
-        return "plus";
+        return "like-batch";
     }
 
     @Override
     public Class<? extends EventBuilder> getBuilderType() {
-        return PlusBuilder.class;
+        return LikeBatchBuilder.class;
     }
 
     @Override
-    public PlusBuilder newBuilder() {
-        return new PlusBuilder();
+    public LikeBatchBuilder newBuilder() {
+        return new LikeBatchBuilder();
     }
 
     @Override
@@ -65,6 +65,6 @@ public class PlusEventType implements EventTypeDefinition, Serializable {
     public List<Field> getDefaultFields() {
         return Fields.list(Fields.user(),
                            Fields.item(),
-                           Fields.timestamp(false));
+                           Fields.likeCount());
     }
 }

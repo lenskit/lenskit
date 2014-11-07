@@ -24,36 +24,36 @@ import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSet;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.event.EventBuilder;
-import org.grouplens.lenskit.data.event.PlusBuilder;
+import org.grouplens.lenskit.data.event.LikeBuilder;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Event type for {@link org.grouplens.lenskit.data.event.Plus}, reading plus counts without
- * timestamps (by default).
+ * Event type for {@link org.grouplens.lenskit.data.event.Like}, reading plus events with optional
+ * timestamps.
  *
  * @since 2.2
  */
-@AutoService(EventTypeDefinition.class)
+@AutoService(EventTypeDefinition.class) // register this class to be loadable as an event type
 @Shareable
-public class PlusCountEventType implements EventTypeDefinition, Serializable {
+public class LikeEventType implements EventTypeDefinition, Serializable {
     private static final long serialVersionUID = 1L;
 
     @Override
     public String getName() {
-        return "plus-count";
+        return "like";
     }
 
     @Override
     public Class<? extends EventBuilder> getBuilderType() {
-        return PlusBuilder.class;
+        return LikeBuilder.class;
     }
 
     @Override
-    public PlusBuilder newBuilder() {
-        return new PlusBuilder();
+    public LikeBuilder newBuilder() {
+        return new LikeBuilder();
     }
 
     @Override
@@ -65,6 +65,6 @@ public class PlusCountEventType implements EventTypeDefinition, Serializable {
     public List<Field> getDefaultFields() {
         return Fields.list(Fields.user(),
                            Fields.item(),
-                           Fields.plusCount());
+                           Fields.timestamp(false));
     }
 }

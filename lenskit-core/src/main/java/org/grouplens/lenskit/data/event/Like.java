@@ -20,28 +20,14 @@
  */
 package org.grouplens.lenskit.data.event;
 
-import org.junit.Test;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
-
-public class SimplePlusTest {
-    @Test
-    public void testSimplePlus() {
-        Plus plus = Events.plus(42, 67);
-        assertThat(plus.getUserId(), equalTo(42L));
-        assertThat(plus.getItemId(), equalTo(67L));
-        assertThat(plus.getCount(), equalTo(1));
-        assertThat(plus.getTimestamp(), equalTo(-1L));
-    }
-
-    @Test
-    public void testTimestampedPlus() {
-        long ts = System.currentTimeMillis() / 1000;
-        Plus plus = Events.plus(42, 67, ts);
-        assertThat(plus.getUserId(), equalTo(42L));
-        assertThat(plus.getItemId(), equalTo(67L));
-        assertThat(plus.getCount(), equalTo(1));
-        assertThat(plus.getTimestamp(), equalTo(ts));
-    }
+/**
+ * Generic interface representing a unary interaction.  This provides a basic, generic representation
+ * of likes, clicks, purchases, and other unary interactions.  Applications may want to implement
+ * their own events to represent such interactions.
+ *
+ * @since 2.2
+ * @see Events#like(long, long)
+ * @see Events#like(long, long, long)
+ */
+public interface Like extends Event {
 }

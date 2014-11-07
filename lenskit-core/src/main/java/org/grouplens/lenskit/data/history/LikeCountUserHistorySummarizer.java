@@ -20,58 +20,60 @@
  */
 package org.grouplens.lenskit.data.history;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.EventType;
-import org.grouplens.lenskit.data.event.Plus;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.data.event.Like;
+import org.grouplens.lenskit.data.event.LikeBatch;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 /**
- * Summarize a history by summing the {@link Plus} values reference an item.
+ * Summarize a history by counting likes (both batched and unbatched).
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @Shareable
-public final class PlusSumUserHistorySummarizer implements UserHistorySummarizer {
+public final class LikeCountUserHistorySummarizer implements UserHistorySummarizer {
     /**
-     * Create a new plus sum summarizer.
+     * Create a new like count summarizer.  It counts like events and adds {@link LikeBatch} events.
      */
     @Inject
-    public PlusSumUserHistorySummarizer() {
+    public LikeCountUserHistorySummarizer() {
     }
 
     @Override
     public Class<? extends Event> eventTypeWanted() {
-        return Plus.class;
+        return Event.class;
     }
 
     @Override @Nonnull
     public SparseVector summarize(@Nonnull UserHistory<? extends Event> history) {
-        Long2DoubleMap map = new Long2DoubleOpenHashMap();
+        MutableSparseVector v = MutableSparseVector.create(history.itemSet());
+        v.fill(0);
         for (Event e : history) {
-            if (e instanceof Plus) {
-                Plus pe = (Plus) e;
-                final long iid = pe.getItemId();
-                map.put(iid, map.get(iid) + pe.getCount());
+            final long iid = e.getItemId();
+            if (e instanceof Like) {
+                v.add(iid, 1);
+            } else if (e instanceof LikeBatch) {
+                LikeBatch lb = (LikeBatch) e;
+                v.add(iid, lb.getCount());
             }
         }
-        return ImmutableSparseVector.create(map);
+        v.unsetLessThan(0.1);
+        return v.freeze();
     }
 
     @Override
     public int hashCode() {
-        return PlusSumUserHistorySummarizer.class.hashCode();
+        return LikeCountUserHistorySummarizer.class.hashCode();
     }
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof PlusSumUserHistorySummarizer;
+        return o instanceof LikeCountUserHistorySummarizer;
     }
 }

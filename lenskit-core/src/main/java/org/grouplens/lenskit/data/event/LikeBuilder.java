@@ -21,62 +21,49 @@
 package org.grouplens.lenskit.data.event;
 
 import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.builder.Builder;
 
 /**
- * Builder for {@link Plus} events.
+ * Builder for {@link Like} events.
  *
  * @since 2.2
- * @see Plus
+ * @see Like
  */
-public class PlusBuilder implements EventBuilder<Plus> {
+public class LikeBuilder implements EventBuilder<Like> {
     private long userId;
     private long itemId;
     private long timestamp = -1;
-    private int count = 1;
     private boolean hasUserId, hasItemId;
 
     @Override
     public void reset() {
         hasUserId = hasItemId = false;
         timestamp = -1;
-        count = 1;
     }
 
     @Override
-    public PlusBuilder setUserId(long uid) {
+    public LikeBuilder setUserId(long uid) {
         userId = uid;
         hasUserId = true;
         return this;
     }
 
     @Override
-    public PlusBuilder setItemId(long iid) {
+    public LikeBuilder setItemId(long iid) {
         itemId = iid;
         hasItemId = true;
         return this;
     }
 
     @Override
-    public PlusBuilder setTimestamp(long ts) {
+    public LikeBuilder setTimestamp(long ts) {
         timestamp = ts;
         return this;
     }
 
-    /**
-     * Set the count associated with the event.
-     * @param ct The count/value.
-     * @return The builder (for chaining).
-     */
-    public PlusBuilder setCount(int ct) {
-        count = ct;
-        return this;
-    }
-
     @Override
-    public Plus build() {
+    public Like build() {
         Preconditions.checkArgument(hasUserId, "no user ID set");
         Preconditions.checkArgument(hasItemId, "no item ID set");
-        return new SimplePlus(userId, itemId, count, timestamp);
+        return new SimpleLike(userId, itemId, timestamp);
     }
 }
