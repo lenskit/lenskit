@@ -75,6 +75,19 @@ public final class Fields {
     }
 
     /**
+     * A field that is ignored and may be optional.
+     * @param optional {@code true} if the field is optional (it may or may not appear).
+     * @return A field definition for a field to ignore.
+     */
+    public static Field ignored(boolean optional) {
+        if (optional) {
+            return CommonFields.OPTIONAL_IGNORE;
+        } else {
+            return CommonFields.IGNORED;
+        }
+    }
+
+    /**
      * Create a list of fields.  This helper is structured to aid in type inference.
      *
      * @param fields The fields to put in the list.
@@ -107,6 +120,17 @@ public final class Fields {
 
     private static enum CommonFields implements Field {
         IGNORED {
+            @Override
+            public void apply(String token, EventBuilder builder) {
+                /* do nothing */
+            }
+        },
+        OPTIONAL_IGNORE {
+            @Override
+            public boolean isOptional() {
+                return true;
+            }
+
             @Override
             public void apply(String token, EventBuilder builder) {
                 /* do nothing */

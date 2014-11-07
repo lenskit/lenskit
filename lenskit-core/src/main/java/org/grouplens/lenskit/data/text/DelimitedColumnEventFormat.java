@@ -149,9 +149,18 @@ public final class DelimitedColumnEventFormat implements EventFormat {
                 return input != null && input.isAssignableFrom(eventTypeDef.getBuilderType());
             }
         };
+        boolean seenOptional = false;
         for (Field fld: fields) {
+            if (fld == null) {
+                throw new NullPointerException("field is null");
+            }
             if (!Iterables.any(fld.getExpectedBuilderTypes(), canConfigBuilderType)) {
                 throw new IllegalArgumentException("Field " + fld + " cannot configure builder " + eventTypeDef.getBuilderType());
+            }
+            if (seenOptional && !fld.isOptional()) {
+                throw new IllegalArgumentException("Non-optional field {} after optional field {}");
+            } else if (fld.isOptional()) {
+                seenOptional = true;
             }
         }
         fieldList = ImmutableList.copyOf(fields);
@@ -169,8 +178,7 @@ public final class DelimitedColumnEventFormat implements EventFormat {
     private Event parse(StrTokenizer tok, EventBuilder<?> builder) throws InvalidRowException {
         for (Field field: fieldList) {
             String token = tok.nextToken();
-            if (token == null && field != null && !field.isOptional()) {
-                // fixme make nulls optional if they are at the end
+            if (token == null && !field.isOptional()) {
                 throw new InvalidRowException("Non-optional field " + field.toString() + " missing");
             }
             if (field != null) {
