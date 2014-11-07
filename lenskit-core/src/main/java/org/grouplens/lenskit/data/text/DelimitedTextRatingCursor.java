@@ -36,7 +36,7 @@ import javax.annotation.WillCloseWhenClosed;
 import java.io.BufferedReader;
 
 /**
- * Cursor that parses arbitrary delimited text.
+ * Cursor that parses arbitrary delimited text into {@link Rating} objects.
  *
  * @compat Public
  * @since 2.2

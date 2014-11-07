@@ -38,9 +38,9 @@ public class LineCursor extends AbstractPollingCursor<String> {
     private int lineNumber = 0;
 
     /**
-     * Construct a cursor reading text from a scanner with a regex delimiter.
+     * Construct a cursor reading lines from a buffered reader.
      *
-     * @param in    The input scanner.
+     * @param in    The input reader.
      */
     public LineCursor(@WillCloseWhenClosed @Nonnull BufferedReader in) {
         input = in;
@@ -53,7 +53,7 @@ public class LineCursor extends AbstractPollingCursor<String> {
      * @throws java.io.FileNotFoundException if {@var file} is not found.
      */
     public LineCursor(File file) throws FileNotFoundException {
-        // REVIEW This doesn't handle an error constructing the BufferedReader
+        // FIXME This doesn't handle an error constructing the BufferedReader
         this(new BufferedReader(new FileReader(file)));
     }
 

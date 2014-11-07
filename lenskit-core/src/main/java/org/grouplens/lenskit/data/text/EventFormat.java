@@ -50,8 +50,7 @@ public interface EventFormat {
     Object newContext();
 
     /**
-     * Parse using a context.  It is permitted for {@code context} to be a mutable event, and for
-     * this method to return that event.
+     * Parse using a context.
      *
      * @param line The line to parse.
      * @param context The parsing context.

@@ -68,7 +68,7 @@ public final class History {
     }
 
     /**
-     * Create an empty history for a particular user.
+     * Create a history for a particular user with an array of events.
      * @param id The user ID.
      * @param events The events.
      * @param <E> The type of event in the history.
