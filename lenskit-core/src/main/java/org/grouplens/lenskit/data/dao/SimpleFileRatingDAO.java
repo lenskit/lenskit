@@ -45,7 +45,9 @@ import java.util.Comparator;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
+ * @deprecated Use {@link org.grouplens.lenskit.data.text.TextEventDAO} instead.
  */
+@Deprecated
 public class SimpleFileRatingDAO implements EventDAO, Describable {
     private static final Logger logger = LoggerFactory.getLogger(SimpleFileRatingDAO.class);
 
