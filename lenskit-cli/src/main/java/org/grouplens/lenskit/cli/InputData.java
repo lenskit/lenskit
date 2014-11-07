@@ -182,7 +182,7 @@ public class InputData {
         options.addArgument("-t", "--event-type")
                .setDefault("rating")
                .metavar("TYPE")
-               .help("input file contains TYPE data");
+               .help("read events of type TYPE from input file");
         group.addArgument("--pack-file")
              .type(File.class)
              .metavar("FILE")
