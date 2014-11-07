@@ -173,8 +173,17 @@ public final class Fields {
 
             @Override
             public void apply(String token, EventBuilder builder) {
-                // TODO Add support for unrate events
-                ((RatingBuilder) builder).setRating(Double.parseDouble(token));
+                RatingBuilder rb = (RatingBuilder) builder;
+                if (token == null || token.equals("")) {
+                    rb.clearRating();
+                } else {
+                    double v = Double.parseDouble(token);
+                    if (Double.isNaN(v)) {
+                        rb.clearRating();
+                    } else {
+                        rb.setRating(v);
+                    }
+                }
             }
         },
 
