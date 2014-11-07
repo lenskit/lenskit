@@ -21,11 +21,14 @@
 package org.grouplens.lenskit.util;
 
 import com.google.common.base.Throwables;
+import com.google.common.io.Closer;
+import com.google.common.io.Files;
 import org.grouplens.lenskit.cursors.AbstractPollingCursor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillCloseWhenClosed;
 import java.io.*;
+import java.nio.charset.Charset;
 
 /**
  * Cursor that reads lines from a file.
@@ -47,14 +50,14 @@ public class LineCursor extends AbstractPollingCursor<String> {
     }
 
     /**
-     * Construct a delimited text cursor from a file.
+     * Open a delimited text cursor as a file.
      *
-     * @param file  The name of the file to read.
-     * @throws java.io.FileNotFoundException if {@var file} is not found.
+     * @param file The file to open.
+     * @return The cursor.
+     * @throws FileNotFoundException if there is an error opening the file.
      */
-    public LineCursor(File file) throws FileNotFoundException {
-        // FIXME This doesn't handle an error constructing the BufferedReader
-        this(new BufferedReader(new FileReader(file)));
+    public static LineCursor openFile(File file) throws FileNotFoundException {
+        return new LineCursor(Files.newReader(file, Charset.defaultCharset()));
     }
 
     @Override

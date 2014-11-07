@@ -75,7 +75,7 @@ public class TextEventDAO implements EventDAO {
     @Override
     public Cursor<Event> streamEvents() {
         try {
-            return new EventCursor(new LineCursor(inputFile));
+            return new EventCursor(LineCursor.openFile(inputFile));
         } catch (FileNotFoundException e) {
             throw new DataAccessException("cannot open " + inputFile, e);
         }
