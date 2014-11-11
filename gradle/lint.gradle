@@ -30,6 +30,7 @@ report.dependsOn jacocoMergedReport
 apply plugin: 'sonar-runner'
 
 sonarRunner {
+    toolVersion = '2.4'
     sonarProperties {
         property "sonar.host.url", "https://sonar.cs.txstate.edu"
         property "sonar.jdbc.driverClassName", "org.postgresql.Driver"
