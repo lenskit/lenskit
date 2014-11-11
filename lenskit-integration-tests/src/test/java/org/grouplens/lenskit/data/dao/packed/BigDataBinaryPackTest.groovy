@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.data.dao.packed
 
 import com.google.common.collect.Iterables
+import groovy.transform.CompileStatic
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongSet
 import org.grouplens.lenskit.collections.LongUtils
