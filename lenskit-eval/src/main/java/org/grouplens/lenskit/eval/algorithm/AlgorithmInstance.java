@@ -113,12 +113,14 @@ public class AlgorithmInstance implements Attributed {
 
     /**
      * Build a recommender.
+     *
      * @param defaults Additional configuration.  This configuration comes <em>before</em> the
-     *                 algorithm's configuration, so it is overridden if appropriate.
-     * @return
+     *                 algorithm's configuration, so it is overridden if appropriate.  It is used
+     *                 for providing things such as DAOs.
+     * @return The instantiated recommender.
      * @throws RecommenderBuildException
      */
-    public LenskitRecommender buildRecommender(LenskitConfiguration defaults) throws RecommenderBuildException {
+    public LenskitRecommender buildRecommender(@Nullable LenskitConfiguration defaults) throws RecommenderBuildException {
         LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
         if (defaults != null) {
             builder.addConfiguration(defaults);
@@ -130,20 +132,17 @@ public class AlgorithmInstance implements Attributed {
     /**
      * Build a recommender graph (but don't instantiate any objects).
      *
-     *
      * @param defaults Additional configuration.  This configuration comes <em>before</em> the
-     *                 algorithm's configuration, so it is overridden if appropriate.
+     *                 algorithm's configuration, so it is overridden if appropriate.  It is used
+     *                 for providing things such as DAOs.
      * @return The recommender graph.
      * @throws RecommenderConfigurationException if there is an error configuring the recommender.
      */
-    public DAGNode<Component,Dependency> buildRecommenderGraph(LenskitConfiguration defaults) throws RecommenderConfigurationException {
-        LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
-        if (defaults != null) {
-            builder.addConfiguration(defaults);
-        }
-        builder.addConfiguration(config);
+    public DAGNode<Component,Dependency> buildRecommenderGraph(@Nullable LenskitConfiguration defaults) throws RecommenderConfigurationException {
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
-        rgb.addConfiguration(defaults);
+        if (defaults != null) {
+            rgb.addConfiguration(defaults);
+        }
         rgb.addConfiguration(config);
         try {
             return rgb.buildGraph();
