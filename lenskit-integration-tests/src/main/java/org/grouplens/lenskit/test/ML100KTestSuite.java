@@ -75,7 +75,7 @@ public class ML100KTestSuite {
                                             "See <http://lenskit.grouplens.org/ML100K>.");
         }
         ratingDAO = SimpleFileRatingDAO.create(inputFile, "\t", CompressionMode.NONE);
-        DelimitedColumnEventFormat format = DelimitedColumnEventFormat.create("plus");
+        DelimitedColumnEventFormat format = DelimitedColumnEventFormat.create("like");
         format.setDelimiter("\t")
               .setFields(Fields.user(), Fields.item(), Fields.ignored(), Fields.timestamp());
         implicitDAO = TextEventDAO.create(inputFile, format);
