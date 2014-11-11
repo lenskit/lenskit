@@ -18,9 +18,8 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.dao;
+package org.grouplens.lenskit.data.text;
 
-import org.grouplens.grapht.annotation.AliasFor;
 import org.grouplens.lenskit.core.Parameter;
 
 import javax.inject.Qualifier;
@@ -28,15 +27,13 @@ import java.io.File;
 import java.lang.annotation.*;
 
 /**
- * User list file for {@link org.grouplens.lenskit.data.text.SimpleFileUserDAOProvider}.
+ * User list file for {@link SimpleFileUserDAOProvider}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 2.1
- * @deprecated Use {@link org.grouplens.lenskit.data.text} instead.
  */
 @Qualifier
-@AliasFor(org.grouplens.lenskit.data.text.UserFile.class)
-@Deprecated
+@Parameter(File.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.METHOD})
 @Documented

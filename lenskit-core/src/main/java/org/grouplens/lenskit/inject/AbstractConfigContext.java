@@ -24,6 +24,7 @@ import com.google.common.base.Preconditions;
 import org.grouplens.grapht.AbstractContext;
 import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.Context;
+import org.grouplens.grapht.reflect.Qualifiers;
 import org.grouplens.lenskit.core.LenskitBinding;
 import org.grouplens.lenskit.core.LenskitConfigContext;
 import org.grouplens.lenskit.core.Parameter;
@@ -65,9 +66,11 @@ public abstract class AbstractConfigContext extends AbstractContext implements L
 
     @Override
     @SuppressWarnings("rawtypes")
-    public Binding set(Class<? extends Annotation> param) {
+    public Binding set(@Nonnull Class<? extends Annotation> param) {
         Preconditions.checkNotNull(param);
-        final Parameter annot = param.getAnnotation(Parameter.class);
+        // Parameter annotation appears on the alias target
+        Class<? extends Annotation> real = Qualifiers.resolveAliases(param);
+        final Parameter annot = real.getAnnotation(Parameter.class);
         if (annot == null) {
             throw new IllegalArgumentException(param.toString() + "has no Parameter annotation");
         }

@@ -20,16 +20,14 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
-import com.google.common.hash.PrimitiveSink;
 import com.google.common.io.Closeables;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
@@ -47,7 +45,9 @@ import java.util.Comparator;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
+ * @deprecated Use {@link org.grouplens.lenskit.data.text.TextEventDAO} instead.
  */
+@Deprecated
 public class SimpleFileRatingDAO implements EventDAO, Describable {
     private static final Logger logger = LoggerFactory.getLogger(SimpleFileRatingDAO.class);
 
@@ -69,7 +69,6 @@ public class SimpleFileRatingDAO implements EventDAO, Describable {
         delimiter = delim;
         compression = comp;
     }
-
 
     /**
      * Create a DAO reading from the specified file/URL and delimiter.

@@ -61,7 +61,7 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
         configureAlgorithm(algo.getConfig());
         evalCommand.addAlgorithm(algo);
 
-        evalCommand.addDataset(new GenericDataSource("ml-100k", dao, PreferenceDomain.fromString("[1,5]/1")), 5, 0.2);
+        evalCommand.addDataset(new GenericDataSource("ml-100k", ratingDAO, PreferenceDomain.fromString("[1,5]/1")), 5, 0.2);
 
         evalCommand.addMetric(new CoveragePredictMetric())
                    .addMetric(new RMSEPredictMetric())

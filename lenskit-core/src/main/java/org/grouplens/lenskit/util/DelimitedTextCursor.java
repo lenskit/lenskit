@@ -20,13 +20,14 @@
  */
 package org.grouplens.lenskit.util;
 
-import com.google.common.base.Throwables;
-import org.grouplens.lenskit.cursors.AbstractPollingCursor;
-import org.grouplens.lenskit.util.io.LKFileUtils;
+import org.grouplens.lenskit.cursors.AbstractCursor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillCloseWhenClosed;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.regex.Pattern;
 
 /**
@@ -35,10 +36,9 @@ import java.util.regex.Pattern;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-public class DelimitedTextCursor extends AbstractPollingCursor<String[]> {
-    private BufferedReader input;
+public class DelimitedTextCursor extends AbstractCursor<String[]> {
+    private LineCursor lines;
     private Pattern delimiter;
-    private int lineNumber = 0;
 
     /**
      * Construct a cursor reading text from a scanner with a regex delimiter.
@@ -48,7 +48,7 @@ public class DelimitedTextCursor extends AbstractPollingCursor<String[]> {
      */
     public DelimitedTextCursor(@WillCloseWhenClosed @Nonnull BufferedReader in,
                                @Nonnull Pattern delim) {
-        input = in;
+        lines = new LineCursor(in);
         delimiter = delim;
     }
 
@@ -76,19 +76,15 @@ public class DelimitedTextCursor extends AbstractPollingCursor<String[]> {
     }
 
     @Override
-    public String[] poll() {
-        String line;
-        try {
-            line = input.readLine();
-        } catch (IOException e) {
-            throw new RuntimeException("error reading line", e);
-        }
-        if (line == null) {
-            return null;
-        } else {
-            lineNumber++;
-            return delimiter.split(line);
-        }
+    public boolean hasNext() {
+        return lines.hasNext();
+    }
+
+    @Nonnull
+    @Override
+    public String[] next() {
+        String str = lines.next();
+        return delimiter.split(str);
     }
 
     /**
@@ -97,15 +93,11 @@ public class DelimitedTextCursor extends AbstractPollingCursor<String[]> {
      * @return The number of the last line retrieved.
      */
     public int getLineNumber() {
-        return lineNumber;
+        return lines.getLineNumber();
     }
 
     @Override
     public void close() {
-        try {
-            input.close();
-        } catch (IOException ex) {
-            throw Throwables.propagate(ex);
-        }
+        lines.close();
     }
 }

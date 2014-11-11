@@ -760,4 +760,13 @@ public class MutableSparseVectorTest extends SparseVectorTestCommon {
         v1.unset(7);
         assertThat(v1.unsetKeySet(), contains(7L));
     }
+
+    @Test
+    public void testUnsetThreshold() {
+        MutableSparseVector v = simpleVector();
+        v.unsetLessThan(2);
+        assertThat(v.size(), equalTo(2));
+        assertThat(v.get(7), closeTo(3.5));
+        assertThat(v.get(8), closeTo(2));
+    }
 }

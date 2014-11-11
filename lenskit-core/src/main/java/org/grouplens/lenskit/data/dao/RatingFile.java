@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.data.dao;
 
 import org.grouplens.lenskit.core.Parameter;
+import org.grouplens.lenskit.data.text.EventFile;
 
 import javax.inject.Qualifier;
 import java.io.File;
@@ -30,6 +31,7 @@ import java.lang.annotation.*;
  * Rating file for {@link SimpleFileRatingDAO}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 2.1
  */
 @Qualifier
 @Parameter(File.class)

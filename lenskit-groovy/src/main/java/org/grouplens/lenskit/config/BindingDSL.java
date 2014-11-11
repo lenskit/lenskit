@@ -131,7 +131,7 @@ public class BindingDSL extends AbstractConfigContext {
     /** @see LenskitConfigContext#set(Class) */
     @Override
     @SuppressWarnings("rawtypes")
-    public Binding set(Class<? extends Annotation> param) {
+    public Binding set(@Nonnull Class<? extends Annotation> param) {
         return context.set(param);
     }
 

@@ -22,6 +22,7 @@ package org.grouplens.lenskit.data.dao;
 
 import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.cursors.AbstractPollingCursor;
+import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
@@ -35,10 +36,13 @@ import javax.annotation.WillCloseWhenClosed;
 import java.io.BufferedReader;
 
 /**
- * Cursor that parses arbitrary delimited text.
+ * Cursor that parses arbitrary delimited text into {@link Rating} objects.
  *
  * @compat Public
+ * @since 2.2
+ * @deprecated Use the code in {@link org.grouplens.lenskit.data.text}.
  */
+@Deprecated
 public class DelimitedTextRatingCursor extends AbstractPollingCursor<Rating> {
     protected Logger logger = LoggerFactory.getLogger(getClass());
     private final String fileName;
@@ -51,13 +55,21 @@ public class DelimitedTextRatingCursor extends AbstractPollingCursor<Rating> {
      * @param s         The reader to read.
      * @param name      The file name (for error messages).
      * @param delimiter The delimiter.
+     * @deprecated Inheriting from this class is deprecated.
      */
-    public DelimitedTextRatingCursor(@WillCloseWhenClosed @Nonnull BufferedReader s,
-                                     @Nullable String name,
-                                     @Nonnull String delimiter) {
+    @Deprecated
+    protected DelimitedTextRatingCursor(@WillCloseWhenClosed @Nonnull BufferedReader s,
+                                        @Nullable String name,
+                                        @Nonnull String delimiter) {
         fileName = name;
         rating = new MutableRating();
         rowCursor = new DelimitedTextCursor(s, delimiter);
+    }
+
+    @SuppressWarnings("deprecation")
+    public static Cursor<Rating> open(@WillCloseWhenClosed @Nonnull BufferedReader s,
+                                      @Nonnull String delimiter) {
+        return new DelimitedTextRatingCursor(s, null, delimiter);
     }
 
     @Override
@@ -66,7 +78,6 @@ public class DelimitedTextRatingCursor extends AbstractPollingCursor<Rating> {
         rating = null;
     }
 
-    //CHECKSTYLE:OFF MagicNumber
     @Override
     public Rating poll() {
         Preconditions.checkState(rating != null, "cursor is closed");
@@ -96,5 +107,4 @@ public class DelimitedTextRatingCursor extends AbstractPollingCursor<Rating> {
     public Rating copy(Rating r) {
         return Ratings.copyBuilder(r).build();
     }
-    //CHECKSTYLE:ON
 }

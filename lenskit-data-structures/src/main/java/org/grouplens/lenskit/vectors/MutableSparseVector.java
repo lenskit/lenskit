@@ -405,6 +405,19 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     }
 
     /**
+     * Unset all values less than a threshold.
+     * @param thresh The threshold.
+     */
+    public void unsetLessThan(double thresh) {
+        for (int i = values.length - 1; i >= 0; i--) {
+            // it's fine to check all, even unset keys, b/c we only unset
+            if (values[i] < thresh) {
+                keys.setActive(i, false);
+            }
+        }
+    }
+
+    /**
      * Clear all values from the set.
      */
     public void clear() {

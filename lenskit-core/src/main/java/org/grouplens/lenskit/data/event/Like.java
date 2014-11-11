@@ -18,27 +18,16 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.dao;
-
-import org.grouplens.grapht.annotation.AliasFor;
-import org.grouplens.lenskit.core.Parameter;
-
-import javax.inject.Qualifier;
-import java.io.File;
-import java.lang.annotation.*;
+package org.grouplens.lenskit.data.event;
 
 /**
- * User list file for {@link org.grouplens.lenskit.data.text.SimpleFileUserDAOProvider}.
+ * Generic interface representing a unary interaction.  This provides a basic, generic representation
+ * of likes, clicks, purchases, and other unary interactions.  Applications may want to implement
+ * their own events to represent such interactions.
  *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 2.1
- * @deprecated Use {@link org.grouplens.lenskit.data.text} instead.
+ * @since 2.2
+ * @see Events#like(long, long)
+ * @see Events#like(long, long, long)
  */
-@Qualifier
-@AliasFor(org.grouplens.lenskit.data.text.UserFile.class)
-@Deprecated
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER, ElementType.METHOD})
-@Documented
-public @interface UserFile {
+public interface Like extends Event {
 }

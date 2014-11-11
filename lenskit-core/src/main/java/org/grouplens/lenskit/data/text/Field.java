@@ -18,27 +18,37 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.dao;
+package org.grouplens.lenskit.data.text;
 
-import org.grouplens.grapht.annotation.AliasFor;
-import org.grouplens.lenskit.core.Parameter;
+import org.grouplens.lenskit.data.event.EventBuilder;
 
-import javax.inject.Qualifier;
-import java.io.File;
-import java.lang.annotation.*;
+import java.util.Set;
 
 /**
- * User list file for {@link org.grouplens.lenskit.data.text.SimpleFileUserDAOProvider}.
+ * Identifiers for fields in a delimited/columnar database.
  *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 2.1
- * @deprecated Use {@link org.grouplens.lenskit.data.text} instead.
+ * @since 2.2
  */
-@Qualifier
-@AliasFor(org.grouplens.lenskit.data.text.UserFile.class)
-@Deprecated
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER, ElementType.METHOD})
-@Documented
-public @interface UserFile {
+public interface Field {
+
+    /**
+     * Query whether this field is optional.
+     *
+     * @return {@code true} if the field is optional.
+     */
+    boolean isOptional();
+
+    /**
+     * Apply the field's value to the builder.
+     *
+     * @param token   The field value (or {@code null} if this is a nonexistent optional field).
+     * @param builder The builder into which to set the value.
+     */
+    void apply(String token, EventBuilder builder);
+
+    /**
+     * Get the set of event builder types that this field can apply to.
+     * @return A set of classes representing event builder types to which this field can apply.”
+     */
+    Set<Class<? extends EventBuilder>> getExpectedBuilderTypes();
 }

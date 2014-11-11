@@ -18,27 +18,41 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.dao;
-
-import org.grouplens.grapht.annotation.AliasFor;
-import org.grouplens.lenskit.core.Parameter;
-
-import javax.inject.Qualifier;
-import java.io.File;
-import java.lang.annotation.*;
+package org.grouplens.lenskit.data.event;
 
 /**
- * User list file for {@link org.grouplens.lenskit.data.text.SimpleFileUserDAOProvider}.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 2.1
- * @deprecated Use {@link org.grouplens.lenskit.data.text} instead.
+ * Basic implementation of {@link org.grouplens.lenskit.data.event.Like}.
  */
-@Qualifier
-@AliasFor(org.grouplens.lenskit.data.text.UserFile.class)
-@Deprecated
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER, ElementType.METHOD})
-@Documented
-public @interface UserFile {
+class SimpleLikeBatch implements LikeBatch {
+    private final long userId;
+    private final long itemId;
+    private final int count;
+
+    SimpleLikeBatch(long uid, long iid, int ct) {
+        userId = uid;
+        itemId = iid;
+        count = ct;
+    }
+
+    @Override
+    public long getUserId() {
+        return userId;
+    }
+
+    @Override
+    public long getItemId() {
+        return itemId;
+    }
+
+    @Override
+    public int getCount() {
+        return count;
+    }
+
+    @Override
+    public long getTimestamp() {
+        return -1;
+    }
+
+    // FIXME Add equals/hashcode
 }

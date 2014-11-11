@@ -49,13 +49,13 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
 
     UserDAO getUserDAO() {
         if (udao == null) {
-            udao = new PrefetchingUserDAO(dao)
+            udao = new PrefetchingUserDAO(ratingDAO)
         }
         return udao
     }
     ItemDAO getItemDAO() {
         if (idao == null) {
-            idao = new PrefetchingItemDAO(dao)
+            idao = new PrefetchingItemDAO(ratingDAO)
         }
         return idao
     }
@@ -71,7 +71,7 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
         def file = tempDir.newFile()
         BinaryRatingPacker packer = BinaryRatingPacker.open(file)
         try {
-            Cursor<Rating> ratings = dao.streamEvents(Rating)
+            Cursor<Rating> ratings = ratingDAO.streamEvents(Rating)
             try {
                 packer.writeRatings(ratings)
             } finally {
@@ -94,7 +94,7 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
         def file = tempDir.newFile()
         BinaryRatingPacker packer = BinaryRatingPacker.open(file, BinaryFormatFlag.TIMESTAMPS)
         try {
-            Cursor<Rating> ratings = dao.streamEvents(Rating, SortOrder.TIMESTAMP)
+            Cursor<Rating> ratings = ratingDAO.streamEvents(Rating, SortOrder.TIMESTAMP)
             try {
                 packer.writeRatings(ratings)
             } finally {
@@ -117,7 +117,7 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
         def file = tempDir.newFile()
         BinaryRatingPacker packer = BinaryRatingPacker.open(file, BinaryFormatFlag.TIMESTAMPS)
         try {
-            Cursor<Rating> ratings = dao.streamEvents(Rating)
+            Cursor<Rating> ratings = ratingDAO.streamEvents(Rating)
             try {
                 packer.writeRatings(ratings)
             } finally {
@@ -135,8 +135,8 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
         // try sorted!
         checkSorted(binDao.streamEvents(Rating, SortOrder.TIMESTAMP));
 
-        def uedao = new PrefetchingUserEventDAO(dao)
-        def iedao = new PrefetchingItemEventDAO(dao)
+        def uedao = new PrefetchingUserEventDAO(ratingDAO)
+        def iedao = new PrefetchingItemEventDAO(ratingDAO)
 
         // and scan users
         for (long user: binDao.getUserIds()) {
@@ -187,7 +187,7 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
         def file = tempDir.newFile()
         BinaryRatingPacker packer = BinaryRatingPacker.open(file)
         try {
-            Cursor<Rating> ratings = dao.streamEvents(Rating)
+            Cursor<Rating> ratings = ratingDAO.streamEvents(Rating)
             try {
                 for (Rating r: ratings) {
                     packer.writeRating(Ratings.make(userMap[r.userId],

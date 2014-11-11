@@ -18,27 +18,28 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.dao;
+package org.grouplens.lenskit.data.event;
 
-import org.grouplens.grapht.annotation.AliasFor;
-import org.grouplens.lenskit.core.Parameter;
+import org.junit.Test;
 
-import javax.inject.Qualifier;
-import java.io.File;
-import java.lang.annotation.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.*;
 
-/**
- * User list file for {@link org.grouplens.lenskit.data.text.SimpleFileUserDAOProvider}.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 2.1
- * @deprecated Use {@link org.grouplens.lenskit.data.text} instead.
- */
-@Qualifier
-@AliasFor(org.grouplens.lenskit.data.text.UserFile.class)
-@Deprecated
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER, ElementType.METHOD})
-@Documented
-public @interface UserFile {
+public class SimpleLikeTest {
+    @Test
+    public void testSimpleLike() {
+        Like like = Events.like(42, 67);
+        assertThat(like.getUserId(), equalTo(42L));
+        assertThat(like.getItemId(), equalTo(67L));
+        assertThat(like.getTimestamp(), equalTo(-1L));
+    }
+
+    @Test
+    public void testTimestampedLike() {
+        long ts = System.currentTimeMillis() / 1000;
+        Like like = Events.like(42, 67, ts);
+        assertThat(like.getUserId(), equalTo(42L));
+        assertThat(like.getItemId(), equalTo(67L));
+        assertThat(like.getTimestamp(), equalTo(ts));
+    }
 }

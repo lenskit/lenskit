@@ -29,7 +29,7 @@ import org.apache.commons.lang3.builder.Builder;
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class RatingBuilder implements Builder<Rating> {
+public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
     private boolean hasUserId;
     private long userId;
     private boolean hasItemId;
@@ -50,6 +50,12 @@ public class RatingBuilder implements Builder<Rating> {
      */
     public static RatingBuilder copy(Rating r) {
         return Ratings.copyBuilder(r);
+    }
+
+    @Override
+    public void reset() {
+        hasUserId = hasItemId = hasRating = false;
+        timestamp = -1;
     }
 
     /**

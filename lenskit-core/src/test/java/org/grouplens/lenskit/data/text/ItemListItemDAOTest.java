@@ -18,33 +18,34 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.dao;
+package org.grouplens.lenskit.data.text;
 
 import it.unimi.dsi.fastutil.longs.LongLists;
 import org.grouplens.lenskit.collections.LongUtils;
+import org.grouplens.lenskit.data.dao.ItemDAO;
+import org.grouplens.lenskit.data.dao.ItemListItemDAO;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
-public class UserListUserDAOTest {
+public class ItemListItemDAOTest {
     public void testEmptyDAO() {
-        UserDAO dao = new UserListUserDAO(LongLists.EMPTY_LIST);
-        assertThat(dao.getUserIds(), hasSize(0));
+        ItemDAO dao = new ItemListItemDAO(LongLists.EMPTY_LIST);
+        assertThat(dao.getItemIds(), hasSize(0));
     }
 
-    public void testUsersDAO() {
-        UserDAO dao = new UserListUserDAO(LongUtils.packedSet(1, 2, 3, 42));
-        assertThat(dao.getUserIds(), hasSize(4));
-        assertThat(dao.getUserIds(), contains(1L, 2L, 3L, 42L));
+    public void testItemsDAO() {
+        ItemDAO dao = new ItemListItemDAO(LongUtils.packedSet(1, 2, 3, 42));
+        assertThat(dao.getItemIds(), hasSize(4));
+        assertThat(dao.getItemIds(), contains(1L, 2L, 3L, 42L));
     }
 
-    public void testReadUserFile() throws IOException {
-        File file = File.createTempFile("users", ".lst");
+    public void testReadItemFile() throws IOException {
+        File file = File.createTempFile("items", ".lst");
         try {
             PrintWriter writer = new PrintWriter(file);
             try {
@@ -55,9 +56,9 @@ public class UserListUserDAOTest {
             } finally {
                 writer.close();
             }
-            UserDAO dao = UserListUserDAO.fromFile(file);
-            assertThat(dao.getUserIds(), hasSize(3));
-            assertThat(dao.getUserIds(), contains(1L, 2L, 3L));
+            ItemDAO dao = ItemListItemDAO.fromFile(file);
+            assertThat(dao.getItemIds(), hasSize(3));
+            assertThat(dao.getItemIds(), contains(1L, 2L, 3L));
         } finally {
             file.delete();
         }

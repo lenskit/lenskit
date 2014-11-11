@@ -67,4 +67,37 @@ public final class Events {
         }
     };
 
+    /**
+     * Create a new {@link Like} event with no timestamp.
+     *
+     * @param user The user ID.
+     * @param item The item ID.
+     * @return A {@link Like}.
+     */
+    public static Like like(long user, long item) {
+        return like(user, item, -1);
+    }
+
+    /**
+     * Create a new {@link Like} event.
+     *
+     * @param user The user ID.
+     * @param item The item ID.
+     * @param ts The timestamp.
+     * @return A {@link Like}.
+     */
+    public static Like like(long user, long item, long ts) {
+        return new SimpleLike(user, item, ts);
+    }
+
+    /**
+     * Create a {@link LikeBatch} event with a nonzero count.
+     * @param user The user ID.
+     * @param item The item ID.
+     * @param count The count.
+     * @return The new event.
+     */
+    public static LikeBatch likeBatch(long user, long item, int count) {
+        return new SimpleLikeBatch(user, item, count);
+    }
 }
