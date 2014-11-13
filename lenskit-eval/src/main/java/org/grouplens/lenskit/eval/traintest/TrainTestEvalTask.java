@@ -33,6 +33,7 @@ import org.grouplens.grapht.graph.MergePool;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
+import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.ExecutionInfo;
 import org.grouplens.lenskit.eval.TaskExecutionException;
@@ -548,6 +549,8 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
                                               .build();
             dataConfig.addComponent(info);
             dataset.configure(dataConfig);
+            // we need the user event DAO in the test phase
+            dataConfig.addRoot(UserEventDAO.class);
             // Build the graph
             DAGNode<Component, Dependency> graph = algo.buildRecommenderGraph(dataConfig);
 

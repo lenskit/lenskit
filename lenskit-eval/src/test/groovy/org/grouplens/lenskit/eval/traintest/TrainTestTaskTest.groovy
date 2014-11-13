@@ -24,7 +24,9 @@ import com.google.common.base.Throwables
 import com.google.common.collect.Sets
 import com.google.common.io.Closer
 import org.apache.commons.lang3.tuple.Pair
+import org.grouplens.lenskit.ItemRecommender
 import org.grouplens.lenskit.ItemScorer
+import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.baseline.UserMeanBaseline
 import org.grouplens.lenskit.baseline.UserMeanItemScorer
@@ -442,5 +444,29 @@ class TrainTestTaskTest {
         assertThat userMeanScorers, hasSize(2)
         // 2 item mean scorer (since there is no merging)
         assertThat itemMeanScorers, hasSize(2)
+    }
+
+    /**
+     * This test attempts to reproduce <a href="https://github.com/lenskit/lenskit/issues/640">#640</a>.
+     */
+    @Test
+    void testRunWithoutNeedingDAOs() {
+        eval {
+            dataset crossfold("tempRatings") {
+                source file
+                partitions 2
+                holdout 1
+                train "${folder.root.absolutePath}/ratings.train.%d.csv"
+                test "${folder.root.absolutePath}/ratings.test.%d.csv"
+            }
+            algorithm {
+                bind ItemScorer to GlobalMeanRatingItemScorer
+                bind ItemRecommender to null
+            }
+            output null
+        }
+        command.execute()
+        assertThat(command.isDone(), equalTo(true))
+        assertThat(command.get(), notNullValue())
     }
 }
