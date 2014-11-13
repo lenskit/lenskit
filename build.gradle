@@ -184,11 +184,7 @@ task report(group: 'verification') {
 }
 
 apply from: "$rootDir/gradle/website.gradle"
-ext.enableLint = getConfigProperty('lint', 'false').toBoolean()
-ext.enableLint |= System.getenv('SONAR_BUILD') == 'true'
-if (enableLint) {
-    apply from: "$rootDir/gradle/lint.gradle"
-}
+apply from: "$rootDir/gradle/lint.gradle"
 
 if (file('local.gradle').exists()) {
     apply from: 'local.gradle'

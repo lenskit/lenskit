@@ -1,31 +1,48 @@
 logger.lifecycle 'Enabling lint support in LensKit build'
 
-allprojects {
-    apply plugin: 'jacoco'
-    jacoco {
-        toolVersion = '0.7.0.201403182114'
-    }
+ext.lintMode = 'disabled'
+if (System.getenv('SONAR_BUILD') == 'true') {
+    ext.lintMode = 'enabled'
+}
+switch (getConfigProperty('lint', 'false').toLowerCase()) {
+    case 'true':
+        logger.info 'running in lint mode'
+        ext.lintMode = 'enabled'
+        break
+    case 'preview':
+        logger.info 'running in lint preview mode'
+        ext.lintMode = 'preview'
+        break
 }
 
-task jacocoMergedReport(type: JacocoReport) {
-    for (prj in subprojects) {
-        dependsOn prj.test
-        sourceSets prj.sourceSets.test
-        if (prj.sourceSets.test.allSource.files.isEmpty()) {
-            logger.info '{} has no tests', prj.name
-        } else {
-            logger.info 'aggregating tests from {}', prj.name
-            executionData prj.test
+if (lintMode != 'disabled') {
+    allprojects {
+        apply plugin: 'jacoco'
+        jacoco {
+            toolVersion = '0.7.0.201403182114'
         }
     }
-    reports {
-        csv.enabled = false
-        xml.enabled = false
-        html.destination = "$reporting.baseDir/jacoco"
-    }
-}
 
-report.dependsOn jacocoMergedReport
+    task jacocoMergedReport(type: JacocoReport) {
+        for (prj in subprojects) {
+            dependsOn prj.test
+            sourceSets prj.sourceSets.test
+            if (prj.sourceSets.test.allSource.files.isEmpty()) {
+                logger.info '{} has no tests', prj.name
+            } else {
+                logger.info 'aggregating tests from {}', prj.name
+                executionData prj.test
+            }
+        }
+        reports {
+            csv.enabled = false
+            xml.enabled = false
+            html.destination = "$reporting.baseDir/jacoco"
+        }
+    }
+
+    report.dependsOn jacocoMergedReport
+}
 
 apply plugin: 'sonar-runner'
 
@@ -34,11 +51,20 @@ sonarRunner {
     sonarProperties {
         property "sonar.host.url", "https://sonar.cs.txstate.edu"
         property "sonar.jdbc.driverClassName", "org.postgresql.Driver"
+        property "sonar.sourceEncoding", "UTF-8"
         for (prop in project.properties.entrySet()) {
             if (prop.key.startsWith("sonar.")) {
                 property prop.key, prop.value
             }
         }
+        if (lintMode == 'preview') {
+            logger.info 'configuring Sonar for preview mode'
+            property "sonar.analysis.mode", "preview"
+            property "sonar.issuesReport.html.enable", "true"
+        }
     }
 }
-ciPublish.dependsOn 'sonarRunner'
+
+if (lintMode == 'enabled') {
+    ciPublish.dependsOn 'sonarRunner'
+}
