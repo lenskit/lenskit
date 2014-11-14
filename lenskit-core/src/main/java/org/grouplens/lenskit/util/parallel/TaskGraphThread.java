@@ -53,7 +53,7 @@ class TaskGraphThread<T extends Callable<?>,E> extends Thread {
                 logger.info("executing task {}", task.getLabel());
                 task.getLabel().call();
                 manager.taskFinished(task, null);
-            } catch (Throwable th) {
+            } catch (Throwable th) { // NOSONAR propagating across threads
                 logger.error("error in task " + task.getLabel(), th);
                 manager.taskFinished(task, th);
             }

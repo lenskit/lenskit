@@ -176,7 +176,7 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
                     BinaryRatingPacker packer = closer.register(BinaryRatingPacker.open(file, flags));
                     Cursor<Rating> ratings = closer.register(dao.streamEvents(Rating.class, order));
                     packer.writeRatings(ratings);
-                } catch (Throwable th) {
+                } catch (Throwable th) { // NOSONAR using a closer
                     throw closer.rethrow(th);
                 } finally {
                     closer.close();

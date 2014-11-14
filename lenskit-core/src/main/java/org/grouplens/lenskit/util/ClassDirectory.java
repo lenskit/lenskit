@@ -70,7 +70,7 @@ public class ClassDirectory {
                         }
                         line = buf.readLine();
                     }
-                } catch (Throwable th) {
+                } catch (Throwable th) { // NOSONAR using a closer
                     throw closer.rethrow(th);
                 } finally {
                     closer.close();

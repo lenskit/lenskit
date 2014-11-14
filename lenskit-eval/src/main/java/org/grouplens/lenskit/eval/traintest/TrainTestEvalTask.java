@@ -416,7 +416,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
 
                 // tell all metrics to get started
                 runEvaluations(jobGraph);
-            } catch (Throwable th) {
+            } catch (Throwable th) { // NOSONAR using a closer
                 throw closer.rethrow(th, TaskExecutionException.class, InterruptedException.class);
             } finally {
                 closer.close();

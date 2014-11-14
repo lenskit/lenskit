@@ -89,7 +89,7 @@ class SequencedCursor<T> extends AbstractCursor<T> {
         if (current != null) {
             try {
                 current.close();
-            } catch (Throwable th) {
+            } catch (Throwable th) { // NOSONAR We are managing errors
                 error = th;
             }
             current = null;
@@ -98,7 +98,7 @@ class SequencedCursor<T> extends AbstractCursor<T> {
             Cursor<? extends T> cur = cursorIter.next();
             try {
                 cur.close();
-            } catch (Throwable th) {
+            } catch (Throwable th) { // NOSONAR We are managing errors
                 if (error != null) {
                     error = th;
                 }

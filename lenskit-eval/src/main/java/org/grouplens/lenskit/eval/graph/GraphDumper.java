@@ -358,7 +358,7 @@ public class GraphDumper {
             }
             // and we're done
             dumper.finish();
-        } catch (Throwable th) {
+        } catch (Throwable th) { // NOSONAR using a closer
             throw close.rethrow(th);
         } finally {
             close.close();

@@ -282,7 +282,7 @@ class ComponentCache implements NodeProcessor {
                     OutputStream gzOut = closer.register(new GZIPOutputStream(out));
                     ObjectOutputStream objOut = closer.register(new ObjectOutputStream(gzOut));
                     objOut.writeObject(obj);
-                } catch (Throwable th) {
+                } catch (Throwable th) { // NOSONAR using a closer
                     throw closer.rethrow(th);
                 } finally {
                     closer.close();
@@ -302,7 +302,7 @@ class ComponentCache implements NodeProcessor {
                     InputStream gzin = closer.register(new GZIPInputStream(in));
                     ObjectInputStream oin = closer.register(new CustomClassLoaderObjectInputStream(gzin, classLoader));
                     return type.cast(oin.readObject());
-                } catch (Throwable th) {
+                } catch (Throwable th) { // NOSONAR using a closer
                     throw closer.rethrow(th);
                 } finally {
                     closer.close();

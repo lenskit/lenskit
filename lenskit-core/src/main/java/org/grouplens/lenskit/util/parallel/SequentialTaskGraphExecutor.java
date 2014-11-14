@@ -37,7 +37,7 @@ class SequentialTaskGraphExecutor extends TaskGraphExecutor {
                 node.getLabel().call();
             } catch (InterruptedException ex) {
                 throw ex;
-            } catch (Throwable th) {
+            } catch (Throwable th) { // NOSONAR propagating error
                 throw new ExecutionException("error in graph task", th);
             }
         }

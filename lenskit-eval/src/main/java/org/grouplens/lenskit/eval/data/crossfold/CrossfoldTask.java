@@ -442,7 +442,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
                 writeTTFilesByRatings(trainWriters, testWriters);
                 break;
             }
-        } catch (Throwable th) {
+        } catch (Throwable th) { // NOSONAR using a closer
             throw closer.rethrow(th);
         } finally {
             closer.close();

@@ -84,7 +84,7 @@ public class TrainModel implements Command {
             OutputStream stream = closer.register(new FileOutputStream(output));
             stream = closer.register(comp.wrapOutput(stream));
             engine.write(stream);
-        } catch (Throwable th) {
+        } catch (Throwable th) { // NOSONAR using a closer
             throw closer.rethrow(th);
         } finally {
             closer.close();

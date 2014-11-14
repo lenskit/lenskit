@@ -192,7 +192,7 @@ public class SubsampleTask extends AbstractTask<DataSource> {
             RatingWriter subsampleWriter = closer.register(RatingWriters.csv(subsampleFile));
             try {
                 mode.doSample(source, subsampleWriter, subsampleFraction, getProject().getRandom());
-            } catch (Throwable th) {
+            } catch (Throwable th) { // NOSONAR using a closer
                 throw closer.rethrow(th);
             } finally {
                 closer.close();

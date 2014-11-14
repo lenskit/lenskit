@@ -171,7 +171,7 @@ abstract class TrainTestJob implements Callable<Void> {
 
             writeMetricValues(buildTimer, testTimer, outputRow, accumulators);
             bus.post(JobEvents.finished(this));
-        } catch (Throwable th) {
+        } catch (Throwable th) { // NOSONAR using a closer
             bus.post(JobEvents.failed(this, th));
             throw closer.rethrow(th, RecommenderBuildException.class);
         } finally {

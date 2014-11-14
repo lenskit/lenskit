@@ -304,7 +304,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
                         }
                         writer.println();
                     }
-                } catch (Throwable th) {
+                } catch (Throwable th) { //NOSONAR we use Closer
                     throw closer.rethrow(th);
                 } finally {
                     closer.close();
@@ -344,7 +344,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
                     while (iter.hasNext()) {
                         writer.println(iter.nextLong());
                     }
-                } catch (Throwable th) {
+                } catch (Throwable th) { //NOSONAR we use Closer
                     throw closer.rethrow(th);
                 } finally {
                     closer.close();

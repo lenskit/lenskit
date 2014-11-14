@@ -81,7 +81,7 @@ public class PackRatings implements Command {
             Cursor<Rating> ratings = closer.register(dao.streamEvents(Rating.class));
             packer.writeRatings(ratings);
             logger.info("packed {} ratings", packer.getRatingCount());
-        } catch (Throwable th) {
+        } catch (Throwable th) { // NOSONAR using a closer
             throw closer.rethrow(th);
         } finally {
             closer.close();
