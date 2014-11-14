@@ -71,7 +71,7 @@ public class LineCursor extends AbstractPollingCursor<String> {
      */
     public static LineCursor openFile(File file, CompressionMode comp) throws IOException {
         FileInputStream fin = new FileInputStream(file);
-        InputStream rawin = comp.wrapInput(fin);
+        InputStream rawin = comp.getEffectiveCompressionMode(file.getName()).wrapInput(fin);
         // REVIEW do we want to use the default charset?
         Reader reader = new InputStreamReader(rawin, Charset.defaultCharset());
         BufferedReader buffer = new BufferedReader(reader);

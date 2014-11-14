@@ -208,7 +208,7 @@ public final class DelimitedColumnEventFormat implements EventFormat {
     }
 
     private class Context {
-        public final StrTokenizer tokenizer = new StrTokenizer();
+        public final StrTokenizer tokenizer = new StrTokenizer().setDelimiterString(delimiter);
         public final EventBuilder<?> builder = eventTypeDef.newBuilder();
     }
 }
