@@ -23,6 +23,8 @@ package org.grouplens.lenskit.eval.data;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
+import org.grouplens.lenskit.data.text.TextEventDAO;
 import org.grouplens.lenskit.util.io.CompressionMode;
 
 import java.io.File;
@@ -47,7 +49,10 @@ public class CSVDataSource extends AbstractDataSource {
         domain = pdom;
         delimiter = delim;
 
-        dao = SimpleFileRatingDAO.create(file, delim, CompressionMode.AUTO);
+        DelimitedColumnEventFormat format = DelimitedColumnEventFormat.create("rating");
+        format.setDelimiter(delimiter);
+
+        dao = TextEventDAO.create(file, format, CompressionMode.AUTO);
     }
 
     @Override

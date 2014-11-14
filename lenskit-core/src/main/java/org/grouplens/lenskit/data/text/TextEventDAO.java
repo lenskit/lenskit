@@ -29,12 +29,13 @@ import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.util.LineCursor;
+import org.grouplens.lenskit.util.io.CompressionMode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -48,35 +49,65 @@ import java.util.List;
 @ThreadSafe
 public class TextEventDAO implements EventDAO {
     private final File inputFile;
+    private final CompressionMode compression;
     private final EventFormat eventFormat;
 
     @Inject
     public TextEventDAO(@EventFile File file, EventFormat format) {
+        this(file, format, CompressionMode.AUTO);
+    }
+
+    private TextEventDAO(@EventFile File file, EventFormat format, CompressionMode comp) {
         inputFile = file;
+        compression = comp;
         eventFormat = format;
     }
 
     /**
-     * Open a rating DAO.
+     * Open a rating DAO with the default layout and automatic compression.
      * @param file The file.
      * @param delim The delimiter.
      * @return A DAO that parses ratings from {@code file} using {@link DelimitedColumnEventFormat}.
+     * @see #ratings(File, String, org.grouplens.lenskit.util.io.CompressionMode)
      */
     public static TextEventDAO ratings(File file, String delim) {
+        return ratings(file, delim, CompressionMode.AUTO);
+    }
+
+    /**
+     * Open a potentially-compressed file of ratings.  It uses the default layout:
+     *
+     * <ol>
+     *     <li>User</li>
+     *     <li>Item</li>
+     *     <li>Rating</li>
+     *     <li>Optional timestamp</li>
+     * </ol>
+     *
+     * @param file The file to open.
+     * @param delim The delimiter.
+     * @param mode The compression mode.
+     * @return A text event DAO.
+     */
+    public static TextEventDAO ratings(File file, String delim, CompressionMode mode) {
         EventFormat fmt = DelimitedColumnEventFormat.create(new RatingEventType())
                                                     .setDelimiter(delim);
-        return new TextEventDAO(file, fmt);
+        return new TextEventDAO(file, fmt, mode);
     }
 
     public static TextEventDAO create(File inputFile, DelimitedColumnEventFormat format) {
-        return new TextEventDAO(inputFile, format);
+        return create(inputFile, format, CompressionMode.AUTO);
+    }
+
+    public static TextEventDAO create(File inputFile, DelimitedColumnEventFormat format, CompressionMode comp) {
+        return new TextEventDAO(inputFile, format, comp);
     }
 
     @Override
     public Cursor<Event> streamEvents() {
         try {
-            return new EventCursor(LineCursor.openFile(inputFile));
-        } catch (FileNotFoundException e) {
+            return new EventCursor(LineCursor.openFile(inputFile, compression));
+        } catch (IOException e) {
             throw new DataAccessException("cannot open " + inputFile, e);
         }
     }
