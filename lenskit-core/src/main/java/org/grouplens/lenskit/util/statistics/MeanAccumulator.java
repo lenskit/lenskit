@@ -66,7 +66,7 @@ public class MeanAccumulator {
      * @return average over all added datums
      */
     public double getMean() {
-        if (accCount == 0 || accSum == 0) {
+        if (accCount == 0) {
             return 0;
         }
 
