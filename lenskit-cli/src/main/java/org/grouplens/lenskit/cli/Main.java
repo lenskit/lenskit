@@ -55,6 +55,7 @@ public class Main {
         registerClass(subparsers, Predict.class);
         registerClass(subparsers, Graph.class);
         registerClass(subparsers, GlobalRecommend.class);
+        registerClass(subparsers, Crossfold.class);
 
         try {
             Namespace options = parser.parseArgs(args);
