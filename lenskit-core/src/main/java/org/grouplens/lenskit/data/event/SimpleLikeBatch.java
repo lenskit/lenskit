@@ -56,8 +56,6 @@ class SimpleLikeBatch implements LikeBatch {
         return -1;
     }
 
-    // FIXME Add equals/hashcode
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
