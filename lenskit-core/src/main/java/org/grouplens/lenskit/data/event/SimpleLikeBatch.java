@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.data.event;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 /**
  * Basic implementation of {@link org.grouplens.lenskit.data.event.Like}.
  */
@@ -55,4 +57,38 @@ class SimpleLikeBatch implements LikeBatch {
     }
 
     // FIXME Add equals/hashcode
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof LikeBatch)) return false;
+
+        LikeBatch that = (LikeBatch) o;
+
+        if (count != that.getCount()) return false;
+        if (itemId != that.getItemId()) return false;
+        if (userId != that.getUserId()) return false;
+        if (that.getTimestamp() != -1) return false; //other implementations may have timestamps
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        HashCodeBuilder hcb = new HashCodeBuilder();
+        hcb.append(userId)
+           .append(itemId)
+           .append(count)
+           .append(-1L);
+        return hcb.toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "LikeBatch{" +
+                "userId=" + userId +
+                ", itemId=" + itemId +
+                ", count=" + count +
+                '}';
+    }
 }
