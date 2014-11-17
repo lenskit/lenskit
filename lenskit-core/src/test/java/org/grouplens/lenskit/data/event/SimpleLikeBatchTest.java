@@ -34,4 +34,21 @@ public class SimpleLikeBatchTest {
         assertThat(like.getTimestamp(), equalTo(-1L));
         assertThat(like.getCount(), equalTo(39));
     }
+
+    @Test
+    public void testEquals() {
+        LikeBatch like = Events.likeBatch(42, 67, 1989);
+        LikeBatch equalLike = Events.likeBatch(42, 67, 1989);
+        LikeBatch differentUser = Events.likeBatch(1, 67, 1989);
+        LikeBatch differentItem = Events.likeBatch(42, 42, 1989);
+        LikeBatch differentCount = Events.likeBatch(42, 67, 2014);
+
+        assertThat(like.equals(like), equalTo(true));
+        assertThat(like.equals(equalLike), equalTo(true));
+        assertThat(like.equals(differentUser), equalTo(false));
+        assertThat(like.equals(differentItem), equalTo(false));
+        assertThat(like.equals(differentCount), equalTo(false));
+        assertThat(like.equals(null), equalTo(false));
+
+    }
 }

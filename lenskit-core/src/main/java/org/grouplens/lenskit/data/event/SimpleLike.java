@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.data.event;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 /**
  * Basic implementation of {@link Like}.
  */
@@ -49,5 +51,35 @@ class SimpleLike implements Like {
         return timestamp;
     }
 
-    // FIXME Add equals/hashcode
+    @Override
+    public String toString() {
+        return "Like{" +
+                "userId=" + userId +
+                ", itemId=" + itemId +
+                ", timestamp=" + timestamp +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Like)) return false;
+
+        Like that = (Like) o;
+
+        if (itemId != that.getItemId()) return false;
+        if (timestamp != that.getTimestamp()) return false;
+        if (userId != that.getUserId()) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        HashCodeBuilder hcb = new HashCodeBuilder();
+        hcb.append(userId)
+           .append(itemId)
+           .append(timestamp);
+        return hcb.toHashCode();
+    }
 }

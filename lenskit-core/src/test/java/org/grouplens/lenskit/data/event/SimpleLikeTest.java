@@ -42,4 +42,21 @@ public class SimpleLikeTest {
         assertThat(like.getItemId(), equalTo(67L));
         assertThat(like.getTimestamp(), equalTo(ts));
     }
+
+    @Test
+    public void testEquals() {
+        Like like = Events.like(42, 67, 1989);
+        Like equalLike = Events.like(42, 67, 1989);
+        Like differentUser = Events.like(1, 67, 1989);
+        Like differentItem = Events.like(42, 42, 1989);
+        Like differentTime = Events.like(42, 67, 2014);
+
+        assertThat(like.equals(like), equalTo(true));
+        assertThat(like.equals(equalLike), equalTo(true));
+        assertThat(like.equals(differentUser), equalTo(false));
+        assertThat(like.equals(differentItem), equalTo(false));
+        assertThat(like.equals(differentTime), equalTo(false));
+        assertThat(like.equals(null), equalTo(false));
+
+    }
 }
