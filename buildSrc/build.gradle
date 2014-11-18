@@ -46,7 +46,7 @@ dependencies {
     compile 'org.eclipse.jgit:org.eclipse.jgit:3.4.1.201406201815-r'
     compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
     compile 'org.apache.httpcomponents:httpmime:4.2.1'
-    compile 'com.google.guava:guava:16.0.1'
+    compile 'com.google.guava:guava:18.0'
 }
 
 apply plugin: 'idea'
