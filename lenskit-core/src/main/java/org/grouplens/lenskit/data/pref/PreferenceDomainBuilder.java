@@ -21,7 +21,11 @@
 package org.grouplens.lenskit.data.pref;
 
 import com.google.common.base.Preconditions;
+import com.typesafe.config.Config;
 import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.specs.SpecHandler;
+import org.grouplens.lenskit.specs.SpecificationContext;
+import org.grouplens.lenskit.specs.SpecificationException;
 
 /**
  * Build a {@link PreferenceDomain}.
@@ -29,7 +33,7 @@ import org.apache.commons.lang3.builder.Builder;
  * @since 1.2
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class PreferenceDomainBuilder implements Builder<PreferenceDomain> {
+public class PreferenceDomainBuilder implements Builder<PreferenceDomain>, SpecHandler<PreferenceDomain> {
     private double minimum = Double.NaN;
     private double maximum = Double.NaN;
     private double precision = Double.NaN;
@@ -109,5 +113,22 @@ public class PreferenceDomainBuilder implements Builder<PreferenceDomain> {
         Preconditions.checkState(!Double.isNaN(minimum), "no minimum preference specified");
         Preconditions.checkState(!Double.isNaN(maximum), "no maximum preference specified");
         return new PreferenceDomain(minimum, maximum, precision);
+    }
+
+    @Override
+    public boolean handlesType(String type) {
+        return type.equals("domain");
+    }
+
+    @Override
+    public PreferenceDomain buildFromSpec(SpecificationContext context, Config cfg) throws SpecificationException {
+        setMinimum(cfg.getDouble("minimum"));
+        setMaximum(cfg.getDouble("maximum"));
+        if (cfg.hasPath("precision")) {
+            setPrecision(cfg.getDouble("precision"));
+        } else {
+            setPrecision(Double.NaN);
+        }
+        return build();
     }
 }

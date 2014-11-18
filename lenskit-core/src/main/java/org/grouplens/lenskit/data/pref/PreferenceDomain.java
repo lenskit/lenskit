@@ -25,6 +25,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.grapht.annotation.DefaultNull;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.specs.SpecHandlerInterface;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
@@ -40,6 +41,7 @@ import java.util.regex.Pattern;
  */
 @Shareable
 @DefaultNull
+@SpecHandlerInterface(PreferenceDomainBuilder.class)
 public final class PreferenceDomain implements Serializable {
     public static final long serialVersionUID = 1L;
 
