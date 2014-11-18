@@ -24,6 +24,7 @@ import com.google.common.base.Throwables;
 import com.google.common.io.Closer;
 import com.google.common.io.Files;
 import org.grouplens.lenskit.cursors.AbstractPollingCursor;
+import org.grouplens.lenskit.util.io.CompressionMode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillCloseWhenClosed;
@@ -57,7 +58,24 @@ public class LineCursor extends AbstractPollingCursor<String> {
      * @throws FileNotFoundException if there is an error opening the file.
      */
     public static LineCursor openFile(File file) throws FileNotFoundException {
+        // REVIEW do we want to use the default charset?
         return new LineCursor(Files.newReader(file, Charset.defaultCharset()));
+    }
+
+    /**
+     * Open a delimited text cursor as a file.
+     *
+     * @param file The file to open.
+     * @return The cursor.
+     * @throws FileNotFoundException if there is an error opening the file.
+     */
+    public static LineCursor openFile(File file, CompressionMode comp) throws IOException {
+        FileInputStream fin = new FileInputStream(file);
+        InputStream rawin = comp.getEffectiveCompressionMode(file.getName()).wrapInput(fin);
+        // REVIEW do we want to use the default charset?
+        Reader reader = new InputStreamReader(rawin, Charset.defaultCharset());
+        BufferedReader buffer = new BufferedReader(reader);
+        return new LineCursor(buffer);
     }
 
     @Override
