@@ -79,6 +79,14 @@ test {
 task checkPythonInstall {
     description 'Checks whether the Python install is valid'
     ext.isValid = false
+    ext.shouldTry = true
+    if (project.hasProperty('python.skip')) {
+        ext.shouldTry = project.getProperty('python.skip').toLowerCase() != 'true'
+    }
+
+    onlyIf {
+        shouldTry
+    }
 
     doLast {
         try {
@@ -98,7 +106,7 @@ task checkPythonInstall {
 
 ciPrep.dependsOn checkPythonInstall
 ciPrep.doFirst {
-    if (false && !checkPythonInstall.isValid) {
+    if (checkPythonInstall.shouldTry && !checkPythonInstall.isValid) {
         logger.error 'Working Python install is required for CI'
         throw new RuntimeException('Python is not working')
     }
