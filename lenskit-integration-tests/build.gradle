@@ -98,7 +98,7 @@ task checkPythonInstall {
 
 ciPrep.dependsOn checkPythonInstall
 ciPrep.doFirst {
-    if (!checkPythonInstall.isValid) {
+    if (true || !checkPythonInstall.isValid) {
         logger.error 'Working Python install is required for CI'
         throw new RuntimeException('Python is not working')
     }
