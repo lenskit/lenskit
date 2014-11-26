@@ -1,6 +1,7 @@
 # LensKit
 
 [![Build Status](https://travis-ci.org/lenskit/lenskit.png?branch=master)](https://travis-ci.org/lenskit/lenskit)
+[![Windows build status](https://ci.appveyor.com/api/projects/status/github/lenskit/lenskit?branch=master)](https://ci.appveyor.com/project/elehack/lenskit)
 
 LensKit is an implementation of collaborative filtering algorithms and
 a set of tools for benchmarking them.  This readme is about working with
