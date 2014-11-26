@@ -17,7 +17,7 @@ before_install:
 - pip install --user pandocfilters
 - git fetch --depth=10000 origin
 install: ./gradlew ciPrep
-script: ./gradlew ciBuild
+script: ./gradlew ciTest
 env:
   global:
   - TERM=dumb
