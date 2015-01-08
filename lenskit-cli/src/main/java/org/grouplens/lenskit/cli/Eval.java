@@ -52,6 +52,8 @@ public class Eval implements Command {
     private final Logger logger = LoggerFactory.getLogger(Eval.class);
 
     public static void configureArguments(Subparser parser) {
+        parser.description("Run a LensKit evaluation script.  By default, the script is " +
+                           "taken from 'eval.groovy'; use -f to override");
         ScriptEnvironment.configureArguments(parser);
         parser.addArgument("-F", "--force")
               .action(Arguments.storeTrue())
