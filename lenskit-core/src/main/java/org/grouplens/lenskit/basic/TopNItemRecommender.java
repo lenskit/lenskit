@@ -43,6 +43,8 @@ import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -60,6 +62,7 @@ import java.util.List;
  * @since 1.1
  */
 public class TopNItemRecommender extends AbstractItemRecommender {
+    private static final Logger logger = LoggerFactory.getLogger(TopNItemRecommender.class);
     protected final UserEventDAO userEventDAO;
     protected final ItemDAO itemDAO;
     protected final ItemScorer scorer;
@@ -90,6 +93,8 @@ public class TopNItemRecommender extends AbstractItemRecommender {
         if (!exclude.isEmpty()) {
             candidates = LongUtils.setDifference(candidates, exclude);
         }
+        logger.info("Computing {} recommendations for user {} from {} candidates",
+                    n, user, candidates.size());
 
         SparseVector scores = scorer.score(user, candidates);
         return recommend(n, scores);
