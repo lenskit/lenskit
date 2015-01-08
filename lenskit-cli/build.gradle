@@ -41,7 +41,7 @@ apply plugin: 'groovy'
 
 dependencies {
     compile project(':lenskit-all')
-    compile group: 'net.sourceforge.argparse4j', name: 'argparse4j', version: '0.4.3'
+    compile group: 'net.sourceforge.argparse4j', name: 'argparse4j', version: '0.4.4'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
 
     runtime group: 'org.fusesource.jansi', name: 'jansi', version: '1.8'
