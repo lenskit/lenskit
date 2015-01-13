@@ -132,7 +132,8 @@ public class SimpleEvaluator implements Callable<Table> {
 
     /**
      * Constructs a new {@code CrossfoldCommand} with the same name as its datasource
-     * and configures it before adding the datasets * to the {@code TrainTestEvalCommand}.
+     * and configures it before adding the datasets
+     * to the {@code TrainTestEvalCommand}.
      *
      * @param source The source for the crossfold
      * @param partitions The number of partitions
@@ -146,29 +147,27 @@ public class SimpleEvaluator implements Callable<Table> {
      * Constructs a new {@code CrossfoldCommand} and configures it before adding the datasets
      * to the {@code TrainTestEvalCommand}.
      *
-     * It defaults the holdout to .2
-     *
      * @param name The name of the crossfold
      * @param source The source for the crossfold
      * @param partitions The number of partitions
      * @return Itself for chaining.
      */
     public SimpleEvaluator addDataset(String name, DataSource source, int partitions){
-       return addDataset(name, source, partitions, .2);
+        return addDataset(new CrossfoldTask(name).setSource(source).setPartitions(partitions));
     }
 
     /**
      * Constructs a new {@code CrossfoldCommand} and configures it before adding the datasets
      * to the {@code TrainTestEvalCommand}.
      *
-     * It defaults the holdout to .2 and the name of the crossfold to the name of the data source.
+     * It defaults the holdout of 10 items and the name of the crossfold to the name of the data source.
      *
      * @param source The source for the crossfold
      * @param partitions The number of partitions
      * @return Itself for chaining.
      */
     public SimpleEvaluator addDataset(DataSource source, int partitions){
-        return addDataset(source.getName(), source, partitions, .2);
+        return addDataset(source.getName(), source, partitions);
     }
 
     /**
