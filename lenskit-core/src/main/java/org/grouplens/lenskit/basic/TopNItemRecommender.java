@@ -93,8 +93,8 @@ public class TopNItemRecommender extends AbstractItemRecommender {
         if (!exclude.isEmpty()) {
             candidates = LongUtils.setDifference(candidates, exclude);
         }
-        logger.info("Computing {} recommendations for user {} from {} candidates",
-                    n, user, candidates.size());
+        logger.debug("Computing {} recommendations for user {} from {} candidates",
+                     n, user, candidates.size());
 
         SparseVector scores = scorer.score(user, candidates);
         return recommend(n, scores);
