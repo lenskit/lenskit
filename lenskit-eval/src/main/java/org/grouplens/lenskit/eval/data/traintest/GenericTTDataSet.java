@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.eval.data.traintest;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
@@ -69,7 +70,7 @@ public class GenericTTDataSet implements TTDataSet {
         if (attrs == null) {
             attributes = Collections.emptyMap();
         } else {
-            attributes = Maps.newHashMap(attrs);
+            attributes = ImmutableMap.copyOf(attrs);
         }
     }
 
