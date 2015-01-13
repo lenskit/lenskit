@@ -112,8 +112,9 @@ public class SimpleEvaluator implements Callable<Table> {
     }
 
     /**
-     * Constructs a new {@code CrossfoldCommand} and configures it before adding the datasets
-     * to the {@code TrainTestEvalCommand}.
+     * Add a new data set to be cross-folded.  This method creates a new {@link CrossfoldTask}
+     * and passes it to {@link #addDataset(CrossfoldTask)}.  All crossfold parameters that are not
+     * taken as arguments by this method are left at their defaults.
      *
      * @param name The name of the crossfold
      * @param source The source for the crossfold
@@ -131,9 +132,9 @@ public class SimpleEvaluator implements Callable<Table> {
     }
 
     /**
-     * Constructs a new {@code CrossfoldCommand} with the same name as its datasource
-     * and configures it before adding the datasets
-     * to the {@code TrainTestEvalCommand}.
+     * Add a new data set to be cross-folded.  This method creates a new {@link CrossfoldTask}
+     * and passes it to {@link #addDataset(CrossfoldTask)}.  All crossfold parameters that are not
+     * taken as arguments by this method are left at their defaults.
      *
      * @param source The source for the crossfold
      * @param partitions The number of partitions
@@ -144,8 +145,13 @@ public class SimpleEvaluator implements Callable<Table> {
         return addDataset(source.getName(), source, partitions, holdout);
     }
     /**
-     * Constructs a new {@code CrossfoldCommand} and configures it before adding the datasets
-     * to the {@code TrainTestEvalCommand}.
+     * Add a new data set to be cross-folded.  This method creates a new {@link CrossfoldTask}
+     * and passes it to {@link #addDataset(CrossfoldTask)}.  All crossfold parameters that are not
+     * taken as arguments by this method are left at their defaults.
+     * <p>
+     * <strong>Note:</strong> Prior to LensKit 2.2, this method used a holdout fraction of 0.2. In
+     * LensKit 2.2, it was changed to use the {@link CrossfoldTask}'s default holdout.
+     * </p>
      *
      * @param name The name of the crossfold
      * @param source The source for the crossfold
@@ -157,10 +163,13 @@ public class SimpleEvaluator implements Callable<Table> {
     }
 
     /**
-     * Constructs a new {@code CrossfoldCommand} and configures it before adding the datasets
-     * to the {@code TrainTestEvalCommand}.
-     *
-     * It defaults the holdout of 10 items and the name of the crossfold to the name of the data source.
+     * Add a new data set to be cross-folded.  This method creates a new {@link CrossfoldTask}
+     * and passes it to {@link #addDataset(CrossfoldTask)}.  All crossfold parameters that are not
+     * taken as arguments by this method are left at their defaults.
+     * <p>
+     * <strong>Note:</strong> Prior to LensKit 2.2, this method used a holdout fraction of 0.2. In
+     * LensKit 2.2, it was changed to use the {@link CrossfoldTask}'s default holdout.
+     * </p>
      *
      * @param source The source for the crossfold
      * @param partitions The number of partitions
