@@ -199,8 +199,8 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
     }
 
     /**
-     * Add a list of users as a command-line argument.  The users will be provided as a CSV file
-     * in the format (user, user, user, timestamp).
+     * Add a list of users as a command-line argument.  The users will be provided as a text file
+     * with one user per line.
      *
      * @param users A DAO of users to provide to the process.
      * @return The builder (for chaining).
