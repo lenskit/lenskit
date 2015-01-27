@@ -130,6 +130,8 @@ public class Graph implements Command {
     }
 
     public static void configureArguments(ArgumentParser parser) {
+        parser.description("Generates a visualization of a recommender configuration. " +
+                           "This visualization is intended to be viewed with GraphViz.");
         ScriptEnvironment.configureArguments(parser);
         parser.addArgument("-o", "--output-file")
               .type(File.class)

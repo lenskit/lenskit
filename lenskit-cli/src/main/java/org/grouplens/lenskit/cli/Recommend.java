@@ -30,7 +30,6 @@ import org.grouplens.lenskit.core.*;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.io.CompressionMode;
-import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +38,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Generate Top-N recommendations for users.
@@ -142,6 +140,7 @@ public class Recommend implements Command {
     }
 
     public static void configureArguments(ArgumentParser parser) {
+        parser.description("Generates recommendations for a user.");
         InputData.configureArguments(parser);
         ScriptEnvironment.configureArguments(parser);
         parser.addArgument("-n", "--num-recs")

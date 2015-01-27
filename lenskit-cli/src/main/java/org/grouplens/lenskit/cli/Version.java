@@ -44,7 +44,7 @@ public class Version implements Command {
     }
 
     public static void configureArguments(ArgumentParser parser) {
-
+        parser.description("Prints the LensKit version.");
     }
 
     public static String lenskitVersion() {

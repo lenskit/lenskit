@@ -89,6 +89,8 @@ public class PackRatings implements Command {
     }
 
     public static void configureArguments(Subparser parser) {
+        parser.description("Takes a ratings data set and writes it in binary packed format to a " +
+                           "data file.");
         parser.addArgument("-o", "--output-file")
               .type(File.class)
               .metavar("FILE")

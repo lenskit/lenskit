@@ -150,6 +150,7 @@ public class Predict implements Command {
     }
 
     public static void configureArguments(ArgumentParser parser) {
+        parser.description("Predicts a user's rating of some items.");
         InputData.configureArguments(parser);
         ScriptEnvironment.configureArguments(parser);
         parser.addArgument("-c", "--config-file")

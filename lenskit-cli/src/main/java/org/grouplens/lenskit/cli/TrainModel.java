@@ -92,6 +92,7 @@ public class TrainModel implements Command {
     }
 
     public static void configureArguments(ArgumentParser parser) {
+        parser.description("Trains a recommendation model and write it to disk.");
         ScriptEnvironment.configureArguments(parser);
         InputData.configureArguments(parser);
         parser.addArgument("-o", "--output-file")

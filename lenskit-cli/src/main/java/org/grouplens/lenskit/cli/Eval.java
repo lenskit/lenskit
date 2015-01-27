@@ -20,9 +20,7 @@
  */
 package org.grouplens.lenskit.cli;
 
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.collect.Iterables;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
@@ -33,13 +31,11 @@ import org.grouplens.lenskit.eval.script.EvalScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.Callable;
 
 /**
  * Run an eval script.
