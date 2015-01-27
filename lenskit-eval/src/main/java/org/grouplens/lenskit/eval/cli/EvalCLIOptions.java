@@ -113,7 +113,7 @@ public class EvalCLIOptions {
 
     public static String lenskitVersion() {
         Properties props = new Properties();
-        InputStream stream = EvalCLIOptions.class.getResourceAsStream("/META-INF/lenskit-eval/version.properties");
+        InputStream stream = EvalCLIOptions.class.getResourceAsStream("/META-INF/lenskit/version.properties");
         try {
             props.load(stream);
         } catch (IOException e) {
