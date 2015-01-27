@@ -17,9 +17,11 @@ switch (getConfigProperty('lint', 'false').toLowerCase()) {
 
 if (lintMode != 'disabled') {
     allprojects {
-        apply plugin: 'jacoco'
-        jacoco {
-            toolVersion = '0.7.0.201403182114'
+        if (name != 'lenskit-integration-tests') {
+            apply plugin: 'jacoco'
+            jacoco {
+                toolVersion = '0.7.0.201403182114'
+            }
         }
     }
 
