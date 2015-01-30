@@ -105,6 +105,7 @@ public class KnownRatingRatingPredictorTest {
         assertFalse(predictItems.containsKey(1));
 
     }
+    @SuppressWarnings("deprecation")
     @Test
      /*
     * Test method that tests unrated items for a user in the data set,
@@ -112,18 +113,19 @@ public class KnownRatingRatingPredictorTest {
     * */
     public void  testPredictForUnratedItems() {
 
-        Rating r = new RatingBuilder()
-                .setUserId(420)
-                .setItemId(840)
-                .setRating(3.5)
-                .clearRating()
-                .build();
-        rs.add(r);
+        RatingBuilder rb = new RatingBuilder().setUserId(420);
+        rs.add(rb.setItemId(840).setRating(3.5).setTimestamp(10).build());
+        rs.add(rb.setItemId(390).setRating(4.5).setTimestamp(20).build());
+        rs.add(rb.setItemId(840).clearRating().setTimestamp(30).build());
+
+        dao = new EventCollectionDAO(rs);
+        userDAO = new PrefetchingUserEventDAO(dao);
 
         KnownRatingRatingPredictor KnownPredict = new KnownRatingRatingPredictor(userDAO);
-        MutableSparseVector predictItems = MutableSparseVector.create(840);
+        MutableSparseVector predictItems = MutableSparseVector.create(840,390);
         KnownPredict.predict(420, predictItems);
-        assertThat(predictItems.size(), equalTo(0));
+        assertThat(predictItems.get(390), equalTo(4.5));
+        assertFalse(predictItems.containsKey(840));
 
     }
 }
