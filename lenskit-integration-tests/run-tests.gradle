@@ -1,5 +1,5 @@
 // Run some high-level integration tests
-file('src/it').eachDir { testDir ->
+file('src/it/eval').eachDir { testDir ->
     if (file("$testDir/ignore").exists()) {
         return
     }
