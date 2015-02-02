@@ -1,0 +1,29 @@
+apply plugin: 'java'
+
+repositories {
+    maven {
+        url testRepoURI
+    }
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.grouplens.lenskit:lenskit-all:$lenskitVersion"
+    runtime "org.grouplens.lenskit:lenskit-cli:$lenskitVersion"
+}
+
+task recommend(type: JavaExec) {
+    classpath configurations.runtime
+    inputs.file 'predictor.groovy'
+
+    main 'org.grouplens.lenskit.cli.Main'
+    args 'recommend'
+    args '-C', "$buildDir/classes/main"
+    args '-c', 'predictor.groovy'
+    args "--tsv-file", ratingsFile
+    args '100'
+}
+
+check {
+    dependsOn recommend
+}
