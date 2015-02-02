@@ -21,7 +21,7 @@ file('src/it/eval').eachDir { testDir ->
         }
     
         ext.testDir = testDir
-        ext.workDir = "$buildDir/it/$name"
+        ext.workDir = "$buildDir/eval-tests/$name"
 
         inputs.files testDir, fetchData
         inputs.dir mlDataDir
