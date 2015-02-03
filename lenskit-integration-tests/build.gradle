@@ -113,4 +113,5 @@ ciPrep.doFirst {
 }
 
 // import code to run the integration tests
-apply from: 'run-tests.gradle'
+apply from: 'eval-tests.gradle'
+apply from: 'gradle-tests.gradle'

@@ -1,5 +1,5 @@
 // Run some high-level integration tests
-file('src/it').eachDir { testDir ->
+file('src/it/eval').eachDir { testDir ->
     if (file("$testDir/ignore").exists()) {
         return
     }
@@ -21,7 +21,7 @@ file('src/it').eachDir { testDir ->
         }
     
         ext.testDir = testDir
-        ext.workDir = "$buildDir/it/$name"
+        ext.workDir = "$buildDir/eval-tests/$name"
 
         inputs.files testDir, fetchData
         inputs.dir mlDataDir
@@ -54,10 +54,10 @@ file('src/it').eachDir { testDir ->
         description "Verify the $name tests."
         dependsOn "run$camelName"
         onlyIf {
-            tasks["run$camelName"].didWork
+            !tasks["run$camelName"].state.skipped
         }
 
-        ext.workDir = "$buildDir/it/$name"
+        ext.workDir = "$buildDir/eval-tests/$name"
         inputs.dir workDir
         
         workingDir workDir

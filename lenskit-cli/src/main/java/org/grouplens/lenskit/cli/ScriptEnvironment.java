@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
@@ -55,7 +54,6 @@ public class ScriptEnvironment {
                                     .description("Options for interpreting Groovy scripts.");
         group.addArgument("-C", "--classpath")
              .dest("classpath")
-             .type(URI.class)
              .action(Arguments.append())
              .metavar("URL")
              .help("add URL (jar or dir) to script classpath");
@@ -79,7 +77,7 @@ public class ScriptEnvironment {
     }
 
     private final Properties properties;
-    private final List<URI> classpath;
+    private final List<String> classpath;
 
     public ScriptEnvironment(Namespace ns) {
         properties = new Properties();
@@ -90,7 +88,7 @@ public class ScriptEnvironment {
             }
         }
 
-        List<URI> cp = ns.getList("classpath");
+        List<String> cp = ns.getList("classpath");
         if (cp != null) {
             classpath = cp;
         } else {
@@ -110,7 +108,7 @@ public class ScriptEnvironment {
      * Get the classpath.
      * @return The classpath.
      */
-    public List<URI> getClasspath() {
+    public List<String> getClasspath() {
         return classpath;
     }
 
@@ -127,11 +125,11 @@ public class ScriptEnvironment {
             return parent;
         } else {
             URL[] urls = new URL[classpath.size()];
-            URI base = new File(".").toURI();
             int i = 0;
-            for (URI uri: classpath) {
+            for (String path: classpath) {
+                File file = new File(path);
                 try {
-                    urls[i] = base.resolve(uri).toURL();
+                    urls[i] = file.toURI().toURL();
                     logger.info("added to classpath: {}", urls[i]);
                 } catch (MalformedURLException e) {
                     throw new IllegalArgumentException("Invalid URL", e);

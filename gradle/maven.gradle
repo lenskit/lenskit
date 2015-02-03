@@ -75,8 +75,12 @@ task javadocJar(type: Jar) {
     classifier = 'javadoc'
 }
 
+configurations {
+    mavenCentral
+    mavenCentral.extendsFrom archives
+}
 artifacts {
-    archives sourcesJar, javadocJar
+    mavenCentral sourcesJar, javadocJar
 }
 
 signing {
@@ -100,7 +104,17 @@ install {
     }
 }
 
+task installForTesting(type: Upload) {
+    repositories {
+        mavenDeployer {
+            repository(url: rootProject.project('lenskit-integration-tests').uri('build/test-repo'))
+        }
+    }
+    configuration = configurations.archives
+}
+
 uploadArchives {
+    configuration = configurations.mavenCentral
     repositories.mavenDeployer {
         def user = System.getenv('DEPLOY_USER') ?: project.getConfigProperty('deploy.user', null)
         def password = System.getenv('DEPLOY_PASSWORD') ?: project.getConfigProperty('deploy.password', null)
