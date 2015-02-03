@@ -93,6 +93,14 @@ public class LenskitConfiguration extends AbstractConfigContext {
         roots.add(componentType);
     }
 
+    /**
+     * Clear the set of roots, removing all configured <em>and default</em> roots.  This is almost
+     * never desired in production, but is useful for testing.
+     */
+    public void clearRoots() {
+        roots.clear();
+    }
+
     @Override
     public <T> LenskitBinding<T> bind(Class<T> type) {
         return wrapContext(bindings.getRootContext()).bind(type);
