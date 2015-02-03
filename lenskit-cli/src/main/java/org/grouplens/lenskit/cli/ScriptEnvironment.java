@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
@@ -126,8 +125,6 @@ public class ScriptEnvironment {
             return parent;
         } else {
             URL[] urls = new URL[classpath.size()];
-            URI base = URI.create("file://" + System.getProperty("user.dir"));
-            logger.info("Using base URL {}", base);
             int i = 0;
             for (String path: classpath) {
                 try {
