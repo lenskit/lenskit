@@ -30,6 +30,8 @@ import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.util.LineCursor;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.grouplens.lenskit.util.io.Describable;
+import org.grouplens.lenskit.util.io.DescriptionWriter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
@@ -47,7 +49,7 @@ import java.util.List;
  * @since 2.2
  */
 @ThreadSafe
-public class TextEventDAO implements EventDAO {
+public class TextEventDAO implements EventDAO, Describable {
     private final File inputFile;
     private final CompressionMode compression;
     private final EventFormat eventFormat;
@@ -132,6 +134,13 @@ public class TextEventDAO implements EventDAO {
         } finally {
             cursor.close();
         }
+    }
+
+    @Override
+    public void describeTo(DescriptionWriter descr) {
+        descr.putField("file", inputFile.getAbsolutePath())
+             .putField("length", inputFile.length())
+             .putField("mtime", inputFile.lastModified());
     }
 
     private final class EventCursor extends AbstractCursor<Event> {
