@@ -29,6 +29,28 @@ public final class Formats {
     private Formats() {}
 
     /**
+     * A basic format of ratings in a CSV file.  The expected format is (<em>user</em>, <em>item</em>,
+     * <em>rating</em>, <em>timestamp</em>), where the timestamp is optional.
+     * @param delim The delimiter.
+     * @return An event format for reading ratings from a CSV file.
+     */
+    public static DelimitedColumnEventFormat delimitedRatings(String delim) {
+        DelimitedColumnEventFormat fmt = new DelimitedColumnEventFormat(new RatingEventType());
+        fmt.setDelimiter(delim);
+        fmt.setFields(Fields.user(), Fields.item(), Fields.rating(), Fields.timestamp(false));
+        return fmt;
+    }
+
+    /**
+     * A basic format of ratings in a CSV file.  The expected format is (<em>user</em>, <em>item</em>,
+     * <em>rating</em>, <em>timestamp</em>), where the timestamp is optional.
+     * @return An event format for reading ratings from a CSV file.
+     */
+    public static DelimitedColumnEventFormat csvRatings() {
+        return delimitedRatings(",");
+    }
+
+    /**
      * Get a format for reading the ML-100K data set.
      *
      * @return A format for using {@link TextEventDAO} to read the ML-100K data set.
@@ -41,7 +63,7 @@ public final class Formats {
     }
 
     /**
-     * Get a format for reading the MovieLens data sets.
+     * Get a format for reading the MovieLens data sets (other than 100K).
      *
      * @return A format for using {@link TextEventDAO} to read the ML-1M and ML-10M data sets.
      */
