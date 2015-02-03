@@ -127,8 +127,9 @@ public class ScriptEnvironment {
             URL[] urls = new URL[classpath.size()];
             int i = 0;
             for (String path: classpath) {
+                File file = new File(path);
                 try {
-                    urls[i] = new File(path).toURI().toURL();
+                    urls[i] = file.toURI().toURL();
                     logger.info("added to classpath: {}", urls[i]);
                 } catch (MalformedURLException e) {
                     throw new IllegalArgumentException("Invalid URL", e);

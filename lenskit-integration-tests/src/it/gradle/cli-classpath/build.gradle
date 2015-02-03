@@ -13,6 +13,7 @@ dependencies {
 }
 
 task recommend(type: JavaExec) {
+    dependsOn classes
     classpath configurations.runtime
     inputs.file 'predictor.groovy'
 
