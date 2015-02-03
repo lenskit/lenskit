@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.inject;
 
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import org.grouplens.grapht.AbstractContext;
 import org.grouplens.grapht.Binding;
@@ -31,6 +33,7 @@ import org.grouplens.lenskit.core.Parameter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.File;
 import java.lang.annotation.Annotation;
 
 /**
@@ -74,7 +77,12 @@ public abstract class AbstractConfigContext extends AbstractContext implements L
         if (annot == null) {
             throw new IllegalArgumentException(param.toString() + "has no Parameter annotation");
         }
-        return bind(annot.value()).withQualifier(param);
+        Class<?> type = annot.value();
+        Binding binding = bind(annot.value());
+        if (type.equals(File.class)) {
+            binding = LenskitBindingImpl.wrap(binding, new StringToFileConversion());
+        }
+        return binding.withQualifier(param);
     }
 
     @SuppressWarnings("unchecked")
@@ -102,5 +110,19 @@ public abstract class AbstractConfigContext extends AbstractContext implements L
     @Override @Deprecated
     public LenskitConfigContext in(@Nullable Annotation qualifier, Class<?> type) {
         return within(qualifier, type);
+    }
+
+    private static class StringToFileConversion implements Function<Object,Optional<File>> {
+        @Nullable
+        @Override
+        public Optional<File> apply(@Nullable Object input) {
+            if (input == null) {
+                return null;
+            } else if (input instanceof String) {
+                return Optional.of(new File((String) input));
+            } else {
+                return Optional.absent();
+            }
+        }
     }
 }
