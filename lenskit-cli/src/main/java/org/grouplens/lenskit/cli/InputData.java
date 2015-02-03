@@ -31,6 +31,8 @@ import org.grouplens.lenskit.data.dao.packed.BinaryRatingFile;
 import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
 import org.grouplens.lenskit.data.text.TextEventDAO;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 
@@ -47,6 +49,7 @@ public class InputData {
         options = opts;
     }
 
+    @Nullable
     Source getSource() {
         String type = options.get("event_type");
         File ratingFile = options.get("csv_file");
@@ -73,20 +76,29 @@ public class InputData {
             return new PackedInput(packFile);
         }
 
-        throw new IllegalStateException("no input data configured");
+        return null;
     }
 
+    @Nullable
     public EventDAO getEventDAO() throws IOException {
-        return getSource().getEventDAO();
+        Source src = getSource();
+        return (src == null) ? null : src.getEventDAO();
     }
 
+    @Nonnull
     public LenskitConfiguration getConfiguration() {
-        return getSource().getConfiguration();
+        Source src = getSource();
+        if (src == null) {
+            return new LenskitConfiguration();
+        } else {
+            return src.getConfiguration();
+        }
     }
 
     @Override
     public String toString() {
-        return getSource().toString();
+        Source src = getSource();
+        return (src == null) ? "null" : src.toString();
     }
 
     static interface Source {
@@ -153,10 +165,14 @@ public class InputData {
     }
 
     public static void configureArguments(ArgumentParser parser) {
+        configureArguments(parser, false);
+    }
+
+    public static void configureArguments(ArgumentParser parser, boolean required) {
         MutuallyExclusiveGroup group =
                 parser.addMutuallyExclusiveGroup("input data")
                       .description("Specify the input data for the command.")
-                      .required(true);
+                      .required(required);
         ArgumentGroup options = parser.addArgumentGroup("input options")
                                       .description("Additional options for input data.");
         group.addArgument("--csv-file")

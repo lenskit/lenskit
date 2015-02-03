@@ -70,6 +70,9 @@ public class PackRatings implements Command {
         logger.info("packing ratings from {}", input);
         logger.debug("using delimiter {}", getDelimiter());
         EventDAO dao = input.getEventDAO();
+        if (dao == null) {
+            throw new IOException("no data source specified");
+        }
         EnumSet<BinaryFormatFlag> flags = EnumSet.noneOf(BinaryFormatFlag.class);
         if (useTimestamps()) {
             flags.add(BinaryFormatFlag.TIMESTAMPS);
@@ -100,6 +103,6 @@ public class PackRatings implements Command {
               .action(Arguments.storeFalse())
               .dest("use_timestamps")
               .help("don't include or use timestamps");
-        InputData.configureArguments(parser);
+        InputData.configureArguments(parser, true);
     }
 }
