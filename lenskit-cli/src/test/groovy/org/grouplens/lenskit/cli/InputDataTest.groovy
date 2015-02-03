@@ -32,7 +32,7 @@ import static org.junit.Assert.assertThat
 class InputDataTest {
     static InputData parse(String... args) {
         def parser = ArgumentParsers.newArgumentParser("lenskit-input");
-        InputData.configureArguments(parser)
+        InputData.configureArguments(parser, true)
         def options = parser.parseArgs(args)
         return new InputData(options)
     }
