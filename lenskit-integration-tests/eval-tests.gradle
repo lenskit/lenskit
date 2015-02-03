@@ -54,7 +54,7 @@ file('src/it/eval').eachDir { testDir ->
         description "Verify the $name tests."
         dependsOn "run$camelName"
         onlyIf {
-            !tasks["run$camelName"].skipped
+            !tasks["run$camelName"].state.skipped
         }
 
         ext.workDir = "$buildDir/eval-tests/$name"
