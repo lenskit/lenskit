@@ -88,7 +88,7 @@ signing {
     required {
         !version.endsWith('SNAPSHOT') && gradle.taskGraph.hasTask('uploadArchives')
     }
-    sign configurations.archives
+    sign configurations.archives, configurations.mavenCentral
 }
 
 install {
