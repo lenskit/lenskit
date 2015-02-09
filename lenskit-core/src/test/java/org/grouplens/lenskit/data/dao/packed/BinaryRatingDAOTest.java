@@ -22,6 +22,7 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.io.Closer;
 import org.apache.commons.lang3.SerializationUtils;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.SortOrder;
@@ -35,7 +36,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -165,6 +169,32 @@ public class BinaryRatingDAOTest {
         BinaryRatingDAO dao = BinaryRatingDAO.open(file);
         BinaryRatingDAO clone = SerializationUtils.clone(dao);
         verifySimpleDAO(clone);
+    }
+
+    @Test
+    public void testBufferDAO() throws IOException {
+        File file = folder.newFile("ratings.bin");
+        BinaryRatingPacker packer = BinaryRatingPacker.open(file);
+        try {
+            packer.writeRatings(ratings);
+        } finally {
+            packer.close();
+        }
+
+        ByteBuffer buffer;
+        Closer closer = Closer.create();
+        try {
+            FileInputStream istr = new FileInputStream(file);
+            FileChannel chan = istr.getChannel();
+            buffer = chan.map(FileChannel.MapMode.READ_ONLY, 0, chan.size());
+        } catch (Throwable th) {
+            throw closer.rethrow(th);
+        } finally {
+            closer.close();
+        }
+
+        BinaryRatingDAO dao = BinaryRatingDAO.fromBuffer(buffer);
+        verifySimpleDAO(dao);
     }
 
     private void verifySimpleDAO(BinaryRatingDAO dao) {
