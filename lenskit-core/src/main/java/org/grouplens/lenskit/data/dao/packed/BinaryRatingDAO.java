@@ -93,17 +93,25 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     }
 
     static BinaryRatingDAO fromBuffer(ByteBuffer buffer) {
+        // start by reading header from the buffer
         BinaryHeader header = BinaryHeader.fromHeader(buffer);
         assert buffer.position() >= BinaryHeader.HEADER_SIZE;
-        ByteBuffer dup = buffer.duplicate();
-        dup.limit(header.getRatingDataSize());
+        // the header read advanced the buffer position past the header; prepare a data slice
+        // first slice to remove the header
+        ByteBuffer data = buffer.slice();
+        // then limit to the rating data size
+        data.limit(header.getRatingDataSize());
+        assert data.remaining() == header.getRatingDataSize();
 
+        // prepare to read tables
         ByteBuffer tableBuffer = buffer.duplicate();
+        // skip the header and the rating data
         tableBuffer.position(tableBuffer.position() + header.getRatingDataSize());
+        // each of the following reads advances the buffer by the amount read
         BinaryIndexTable utbl = BinaryIndexTable.fromBuffer(header.getUserCount(), tableBuffer);
         BinaryIndexTable itbl = BinaryIndexTable.fromBuffer(header.getItemCount(), tableBuffer);
 
-        return new BinaryRatingDAO(null, header, dup.slice(), utbl, itbl);
+        return new BinaryRatingDAO(null, header, data, utbl, itbl);
     }
 
     /**
@@ -119,6 +127,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             BinaryHeader header = BinaryHeader.read(channel);
             logger.info("Loading DAO with {} ratings of {} items from {} users",
                         header.getRatingCount(), header.getItemCount(), header.getUserCount());
+            // the channel position has been advanced to end of header
 
             ByteBuffer data = channel.map(FileChannel.MapMode.READ_ONLY,
                                           channel.position(), header.getRatingDataSize());
