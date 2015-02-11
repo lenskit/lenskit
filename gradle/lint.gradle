@@ -51,14 +51,12 @@ apply plugin: 'sonar-runner'
 sonarRunner {
     toolVersion = '2.4'
     sonarProperties {
-        def properties = ['jdbc.user', 'jdbc.password', 'jdbc.url', 'host.url']
         property "sonar.host.url", "https://sonar.cs.txstate.edu"
         property "sonar.jdbc.driverClassName", "org.postgresql.Driver"
         property "sonar.sourceEncoding", "UTF-8"
-        for (prop in properties) {
-            def pn = "sonar.$prop"
-            if (project.hasProperty(pn)) {
-                property pn, project.getProperty(pn)
+        for (prop in project.properties.entrySet()) {
+            if (prop.key.startsWith("sonar.")) {
+                property prop.key, prop.value
             }
         }
         if (lintMode == 'preview') {
