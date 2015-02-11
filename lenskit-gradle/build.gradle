@@ -1,0 +1,7 @@
+apply plugin: 'groovy'
+apply from: "$rootDir/gradle/maven.gradle"
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+}
