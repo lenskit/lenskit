@@ -26,9 +26,12 @@ import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.data.dao.MapItemNameDAO;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingFile;
+import org.grouplens.lenskit.data.text.CSVFileItemNameDAOProvider;
 import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
+import org.grouplens.lenskit.data.text.ItemFile;
 import org.grouplens.lenskit.data.text.TextEventDAO;
 
 import javax.annotation.Nonnull;
@@ -52,14 +55,15 @@ public class InputData {
     @Nullable
     Source getSource() {
         String type = options.get("event_type");
+        File nameFile = options.get("item_names");
         File ratingFile = options.get("csv_file");
         if (ratingFile != null) {
-            return new TextInput(ratingFile, ",", type);
+            return new TextInput(ratingFile, ",", type, nameFile);
         }
 
         ratingFile = options.get("tsv_file");
         if (ratingFile != null) {
-            return new TextInput(ratingFile, "\t", type);
+            return new TextInput(ratingFile, "\t", type, nameFile);
         }
 
         ratingFile = options.get("ratings_file");
@@ -68,12 +72,12 @@ public class InputData {
         }
         if (ratingFile != null) {
             String delim = options.getString("delimiter");
-            return new TextInput(ratingFile, delim, type);
+            return new TextInput(ratingFile, delim, type, nameFile);
         }
 
         File packFile = options.get("pack_file");
         if (packFile != null) {
-            return new PackedInput(packFile);
+            return new PackedInput(packFile, nameFile);
         }
 
         return null;
@@ -110,11 +114,13 @@ public class InputData {
         final File inputFile;
         final String delimiter;
         final String type;
+        final File nameFile;
 
-        public TextInput(File file, String delim, String et) {
+        public TextInput(File file, String delim, String et, File nf) {
             inputFile = file;
             delimiter = delim;
             type = et;
+            nameFile = nf;
         }
 
         @Override
@@ -128,6 +134,12 @@ public class InputData {
         public LenskitConfiguration getConfiguration() {
             LenskitConfiguration config = new LenskitConfiguration();
             config.addComponent(getEventDAO());
+            if (nameFile != null) {
+                config.bind(MapItemNameDAO.class)
+                      .toProvider(CSVFileItemNameDAOProvider.class);
+                config.set(ItemFile.class)
+                      .to(nameFile);
+            }
             return config;
         }
 
@@ -139,9 +151,11 @@ public class InputData {
 
     static class PackedInput implements Source {
         final File inputFile;
+        final File nameFile;
 
-        public PackedInput(File file) {
+        public PackedInput(File file, File nf) {
             inputFile = file;
+            nameFile = nf;
         }
 
         @Override
@@ -155,6 +169,12 @@ public class InputData {
             config.addComponent(BinaryRatingDAO.class);
             config.bind(BinaryRatingFile.class, File.class)
                   .to(inputFile);
+            if (nameFile != null) {
+                config.bind(MapItemNameDAO.class)
+                      .toProvider(CSVFileItemNameDAOProvider.class);
+                config.set(ItemFile.class)
+                      .to(nameFile);
+            }
             return config;
         }
 
@@ -199,6 +219,10 @@ public class InputData {
                .setDefault("rating")
                .metavar("TYPE")
                .help("read events of type TYPE from input file");
+        options.addArgument("--item-names")
+               .type(File.class)
+               .metavar("FILE")
+               .help("Read item names from CSV file FILE");
         group.addArgument("--pack-file")
              .type(File.class)
              .metavar("FILE")
