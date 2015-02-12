@@ -27,6 +27,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.*;
+import org.grouplens.lenskit.data.dao.ItemNameDAO;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.util.io.CompressionMode;
@@ -67,6 +68,7 @@ public class Recommend implements Command {
 
         LenskitRecommender rec = engine.createRecommender();
         ItemRecommender irec = rec.getItemRecommender();
+        ItemNameDAO indao = rec.get(ItemNameDAO.class);
         if (irec == null) {
             logger.error("recommender has no item recommender");
             throw new UnsupportedOperationException("no item recommender");
@@ -79,7 +81,11 @@ public class Recommend implements Command {
             List<ScoredId> recs = irec.recommend(user, n);
             System.out.format("recommendations for user %d:\n", user);
             for (ScoredId item: recs) {
-                System.out.format("  %d: %.3f", item.getId(), item.getScore());
+                System.out.format("  %d", item.getId());
+                if (indao != null) {
+                    System.out.format(" (%s)", indao.getItemName(item.getId()));
+                }
+                System.out.format(": %.3f", item.getScore());
                 if (pchan != null && item.hasUnboxedChannel(pchan)) {
                     System.out.format(" (%f)", item.getUnboxedChannelValue(pchan));
                 }
