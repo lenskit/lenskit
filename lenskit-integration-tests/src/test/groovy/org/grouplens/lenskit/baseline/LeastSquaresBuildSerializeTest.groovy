@@ -41,6 +41,20 @@ import static org.junit.Assert.assertThat
  */
 public class LeastSquaresBuildSerializeTest extends ML100KTestSuite {
     @Test
+    public void testBuildWithItemSubset() {
+        LenskitConfiguration config = ConfigHelpers.load {
+            bind ItemScorer to LeastSquaresItemScorer
+        }
+
+        LenskitRecommenderEngine engine =
+                LenskitRecommenderEngine.newBuilder()
+                                        .addConfiguration(config)
+                                        .addConfiguration(itemSubsetConfig, ModelDisposition.EXCLUDED)
+                                        .build()
+        assertThat(engine, notNullValue())
+    }
+
+    @Test
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
         LenskitConfiguration config = ConfigHelpers.load {
             bind ItemScorer to LeastSquaresItemScorer
