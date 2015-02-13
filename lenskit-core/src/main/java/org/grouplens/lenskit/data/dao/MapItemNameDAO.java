@@ -41,8 +41,8 @@ import java.util.NoSuchElementException;
 /**
  * An item name DAO backed by a map of item IDs to names.
  *
- * @since 2.1
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 2.2
+ * @see org.grouplens.lenskit.data.dao.ItemNameDAO
  */
 @Shareable
 public class MapItemNameDAO implements ItemNameDAO, ItemDAO, Serializable {

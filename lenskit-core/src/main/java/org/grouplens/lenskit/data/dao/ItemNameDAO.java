@@ -25,6 +25,20 @@ import javax.annotation.Nullable;
 
 /**
  * A DAO interface that provides access to item names.
+ * <p>
+ * The normal way to get item names, without writing your own DAOs, is to use a {@link org.grouplens.lenskit.data.dao.MapItemNameDAO}, often
+ * loaded from a CSV file:
+ * </p>
+ * <pre>{@code
+ * bind MapItemNameDAO to CSVFileItemNameDAOProvider
+ * set ItemFile to "item-names.csv"
+ * }</pre>
+ * <p>
+ * Note that, while {@link org.grouplens.lenskit.data.dao.MapItemNameDAO} implements both this
+ * interface and {@link org.grouplens.lenskit.data.dao.ItemDAO}, binding this interface to the
+ * provider instead of the class means that the item name DAO will only be used to satisfy item name
+ * DAO requests and not item list requests.
+ * </p>
  */
 public interface ItemNameDAO {
     /**
