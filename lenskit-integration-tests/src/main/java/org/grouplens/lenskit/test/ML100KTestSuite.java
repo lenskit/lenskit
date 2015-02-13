@@ -20,9 +20,11 @@
  */
 package org.grouplens.lenskit.test;
 
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.LongLists;
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.dao.SimpleFileRatingDAO;
+import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
 import org.grouplens.lenskit.data.text.Fields;
 import org.grouplens.lenskit.data.text.TextEventDAO;
@@ -32,6 +34,7 @@ import org.junit.internal.AssumptionViolatedException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Random;
 
 import static org.junit.Assume.assumeTrue;
 
@@ -50,6 +53,17 @@ public class ML100KTestSuite {
     protected LenskitConfiguration getDaoConfig() {
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).to(ratingDAO);
+        return config;
+    }
+
+    protected LenskitConfiguration getItemSubsetConfig() {
+        Random rng = new Random();
+        LenskitConfiguration config = getDaoConfig();
+        ItemDAO idao = new PrefetchingItemDAO(ratingDAO);
+        LongList items = new LongArrayList(idao.getItemIds());
+        LongLists.shuffle(items, rng);
+        items = items.subList(0, items.size() - 20);
+        config.bind(ItemDAO.class).to(new ItemListItemDAO(items));
         return config;
     }
 
