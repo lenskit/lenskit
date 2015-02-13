@@ -27,7 +27,6 @@ import org.grouplens.lenskit.core.LenskitConfiguration
 import org.grouplens.lenskit.core.LenskitRecommender
 import org.grouplens.lenskit.core.LenskitRecommenderEngine
 import org.grouplens.lenskit.core.ModelDisposition
-import org.grouplens.lenskit.data.dao.EventDAO
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.junit.Test
 

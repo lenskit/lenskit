@@ -33,7 +33,6 @@ import org.junit.internal.AssumptionViolatedException;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
 
 /**
