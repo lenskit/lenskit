@@ -57,6 +57,10 @@ data to work with, one of the following mutually-exclusive options must be prese
 :   Read ratings from the packed rating file *FILE*.  Packed files can be created with the
     [**pack-ratings**](lenskit-pack-ratings.1.html) command.
 
+--item-names *FILE*
+:   Load an item ID to name mapping from the CSV file *FILE*.  This will be used to provide an
+    `ItemNameDAO` and `ItemDAO`.
+
 Additionally, the following options provide additional control over the data input:
 
 -d *DELIM*, --delimiter *DELIM*
