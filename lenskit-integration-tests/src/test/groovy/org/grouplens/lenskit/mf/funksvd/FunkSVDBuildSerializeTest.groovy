@@ -42,19 +42,29 @@ import static org.junit.Assert.assertThat
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class FunkSVDBuildSerializeTest extends ML100KTestSuite {
+    def config = ConfigHelpers.load {
+        bind ItemScorer to FunkSVDItemScorer
+        bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
+        bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
+        set FeatureCount to 10
+        set IterationCount to 10
+        within (BaselineScorer, ItemScorer) {
+            set MeanDamping to 25
+        }
+    }
+
+    @Test
+    void testBuildWithMissingItems() {
+        LenskitRecommenderEngine engine =
+                LenskitRecommenderEngine.newBuilder()
+                                        .addConfiguration(config)
+                                        .addConfiguration(itemSubsetConfig, ModelDisposition.EXCLUDED)
+                                        .build()
+        assertThat(engine, notNullValue())
+    }
+
     @Test
     void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
-        def config = ConfigHelpers.load {
-            bind ItemScorer to FunkSVDItemScorer
-            bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
-            bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
-            set FeatureCount to 10
-            set IterationCount to 10
-            within (BaselineScorer, ItemScorer) {
-                set MeanDamping to 25
-            }
-        }
-
         LenskitRecommenderEngine engine =
             LenskitRecommenderEngine.newBuilder()
                                     .addConfiguration(config)
