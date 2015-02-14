@@ -98,6 +98,8 @@ public class GlobalRecommend implements Command {
 
     private LenskitRecommenderEngine loadEngine() throws RecommenderBuildException, IOException {
         File modelFile = options.get("model_file");
+        LenskitConfiguration roots = new LenskitConfiguration();
+        roots.addRoot(ItemNameDAO.class);
         if (modelFile == null) {
             logger.info("creating fresh recommender");
             LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
@@ -105,6 +107,7 @@ public class GlobalRecommend implements Command {
                 builder.addConfiguration(config);
             }
             builder.addConfiguration(input.getConfiguration());
+            builder.addConfiguration(roots);
             Stopwatch timer = Stopwatch.createStarted();
             LenskitRecommenderEngine engine = builder.build();
             timer.stop();
@@ -117,6 +120,7 @@ public class GlobalRecommend implements Command {
                 loader.addConfiguration(config);
             }
             loader.addConfiguration(input.getConfiguration());
+            loader.addConfiguration(roots);
             Stopwatch timer = Stopwatch.createStarted();
             LenskitRecommenderEngine engine;
             InputStream input = new FileInputStream(modelFile);
