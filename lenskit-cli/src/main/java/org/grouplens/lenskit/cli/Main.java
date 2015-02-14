@@ -54,6 +54,7 @@ public class Main {
         registerClass(subparsers, Recommend.class);
         registerClass(subparsers, Predict.class);
         registerClass(subparsers, Graph.class);
+        registerClass(subparsers, GlobalRecommend.class);
 
         try {
             Namespace options = parser.parseArgs(args);
