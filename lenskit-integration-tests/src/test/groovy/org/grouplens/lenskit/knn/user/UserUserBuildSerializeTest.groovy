@@ -53,6 +53,26 @@ import static org.junit.Assert.assertThat
  */
 public class UserUserBuildSerializeTest extends ML100KTestSuite {
     @Test
+    public void testBuildWithoutItems() throws RecommenderBuildException, IOException {
+        def config = ConfigHelpers.load {
+            bind ItemScorer to UserUserItemScorer
+            within(UserVectorSimilarity) {
+                bind VectorSimilarity to CosineVectorSimilarity
+            }
+            bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
+            bind(BaselineScorer, ItemScorer) to UserMeanItemScorer
+            bind(UserMeanBaseline, ItemMeanRatingItemScorer) to ItemMeanRatingItemScorer
+        }
+
+        LenskitRecommenderEngine engine =
+                LenskitRecommenderEngine.newBuilder()
+                                        .addConfiguration(config)
+                                        .addConfiguration(itemSubsetConfig, ModelDisposition.EXCLUDED)
+                                        .build()
+        assertThat(engine, notNullValue())
+    }
+
+    @Test
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
         def config = ConfigHelpers.load {
             bind ItemScorer to UserUserItemScorer
