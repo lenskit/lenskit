@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.cli;
 
 import com.google.common.base.Stopwatch;
-import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.ItemRecommender;
@@ -30,14 +29,11 @@ import org.grouplens.lenskit.core.*;
 import org.grouplens.lenskit.data.dao.ItemNameDAO;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
-import org.grouplens.lenskit.util.io.CompressionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -52,16 +48,18 @@ public class Recommend implements Command {
     private final Namespace options;
     private final InputData input;
     private final ScriptEnvironment environment;
+    private final RecommenderLoader loader;
 
     public Recommend(Namespace opts) {
         options = opts;
         input = new InputData(opts);
         environment = new ScriptEnvironment(opts);
+        loader = new RecommenderLoader(input, environment, opts);
     }
 
     @Override
     public void execute() throws IOException, RecommenderBuildException {
-        LenskitRecommenderEngine engine = loadEngine();
+        LenskitRecommenderEngine engine = loader.loadEngine();
 
         List<Long> users = options.get("users");
         final int n = options.getInt("num_recs");
@@ -96,50 +94,6 @@ public class Recommend implements Command {
         logger.info("recommended for {} users in {}", users.size(), timer);
     }
 
-    private LenskitRecommenderEngine loadEngine() throws RecommenderBuildException, IOException {
-        LenskitConfiguration roots = new LenskitConfiguration();
-        roots.addRoot(ItemNameDAO.class);
-        File modelFile = options.get("model_file");
-        if (modelFile == null) {
-            logger.info("creating fresh recommender");
-            LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
-            for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
-                builder.addConfiguration(config);
-            }
-            builder.addConfiguration(input.getConfiguration());
-            builder.addConfiguration(roots);
-            Stopwatch timer = Stopwatch.createStarted();
-            LenskitRecommenderEngine engine = builder.build();
-            timer.stop();
-            logger.info("built recommender in {}", timer);
-            return engine;
-        } else {
-            logger.info("loading recommender from {}", modelFile);
-            LenskitRecommenderEngineLoader loader = LenskitRecommenderEngine.newLoader();
-            for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
-                loader.addConfiguration(config);
-            }
-            loader.addConfiguration(input.getConfiguration());
-            loader.addConfiguration(roots);
-            Stopwatch timer = Stopwatch.createStarted();
-            LenskitRecommenderEngine engine;
-            InputStream input = new FileInputStream(modelFile);
-            try {
-                input = CompressionMode.autodetect(modelFile).wrapInput(input);
-                engine = loader.load(input);
-            } finally {
-                input.close();
-            }
-            timer.stop();
-            logger.info("loaded recommender in {}", timer);
-            return engine;
-        }
-    }
-
-    List<File> getConfigFiles() {
-        return options.getList("config_file");
-    }
-
     Symbol getPrintChannel() {
         String name = options.get("print_channel");
         if (name == null) {
@@ -153,20 +107,12 @@ public class Recommend implements Command {
         parser.description("Generates recommendations for a user.");
         InputData.configureArguments(parser);
         ScriptEnvironment.configureArguments(parser);
+        RecommenderLoader.configureArguments(parser);
         parser.addArgument("-n", "--num-recs")
               .type(Integer.class)
               .setDefault(10)
               .metavar("N")
               .help("generate up to N recommendations per user");
-        parser.addArgument("-c", "--config-file")
-              .type(File.class)
-              .action(Arguments.append())
-              .metavar("FILE")
-              .help("use configuration from FILE");
-        parser.addArgument("-m", "--model-file")
-              .type(File.class)
-              .metavar("FILE")
-              .help("load model from FILE");
         parser.addArgument("--print-channel")
               .metavar("CHAN")
               .help("also print value from CHAN");
@@ -176,4 +122,5 @@ public class Recommend implements Command {
               .metavar("USER")
               .help("recommend for USERS");
     }
+
 }

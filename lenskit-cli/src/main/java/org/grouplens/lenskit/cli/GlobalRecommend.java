@@ -53,16 +53,18 @@ public class GlobalRecommend implements Command {
     private final Namespace options;
     private final InputData input;
     private final ScriptEnvironment environment;
+    private final RecommenderLoader loader;
 
     public GlobalRecommend(Namespace opts) {
         options = opts;
         input = new InputData(opts);
         environment = new ScriptEnvironment(opts);
+        loader = new RecommenderLoader(input, environment, opts);
     }
 
     @Override
     public void execute() throws IOException, RecommenderBuildException {
-        LenskitRecommenderEngine engine = loadEngine();
+        LenskitRecommenderEngine engine = loader.loadEngine();
 
         List<Long> items = options.get("items");
         final int n = options.getInt("num_recs");
@@ -94,50 +96,6 @@ public class GlobalRecommend implements Command {
 
         timer.stop();
         logger.info("recommended in {}", timer);
-    }
-
-    private LenskitRecommenderEngine loadEngine() throws RecommenderBuildException, IOException {
-        File modelFile = options.get("model_file");
-        LenskitConfiguration roots = new LenskitConfiguration();
-        roots.addRoot(ItemNameDAO.class);
-        if (modelFile == null) {
-            logger.info("creating fresh recommender");
-            LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
-            for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
-                builder.addConfiguration(config);
-            }
-            builder.addConfiguration(input.getConfiguration());
-            builder.addConfiguration(roots);
-            Stopwatch timer = Stopwatch.createStarted();
-            LenskitRecommenderEngine engine = builder.build();
-            timer.stop();
-            logger.info("built recommender in {}", timer);
-            return engine;
-        } else {
-            logger.info("loading recommender from {}", modelFile);
-            LenskitRecommenderEngineLoader loader = LenskitRecommenderEngine.newLoader();
-            for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
-                loader.addConfiguration(config);
-            }
-            loader.addConfiguration(input.getConfiguration());
-            loader.addConfiguration(roots);
-            Stopwatch timer = Stopwatch.createStarted();
-            LenskitRecommenderEngine engine;
-            InputStream input = new FileInputStream(modelFile);
-            try {
-                input = CompressionMode.autodetect(modelFile).wrapInput(input);
-                engine = loader.load(input);
-            } finally {
-                input.close();
-            }
-            timer.stop();
-            logger.info("loaded recommender in {}", timer);
-            return engine;
-        }
-    }
-
-    List<File> getConfigFiles() {
-        return options.getList("config_file");
     }
 
     Symbol getPrintChannel() {
