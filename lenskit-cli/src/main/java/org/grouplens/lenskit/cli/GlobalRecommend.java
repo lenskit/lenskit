@@ -168,7 +168,7 @@ public class GlobalRecommend implements Command {
               .help("also print value from CHAN");
         parser.addArgument("items")
               .type(Long.class)
-              .nargs("+")
+              .nargs("*")
               .metavar("ITEM")
               .help("use ITEMS as reference for recommendation");
     }
