@@ -46,15 +46,25 @@ import static org.junit.Assert.assertThat
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ItemItemBuildSerializeTest extends ML100KTestSuite {
+    def config = ConfigHelpers.load {
+        bind ItemScorer to ItemItemScorer
+        bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
+        bind(BaselineScorer, ItemScorer) to UserMeanItemScorer
+        bind(UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
+    }
+
+    @Test
+    public void testBuildWithItemSubset() throws RecommenderBuildException, IOException {
+        LenskitRecommenderEngine engine =
+                LenskitRecommenderEngine.newBuilder()
+                                        .addConfiguration(config)
+                                        .addConfiguration(itemSubsetConfig)
+                                        .build()
+        assertThat(engine, notNullValue())
+    }
+
     @Test
     public void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
-        def config = ConfigHelpers.load {
-            bind ItemScorer to ItemItemScorer
-            bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
-            bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
-            bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
-        }
-
         LenskitRecommenderEngine engine =
             LenskitRecommenderEngine.newBuilder()
                                     .addConfiguration(config)
