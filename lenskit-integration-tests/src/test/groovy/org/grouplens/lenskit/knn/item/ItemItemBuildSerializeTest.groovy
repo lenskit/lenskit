@@ -32,9 +32,13 @@ import org.grouplens.lenskit.core.LenskitRecommender
 import org.grouplens.lenskit.core.LenskitRecommenderEngine
 import org.grouplens.lenskit.core.ModelDisposition
 import org.grouplens.lenskit.knn.item.model.ItemItemModel
+import org.grouplens.lenskit.knn.item.model.ItemItemModelBuilder
+import org.grouplens.lenskit.knn.item.model.NormalizingItemItemModelBuilder
+import org.grouplens.lenskit.knn.item.model.StandardVectorTruncatorProvider
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
+import org.grouplens.lenskit.transform.truncate.VectorTruncator
 import org.junit.Test
 
 import static org.hamcrest.Matchers.*
@@ -58,6 +62,19 @@ public class ItemItemBuildSerializeTest extends ML100KTestSuite {
         LenskitRecommenderEngine engine =
                 LenskitRecommenderEngine.newBuilder()
                                         .addConfiguration(config)
+                                        .addConfiguration(itemSubsetConfig)
+                                        .build()
+        assertThat(engine, notNullValue())
+    }
+
+    @Test
+    public void testNormalizingBuildWithItemSubset() throws RecommenderBuildException, IOException {
+        def cfg = config.copy()
+        cfg.bind(ItemItemModel).toProvider(NormalizingItemItemModelBuilder)
+        cfg.at(ItemItemModel).bind(VectorTruncator).toProvider(StandardVectorTruncatorProvider)
+        LenskitRecommenderEngine engine =
+                LenskitRecommenderEngine.newBuilder()
+                                        .addConfiguration(cfg)
                                         .addConfiguration(itemSubsetConfig)
                                         .build()
         assertThat(engine, notNullValue())
