@@ -27,13 +27,12 @@ import org.grouplens.lenskit.config.ConfigHelpers
 import org.grouplens.lenskit.core.LenskitRecommender
 import org.grouplens.lenskit.core.LenskitRecommenderEngine
 import org.grouplens.lenskit.core.ModelDisposition
-import org.grouplens.lenskit.data.dao.EventDAO
+import org.grouplens.lenskit.data.dao.ItemDAO
 import org.grouplens.lenskit.iterative.IterationCount
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.junit.Test
 
-import static org.hamcrest.Matchers.instanceOf
-import static org.hamcrest.Matchers.notNullValue
+import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
 /**
@@ -51,6 +50,7 @@ public class FunkSVDBuildSerializeTest extends ML100KTestSuite {
         within (BaselineScorer, ItemScorer) {
             set MeanDamping to 25
         }
+        root ItemDAO
     }
 
     @Test
@@ -58,9 +58,15 @@ public class FunkSVDBuildSerializeTest extends ML100KTestSuite {
         LenskitRecommenderEngine engine =
                 LenskitRecommenderEngine.newBuilder()
                                         .addConfiguration(config)
-                                        .addConfiguration(itemSubsetConfig, ModelDisposition.EXCLUDED)
+                                        .addConfiguration(itemSubsetConfig)
                                         .build()
         assertThat(engine, notNullValue())
+        def rec = engine.createRecommender();
+        def dao = rec.get(ItemDAO)
+        def model = rec.get(FunkSVDModel)
+        assertThat(model.itemIndex.idList,
+                   anyOf(hasSize(dao.itemIds.size()),
+                         hasSize(dao.itemIds.size() + SUBSET_DROP_SIZE)));
     }
 
     @Test
