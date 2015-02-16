@@ -45,6 +45,7 @@ import static org.junit.Assume.assumeTrue;
 public class ML100KTestSuite {
     protected final String ML100K_PROPERTY = "lenskit.movielens.100k";
     protected final String INPUT_FILE_NAME = "u.data";
+    protected final int SUBSET_DROP_SIZE = 20;
 
     protected File inputFile;
     protected EventDAO ratingDAO;
@@ -62,7 +63,7 @@ public class ML100KTestSuite {
         ItemDAO idao = new PrefetchingItemDAO(ratingDAO);
         LongList items = new LongArrayList(idao.getItemIds());
         LongLists.shuffle(items, rng);
-        items = items.subList(0, items.size() - 20);
+        items = items.subList(0, items.size() - SUBSET_DROP_SIZE);
         config.bind(ItemDAO.class).to(new ItemListItemDAO(items));
         return config;
     }
