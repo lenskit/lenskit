@@ -32,6 +32,8 @@ import org.grouplens.lenskit.util.io.CompressionMode;
 import org.junit.Before;
 import org.junit.internal.AssumptionViolatedException;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Random;
@@ -45,7 +47,7 @@ import static org.junit.Assume.assumeTrue;
 public class ML100KTestSuite {
     protected final String ML100K_PROPERTY = "lenskit.movielens.100k";
     protected final String INPUT_FILE_NAME = "u.data";
-    protected final int SUBSET_DROP_SIZE = 20;
+    protected static final int SUBSET_DROP_SIZE = 20;
 
     protected File inputFile;
     protected EventDAO ratingDAO;
@@ -58,13 +60,8 @@ public class ML100KTestSuite {
     }
 
     protected LenskitConfiguration getItemSubsetConfig() {
-        Random rng = new Random();
         LenskitConfiguration config = getDaoConfig();
-        ItemDAO idao = new PrefetchingItemDAO(ratingDAO);
-        LongList items = new LongArrayList(idao.getItemIds());
-        LongLists.shuffle(items, rng);
-        items = items.subList(0, items.size() - SUBSET_DROP_SIZE);
-        config.bind(ItemDAO.class).to(new ItemListItemDAO(items));
+        config.bind(ItemDAO.class).toProvider(SubsetProvider.class);
         return config;
     }
 
@@ -93,5 +90,24 @@ public class ML100KTestSuite {
         format.setDelimiter("\t")
               .setFields(Fields.user(), Fields.item(), Fields.ignored(), Fields.timestamp());
         implicitDAO = TextEventDAO.create(inputFile, format);
+    }
+
+    public static class SubsetProvider implements Provider<ItemDAO> {
+        private final Random rng;
+        private final ItemDAO baseDAO;
+
+        @Inject
+        public SubsetProvider(Random rng, PrefetchingItemDAO dao) {
+            this.rng = rng;
+            baseDAO = dao;
+        }
+
+        @Override
+        public ItemDAO get() {
+            LongList items = new LongArrayList(baseDAO.getItemIds());
+            LongLists.shuffle(items, rng);
+            items = items.subList(0, items.size() - SUBSET_DROP_SIZE);
+            return new ItemListItemDAO(items);
+        }
     }
 }
