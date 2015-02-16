@@ -45,7 +45,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.elehack.gradle:gradle-util:0.1-SNAPSHOT'
+        classpath 'net.elehack.gradle:gradle-util:0.3'
     }
 }
 
