@@ -164,7 +164,7 @@ applicationDistribution.from(rootProject.tasks['javadoc']) {
 
 // make standard tasks build the application
 build.dependsOn installApp
-assemble.dependsOn distZip, distTar
+assemble.dependsOn distZip
 
 if (hasProperty('lenskit.install.dir')) {
     installApp.destinationDir = rootProject.file(getProperty('lenskit.install.dir'))
