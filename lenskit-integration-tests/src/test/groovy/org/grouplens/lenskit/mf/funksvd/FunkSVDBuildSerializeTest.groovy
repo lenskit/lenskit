@@ -27,13 +27,12 @@ import org.grouplens.lenskit.config.ConfigHelpers
 import org.grouplens.lenskit.core.LenskitRecommender
 import org.grouplens.lenskit.core.LenskitRecommenderEngine
 import org.grouplens.lenskit.core.ModelDisposition
-import org.grouplens.lenskit.data.dao.EventDAO
+import org.grouplens.lenskit.data.dao.ItemDAO
 import org.grouplens.lenskit.iterative.IterationCount
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.junit.Test
 
-import static org.hamcrest.Matchers.instanceOf
-import static org.hamcrest.Matchers.notNullValue
+import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
 /**
@@ -42,19 +41,36 @@ import static org.junit.Assert.assertThat
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class FunkSVDBuildSerializeTest extends ML100KTestSuite {
+    def config = ConfigHelpers.load {
+        bind ItemScorer to FunkSVDItemScorer
+        bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
+        bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
+        set FeatureCount to 10
+        set IterationCount to 10
+        within (BaselineScorer, ItemScorer) {
+            set MeanDamping to 25
+        }
+        root ItemDAO
+    }
+
+    @Test
+    void testBuildWithMissingItems() {
+        LenskitRecommenderEngine engine =
+                LenskitRecommenderEngine.newBuilder()
+                                        .addConfiguration(config)
+                                        .addConfiguration(itemSubsetConfig)
+                                        .build()
+        assertThat(engine, notNullValue())
+        def rec = engine.createRecommender();
+        def dao = rec.get(ItemDAO)
+        def model = rec.get(FunkSVDModel)
+        assertThat(model.itemIndex.idList,
+                   anyOf(hasSize(dao.itemIds.size()),
+                         hasSize(dao.itemIds.size() + SUBSET_DROP_SIZE)));
+    }
+
     @Test
     void testBuildAndSerializeModel() throws RecommenderBuildException, IOException {
-        def config = ConfigHelpers.load {
-            bind ItemScorer to FunkSVDItemScorer
-            bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
-            bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
-            set FeatureCount to 10
-            set IterationCount to 10
-            within (BaselineScorer, ItemScorer) {
-                set MeanDamping to 25
-            }
-        }
-
         LenskitRecommenderEngine engine =
             LenskitRecommenderEngine.newBuilder()
                                     .addConfiguration(config)
