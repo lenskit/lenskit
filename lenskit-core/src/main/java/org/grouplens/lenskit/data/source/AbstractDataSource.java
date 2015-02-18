@@ -107,6 +107,26 @@ public abstract class AbstractDataSource implements DataSource {
         return userDAOCache.get();
     }
 
+    /**
+     * Get the item name DAO.  The default implementation first checks if the event DAO implements
+     * this interface, then the item DAO.
+     *
+     * @return The item name DAO, or {@code null} if none is defined.
+     */
+    public ItemNameDAO getItemNameDAO() {
+        EventDAO dao = getEventDAO();
+        if (dao instanceof ItemNameDAO) {
+            return (ItemNameDAO) dao;
+        }
+
+        ItemDAO idao = getItemDAO();
+        if (idao instanceof ItemNameDAO) {
+            return (ItemNameDAO) idao;
+        }
+
+        return null;
+    }
+
     @Override
     public void configure(LenskitConfiguration config) {
         logger.debug("generating configuration for {}", this);

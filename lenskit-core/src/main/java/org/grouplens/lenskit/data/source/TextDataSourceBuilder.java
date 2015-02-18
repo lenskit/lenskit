@@ -43,6 +43,8 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
             DelimitedColumnEventFormat.create(new RatingEventType())
                                       .setDelimiter(",");
     EventFormat format = dceFormat;
+    File itemFile;
+    private File itemNameFile;
 
     public TextDataSourceBuilder() {}
 
@@ -161,6 +163,40 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
     }
 
     /**
+     * Get the item file.
+     * @return The item file, if one is specified.
+     */
+    public File getItemFile() {
+        return itemFile;
+    }
+
+    /**
+     * Set the item ID file.
+     * @param file The item file, if one is specified.
+     */
+    public TextDataSourceBuilder setItemFile(File file) {
+        itemFile = file;
+        return this;
+    }
+
+    /**
+     * Get the item file.
+     * @return The item file, if one is specified.
+     */
+    public File getItemNameFile() {
+        return itemNameFile;
+    }
+
+    /**
+     * Set the item ID to name mapping file.
+     * @param file The item name file, if one is specified.
+     */
+    public TextDataSourceBuilder setItemNameFile(File file) {
+        itemNameFile = file;
+        return this;
+    }
+
+    /**
      * Build the data source. At least one of {@link #setName(String)} or
      * {@link #setFile(java.io.File)} must be called prior to building.
      *
@@ -178,6 +214,6 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
         }
         // by now we should have a file
         Preconditions.checkState(inputFile != null, "no input file specified");
-        return new TextDataSource(getName(), inputFile, format, domain);
+        return new TextDataSource(getName(), inputFile, format, domain, itemFile, itemNameFile);
     }
 }

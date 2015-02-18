@@ -20,12 +20,16 @@
  */
 package org.grouplens.lenskit.data.source;
 
-import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.grapht.util.Providers;
+import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.data.text.CSVFileItemNameDAOProvider;
 import org.grouplens.lenskit.data.text.EventFormat;
+import org.grouplens.lenskit.data.text.SimpleFileItemDAOProvider;
 import org.grouplens.lenskit.data.text.TextEventDAO;
 import org.grouplens.lenskit.util.io.CompressionMode;
 
+import javax.inject.Provider;
 import java.io.File;
 
 /**
@@ -42,13 +46,28 @@ public class TextDataSource extends AbstractDataSource {
     private final PreferenceDomain domain;
     private final EventFormat format;
 
-    TextDataSource(String name, File file, EventFormat fmt, PreferenceDomain pdom) {
+    private final Provider<ItemListItemDAO> items;
+    private final Provider<MapItemNameDAO> itemNames;
+
+    TextDataSource(String name, File file, EventFormat fmt, PreferenceDomain pdom,
+                   File itemFile, File itemNameFile) {
         this.name = name;
         sourceFile = file;
         domain = pdom;
         format = fmt;
 
         dao = TextEventDAO.create(file, format, CompressionMode.AUTO);
+
+        if (itemFile != null) {
+            items = Providers.memoize(new SimpleFileItemDAOProvider(itemFile));
+        } else {
+            items = null;
+        }
+        if (itemNameFile != null) {
+            itemNames = Providers.memoize(new CSVFileItemNameDAOProvider(itemNameFile));
+        } else {
+            itemNames = null;
+        }
     }
 
     @Override
@@ -81,6 +100,26 @@ public class TextDataSource extends AbstractDataSource {
     @Override
     public EventDAO getEventDAO() {
         return dao;
+    }
+
+    @Override
+    public ItemDAO getItemDAO() {
+        if (items != null) {
+            return items.get();
+        } else if (itemNames != null) {
+            return itemNames.get();
+        } else {
+            return super.getItemDAO();
+        }
+    }
+
+    @Override
+    public ItemNameDAO getItemNameDAO() {
+        if (itemNames != null) {
+            return itemNames.get();
+        } else {
+            return super.getItemNameDAO();
+        }
     }
 
     @Override

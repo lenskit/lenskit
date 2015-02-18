@@ -88,6 +88,11 @@ public interface DataSource {
     UserDAO getUserDAO();
 
     /**
+     * Get an item name DAO for this data source.
+     */
+    ItemNameDAO getItemNameDAO();
+
+    /**
      * Configure LensKit to use this data set.
      * @param config A LensKit configuration.  Bindings for this data source's data will be added
      *               to this configuration.

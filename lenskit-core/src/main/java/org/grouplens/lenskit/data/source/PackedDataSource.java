@@ -97,6 +97,11 @@ public class PackedDataSource implements DataSource {
     }
 
     @Override
+    public ItemNameDAO getItemNameDAO() {
+        return null;
+    }
+
+    @Override
     public void configure(LenskitConfiguration config) {
         Provider<BinaryRatingDAO> provider = new DAOProvider();
         config.bind(BinaryRatingDAO.class).toProvider(provider);

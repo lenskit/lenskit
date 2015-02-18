@@ -31,6 +31,8 @@ import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;
 import org.grouplens.lenskit.data.source.TextDataSourceBuilder;
 import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
 import org.grouplens.lenskit.data.text.EventFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -44,6 +46,7 @@ import java.io.IOException;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class InputData {
+    private static final Logger logger = LoggerFactory.getLogger(InputData.class);
     private final Namespace options;
 
     public InputData(Namespace opts) {
@@ -56,6 +59,9 @@ public class InputData {
 
         String type = options.get("event_type");
         File nameFile = options.get("item_names");
+        if (nameFile != null) {
+            dsb.setItemNameFile(nameFile);
+        }
         File ratingFile = options.get("csv_file");
         if (ratingFile != null) {
             return dsb.setFile(ratingFile)
@@ -85,6 +91,9 @@ public class InputData {
 
         File packFile = options.get("pack_file");
         if (packFile != null) {
+            if (nameFile != null) {
+                logger.warn("item name file ignored for packed rating input");
+            }
             return new PackedDataSourceBuilder(packFile).build();
         }
 
