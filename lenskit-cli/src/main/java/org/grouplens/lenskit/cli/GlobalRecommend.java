@@ -27,18 +27,16 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.collections.LongUtils;
-import org.grouplens.lenskit.core.*;
+import org.grouplens.lenskit.core.LenskitRecommender;
+import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.dao.ItemNameDAO;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
-import org.grouplens.lenskit.util.io.CompressionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 /**

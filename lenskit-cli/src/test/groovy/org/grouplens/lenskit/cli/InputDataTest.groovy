@@ -22,6 +22,8 @@ package org.grouplens.lenskit.cli
 
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
+import org.grouplens.lenskit.data.source.PackedDataSource
+import org.grouplens.lenskit.data.source.TextDataSource
 import org.junit.Test
 
 import static groovy.test.GroovyAssert.shouldFail
@@ -47,41 +49,41 @@ class InputDataTest {
     @Test
     public void testCSVFile() {
         def data = parse('--csv-file', 'foo.csv')
-        def input = data.source as InputData.TextInput
-        assertThat(input.inputFile.name, equalTo('foo.csv'))
-        assertThat(input.delimiter, equalTo(','))
+        def input = data.source as TextDataSource
+        assertThat(input.file.name, equalTo('foo.csv'))
+        assertThat(input.format.delimiter, equalTo(','))
     }
 
     @Test
     public void testTSVFile() {
         def data = parse('--tsv-file', 'foo.tsv')
-        def input = data.source as InputData.TextInput
-        assertThat(input.inputFile.name, equalTo('foo.tsv'))
-        assertThat(input.delimiter, equalTo('\t'))
+        def input = data.source as TextDataSource
+        assertThat(input.file.name, equalTo('foo.tsv'))
+        assertThat(input.format.delimiter, equalTo('\t'))
     }
 
     @Test
     public void testRatingFile() {
         def data = parse('--ratings-file', 'foo.tsv', '-d', '\t')
-        def input = data.source as InputData.TextInput
-        assertThat(input.inputFile.name, equalTo('foo.tsv'))
-        assertThat(input.delimiter, equalTo('\t'))
+        def input = data.source as TextDataSource
+        assertThat(input.file.name, equalTo('foo.tsv'))
+        assertThat(input.format.delimiter, equalTo('\t'))
     }
 
     @Test
     public void testRatingFileOddDelim() {
         def data = parse('--ratings-file', 'ratings.dat', '-d', '::')
-        def input = data.source as InputData.TextInput
-        assertThat(input.inputFile.name, equalTo('ratings.dat'))
-        assertThat(input.delimiter, equalTo('::'))
+        def input = data.source as TextDataSource
+        assertThat(input.file.name, equalTo('ratings.dat'))
+        assertThat(input.format.delimiter, equalTo('::'))
     }
 
     @Test
     public void testPackFile() {
         def data = parse('--pack-file', 'ratings.pack')
         def input = data.source
-        assertThat(input, instanceOf(InputData.PackedInput))
-        def pack = input as InputData.PackedInput
-        assertThat(pack.inputFile.name, equalTo('ratings.pack'))
+        assertThat(input, instanceOf(PackedDataSource))
+        def pack = input as PackedDataSource
+        assertThat(pack.packedFile.name, equalTo('ratings.pack'))
     }
 }

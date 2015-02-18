@@ -26,13 +26,11 @@ import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.dao.MapItemNameDAO;
-import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO;
-import org.grouplens.lenskit.data.dao.packed.BinaryRatingFile;
-import org.grouplens.lenskit.data.text.CSVFileItemNameDAOProvider;
+import org.grouplens.lenskit.data.source.DataSource;
+import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;
+import org.grouplens.lenskit.data.source.TextDataSourceBuilder;
 import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
-import org.grouplens.lenskit.data.text.ItemFile;
-import org.grouplens.lenskit.data.text.TextEventDAO;
+import org.grouplens.lenskit.data.text.EventFormat;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,17 +51,23 @@ public class InputData {
     }
 
     @Nullable
-    Source getSource() {
+    DataSource getSource() {
+        TextDataSourceBuilder dsb = new TextDataSourceBuilder();
+
         String type = options.get("event_type");
         File nameFile = options.get("item_names");
         File ratingFile = options.get("csv_file");
         if (ratingFile != null) {
-            return new TextInput(ratingFile, ",", type, nameFile);
+            return dsb.setFile(ratingFile)
+                      .setDelimiter(",")
+                      .build();
         }
 
         ratingFile = options.get("tsv_file");
         if (ratingFile != null) {
-            return new TextInput(ratingFile, "\t", type, nameFile);
+            return dsb.setFile(ratingFile)
+                      .setDelimiter("\t")
+                      .build();
         }
 
         ratingFile = options.get("ratings_file");
@@ -72,12 +76,16 @@ public class InputData {
         }
         if (ratingFile != null) {
             String delim = options.getString("delimiter");
-            return new TextInput(ratingFile, delim, type, nameFile);
+            EventFormat fmt = DelimitedColumnEventFormat.create(type)
+                                                        .setDelimiter(delim);
+            return dsb.setFormat(fmt)
+                      .setFile(ratingFile)
+                      .build();
         }
 
         File packFile = options.get("pack_file");
         if (packFile != null) {
-            return new PackedInput(packFile, nameFile);
+            return new PackedDataSourceBuilder(packFile).build();
         }
 
         return null;
@@ -85,103 +93,24 @@ public class InputData {
 
     @Nullable
     public EventDAO getEventDAO() throws IOException {
-        Source src = getSource();
+        DataSource src = getSource();
         return (src == null) ? null : src.getEventDAO();
     }
 
     @Nonnull
     public LenskitConfiguration getConfiguration() {
-        Source src = getSource();
-        if (src == null) {
-            return new LenskitConfiguration();
-        } else {
-            return src.getConfiguration();
+        DataSource src = getSource();
+        LenskitConfiguration config = new LenskitConfiguration();
+        if (src != null) {
+            src.configure(config);
         }
+        return config;
     }
 
     @Override
     public String toString() {
-        Source src = getSource();
+        DataSource src = getSource();
         return (src == null) ? "null" : src.toString();
-    }
-
-    static interface Source {
-        EventDAO getEventDAO() throws IOException;
-        LenskitConfiguration getConfiguration();
-    }
-
-    static class TextInput implements Source {
-        final File inputFile;
-        final String delimiter;
-        final String type;
-        final File nameFile;
-
-        public TextInput(File file, String delim, String et, File nf) {
-            inputFile = file;
-            delimiter = delim;
-            type = et;
-            nameFile = nf;
-        }
-
-        @Override
-        public EventDAO getEventDAO() {
-            DelimitedColumnEventFormat format = DelimitedColumnEventFormat.create(type);
-            format.setDelimiter(delimiter);
-            return TextEventDAO.create(inputFile, format);
-        }
-
-        @Override
-        public LenskitConfiguration getConfiguration() {
-            LenskitConfiguration config = new LenskitConfiguration();
-            config.addComponent(getEventDAO());
-            if (nameFile != null) {
-                config.bind(MapItemNameDAO.class)
-                      .toProvider(CSVFileItemNameDAOProvider.class);
-                config.set(ItemFile.class)
-                      .to(nameFile);
-            }
-            return config;
-        }
-
-        @Override
-        public String toString() {
-            return "file " + inputFile + " with delimiter '" + delimiter + "'";
-        }
-    }
-
-    static class PackedInput implements Source {
-        final File inputFile;
-        final File nameFile;
-
-        public PackedInput(File file, File nf) {
-            inputFile = file;
-            nameFile = nf;
-        }
-
-        @Override
-        public EventDAO getEventDAO() throws IOException {
-            return BinaryRatingDAO.open(inputFile);
-        }
-
-        @Override
-        public LenskitConfiguration getConfiguration() {
-            LenskitConfiguration config = new LenskitConfiguration();
-            config.addComponent(BinaryRatingDAO.class);
-            config.bind(BinaryRatingFile.class, File.class)
-                  .to(inputFile);
-            if (nameFile != null) {
-                config.bind(MapItemNameDAO.class)
-                      .toProvider(CSVFileItemNameDAOProvider.class);
-                config.set(ItemFile.class)
-                      .to(nameFile);
-            }
-            return config;
-        }
-
-        @Override
-        public String toString() {
-            return "packed file " + inputFile;
-        }
     }
 
     public static void configureArguments(ArgumentParser parser) {
