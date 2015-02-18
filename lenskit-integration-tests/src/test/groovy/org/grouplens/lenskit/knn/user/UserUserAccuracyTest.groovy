@@ -54,8 +54,8 @@ public class UserUserAccuracyTest extends CrossfoldTestSuite {
     @Override
     protected void checkResults(Table table) {
         assertThat(table.column("MAE.ByRating").average(),
-                   closeTo(0.70d, 0.025d))
+                   closeTo(0.71d, 0.025d))
         assertThat(table.column("RMSE.ByUser").average(),
-                   closeTo(0.90d, 0.05d))
+                   closeTo(0.91d, 0.05d))
     }
 }
