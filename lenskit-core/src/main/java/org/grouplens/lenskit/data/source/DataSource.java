@@ -18,22 +18,20 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data;
+package org.grouplens.lenskit.data.source;
 
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.script.BuiltBy;
 
 import javax.annotation.Nullable;
-import javax.inject.Provider;
 
 /**
- * Data source for a single data set.
+ * Representation of a single data source.  A data source contains one or more DAOs, and can
+ * construct LensKit configurations to expose them to components.jj
  *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 2.2
  */
-@BuiltBy(CSVDataSourceBuilder.class)
 public interface DataSource {
     /**
      * Get the data source name.

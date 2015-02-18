@@ -20,16 +20,13 @@
  */
 package org.grouplens.lenskit.eval.data.traintest;
 
-import java.util.Map;
-import java.util.UUID;
-
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.data.DataSource;
+import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.script.BuiltBy;
 
-import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Interface for train-test data sets.  This is a single train-test pair.

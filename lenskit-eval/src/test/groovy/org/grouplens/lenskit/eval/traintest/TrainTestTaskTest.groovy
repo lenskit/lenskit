@@ -32,9 +32,9 @@ import org.grouplens.lenskit.baseline.UserMeanBaseline
 import org.grouplens.lenskit.baseline.UserMeanItemScorer
 import org.grouplens.lenskit.core.LenskitRecommender
 import org.grouplens.lenskit.data.dao.DataAccessException
+import org.grouplens.lenskit.data.source.CSVDataSource
 import org.grouplens.lenskit.eval.EvalConfig
 import org.grouplens.lenskit.eval.TaskExecutionException
-import org.grouplens.lenskit.eval.data.CSVDataSource
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet

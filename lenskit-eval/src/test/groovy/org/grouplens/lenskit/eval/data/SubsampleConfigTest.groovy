@@ -26,8 +26,7 @@ import org.grouplens.lenskit.cursors.Cursors
 import org.grouplens.lenskit.data.dao.*
 import org.grouplens.lenskit.data.event.Rating
 import org.grouplens.lenskit.data.event.Ratings
-import org.grouplens.lenskit.data.event.SimpleRating
-import org.grouplens.lenskit.data.pref.SimplePreference
+import org.grouplens.lenskit.data.source.GenericDataSource
 import org.grouplens.lenskit.eval.data.subsample.SubsampleMode
 import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.junit.After

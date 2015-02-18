@@ -20,12 +20,15 @@
  */
 package org.grouplens.lenskit.eval.data
 
-import static org.junit.Assert.*
-import static org.hamcrest.Matchers.*
+import org.grouplens.lenskit.data.pref.PreferenceDomain
+import org.grouplens.lenskit.data.source.CSVDataSource
+import org.grouplens.lenskit.data.source.CSVDataSourceBuilder
+import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.junit.Test
 
-import org.grouplens.lenskit.eval.script.ConfigTestBase
-import org.grouplens.lenskit.data.pref.PreferenceDomain
+import static org.hamcrest.Matchers.equalTo
+import static org.hamcrest.Matchers.notNullValue
+import static org.junit.Assert.assertThat
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

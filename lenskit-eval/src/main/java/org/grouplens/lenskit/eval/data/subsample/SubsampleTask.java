@@ -21,10 +21,10 @@
 package org.grouplens.lenskit.eval.data.subsample;
 
 import com.google.common.io.Closer;
+import org.grouplens.lenskit.data.source.CSVDataSourceBuilder;
+import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
-import org.grouplens.lenskit.eval.data.CSVDataSourceBuilder;
-import org.grouplens.lenskit.eval.data.DataSource;
 import org.grouplens.lenskit.eval.data.RatingWriter;
 import org.grouplens.lenskit.eval.data.RatingWriters;
 import org.grouplens.lenskit.util.io.UpToDateChecker;

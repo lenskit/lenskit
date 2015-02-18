@@ -22,7 +22,6 @@ package org.grouplens.lenskit.eval.data.pack;
 
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.data.CSVDataSourceBuilder;
 
 import javax.annotation.Nonnull;
 import java.io.File;

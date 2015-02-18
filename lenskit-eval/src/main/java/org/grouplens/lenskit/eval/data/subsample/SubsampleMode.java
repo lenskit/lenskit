@@ -29,7 +29,7 @@ import org.grouplens.lenskit.data.dao.ItemEventDAO;
 import org.grouplens.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.eval.data.DataSource;
+import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.data.RatingWriter;
 
 import java.io.IOException;

@@ -22,13 +22,13 @@ package org.grouplens.lenskit.eval.traintest;
 
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.data.source.DataSource;
+import org.grouplens.lenskit.data.source.GenericDataSource;
 import org.grouplens.lenskit.eval.EvalConfig;
 import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceBuilder;
-import org.grouplens.lenskit.eval.data.DataSource;
-import org.grouplens.lenskit.eval.data.GenericDataSource;
 import org.grouplens.lenskit.eval.data.crossfold.CrossfoldTask;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;

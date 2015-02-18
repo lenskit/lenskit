@@ -30,8 +30,8 @@ import org.grouplens.lenskit.baseline.UserMeanItemScorer
 import org.grouplens.lenskit.config.ConfigHelpers
 import org.grouplens.lenskit.core.LenskitConfiguration
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
+import org.grouplens.lenskit.data.source.GenericDataSource
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceBuilder
-import org.grouplens.lenskit.eval.data.GenericDataSource
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet
 import org.grouplens.lenskit.inject.GraphtUtils

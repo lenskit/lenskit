@@ -38,7 +38,7 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.eval.data.CSVDataSource;
+import org.grouplens.lenskit.data.source.CSVDataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;

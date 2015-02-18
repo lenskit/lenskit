@@ -22,12 +22,11 @@ package org.grouplens.lenskit.eval.data.traintest;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.data.dao.UserListUserDAO;
-import org.grouplens.lenskit.eval.data.DataSource;
+import org.grouplens.lenskit.data.source.DataSource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

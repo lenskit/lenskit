@@ -18,23 +18,24 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data;
+package org.grouplens.lenskit.data.source;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.eval.traintest.CachingDAOProvider;
 import org.grouplens.lenskit.util.MoreSuppliers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Base class to help implement data sources.
+ * Base class to help implement data sources. This class automatically wraps the event DAO in a
+ * prefetching DAO to produce the specialized DAO classes, if it does not already implement those
+ * classes. It also produces a LensKit configuration with the appropriate bindings for the
+ * configured data source.
  *
- * @since 2.0
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 2.2
  */
 public abstract class AbstractDataSource implements DataSource {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
@@ -115,13 +116,5 @@ public abstract class AbstractDataSource implements DataSource {
             logger.debug("using preference domain {}", dom);
             config.addComponent(dom);
         }
-        config.bind(PrefetchingUserDAO.class)
-              .toProvider(CachingDAOProvider.User.class);
-        config.bind(PrefetchingUserEventDAO.class)
-              .toProvider(CachingDAOProvider.UserEvent.class);
-        config.bind(PrefetchingItemDAO.class)
-              .toProvider(CachingDAOProvider.Item.class);
-        config.bind(PrefetchingItemEventDAO.class)
-              .toProvider(CachingDAOProvider.ItemEvent.class);
     }
 }

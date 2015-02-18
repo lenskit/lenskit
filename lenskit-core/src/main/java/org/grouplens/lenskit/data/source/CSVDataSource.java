@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data;
+package org.grouplens.lenskit.data.source;
 
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
@@ -32,8 +32,8 @@ import java.io.File;
  * Data source backed by a CSV file.  Use {@link CSVDataSourceBuilder} to configure and build one
  * of these, or the <code>csvfile</code> command in an eval script.
  *
+ * @since 2.2
  * @see CSVDataSourceBuilder
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class CSVDataSource extends AbstractDataSource {
     final String name;

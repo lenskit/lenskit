@@ -24,15 +24,14 @@ import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
-import org.grouplens.lenskit.eval.data.GenericDataSource
 import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.grouplens.lenskit.eval.traintest.ExternalAlgorithm
-import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
 import org.grouplens.lenskit.iterative.MinimumIterations
 import org.grouplens.lenskit.iterative.StoppingThreshold
-import org.grouplens.lenskit.transform.threshold.ThresholdValue
+import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
 import org.grouplens.lenskit.transform.threshold.AbsoluteThreshold
 import org.grouplens.lenskit.transform.threshold.RealThreshold
+import org.grouplens.lenskit.transform.threshold.ThresholdValue
 import org.junit.Test
 
 import static org.hamcrest.Matchers.*

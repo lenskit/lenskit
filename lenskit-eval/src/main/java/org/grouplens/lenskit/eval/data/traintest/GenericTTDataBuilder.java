@@ -22,7 +22,7 @@ package org.grouplens.lenskit.eval.data.traintest;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.eval.data.DataSource;
+import org.grouplens.lenskit.data.source.DataSource;
 
 import javax.annotation.Nonnull;
 import java.util.LinkedHashMap;

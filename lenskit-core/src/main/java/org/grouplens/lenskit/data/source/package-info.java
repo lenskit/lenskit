@@ -18,47 +18,9 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data;
-
-import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
 
 /**
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Support for <em>data sources</em>, packaged configurations of DAOs.  These objects package up one
+ * or more data access objects that together comprise the data source for a recommendation run.
  */
-public class GenericDataSource extends AbstractDataSource {
-    private String name;
-    private EventDAO dao;
-    private PreferenceDomain domain;
-
-    public GenericDataSource(String name, EventDAO dao) {
-        this(name, dao, null);
-    }
-
-    public GenericDataSource(String name, EventDAO dao, PreferenceDomain dom) {
-        this.name = name;
-        this.dao = dao;
-        domain = dom;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public PreferenceDomain getPreferenceDomain() {
-        return domain;
-    }
-
-    @Override
-    public EventDAO getEventDAO() {
-        return dao;
-    }
-
-    @Override
-    public long lastModified() {
-        return 0;
-    }
-
-}
+package org.grouplens.lenskit.data.source;
