@@ -136,7 +136,7 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
      * Set the input field delimiter. The default is the tab character.
      *
      * @param delim The input delimiter.
-     * @throws IllegalStateException if a format has been specified with {@link #setFormat(EvenFormat)}.
+     * @throws IllegalStateException if a format has been specified with {@link #setFormat(EventFormat)}.
      */
     public TextDataSourceBuilder setDelimiter(String delim) {
         if (dceFormat != null) {
