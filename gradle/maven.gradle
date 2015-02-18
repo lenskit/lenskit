@@ -91,6 +91,19 @@ signing {
     sign configurations.archives, configurations.mavenCentral
 }
 
+tasks.withType(Sign) {
+    it.onlyIf {
+        for (task in gradle.taskGraph.allTasks) {
+            if (task.name == 'uploadArchives') {
+                return true;
+            } else if (task.name == 'install') {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
 install {
     def installUrl = project.getConfigProperty('install.url', null)
     if (installUrl != null) {
