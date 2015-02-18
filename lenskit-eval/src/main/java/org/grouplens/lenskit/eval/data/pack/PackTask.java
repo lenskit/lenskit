@@ -29,6 +29,7 @@ import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.source.CSVDataSource;
 import org.grouplens.lenskit.data.source.DataSource;
+import org.grouplens.lenskit.data.source.PackedDataSource;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;

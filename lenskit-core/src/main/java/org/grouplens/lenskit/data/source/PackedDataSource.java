@@ -18,14 +18,13 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.pack;
+package org.grouplens.lenskit.data.source;
 
 import com.google.common.base.Supplier;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.util.MoreSuppliers;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
@@ -35,7 +34,10 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Data source backed by a packed rating file.
+ *
+ * @see org.grouplens.lenskit.data.source.PackedDataSourceBuilder
+ * @since 2.2
  */
 public class PackedDataSource implements DataSource {
     private final String name;

@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.pack;
+package org.grouplens.lenskit.data.source;
 
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
@@ -27,7 +27,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 
 /**
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Builder for {@link PackedDataSource}s.
  */
 public class PackedDataSourceBuilder implements Builder<PackedDataSource> {
     private File file;
