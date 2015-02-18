@@ -23,6 +23,8 @@ package org.grouplens.lenskit.data.source;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
+import org.grouplens.lenskit.data.text.EventFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,7 +151,7 @@ public class CSVDataSourceBuilder implements Builder<DataSource> {
      * @return The configured data source.
      */
     @Override
-    public CSVDataSource build() {
+    public TextDataSource build() {
         // if no name, use the file name
         if (name == null && inputFile != null) {
             setName(inputFile.toString());
@@ -160,6 +162,7 @@ public class CSVDataSourceBuilder implements Builder<DataSource> {
         }
         // by now we should have a file
         Preconditions.checkState(inputFile != null, "no input file specified");
-        return new CSVDataSource(getName(), inputFile, delimiter, domain);
+        EventFormat fmt = DelimitedColumnEventFormat.create("rating").setDelimiter(delimiter);
+        return new TextDataSource(getName(), inputFile, fmt, domain);
     }
 }

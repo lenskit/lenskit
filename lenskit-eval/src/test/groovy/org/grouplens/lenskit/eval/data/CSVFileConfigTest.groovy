@@ -21,8 +21,8 @@
 package org.grouplens.lenskit.eval.data
 
 import org.grouplens.lenskit.data.pref.PreferenceDomain
-import org.grouplens.lenskit.data.source.CSVDataSource
 import org.grouplens.lenskit.data.source.CSVDataSourceBuilder
+import org.grouplens.lenskit.data.source.TextDataSource
 import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.junit.Test
 
@@ -45,7 +45,7 @@ class CSVFileConfigTest extends ConfigTestBase {
     void testBasic() {
         def source = eval {
             csvfile("ml-100k.dat")
-        } as CSVDataSource
+        } as TextDataSource
         assertThat(source, notNullValue())
         assertThat(source.name, equalTo("ml-100k.dat"))
         assertThat(source.sourceFile, equalTo(new File("ml-100k.dat")))
@@ -59,7 +59,7 @@ class CSVFileConfigTest extends ConfigTestBase {
                 file "ml-100k/u.data"
                 delimiter "::"
             }
-        } as CSVDataSource
+        } as TextDataSource
         assertThat(source.name, equalTo("ml-100k"))
         assertThat(source.sourceFile, equalTo(new File("ml-100k/u.data")))
         assertThat(source.delimiter, equalTo("::"))
@@ -71,7 +71,7 @@ class CSVFileConfigTest extends ConfigTestBase {
             csvfile {
                 file "ml-100k.dat"
             }
-        } as CSVDataSource
+        } as TextDataSource
         assertThat(source.name, equalTo("ml-100k.dat"))
         assertThat(source.sourceFile, equalTo(new File("ml-100k.dat")))
     }
@@ -86,7 +86,7 @@ class CSVFileConfigTest extends ConfigTestBase {
                     precision 1.0
                 }
             }
-        } as CSVDataSource
+        } as TextDataSource
         assertThat(source.domain, equalTo(new PreferenceDomain(1.0, 5.0, 1.0)))
     }
 
@@ -100,7 +100,7 @@ class CSVFileConfigTest extends ConfigTestBase {
             csvfile(name) {
                 file "${name}.csv"
             }
-        } as CSVDataSource
+        } as TextDataSource
         assertThat(source.name, equalTo("ml-100k"))
         assertThat(source.sourceFile, equalTo(new File("ml-100k.csv")))
     }

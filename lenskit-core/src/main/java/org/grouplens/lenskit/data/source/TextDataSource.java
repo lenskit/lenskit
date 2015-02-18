@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.source;
 
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
+import org.grouplens.lenskit.data.text.EventFormat;
 import org.grouplens.lenskit.data.text.TextEventDAO;
 import org.grouplens.lenskit.util.io.CompressionMode;
 
@@ -35,22 +35,18 @@ import java.io.File;
  * @since 2.2
  * @see CSVDataSourceBuilder
  */
-public class CSVDataSource extends AbstractDataSource {
-    final String name;
-    final EventDAO dao;
-    final File sourceFile;
-    final PreferenceDomain domain;
-    final String delimiter;
+public class TextDataSource extends AbstractDataSource {
+    private final String name;
+    private final EventDAO dao;
+    private final File sourceFile;
+    private final PreferenceDomain domain;
+    private final EventFormat format;
 
-    CSVDataSource(String name, File file, String delim, PreferenceDomain pdom) {
+    TextDataSource(String name, File file, EventFormat fmt, PreferenceDomain pdom) {
         this.name = name;
         sourceFile = file;
         domain = pdom;
-        delimiter = delim;
-
-        DelimitedColumnEventFormat format =
-                DelimitedColumnEventFormat.create("rating")
-                                          .setDelimiter(delim);
+        format = fmt;
 
         dao = TextEventDAO.create(file, format, CompressionMode.AUTO);
     }
@@ -68,8 +64,8 @@ public class CSVDataSource extends AbstractDataSource {
         return sourceFile;
     }
 
-    public String getDelimiter() {
-        return delimiter;
+    public EventFormat getForamt() {
+        return format;
     }
 
     @Override
@@ -90,7 +86,7 @@ public class CSVDataSource extends AbstractDataSource {
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
-        str.append("CSVData(")
+        str.append("TextData(")
            .append(getName())
            .append(")");
         return str.toString();

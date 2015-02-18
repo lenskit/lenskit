@@ -38,7 +38,7 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.data.source.CSVDataSource;
+import org.grouplens.lenskit.data.source.TextDataSource;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
@@ -193,7 +193,7 @@ class ExternalEvalJob extends TrainTestJob {
     private File trainingFile(TTDataSet data) throws IOException {
         try {
             GenericTTDataSet gds = (GenericTTDataSet) data;
-            CSVDataSource csv = (CSVDataSource) gds.getTrainingData();
+            TextDataSource csv = (TextDataSource) gds.getTrainingData();
             if (",".equals(csv.getDelimiter())) {
                 File file = csv.getFile();
                 logger.debug("using training file {}", file);

@@ -97,11 +97,11 @@ public class TextEventDAO implements EventDAO, Describable {
         return new TextEventDAO(file, fmt, mode);
     }
 
-    public static TextEventDAO create(File inputFile, DelimitedColumnEventFormat format) {
+    public static TextEventDAO create(File inputFile, EventFormat format) {
         return create(inputFile, format, CompressionMode.AUTO);
     }
 
-    public static TextEventDAO create(File inputFile, DelimitedColumnEventFormat format, CompressionMode comp) {
+    public static TextEventDAO create(File inputFile, EventFormat format, CompressionMode comp) {
         return new TextEventDAO(inputFile, format, comp);
     }
 

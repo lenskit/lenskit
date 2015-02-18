@@ -32,7 +32,7 @@ import org.grouplens.lenskit.baseline.UserMeanBaseline
 import org.grouplens.lenskit.baseline.UserMeanItemScorer
 import org.grouplens.lenskit.core.LenskitRecommender
 import org.grouplens.lenskit.data.dao.DataAccessException
-import org.grouplens.lenskit.data.source.CSVDataSource
+import org.grouplens.lenskit.data.source.TextDataSource
 import org.grouplens.lenskit.eval.EvalConfig
 import org.grouplens.lenskit.eval.TaskExecutionException
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder
@@ -178,10 +178,10 @@ class TrainTestTaskTest {
         assertThat(data.size(), equalTo(1))
         assertThat(data.get(0), instanceOf(GenericTTDataSet))
         GenericTTDataSet ds = data.get(0) as GenericTTDataSet
-        assertThat(ds.trainingData, instanceOf(CSVDataSource))
+        assertThat(ds.trainingData, instanceOf(TextDataSource))
         assertThat(ds.trainingData.sourceFile, equalTo(new File("train.csv")))
         assertThat(ds.trainingData.delimiter, equalTo(","))
-        assertThat(ds.testData, instanceOf(CSVDataSource))
+        assertThat(ds.testData, instanceOf(TextDataSource))
         assertThat(ds.testData.sourceFile, equalTo(new File("test.csv")))
     }
 
@@ -200,9 +200,9 @@ class TrainTestTaskTest {
         assertThat(data.size(), equalTo(1))
         assertThat(data.get(0), instanceOf(GenericTTDataSet))
         GenericTTDataSet ds = data.get(0) as GenericTTDataSet
-        assertThat(ds.trainingData, instanceOf(CSVDataSource))
+        assertThat(ds.trainingData, instanceOf(TextDataSource))
         assertThat(ds.trainingData.sourceFile, equalTo(new File("train.csv")))
-        assertThat(ds.testData, instanceOf(CSVDataSource))
+        assertThat(ds.testData, instanceOf(TextDataSource))
         assertThat(ds.testData.sourceFile, equalTo(new File("test.csv")))
     }
 

@@ -27,9 +27,9 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.source.CSVDataSource;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.PackedDataSource;
+import org.grouplens.lenskit.data.source.TextDataSource;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
@@ -168,8 +168,8 @@ public class PackTask extends AbstractTask<List<Object>> {
         @Override
         public File apply(@Nullable DataSource input) {
             assert input != null;
-            if (input instanceof CSVDataSource) {
-                CSVDataSource csv = (CSVDataSource) input;
+            if (input instanceof TextDataSource) {
+                TextDataSource csv = (TextDataSource) input;
                 File file = csv.getFile();
                 String name = file.getName();
                 return new File(file.getParentFile(), name + ".pack");
