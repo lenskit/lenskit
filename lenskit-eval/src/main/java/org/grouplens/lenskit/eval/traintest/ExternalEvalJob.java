@@ -39,6 +39,8 @@ import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.source.TextDataSource;
+import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
+import org.grouplens.lenskit.data.text.EventFormat;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
@@ -194,7 +196,11 @@ class ExternalEvalJob extends TrainTestJob {
         try {
             GenericTTDataSet gds = (GenericTTDataSet) data;
             TextDataSource csv = (TextDataSource) gds.getTrainingData();
-            if (",".equals(csv.getDelimiter())) {
+            EventFormat fmt = csv.getFormat();
+            String delim = fmt instanceof DelimitedColumnEventFormat
+                    ? ((DelimitedColumnEventFormat) fmt).getDelimiter()
+                    : null;
+            if (",".equals(delim)) {
                 File file = csv.getFile();
                 logger.debug("using training file {}", file);
                 return file;

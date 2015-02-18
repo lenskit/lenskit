@@ -64,7 +64,7 @@ public class TextDataSource extends AbstractDataSource {
         return sourceFile;
     }
 
-    public EventFormat getForamt() {
+    public EventFormat getFormat() {
         return format;
     }
 

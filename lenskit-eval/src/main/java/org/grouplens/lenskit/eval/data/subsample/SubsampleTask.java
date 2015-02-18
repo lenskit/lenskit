@@ -161,10 +161,10 @@ public class SubsampleTask extends AbstractTask<DataSource> {
      * @return DataSource The subsample DataSource file
      */
     private DataSource makeDataSource() {
-        CSVDataSourceBuilder bld = new CSVDataSourceBuilder()
-                .setDomain(source.getPreferenceDomain())
-                .setFile(getOutput());
-        return bld.build();
+        CSVDataSourceBuilder bld = new CSVDataSourceBuilder();
+        return bld.setDomain(source.getPreferenceDomain())
+                  .setFile(getOutput())
+                  .build();
     }
     
     /**

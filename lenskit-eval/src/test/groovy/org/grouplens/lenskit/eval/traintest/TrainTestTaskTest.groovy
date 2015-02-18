@@ -180,7 +180,7 @@ class TrainTestTaskTest {
         GenericTTDataSet ds = data.get(0) as GenericTTDataSet
         assertThat(ds.trainingData, instanceOf(TextDataSource))
         assertThat(ds.trainingData.sourceFile, equalTo(new File("train.csv")))
-        assertThat(ds.trainingData.delimiter, equalTo(","))
+        assertThat(ds.trainingData.format.delimiter, equalTo(","))
         assertThat(ds.testData, instanceOf(TextDataSource))
         assertThat(ds.testData.sourceFile, equalTo(new File("test.csv")))
     }
