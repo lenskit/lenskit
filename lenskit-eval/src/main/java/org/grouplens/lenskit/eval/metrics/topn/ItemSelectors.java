@@ -54,7 +54,7 @@ import java.util.Random;
  * Class providing various item selectors.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public final class ItemSelectors {
+public final class  ItemSelectors {
     private static Logger logger = LoggerFactory.getLogger(ItemSelectors.class);
     private ItemSelectors() {}
 

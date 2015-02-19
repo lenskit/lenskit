@@ -23,6 +23,7 @@ package org.grouplens.lenskit.data.source;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.specs.SpecHandlerInterface;
 
 import javax.annotation.Nullable;
 
@@ -32,6 +33,7 @@ import javax.annotation.Nullable;
  *
  * @since 2.2
  */
+@SpecHandlerInterface(DataSourceConfigurator.class)
 public interface DataSource {
     /**
      * Get the data source name.
