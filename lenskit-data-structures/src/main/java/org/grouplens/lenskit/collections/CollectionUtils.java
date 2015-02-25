@@ -100,7 +100,7 @@ public final class CollectionUtils {
      * @param obj The object.
      * @param n   The size of the list.
      * @param <T> The type of list elements.
-     * @return A list containing {@var obj} {@var n} times.
+     * @return A list containing <var>obj</var> <var>n</var> times.
      */
     public static <T> List<T> repeat(T obj, int n) {
         return new RepeatedList<T>(obj, n);

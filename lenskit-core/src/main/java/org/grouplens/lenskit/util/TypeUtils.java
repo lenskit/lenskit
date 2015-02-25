@@ -20,22 +20,17 @@
  */
 package org.grouplens.lenskit.util;
 
-import static com.google.common.collect.Iterables.addAll;
-import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Iterables.transform;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import static com.google.common.collect.Iterables.*;
 
 /**
  * Various type utilities used in LensKit.
@@ -45,14 +40,14 @@ import javax.annotation.Nullable;
 public class TypeUtils {
     /**
      * Build the set of types implemented by the objects' classes. This includes
-     * all supertypes which are themselves subclasses of {@var parent}.  The
-     * resulting set is the set of all subclasses of {@var parent} such that
-     * there exists some object in {@var objects} assignable to one of them.
+     * all supertypes which are themselves subclasses of <var>parent</var>.  The
+     * resulting set is the set of all subclasses of <var>parent</var> such that
+     * there exists some object in <var>objects</var> assignable to one of them.
      *
      * @param objects A collection of objects.  This iterable may be fast (returning a modified
      *                version of the same object).
      * @param parent  The parent type of interest.
-     * @return The set of types applicable to objects in {@var objects}.
+     * @return The set of types applicable to objects in <var>objects</var>.
      */
     public static <T> Set<Class<? extends T>>
     findTypes(Iterable<? extends T> objects, Class<T> parent) {

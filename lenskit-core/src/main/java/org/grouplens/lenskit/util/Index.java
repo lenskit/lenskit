@@ -21,10 +21,9 @@
 package org.grouplens.lenskit.util;
 
 import it.unimi.dsi.fastutil.longs.LongList;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 import java.io.Serializable;
-
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 /**
  * An index mapping long IDs to consecuitive 0-based integers.  The indexes
@@ -50,7 +49,7 @@ public interface Index extends Serializable {
      * Get the id for an index.
      *
      * @param idx The index of the ID to retrieve.
-     * @return The ID for the given {@var idx}.
+     * @return The ID for the given <var>idx</var>.
      */
     long getId(int idx);
 

@@ -66,7 +66,7 @@ public final class MutableIdIndexMapping extends IdIndexMapping {
      * Get an index for an ID, generating a new one if necessary.
      *
      * @param id The ID.
-     * @return The index for {@var id}. If the ID has already been added to the index,
+     * @return The index for <var>id</var>. If the ID has already been added to the index,
      *         the old index is returned; otherwise, a new index is generated and returned.
      */
     public int internId(long id) {

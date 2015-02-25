@@ -49,7 +49,7 @@ public class UnitVectorNormalizer extends AbstractVectorNormalizer implements Se
 
     /**
      * Create a unit vector normalizer a specified tolerance around 0. Any
-     * vector norm whose absolute value is less than {@var t} is converted
+     * vector norm whose absolute value is less than <var>t</var> is converted
      * to a no-op.
      *
      * @param t The error tolerance for 0-checking.

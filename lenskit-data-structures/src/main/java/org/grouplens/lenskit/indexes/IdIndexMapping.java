@@ -72,7 +72,7 @@ public abstract class IdIndexMapping implements Serializable {
      * Get the ID for an index.
      *
      * @param idx The index of the ID to retrieve.
-     * @return The ID for the given {@var idx}.
+     * @return The ID for the given <var>idx</var>.
      * @throws IndexOutOfBoundsException if {@code idx} is not a valid index.
      */
     public abstract long getId(int idx);

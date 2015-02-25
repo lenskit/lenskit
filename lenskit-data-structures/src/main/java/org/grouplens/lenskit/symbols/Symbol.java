@@ -63,7 +63,7 @@ public final class Symbol implements Serializable {
     }
 
     /**
-     * Get a unique symbol for {@var name}.
+     * Get a unique symbol for <var>name</var>.
      *
      * @param name the name for this symbol during this execution of
      *             the program

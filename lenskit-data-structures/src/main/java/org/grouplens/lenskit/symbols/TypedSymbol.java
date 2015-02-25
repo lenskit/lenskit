@@ -57,7 +57,7 @@ public final class TypedSymbol<K> implements Serializable {
     }
 
     /**
-     * Get a unique symbol for {@var name} and {@var type}.
+     * Get a unique symbol for <var>name</var> and <var>type</var>.
      *
      * @param type The type for the type-symbol pair.
      * @param name The name for the type-symbol pair.

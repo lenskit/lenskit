@@ -50,7 +50,7 @@ public abstract class CopyingFastCollection<E> extends AbstractCollection<E> imp
      * Copy an element of the collection.
      *
      * @param elt The element to copy.
-     * @return A copy of {@var elt}
+     * @return A copy of <var>elt</var>
      */
     protected abstract E copy(E elt);
 

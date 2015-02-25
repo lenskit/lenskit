@@ -53,7 +53,7 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
     private IntHeapPriorityQueue heap;
 
     /**
-     * Create a new accumulator to accumulate the top {@var n} IDs.
+     * Create a new accumulator to accumulate the top <var>n</var> IDs.
      *
      * @param n The number of IDs to retain.
      */

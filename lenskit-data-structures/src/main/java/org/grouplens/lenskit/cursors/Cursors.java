@@ -69,7 +69,7 @@ public final class Cursors {
      * @param <T>       The type of cursor rows.
      * @param cursor    The source cursor.
      * @param predicate A predicate indicating which rows to return.
-     * @return A cursor returning all rows for which {@var predicate} returns
+     * @return A cursor returning all rows for which <var>predicate</var> returns
      *         {@code true}.
      */
     public static <T> Cursor<T> filter(@WillCloseWhenClosed Cursor<T> cursor, Predicate<? super T> predicate) {
@@ -77,7 +77,7 @@ public final class Cursors {
     }
 
     /**
-     * Filter a cursor to only contain elements of type {@var type}. Unlike
+     * Filter a cursor to only contain elements of type <var>type</var>. Unlike
      * {@link #filter(Cursor, Predicate)} with a predicate from
      * {@link Predicates#instanceOf(Class)}, this method also transforms the
      * cursor to be of the target type.
@@ -85,8 +85,8 @@ public final class Cursors {
      * @param <T>    The type of value in the cursor.
      * @param cursor The source cursor.
      * @param type   The type to filter.
-     * @return A cursor returning all elements in {@var cursor} which are
-     *         instances of type {@var type}.
+     * @return A cursor returning all elements in <var>cursor</var> which are
+     *         instances of type <var>type</var>.
      */
     public static <T> Cursor<T> filter(@WillCloseWhenClosed final Cursor<?> cursor, final Class<T> type) {
         return new AbstractPollingCursor<T>() {
@@ -116,7 +116,7 @@ public final class Cursors {
      * @param <T>      The type of output cursor rows
      * @param cursor   The source cursor
      * @param function A function to apply to each row in the cursor.
-     * @return A new cursor iterating the results of {@var function}.
+     * @return A new cursor iterating the results of <var>function</var>.
      */
     public static <S, T> Cursor<T> transform(@WillCloseWhenClosed Cursor<S> cursor, Function<? super S, ? extends T> function) {
         return new TransformedCursor<S, T>(cursor, function);

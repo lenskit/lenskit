@@ -153,7 +153,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
 
     /**
      * Find the neighbors for a user with respect to a collection of items.
-     * For each item, the {@var neighborhoodSize} users closest to the
+     * For each item, the <var>neighborhoodSize</var> users closest to the
      * provided user are returned.
      *
      * @param user  The user's rating vector.

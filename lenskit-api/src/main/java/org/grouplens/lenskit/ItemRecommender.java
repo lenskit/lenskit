@@ -73,7 +73,7 @@ public interface ItemRecommender {
     List<ScoredId> recommend(long user);
 
     /**
-     * Recommend up to {@var n} items for a user using the default exclude
+     * Recommend up to <var>n</var> items for a user using the default exclude
      * set.
      *
      * @param user The user ID.
@@ -100,7 +100,7 @@ public interface ItemRecommender {
      * recommendation method, allowing the recommendations to be constrained by
      * both a candidate set and an exclude set. The exclude set is applied to
      * the candidate set, so the final effective candidate set is
-     * {@var canditates} minus {@var exclude}.
+     * <var>canditates</var> minus <var>exclude</var>.
      *
      * @param user       The user's ID
      * @param n          The number of ratings to return. If negative, there is

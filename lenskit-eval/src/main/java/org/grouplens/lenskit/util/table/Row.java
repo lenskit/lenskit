@@ -34,7 +34,7 @@ public interface Row extends Iterable<Object> {
      *
      * @param key The column name.
      * @return The value at that column.
-     * @throws IllegalArgumentException if {@var key} does not define a column.
+     * @throws IllegalArgumentException if <var>key</var> does not define a column.
      */
     @Nullable
     Object value(String key);
@@ -44,7 +44,7 @@ public interface Row extends Iterable<Object> {
      *
      * @param idx The column index.
      * @return The value at that column.
-     * @throws IndexOutOfBoundsException if {@var idx} is not a valid column index.
+     * @throws IndexOutOfBoundsException if <var>idx</var> is not a valid column index.
      */
     @Nullable
     Object value(int idx);

@@ -68,7 +68,7 @@ public class DelimitedTextCursor extends AbstractCursor<String[]> {
      *
      * @param file  The name of the file to read.
      * @param delim The delimiter.
-     * @throws FileNotFoundException if {@var file} is not found.
+     * @throws FileNotFoundException if <var>file</var> is not found.
      */
     public DelimitedTextCursor(File file, @Nonnull String delim) throws FileNotFoundException {
         // REVIEW This doesn't handle an error constructing the BufferedReader

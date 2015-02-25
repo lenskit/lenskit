@@ -348,7 +348,7 @@ public class ConfigMethodInvoker {
      *
      * @param args The argument array.
      * @return A pair consisting of the arguments, except for any trailing closure, and the closure. If
-     *         {@var args} does not have end with a closure, {@code Pair.of(args, null)} is returned.
+     *         <var>args</var> does not have end with a closure, {@code Pair.of(args, null)} is returned.
      */
     public Pair<Object[], Closure> splitClosure(Object[] args) {
         if (args.length > 0 && args[args.length - 1] instanceof Closure) {
