@@ -55,10 +55,6 @@ allprojects {
         return;
     }
     logger.info 'configuring JavaDoc for {}', name
-    dependencies {
-        // We need the GroupLens taglets
-        support project(':build-support')
-    }
     tasks.withType(Javadoc) { task ->
         task.configure {
             dependsOn ':build-support:jar'
@@ -68,9 +64,6 @@ allprojects {
             options {
                 tags 'todo:a:To Do:', 'review:a:Review:'
 
-                // grab the taglets from the support classpath
-                tagletPath configurations.support.files.toList()
-                taglets 'org.grouplens.javadoc.taglets.ExtraInlineTaglet'
                 tags "compat:pt:<a href=\"$webUrl/documentation/versioning/\">Compatibility</a>"
 
                 jFlags "-Dgrouplens.javadoc.versioning.url=$webUrl/documentation/versioning/"
