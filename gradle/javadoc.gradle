@@ -62,6 +62,9 @@ allprojects {
     tasks.withType(Javadoc) { task ->
         task.configure {
             dependsOn ':build-support:jar'
+            onlyIf {
+                JavaVersion.current() >= JavaVersion.VERSION_1_7
+            }
             options {
                 tags 'todo:a:To Do:', 'review:a:Review:'
 
