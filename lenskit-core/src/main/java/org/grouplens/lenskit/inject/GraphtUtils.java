@@ -118,8 +118,9 @@ public final class GraphtUtils {
                 return input != null && input.getSatisfaction() instanceof PlaceholderSatisfaction;
             }
         };
+        Predicate<DAGNode<Component, ?>> nodePredicate = DAGNode.labelMatches(isPlaceholder);
         return FluentIterable.from(graph.getReachableNodes())
-                             .filter(DAGNode.labelMatches(isPlaceholder))
+                             .filter(nodePredicate)
                              .toSet();
     }
 
