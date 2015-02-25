@@ -57,6 +57,9 @@ public class AlgorithmInstance implements Attributed {
     private final boolean preload;
     private Random random;
 
+    /*
+     * Takes the name and Lenskit configuration to generate an Algorithm instance
+     */
     public AlgorithmInstance(String name, LenskitConfiguration config) {
         this(name, config, Collections.<String, Object>emptyMap(), false);
     }
@@ -67,6 +70,7 @@ public class AlgorithmInstance implements Attributed {
         attributes = ImmutableMap.copyOf(attrs);
         this.preload = preload;
     }
+
 
     /**
      * Get the name of this algorithmInfo.  This returns a short name which is

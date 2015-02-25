@@ -51,6 +51,16 @@ public class SimpleEvaluator implements Callable<Table> {
     }
 
     /**
+     * An algorithm instance constructed with a name and Lenskit configuration
+     * @param name
+     * @param config Lenskit configuration
+     *
+     */
+    public SimpleEvaluator(String name, LenskitConfiguration config) {
+        AlgorithmInstance(name, config);
+    }
+
+    /**
      * Create a simple evaluator with a custom configuration.
      *
      * @param props Properties for the eval configuration.
