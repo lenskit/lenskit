@@ -2,6 +2,7 @@ target
 .project
 .classpath
 .settings
+.vagrant
 /.idea
 /.idea_modules
 .gradle
