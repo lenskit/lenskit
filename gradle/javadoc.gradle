@@ -71,7 +71,7 @@ allprojects {
                 // grab the taglets from the support classpath
                 tagletPath configurations.support.files.toList()
                 taglets 'org.grouplens.javadoc.taglets.ExtraInlineTaglet'
-                taglets 'org.grouplens.javadoc.taglets.CompatTaglet'
+                tags "compat:pt:<a href=\"$webUrl/documentation/versioning/\">Compatibility</a>"
 
                 jFlags "-Dgrouplens.javadoc.versioning.url=$webUrl/documentation/versioning/"
 
