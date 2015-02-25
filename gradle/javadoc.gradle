@@ -50,10 +50,6 @@ task javadoc(type: Javadoc, group: 'build') {
 
 // Set up JavaDoc configuration
 allprojects {
-    if (name == 'build-support') {
-        logger.info 'not configurationg JavaDoc for build-support'
-        return;
-    }
     logger.info 'configuring JavaDoc for {}', name
     tasks.withType(Javadoc) { task ->
         task.configure {
