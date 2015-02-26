@@ -45,8 +45,8 @@ import java.util.Set;
  *     }
  * </code></pre>
  */
-@AutoService(DataSourceConfigurator.class)
-public class CSVDataSourceConfigurator implements DataSourceConfigurator {
+@AutoService(DataSourceSpecHandler.class)
+public class CSVDataSourceSpecHandler implements DataSourceSpecHandler {
     private static final Set<String> HANDLED_TYPES = Sets.newHashSet("csv", "tsv", "text");
 
     @Override

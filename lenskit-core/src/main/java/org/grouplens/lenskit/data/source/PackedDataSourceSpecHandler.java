@@ -42,8 +42,8 @@ import java.net.URI;
  *     }
  * </code></pre>
  */
-@AutoService(DataSourceConfigurator.class)
-public class PackedDataSourceConfigurator implements DataSourceConfigurator {
+@AutoService(DataSourceSpecHandler.class)
+public class PackedDataSourceSpecHandler implements DataSourceSpecHandler {
 
     @Override
     public boolean handlesType(String type) {

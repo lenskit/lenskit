@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
  *
  * @since 2.2
  */
-@SpecHandlerInterface(DataSourceConfigurator.class)
+@SpecHandlerInterface(DataSourceSpecHandler.class)
 public interface DataSource {
     /**
      * Get the data source name.

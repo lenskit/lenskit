@@ -18,15 +18,24 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.source;
+package org.grouplens.lenskit.data.source
 
-import org.grouplens.lenskit.specs.SpecHandler;
+import org.grouplens.lenskit.specs.SpecificationContext
+import org.grouplens.lenskit.util.test.MiscBuilders
+import org.junit.Test
 
-/**
- * Interface for building data sources from configuration objects.
- *
- * @since 2.2
- * @compat Experimental
- */
-public interface DataSourceConfigurator extends SpecHandler<DataSource> {
+class PackedDataSourceSpecHandlerTest extends GroovyTestCase {
+    private final def context = SpecificationContext.create()
+
+    @Test
+    public void testConfigurePack() {
+        def cfg = MiscBuilders.configObj {
+            type "pack"
+            file "ratings.pack"
+        }
+        def src = context.build(DataSource, cfg)
+        org.junit.Assert.assertThat src, org.hamcrest.Matchers.instanceOf(PackedDataSource)
+        src = src as PackedDataSource
+        org.junit.Assert.assertThat src.file.name, org.hamcrest.Matchers.equalTo("ratings.pack")
+    }
 }

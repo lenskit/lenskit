@@ -28,7 +28,7 @@ import org.junit.Test
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
-class CSVDataSourceConfiguratorTest {
+class CSVDataSourceSpecHandlerTest {
     def context = SpecificationContext.create()
 
     @Test
@@ -76,7 +76,7 @@ class CSVDataSourceConfiguratorTest {
 
     @Test
     public void testMLFileWithDomain() {
-        def src = SpecificationContext.buildWithHandler(DataSourceConfigurator,
+        def src = SpecificationContext.buildWithHandler(DataSourceSpecHandler,
                                                         getClass().getResource("csvsource.conf").toURI())
         assertThat src, instanceOf(CSVDataSource)
         src = src as TextDataSource
