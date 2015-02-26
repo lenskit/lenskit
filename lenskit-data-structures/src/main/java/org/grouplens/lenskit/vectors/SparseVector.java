@@ -65,7 +65,7 @@ import java.util.Set;
  * vectors that are guaranteed to be unchanging, see
  * {@link ImmutableSparseVector}.
  *
- * @see http://lenskit.org/documentation/basics/sparse-vectors/
+ * @see <a href="http://lenskit.org/documentation/basics/sparse-vectors/">Sparse Vector tutorial</a>
  * @compat Public
  */
 public abstract class SparseVector implements Iterable<VectorEntry>, Serializable {

@@ -34,6 +34,6 @@
  *
  * <p>The {@link Vectors} class provides utility methods for working with vectors.
  *
- * @see http://lenskit.org/documentation/basics/sparse-vectors/
+ * @see <a href="http://lenskit.org/documentation/basics/sparse-vectors/">Sparse Vector tutorial</a>
  */
 package org.grouplens.lenskit.vectors;
