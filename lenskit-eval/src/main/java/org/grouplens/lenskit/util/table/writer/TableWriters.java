@@ -40,7 +40,7 @@ public final class TableWriters {
      * @param prefix The values of the leading columns in this table writer.
      * @return A table writer with
      *         {@code base.getColumnCount() - prefix.size()} columns. Each
-     *         row is prefixed with the values in {@var prefix}.
+     *         row is prefixed with the values in <var>prefix</var>.
      * @since 1.1
      */
     public static TableWriter prefixed(@WillNotClose TableWriter base, List<?> prefix) {
@@ -55,7 +55,7 @@ public final class TableWriters {
      * @param prefix The values of the leading columns in this table writer.
      * @return A table writer with
      *         {@code base.getColumnCount() - prefix.length} columns. Each
-     *         row is prefixed with the values in {@var prefix}.
+     *         row is prefixed with the values in <var>prefix</var>.
      * @since 0.8
      */
     public static TableWriter prefixed(@WillNotClose TableWriter base, Object... prefix) {

@@ -46,7 +46,7 @@ public interface NeighborhoodScorer {
      * @param item
      * @param neighbors A vector of neighbors with similarity measures.
      * @param scores    A vector of item scores. It should contain a score for
-     *                  every item in {@var neighbors}.
+     *                  every item in <var>neighbors</var>.
      * @return An accumulated score from the neighbors, or {@code null} if
      *         no score could be computed.
      */

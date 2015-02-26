@@ -45,7 +45,7 @@ public class UpToDateChecker {
      * Query if a particular output is up to date.
      *
      * @param ts An output timestamp.
-     * @return {@code true} if an output with modification time {@var ts} is up to date
+     * @return {@code true} if an output with modification time <var>ts</var> is up to date
      *         with respect to the input resources.
      */
     public boolean isUpToDate(long ts) {

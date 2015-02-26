@@ -20,15 +20,10 @@
  */
 package org.grouplens.lenskit.util;
 
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.grouplens.lenskit.vectors.VectorEntry.State;
-
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
-import it.unimi.dsi.fastutil.longs.LongLists;
 
 /**
  * Build contiguous 0-based indexes for long IDs.
@@ -76,7 +71,7 @@ public class Indexer implements Index {
      * Get an index for an ID, generating a new one if necessary.
      *
      * @param id The ID.
-     * @return The index for {@var id}. If the ID has already been interned,
+     * @return The index for <var>id</var>. If the ID has already been interned,
      *         the old index is returned; otherwise, a new index is generated
      *         and returned.
      */

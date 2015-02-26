@@ -20,9 +20,6 @@
  */
 package org.grouplens.lenskit.baseline;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
@@ -30,6 +27,9 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.Preference;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * Rating scorer that predicts the global mean rating for all items.
@@ -81,7 +81,7 @@ public class GlobalMeanRatingItemScorer extends ConstantItemScorer {
      * contained in the given collection of ratings.
      *
      * @param dao The DAO to average.
-     * @return The average of the rating values stored in {@var ratings}.
+     * @return The average of the rating values stored in <var>ratings</var>.
      */
     public static double computeMeanRating(EventDAO dao) {
         double total = 0;

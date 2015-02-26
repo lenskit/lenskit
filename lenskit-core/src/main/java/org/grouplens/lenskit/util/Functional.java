@@ -99,7 +99,7 @@ public final class Functional {
      * @param <T> The type to which to cast arguments.
      * @param target The target type for arguments.
      * @return A function which, when applied to an object, casts it to type
-     *         {@var target}.
+     *         <var>target</var>.
      */
     public static <F, T> Function<F, T> cast(final Class<T> target) {
         return new Function<F, T>() {

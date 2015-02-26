@@ -76,7 +76,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
          *
          * @param dao The DAO from which to get the global mean.
          * @param d   A Bayesian damping term.  The normalizer pretends each user has an
-         *            additional {@var d} ratings that are equal to the global mean.
+         *            additional <var>d</var> ratings that are equal to the global mean.
          */
         @Inject
         public Builder(@Transient EventDAO dao,

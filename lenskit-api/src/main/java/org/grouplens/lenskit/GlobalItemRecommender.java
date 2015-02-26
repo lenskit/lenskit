@@ -49,7 +49,7 @@ public interface GlobalItemRecommender {
     List<ScoredId> globalRecommend(Set<Long> items);
 
     /**
-     * Recommend up to {@var n} items for a basket of items using the default exclude set.
+     * Recommend up to <var>n</var> items for a basket of items using the default exclude set.
      *
      * @param items The items value.
      * @param n     The number of recommendations to return.
@@ -73,7 +73,7 @@ public interface GlobalItemRecommender {
      * Produce a set of recommendations for the item. This is the most general recommendation
      * method, allowing the recommendations to be constrained by both a candidate set and an exclude
      * set. The exclude set is applied to the candidate set, so the final effective candidate set is
-     * {@var canditates} minus {@var exclude}.
+     * <var>candidates</var> minus <var>exclude</var>.
      *
      * @param items      The items value
      * @param n          The number of ratings to return. If negative, no specific size is requested.

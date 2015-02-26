@@ -40,7 +40,7 @@ public final class IndexedPreferenceBuilder implements Builder<IndexedPreference
     /**
      * Create a new preference builder initialized as a copy of a preference.
      * @param pref The preference to copy.
-     * @return A new builder initialized with a copy of {@var pref}'s data.
+     * @return A new builder initialized with a copy of <var>pref</var>'s data.
      */
     public static IndexedPreferenceBuilder copy(IndexedPreference pref) {
         return new IndexedPreferenceBuilder()

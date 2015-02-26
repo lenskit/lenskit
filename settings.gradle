@@ -35,7 +35,6 @@
 
 rootProject.name = 'lenskit'
 
-include 'build-support'
 include 'lenskit-test'
 include 'lenskit-data-structures'
 include 'lenskit-api'

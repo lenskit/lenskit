@@ -50,28 +50,16 @@ task javadoc(type: Javadoc, group: 'build') {
 
 // Set up JavaDoc configuration
 allprojects {
-    if (name == 'build-support') {
-        logger.info 'not configurationg JavaDoc for build-support'
-        return;
-    }
     logger.info 'configuring JavaDoc for {}', name
-    dependencies {
-        // We need the GroupLens taglets
-        support project(':build-support')
-    }
     tasks.withType(Javadoc) { task ->
         task.configure {
-            dependsOn ':build-support:jar'
             onlyIf {
                 JavaVersion.current() >= JavaVersion.VERSION_1_7
             }
             options {
                 tags 'todo:a:To Do:', 'review:a:Review:'
 
-                // grab the taglets from the support classpath
-                tagletPath configurations.support.files.toList()
-                taglets 'org.grouplens.javadoc.taglets.ExtraInlineTaglet'
-                taglets 'org.grouplens.javadoc.taglets.CompatTaglet'
+                tags "compat:pt:<a href=\"$webUrl/documentation/versioning/\">Compatibility</a>"
 
                 jFlags "-Dgrouplens.javadoc.versioning.url=$webUrl/documentation/versioning/"
 
