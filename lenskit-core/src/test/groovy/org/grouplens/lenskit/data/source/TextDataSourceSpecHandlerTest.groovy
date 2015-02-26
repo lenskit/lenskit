@@ -28,7 +28,7 @@ import org.junit.Test
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
-class CSVDataSourceSpecHandlerTest {
+class TextDataSourceSpecHandlerTest {
     def context = SpecificationContext.create()
 
     @Test
@@ -38,9 +38,9 @@ class CSVDataSourceSpecHandlerTest {
             file "ratings.csv"
         }
         def src = context.build(DataSource, cfg)
-        assertThat src, instanceOf(CSVDataSource)
+        assertThat src, instanceOf(TextDataSource)
         src = src as TextDataSource
-        assertThat src.delimiter, equalTo(",")
+        assertThat src.format.delimiter, equalTo(",")
         assertThat src.file.name, equalTo("ratings.csv")
         assertThat src.domain, nullValue()
     }
@@ -52,9 +52,9 @@ class CSVDataSourceSpecHandlerTest {
             file "ratings.tsv"
         }
         def src = context.build(DataSource, cfg)
-        assertThat src, instanceOf(CSVDataSource)
+        assertThat src, instanceOf(TextDataSource)
         src = src as TextDataSource
-        assertThat src.delimiter, equalTo("\t")
+        assertThat src.format.delimiter, equalTo("\t")
         assertThat src.file.name, equalTo("ratings.tsv")
         assertThat src.domain, nullValue()
     }
@@ -67,9 +67,9 @@ class CSVDataSourceSpecHandlerTest {
             delimiter "::"
         }
         def src = context.build(DataSource, cfg)
-        assertThat src, instanceOf(CSVDataSource)
+        assertThat src, instanceOf(TextDataSource)
         src = src as TextDataSource
-        assertThat src.delimiter, equalTo("::")
+        assertThat src.format.delimiter, equalTo("::")
         assertThat src.file.name, equalTo("ratings.dat")
         assertThat src.domain, nullValue()
     }
@@ -78,9 +78,9 @@ class CSVDataSourceSpecHandlerTest {
     public void testMLFileWithDomain() {
         def src = SpecificationContext.buildWithHandler(DataSourceSpecHandler,
                                                         getClass().getResource("csvsource.conf").toURI())
-        assertThat src, instanceOf(CSVDataSource)
+        assertThat src, instanceOf(TextDataSource)
         src = src as TextDataSource
-        assertThat src.delimiter, equalTo("::")
+        assertThat src.format.delimiter, equalTo("::")
         assertThat src.file.name, equalTo("ratings.dat")
         assertThat src.domain, equalTo(PreferenceDomain.fromString("[1.0,5.0]/1.0"))
     }
