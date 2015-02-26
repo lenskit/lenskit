@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.cli;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
@@ -31,6 +33,8 @@ import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;
 import org.grouplens.lenskit.data.source.TextDataSourceBuilder;
 import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
 import org.grouplens.lenskit.data.text.EventFormat;
+import org.grouplens.lenskit.specs.SpecificationContext;
+import org.grouplens.lenskit.specs.SpecificationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,14 +52,33 @@ import java.io.IOException;
 public class InputData {
     private static final Logger logger = LoggerFactory.getLogger(InputData.class);
     private final Namespace options;
+    private final ScriptEnvironment environment;
 
-    public InputData(Namespace opts) {
+    public InputData(ScriptEnvironment env, Namespace opts) {
+        environment = env;
         options = opts;
     }
 
     @Nullable
     DataSource getSource() {
         TextDataSourceBuilder dsb = new TextDataSourceBuilder();
+
+        File sourceFile = options.get("data_source");
+        if (sourceFile != null) {
+            SpecificationContext ctx;
+            if (environment != null) {
+                ctx = SpecificationContext.create(environment.getClassLoader(),
+                                                  new File(".").toURI());
+            } else {
+                ctx = SpecificationContext.create(new File(".").toURI());
+            }
+            Config cfg = ConfigFactory.parseFile(sourceFile);
+            try {
+                return ctx.build(DataSource.class, cfg);
+            } catch (SpecificationException e) {
+                throw new RuntimeException("Cannot configure data source", e);
+            }
+        }
 
         String type = options.get("event_type");
         File nameFile = options.get("item_names");
@@ -165,5 +188,9 @@ public class InputData {
              .type(File.class)
              .metavar("FILE")
              .help("read from binary packed FILE");
+        group.addArgument("--data-source")
+             .type(File.class)
+             .metavar("FILE")
+             .help("read a data source specification from FILE");
     }
 }

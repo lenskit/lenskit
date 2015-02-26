@@ -52,7 +52,7 @@ public class TrainModel implements Command {
     public TrainModel(Namespace opts) {
         options = opts;
         environment = new ScriptEnvironment(opts);
-        input = new InputData(opts);
+        input = new InputData(environment, opts);
     }
 
     public List<File> getConfigFiles() {

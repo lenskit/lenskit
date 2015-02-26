@@ -22,6 +22,7 @@ package org.grouplens.lenskit.cli
 
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
+import org.grouplens.lenskit.data.pref.PreferenceDomain
 import org.grouplens.lenskit.data.source.PackedDataSource
 import org.grouplens.lenskit.data.source.TextDataSource
 import org.junit.Test
@@ -36,7 +37,7 @@ class InputDataTest {
         def parser = ArgumentParsers.newArgumentParser("lenskit-input");
         InputData.configureArguments(parser, true)
         def options = parser.parseArgs(args)
-        return new InputData(options)
+        return new InputData(null, options)
     }
 
     @Test
@@ -85,5 +86,25 @@ class InputDataTest {
         assertThat(input, instanceOf(PackedDataSource))
         def pack = input as PackedDataSource
         assertThat(pack.packedFile.name, equalTo('ratings.pack'))
+    }
+
+    @Test
+    public void testDataSource() {
+        def file = File.createTempFile("input", ".conf")
+        file.text = """\
+type: text
+file: foo.tsv
+delimiter: "\\t"
+domain: {
+  minimum: 0.5
+  maximum: 5.0
+  precision: 0.5
+}
+"""
+        def data = parse('--data-source', file.absolutePath)
+        def input = data.source as TextDataSource
+        assertThat(input.file.name, equalTo('foo.tsv'))
+        assertThat(input.format.delimiter, equalTo('\t'))
+        assertThat(input.preferenceDomain, equalTo(PreferenceDomain.fromString("[0.5,5.0]/0.5")))
     }
 }

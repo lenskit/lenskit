@@ -54,8 +54,8 @@ public class Predict implements Command {
 
     public Predict(Namespace opts) {
         options = opts;
-        input = new InputData(opts);
         environment = new ScriptEnvironment(opts);
+        input = new InputData(environment, opts);
         loader = new RecommenderLoader(input, environment, opts);
     }
 

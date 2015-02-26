@@ -50,7 +50,7 @@ public class PackRatings implements Command {
 
     public PackRatings(Namespace opts) {
         options = opts;
-        input = new InputData(opts);
+        input = new InputData(null, opts);
     }
 
     public File getOutputFile() {

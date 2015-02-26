@@ -55,8 +55,8 @@ public class GlobalRecommend implements Command {
 
     public GlobalRecommend(Namespace opts) {
         options = opts;
-        input = new InputData(opts);
         environment = new ScriptEnvironment(opts);
+        input = new InputData(environment, opts);
         loader = new RecommenderLoader(input, environment, opts);
     }
 
