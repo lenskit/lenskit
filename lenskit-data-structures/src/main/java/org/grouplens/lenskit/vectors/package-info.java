@@ -33,5 +33,7 @@
  * components to specifically work with and store vectors guaranteed to be immutable.
  *
  * <p>The {@link Vectors} class provides utility methods for working with vectors.
+ *
+ * @see http://lenskit.org/documentation/basics/sparse-vectors/
  */
 package org.grouplens.lenskit.vectors;
