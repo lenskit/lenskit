@@ -179,6 +179,26 @@ public class SpecificationContext {
         return ctx.buildWithHandler(cfgClass, config);
     }
 
+    /**
+     * Configure an object using a configuration file at a URI.
+     * @param type The configurator interface, defining the kind of object to configure.
+     * @param uri The URI of a configuration file or resource.
+     * @param <T> The object type.
+     * @return A configured object.
+     */
+    public static <T> T build(Class<T> type, URI uri) throws SpecificationException {
+        URL url = null;
+        try {
+            url = uri.toURL();
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("invalid URL " + uri, e);
+        }
+        SpecificationContext ctx = SpecificationContext.create(ClassLoaders.inferDefault(type), uri);
+        Config config = ConfigFactory.parseURL(url);
+        return ctx.build(type, config);
+    }
+
+
     public URI getBaseURI() {
         return baseURI;
     }
