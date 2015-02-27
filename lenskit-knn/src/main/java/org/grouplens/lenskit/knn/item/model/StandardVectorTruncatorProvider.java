@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import org.grouplens.lenskit.knn.item.ItemSimilarityThreshold;
 import org.grouplens.lenskit.knn.item.ModelSize;
 import org.grouplens.lenskit.transform.threshold.Threshold;
@@ -64,9 +64,9 @@ public class StandardVectorTruncatorProvider implements Provider<VectorTruncator
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(StandardVectorTruncatorProvider.class)
-                      .add("modelSize", modelSize)
-                      .add("threshold", threshold)
-                      .toString();
+        return MoreObjects.toStringHelper(StandardVectorTruncatorProvider.class)
+                          .add("modelSize", modelSize)
+                          .add("threshold", threshold)
+                          .toString();
     }
 }

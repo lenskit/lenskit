@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -142,10 +142,10 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(NormalizingItemItemModelBuilder.class)
-                      .add("similarity", similarity)
-                      .add("normalizer", rowNormalizer)
-                      .add("truncator", truncator)
-                      .toString();
+        return MoreObjects.toStringHelper(NormalizingItemItemModelBuilder.class)
+                          .add("similarity", similarity)
+                          .add("normalizer", rowNormalizer)
+                          .add("truncator", truncator)
+                          .toString();
     }
 }

@@ -21,9 +21,11 @@
 package org.grouplens.lenskit.eval.script;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.*;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.Uninterruptibles;
 import groovy.lang.*;
 import groovy.util.AntBuilder;
 import org.apache.commons.lang3.builder.Builder;
@@ -244,7 +246,7 @@ public class EvalScript extends Script implements GroovyObject {
                             }
                         }
                     };
-                    deps.addListener(execute, MoreExecutors.sameThreadExecutor());
+                    deps.addListener(execute, MoreExecutors.directExecutor());
                     if (task.isDone()) {
                         return Uninterruptibles.getUninterruptibly(task);
                     } else {

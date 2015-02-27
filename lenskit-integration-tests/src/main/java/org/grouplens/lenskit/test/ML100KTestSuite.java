@@ -24,11 +24,14 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongLists;
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.data.dao.*;
+import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.data.dao.ItemDAO;
+import org.grouplens.lenskit.data.dao.ItemListItemDAO;
+import org.grouplens.lenskit.data.dao.PrefetchingItemDAO;
 import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
 import org.grouplens.lenskit.data.text.Fields;
+import org.grouplens.lenskit.data.text.Formats;
 import org.grouplens.lenskit.data.text.TextEventDAO;
-import org.grouplens.lenskit.util.io.CompressionMode;
 import org.junit.Before;
 import org.junit.internal.AssumptionViolatedException;
 
@@ -85,7 +88,7 @@ public class ML100KTestSuite {
             throw new FileNotFoundException("ML data set at " + inputFile + ". " +
                                             "See <http://lenskit.grouplens.org/ML100K>.");
         }
-        ratingDAO = SimpleFileRatingDAO.create(inputFile, "\t", CompressionMode.NONE);
+        ratingDAO = TextEventDAO.create(inputFile, Formats.ml100kFormat());
         DelimitedColumnEventFormat format = DelimitedColumnEventFormat.create("like");
         format.setDelimiter("\t")
               .setFields(Fields.user(), Fields.item(), Fields.ignored(), Fields.timestamp());

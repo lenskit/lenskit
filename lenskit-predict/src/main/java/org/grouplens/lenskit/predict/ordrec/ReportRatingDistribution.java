@@ -24,10 +24,7 @@ import org.grouplens.grapht.annotation.DefaultBoolean;
 import org.grouplens.lenskit.core.Parameter;
 
 import javax.inject.Qualifier;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Control whether the {@linkplain OrdRecRatingPredictor OrdRec predictor} reports full probability
@@ -41,5 +38,6 @@ import java.lang.annotation.Target;
 @DefaultBoolean(false)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.METHOD})
+@Documented
 public @interface ReportRatingDistribution {
 }
