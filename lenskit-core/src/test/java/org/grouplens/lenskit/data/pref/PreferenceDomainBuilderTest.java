@@ -20,7 +20,13 @@
  */
 package org.grouplens.lenskit.data.pref;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import org.grouplens.lenskit.specs.SpecificationContext;
+import org.grouplens.lenskit.specs.SpecificationException;
 import org.junit.Test;
+
+import java.util.Map;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -71,5 +77,19 @@ public class PreferenceDomainBuilderTest {
         assertThat(dom.getMinimum(), equalTo(1.0));
         assertThat(dom.getMaximum(), equalTo(5.0));
         assertThat(dom.getPrecision(), equalTo(0.5));
+    }
+
+    @Test
+    public void testSpecRoundTrip() throws SpecificationException {
+        PreferenceDomainBuilder bld = new PreferenceDomainBuilder();
+        bld.setMinimum(1.0)
+           .setMaximum(5)
+           .setPrecision(0.5);
+        PreferenceDomain dom = bld.build();
+        Map<String,Object> spec = dom.toSpecification();
+        Config config = ConfigFactory.parseMap(spec);
+        PreferenceDomain dom2 = SpecificationContext.create()
+                                                    .build(PreferenceDomain.class, config);
+        assertThat(dom2, equalTo(dom));
     }
 }

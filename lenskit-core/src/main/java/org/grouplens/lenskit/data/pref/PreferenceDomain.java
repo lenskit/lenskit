@@ -21,16 +21,19 @@
 package org.grouplens.lenskit.data.pref;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.grapht.annotation.DefaultNull;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.specs.SpecHandlerInterface;
+import org.grouplens.lenskit.specs.Specifiable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,7 +45,7 @@ import java.util.regex.Pattern;
 @Shareable
 @DefaultNull
 @SpecHandlerInterface(PreferenceDomainBuilder.class)
-public final class PreferenceDomain implements Serializable {
+public final class PreferenceDomain implements Serializable, Specifiable {
     public static final long serialVersionUID = 1L;
 
     private final double minimum;
@@ -146,7 +149,7 @@ public final class PreferenceDomain implements Serializable {
     @Override
     public String toString() {
         String str = String.format("[%f,%f]", minimum, maximum);
-        if (!Double.isNaN(precision)) {
+        if (precision > 0) {
             str += String.format("/%f", precision);
         }
         return str;
@@ -179,6 +182,18 @@ public final class PreferenceDomain implements Serializable {
         } else {
             return false;
         }
+    }
+
+    @Nonnull
+    @Override
+    public Map<String, Object> toSpecification() {
+        ImmutableMap.Builder<String,Object> bld = ImmutableMap.builder();
+        bld.put("minimum", minimum);
+        bld.put("maximum", maximum);
+        if (precision > 0) {
+            bld.put("precision", precision);
+        }
+        return bld.build();
     }
 
     private static Pattern specRE =
