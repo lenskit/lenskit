@@ -20,24 +20,19 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold
 
+import org.grouplens.lenskit.cursors.Cursors
 import org.grouplens.lenskit.data.dao.EventDAO
+import org.grouplens.lenskit.data.event.Rating
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet
+import org.grouplens.lenskit.eval.script.ConfigTestBase
+import org.grouplens.lenskit.specs.SpecificationContext
+import org.junit.Before
 import org.junit.Rule
+import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
 import static org.hamcrest.Matchers.*
-import static org.junit.Assert.*
-
-import org.grouplens.lenskit.cursors.Cursors
-
-import org.grouplens.lenskit.data.event.Rating
-import org.grouplens.lenskit.eval.script.ConfigTestBase
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet
-import org.junit.After
-import org.junit.Before
-import org.junit.Ignore
-import org.junit.Test
-
-import com.google.common.io.Files
+import static org.junit.Assert.assertThat
 
 /**
  * Test crossfold configuration
@@ -106,6 +101,27 @@ class CrossfoldConfigTest extends ConfigTestBase {
             List<Rating> ratings = Cursors.makeList(dao.streamEvents(Rating.class));
 
             assertThat(ratings.size(), equalTo(2))
+        }
+    }
+
+    @Test
+    void testCrossfoldSpec() {
+        def obj = eval {
+            crossfold("tempRatings") {
+                source file
+                partitions 5
+                train "$folder.root.absolutePath/ratings.train/%d.csv"
+                test "$folder.root.absolutePath/ratings.test/%d.csv"
+                spec "$folder.root.absolutePath/data.%d.json"
+            }
+        }
+        assertThat(obj.size(), equalTo(5))
+        assertThat(obj[1], instanceOf(TTDataSet))
+        for (int i = 0; i < 5; i++) {
+            def uri = folder.root.toURI()
+            def data = SpecificationContext.build(TTDataSet, uri.resolve("data.${i}.json"))
+            def dao = data.testDAO
+            assertThat(dao, notNullValue())
         }
     }
 }

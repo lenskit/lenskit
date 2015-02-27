@@ -45,11 +45,13 @@ import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
+import org.json.simple.JSONValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -64,6 +66,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     private int partitionCount = 5;
     private String trainFilePattern;
     private String testFilePattern;
+    private String specFilePattern;
     private Order<Rating> order = new RandomOrder<Rating>();
     private PartitionAlgorithm<Rating> partition = new HoldoutNPartition<Rating>(10);
     private boolean isForced;
@@ -128,6 +131,18 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      */
     public CrossfoldTask setTest(String pat) {
         testFilePattern = pat;
+        return this;
+    }
+
+    /**
+     * Set the pattern for train-test spec files.
+     *
+     * @param pat The train-test spec file pattern.
+     * @return The CrossfoldCommand object  (for chaining)
+     * @see #setTrain(String)
+     */
+    public CrossfoldTask setSpec(String pat) {
+        specFilePattern = pat;
         return this;
     }
 
@@ -446,6 +461,16 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
             throw closer.rethrow(th);
         } finally {
             closer.close();
+        }
+
+        if (specFilePattern != null) {
+            List<TTDataSet> dataSets = getTTFiles();
+            assert dataSets.size() == partitionCount;
+            for (int i = 0; i < partitionCount; i++) {
+                File file = new File(String.format(specFilePattern, i));
+                String json = JSONValue.toJSONString(dataSets.get(i).toSpecification());
+                Files.write(json, file, Charset.forName("UTF-8"));
+            }
         }
     }
     
