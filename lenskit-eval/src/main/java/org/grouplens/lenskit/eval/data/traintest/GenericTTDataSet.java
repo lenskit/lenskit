@@ -139,6 +139,21 @@ public class GenericTTDataSet implements TTDataSet {
         return String.format("{TTDataSet %s}", name);
     }
 
+    @Nonnull
+    @Override
+    public Map<String, Object> toSpecification() {
+        ImmutableMap.Builder<String,Object> bld = ImmutableMap.builder();
+        if (name != null) {
+            bld.put("name", name);
+        }
+        bld.put("train", trainData.toSpecification());
+        bld.put("test", testData.toSpecification());
+        if (queryData != null) {
+            bld.put("query", queryData);
+        }
+        return bld.build();
+    }
+
     /**
      * Create a new generic train-test data set builder.
      * @return The new builder.
