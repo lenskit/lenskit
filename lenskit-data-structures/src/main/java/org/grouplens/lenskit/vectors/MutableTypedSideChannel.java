@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 
 import java.util.Arrays;
@@ -145,7 +144,7 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
     public void clear() {
         checkMutable();
         keys.setAllActive(false);
-        ObjectArrays.fill(values, null);
+        Arrays.fill(values, null);
     }
 
     @Override

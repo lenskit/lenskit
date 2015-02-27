@@ -22,10 +22,8 @@ package org.grouplens.lenskit.vectors;
 
 import com.google.common.base.Preconditions;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.doubles.DoubleArrays;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
@@ -40,6 +38,8 @@ import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
+
+import static it.unimi.dsi.fastutil.Arrays.quickSort;
 
 /**
  * Mutable version of sparse vector.
@@ -180,7 +180,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     MutableSparseVector(LongSet keySet, double value) {
         this(keySet);
         keys.setAllActive(true);
-        DoubleArrays.fill(values, 0, keys.domainSize(), value);
+        Arrays.fill(values, 0, keys.domainSize(), value);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -362,7 +362,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
      */
     public void fill(double value) {
         checkFrozen();
-        DoubleArrays.fill(values, 0, keys.domainSize(), value);
+        Arrays.fill(values, 0, keys.domainSize(), value);
         keys.setAllActive(true);
     }
 
@@ -869,7 +869,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
     public static MutableSparseVector wrapUnsorted(long[] keys, double[] values) {
         IdComparator comparator = new IdComparator(keys);
         ParallelSwapper swapper = new ParallelSwapper(keys, values);
-        Arrays.quickSort(0, keys.length, comparator, swapper);
+        quickSort(0, keys.length, comparator, swapper);
 
         return MutableSparseVector.wrap(keys, values);
     }
