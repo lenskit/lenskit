@@ -75,6 +75,7 @@ public class Crossfold implements Command {
         String suffix = pack ? "pack" : "csv";
         task.setTrain(dir + "/" + "train.%d." + suffix);
         task.setTest(dir + "/" + "test.%d." + suffix);
+        task.setSpec(dir + "/" + "split.%d.json");
         if (pack) {
             task.setWriteTimestamps(options.getBoolean("use_timestamps"));
         }
