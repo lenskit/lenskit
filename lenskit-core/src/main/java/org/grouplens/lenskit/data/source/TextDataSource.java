@@ -20,17 +20,18 @@
  */
 package org.grouplens.lenskit.data.source;
 
+import com.google.common.collect.ImmutableMap;
 import org.grouplens.grapht.util.Providers;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.text.CSVFileItemNameDAOProvider;
-import org.grouplens.lenskit.data.text.EventFormat;
+import org.grouplens.lenskit.data.text.*;
 import org.grouplens.lenskit.data.text.SimpleFileItemDAOProvider;
-import org.grouplens.lenskit.data.text.TextEventDAO;
 import org.grouplens.lenskit.util.io.CompressionMode;
 
+import javax.annotation.Nonnull;
 import javax.inject.Provider;
 import java.io.File;
+import java.util.Map;
 
 /**
  * Data source backed by a CSV file.  Use {@link CSVDataSourceBuilder} to configure and build one
@@ -129,5 +130,23 @@ public class TextDataSource extends AbstractDataSource {
            .append(getName())
            .append(")");
         return str.toString();
+    }
+
+    @Nonnull
+    @Override
+    public Map<String, Object> toSpecification() {
+        ImmutableMap.Builder<String,Object> bld = ImmutableMap.builder();
+        bld.put("type", "text")
+           .put("file", sourceFile.getPath());
+        if (format instanceof DelimitedColumnEventFormat) {
+            DelimitedColumnEventFormat cf = (DelimitedColumnEventFormat) format;
+            bld.put("delimiter", cf.getDelimiter());
+            // FIXME Serialize columns
+            logger.warn("cannot serialize columns, assuming default");
+        }
+        if (domain != null) {
+            bld.put("domain", domain.toSpecification());
+        }
+        return bld.build();
     }
 }

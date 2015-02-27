@@ -20,9 +20,14 @@
  */
 package org.grouplens.lenskit.data.source
 
+import com.typesafe.config.ConfigFactory
 import org.grouplens.lenskit.specs.SpecificationContext
 import org.grouplens.lenskit.util.test.MiscBuilders
 import org.junit.Test
+
+import static org.hamcrest.Matchers.equalTo
+import static org.hamcrest.Matchers.instanceOf
+import static org.junit.Assert.assertThat
 
 class PackedDataSourceSpecHandlerTest extends GroovyTestCase {
     private final def context = SpecificationContext.create()
@@ -34,8 +39,22 @@ class PackedDataSourceSpecHandlerTest extends GroovyTestCase {
             file "ratings.pack"
         }
         def src = context.build(DataSource, cfg)
-        org.junit.Assert.assertThat src, org.hamcrest.Matchers.instanceOf(PackedDataSource)
+        assertThat src, instanceOf(PackedDataSource)
         src = src as PackedDataSource
-        org.junit.Assert.assertThat src.file.name, org.hamcrest.Matchers.equalTo("ratings.pack")
+        assertThat src.file.name, equalTo("ratings.pack")
+    }
+
+    @Test
+    public void testRoundTrip() {
+        def cfg = MiscBuilders.configObj {
+            type "pack"
+            file "ratings.pack"
+        }
+        def orig = context.build(DataSource, cfg)
+        def spec = ConfigFactory.parseMap(orig.toSpecification())
+        def src = context.build(DataSource, spec)
+        assertThat src, instanceOf(PackedDataSource)
+        src = src as PackedDataSource
+        assertThat src.file.name, equalTo("ratings.pack")
     }
 }

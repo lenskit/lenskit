@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.source
 
+import com.typesafe.config.ConfigFactory
 import org.grouplens.lenskit.data.pref.PreferenceDomain
 import org.grouplens.lenskit.specs.SpecificationContext
 import org.grouplens.lenskit.util.test.MiscBuilders
@@ -83,5 +84,18 @@ class TextDataSourceSpecHandlerTest {
         assertThat src.format.delimiter, equalTo("::")
         assertThat src.file.name, equalTo("ratings.dat")
         assertThat src.domain, equalTo(PreferenceDomain.fromString("[1.0,5.0]/1.0"))
+    }
+
+    @Test
+    public void testRoundTrip() {
+        def src = SpecificationContext.buildWithHandler(DataSourceSpecHandler,
+                                                        getClass().getResource("csvsource.conf").toURI())
+        def spec = ConfigFactory.parseMap(src.toSpecification())
+        def s2 = SpecificationContext.create().build(DataSource, spec);
+        assertThat(s2, instanceOf(TextDataSource))
+        s2 = s2 as TextDataSource
+        assertThat s2.format.delimiter, equalTo("::")
+        assertThat s2.file.name, equalTo("ratings.dat")
+        assertThat s2.domain, equalTo(PreferenceDomain.fromString("[1.0,5.0]/1.0"))
     }
 }

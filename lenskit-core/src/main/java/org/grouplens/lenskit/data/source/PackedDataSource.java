@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.data.source;
 
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableMap;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO;
@@ -29,9 +30,11 @@ import org.grouplens.lenskit.util.MoreSuppliers;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
 
+import javax.annotation.Nonnull;
 import javax.inject.Provider;
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Data source backed by a packed rating file.
@@ -109,6 +112,18 @@ public class PackedDataSource implements DataSource {
         if (dom != null) {
             config.addComponent(dom);
         }
+    }
+
+    @Nonnull
+    @Override
+    public Map<String, Object> toSpecification() {
+        ImmutableMap.Builder<String,Object> bld = ImmutableMap.builder();
+        bld.put("type", "pack")
+           .put("file", file.getPath());
+        if (domain != null) {
+            bld.put("domain", domain.toSpecification());
+        }
+        return bld.build();
     }
 
     private class DAOProvider implements Provider<BinaryRatingDAO>, Describable {

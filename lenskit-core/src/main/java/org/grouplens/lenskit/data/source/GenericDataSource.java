@@ -23,6 +23,9 @@ package org.grouplens.lenskit.data.source;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 
+import javax.annotation.Nonnull;
+import java.util.Map;
+
 /**
  * Generic data source backed by a single DAO object, implementing at least {@link EventDAO}.  If
  * the object implements other DAO interfaces, it is used to provide those; otherwise, they are
@@ -65,4 +68,9 @@ public class GenericDataSource extends AbstractDataSource {
         return 0;
     }
 
+    @Nonnull
+    @Override
+    public Map<String, Object> toSpecification() {
+        throw new UnsupportedOperationException("generic data sources cannot be specified");
+    }
 }

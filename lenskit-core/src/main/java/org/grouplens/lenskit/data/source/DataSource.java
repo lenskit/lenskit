@@ -24,6 +24,7 @@ import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.specs.SpecHandlerInterface;
+import org.grouplens.lenskit.specs.Specifiable;
 
 import javax.annotation.Nullable;
 
@@ -34,7 +35,7 @@ import javax.annotation.Nullable;
  * @since 2.2
  */
 @SpecHandlerInterface(DataSourceSpecHandler.class)
-public interface DataSource {
+public interface DataSource extends Specifiable {
     /**
      * Get the data source name.
      *
