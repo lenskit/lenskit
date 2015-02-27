@@ -22,7 +22,6 @@ package org.grouplens.lenskit.cli
 
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
-import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO
 import org.grouplens.lenskit.data.pref.PreferenceDomain
 import org.grouplens.lenskit.data.source.PackedDataSource
 import org.grouplens.lenskit.data.source.TextDataSource
@@ -124,7 +123,6 @@ domain: {
         def data = parse('--data-source', file.absolutePath)
         def input = data.source as PackedDataSource
         assertThat(input.file.name, equalTo('foo.pack'))
-        assertThat(input.eventDAO, instanceOf(BinaryRatingDAO))
         assertThat(input.preferenceDomain, equalTo(PreferenceDomain.fromString("[0.5,5.0]/0.5")))
     }
 }
