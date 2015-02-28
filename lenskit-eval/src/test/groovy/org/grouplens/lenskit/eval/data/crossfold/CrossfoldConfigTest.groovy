@@ -26,6 +26,7 @@ import org.grouplens.lenskit.data.event.Rating
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet
 import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.grouplens.lenskit.specs.SpecificationContext
+import org.grouplens.lenskit.util.test.MiscBuilders
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -105,7 +106,7 @@ class CrossfoldConfigTest extends ConfigTestBase {
     }
 
     @Test
-    void testCrossfoldSpec() {
+    void testCrossfoldSpecOutput() {
         def obj = eval {
             crossfold("tempRatings") {
                 source file
@@ -120,6 +121,37 @@ class CrossfoldConfigTest extends ConfigTestBase {
         for (int i = 0; i < 5; i++) {
             def uri = folder.root.toURI()
             def data = SpecificationContext.build(TTDataSet, uri.resolve("data.${i}.json"))
+            def dao = data.testDAO
+            assertThat(dao, notNullValue())
+        }
+    }
+
+    @Test
+    void testCrossfoldBasicSpec() {
+        def spec = MiscBuilders.configObj {
+            name "tempRatings"
+            source {
+                type "text"
+                file file.absolutePath
+                delimiter ","
+            }
+            partitions 10
+            holdoutFraction 0.5
+            order 'random'
+            outputDir folder.root.absolutePath
+        }
+        def task = SpecificationContext.create().build(CrossfoldTask, spec)
+        task.setProject(engine.createProject())
+        def obj = task.perform()
+        assertThat(obj.size(), equalTo(10))
+        assertThat(obj[1], instanceOf(TTDataSet))
+        def tt = obj as List<TTDataSet>
+        assertThat(tt[1].name, equalTo("tempRatings.1"))
+        assertThat(tt[2].attributes.get("Partition"), equalTo(2))
+        assertThat(tt[3].testDAO, instanceOf(EventDAO))
+        for (int i = 0; i < 5; i++) {
+            def uri = folder.root.toURI()
+            def data = SpecificationContext.build(TTDataSet, uri.resolve("split.${i}.json"))
             def dao = data.testDAO
             assertThat(dao, notNullValue())
         }

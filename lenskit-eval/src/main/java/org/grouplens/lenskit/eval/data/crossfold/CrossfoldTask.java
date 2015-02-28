@@ -43,6 +43,7 @@ import org.grouplens.lenskit.eval.data.RatingWriter;
 import org.grouplens.lenskit.eval.data.RatingWriters;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.grouplens.lenskit.specs.SpecHandlerInterface;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.json.simple.JSONValue;
@@ -59,6 +60,7 @@ import java.util.*;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@SpecHandlerInterface(CrossfoldSpecHandler.class)
 public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     private static final Logger logger = LoggerFactory.getLogger(CrossfoldTask.class);
 

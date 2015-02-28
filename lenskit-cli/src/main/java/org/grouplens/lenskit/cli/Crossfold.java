@@ -20,20 +20,26 @@
  */
 package org.grouplens.lenskit.cli;
 
+import com.google.common.collect.Maps;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
-import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.data.crossfold.CrossfoldMethod;
 import org.grouplens.lenskit.eval.data.crossfold.CrossfoldTask;
-import org.grouplens.lenskit.eval.data.crossfold.TimestampOrder;
+import org.grouplens.lenskit.specs.SpecificationContext;
+import org.grouplens.lenskit.specs.SpecificationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Pack ratings data into a rating file.
@@ -47,6 +53,9 @@ public class Crossfold implements Command {
     private final Namespace options;
     private final InputData input;
 
+    private static final String DEFAULT_SPEC =
+            "outputDir: crossfold";
+
     public Crossfold(Namespace opts) {
         options = opts;
         input = new InputData(null, opts);
@@ -57,59 +66,81 @@ public class Crossfold implements Command {
     }
 
     @Override
-    public void execute() throws IOException, TaskExecutionException {
+    public void execute() throws IOException, TaskExecutionException, SpecificationException {
         logger.info("packing ratings from {}", input);
         logger.debug("using delimiter {}", getDelimiter());
-        CrossfoldTask task = new CrossfoldTask();
-        task.setProject(new EvalProject(System.getProperties()));
-        task.setSource(input.getSource());
-        task.setForce(true);
-
-        Integer k = options.get("partitions");
-        if (k != null) {
-            task.setPartitions(k);
+        // FIXME Make the command-line arguments generate an overriding spec
+        Config defaults = ConfigFactory.parseString(DEFAULT_SPEC);
+        Config spec = null;
+        File specFile = options.get("spec");
+        if (specFile != null) {
+            spec = ConfigFactory.parseFile(specFile);
+            spec = spec.withFallback(defaults);
+        } else {
+            spec = defaults;
         }
 
-        String dir = options.getString("output_dir");
-        boolean pack = options.getBoolean("pack_output");
-        String suffix = pack ? "pack" : "csv";
-        task.setTrain(dir + "/" + "train.%d." + suffix);
-        task.setTest(dir + "/" + "test.%d." + suffix);
-        task.setSpec(dir + "/" + "split.%d.json");
-        if (pack) {
-            task.setWriteTimestamps(options.getBoolean("use_timestamps"));
+        Map<String,Object> overrides = Maps.newHashMap();
+
+        DataSource src = input.getSource();
+        if (src != null) {
+            overrides.put("source", src.toSpecification());
+        }
+        Integer k = options.get("partitions");
+        if (k != null) {
+            overrides.put("partitions", k);
+        }
+
+        String dir = options.get("output_dir");
+        if (dir != null) {
+            overrides.put("outputDir", dir);
+        }
+        if (options.getBoolean("pack_output")) {
+            overrides.put("packOutput", true);
+        }
+        if (!options.getBoolean("use_timestamps")) {
+            overrides.put("useTimestamps", false);
         }
 
         CrossfoldMethod method = options.get("crossfold_mode");
-        if (method == null) {
-            method = CrossfoldMethod.PARTITION_USERS;
-        }
-        task.setMethod(method);
-        Integer n;
-        Double v;
-        switch (method) {
-        case PARTITION_RATINGS:
-        case PARTITION_USERS: {
-            if ((n = options.get("holdout_count")) != null) {
-                task.setHoldout(n);
-            } else if ((n = options.get("retain_count")) != null) {
-                task.setRetain(n);
-            } else if ((v = options.get("holdout_fraction")) != null) {
-                task.setHoldoutFraction(v);
+        if (method != null) {
+            switch (method) {
+            case PARTITION_RATINGS:
+                overrides.put("mode", "partition-ratings");
+                break;
+            case PARTITION_USERS:
+                overrides.put("mode", "partition-users");
+                break;
+            case SAMPLE_USERS:
+                overrides.put("mode", "sample-users");
+                break;
             }
-            if ("timestamp".equals(options.getString("order"))) {
-                task.setOrder(new TimestampOrder<Rating>());
-            }
-            break;
-        }
-        case SAMPLE_USERS:
-            n = options.get("sample_size");
-            if (n != null) {
-                task.setSampleSize(n);
-            }
-            break;
         }
 
+        Integer n;
+        Double v;
+        if ((n = options.get("holdout_count")) != null) {
+            overrides.put("holdout", n);
+        }
+        if ((n = options.get("retain_count")) != null) {
+            overrides.put("retain", n);
+        }
+        if ((v = options.get("holdout_fraction")) != null) {
+            overrides.put("holdoutFraction", v);
+        }
+        if ((n = options.get("sample_size")) != null) {
+            overrides.put("sampleSize", n);
+        }
+        String order = options.getString("order");
+        if (order != null) {
+            overrides.put("order", order);
+        }
+
+        Config finalSpec = ConfigFactory.parseMap(overrides).withFallback(spec);
+        CrossfoldTask task = SpecificationContext.create().build(CrossfoldTask.class, finalSpec);
+
+        task.setForce(true);
+        task.setProject(new EvalProject(System.getProperties()));
         task.execute();
     }
 
@@ -118,7 +149,6 @@ public class Crossfold implements Command {
               .dest("output_dir")
               .type(String.class)
               .metavar("DIR")
-              .setDefault("crossfold")
               .help("write splits to DIR");
         parser.addArgument("--pack-output")
               .action(Arguments.storeTrue())
@@ -185,6 +215,11 @@ public class Crossfold implements Command {
                 .setConst("timestamp")
                 .action(Arguments.storeConst())
                 .help("Test on latest ratings from each user, not random.");
+
+        parser.addArgument("spec")
+              .type(File.class)
+              .metavar("SPEC")
+              .help("Read crossfold configuration from SPEC (command line opts will override)");
 
         InputData.configureArguments(parser);
     }
