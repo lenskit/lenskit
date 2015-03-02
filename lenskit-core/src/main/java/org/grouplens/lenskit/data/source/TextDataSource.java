@@ -137,7 +137,7 @@ public class TextDataSource extends AbstractDataSource {
     public Map<String, Object> toSpecification() {
         ImmutableMap.Builder<String,Object> bld = ImmutableMap.builder();
         bld.put("type", "text")
-           .put("name", name)
+           .put("name", getName())
            .put("file", sourceFile.getPath());
         // FIXME Handle item name DAO
         if (format instanceof DelimitedColumnEventFormat) {

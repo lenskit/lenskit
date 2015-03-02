@@ -119,6 +119,7 @@ public class PackedDataSource implements DataSource {
     public Map<String, Object> toSpecification() {
         ImmutableMap.Builder<String,Object> bld = ImmutableMap.builder();
         bld.put("type", "pack")
+           .put("name", getName())
            .put("file", file.getPath());
         if (domain != null) {
             bld.put("domain", domain.toSpecification());

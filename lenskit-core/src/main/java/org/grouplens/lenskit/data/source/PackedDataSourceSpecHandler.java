@@ -53,6 +53,9 @@ public class PackedDataSourceSpecHandler implements DataSourceSpecHandler {
     @Override
     public DataSource buildFromSpec(SpecificationContext ctx, Config cfg) throws SpecificationException {
         PackedDataSourceBuilder bld = new PackedDataSourceBuilder();
+        if (cfg.hasPath("name")) {
+            bld.setName(cfg.getString("name"));
+        }
 
         if (cfg.hasPath("domain")) {
             bld.setDomain(ctx.build(PreferenceDomain.class, cfg.getConfig("domain")));

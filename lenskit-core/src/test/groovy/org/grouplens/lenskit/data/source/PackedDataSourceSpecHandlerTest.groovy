@@ -35,12 +35,14 @@ class PackedDataSourceSpecHandlerTest extends GroovyTestCase {
     @Test
     public void testConfigurePack() {
         def cfg = MiscBuilders.configObj {
+            name "hackem-muche"
             type "pack"
             file "ratings.pack"
         }
         def src = context.build(DataSource, cfg)
         assertThat src, instanceOf(PackedDataSource)
         src = src as PackedDataSource
+        assertThat src.name, equalTo("hackem-muche")
         assertThat src.file.name, equalTo("ratings.pack")
     }
 
