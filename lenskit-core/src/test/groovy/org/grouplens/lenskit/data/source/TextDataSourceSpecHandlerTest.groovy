@@ -35,12 +35,14 @@ class TextDataSourceSpecHandlerTest {
     @Test
     public void testCSVFile() {
         def cfg = MiscBuilders.configObj {
+            name "wombats"
             type "csv"
             file "ratings.csv"
         }
         def src = context.build(DataSource, cfg)
         assertThat src, instanceOf(TextDataSource)
         src = src as TextDataSource
+        assertThat src.name, equalTo("wombats")
         assertThat src.format.delimiter, equalTo(",")
         assertThat src.file.name, equalTo("ratings.csv")
         assertThat src.domain, nullValue()
