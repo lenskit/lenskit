@@ -219,6 +219,7 @@ public class Crossfold implements Command {
         parser.addArgument("spec")
               .type(File.class)
               .metavar("SPEC")
+              .nargs("?")
               .help("Read crossfold configuration from SPEC (command line opts will override)");
 
         InputData.configureArguments(parser);
