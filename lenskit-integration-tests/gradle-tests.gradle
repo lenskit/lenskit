@@ -48,20 +48,17 @@ def ift = task makeTestRepo {
 task gradleTests
 check.dependsOn gradleTests
 
-file('src/it/gradle').eachDir { dir ->
-    def fname = dir.name
+file('src/it/gradle').eachDir { testDir ->
+    def fname = testDir.name
     def tname = fname.replaceAll(/(?:^|-)(.)/) { m -> m[1].toUpperCase() }
     def workDir = file("build/gradle-tests/$fname")
-    task("prep$tname", type: Copy) {
-        onlyIf {
-            !file("$dir/ignore").exists()
-        }
-        from dir
-        into workDir
-    }
 
     task("test$tname", type: GradleBuild) {
-        dependsOn "prep$tname", makeTestRepo, fetchData
+        dependsOn makeTestRepo, fetchData
+        inputs.dir testDir
+        inputs.dir "$buildDir/test-repo"
+        outputs.dir workDir
+
         startParameter.projectProperties = [
                 testRepoURI: uri("$buildDir/test-repo"),
                 lenskitVersion: project.version,
@@ -72,10 +69,14 @@ file('src/it/gradle').eachDir { dir ->
         tasks = ['check']
 
         onlyIf {
-            workDir.exists()
+            !file("$testDir/ignore").exists()
         }
         doFirst {
-            println "running gradle build for $dir"
+            copy {
+                from testDir
+                into workDir
+            }
+            println "running gradle build for $testDir"
         }
     }
 
