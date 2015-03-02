@@ -59,6 +59,9 @@ public class TextDataSourceSpecHandler implements DataSourceSpecHandler {
         CSVDataSourceBuilder bld = new CSVDataSourceBuilder();
 
         bld.setDelimiter(",");
+        if (cfg.hasPath("name")) {
+            bld.setName(cfg.getString("name"));
+        }
         if (cfg.hasPath("delimiter")) {
             bld.setDelimiter(cfg.getString("delimiter"));
         } else if (cfg.getString("type").equalsIgnoreCase("tsv")) {
