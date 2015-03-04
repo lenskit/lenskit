@@ -152,6 +152,21 @@ public class SpecificationContext {
     }
 
     /**
+     * Relativize a file against the base URI, if present; if no base URI is provided, then the
+     * file's absolute path is used.
+     * @param file The file to relativize.
+     * @return The relative path string.
+     */
+    public String relativize(File file) {
+        URI fileURI = file.toURI();
+        if (baseURI == null) {
+            return fileURI.toString();
+        } else {
+            return baseURI.relativize(fileURI).toString();
+        }
+    }
+
+    /**
      * Configure an object using a specification and a particular spec handler.
      * @param specClass The specification handler interface, defining the kind of object to
      *                  configure.  If it is a concrete instantiable class, then the class is used

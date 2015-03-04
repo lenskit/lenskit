@@ -54,6 +54,21 @@ class SpecificationContextTest {
     }
 
     @Test
+    public void testRelativize() {
+        def base = new File(".").absoluteFile.toURI()
+        def context = SpecificationContext.create(base)
+        def path = context.relativize(new File("wombat"))
+        assertThat path, equalTo("wombat")
+    }
+
+    @Test
+    public void testRelativizeDefault() {
+        def context = SpecificationContext.create()
+        def path = context.relativize(new File("wombat").absoluteFile)
+        assertThat path, equalTo(new File("wombat").absoluteFile.toURI().toString())
+    }
+
+    @Test
     public void testEmpty() {
         def context = SpecificationContext.create()
         def spec = MiscBuilders.configObj {
