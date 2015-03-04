@@ -112,8 +112,4 @@ class BinaryIndexTableWriter {
         entryBuffer.clear();
         currentEntryPosition += BinaryIndexTable.TABLE_ENTRY_SIZE;
     }
-
-    private void finish() throws IOException {
-
-    }
 }
