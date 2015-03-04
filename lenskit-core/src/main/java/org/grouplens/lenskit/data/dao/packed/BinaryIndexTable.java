@@ -72,7 +72,7 @@ class BinaryIndexTable implements Serializable {
     /**
      * The index store.
      */
-    private final IntBuffer buffer;
+    private final IntBuffer indexStore;
 
     private BinaryIndexTable(LongKeyDomain keytbl, int[] offtbl, int[] sztbl, IntBuffer buf) {
         assert offtbl.length == keytbl.domainSize();
@@ -80,7 +80,7 @@ class BinaryIndexTable implements Serializable {
         keys = keytbl;
         offsets = offtbl;
         sizes = sztbl;
-        buffer = buf;
+        indexStore = buf;
     }
 
     /**
@@ -118,7 +118,7 @@ class BinaryIndexTable implements Serializable {
         int end = buffer.position() + nextExpectedOffset * 4;
         ByteBuffer dup = buffer.duplicate();
         dup.limit(end);
-        // update input buffer's position
+        // update input indexStore's position
         buffer.position(end);
         // create index table object
         LongKeyDomain dom = LongKeyDomain.wrap(keys, keys.length, true);
@@ -146,7 +146,7 @@ class BinaryIndexTable implements Serializable {
     private IntList getEntryInternal(int idx) {
         int offset = offsets[idx];
         int size = sizes[idx];
-        IntBuffer buf = buffer.duplicate();
+        IntBuffer buf = indexStore.duplicate();
         buf.position(offset).limit(offset + size);
         return BufferBackedIntList.create(buf);
     }
@@ -156,7 +156,7 @@ class BinaryIndexTable implements Serializable {
     }
 
     private Object writeReplace() throws ObjectStreamException {
-        return new SerialProxy(keys, offsets, sizes, buffer);
+        return new SerialProxy(keys, offsets, sizes, indexStore);
     }
 
     private Object readObject(ObjectInputStream in) throws IOException {
