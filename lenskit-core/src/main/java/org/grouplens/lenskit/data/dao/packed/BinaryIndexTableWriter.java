@@ -43,7 +43,7 @@ class BinaryIndexTableWriter implements Closeable {
     // current offset into the store.
     private int currentOffset = 0;
 
-    private BinaryIndexTableWriter(BinaryFormat fmt, ByteBuffer buf, int nkeys) throws IOException {
+    private BinaryIndexTableWriter(BinaryFormat fmt, ByteBuffer buf, int nkeys) {
         format = fmt;
         buffer = buf;
         entryCount = nkeys;
@@ -68,7 +68,7 @@ class BinaryIndexTableWriter implements Closeable {
         return keyCount * BinaryIndexTable.TABLE_ENTRY_SIZE + indexCount * BinaryFormat.INT_SIZE;
     }
 
-    public static BinaryIndexTableWriter create(BinaryFormat fmt, ByteBuffer buf, int nkeys) throws IOException {
+    public static BinaryIndexTableWriter create(BinaryFormat fmt, ByteBuffer buf, int nkeys) {
         return new BinaryIndexTableWriter(fmt, buf, nkeys);
     }
 
@@ -95,7 +95,7 @@ class BinaryIndexTableWriter implements Closeable {
      * @param indexes The indexes to store.
      * @throws IOException if there is an I/O error
      */
-    public void writeEntry(long id, int[] indexes) throws IOException {
+    public void writeEntry(long id, int[] indexes) {
         headerTable.putLong(id);
         headerTable.putInt(currentOffset);
         headerTable.putInt(indexes.length);
