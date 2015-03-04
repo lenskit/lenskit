@@ -206,14 +206,12 @@ public class BinaryRatingPacker implements Closeable {
         while (iter.hasNext()) {
             final long key = iter.nextLong();
             int[] indexes = map.get(key).toIntArray();
-            if (needsSorting) {
-                IntArrays.quickSort(indexes, indexComparator);
-            }
 
             if (translationMap != null) {
                 for (int i = 0; i < indexes.length; i++) {
                     indexes[i] = translationMap[indexes[i]];
                 }
+                IntArrays.quickSort(indexes, indexComparator);
             }
 
             logger.debug("writing {} indices for id {}", key, indexes.length);
