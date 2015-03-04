@@ -53,7 +53,7 @@ class PackedDataSourceSpecHandlerTest extends GroovyTestCase {
             file "ratings.pack"
         }
         def orig = context.build(DataSource, cfg)
-        def spec = ConfigFactory.parseMap(orig.toSpecification())
+        def spec = ConfigFactory.parseMap(orig.toSpecification(SpecificationContext.create()))
         def src = context.build(DataSource, spec)
         assertThat src, instanceOf(PackedDataSource)
         src = src as PackedDataSource

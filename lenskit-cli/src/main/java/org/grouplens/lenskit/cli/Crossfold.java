@@ -84,7 +84,7 @@ public class Crossfold implements Command {
 
         DataSource src = input.getSource();
         if (src != null) {
-            overrides.put("source", src.toSpecification());
+            overrides.put("source", src.toSpecification(SpecificationContext.create()));
         }
         Integer k = options.get("partitions");
         if (k != null) {

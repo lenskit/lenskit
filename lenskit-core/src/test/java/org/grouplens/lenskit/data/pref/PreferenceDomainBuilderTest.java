@@ -86,7 +86,7 @@ public class PreferenceDomainBuilderTest {
            .setMaximum(5)
            .setPrecision(0.5);
         PreferenceDomain dom = bld.build();
-        Map<String,Object> spec = dom.toSpecification();
+        Map<String,Object> spec = dom.toSpecification(SpecificationContext.create());
         Config config = ConfigFactory.parseMap(spec);
         PreferenceDomain dom2 = SpecificationContext.create()
                                                     .build(PreferenceDomain.class, config);

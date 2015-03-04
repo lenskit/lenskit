@@ -26,6 +26,7 @@ import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.text.*;
 import org.grouplens.lenskit.data.text.SimpleFileItemDAOProvider;
+import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.util.io.CompressionMode;
 
 import javax.annotation.Nonnull;
@@ -134,11 +135,11 @@ public class TextDataSource extends AbstractDataSource {
 
     @Nonnull
     @Override
-    public Map<String, Object> toSpecification() {
+    public Map<String, Object> toSpecification(SpecificationContext context) {
         ImmutableMap.Builder<String,Object> bld = ImmutableMap.builder();
         bld.put("type", "text")
            .put("name", getName())
-           .put("file", sourceFile.toURI().toString());
+           .put("file", context.relativize(sourceFile));
         // FIXME Handle item name DAO
         if (format instanceof DelimitedColumnEventFormat) {
             DelimitedColumnEventFormat cf = (DelimitedColumnEventFormat) format;
@@ -147,7 +148,7 @@ public class TextDataSource extends AbstractDataSource {
             logger.warn("cannot serialize columns, assuming default");
         }
         if (domain != null) {
-            bld.put("domain", domain.toSpecification());
+            bld.put("domain", domain.toSpecification(context));
         }
         return bld.build();
     }

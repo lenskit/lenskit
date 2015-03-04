@@ -44,6 +44,7 @@ import org.grouplens.lenskit.eval.data.RatingWriters;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.specs.SpecHandlerInterface;
+import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.json.simple.JSONValue;
@@ -470,7 +471,8 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
             assert dataSets.size() == partitionCount;
             for (int i = 0; i < partitionCount; i++) {
                 File file = new File(String.format(specFilePattern, i));
-                String json = JSONValue.toJSONString(dataSets.get(i).toSpecification());
+                SpecificationContext ctx = SpecificationContext.create(file.toURI());
+                String json = JSONValue.toJSONString(dataSets.get(i).toSpecification(ctx));
                 Files.write(json, file, Charset.forName("UTF-8"));
             }
         }

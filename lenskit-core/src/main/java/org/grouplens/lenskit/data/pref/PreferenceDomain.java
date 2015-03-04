@@ -28,6 +28,7 @@ import org.grouplens.grapht.annotation.DefaultNull;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.specs.SpecHandlerInterface;
 import org.grouplens.lenskit.specs.Specifiable;
+import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 
@@ -186,7 +187,7 @@ public final class PreferenceDomain implements Serializable, Specifiable {
 
     @Nonnull
     @Override
-    public Map<String, Object> toSpecification() {
+    public Map<String, Object> toSpecification(SpecificationContext context) {
         ImmutableMap.Builder<String,Object> bld = ImmutableMap.builder();
         bld.put("minimum", minimum);
         bld.put("maximum", maximum);

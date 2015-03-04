@@ -34,7 +34,8 @@ public interface Specifiable {
      * result in an equivalent object.
      *
      * @return A specification for this object.
+     * @param context The context for generating the specification.
      */
     @Nonnull
-    Map<String,Object> toSpecification();
+    Map<String,Object> toSpecification(SpecificationContext context);
 }

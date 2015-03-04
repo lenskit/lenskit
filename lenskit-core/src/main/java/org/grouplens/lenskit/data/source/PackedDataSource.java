@@ -26,6 +26,7 @@ import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.util.MoreSuppliers;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
@@ -116,13 +117,13 @@ public class PackedDataSource implements DataSource {
 
     @Nonnull
     @Override
-    public Map<String, Object> toSpecification() {
+    public Map<String, Object> toSpecification(SpecificationContext context) {
         ImmutableMap.Builder<String,Object> bld = ImmutableMap.builder();
         bld.put("type", "pack")
            .put("name", getName())
-           .put("file", file.toURI().toString());
+           .put("file", context.relativize(file));
         if (domain != null) {
-            bld.put("domain", domain.toSpecification());
+            bld.put("domain", domain.toSpecification(context));
         }
         return bld.build();
     }

@@ -92,7 +92,7 @@ class TextDataSourceSpecHandlerTest {
     public void testRoundTrip() {
         def src = SpecificationContext.buildWithHandler(DataSourceSpecHandler,
                                                         getClass().getResource("csvsource.conf").toURI())
-        def spec = ConfigFactory.parseMap(src.toSpecification())
+        def spec = ConfigFactory.parseMap(src.toSpecification(SpecificationContext.create()))
         def s2 = SpecificationContext.create().build(DataSource, spec);
         assertThat(s2, instanceOf(TextDataSource))
         s2 = s2 as TextDataSource

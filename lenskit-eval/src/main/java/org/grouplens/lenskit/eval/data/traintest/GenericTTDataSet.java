@@ -27,6 +27,7 @@ import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.data.dao.UserListUserDAO;
 import org.grouplens.lenskit.data.source.DataSource;
+import org.grouplens.lenskit.specs.SpecificationContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -141,13 +142,13 @@ public class GenericTTDataSet implements TTDataSet {
 
     @Nonnull
     @Override
-    public Map<String, Object> toSpecification() {
+    public Map<String, Object> toSpecification(SpecificationContext context) {
         ImmutableMap.Builder<String,Object> bld = ImmutableMap.builder();
         if (name != null) {
             bld.put("name", name);
         }
-        bld.put("train", trainData.toSpecification());
-        bld.put("test", testData.toSpecification());
+        bld.put("train", trainData.toSpecification(context));
+        bld.put("test", testData.toSpecification(context));
         if (queryData != null) {
             bld.put("query", queryData);
         }
