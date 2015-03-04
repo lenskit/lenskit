@@ -35,7 +35,9 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.event.Events;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.event.RatingBuilder;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.data.history.UserHistory;
@@ -52,6 +54,7 @@ import javax.inject.Provider;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -75,6 +78,8 @@ import java.util.List;
 public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, UserDAO, ItemDAO, Serializable, Describable {
     private static final long serialVersionUID = -1L;
     private static final Logger logger = LoggerFactory.getLogger(BinaryRatingDAO.class);
+    private static int  limitIndex = -1;
+    private static long limitTimestamp = -1L;
 
     @Nullable
     private final transient File backingFile;
@@ -83,13 +88,15 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     private final BinaryIndexTable userTable;
     private final BinaryIndexTable itemTable;
 
-    private BinaryRatingDAO(@Nullable File file, BinaryHeader hdr, ByteBuffer data, BinaryIndexTable users, BinaryIndexTable items) {
+    private BinaryRatingDAO(@Nullable File file, BinaryHeader hdr, ByteBuffer data, BinaryIndexTable users, BinaryIndexTable items, int idx, Long timestamp) {
         Preconditions.checkArgument(data.position() == 0, "data is not at position 0");
         backingFile = file;
         header = hdr;
         ratingData = data;
         userTable = users;
         itemTable = items;
+        limitIndex = idx;
+        limitTimestamp = timestamp;
     }
 
     static BinaryRatingDAO fromBuffer(ByteBuffer buffer) {
@@ -111,7 +118,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         BinaryIndexTable utbl = BinaryIndexTable.fromBuffer(header.getUserCount(), tableBuffer);
         BinaryIndexTable itbl = BinaryIndexTable.fromBuffer(header.getItemCount(), tableBuffer);
 
-        return new BinaryRatingDAO(null, header, data, utbl, itbl);
+        return new BinaryRatingDAO(null, header, data, utbl, itbl, header.getRatingCount(),Long.MAX_VALUE);
     }
 
     /**
@@ -138,10 +145,52 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             BinaryIndexTable utbl = BinaryIndexTable.fromBuffer(header.getUserCount(), tableBuffer);
             BinaryIndexTable itbl = BinaryIndexTable.fromBuffer(header.getItemCount(), tableBuffer);
 
-            return new BinaryRatingDAO(file, header, data, utbl, itbl);
+            return new BinaryRatingDAO(file, header, data, utbl, itbl,header.getRatingCount(),Long.MAX_VALUE);
         } finally {
             input.close();
         }
+    }
+    public  BinaryRatingDAO createWindowedView(long timestamp){
+
+        Rating r = new RatingBuilder().setUserId(0).setItemId(0).setRating(0).setTimestamp(timestamp).build();
+        
+        int idx = Collections.binarySearch(getRatingList(),r,Events.TIMESTAMP_COMPARATOR );
+        //pending back scan
+        if (idx<0)
+            idx=-idx-1;
+        
+        ByteBuffer data = ratingData.duplicate();
+        data.limit(idx);
+
+        
+        BinaryIndexTable utbl = userTable.createLimitedView(idx);
+        BinaryIndexTable itbl = itemTable.createLimitedView(idx);
+        return new BinaryRatingDAO(null, header, data, utbl, itbl);
+    }
+
+    public  BinaryRatingDAO createWindowedView(long timestamp){
+
+        Rating r = new RatingBuilder()
+                .setUserId(0)
+                .setItemId(0)
+                .setRating(0)
+                .setTimestamp(timestamp)
+                .build();
+
+        int idx =Collections.binarySearch(getRatingList(),r, Events.TIMESTAMP_COMPARATOR);
+
+        if (idx<0)
+                idx = -idx-1;
+
+        ByteBuffer data = ratingData.duplicate();
+        data.limit(idx);
+
+        BinaryIndexTable utbl = userTable.createLimitedView(idx);
+        BinaryIndexTable itbl = itemTable.createLimitedView(idx);
+
+        return new BinaryRatingDAO(null, header, data, utbl, itbl,idx,timestamp);
+
+
     }
 
     private Object writeReplace() {
@@ -431,7 +480,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         }
 
         private Object readResolve() throws ObjectStreamException {
-            return new BinaryRatingDAO(null, header, ratingData, userTable, itemTable);
+            return new BinaryRatingDAO(null, header, ratingData, userTable, itemTable,limitIndex, limitTimestamp);
         }
     }
 }
