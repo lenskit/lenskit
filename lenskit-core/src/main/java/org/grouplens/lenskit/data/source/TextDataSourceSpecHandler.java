@@ -72,8 +72,8 @@ public class TextDataSourceSpecHandler implements DataSourceSpecHandler {
             bld.setDomain(ctx.build(PreferenceDomain.class, cfg.getConfig("domain")));
         }
 
-        String file = cfg.getString("file");
-        URI uri = ctx.getBaseURI().resolve(file);
+        String path = cfg.getString("file");
+        URI uri = ctx.getBaseURI().resolve(path);
         if (uri.isAbsolute()) {
             try {
                 // FIXME This doesn't really work

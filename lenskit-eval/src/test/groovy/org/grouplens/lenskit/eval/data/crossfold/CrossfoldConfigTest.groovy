@@ -132,7 +132,7 @@ class CrossfoldConfigTest extends ConfigTestBase {
             name "tempRatings"
             source {
                 type "text"
-                file file.absolutePath
+                file file.toURI()
                 delimiter ","
             }
             partitions 10
