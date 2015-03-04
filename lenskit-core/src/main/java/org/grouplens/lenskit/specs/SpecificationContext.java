@@ -26,6 +26,8 @@ import org.grouplens.grapht.util.ClassLoaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -39,21 +41,22 @@ import java.util.ServiceLoader;
 public class SpecificationContext {
     private static final Logger logger = LoggerFactory.getLogger(SpecificationContext.class);
     private final ClassLoader classLoader;
+    @Nullable
     private final URI baseURI;
 
-    private SpecificationContext(ClassLoader loader, URI base) {
+    private SpecificationContext(@Nonnull ClassLoader loader, @Nullable URI base) {
         classLoader = loader;
         baseURI = base;
     }
 
     /**
-     * Create a new context with a default class loader and the current working directory as the
-     * base URI.
+     * Create a new context with a default class loader and the default base URI.
      *
      * @return A configuration context.
+     * @see #create(java.lang.ClassLoader, URI)
      */
     public static SpecificationContext create() {
-        return create(new File(".").getAbsoluteFile().toURI());
+        return create(null);
     }
 
     /**
@@ -66,16 +69,86 @@ public class SpecificationContext {
         return create(ClassLoaders.inferDefault(SpecificationContext.class), base);
     }
 
-
     /**
      * Create a new context.
      *
      * @param loader The class loader.
-     * @param base The base URI for resolving relative paths.
+     * @param base The base URI for resolving relative paths.  May be {@code null}.
      * @return A configuration context.
      */
-    public static SpecificationContext create(ClassLoader loader, URI base) {
+    public static SpecificationContext create(ClassLoader loader, @Nullable URI base) {
         return new SpecificationContext(loader, base);
+    }
+
+    /**
+     * Get the base URI for resolving relative paths.
+     *
+     * @return The base URI, or {@code null} if there is no base URI.
+     */
+    @Nullable
+    public URI getBaseURI() {
+        return baseURI;
+    }
+
+    /**
+     * Get the base URI for resolving relative paths, or the URI of the current working directory if
+     * no base URI has been configured.
+     *
+     * @return The base URI, the URI of the current working directory if no base URI has been
+     * configured.
+     */
+    @Nonnull
+    public URI getBaseOrCurrentURI() {
+        if (baseURI == null) {
+            return new File(".").getAbsoluteFile().toURI();
+        } else {
+            return baseURI;
+        }
+    }
+
+    /**
+     * Resolve a path to a URI.  The path is resolved against the base URI, if configured, or the
+     * current working directory.
+     *
+     * @param path The path to resolve.
+     * @return The resolved absolute URI.
+     */
+    public URI resolve(String path) {
+        return getBaseOrCurrentURI().resolve(path);
+    }
+
+    /**
+     * Resolve a path to a URL.  The path is resolved against the base URI, if configured, or the
+     * current working directory.
+     *
+     * @param path The path to resolve.
+     * @return The resolved absolute URL.
+     * @throws SpecificationException if the resulting URI is not a valid URL.
+     */
+    public URL resolveURL(String path) throws SpecificationException {
+        URI uri = getBaseOrCurrentURI().resolve(path);
+        try {
+            return uri.toURL();
+        } catch (MalformedURLException e) {
+            throw new SpecificationException("invalid URL " + uri, e);
+        }
+    }
+
+    /**
+     * Resolve a path to a file.  The path is resolved against the base URI, if configured, or the
+     * current working directory, and the result converted to a file.
+     *
+     * @param path The path to resolve.
+     * @return The resolved file.
+     * @throws java.lang.IllegalArgumentException if resolving the path does not produce a file URI.
+     */
+    public File resolveFile(String path) throws SpecificationException {
+        URI uri = resolve(path);
+        if (!uri.getScheme().equals("file")) {
+            throw new SpecificationException("Invalid file URI: " + uri);
+        }
+
+        return new File(uri.getPath());
     }
 
     /**
@@ -196,10 +269,5 @@ public class SpecificationContext {
         SpecificationContext ctx = SpecificationContext.create(ClassLoaders.inferDefault(type), uri);
         Config config = ConfigFactory.parseURL(url);
         return ctx.build(type, config);
-    }
-
-
-    public URI getBaseURI() {
-        return baseURI;
     }
 }

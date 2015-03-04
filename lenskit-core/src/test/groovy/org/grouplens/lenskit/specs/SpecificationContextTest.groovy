@@ -29,6 +29,31 @@ import static org.junit.Assert.assertThat
 
 class SpecificationContextTest {
     @Test
+    public void testResolveToBase() {
+        def base = new File("foo/bar").absoluteFile.toURI()
+        def context = SpecificationContext.create(base)
+        def uri = context.resolve("wombat")
+        assertThat uri, equalTo(new File("foo/wombat").absoluteFile.toURI())
+        assertThat context.resolve("/foo"), equalTo(new File("/foo").absoluteFile.toURI())
+    }
+
+    @Test
+    public void testResolveToDefault() {
+        def context = SpecificationContext.create()
+        def uri = context.resolve("wombat")
+        assertThat uri, equalTo(new File("wombat").absoluteFile.toURI())
+        assertThat context.resolve("/foo"), equalTo(new File("/foo").absoluteFile.toURI())
+    }
+
+    @Test
+    public void testResolveFile() {
+        def base = new File("foo/bar").absoluteFile.toURI()
+        def context = SpecificationContext.create(base)
+        def file = context.resolveFile("wombat")
+        assertThat file, equalTo(new File("foo/wombat").absoluteFile)
+    }
+
+    @Test
     public void testEmpty() {
         def context = SpecificationContext.create()
         def spec = MiscBuilders.configObj {

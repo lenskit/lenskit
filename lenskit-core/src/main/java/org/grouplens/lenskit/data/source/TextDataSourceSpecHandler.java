@@ -27,8 +27,6 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.specs.SpecificationException;
 
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.util.Set;
 
 /**
@@ -73,17 +71,7 @@ public class TextDataSourceSpecHandler implements DataSourceSpecHandler {
         }
 
         String path = cfg.getString("file");
-        URI uri = ctx.getBaseURI().resolve(path);
-        if (uri.isAbsolute()) {
-            try {
-                // FIXME This doesn't really work
-                bld.setFile(uri.toURL().getFile());
-            } catch (MalformedURLException e) {
-                throw new SpecificationException(e);
-            }
-        } else {
-            bld.setFile(uri.toString());
-        }
+        bld.setFile(ctx.resolveFile(path));
 
         return bld.build();
     }

@@ -26,9 +26,6 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.specs.SpecificationException;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-
 /**
  * Configurator for packed sources.  Example configuration:
  *
@@ -62,17 +59,7 @@ public class PackedDataSourceSpecHandler implements DataSourceSpecHandler {
         }
 
         String file = cfg.getString("file");
-        URI uri = ctx.getBaseURI().resolve(file);
-        if (uri.isAbsolute()) {
-            try {
-                // FIXME This doesn't really work
-                bld.setFile(uri.toURL().getFile());
-            } catch (MalformedURLException e) {
-                throw new SpecificationException(e);
-            }
-        } else {
-            bld.setFile(uri.toString());
-        }
+        bld.setFile(ctx.resolveFile(file));
 
         return bld.build();
     }
