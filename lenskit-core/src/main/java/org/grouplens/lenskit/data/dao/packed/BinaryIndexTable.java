@@ -37,7 +37,17 @@ import java.util.Collection;
 import java.util.Iterator;
 
 /**
- * An index table from a byte buffer.
+ * An index table from a byte buffer.  An index table maps IDs (user or item IDs) to the positions
+ * in the rating store where their ratings are; it can be thought of as a map from long IDs to lists
+ * of integer rating indexes.
+ * <p>
+ * An index table is organized as follows:
+ * </p>
+ * <ol>
+ * <li>A 16-byte table, containing the long ID, the offset into the index store, and the number
+ * of indexes.</li>
+ * <li>An index store, a sequence of ints representing the actual storage.</li>
+ * </ol>
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -47,9 +57,21 @@ class BinaryIndexTable implements Serializable {
 
     private static final long serialVersionUID = -1L;
     private static final Logger logger = LoggerFactory.getLogger(BinaryIndexTable.class);
+    /**
+     * The keys of the index.
+     */
     private final LongKeyDomain keys;
+    /**
+     * The location in the index store of each key's indexes.
+     */
     private final int[] offsets;
+    /**
+     * The number of indexes associated with each key.
+     */
     private final int[] sizes;
+    /**
+     * The index store.
+     */
     private final IntBuffer buffer;
 
     private BinaryIndexTable(LongKeyDomain keytbl, int[] offtbl, int[] sztbl, IntBuffer buf) {
@@ -72,6 +94,7 @@ class BinaryIndexTable implements Serializable {
         long[] keys = new long[nentries];
         int[] offsets = new int[nentries];
         int[] sizes = new int[nentries];
+        // Read the index table's header (IDs, offsets, and counts/sizes).
         int nextExpectedOffset = 0;
         for (int i = 0; i < nentries; i++) {
             keys[i] = buffer.getLong();
@@ -87,13 +110,17 @@ class BinaryIndexTable implements Serializable {
             }
             nextExpectedOffset += sizes[i];
         }
-        if (buffer.remaining() < nextExpectedOffset) {
+
+        // Set up the integer store
+        if (buffer.remaining() < nextExpectedOffset * 4) {
             throw new IllegalArgumentException("buffer not large enough");
         }
         int end = buffer.position() + nextExpectedOffset * 4;
         ByteBuffer dup = buffer.duplicate();
         dup.limit(end);
+        // update input buffer's position
         buffer.position(end);
+        // create index table object
         LongKeyDomain dom = LongKeyDomain.wrap(keys, keys.length, true);
         return new BinaryIndexTable(dom, offsets, sizes, dup.asIntBuffer());
     }
