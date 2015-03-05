@@ -199,30 +199,24 @@ public class BinaryRatingPacker implements Closeable {
      */
     private void writeIndex(Long2ObjectMap<IntList> map) throws IOException {
         LongSortedSet keys = LongUtils.packedSet(map.keySet());
-        int indexCount = 0;
-        for (IntList il: map.values()) {
-            indexCount += il.size();
-        }
+
         BinaryIndexTableWriter tableWriter =
-                BinaryIndexTableWriter.create(format, channel, keys.size(), indexCount);
-        try {
-            LongIterator iter = keys.iterator();
-            while (iter.hasNext()) {
-                final long key = iter.nextLong();
-                int[] indexes = map.get(key).toIntArray();
+                BinaryIndexTableWriter.create(format, channel, keys.size());
 
-                if (translationMap != null) {
-                    for (int i = 0; i < indexes.length; i++) {
-                        indexes[i] = translationMap[indexes[i]];
-                    }
-                    java.util.Arrays.sort(indexes);
+        LongIterator iter = keys.iterator();
+        while (iter.hasNext()) {
+            final long key = iter.nextLong();
+            int[] indexes = map.get(key).toIntArray();
+
+            if (translationMap != null) {
+                for (int i = 0; i < indexes.length; i++) {
+                    indexes[i] = translationMap[indexes[i]];
                 }
-
-                logger.debug("writing {} indices for id {}", key, indexes.length);
-                tableWriter.writeEntry(key, indexes);
+                java.util.Arrays.sort(indexes);
             }
-        } finally {
-            tableWriter.close();
+
+            logger.debug("writing {} indices for id {}", key, indexes.length);
+            tableWriter.writeEntry(key, indexes);
         }
     }
 

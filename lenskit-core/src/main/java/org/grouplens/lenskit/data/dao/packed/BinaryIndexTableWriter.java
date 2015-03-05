@@ -20,11 +20,8 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
@@ -32,61 +29,39 @@ import java.nio.channels.FileChannel;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class BinaryIndexTableWriter implements Closeable {
+class BinaryIndexTableWriter {
     private final BinaryFormat format;
-    private final ByteBuffer buffer;
+    private final FileChannel channel;
     private final int entryCount;
+    private final long tableStartPosition;
+    private long currentEntryPosition;
 
-    private ByteBuffer headerTable;
-    private IntBuffer intStore;
+    /**
+     * Scratch buffer for storing table entries.
+     */
+    private ByteBuffer entryBuffer;
+    /**
+     * Scratch buffer for storing integers to write to the index store.
+     */
+    private ByteBuffer storeBuffer;
 
     // current offset into the store.
     private int currentOffset = 0;
 
-    private BinaryIndexTableWriter(BinaryFormat fmt, ByteBuffer buf, int nkeys) {
+    private BinaryIndexTableWriter(BinaryFormat fmt, FileChannel chan, int nkeys) throws IOException {
         format = fmt;
-        buffer = buf;
+        channel = chan;
         entryCount = nkeys;
+        tableStartPosition = channel.position();
+        currentEntryPosition = tableStartPosition;
 
-        int tableSize = nkeys * BinaryIndexTable.TABLE_ENTRY_SIZE;
+        entryBuffer = ByteBuffer.allocateDirect(BinaryIndexTable.TABLE_ENTRY_SIZE);
 
-        ByteBuffer tmp = (ByteBuffer) buf.duplicate()
-                                         .limit(tableSize);
-        headerTable = tmp.slice();
-        tmp = (ByteBuffer) buf.duplicate().position(tableSize);
-        intStore = tmp.slice().asIntBuffer();
+        channel.position(tableStartPosition + nkeys * (long) format.indexTableEntrySize());
     }
 
-    /**
-     * Compute the size (in bytes) of an index table that will store the specified number of keys
-     * and indexes.
-     * @param keyCount The number of keys to be stored.
-     * @param indexCount The total number of indexes to be stored.
-     * @return
-     */
-    public static int computeSize(int keyCount, int indexCount) {
-        return keyCount * BinaryIndexTable.TABLE_ENTRY_SIZE + indexCount * BinaryFormat.INT_SIZE;
-    }
-
-    public static BinaryIndexTableWriter create(BinaryFormat fmt, ByteBuffer buf, int nkeys) {
-        return new BinaryIndexTableWriter(fmt, buf, nkeys);
-    }
-
-    /**
-     * Create a table writer that writes to a file.
-     * @param fmt The binary format.
-     * @param chan The output file.  The table will be written to the file's current position.
-     * @param nkeys The number of keys.
-     * @param nidxes The total number of indexes to write.
-     * @return
-     * @throws IOException
-     */
-    public static BinaryIndexTableWriter create(BinaryFormat fmt, FileChannel chan, int nkeys, int nidxes) throws IOException {
-        int size = computeSize(nkeys, nidxes);
-        MappedByteBuffer buf = chan.map(FileChannel.MapMode.READ_WRITE,
-                                        chan.position(), chan.position() + size);
-        chan.position(chan.position() + size);
-        return new BinaryIndexTableWriter(fmt, buf, nkeys);
+    public static BinaryIndexTableWriter create(BinaryFormat fmt, FileChannel chan, int nkeys) throws IOException {
+        return new BinaryIndexTableWriter(fmt, chan, nkeys);
     }
 
     /**
@@ -95,22 +70,46 @@ class BinaryIndexTableWriter implements Closeable {
      * @param indexes The indexes to store.
      * @throws IOException if there is an I/O error
      */
-    public void writeEntry(long id, int[] indexes) {
-        headerTable.putLong(id);
-        headerTable.putInt(currentOffset);
-        headerTable.putInt(indexes.length);
+    public void writeEntry(long id, int[] indexes) throws IOException {
+        writeEntryHeader(id, indexes.length);
+
+        int storeBytes = indexes.length * BinaryFormat.INT_SIZE;
+        if (storeBuffer == null || storeBuffer.capacity() < storeBytes) {
+            storeBuffer = ByteBuffer.allocateDirect(storeBytes);
+        }
+        assert storeBuffer.position() == 0;
+        assert storeBuffer.limit() >= storeBytes;
 
         for (int idx: indexes) {
-            intStore.put(idx);
+            storeBuffer.putInt(idx);
         }
+        storeBuffer.flip();
+        assert storeBuffer.limit() == storeBytes;
+
+        BinaryUtils.writeBuffer(channel, storeBuffer);
+        storeBuffer.clear();
 
         currentOffset += indexes.length;
+
+        assert channel.position() == tableStartPosition
+                                     + (entryCount * BinaryIndexTable.TABLE_ENTRY_SIZE)
+                                     + (currentOffset * BinaryFormat.INT_SIZE);
     }
 
-    @Override
-    public void close() throws IOException {
-        if (buffer instanceof MappedByteBuffer) {
-            ((MappedByteBuffer) buffer).force();
-        }
+    /**
+     * Write the header table entry for an index entry.
+     * @param id The key/ID.
+     * @param length The number of indexes for this table.
+     * @throws IOException If there is an I/O error.
+     */
+    private void writeEntryHeader(long id, int length) throws IOException {
+        assert entryBuffer.position() == 0;
+        entryBuffer.putLong(id);
+        entryBuffer.putInt(currentOffset);
+        entryBuffer.putInt(length);
+        entryBuffer.flip();
+        BinaryUtils.writeBuffer(channel, entryBuffer, currentEntryPosition);
+        entryBuffer.clear();
+        currentEntryPosition += BinaryIndexTable.TABLE_ENTRY_SIZE;
     }
 }
