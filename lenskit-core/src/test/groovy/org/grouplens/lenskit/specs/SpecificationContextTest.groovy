@@ -34,7 +34,10 @@ class SpecificationContextTest {
         def context = SpecificationContext.create(base)
         def uri = context.resolve("wombat")
         assertThat uri, equalTo(new File("foo/wombat").absoluteFile.toURI())
-        assertThat context.resolve("/foo"), equalTo(new File("/foo").absoluteFile.toURI())
+        // let's also test that an absolute path resolves absolutely
+        File foo = new File("/foo");
+        assertThat(context.resolve(foo.absoluteFile.toURI().getPath()),
+                equalTo(foo.absoluteFile.toURI()))
     }
 
     @Test
@@ -42,7 +45,9 @@ class SpecificationContextTest {
         def context = SpecificationContext.create()
         def uri = context.resolve("wombat")
         assertThat uri, equalTo(new File("wombat").absoluteFile.toURI())
-        assertThat context.resolve("/foo"), equalTo(new File("/foo").absoluteFile.toURI())
+        File foo = new File("/foo");
+        assertThat(context.resolve(foo.absoluteFile.toURI().getPath()),
+                equalTo(foo.absoluteFile.toURI()))
     }
 
     @Test
