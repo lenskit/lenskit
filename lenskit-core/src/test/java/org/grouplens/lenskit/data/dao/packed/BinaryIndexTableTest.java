@@ -20,14 +20,24 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 public class BinaryIndexTableTest {
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
+
     @Test
     public void testEmpty() {
         BinaryIndexTable tbl = BinaryIndexTable.fromBuffer(0, ByteBuffer.allocate(0));
@@ -36,11 +46,13 @@ public class BinaryIndexTableTest {
     }
 
     @Test
-    public void testSingleEntry() {
-        int sz = BinaryIndexTableWriter.computeSize(1, 1);
-        ByteBuffer buf = ByteBuffer.allocate(sz);
-        BinaryIndexTableWriter w = BinaryIndexTableWriter.create(BinaryFormat.create(), buf, 1);
+    public void testSingleEntry() throws IOException {
+        File file = folder.newFile();
+        FileChannel chan = new RandomAccessFile(file, "rw").getChannel();
+        BinaryIndexTableWriter w = BinaryIndexTableWriter.create(BinaryFormat.create(), chan, 1);
         w.writeEntry(42, new int[] {0});
+
+        MappedByteBuffer buf = chan.map(FileChannel.MapMode.READ_ONLY, 0, chan.size());
         BinaryIndexTable tbl = BinaryIndexTable.fromBuffer(1, buf);
         assertThat(tbl.getKeys(), contains(42L));
         assertThat(tbl.getEntry(42), contains(0));
@@ -48,13 +60,15 @@ public class BinaryIndexTableTest {
     }
 
     @Test
-    public void testMultipleEntries() {
-        int sz = BinaryIndexTableWriter.computeSize(3, 5);
-        ByteBuffer buf = ByteBuffer.allocate(sz);
-        BinaryIndexTableWriter w = BinaryIndexTableWriter.create(BinaryFormat.create(), buf, 3);
+    public void testMultipleEntries() throws IOException {
+        File file = folder.newFile();
+        FileChannel chan = new RandomAccessFile(file, "rw").getChannel();
+        BinaryIndexTableWriter w = BinaryIndexTableWriter.create(BinaryFormat.create(), chan, 3);
         w.writeEntry(42, new int[] {0});
         w.writeEntry(49, new int[] {1,3});
         w.writeEntry(67, new int[] {2,4});
+
+        MappedByteBuffer buf = chan.map(FileChannel.MapMode.READ_ONLY, 0, chan.size());
         BinaryIndexTable tbl = BinaryIndexTable.fromBuffer(3, buf);
         assertThat(tbl.getKeys(), contains(42L, 49L, 67L));
         assertThat(tbl.getEntry(42), contains(0));
