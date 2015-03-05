@@ -29,6 +29,51 @@ import static org.junit.Assert.assertThat
 
 class SpecificationContextTest {
     @Test
+    public void testResolveToBase() {
+        def base = new File("foo/bar").absoluteFile.toURI()
+        def context = SpecificationContext.create(base)
+        def uri = context.resolve("wombat")
+        assertThat uri, equalTo(new File("foo/wombat").absoluteFile.toURI())
+        // let's also test that an absolute path resolves absolutely
+        File foo = new File("/foo");
+        assertThat(context.resolve(foo.absoluteFile.toURI().getPath()),
+                equalTo(foo.absoluteFile.toURI()))
+    }
+
+    @Test
+    public void testResolveToDefault() {
+        def context = SpecificationContext.create()
+        def uri = context.resolve("wombat")
+        assertThat uri, equalTo(new File("wombat").absoluteFile.toURI())
+        File foo = new File("/foo");
+        assertThat(context.resolve(foo.absoluteFile.toURI().getPath()),
+                equalTo(foo.absoluteFile.toURI()))
+    }
+
+    @Test
+    public void testResolveFile() {
+        def base = new File("foo/bar").absoluteFile.toURI()
+        def context = SpecificationContext.create(base)
+        def file = context.resolveFile("wombat")
+        assertThat file, equalTo(new File("foo/wombat").absoluteFile)
+    }
+
+    @Test
+    public void testRelativize() {
+        def base = new File(".").absoluteFile.toURI()
+        def context = SpecificationContext.create(base)
+        def path = context.relativize(new File("wombat"))
+        assertThat path, equalTo("wombat")
+    }
+
+    @Test
+    public void testRelativizeDefault() {
+        def context = SpecificationContext.create()
+        def path = context.relativize(new File("wombat").absoluteFile)
+        assertThat path, equalTo(new File("wombat").absoluteFile.toURI().toString())
+    }
+
+    @Test
     public void testEmpty() {
         def context = SpecificationContext.create()
         def spec = MiscBuilders.configObj {

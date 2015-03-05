@@ -1,0 +1,51 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.hamcrest:hamcrest-library:1.3"
+    }
+}
+apply plugin: 'java'
+
+
+import static org.hamcrest.MatcherAssert.*
+import static org.hamcrest.Matchers.*
+
+repositories {
+    maven {
+        url testRepoURI
+    }
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.grouplens.lenskit:lenskit-all:$lenskitVersion"
+    runtime "org.grouplens.lenskit:lenskit-cli:$lenskitVersion"
+}
+
+task crossfold(type: JavaExec) {
+    dependsOn classes
+    classpath configurations.runtime
+    inputs.file 'predictor.groovy'
+    inputs.file ratingsFile
+    outputs.dir 'split'
+
+    main 'org.grouplens.lenskit.cli.Main'
+    args 'crossfold'
+    args '--tsv-file', ratingsFile
+    args 'crossfold.conf'
+}
+
+check {
+    dependsOn crossfold
+    doLast {
+        def dir = file('split')
+        assertThat dir.exists(), equalTo(true)
+        for (int i = 0; i < 10; i++) {
+            assertThat file("split/split.${i}.json").exists(), equalTo(true)
+            assertThat file("split/train.${i}.pack").exists(), equalTo(true)
+            assertThat file("split/test.${i}.pack").exists(), equalTo(true)
+        }
+    }
+}

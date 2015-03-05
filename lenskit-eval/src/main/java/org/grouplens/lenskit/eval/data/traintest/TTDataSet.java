@@ -25,6 +25,7 @@ import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.script.BuiltBy;
 import org.grouplens.lenskit.specs.SpecHandlerInterface;
+import org.grouplens.lenskit.specs.Specifiable;
 
 import java.util.Map;
 import java.util.UUID;
@@ -37,7 +38,7 @@ import java.util.UUID;
  */
 @BuiltBy(GenericTTDataBuilder.class)
 @SpecHandlerInterface(GenericTTSpecHandler.class)
-public interface TTDataSet {
+public interface TTDataSet extends Specifiable {
     /**
      * Get the data set name.
      *
