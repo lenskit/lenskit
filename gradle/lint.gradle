@@ -51,6 +51,10 @@ apply plugin: 'sonar-runner'
 sonarRunner {
     toolVersion = '2.4'
     sonarProperties {
+        def branch = System.getenv("BRANCH")
+        if (branch != null) {
+            property "sonar.projectKey", "$project.group:$project.name-$branch"
+        }
         property "sonar.host.url", "https://sonar.cs.txstate.edu"
         property "sonar.jdbc.driverClassName", "org.postgresql.Driver"
         property "sonar.sourceEncoding", "UTF-8"
