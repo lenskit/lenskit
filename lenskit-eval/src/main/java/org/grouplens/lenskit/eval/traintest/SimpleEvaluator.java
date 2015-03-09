@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.traintest;
 
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.eval.EvalConfig;
@@ -57,7 +58,7 @@ public class SimpleEvaluator implements Callable<Table> {
      *
      */
     public SimpleEvaluator(String name, LenskitConfiguration config) {
-        AlgorithmInstance(name, config);
+        result.addAlgorithm(new AlgorithmInstance(name, config));
     }
 
     /**
