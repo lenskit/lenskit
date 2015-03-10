@@ -52,16 +52,6 @@ public class SimpleEvaluator implements Callable<Table> {
     }
 
     /**
-     * An algorithm instance constructed with a name and Lenskit configuration
-     * @param name
-     * @param config Lenskit configuration
-     *
-     */
-    public SimpleEvaluator(String name, LenskitConfiguration config) {
-        result.addAlgorithm(new AlgorithmInstance(name, config));
-    }
-
-    /**
      * Create a simple evaluator with a custom configuration.
      *
      * @param props Properties for the eval configuration.
@@ -86,6 +76,17 @@ public class SimpleEvaluator implements Callable<Table> {
      */
     public SimpleEvaluator addAlgorithm(AlgorithmInstance algo){
         result.addAlgorithm(algo);
+        return this;
+    }
+
+    /**
+     * An algorithm instance constructed with a name and Lenskit configuration
+     * @param name
+     * @param config Lenskit configuration
+     *
+     */
+    public SimpleEvaluator addAlgorithm(String name, LenskitConfiguration config) {
+        result.addAlgorithm(new AlgorithmInstance(name, config));
         return this;
     }
 
