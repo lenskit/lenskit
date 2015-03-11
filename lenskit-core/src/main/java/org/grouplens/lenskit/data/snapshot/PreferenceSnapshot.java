@@ -22,13 +22,13 @@ package org.grouplens.lenskit.data.snapshot;
 
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.indexes.IdIndexMapping;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.concurrent.ThreadSafe;
 import java.io.Closeable;
+import java.util.Collection;
 
 /**
  * Snapshot of the ratings data for building a recommender.
@@ -52,7 +52,6 @@ import java.io.Closeable;
  */
 @ThreadSafe
 @DefaultImplementation(PackedPreferenceSnapshot.class)
-@SuppressWarnings("deprecation")
 public interface PreferenceSnapshot extends Closeable {
     /**
      * Get the set of user IDs in the snapshot.
@@ -93,7 +92,7 @@ public interface PreferenceSnapshot extends Closeable {
      *
      * @return All ratings in the system.
      */
-    FastCollection<IndexedPreference> getRatings();
+    Collection<IndexedPreference> getRatings();
 
     /**
      * Get the ratings for a particular user. It is guaranteed that no duplicate ratings appear -
@@ -105,7 +104,7 @@ public interface PreferenceSnapshot extends Closeable {
      * @param userId The user's ID.
      * @return The user's ratings, or an empty collection if the user is unknown.
      */
-    FastCollection<IndexedPreference> getUserRatings(long userId);
+    Collection<IndexedPreference> getUserRatings(long userId);
 
     /**
      * Get the current preferences of a particular user in SparseVector form.

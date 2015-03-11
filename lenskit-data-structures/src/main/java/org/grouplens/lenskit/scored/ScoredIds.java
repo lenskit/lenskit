@@ -25,7 +25,6 @@ import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.SymbolValue;
 import org.grouplens.lenskit.symbols.TypedSymbol;
@@ -34,6 +33,7 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nullable;
 import java.util.AbstractCollection;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 
@@ -230,19 +230,19 @@ public final class ScoredIds {
 
     //region Vector conversion
     /**
-     * View a vector as a {@link org.grouplens.lenskit.collections.FastCollection} of {@link ScoredId} objects.
+     * View a vector as a collection of {@link ScoredId} objects.
      *
      * @return A fast collection containing this vector's keys and values as
      * {@link ScoredId} objects.
      * @param vector The vector to view as a collection of {@link ScoredId}s
      */
     @SuppressWarnings("deprecation")
-    public static FastCollection<ScoredId> collectionFromVector(SparseVector vector) {
+    public static Collection<ScoredId> collectionFromVector(SparseVector vector) {
         return new VectorIdCollection(vector);
     }
 
     @SuppressWarnings("deprecation")
-    private static class VectorIdCollection extends AbstractCollection<ScoredId> implements FastCollection<ScoredId> {
+    private static class VectorIdCollection extends AbstractCollection<ScoredId> implements Collection<ScoredId> {
 
         private final SparseVector vector;
 
@@ -258,12 +258,6 @@ public final class ScoredIds {
         @Override
         public Iterator<ScoredId> iterator() {
             return new VectorIdIter(vector);
-        }
-
-        @Deprecated
-        @Override
-        public Iterator<ScoredId> fastIterator() {
-            return iterator();
         }
     }
 

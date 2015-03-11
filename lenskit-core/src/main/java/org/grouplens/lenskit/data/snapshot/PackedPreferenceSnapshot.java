@@ -25,17 +25,13 @@ import com.google.common.base.Suppliers;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.indexes.IdIndexMapping;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * An in-memory snapshot of rating data stored in packed arrays.
@@ -56,7 +52,7 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
 
     private PackedPreferenceData data;
     @SuppressWarnings("deprecation")
-    private Supplier<List<FastCollection<IndexedPreference>>> userIndexLists;
+    private Supplier<List<Collection<IndexedPreference>>> userIndexLists;
 
     PackedPreferenceSnapshot(PackedPreferenceData data) {
         super();
@@ -93,18 +89,16 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public FastCollection<IndexedPreference> getRatings() {
+    public Collection<IndexedPreference> getRatings() {
         return new PackedPreferenceCollection(data);
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public FastCollection<IndexedPreference> getUserRatings(long userId) {
+    public Collection<IndexedPreference> getUserRatings(long userId) {
         int uidx = userIndex().tryGetIndex(userId);
-        List<FastCollection<IndexedPreference>> userLists = userIndexLists.get();
+        List<Collection<IndexedPreference>> userLists = userIndexLists.get();
         if (uidx < 0 || uidx >= userLists.size()) {
-            return CollectionUtils.emptyFastCollection();
+            return Collections.emptyList();
         } else {
             return userLists.get(uidx);
         }
@@ -122,9 +116,9 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
      * Supplier to create user index lists.  Used to re-use memoization logic.
      */
     @SuppressWarnings("deprecation")
-    private class UserPreferenceSupplier implements Supplier<List<FastCollection<IndexedPreference>>> {
+    private class UserPreferenceSupplier implements Supplier<List<Collection<IndexedPreference>>> {
         @Override @Nonnull
-        public List<FastCollection<IndexedPreference>> get() {
+        public List<Collection<IndexedPreference>> get() {
             int nusers = data.getUserIndex().size();
             ArrayList<IntArrayList> userLists = new ArrayList<IntArrayList>(nusers);
             for (int i = 0; i < nusers; i++) {
@@ -135,8 +129,8 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
                 final int idx = pref.getIndex();
                 userLists.get(uidx).add(idx);
             }
-            ArrayList<FastCollection<IndexedPreference>> users =
-                    new ArrayList<FastCollection<IndexedPreference>>(nusers);
+            ArrayList<Collection<IndexedPreference>> users =
+                    new ArrayList<Collection<IndexedPreference>>(nusers);
             for (IntArrayList list: userLists) {
                 list.trim();
                 users.add(new PackedPreferenceCollection(data, list));

@@ -29,7 +29,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.symbols.DoubleSymbolValue;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.SymbolValue;
@@ -51,8 +50,7 @@ import java.util.*;
  * @compat Public
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@SuppressWarnings("deprecation")
-public final class PackedScoredIdList extends AbstractList<ScoredId> implements FastCollection<ScoredId>, Serializable {
+public final class PackedScoredIdList extends AbstractList<ScoredId> implements Collection<ScoredId>, Serializable {
     private static final long serialVersionUID = 1L;
     private final LongList ids;
     private final DoubleList scores;
@@ -93,12 +91,6 @@ public final class PackedScoredIdList extends AbstractList<ScoredId> implements 
     @Override
     public int size() {
         return ids.size();
-    }
-
-    @Override
-    @Deprecated
-    public Iterator<ScoredId> fastIterator() {
-        return iterator();
     }
 
     @Override
