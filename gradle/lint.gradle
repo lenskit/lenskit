@@ -52,8 +52,10 @@ sonarRunner {
     toolVersion = '2.4'
     sonarProperties {
         def branch = System.getenv("BRANCH")
-        if (branch != null) {
-            property "sonar.projectKey", "$project.group:$project.name-$branch"
+        def m = branch != null ? branch =~ /release\/(.*)/ : null
+        if (m) {
+            def bk = m.group(1)
+            property "sonar.projectKey", "$project.group:$project.name-$bk"
         }
         property "sonar.host.url", "https://sonar.cs.txstate.edu"
         property "sonar.jdbc.driverClassName", "org.postgresql.Driver"
