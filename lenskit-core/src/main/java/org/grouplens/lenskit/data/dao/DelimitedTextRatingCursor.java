@@ -23,9 +23,8 @@ package org.grouplens.lenskit.data.dao;
 import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.cursors.AbstractPollingCursor;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.event.RatingBuilder;
 import org.grouplens.lenskit.util.DelimitedTextCursor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +45,7 @@ import java.io.BufferedReader;
 public class DelimitedTextRatingCursor extends AbstractPollingCursor<Rating> {
     protected Logger logger = LoggerFactory.getLogger(getClass());
     private final String fileName;
-    private MutableRating rating;
+    private RatingBuilder builder;
     private DelimitedTextCursor rowCursor;
 
     /**
@@ -62,7 +61,7 @@ public class DelimitedTextRatingCursor extends AbstractPollingCursor<Rating> {
                                         @Nullable String name,
                                         @Nonnull String delimiter) {
         fileName = name;
-        rating = new MutableRating();
+        builder = new RatingBuilder();
         rowCursor = new DelimitedTextCursor(s, delimiter);
     }
 
@@ -75,12 +74,12 @@ public class DelimitedTextRatingCursor extends AbstractPollingCursor<Rating> {
     @Override
     public void close() {
         rowCursor.close();
-        rating = null;
+        builder = null;
     }
 
     @Override
     public Rating poll() {
-        Preconditions.checkState(rating != null, "cursor is closed");
+        Preconditions.checkState(builder != null, "cursor is closed");
         while (rowCursor.hasNext()) {
             String[] fields = rowCursor.next();
             if (fields.length < 3) {
@@ -89,22 +88,17 @@ public class DelimitedTextRatingCursor extends AbstractPollingCursor<Rating> {
                 continue;
             }
 
-            rating.setUserId(Long.parseLong(fields[0].trim()));
-            rating.setItemId(Long.parseLong(fields[1].trim()));
-            rating.setRating(Double.parseDouble(fields[2].trim()));
-            rating.setTimestamp(-1);
+            builder.setUserId(Long.parseLong(fields[0].trim()));
+            builder.setItemId(Long.parseLong(fields[1].trim()));
+            builder.setRating(Double.parseDouble(fields[2].trim()));
+            builder.setTimestamp(-1);
             if (fields.length >= 4) {
-                rating.setTimestamp(Long.parseLong(fields[3].trim()));
+                builder.setTimestamp(Long.parseLong(fields[3].trim()));
             }
 
-            return rating;
+            return builder.build();
         }
 
         return null;
-    }
-
-    @Override
-    public Rating copy(Rating r) {
-        return Ratings.copyBuilder(r).build();
     }
 }
