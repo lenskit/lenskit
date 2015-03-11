@@ -150,47 +150,22 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             input.close();
         }
     }
-    public  BinaryRatingDAO createWindowedView(long timestamp){
+    public  BinaryRatingDAO createWindowedView(long timestamp) {
 
         Rating r = new RatingBuilder().setUserId(0).setItemId(0).setRating(0).setTimestamp(timestamp).build();
-        
-        int idx = Collections.binarySearch(getRatingList(),r,Events.TIMESTAMP_COMPARATOR );
+
+        int idx = Collections.binarySearch(getRatingList(), r, Events.TIMESTAMP_COMPARATOR);
         //pending back scan
-        if (idx<0)
-            idx=-idx-1;
-        
-        ByteBuffer data = ratingData.duplicate();
-        data.limit(idx);
-
-        
-        BinaryIndexTable utbl = userTable.createLimitedView(idx);
-        BinaryIndexTable itbl = itemTable.createLimitedView(idx);
-        return new BinaryRatingDAO(null, header, data, utbl, itbl);
-    }
-
-    public  BinaryRatingDAO createWindowedView(long timestamp){
-
-        Rating r = new RatingBuilder()
-                .setUserId(0)
-                .setItemId(0)
-                .setRating(0)
-                .setTimestamp(timestamp)
-                .build();
-
-        int idx =Collections.binarySearch(getRatingList(),r, Events.TIMESTAMP_COMPARATOR);
-
-        if (idx<0)
-                idx = -idx-1;
+        if (idx < 0)
+            idx = -idx - 1;
 
         ByteBuffer data = ratingData.duplicate();
         data.limit(idx);
 
+
         BinaryIndexTable utbl = userTable.createLimitedView(idx);
         BinaryIndexTable itbl = itemTable.createLimitedView(idx);
-
-        return new BinaryRatingDAO(null, header, data, utbl, itbl,idx,timestamp);
-
-
+        return new BinaryRatingDAO(null, header, data, utbl, itbl, idx, timestamp);
     }
 
     private Object writeReplace() {
