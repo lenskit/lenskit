@@ -96,4 +96,6 @@ task uploadWeb {
         }
     }
 }
-ciPublish.dependsOn uploadWeb
+if (System.getenv("BRANCH") == "master") {
+    ciPublish.dependsOn uploadWeb
+}
