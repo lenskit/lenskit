@@ -504,5 +504,10 @@ public class ConfigMethodInvoker {
         }
 
         private Closure closure;
+
+        @Override
+        public String toString() {
+            return "closure " + closure;
+        }
     }
 }
