@@ -30,6 +30,8 @@ import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.util.table.TableLayoutBuilder;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -45,6 +47,7 @@ import java.util.List;
  * @since 1.1
  */
 public class FunctionMultiModelMetric implements Metric<Void> {
+    private static final Logger logger = LoggerFactory.getLogger(FunctionMultiModelMetric.class);
     private final File outputFile;
     private final List<String> columnHeaders;
     private final Function<Recommender, List<List<Object>>> function;
@@ -84,8 +87,17 @@ public class FunctionMultiModelMetric implements Metric<Void> {
     @Override
     public Void createContext(Attributed algorithm, TTDataSet dataSet, Recommender recommender) {
         Preconditions.checkState(evalLayout != null, "evaluation not in progress");
+        logger.info("Measuring algorithm {} on data set {} with metric {}",
+                    algorithm, dataSet, function);
         TableWriter w = evalLayout.prefixTable(writer, algorithm, dataSet);
-        for (List<Object> row: function.apply(recommender)) {
+        List<List<Object>> measurement = function.apply(recommender);
+        if (measurement == null) {
+            logger.warn("Metric {} on algorithm {} for data set {} returned null.",
+                        function, algorithm, dataSet);
+            return null;
+        }
+        logger.debug("got {} rows", measurement.size());
+        for (List<Object> row: measurement) {
             try {
                 w.writeRow(row.toArray());
             } catch (IOException e) {
