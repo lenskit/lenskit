@@ -72,6 +72,22 @@ task checkAnnotations(type: JavaCompile, dependsOn: classes) {
 }
 check.dependsOn checkAnnotations
 
+// Make LensKit version info available
+task versionInfo {
+    mustRunAfter processResources
+    ext.versionFile = {
+        "$sourceSets.main.output.resourcesDir/META-INF/lenskit/version.properties"
+    }
+    outputs.file versionFile
+    inputs.property 'version', version
+}
+versionInfo << {
+    def vf = file(versionFile)
+    mkdir vf.parentFile
+    vf.text = "lenskit.version=$version\n"
+}
+classes.dependsOn versionInfo
+
 /* Generate the Git commit list */
 task listGitCommits(group: 'build') {
     // where does the report go?
