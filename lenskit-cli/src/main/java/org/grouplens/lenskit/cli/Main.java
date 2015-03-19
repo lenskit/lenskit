@@ -61,7 +61,8 @@ public class Main {
             Namespace options = parser.parseArgs(args);
             Logging.configureLogging(options);
             Runtime rt = Runtime.getRuntime();
-            logger.info("Starting LensKit on Java {} from {}",
+            logger.info("Starting LensKit {} on Java {} from {}",
+                        Version.lenskitVersion(),
                         SystemUtils.JAVA_VERSION, SystemUtils.JAVA_VENDOR);
             logger.debug("Using VM '{}' version {} from {}",
                          SystemUtils.JAVA_VM_NAME,
