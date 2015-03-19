@@ -22,10 +22,7 @@ package org.grouplens.lenskit.cli;
 
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import org.grouplens.lenskit.core.LenskitInfo;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -40,27 +37,14 @@ public class Version implements Command {
 
     @Override
     public void execute() throws Exception {
-        System.out.format("LensKit version %s\n", lenskitVersion());
+        String version = LenskitInfo.lenskitVersion();
+        System.out.format("LensKit version %s\n", version);
+        if (version.endsWith("-SNAPSHOT")) {
+            System.out.format("Git revision %s\n", LenskitInfo.getHeadRevision());
+        }
     }
 
     public static void configureArguments(ArgumentParser parser) {
         parser.description("Prints the LensKit version.");
-    }
-
-    public static String lenskitVersion() {
-        Properties props = new Properties();
-        InputStream stream = Version.class.getResourceAsStream("/META-INF/lenskit/version.properties");
-        try {
-            props.load(stream);
-        } catch (IOException e) {
-            throw new RuntimeException("properties error", e);
-        } finally {
-            try {
-                stream.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return props.getProperty("lenskit.version");
     }
 }

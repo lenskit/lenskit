@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
+import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -68,7 +69,8 @@ public final class LenskitInfo {
     }
 
     /**
-     * Get the set of revisions LensKit is built from.
+     * Get the set of revisions LensKit is built from.  This is in the order returned by {@code git log},
+     * so the head revision is first.
      * @return The set of revisions included in this build of LensKit.
      */
     public static synchronized Set<String> getRevisions() {
@@ -88,5 +90,34 @@ public final class LenskitInfo {
      */
     public static boolean includesRevision(String revision) {
         return getRevisions().contains(revision);
+    }
+
+    /**
+     * Get the HEAD revision from which LensKit was built.
+     * @return The revision from which this version of LensKit was built.
+     */
+    public static String getHeadRevision() {
+        return getRevisions().iterator().next();
+    }
+
+    /**
+     * Get the current LensKit version.
+     * @return The LensKit version.
+     */
+    public static String lenskitVersion() {
+        Properties props = new Properties();
+        InputStream stream = LenskitInfo.class.getResourceAsStream("/META-INF/lenskit/version.properties");
+        try {
+            props.load(stream);
+        } catch (IOException e) {
+            throw new RuntimeException("properties error", e);
+        } finally {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return props.getProperty("lenskit.version");
     }
 }
