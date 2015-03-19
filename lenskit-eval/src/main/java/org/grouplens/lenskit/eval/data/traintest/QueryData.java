@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.eval.data.traintest;
 
+import org.grouplens.grapht.annotation.AllowUnqualifiedMatch;
+
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
@@ -33,5 +35,6 @@ import java.lang.annotation.*;
 @Qualifier
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.METHOD})
+@AllowUnqualifiedMatch
 public @interface QueryData {
 }
