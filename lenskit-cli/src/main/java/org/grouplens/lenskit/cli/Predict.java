@@ -28,6 +28,7 @@ import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
+import org.grouplens.lenskit.data.dao.ItemNameDAO;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -69,6 +70,7 @@ public class Predict implements Command {
 
         LenskitRecommender rec = engine.createRecommender();
         RatingPredictor pred = rec.getRatingPredictor();
+        ItemNameDAO names = rec.get(ItemNameDAO.class);
         if (pred == null) {
             logger.error("recommender has no rating predictor");
             throw new UnsupportedOperationException("no rating predictor");
@@ -86,8 +88,13 @@ public class Predict implements Command {
                 }
             }
         }
+        System.out.format("predictions for user %d:\n", user);
         for (VectorEntry e: preds) {
-            System.out.format("  %d: %.3f", e.getKey(), e.getValue());
+            System.out.format("  %d", e.getKey());
+            if (names != null) {
+                System.out.format(" (%s)", names.getItemName(e.getKey()));
+            }
+            System.out.format(": %.3f", e.getValue());
             if (channel != null) {
                 System.out.format(" (%s)", channel.get(e.getKey()));
             }
