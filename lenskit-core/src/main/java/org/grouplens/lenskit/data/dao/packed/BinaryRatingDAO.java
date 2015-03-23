@@ -161,16 +161,17 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
 
         int idx = Collections.binarySearch(getRatingList(), r, Events.TIMESTAMP_COMPARATOR);
 
-        if (idx < 0)
+        if (idx < 0) {
             idx = -idx - 1;
-        else {
-            while (getRatingList().get(idx).getTimestamp() >= timestamp)
+        } else {
+            while (getRatingList().get(idx).getTimestamp() >= timestamp) {
                 idx--;//will reach the position of timestamp < limitTimestamp
+            }
+            ++idx;//position of first timestamp >= limitTimestamp
         }
         ByteBuffer data = ratingData.duplicate();
         data.limit(idx*header.getFormat().getRatingSize());
 
-        ++idx;//position of first timestamp >= limitTimestamp
         BinaryIndexTable utbl = userTable.createLimitedView(idx);
         BinaryIndexTable itbl = itemTable.createLimitedView(idx);
         return new BinaryRatingDAO(null, header, data, utbl, itbl, idx, timestamp);
@@ -185,7 +186,8 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     }
 
     private BinaryRatingList getRatingList() {
-        return getRatingList(CollectionUtils.interval(0, header.getRatingCount()));
+        //return getRatingList(CollectionUtils.interval(0, header.getRatingCount()));
+        return getRatingList(CollectionUtils.interval(0, limitIndex));
     }
 
     private BinaryRatingList getRatingList(IntList indexes) {
