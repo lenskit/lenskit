@@ -54,18 +54,19 @@ public class LimitedBinaryRatingDAOTest {
     @Before
     public void createDao() throws IOException {
         ImmutableList.Builder<Rating> bld = ImmutableList.builder();
-        bld .add(Ratings.make(12, 102, 2.5, 1050L))
-                .add(Ratings.make(12, 120, 4.5, 1650L))
-                .add(Ratings.make(13, 102, 3.5, 1000L))
-                .add(Ratings.make(13, 111, 4.5, 1200L))
+        bld.add(Ratings.make(13, 102, 3.5, 1000L))
                 .add(Ratings.make(39, 105, 3.5, 1000L))
-                .add(Ratings.make(39, 120, 4.5, 1650L))
+                .add(Ratings.make(12, 102, 2.5, 1050L))
                 .add(Ratings.make(40, 111, 4.5, 1050L))
-                .add(Ratings.make(40, 120, 2.5, 1650L))
+                .add(Ratings.make(13, 111, 4.5, 1200L))
                 .add(Ratings.make(41, 105, 2.5, 1400L))
+                .add(Ratings.make(39, 120, 4.5, 1650L))
+                .add(Ratings.make(12, 120, 4.5, 1650L))
+                .add(Ratings.make(42, 120, 2.5, 1650L))
+                .add(Ratings.make(40, 120, 2.5, 1650L))
                 .add(Ratings.make(41, 111, 3.5, 1700L))
-                .add(Ratings.make(42, 115, 3.5, 1700L))
-                .add(Ratings.make(42, 120, 2.5, 1650L));
+                .add(Ratings.make(42, 115, 3.5, 1700L));
+
         ratings = bld.build();
 
         File file = folder.newFile("ratings.bin");
@@ -104,7 +105,7 @@ public class LimitedBinaryRatingDAOTest {
 
         dao = dao.createWindowedView(2000L);
         assertThat(Cursors.makeList(dao.streamEvents()),
-                hasSize(14));
+                hasSize(12));
         assertThat(Cursors.makeList(dao.streamEvents(Rating.class)),
                 equalTo(ratings));
     }

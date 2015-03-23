@@ -98,24 +98,23 @@ class BinaryIndexTable implements Serializable {
         return new BinaryIndexTable(dom, offsets, sizes, dup.asIntBuffer());
     }
 
-    public  BinaryIndexTable createLimitedView(int limit){
+    public  BinaryIndexTable createLimitedView(int limit) {
         LongKeyDomain newKeys = keys.clone();
         int[] newSizes = new int[sizes.length];
-        for(int i=0;i<sizes.length;i++){
-            if(buffer.get(offsets[i])>=limit){
+        for (int i=0;i<offsets.length;i++) {
+            if (indexStore.get(offsets[i])>=limit||sizes[i]==0) {
                 newSizes[i]=0;
                 newKeys.setActive(i,false);
-            }
-            else{
-                int size=0;
-                for(int j=0;j<offsets[i] + sizes[i];j++){
-                    size++;
+            } else {
+                //following loop need to be replaced with binary rating search
+                for (int j= offsets[i];j<(offsets[i]+sizes[i]);j++) {
+                    //find the new 'size' value; this is the number of indexes for this key that are less than the limit.
+                    if(indexStore.get(j)<limit)
+                        newSizes[i]+=1;
                 }
-                newSizes[i]=size;
             }
-
         }
-        return new BinaryIndexTable(newKeys,offsets, newSizes, buffer);
+        return new BinaryIndexTable(newKeys,offsets, newSizes, indexStore);
     }
     public LongSet getKeys() {
         return keys.activeSetView();
