@@ -22,7 +22,6 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.io.Closer;
 import org.apache.commons.lang3.SerializationUtils;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.SortOrder;
@@ -182,15 +181,9 @@ public class BinaryRatingDAOTest {
         }
 
         ByteBuffer buffer;
-        Closer closer = Closer.create();
-        try {
-            FileInputStream istr = new FileInputStream(file);
+        try (FileInputStream istr = new FileInputStream(file)) {
             FileChannel chan = istr.getChannel();
             buffer = chan.map(FileChannel.MapMode.READ_ONLY, 0, chan.size());
-        } catch (Throwable th) {
-            throw closer.rethrow(th);
-        } finally {
-            closer.close();
         }
 
         BinaryRatingDAO dao = BinaryRatingDAO.fromBuffer(buffer);

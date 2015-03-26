@@ -22,7 +22,6 @@ package org.grouplens.lenskit.util.io;
 
 import com.google.common.base.Throwables;
 import com.google.common.io.Closeables;
-import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.slf4j.Logger;
@@ -209,10 +208,8 @@ public final class LKFileUtils {
      */
     public static LongList readIdList(File file) throws IOException {
         LongList items = new LongArrayList();
-        Closer closer = Closer.create();
-        try {
-            FileReader fread = closer.register(new FileReader(file));
-            BufferedReader buf = closer.register(new BufferedReader(fread));
+        try (FileReader fread = new FileReader(file);
+             BufferedReader buf = new BufferedReader(fread)) {
             String line;
             int lno = 0;
             while ((line = buf.readLine()) != null) {
@@ -228,10 +225,6 @@ public final class LKFileUtils {
                 }
                 items.add(item);
             }
-        } catch (Throwable th) { // NOSONAR using a closer
-            throw closer.rethrow(th);
-        } finally {
-            closer.close();
         }
         return items;
     }
