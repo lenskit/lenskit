@@ -24,7 +24,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.io.Closer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
@@ -337,10 +336,9 @@ public class GraphDumper {
         RecommenderInstantiator instantiator = RecommenderInstantiator.create(graph);
         DAGNode<Component, Dependency> unshared = instantiator.simulate();
         logger.debug("unshared graph has {} nodes", unshared.getReachableNodes().size());
-        Closer close = Closer.create();
-        try {
-            Writer writer = close.register(new FileWriter(graphvizFile));
-            GraphWriter gw = close.register(new GraphWriter(writer));
+        try (Writer writer = new FileWriter(graphvizFile);
+             GraphWriter gw = new GraphWriter(writer)) {
+
             GraphDumper dumper = new GraphDumper(graph, unshared.getReachableNodes(), gw);
             logger.debug("writing root node");
             String rid = dumper.setRoot(graph);
@@ -358,10 +356,6 @@ public class GraphDumper {
             }
             // and we're done
             dumper.finish();
-        } catch (Throwable th) { // NOSONAR using a closer
-            throw close.rethrow(th);
-        } finally {
-            close.close();
         }
     }
 

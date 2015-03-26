@@ -23,7 +23,6 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.io.Closer;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
@@ -276,17 +275,12 @@ class ComponentCache implements NodeProcessor {
             }
             StagedWrite stage = StagedWrite.begin(cacheFile);
             try {
-                Closer closer = Closer.create();
-                try {
-                    OutputStream out = closer.register(stage.openOutputStream());
-                    OutputStream gzOut = closer.register(new GZIPOutputStream(out));
-                    ObjectOutputStream objOut = closer.register(new ObjectOutputStream(gzOut));
+                try (OutputStream out = stage.openOutputStream();
+                     OutputStream gzOut = new GZIPOutputStream(out);
+                     ObjectOutputStream objOut = new ObjectOutputStream(gzOut)) {
                     objOut.writeObject(obj);
-                } catch (Throwable th) { // NOSONAR using a closer
-                    throw closer.rethrow(th);
-                } finally {
-                    closer.close();
                 }
+                // now we commit, after closing the output files
                 stage.commit();
             } finally {
                 stage.close();
@@ -295,19 +289,17 @@ class ComponentCache implements NodeProcessor {
 
         private Object readCompressedObject(File cacheFile, Class<?> type) {
             // The file is there, load it
-            try {
-                Closer closer = Closer.create();
-                try {
-                    InputStream in = closer.register(new FileInputStream(cacheFile));
-                    InputStream gzin = closer.register(new GZIPInputStream(in));
-                    ObjectInputStream oin = closer.register(new CustomClassLoaderObjectInputStream(gzin, classLoader));
-                    return type.cast(oin.readObject());
-                } catch (Throwable th) { // NOSONAR using a closer
-                    throw closer.rethrow(th);
-                } finally {
-                    closer.close();
-                }
+            try (InputStream in = new FileInputStream(cacheFile);
+                 InputStream gzin = new GZIPInputStream(in);
+                 ObjectInputStream oin = new CustomClassLoaderObjectInputStream(gzin, classLoader)) {
+
+                return type.cast(oin.readObject());
             } catch (IOException ex) {
+                logger.warn("ignoring cache file {} due to read error: {}",
+                            cacheFile.getName(), ex.toString());
+                logger.info("This error can be caused by a corrupted cache file.");
+                return null;
+            } catch (ClassNotFoundException ex) {
                 logger.warn("ignoring cache file {} due to read error: {}",
                             cacheFile.getName(), ex.toString());
                 logger.info("This error can be caused by a corrupted cache file.");
