@@ -124,11 +124,11 @@ public class LimitedBinaryRatingDAOTest {
         assertThat(brDao.getItemIds(), containsInAnyOrder(102L, 105L, 111L));
         assertFalse(brDao.getItemIds().contains(120));/*check if it is correct syntax*/
         assertThat(brDao.getEventsForItem(120), nullValue());
-        assertThat(brDao.getEventsForItem(105), hasSize(1));
+        assertThat(brDao.getEventsForItem(105), hasSize(2));
         assertThat(brDao.getEventsForItem(105, Rating.class),
-                contains(Ratings.make(41, 105, 2.5)));
+                containsInAnyOrder(Ratings.make(39, 105, 3.5, 1000L),Ratings.make(41, 105, 2.5, 1400L)));
         assertThat(brDao.getEventsForItem(111, Rating.class),
-                containsInAnyOrder(Ratings.make(13, 111, 4.5), Ratings.make(40, 111, 4.5)));
+                containsInAnyOrder(Ratings.make(13, 111, 4.5, 1200L), Ratings.make(40, 111, 4.5, 1050L)));
 
         /*check if assertNotEqual works properly*/
         assertNotEquals(brDao.getUsersForItem(111), containsInAnyOrder(41L));
@@ -149,11 +149,10 @@ public class LimitedBinaryRatingDAOTest {
         assertThat(brDao.getUserIds(),  containsInAnyOrder(12L, 13L, 39L, 40L));
         assertFalse(brDao.getUserIds().contains(42));/*check if it is correct syntax*/
         assertThat(brDao.getEventsForUser(42), nullValue());
-        assertThat(brDao.getEventsForUser(41), hasSize(1));
+        assertThat(brDao.getEventsForUser(40), hasSize(1));
         assertThat(brDao.getEventsForUser(41), nullValue());
         assertThat(brDao.getEventsForUser(13, Rating.class),
-                containsInAnyOrder(Ratings.make(13, 102, 3.5),
-                        Ratings.make(13, 111, 4.5)));
+                containsInAnyOrder(Ratings.make(13, 102, 3.5, 1000L), Ratings.make(13, 111, 4.5, 1200L)));
     }
 
     /**
@@ -185,12 +184,12 @@ public class LimitedBinaryRatingDAOTest {
         BinaryRatingDAO highLimitDao = lowLimitDao.createWindowedView(1700L);
 
         assertThat(Cursors.makeList(highLimitDao.streamEvents()),
-                hasSize(7));
+                hasSize(6));
         assertThat(highLimitDao.getEventsForItem(120), nullValue());
-        assertThat(highLimitDao.getEventsForUser(42), hasSize(1));
+        assertThat(highLimitDao.getEventsForUser(42), nullValue());
+        assertThat(highLimitDao.getEventsForUser(40), hasSize(1));
         assertFalse(highLimitDao.getEventsForItem(111).contains(1700L));
         assertThat(highLimitDao.getUsersForItem(111), hasSize(2));
-
     }
 
     /**
@@ -204,43 +203,43 @@ public class LimitedBinaryRatingDAOTest {
                 hasSize(6));
 
         //test getters for user
-        assertThat(dao.getUserIds(), containsInAnyOrder(12L,13L,39L,40L));
-        assertThat(dao.getUsersForItem(105), containsInAnyOrder(39L,41L));
-        assertThat(dao.getUsersForItem(120), nullValue());
-        assertThat(dao.getEventsForUser(39, Rating.class),
-                contains(Ratings.make(39, 105, 3.5)));
-        assertThat(dao.getEventsForUser(13, Rating.class),
-                containsInAnyOrder(Ratings.make(13, 102, 3.5),
-                        Ratings.make(13, 111, 4.5)));
-        assertThat(dao.getEventsForUser(42), nullValue());
+        assertThat(brDao.getUserIds(), containsInAnyOrder(12L, 13L, 39L, 40L, 41L));
+        assertThat(brDao.getUsersForItem(105), containsInAnyOrder(39L,41L));
+        assertThat(brDao.getUsersForItem(120), nullValue());
+        assertThat(brDao.getEventsForUser(39, Rating.class),
+                contains(Ratings.make(39, 105, 3.5, 1000L)));
+        assertThat(brDao.getEventsForUser(13, Rating.class),
+                containsInAnyOrder(Ratings.make(13, 102, 3.5, 1000L),
+                        Ratings.make(13, 111, 4.5, 1200L)));
+        assertThat(brDao.getEventsForUser(42), nullValue());
 
         //test getters for item
-        assertThat(dao.getItemIds(), containsInAnyOrder(102L, 105L, 111L));
-        assertThat(dao.getEventsForItem(12, Rating.class),
-                contains(Ratings.make(12, 102, 2.5)));
-        assertThat(dao.getEventsForItem(105, Rating.class),
-                containsInAnyOrder(Ratings.make(39, 105, 3.5),
-                        Ratings.make(41, 105, 2.5)));
-        assertThat(dao.getEventsForItem(120), nullValue());
+        assertThat(brDao.getItemIds(), containsInAnyOrder(102L, 105L, 111L));
+        assertThat(brDao.getEventsForItem(102, Rating.class),
+                contains(Ratings.make(13, 102, 3.5, 1000L),Ratings.make(12, 102, 2.5, 1050L)));
+        assertThat(brDao.getEventsForItem(105, Rating.class),
+                containsInAnyOrder(Ratings.make(39, 105, 3.5, 1000L),
+                        Ratings.make(41, 105, 2.5, 1400L)));
+        assertThat(brDao.getEventsForItem(120), nullValue());
 
         //test streamEventsByUser
-        List<UserHistory<Event>> histories = Cursors.makeList(dao.streamEventsByUser());
+        List<UserHistory<Event>> histories = Cursors.makeList(brDao.streamEventsByUser());
         assertThat(histories, hasSize(6));
         assertThat(histories.get(0).getUserId(), equalTo(12L));
         assertThat(histories.get(0),
-                equalTo(dao.getEventsForUser(12L)));
+                equalTo(brDao.getEventsForUser(12L)));
         assertThat(histories.get(1).getUserId(), equalTo(13L));
         assertThat(histories.get(1),
-                equalTo(dao.getEventsForUser(13)));
+                equalTo(brDao.getEventsForUser(13)));
 
         //test streamEvents
-        List<Rating> events = Cursors.makeList(dao.streamEvents(Rating.class, SortOrder.USER));
+        List<Rating> events = Cursors.makeList(brDao.streamEvents(Rating.class, SortOrder.USER));
         assertThat(events, hasSize(6));
         assertThat(events.get(0).getUserId(), equalTo(12L));
 
-        events = Cursors.makeList(dao.streamEvents(Rating.class, SortOrder.ITEM));
+        events = Cursors.makeList(brDao.streamEvents(Rating.class, SortOrder.ITEM));
         assertThat(events, hasSize(6));
-        assertThat(events.get(0).getUserId(), equalTo(12L));
+        assertThat(events.get(0).getUserId(), equalTo(13L));
         assertThat(events.get(0).getItemId(), equalTo(102L));
         assertThat(events.get(2).getItemId(), equalTo(105L));
     }

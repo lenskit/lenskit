@@ -108,7 +108,10 @@ class BinaryIndexTable implements Serializable {
             } else {
                 //following loop need to be replaced with binary rating search
                 for (int j= offsets[i];j<(offsets[i]+sizes[i]);j++) {
-                    //find the new 'size' value; this is the number of indexes for this key that are less than the limit.
+                    /*
+                    * find the new 'size' value; this is the number of indexes for this key that
+                    * are less than the limit
+                    */
                     if(indexStore.get(j)<limit)
                         newSizes[i]+=1;
                 }
@@ -126,11 +129,10 @@ class BinaryIndexTable implements Serializable {
      * @return The position list.
      */
     public IntList getEntry(long key) {
-        int idx = keys.getIndex(key);
+        int idx = keys.getIndexIfActive(key);
         if (idx < 0) {
             return null;
         }
-
         return getEntryInternal(idx);
     }
 
@@ -230,7 +232,7 @@ class BinaryIndexTable implements Serializable {
                 throw new InvalidObjectException("arrays not the same length");
             }
             return new BinaryIndexTable(LongKeyDomain.wrap(keys, keys.length, true),
-                                        offsets, sizes, buffer.duplicate());
+                    offsets, sizes, buffer.duplicate());
         }
     }
 }

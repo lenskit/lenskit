@@ -92,7 +92,7 @@ public class BinaryIndexTableTest {
         assertThat(tbl.getKeys(), contains(12L,17L));
         assertThat(tbl.getEntry(12), contains(0));
         assertThat(tbl.getEntry(17), contains(1));
-        assertThat(tbl.getEntry(19), nullValue());//check
+        assertThat(tbl.getEntry(19), nullValue());
         assertThat(tbl.getEntry(-1), nullValue());
     }
 }

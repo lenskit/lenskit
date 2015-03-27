@@ -133,15 +133,15 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             FileChannel channel = input.getChannel();
             BinaryHeader header = BinaryHeader.read(channel);
             logger.info("Loading DAO with {} ratings of {} items from {} users",
-                        header.getRatingCount(), header.getItemCount(), header.getUserCount());
+                    header.getRatingCount(), header.getItemCount(), header.getUserCount());
             // the channel position has been advanced to end of header
 
             ByteBuffer data = channel.map(FileChannel.MapMode.READ_ONLY,
-                                          channel.position(), header.getRatingDataSize());
+                    channel.position(), header.getRatingDataSize());
             channel.position(channel.position() + header.getRatingDataSize());
 
             ByteBuffer tableBuffer = channel.map(FileChannel.MapMode.READ_ONLY,
-                                                 channel.position(), channel.size() - channel.position());
+                    channel.position(), channel.size() - channel.position());
             BinaryIndexTable utbl = BinaryIndexTable.fromBuffer(header.getUserCount(), tableBuffer);
             BinaryIndexTable itbl = BinaryIndexTable.fromBuffer(header.getItemCount(), tableBuffer);
 
@@ -186,7 +186,6 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     }
 
     private BinaryRatingList getRatingList() {
-        //return getRatingList(CollectionUtils.interval(0, header.getRatingCount()));
         return getRatingList(CollectionUtils.interval(0, limitIndex));
     }
 
@@ -214,20 +213,20 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         final Cursor<Rating> cursor;
 
         switch (order) {
-        case ANY:
-        case TIMESTAMP:
-            cursor = getRatingList().cursor();
-            break;
-        case USER:
-            cursor = Cursors.concat(Iterables.transform(userTable.entries(),
-                                                        new EntryToCursorTransformer()));
-            break;
-        case ITEM:
-            cursor = Cursors.concat(Iterables.transform(itemTable.entries(),
-                                                        new EntryToCursorTransformer()));
-            break;
-        default:
-            throw new IllegalArgumentException("unexpected sort order");
+            case ANY:
+            case TIMESTAMP:
+                cursor = getRatingList().cursor();
+                break;
+            case USER:
+                cursor = Cursors.concat(Iterables.transform(userTable.entries(),
+                        new EntryToCursorTransformer()));
+                break;
+            case ITEM:
+                cursor = Cursors.concat(Iterables.transform(itemTable.entries(),
+                        new EntryToCursorTransformer()));
+                break;
+            default:
+                throw new IllegalArgumentException("unexpected sort order");
         }
 
         return (Cursor<E>) cursor;
@@ -249,7 +248,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         if (type.isAssignableFrom(Rating.class)) {
             // cast is safe, Rating extends E
             return (Cursor) Cursors.wrap(Collections2.transform(itemTable.entries(),
-                                                                new ItemEntryTransformer()));
+                    new ItemEntryTransformer()));
         } else {
             return Cursors.empty();
         }
@@ -309,7 +308,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         if (type.isAssignableFrom(Rating.class)) {
             // cast is safe, E super Rating
             return (Cursor) Cursors.wrap(Collections2.transform(userTable.entries(),
-                                                                new UserEntryTransformer()));
+                    new UserEntryTransformer()));
         } else {
             return Cursors.empty();
         }
@@ -341,10 +340,10 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     public void describeTo(DescriptionWriter writer) {
         if (backingFile != null) {
             writer.putField("file", backingFile.getAbsolutePath())
-                  .putField("mtime", backingFile.lastModified());
+                    .putField("mtime", backingFile.lastModified());
         } else {
             writer.putField("file", "/dev/null")
-                  .putField("mtime", 0);
+                    .putField("mtime", 0);
         }
         writer.putField("header", header.render());
     }
