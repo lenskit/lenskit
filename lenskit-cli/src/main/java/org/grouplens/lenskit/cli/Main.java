@@ -25,6 +25,7 @@ import net.sourceforge.argparse4j.inf.*;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.grouplens.lenskit.core.LenskitInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,13 +56,16 @@ public class Main {
         registerClass(subparsers, Predict.class);
         registerClass(subparsers, Graph.class);
         registerClass(subparsers, GlobalRecommend.class);
+        registerClass(subparsers, Crossfold.class);
 
         try {
             Namespace options = parser.parseArgs(args);
             Logging.configureLogging(options);
             Runtime rt = Runtime.getRuntime();
-            logger.info("Starting LensKit on Java {} from {}",
+            logger.info("Starting LensKit {} on Java {} from {}",
+                        LenskitInfo.lenskitVersion(),
                         SystemUtils.JAVA_VERSION, SystemUtils.JAVA_VENDOR);
+            logger.debug("Built from Git revision {}", LenskitInfo.getHeadRevision());
             logger.debug("Using VM '{}' version {} from {}",
                          SystemUtils.JAVA_VM_NAME,
                          SystemUtils.JAVA_VM_VERSION,

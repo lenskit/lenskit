@@ -25,11 +25,9 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -62,28 +60,6 @@ public class AbstractPollingCursorTest {
             } else {
                 return null;
             }
-        }
-    }
-
-    private static class NumPC extends AbstractPollingCursor<Number> {
-        private AtomicInteger number = new AtomicInteger();
-        private final int max;
-        public NumPC(int m) {
-            max = m;
-        }
-
-        @Override
-        public Number poll() {
-            if (number.getAndIncrement() < max) {
-                return number;
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public Number copy(Number n) {
-            return n.intValue();
         }
     }
 
@@ -146,43 +122,5 @@ public class AbstractPollingCursorTest {
         List<String> strs = Cursors.makeList(cur);
         assertThat(strs, hasSize(3));
         assertThat(strs, contains("foo", "bar", "blatz"));
-    }
-
-    @Test
-    @SuppressWarnings("deprecation")
-    public void testCopyingCursorFast() {
-        Cursor<Number> nums = new NumPC(3);
-        try {
-            assertThat(nums.hasNext(), equalTo(true));
-            Number first = nums.fastNext();
-            assertThat(first.intValue(), equalTo(1));
-            Number n2 = nums.fastNext();
-            assertThat(n2.intValue(), equalTo(2));
-            assertThat(n2, sameInstance(first));
-            n2 = nums.fastNext();
-            assertThat(n2.intValue(), equalTo(3));
-            assertThat(n2, sameInstance(first));
-            try {
-                nums.fastNext();
-                fail("firstNext should fail after checking");
-            } catch (NoSuchElementException e) {
-                /* expected */
-            }
-            assertThat(nums.hasNext(), equalTo(false));
-        } finally {
-            nums.close();
-        }
-    }
-
-    @Test
-    public void testCopyingCursor() {
-        Cursor<Number> nums = new NumPC(3);
-        try {
-            List<Number> list = Cursors.makeList(nums);
-            assertThat(list, hasSize(3));
-            assertThat(list, contains((Number) 1, 2, 3));
-        } finally {
-            nums.close();
-        }
     }
 }

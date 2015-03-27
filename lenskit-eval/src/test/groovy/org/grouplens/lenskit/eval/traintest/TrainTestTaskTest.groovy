@@ -262,6 +262,35 @@ class TrainTestTaskTest {
     }
 
     @Test
+    void testMultiMetric() {
+        eval {
+            dataset crossfold("tempRatings") {
+                source file
+                partitions 2
+                holdout 1
+                train "${folder.root.absolutePath}/ratings.train.%d.csv"
+                test "${folder.root.absolutePath}/ratings.test.%d.csv"
+            }
+            // FIXME This should work without the file object
+            def innerFile = new File("${folder.root.absolutePath}/measure.csv")
+            multiMetric(innerFile, ["Item", "MeanRating"]) { LenskitRecommender rec ->
+                def scorer = rec.get(ItemMeanRatingItemScorer)
+                def means = scorer.itemMeans
+                means.collect { e -> [e.key, e.value]}
+            }
+            algorithm {
+                bind ItemScorer to ItemMeanRatingItemScorer
+            }
+            output null
+        }
+        command.execute()
+        assertThat(command.isDone(), equalTo(true))
+        assertThat(command.get(), notNullValue())
+        assertThat(new File("${folder.root.absolutePath}/measure.csv").exists(),
+                   equalTo(true))
+    }
+
+    @Test
     void testFailedRun() {
         eval {
             dataset crossfold("tempRatings") {

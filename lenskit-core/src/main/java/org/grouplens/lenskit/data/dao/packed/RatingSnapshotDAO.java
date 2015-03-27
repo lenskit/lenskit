@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
-import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
@@ -170,16 +169,10 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
                 order = SortOrder.TIMESTAMP;
             }
 
-            Closer closer = Closer.create();
             try {
-                try {
-                    BinaryRatingPacker packer = closer.register(BinaryRatingPacker.open(file, flags));
-                    Cursor<Rating> ratings = closer.register(dao.streamEvents(Rating.class, order));
+                try (BinaryRatingPacker packer = BinaryRatingPacker.open(file, flags);
+                     Cursor<Rating> ratings = dao.streamEvents(Rating.class, order)) {
                     packer.writeRatings(ratings);
-                } catch (Throwable th) { // NOSONAR using a closer
-                    throw closer.rethrow(th);
-                } finally {
-                    closer.close();
                 }
                 BinaryRatingDAO result = BinaryRatingDAO.open(file);
                 // try to delete the file early, helps keep things clean on Unix

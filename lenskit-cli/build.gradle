@@ -33,7 +33,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 import org.gradle.process.internal.ExecException
+
 import java.util.zip.ZipFile
 
 apply from: "$rootDir/gradle/maven.gradle"
@@ -52,21 +54,6 @@ meta {
     name 'LensKit CLI'
     description 'Command-line tools for interacting with LensKit.'
 }
-
-// Make LensKit version info available
-task versionInfo {
-    ext.versionFile = {
-        "$sourceSets.main.output.resourcesDir/META-INF/lenskit/version.properties"
-    }
-    outputs.file versionFile
-    inputs.property 'version', version
-}
-versionInfo << {
-    def vf = file(versionFile)
-    mkdir vf.parentFile
-    vf.text = "lenskit.version=$version\n"
-}
-classes.dependsOn versionInfo
 
 // Build an application
 apply plugin: 'application'

@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.cli;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.io.Closer;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.RecommenderBuildException;
@@ -78,16 +77,11 @@ public class TrainModel implements Command {
         logger.info("built model in {}", timer);
         File output = getOutputFile();
         CompressionMode comp = CompressionMode.autodetect(output);
+
         logger.info("writing model to {}", output);
-        Closer closer = Closer.create();
-        try {
-            OutputStream stream = closer.register(new FileOutputStream(output));
-            stream = closer.register(comp.wrapOutput(stream));
+        try (OutputStream raw = new FileOutputStream(output);
+             OutputStream stream = comp.wrapOutput(raw)) {
             engine.write(stream);
-        } catch (Throwable th) { // NOSONAR using a closer
-            throw closer.rethrow(th);
-        } finally {
-            closer.close();
         }
     }
 

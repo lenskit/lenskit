@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.cli;
 
-import com.google.common.io.Closer;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
@@ -78,16 +77,10 @@ public class PackRatings implements Command {
             flags.add(BinaryFormatFlag.TIMESTAMPS);
         }
         logger.info("packing to {} with flags {}", getOutputFile(), flags);
-        Closer closer = Closer.create();
-        try {
-            BinaryRatingPacker packer = closer.register(BinaryRatingPacker.open(getOutputFile(), flags));
-            Cursor<Rating> ratings = closer.register(dao.streamEvents(Rating.class));
+        try (BinaryRatingPacker packer = BinaryRatingPacker.open(getOutputFile(), flags);
+        Cursor<Rating> ratings = dao.streamEvents(Rating.class)) {
             packer.writeRatings(ratings);
             logger.info("packed {} ratings", packer.getRatingCount());
-        } catch (Throwable th) { // NOSONAR using a closer
-            throw closer.rethrow(th);
-        } finally {
-            closer.close();
         }
     }
 

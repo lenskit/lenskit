@@ -18,38 +18,24 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util;
+package org.grouplens.lenskit.specs;
 
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.junit.Test;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import javax.annotation.Nonnull;
+import java.util.Map;
 
 /**
- * 
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- *
+ * Interface allowing an object to produce a specification to recreate itself.
  */
-@SuppressWarnings("deprecation")
-public class IndexerTest {
-
-    @Test
-    public void testConvertArrayToVector(){
-        Indexer ind = new Indexer();
-        MutableSparseVector vector = MutableSparseVector.create();
-        double[] values = {1.0, 2.0, 3.0};
-        assertThat(ind.getObjectCount(), equalTo(0));
-        
-        ind.internId(0);
-        ind.internId(1);
-        ind.internId(2);
-        assertThat(ind.getObjectCount(), equalTo(3));
-        
-        vector = ind.convertArrayToVector(values);
-        assertThat(vector.get(0), equalTo(1.0));
-        assertThat(vector.get(1), equalTo(2.0));
-        assertThat(vector.get(2), equalTo(3.0));
-    }
-
+public interface Specifiable {
+    /**
+     * Create a specification for this object.  The return value should be a JSON-like structure,
+     * such that wrapping it in {@link com.typesafe.config.ConfigFactory#parseMap(java.util.Map)}
+     * and passing it to {@link SpecificationContext#build(Class, com.typesafe.config.Config)} will
+     * result in an equivalent object.
+     *
+     * @return A specification for this object.
+     * @param context The context for generating the specification.
+     */
+    @Nonnull
+    Map<String,Object> toSpecification(SpecificationContext context);
 }

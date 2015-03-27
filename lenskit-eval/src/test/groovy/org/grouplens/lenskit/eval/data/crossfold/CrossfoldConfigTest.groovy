@@ -20,24 +20,20 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold
 
+import org.grouplens.lenskit.cursors.Cursors
 import org.grouplens.lenskit.data.dao.EventDAO
+import org.grouplens.lenskit.data.event.Rating
+import org.grouplens.lenskit.eval.data.traintest.TTDataSet
+import org.grouplens.lenskit.eval.script.ConfigTestBase
+import org.grouplens.lenskit.specs.SpecificationContext
+import org.grouplens.lenskit.util.test.MiscBuilders
+import org.junit.Before
 import org.junit.Rule
+import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
 import static org.hamcrest.Matchers.*
-import static org.junit.Assert.*
-
-import org.grouplens.lenskit.cursors.Cursors
-
-import org.grouplens.lenskit.data.event.Rating
-import org.grouplens.lenskit.eval.script.ConfigTestBase
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet
-import org.junit.After
-import org.junit.Before
-import org.junit.Ignore
-import org.junit.Test
-
-import com.google.common.io.Files
+import static org.junit.Assert.assertThat
 
 /**
  * Test crossfold configuration
@@ -106,6 +102,58 @@ class CrossfoldConfigTest extends ConfigTestBase {
             List<Rating> ratings = Cursors.makeList(dao.streamEvents(Rating.class));
 
             assertThat(ratings.size(), equalTo(2))
+        }
+    }
+
+    @Test
+    void testCrossfoldSpecOutput() {
+        def obj = eval {
+            crossfold("tempRatings") {
+                source file
+                partitions 5
+                train "$folder.root.absolutePath/ratings.train/%d.csv"
+                test "$folder.root.absolutePath/ratings.test/%d.csv"
+                spec "$folder.root.absolutePath/data.%d.json"
+            }
+        }
+        assertThat(obj.size(), equalTo(5))
+        assertThat(obj[1], instanceOf(TTDataSet))
+        for (int i = 0; i < 5; i++) {
+            def uri = folder.root.toURI()
+            def data = SpecificationContext.build(TTDataSet, uri.resolve("data.${i}.json"))
+            def dao = data.testDAO
+            assertThat(dao, notNullValue())
+        }
+    }
+
+    @Test
+    void testCrossfoldBasicSpec() {
+        def spec = MiscBuilders.configObj {
+            name "tempRatings"
+            source {
+                type "text"
+                file file.toURI().toString()
+                delimiter ","
+            }
+            partitions 10
+            holdoutFraction 0.5
+            order 'random'
+            outputDir folder.root.absolutePath
+        }
+        def task = SpecificationContext.create().build(CrossfoldTask, spec)
+        task.setProject(engine.createProject())
+        def obj = task.perform()
+        assertThat(obj.size(), equalTo(10))
+        assertThat(obj[1], instanceOf(TTDataSet))
+        def tt = obj as List<TTDataSet>
+        assertThat(tt[1].name, equalTo("tempRatings.1"))
+        assertThat(tt[2].attributes.get("Partition"), equalTo(2))
+        assertThat(tt[3].testDAO, instanceOf(EventDAO))
+        for (int i = 0; i < 5; i++) {
+            def uri = folder.root.toURI()
+            def data = SpecificationContext.build(TTDataSet, uri.resolve("split.${i}.json"))
+            def dao = data.testDAO
+            assertThat(dao, notNullValue())
         }
     }
 }

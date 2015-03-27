@@ -27,8 +27,6 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.specs.SpecificationException;
 
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.util.Set;
 
 /**
@@ -59,6 +57,9 @@ public class TextDataSourceSpecHandler implements DataSourceSpecHandler {
         CSVDataSourceBuilder bld = new CSVDataSourceBuilder();
 
         bld.setDelimiter(",");
+        if (cfg.hasPath("name")) {
+            bld.setName(cfg.getString("name"));
+        }
         if (cfg.hasPath("delimiter")) {
             bld.setDelimiter(cfg.getString("delimiter"));
         } else if (cfg.getString("type").equalsIgnoreCase("tsv")) {
@@ -69,18 +70,8 @@ public class TextDataSourceSpecHandler implements DataSourceSpecHandler {
             bld.setDomain(ctx.build(PreferenceDomain.class, cfg.getConfig("domain")));
         }
 
-        String file = cfg.getString("file");
-        URI uri = ctx.getBaseURI().resolve(file);
-        if (uri.isAbsolute()) {
-            try {
-                // FIXME This doesn't really work
-                bld.setFile(uri.toURL().getFile());
-            } catch (MalformedURLException e) {
-                throw new SpecificationException(e);
-            }
-        } else {
-            bld.setFile(uri.toString());
-        }
+        String path = cfg.getString("file");
+        bld.setFile(ctx.resolveFile(path));
 
         return bld.build();
     }

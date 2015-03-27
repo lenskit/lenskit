@@ -63,7 +63,6 @@ public class PackedScoredIdListTest {
             /* expected */
         }
         assertThat(list.iterator().hasNext(), equalTo(false));
-        assertThat(list.fastIterator().hasNext(), equalTo(false));
     }
 
     @Test

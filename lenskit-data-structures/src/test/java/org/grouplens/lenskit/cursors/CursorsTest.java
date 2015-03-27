@@ -58,23 +58,6 @@ public class CursorsTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation")
-    public void testEmptyCursorFastNext() {
-        Cursor<String> cur = Cursors.empty();
-        try {
-            assertThat(cur.hasNext(), equalTo(false));
-            try {
-                cur.fastNext();
-                fail("next() on empty cursor should fail");
-            } catch (NoSuchElementException e) {
-                /* expected */
-            }
-        } finally {
-            cur.close();
-        }
-    }
-
-    @Test
     public void testEmptyCursorIterable() {
         Cursor<String> cur = Cursors.empty();
         try {
@@ -123,32 +106,6 @@ public class CursorsTest {
             try {
                 cursor.next();
                 fail("next should fail on empty cursor");
-            } catch (NoSuchElementException e) {
-            /* expected */
-            }
-        } finally {
-            cursor.close();
-        }
-    }
-
-    @Test
-    @SuppressWarnings("deprecation")
-    public void testWrapCollectionFastNext() {
-        Cursor<String> cursor = Cursors.wrap(Lists.newArrayList("foo", "bar"));
-        try {
-            assertThat(cursor.getRowCount(),
-                       equalTo(2));
-            assertThat(cursor.hasNext(),
-                       equalTo(true));
-            assertThat(cursor.fastNext(),
-                       equalTo("foo"));
-            assertThat(cursor.fastNext(),
-                       equalTo("bar"));
-            assertThat(cursor.hasNext(),
-                       equalTo(false));
-            try {
-                cursor.fastNext();
-                fail("fastNext should fail on empty cursor");
             } catch (NoSuchElementException e) {
             /* expected */
             }

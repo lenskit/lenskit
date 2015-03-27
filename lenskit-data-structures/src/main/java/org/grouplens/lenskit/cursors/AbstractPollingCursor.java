@@ -63,8 +63,7 @@ public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
 
     @Nonnull
     @Override
-    @Deprecated
-    public T fastNext() {
+    public T next() {
         if (!hasNextCalled) {
             polled = poll();
         }
@@ -78,36 +77,16 @@ public abstract class AbstractPollingCursor<T> extends AbstractCursor<T> {
         return n;
     }
 
-    @Nonnull
-    @Override
-    public T next() {
-        return copy(fastNext());
-    }
-
     /**
      * Return the next element in this Cursor, or null if there are no more
      * elements. This must be safe to call multiple times at the end of its
-     * collection. The same element object is allowed to be reused (fast
-     * iteration), so long as {@link #copy(Object)} copies objects.  If this
-     * method returns a fresh object every time, then {@link #copy(Object)}
-     * should be a no-op.
+     * collection.
+     * <p>
+     * <strong>Change in 3.0:</strong> Previously, this method was allowed to return the same object
+     * repeatedly, mutated to represent the next result. This is no longer permitted.
+     * </p>
      *
-     * @return The next element, or null
+     * @return The next element, or null.
      */
     protected abstract T poll();
-
-    /**
-     * Construct a copy of an object. The default does not copy; it just returns
-     * its parameter. If a subclass wants to fast iteration to actually be fast
-     * (mutate and reuse the same object), it should do so in its {@link #poll()}
-     * method, and override this method to create a new copy of an object for when
-     * {@link #next()} is called. Subclasses which return fresh objects on each
-     * call to {@link #poll()} do not need to override this method.
-     *
-     * @param obj The object to copy.
-     * @return A copy of {@code obj}.
-     */
-    protected T copy(T obj) {
-        return obj;
-    }
 }

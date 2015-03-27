@@ -24,17 +24,11 @@
 package org.grouplens.lenskit.collections;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 
-import java.util.AbstractCollection;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-
-import static it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet;
 
 /**
  * Various helper methods for working with collections (particularly Fastutil
@@ -45,39 +39,6 @@ import static it.unimi.dsi.fastutil.longs.Long2DoubleMap.FastEntrySet;
  */
 public final class CollectionUtils {
     private CollectionUtils() {
-    }
-
-    /**
-     * Use the fast iterator of an iterable, if available.
-     *
-     * @param <E>  The type of object to iterate.
-     * @param iter An iterable to wrap
-     * @return An iterable using the underlying iterable's fast iterator, if present,
-     *         to do iteration. Fast iteration is detected by looking for a {@code fastIterator()}
-     *         method, like is present in {@link FastEntrySet}.
-     * @deprecated Fast iteration has gone away.  This method now does nothing.
-     */
-    @Deprecated
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public static <E> Iterable<E> fast(final Iterable<E> iter) {
-        return iter;
-    }
-
-    /**
-     * Fast-aware filter-and-limit operation, filtering an iterable.  If the underlying iterable
-     * does not support fast iteration, then the returned iterable's fast iteration will fall back
-     * to ordinary iteration.
-     *
-     * @param iter The iterable to filter and limit.
-     * @param pred The predicate for filtering.
-     * @param limit The maximum number of items to return (negative for unlimited).
-     * @param <E> The type of data in the iterable.
-     * @return A fast iterable filtering and limiting.
-     * @deprecated Fast iteration has gone away.
-     */
-    @Deprecated
-    public static <E> FastIterable<E> fastFilterAndLimit(Iterable<E> iter, Predicate<? super E> pred, int limit) {
-        return new FilteringFastIterable<E>(iter, pred, limit);
     }
 
     /**
@@ -104,36 +65,6 @@ public final class CollectionUtils {
      */
     public static <T> List<T> repeat(T obj, int n) {
         return new RepeatedList<T>(obj, n);
-    }
-
-    /**
-     * Create an empty, immutable fast collection.
-     *
-     * @param <E> The type of fast collection.
-     * @return An empty fast collection.
-     * @deprecated Just use a standard empty collection.
-     */
-    @Deprecated
-    public static <E> FastCollection<E> emptyFastCollection() {
-        return new EmptyFastCollection<E>();
-    }
-
-    @SuppressWarnings("deprecation")
-    private static class EmptyFastCollection<E> extends AbstractCollection<E> implements FastCollection<E> {
-        @Override
-        public Iterator<E> fastIterator() {
-            return Iterators.emptyIterator();
-        }
-
-        @Override
-        public Iterator<E> iterator() {
-            return Iterators.emptyIterator();
-        }
-
-        @Override
-        public int size() {
-            return 0;
-        }
     }
 
     /**

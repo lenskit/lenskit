@@ -21,9 +21,9 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
-import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -91,7 +91,6 @@ abstract class TrainTestJob implements Callable<Void> {
     private void runEvaluation() throws IOException, RecommenderBuildException {
         EventBus bus = task.getProject().getEventBus();
         bus.post(JobEvents.started(this));
-        Closer closer = Closer.create();
         try {
             outputs = task.getOutputs().getPrefixed(algorithmInfo, dataSet);
             TableWriter userResults = outputs.getUserWriter();
@@ -173,14 +172,10 @@ abstract class TrainTestJob implements Callable<Void> {
             bus.post(JobEvents.finished(this));
         } catch (Throwable th) { // NOSONAR using a closer
             bus.post(JobEvents.failed(this, th));
-            throw closer.rethrow(th, RecommenderBuildException.class);
+            Throwables.propagateIfPossible(th, RecommenderBuildException.class);
+            throw Throwables.propagate(th);
         } finally {
-            try {
-                cleanup();
-            } finally {
-                outputs = null;
-                closer.close();
-            }
+            cleanup();
         }
     }
 

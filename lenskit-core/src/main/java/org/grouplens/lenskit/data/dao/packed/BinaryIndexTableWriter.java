@@ -25,7 +25,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
- * Write an index table and store.
+ * Write an index table.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -36,7 +36,13 @@ class BinaryIndexTableWriter {
     private final long tableStartPosition;
     private long currentEntryPosition;
 
+    /**
+     * Scratch buffer for storing table entries.
+     */
     private ByteBuffer entryBuffer;
+    /**
+     * Scratch buffer for storing integers to write to the index store.
+     */
     private ByteBuffer storeBuffer;
 
     // current offset into the store.
@@ -58,6 +64,12 @@ class BinaryIndexTableWriter {
         return new BinaryIndexTableWriter(fmt, chan, nkeys);
     }
 
+    /**
+     * Write an entry into the index table.
+     * @param id The ID.
+     * @param indexes The indexes to store.
+     * @throws IOException if there is an I/O error
+     */
     public void writeEntry(long id, int[] indexes) throws IOException {
         writeEntryHeader(id, indexes.length);
 
@@ -84,6 +96,12 @@ class BinaryIndexTableWriter {
                                      + (currentOffset * BinaryFormat.INT_SIZE);
     }
 
+    /**
+     * Write the header table entry for an index entry.
+     * @param id The key/ID.
+     * @param length The number of indexes for this table.
+     * @throws IOException If there is an I/O error.
+     */
     private void writeEntryHeader(long id, int length) throws IOException {
         assert entryBuffer.position() == 0;
         entryBuffer.putLong(id);
@@ -93,9 +111,5 @@ class BinaryIndexTableWriter {
         BinaryUtils.writeBuffer(channel, entryBuffer, currentEntryPosition);
         entryBuffer.clear();
         currentEntryPosition += BinaryIndexTable.TABLE_ENTRY_SIZE;
-    }
-
-    private void finish() throws IOException {
-
     }
 }

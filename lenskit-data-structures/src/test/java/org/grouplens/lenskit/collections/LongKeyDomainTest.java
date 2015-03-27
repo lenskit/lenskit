@@ -101,4 +101,15 @@ public class LongKeyDomainTest {
         assertThat(keys.lowerBound(8), equalTo(2));
         assertThat(keys.lowerBound(10), equalTo(3));
     }
+
+    @Test
+    public void testDeactivateKey() {
+        LongKeyDomain keys = LongKeyDomain.create(5, 6, 7, 8);
+        keys.setAllActive(true);
+        assertThat(keys.activeSetView(), contains(5L, 6L, 7L, 8L));
+        assertThat(keys.activeSetView().size(), equalTo(4));
+        keys.setActive(2, false);
+        assertThat(keys.activeSetView(), contains(5L, 6L, 8L));
+        assertThat(keys.activeSetView().size(), equalTo(3));
+    }
 }

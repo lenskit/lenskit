@@ -71,18 +71,6 @@ class SequencedCursor<T> extends AbstractCursor<T> {
         }
     }
 
-    @Nonnull
-    @Override
-    @Deprecated
-    public T fastNext() {
-        if (hasNext()) {
-            assert current != null && current.hasNext();
-            return current.fastNext();
-        } else {
-            throw new NoSuchElementException();
-        }
-    }
-
     @Override
     public void close() {
         Throwable error = null;

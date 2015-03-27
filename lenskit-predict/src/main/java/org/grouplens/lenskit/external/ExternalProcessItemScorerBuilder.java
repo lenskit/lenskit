@@ -24,7 +24,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
-import com.google.common.io.Closer;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.ItemScorer;
@@ -286,28 +285,20 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
             }
             logger.info("writing ratings to {}", name);
             File file = new File(workingDir, name);
-            try {
-                Closer closer = Closer.create();
-                try {
-                    PrintWriter writer = closer.register(new PrintWriter(file));
-                    Cursor<Rating> ratings = closer.register(eventDAO.streamEvents(Rating.class));
-                    for (Rating r: ratings) {
-                        writer.printf("%d,%d,", r.getUserId(), r.getItemId());
-                        Preference p = r.getPreference();
-                        if (p != null) {
-                            writer.print(p.getValue());
-                        }
-                        writer.print(",");
-                        long ts = r.getTimestamp();
-                        if (ts >= 0) {
-                            writer.print(ts);
-                        }
-                        writer.println();
+            try (PrintWriter writer = new PrintWriter(file);
+                 Cursor<Rating> ratings = eventDAO.streamEvents(Rating.class)) {
+                for (Rating r: ratings) {
+                    writer.printf("%d,%d,", r.getUserId(), r.getItemId());
+                    Preference p = r.getPreference();
+                    if (p != null) {
+                        writer.print(p.getValue());
                     }
-                } catch (Throwable th) { //NOSONAR we use Closer
-                    throw closer.rethrow(th);
-                } finally {
-                    closer.close();
+                    writer.print(",");
+                    long ts = r.getTimestamp();
+                    if (ts >= 0) {
+                        writer.print(ts);
+                    }
+                    writer.println();
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Error creating ratings file", e);
@@ -335,19 +326,11 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
             }
             logger.info("writing {} to {}", prefix, name);
             File file = new File(workingDir, name);
-            try {
-                Closer closer = Closer.create();
-                try {
-                    PrintWriter writer = closer.register(new PrintWriter(file));
-                    LongSet ids = getIds();
-                    LongIterator iter = ids.iterator();
-                    while (iter.hasNext()) {
-                        writer.println(iter.nextLong());
-                    }
-                } catch (Throwable th) { //NOSONAR we use Closer
-                    throw closer.rethrow(th);
-                } finally {
-                    closer.close();
+            try (PrintWriter writer = new PrintWriter(file)) {
+                LongSet ids = getIds();
+                LongIterator iter = ids.iterator();
+                while (iter.hasNext()) {
+                    writer.println(iter.nextLong());
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Error creating ratings file", e);

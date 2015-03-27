@@ -25,7 +25,6 @@ import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.fastutil.Swapper;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -67,6 +66,9 @@ public class BinaryRatingPacker implements Closeable {
     private long lastTimestamp;
     private boolean needsSorting;
     private int index;
+    /**
+     * Map insertion-order indexes to post-sorting indexes.
+     */
     private int[] translationMap;
 
     /**
@@ -197,23 +199,20 @@ public class BinaryRatingPacker implements Closeable {
      */
     private void writeIndex(Long2ObjectMap<IntList> map) throws IOException {
         LongSortedSet keys = LongUtils.packedSet(map.keySet());
+
         BinaryIndexTableWriter tableWriter =
                 BinaryIndexTableWriter.create(format, channel, keys.size());
-
-        SortComparator indexComparator = new SortComparator();
 
         LongIterator iter = keys.iterator();
         while (iter.hasNext()) {
             final long key = iter.nextLong();
             int[] indexes = map.get(key).toIntArray();
-            if (needsSorting) {
-                IntArrays.quickSort(indexes, indexComparator);
-            }
 
             if (translationMap != null) {
                 for (int i = 0; i < indexes.length; i++) {
                     indexes[i] = translationMap[indexes[i]];
                 }
+                java.util.Arrays.sort(indexes);
             }
 
             logger.debug("writing {} indices for id {}", key, indexes.length);
@@ -287,6 +286,10 @@ public class BinaryRatingPacker implements Closeable {
      * Sort the ratings.
      */
     private void sortRatings() {
+        if (translationMap != null) {
+            throw new IllegalStateException("sort already invoked");
+        }
+        // the inv map will map post-sort indexes to original indexes
         int[] invMap = new int[index];
         for (int i = index - 1; i >= 0; i--) {
             invMap[i] = i;
@@ -294,6 +297,7 @@ public class BinaryRatingPacker implements Closeable {
 
         Arrays.quickSort(0, index, new SortComparator(), new SortSwapper(invMap));
 
+        // invert the inv map, so we map pre-sort to post-sort indexes
         translationMap = new int[index];
         for (int i = 0; i < invMap.length; i++) {
             translationMap[invMap[i]] = i;

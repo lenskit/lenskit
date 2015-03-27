@@ -20,11 +20,10 @@
  */
 package org.grouplens.lenskit.cursors;
 
+import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-
-import javax.annotation.Nonnull;
 
 /**
  * Cursors over data connections.  These are basically closable iterators which
@@ -74,30 +73,6 @@ public interface Cursor<T> extends Iterable<T>, Closeable {
      */
     @Nonnull
     T next();
-
-    /**
-     * Variant of {@link #next()} that may mutate and return the same object
-     * avoid excess allocations. Since many loops don't do anything with the
-     * object after the iteration in which it is retrieved, using this iteration
-     * method can improve both speed and memory use.
-     *
-     * @return The next element from the cursor, reusing objects if possible.
-     * @see Cursor#next()
-     * @deprecated Fast iteration is going away
-     */
-    @Deprecated
-    @Nonnull
-    T fastNext();
-
-    /**
-     * Convert the cursor to an iterable whose {@link Iterator#next()} method is
-     * implemented in terms of {@link #fastNext()}.
-     *
-     * @return An iterable for fast iteration.
-     * @deprecated Fast iteration is going away.
-     */
-    @Deprecated
-    Iterable<T> fast();
 
     /**
      * Close the cursor.  This invalidates the cursor; no more elements may be

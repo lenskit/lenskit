@@ -22,7 +22,6 @@ package org.grouplens.lenskit.util;
 
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
-import com.google.common.io.Closer;
 
 import java.io.*;
 import java.net.URL;
@@ -55,11 +54,9 @@ public class ClassDirectory {
             Enumeration<URL> urls = loader.getResources("META-INF/classes.lst");
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
-                Closer closer = Closer.create();
-                try {
-                    InputStream stream = closer.register(url.openStream());
-                    Reader rdr = closer.register(new InputStreamReader(stream, "UTF-8"));
-                    BufferedReader buf = closer.register(new BufferedReader(rdr));
+                try (InputStream stream = url.openStream();
+                     Reader rdr = new InputStreamReader(stream);
+                     BufferedReader buf = new BufferedReader(rdr)) {
                     String line = buf.readLine();
                     while (line != null) {
                         int idx = line.lastIndexOf('.');
@@ -70,10 +67,6 @@ public class ClassDirectory {
                         }
                         line = buf.readLine();
                     }
-                } catch (Throwable th) { // NOSONAR using a closer
-                    throw closer.rethrow(th);
-                } finally {
-                    closer.close();
                 }
             }
         } catch (IOException e) {

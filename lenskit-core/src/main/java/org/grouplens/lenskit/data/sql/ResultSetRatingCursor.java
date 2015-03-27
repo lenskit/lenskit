@@ -21,9 +21,8 @@
 package org.grouplens.lenskit.data.sql;
 
 import org.grouplens.lenskit.cursors.AbstractPollingCursor;
-import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
+import org.grouplens.lenskit.data.event.RatingBuilder;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -38,10 +37,10 @@ import java.sql.SQLException;
 class ResultSetRatingCursor extends AbstractPollingCursor<Rating> {
     private ResultSet resultSet;
     private boolean hasTimestampColumn;
-    private MutableRating rating;
+    private RatingBuilder builder;
 
     public ResultSetRatingCursor(PreparedStatement stmt) throws SQLException {
-        rating = new MutableRating();
+        builder = new RatingBuilder();
         resultSet = stmt.executeQuery();
         try {
             // SUPPRESS CHECKSTYLE MagicNumber
@@ -66,17 +65,17 @@ class ResultSetRatingCursor extends AbstractPollingCursor<Rating> {
         }
 
         try {
-            rating.setUserId(resultSet.getLong(JDBCRatingDAO.COL_USER_ID));
+            builder.setUserId(resultSet.getLong(JDBCRatingDAO.COL_USER_ID));
             if (resultSet.wasNull()) {
                 throw new DatabaseAccessException("Unexpected null user ID");
             }
-            rating.setItemId(resultSet.getLong(JDBCRatingDAO.COL_ITEM_ID));
+            builder.setItemId(resultSet.getLong(JDBCRatingDAO.COL_ITEM_ID));
             if (resultSet.wasNull()) {
                 throw new DatabaseAccessException("Unexpected null item ID");
             }
-            rating.setRating(resultSet.getDouble(JDBCRatingDAO.COL_RATING));
+            builder.setRating(resultSet.getDouble(JDBCRatingDAO.COL_RATING));
             if (resultSet.wasNull()) {
-                rating.setRating(Double.NaN);
+                builder.setRating(Double.NaN);
             }
             long ts = -1;
             if (hasTimestampColumn) {
@@ -85,17 +84,12 @@ class ResultSetRatingCursor extends AbstractPollingCursor<Rating> {
                     ts = -1;
                 }
             }
-            rating.setTimestamp(ts);
+            builder.setTimestamp(ts);
         } catch (SQLException e) {
             throw new DatabaseAccessException(e);
         }
 
-        return rating;
-    }
-
-    @Override
-    public Rating copy(Rating r) {
-        return Ratings.copyBuilder(r).build();
+        return builder.build();
     }
 
     @Override

@@ -127,7 +127,7 @@ public class PreferenceDomainBuilder implements Builder<PreferenceDomain>, SpecH
         if (cfg.hasPath("precision")) {
             setPrecision(cfg.getDouble("precision"));
         } else {
-            setPrecision(Double.NaN);
+            setPrecision(0);
         }
         return build();
     }

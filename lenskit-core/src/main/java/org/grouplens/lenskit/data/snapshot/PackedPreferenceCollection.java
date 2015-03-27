@@ -26,7 +26,6 @@ package org.grouplens.lenskit.data.snapshot;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.collections.FastCollection;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 
 import javax.annotation.Nonnull;
@@ -41,10 +40,9 @@ import java.util.Iterator;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@SuppressWarnings({"javadoc", "deprecation"})
+@SuppressWarnings({"javadoc"})
         // JavaDoc warnings incorrectly flag PackedPreferenceData
-class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
-        implements FastCollection<IndexedPreference> {
+class PackedPreferenceCollection extends AbstractCollection<IndexedPreference> {
     private final PackedPreferenceData data;
     private final IntList indices;
 
@@ -78,11 +76,6 @@ class PackedPreferenceCollection extends AbstractCollection<IndexedPreference>
     @Override
     public int size() {
         return indices.size();
-    }
-
-    @Override
-    public Iterator<IndexedPreference> fastIterator() {
-        return iterator();
     }
 
     private final class IteratorImpl implements Iterator<IndexedPreference> {

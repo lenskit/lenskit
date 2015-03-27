@@ -22,13 +22,12 @@ package org.grouplens.lenskit.eval.cli;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.cli.*;
+import org.grouplens.lenskit.core.LenskitInfo;
 import org.grouplens.lenskit.eval.EvalConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -103,29 +102,12 @@ public class EvalCLIOptions {
             System.exit(1);
             return null;
         } else if (line.hasOption("v")) {
-            System.out.format("lenskit-eval version %s\n", lenskitVersion());
+            System.out.format("lenskit-eval version %s\n", LenskitInfo.lenskitVersion());
             System.exit(0);
             return null;
         } else {
             return new EvalCLIOptions(line);
         }
-    }
-
-    public static String lenskitVersion() {
-        Properties props = new Properties();
-        InputStream stream = EvalCLIOptions.class.getResourceAsStream("/META-INF/lenskit/version.properties");
-        try {
-            props.load(stream);
-        } catch (IOException e) {
-            throw new RuntimeException("properties error", e);
-        } finally {
-            try {
-                stream.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return props.getProperty("lenskit.version");
     }
 
     @SuppressWarnings({"static", "static-access"})

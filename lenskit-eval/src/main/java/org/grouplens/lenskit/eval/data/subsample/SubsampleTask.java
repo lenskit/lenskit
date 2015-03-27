@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.eval.data.subsample;
 
-import com.google.common.io.Closer;
 import org.grouplens.lenskit.data.source.CSVDataSourceBuilder;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.AbstractTask;
@@ -185,18 +184,10 @@ public class SubsampleTask extends AbstractTask<DataSource> {
             logger.info("subsample {} up to date", getName());
             return makeDataSource();
         }
-        try {
+        try (RatingWriter subsampleWriter = RatingWriters.csv(subsampleFile)) {
             logger.info("sampling {} of {}",
                         subsampleFraction, source.getName());
-            Closer closer = Closer.create();
-            RatingWriter subsampleWriter = closer.register(RatingWriters.csv(subsampleFile));
-            try {
-                mode.doSample(source, subsampleWriter, subsampleFraction, getProject().getRandom());
-            } catch (Throwable th) { // NOSONAR using a closer
-                throw closer.rethrow(th);
-            } finally {
-                closer.close();
-            }
+            mode.doSample(source, subsampleWriter, subsampleFraction, getProject().getRandom());
         } catch (IOException e) {
             throw new TaskExecutionException("Error writing output file", e);
         }

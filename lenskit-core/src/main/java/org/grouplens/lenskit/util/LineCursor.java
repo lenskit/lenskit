@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.util;
 
 import com.google.common.base.Throwables;
-import com.google.common.io.Closer;
 import com.google.common.io.Files;
 import org.grouplens.lenskit.cursors.AbstractPollingCursor;
 import org.grouplens.lenskit.util.io.CompressionMode;
