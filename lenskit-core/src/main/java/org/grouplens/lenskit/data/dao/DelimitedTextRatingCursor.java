@@ -57,9 +57,9 @@ public class DelimitedTextRatingCursor extends AbstractPollingCursor<Rating> {
      * @deprecated Inheriting from this class is deprecated.
      */
     @Deprecated
-    protected DelimitedTextRatingCursor(@WillCloseWhenClosed @Nonnull BufferedReader s,
-                                        @Nullable String name,
-                                        @Nonnull String delimiter) {
+    public DelimitedTextRatingCursor(@WillCloseWhenClosed @Nonnull BufferedReader s,
+                                     @Nullable String name,
+                                     @Nonnull String delimiter) {
         fileName = name;
         builder = new RatingBuilder();
         rowCursor = new DelimitedTextCursor(s, delimiter);
