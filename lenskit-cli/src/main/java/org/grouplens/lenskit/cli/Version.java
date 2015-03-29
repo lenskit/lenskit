@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.cli;
 
+import com.google.auto.service.AutoService;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.core.LenskitInfo;
@@ -27,16 +28,20 @@ import org.grouplens.lenskit.core.LenskitInfo;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@CommandSpec(name="version", help="show the LensKit version")
+@AutoService(Command.class)
 public class Version implements Command {
-    private final Namespace options;
-
-    public Version(Namespace options) {
-        this.options = options;
+    @Override
+    public String getName() {
+        return "version";
     }
 
     @Override
-    public void execute() throws Exception {
+    public String getHelp() {
+        return "show the LensKit version";
+    }
+
+    @Override
+    public void execute(Namespace opts) throws Exception {
         String version = LenskitInfo.lenskitVersion();
         System.out.format("LensKit version %s\n", version);
         if (version.endsWith("-SNAPSHOT")) {
@@ -44,7 +49,7 @@ public class Version implements Command {
         }
     }
 
-    public static void configureArguments(ArgumentParser parser) {
+    public void configureArguments(ArgumentParser parser) {
         parser.description("Prints the LensKit version.");
     }
 }

@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.cli;
 
+import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -41,32 +42,26 @@ import java.util.List;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@CommandSpec(name="train-model", help="train a recommender model")
+@AutoService(Command.class)
 public class TrainModel implements Command {
     private final Logger logger = LoggerFactory.getLogger(TrainModel.class);
-    private final Namespace options;
-    private final ScriptEnvironment environment;
-    private final InputData input;
 
-    public TrainModel(Namespace opts) {
-        options = opts;
-        environment = new ScriptEnvironment(opts);
-        input = new InputData(environment, opts);
-    }
-
-    public List<File> getConfigFiles() {
-        return options.get("config");
-    }
-
-    public File getOutputFile() {
-        return options.get("output_file");
+    @Override
+    public String getName() {
+        return "train-model";
     }
 
     @Override
-    public void execute() throws IOException, RecommenderBuildException {
-        LenskitConfiguration dataConfig = input.getConfiguration();
+    public String getHelp() {
+        return "train a recommender model";
+    }
+
+    @Override
+    public void execute(Namespace opts) throws IOException, RecommenderBuildException {
+        Context ctx = new Context(opts);
+        LenskitConfiguration dataConfig = ctx.input.getConfiguration();
         LenskitRecommenderEngineBuilder builder = LenskitRecommenderEngine.newBuilder();
-        for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
+        for (LenskitConfiguration config: ctx.environment.loadConfigurations(ctx.getConfigFiles())) {
             builder.addConfiguration(config);
         }
         builder.addConfiguration(dataConfig, ModelDisposition.EXCLUDED);
@@ -75,7 +70,7 @@ public class TrainModel implements Command {
         LenskitRecommenderEngine engine = builder.build();
         timer.stop();
         logger.info("built model in {}", timer);
-        File output = getOutputFile();
+        File output = ctx.getOutputFile();
         CompressionMode comp = CompressionMode.autodetect(output);
 
         logger.info("writing model to {}", output);
@@ -85,7 +80,7 @@ public class TrainModel implements Command {
         }
     }
 
-    public static void configureArguments(ArgumentParser parser) {
+    public void configureArguments(ArgumentParser parser) {
         parser.description("Trains a recommendation model and write it to disk.");
         ScriptEnvironment.configureArguments(parser);
         InputData.configureArguments(parser);
@@ -99,5 +94,25 @@ public class TrainModel implements Command {
               .nargs("+")
               .metavar("CONFIG")
               .help("load algorithm configuration from CONFIG");
+    }
+
+    private static class Context {
+        private final Namespace options;
+        private final ScriptEnvironment environment;
+        private final InputData input;
+
+        public Context(Namespace opts) {
+            options = opts;
+            environment = new ScriptEnvironment(opts);
+            input = new InputData(environment, opts);
+        }
+
+        public List<File> getConfigFiles() {
+            return options.get("config");
+        }
+
+        public File getOutputFile() {
+            return options.get("output_file");
+        }
     }
 }

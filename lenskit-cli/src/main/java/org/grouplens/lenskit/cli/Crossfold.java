@@ -20,13 +20,14 @@
  */
 package org.grouplens.lenskit.cli;
 
+import com.google.auto.service.AutoService;
 import com.google.common.collect.Maps;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import net.sourceforge.argparse4j.impl.Arguments;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.TaskExecutionException;
@@ -47,28 +48,32 @@ import java.util.Map;
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@CommandSpec(name = "crossfold", help = "crossfold a data set")
+@AutoService(Command.class)
 public class Crossfold implements Command {
     private final Logger logger = LoggerFactory.getLogger(Crossfold.class);
-    private final Namespace options;
-    private final InputData input;
 
     private static final String DEFAULT_SPEC =
             "outputDir: crossfold";
 
-    public Crossfold(Namespace opts) {
-        options = opts;
-        input = new InputData(null, opts);
-    }
-
-    public String getDelimiter() {
-        return options.get("delimiter");
+    @Override
+    public String getName() {
+        return "crossfold";
     }
 
     @Override
-    public void execute() throws IOException, TaskExecutionException, SpecificationException {
+    public String getHelp() {
+        return "crossfold a data set";
+    }
+
+    public String getDelimiter(Namespace opts) {
+        return opts.get("delimiter");
+    }
+
+    @Override
+    public void execute(Namespace options) throws IOException, TaskExecutionException, SpecificationException {
+        InputData input = new InputData(null, options);
         logger.info("packing ratings from {}", input);
-        logger.debug("using delimiter {}", getDelimiter());
+        logger.debug("using delimiter {}", getDelimiter(options));
         // FIXME Make the command-line arguments generate an overriding spec
         Config defaults = ConfigFactory.parseString(DEFAULT_SPEC);
         Config spec = null;
@@ -144,7 +149,7 @@ public class Crossfold implements Command {
         task.execute();
     }
 
-    public static void configureArguments(Subparser parser) {
+    public void configureArguments(ArgumentParser parser) {
         parser.addArgument("-o", "--output-dir")
               .dest("output_dir")
               .type(String.class)

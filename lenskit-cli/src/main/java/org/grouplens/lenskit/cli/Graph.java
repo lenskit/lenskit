@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.cli;
 
+import com.google.auto.service.AutoService;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.grapht.Component;
@@ -46,29 +47,26 @@ import java.util.List;
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@CommandSpec(name = "graph", help = "diagram a recommender configuration")
+@AutoService(Command.class)
 public class Graph implements Command {
     private final Logger logger = LoggerFactory.getLogger(Graph.class);
-    private final Namespace options;
-    private final ScriptEnvironment environment;
 
-    public Graph(Namespace opts) {
-        options = opts;
-        environment = new ScriptEnvironment(opts);
+    @Override
+    public String getName() {
+        return "graph";
     }
 
-    public List<File> getConfigFiles() {
-        return options.get("config");
+    @Override
+    public String getHelp() {
+        return "diagram a recommender configuration";
     }
 
-    public File getOutputFile() {
-        return options.get("output_file");
-    }
 
-    private LenskitConfiguration makeDataConfig() {
+
+    private LenskitConfiguration makeDataConfig(Context ctx) {
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).toProvider(new DAOProvider());
-        String dspec = options.getString("domain");
+        String dspec = ctx.options.getString("domain");
         if (dspec != null) {
             PreferenceDomain domain = PreferenceDomain.fromString(dspec);
             config.bind(PreferenceDomain.class).to(domain);
@@ -83,12 +81,12 @@ public class Graph implements Command {
      * @throws IOException
      * @throws RecommenderConfigurationException
      */
-    private DAGNode<Component, Dependency> loadModel(File file) throws IOException, RecommenderConfigurationException {
+    private DAGNode<Component, Dependency> loadModel(Context ctx, File file) throws IOException, RecommenderConfigurationException {
         logger.info("loading model from {}", file);
         LenskitRecommenderEngineLoader loader = LenskitRecommenderEngine.newLoader();
         loader.setValidationMode(EngineValidationMode.DEFERRED)
-              .addConfiguration(makeDataConfig());
-        for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
+              .addConfiguration(makeDataConfig(ctx));
+        for (LenskitConfiguration config: ctx.environment.loadConfigurations(ctx.getConfigFiles())) {
             loader.addConfiguration(config);
         }
         LenskitRecommenderEngine engine = loader.load(file);
@@ -101,10 +99,10 @@ public class Graph implements Command {
      * @throws IOException
      * @throws RecommenderConfigurationException
      */
-    private DAGNode<Component,Dependency> makeNewGraph() throws IOException, RecommenderConfigurationException {
+    private DAGNode<Component,Dependency> makeNewGraph(Context ctx) throws IOException, RecommenderConfigurationException {
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
-        rgb.addConfiguration(makeDataConfig());
-        for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
+        rgb.addConfiguration(makeDataConfig(ctx));
+        for (LenskitConfiguration config: ctx.environment.loadConfigurations(ctx.getConfigFiles())) {
             rgb.addConfiguration(config);
         }
 
@@ -116,20 +114,21 @@ public class Graph implements Command {
     }
 
     @Override
-    public void execute() throws IOException, RecommenderBuildException {
-        File modelFile = options.get("model_file");
+    public void execute(Namespace opts) throws IOException, RecommenderBuildException {
+        Context ctx = new Context(opts);
+        File modelFile = opts.get("model_file");
         DAGNode<Component, Dependency> graph;
         if (modelFile != null) {
-            graph = loadModel(modelFile);
+            graph = loadModel(ctx, modelFile);
         } else {
-            graph = makeNewGraph();
+            graph = makeNewGraph(ctx);
         }
-        File output = getOutputFile();
+        File output = ctx.getOutputFile();
         logger.info("writing graph to {}", output);
         GraphDumper.renderGraph(graph, output);
     }
 
-    public static void configureArguments(ArgumentParser parser) {
+    public void configureArguments(ArgumentParser parser) {
         parser.description("Generates a visualization of a recommender configuration. " +
                            "This visualization is intended to be viewed with GraphViz.");
         ScriptEnvironment.configureArguments(parser);
@@ -161,6 +160,24 @@ public class Graph implements Command {
         @Override
         public String toString() {
             return "Data";
+        }
+    }
+
+    private static class Context {
+        private final Namespace options;
+        private final ScriptEnvironment environment;
+
+        public Context(Namespace opts) {
+            options = opts;
+            environment = new ScriptEnvironment(opts);
+        }
+
+        public List<File> getConfigFiles() {
+            return options.get("config");
+        }
+
+        public File getOutputFile() {
+            return options.get("output_file");
         }
     }
 }

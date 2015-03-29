@@ -23,13 +23,11 @@ package org.grouplens.lenskit.cli;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.*;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.apache.commons.lang3.reflect.MethodUtils;
 import org.grouplens.lenskit.core.LenskitInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
+import java.util.ServiceLoader;
 
 /**
  * Main entry point for lenskit-cli.
@@ -39,6 +37,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
     public static void main(String[] args) {
         ArgumentParser parser =
                 ArgumentParsers.newArgumentParser("lenskit")
@@ -48,15 +47,13 @@ public class Main {
         Subparsers subparsers = parser.addSubparsers()
                                       .metavar("COMMAND")
                                       .title("commands");
-        registerClass(subparsers, Version.class);
-        registerClass(subparsers, Eval.class);
-        registerClass(subparsers, PackRatings.class);
-        registerClass(subparsers, TrainModel.class);
-        registerClass(subparsers, Recommend.class);
-        registerClass(subparsers, Predict.class);
-        registerClass(subparsers, Graph.class);
-        registerClass(subparsers, GlobalRecommend.class);
-        registerClass(subparsers, Crossfold.class);
+        ServiceLoader<Command> loader = ServiceLoader.load(Command.class);
+        for (Command cmd: loader) {
+            Subparser cp = subparsers.addParser(cmd.getName())
+                                     .help(cmd.getHelp())
+                                     .setDefault("command", cmd);
+            cmd.configureArguments(cp);
+        }
 
         try {
             Namespace options = parser.parseArgs(args);
@@ -73,47 +70,13 @@ public class Main {
             logger.debug("Memory limit of {} MiB",
                          rt.maxMemory() >> 20);
             logger.debug("Have {} processors", rt.availableProcessors());
-            Command cmd = getCommand(options);
-            cmd.execute();
+            Command cmd = options.get("command");
+            cmd.execute(options);
         } catch (ArgumentParserException e) {
             parser.handleError(e);
         } catch (Exception e) {
             e.printStackTrace(System.err);
             System.exit(2);
-        }
-    }
-
-    private static void registerClass(Subparsers subparsers, Class<? extends Command> cls) {
-        CommandSpec spec = cls.getAnnotation(CommandSpec.class);
-        if (spec == null) {
-            throw new IllegalArgumentException(cls + " has no @CommandSpec annotation");
-        }
-        Subparser parser = subparsers.addParser(spec.name())
-                                     .help(spec.help())
-                                     .setDefault("command", cls);
-        try {
-            MethodUtils.invokeStaticMethod(cls, "configureArguments", parser);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException("cannot configure command " + cls, e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("cannot configure command " + cls, e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException("cannot configure command " + cls, e);
-        }
-    }
-
-    public static Command getCommand(Namespace options) {
-        Class<? extends Command> command = options.get("command");
-        try {
-            return ConstructorUtils.invokeConstructor(command, options);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException("cannot instantiate command " + command, e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("cannot instantiate command " + command, e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException("cannot instantiate command " + command, e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException("cannot instantiate command " + command, e);
         }
     }
 }

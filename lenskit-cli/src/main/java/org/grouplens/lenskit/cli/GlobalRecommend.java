@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.cli;
 
+import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -45,27 +46,29 @@ import java.util.List;
  * @since 2.2
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@CommandSpec(name="global-recommend", help="generate non-personalized recommendations")
+@AutoService(Command.class)
 public class GlobalRecommend implements Command {
     private final Logger logger = LoggerFactory.getLogger(GlobalRecommend.class);
-    private final Namespace options;
-    private final InputData input;
-    private final ScriptEnvironment environment;
-    private final RecommenderLoader loader;
 
-    public GlobalRecommend(Namespace opts) {
-        options = opts;
-        environment = new ScriptEnvironment(opts);
-        input = new InputData(environment, opts);
-        loader = new RecommenderLoader(input, environment, opts);
+    @Override
+    public String getName() {
+        return "global-recommend";
     }
 
     @Override
-    public void execute() throws IOException, RecommenderBuildException {
+    public String getHelp() {
+        return "generate non-personalized recommendations";
+    }
+
+    @Override
+    public void execute(Namespace opts) throws IOException, RecommenderBuildException {
+        ScriptEnvironment env = new ScriptEnvironment(opts);
+        InputData input = new InputData(env, opts);
+        RecommenderLoader loader = new RecommenderLoader(input, env, opts);
         LenskitRecommenderEngine engine = loader.loadEngine();
 
-        List<Long> items = options.get("items");
-        final int n = options.getInt("num_recs");
+        List<Long> items = opts.get("items");
+        final int n = opts.getInt("num_recs");
 
         LenskitRecommender rec = engine.createRecommender();
         GlobalItemRecommender irec = rec.getGlobalItemRecommender();
@@ -76,7 +79,7 @@ public class GlobalRecommend implements Command {
         }
 
         logger.info("using {} reference items", items.size());
-        Symbol pchan = getPrintChannel();
+        Symbol pchan = getPrintChannel(opts);
         Stopwatch timer = Stopwatch.createStarted();
 
         List<ScoredId> recs = irec.globalRecommend(LongUtils.packedSet(items), n);
@@ -96,7 +99,7 @@ public class GlobalRecommend implements Command {
         logger.info("recommended in {}", timer);
     }
 
-    Symbol getPrintChannel() {
+    Symbol getPrintChannel(Namespace options) {
         String name = options.get("print_channel");
         if (name == null) {
             return null;
@@ -105,7 +108,7 @@ public class GlobalRecommend implements Command {
         }
     }
 
-    public static void configureArguments(ArgumentParser parser) {
+    public void configureArguments(ArgumentParser parser) {
         parser.description("Generates non-personalized recommendations using optional reference items.");
         InputData.configureArguments(parser);
         ScriptEnvironment.configureArguments(parser);

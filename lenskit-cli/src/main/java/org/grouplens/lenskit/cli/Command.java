@@ -20,6 +20,9 @@
  */
 package org.grouplens.lenskit.cli;
 
+import net.sourceforge.argparse4j.inf.ArgumentParser;
+import net.sourceforge.argparse4j.inf.Namespace;
+
 /**
  * Interface implemented by all CLI subcommands.
  *
@@ -32,9 +35,31 @@ package org.grouplens.lenskit.cli;
  */
 public interface Command {
     /**
+     * Get the name of the command.
+     *
+     * @return The command's name.
+     */
+    String getName();
+
+    /**
+     * Get the command's help.
+     *
+     * @return The command's help.
+     */
+    String getHelp();
+
+    /**
+     * Configure the argument parser for this command.
+     * @param parser The argument parser into which the arguments should be configured.  This will already be a
+     *               subparser, the command is not responsible for creating that.
+     */
+    void configureArguments(ArgumentParser parser);
+
+    /**
      * Execute the command.
      *
+     * @param options The command-line options.
      * @throws Exception if an error occurs in the command.
      */
-    void execute() throws Exception;
+    void execute(Namespace options) throws Exception;
 }
