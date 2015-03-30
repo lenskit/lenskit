@@ -24,11 +24,10 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 
 /**
- * Interface implemented by all CLI subcommands.
- *
- * <p>In addition to implementing this interface, a subcommand must be annotated with {@link CommandSpec}
- * to declare its name and help text, and have a static method {@code configureArguments(ArgumentParser)}
- * that registers the subcommand's arguments and options with the provided argument parser.</p>
+ * Interface implemented by all CLI subcommands.  Commands are detected by looking for
+ * implementations of this interface using the Java {@link java.util.ServiceLoader} framework.
+ * New implementations can be registered conveniently using the {@link com.google.auto.service.AutoService}
+ * annotation.
  *
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
