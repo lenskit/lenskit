@@ -3,7 +3,6 @@ target
 .classpath
 .settings
 .vagrant
-/.idea
 /.idea_modules
 .gradle
 gradle.properties
