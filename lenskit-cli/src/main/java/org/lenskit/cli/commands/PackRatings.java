@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cli;
+package org.lenskit.cli.commands;
 
 import com.google.auto.service.AutoService;
 import net.sourceforge.argparse4j.impl.Arguments;
@@ -29,6 +29,8 @@ import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
 import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.cli.Command;
+import org.lenskit.cli.util.InputData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

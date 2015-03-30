@@ -31,7 +31,7 @@ task crossfold(type: JavaExec) {
     inputs.file ratingsFile
     outputs.dir 'split'
 
-    main 'org.grouplens.lenskit.cli.Main'
+    main 'org.lenskit.cli.Main'
     args 'crossfold'
     args "--tsv-file", ratingsFile
     args '--no-timestamps'

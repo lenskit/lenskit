@@ -18,38 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cli;
-
-import com.google.auto.service.AutoService;
-import net.sourceforge.argparse4j.inf.ArgumentParser;
-import net.sourceforge.argparse4j.inf.Namespace;
-import org.grouplens.lenskit.core.LenskitInfo;
-
 /**
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Commands for the LensKit CLI.
  */
-@AutoService(Command.class)
-public class Version implements Command {
-    @Override
-    public String getName() {
-        return "version";
-    }
-
-    @Override
-    public String getHelp() {
-        return "show the LensKit version";
-    }
-
-    @Override
-    public void execute(Namespace opts) throws Exception {
-        String version = LenskitInfo.lenskitVersion();
-        System.out.format("LensKit version %s\n", version);
-        if (version.endsWith("-SNAPSHOT")) {
-            System.out.format("Git revision %s\n", LenskitInfo.getHeadRevision());
-        }
-    }
-
-    public void configureArguments(ArgumentParser parser) {
-        parser.description("Prints the LensKit version.");
-    }
-}
+package org.lenskit.cli.commands;

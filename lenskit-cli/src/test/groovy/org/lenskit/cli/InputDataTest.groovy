@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cli
+package org.lenskit.cli
 
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
@@ -26,6 +26,7 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain
 import org.grouplens.lenskit.data.source.PackedDataSource
 import org.grouplens.lenskit.data.source.TextDataSource
 import org.junit.Test
+import org.lenskit.cli.util.InputData
 
 import static groovy.test.GroovyAssert.shouldFail
 import static org.hamcrest.Matchers.equalTo

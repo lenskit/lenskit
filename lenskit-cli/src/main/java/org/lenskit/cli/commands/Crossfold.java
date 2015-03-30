@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cli;
+package org.lenskit.cli.commands;
 
 import com.google.auto.service.AutoService;
 import com.google.common.collect.Maps;
@@ -35,6 +35,8 @@ import org.grouplens.lenskit.eval.data.crossfold.CrossfoldMethod;
 import org.grouplens.lenskit.eval.data.crossfold.CrossfoldTask;
 import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.specs.SpecificationException;
+import org.lenskit.cli.Command;
+import org.lenskit.cli.util.InputData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

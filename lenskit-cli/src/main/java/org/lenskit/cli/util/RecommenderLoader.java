@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cli;
+package org.lenskit.cli.util;
 
 import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.impl.Arguments;
@@ -55,7 +55,7 @@ public class RecommenderLoader {
         options = opts;
     }
 
-    static void configureArguments(ArgumentParser parser) {
+    public static void configureArguments(ArgumentParser parser) {
         parser.addArgument("-c", "--config-file")
               .type(File.class)
               .action(Arguments.append())
@@ -71,7 +71,7 @@ public class RecommenderLoader {
         return options.getList("config_file");
     }
 
-    LenskitRecommenderEngine loadEngine() throws RecommenderBuildException, IOException {
+    public LenskitRecommenderEngine loadEngine() throws RecommenderBuildException, IOException {
         LenskitConfiguration roots = new LenskitConfiguration();
         roots.addRoot(ItemNameDAO.class);
         File modelFile = options.get("model_file");

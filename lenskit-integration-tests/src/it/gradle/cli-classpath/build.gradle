@@ -17,7 +17,7 @@ task recommend(type: JavaExec) {
     classpath configurations.runtime
     inputs.file 'predictor.groovy'
 
-    main 'org.grouplens.lenskit.cli.Main'
+    main 'org.lenskit.cli.Main'
     args 'recommend'
     args '-C', "$buildDir/classes/main"
     args '-c', 'predictor.groovy'

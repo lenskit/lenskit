@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cli;
+package org.lenskit.cli.commands;
 
 import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
@@ -30,6 +30,9 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineBuilder;
 import org.grouplens.lenskit.core.ModelDisposition;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.lenskit.cli.Command;
+import org.lenskit.cli.util.InputData;
+import org.lenskit.cli.util.ScriptEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

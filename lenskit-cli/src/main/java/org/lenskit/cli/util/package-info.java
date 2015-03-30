@@ -19,16 +19,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * LensKit command line commands and infrastructure.
- * <p>
- * The LensKit command line interface is built around subcommands, the way the Git command-line
- * interface works.  Subcommands are implemented as instances of the {@link Command} interface. The
- * <tt>lenskit</tt> program searches for commands using the {@linkplain java.util.ServiceLoader Java
- * Service Loader} system, and makes all detected commands available.  This allows LensKit add-on
- * packages to define their own commands to be run by the LensKit command-line runner.
- * </p>
- * <p>
- * Argument parsing is handled by <a href="http://argparse4j.sourceforge.net/">argparse4j</a>.
- * </p>
+ * Helper utilities for the LensKit CLI.
  */
-package org.grouplens.lenskit.cli;
+package org.lenskit.cli.util;
