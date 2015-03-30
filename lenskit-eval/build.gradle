@@ -43,8 +43,6 @@ configurations {
     testRuntime {
         extendsFrom application
     }
-    compileOnly.visible = false
-    compile.extendsFrom compileOnly
 }
 
 dependencies {
