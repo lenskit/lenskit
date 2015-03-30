@@ -133,7 +133,7 @@ class BinaryIndexTable implements Serializable {
                 newSizes[i]=0;
                 newKeys.setActive(i,false);
             } else {
-                //following loop need to be replaced with binary rating search
+                //TODO following loop need to be replaced with binary rating search
                 for (int j= offsets[i];j<(offsets[i]+sizes[i]);j++) {
                     /*
                     * find the new 'size' value; this is the number of indexes for this key that
@@ -259,7 +259,7 @@ class BinaryIndexTable implements Serializable {
                 throw new InvalidObjectException("arrays not the same length");
             }
             return new BinaryIndexTable(LongKeyDomain.wrap(keys, keys.length, true),
-                    offsets, sizes, buffer.duplicate());
+                                        offsets, sizes, buffer.duplicate());
         }
     }
 }
