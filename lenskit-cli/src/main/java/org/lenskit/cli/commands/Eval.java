@@ -18,16 +18,19 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cli;
+package org.lenskit.cli.commands;
 
+import com.google.auto.service.AutoService;
 import com.google.common.base.Joiner;
 import net.sourceforge.argparse4j.impl.Arguments;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
 import org.grouplens.lenskit.eval.EvalConfig;
 import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.script.EvalScriptEngine;
+import org.lenskit.cli.Command;
+import org.lenskit.cli.util.ScriptEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,11 +46,12 @@ import java.util.Properties;
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@CommandSpec(name ="eval", help="run an evaluation script")
+@AutoService(Command.class)
 public class Eval implements Command {
     private final Logger logger = LoggerFactory.getLogger(Eval.class);
 
-    public static void configureArguments(Subparser parser) {
+    @Override
+    public void configureArguments(ArgumentParser parser) {
         parser.description("Run a LensKit evaluation script.  By default, the script is " +
                            "taken from 'eval.groovy'; use -f to override");
         ScriptEnvironment.configureArguments(parser);
@@ -70,21 +74,23 @@ public class Eval implements Command {
               .help("run TARGET");
     }
 
-    private final Namespace options;
-    private final ScriptEnvironment environment;
-
-    public Eval(Namespace opts) {
-        options = opts;
-        environment = new ScriptEnvironment(opts);
+    @Override
+    public String getHelp() {
+        return "run an evaluation script";
     }
 
-    private Properties getProperties() {
+    @Override
+    public String getName() {
+        return "eval";
+    }
+
+    private Properties getProperties(Namespace opts, ScriptEnvironment env) {
         Properties ps = new Properties(System.getProperties());
-        ps.putAll(environment.getProperties());
-        if (getForce()) {
+        ps.putAll(env.getProperties());
+        if (getForce(opts)) {
             ps.setProperty(EvalConfig.FORCE_PROPERTY, "true");
         }
-        int nthreads = getThreadCount();
+        int nthreads = getThreadCount(opts);
         if (nthreads >= 0) {
             ps.setProperty(EvalConfig.THREAD_COUNT_PROPERTY,
                            Integer.toString(nthreads));
@@ -93,19 +99,20 @@ public class Eval implements Command {
     }
 
     @Override
-    public void execute() throws IOException, TaskExecutionException {
-        File file = getFile();
+    public void execute(Namespace options) throws IOException, TaskExecutionException {
+        File file = getFile(options);
         if (!file.exists()) {
             logger.error("script file {} does not exist", file);
             throw new FileNotFoundException(file.toString());
         }
         logger.info("loading evaluation from {}", file);
+        ScriptEnvironment environment = new ScriptEnvironment(options);
 
         EvalScriptEngine engine = new EvalScriptEngine(environment.getClassLoader(),
-                                                       getProperties());
+                                                       getProperties(options, environment));
 
         EvalProject project = engine.loadProject(file);
-        if (getTargets().isEmpty()) {
+        if (getTargets(options).isEmpty()) {
             String dft = project.getDefaultTarget();
             if (dft != null) {
                 project.executeTarget(dft);
@@ -117,23 +124,23 @@ public class Eval implements Command {
                 System.exit(2);
             }
         } else {
-            project.executeTargets(getTargets());
+            project.executeTargets(getTargets(options));
         }
     }
 
-    public boolean getForce() {
+    private boolean getForce(Namespace options) {
         return options.getBoolean("force");
     }
 
-    public int getThreadCount() {
+    private int getThreadCount(Namespace options) {
         return options.getInt("thread_count");
     }
 
-    public File getFile() {
+    private File getFile(Namespace options) {
         return options.get("file");
     }
 
-    public List<String> getTargets() {
+    private List<String> getTargets(Namespace options) {
         return options.get("target");
     }
 }

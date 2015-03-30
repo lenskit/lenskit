@@ -18,16 +18,19 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cli;
+package org.lenskit.cli.commands;
 
+import com.google.auto.service.AutoService;
 import net.sourceforge.argparse4j.impl.Arguments;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
 import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.cli.Command;
+import org.lenskit.cli.util.InputData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,50 +44,43 @@ import java.util.EnumSet;
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@CommandSpec(name = "pack-ratings", help = "pack ratings data into a binary file")
+@AutoService(Command.class)
 public class PackRatings implements Command {
     private final Logger logger = LoggerFactory.getLogger(PackRatings.class);
-    private final Namespace options;
-    private final InputData input;
 
-    public PackRatings(Namespace opts) {
-        options = opts;
-        input = new InputData(null, opts);
-    }
-
-    public File getOutputFile() {
-        return options.get("output_file");
-    }
-
-    public String getDelimiter() {
-        return options.get("delimiter");
-    }
-
-    public boolean useTimestamps() {
-        return options.getBoolean("use_timestamps");
+    @Override
+    public String getName() {
+        return "pack-ratings";
     }
 
     @Override
-    public void execute() throws IOException {
-        logger.info("packing ratings from {}", input);
-        logger.debug("using delimiter {}", getDelimiter());
-        EventDAO dao = input.getEventDAO();
+    public String getHelp() {
+        return "pack ratings data into a binary file";
+    }
+
+    @Override
+    public void execute(Namespace opts) throws IOException {
+        Context ctx = new Context(opts);
+        logger.info("packing ratings from {}", ctx.input);
+        logger.debug("using delimiter {}", ctx.getDelimiter());
+        EventDAO dao = ctx.input.getEventDAO();
         if (dao == null) {
             throw new IOException("no data source specified");
         }
         EnumSet<BinaryFormatFlag> flags = EnumSet.noneOf(BinaryFormatFlag.class);
-        if (useTimestamps()) {
+        if (ctx.useTimestamps()) {
             flags.add(BinaryFormatFlag.TIMESTAMPS);
         }
-        logger.info("packing to {} with flags {}", getOutputFile(), flags);
-        try (BinaryRatingPacker packer = BinaryRatingPacker.open(getOutputFile(), flags);
+        logger.info("packing to {} with flags {}", ctx.getOutputFile(), flags);
+        try (BinaryRatingPacker packer = BinaryRatingPacker.open(ctx.getOutputFile(), flags);
         Cursor<Rating> ratings = dao.streamEvents(Rating.class)) {
             packer.writeRatings(ratings);
             logger.info("packed {} ratings", packer.getRatingCount());
         }
     }
 
-    public static void configureArguments(Subparser parser) {
+    @Override
+    public void configureArguments(ArgumentParser parser) {
         parser.description("Takes a ratings data set and writes it in binary packed format to a " +
                            "data file.");
         parser.addArgument("-o", "--output-file")
@@ -97,5 +93,27 @@ public class PackRatings implements Command {
               .dest("use_timestamps")
               .help("don't include or use timestamps");
         InputData.configureArguments(parser, true);
+    }
+
+    private static class Context {
+        private final Namespace options;
+        private final InputData input;
+
+        public Context(Namespace opts) {
+            options = opts;
+            input = new InputData(null, opts);
+        }
+
+        public File getOutputFile() {
+            return options.get("output_file");
+        }
+
+        public String getDelimiter() {
+            return options.get("delimiter");
+        }
+
+        public boolean useTimestamps() {
+            return options.getBoolean("use_timestamps");
+        }
     }
 }

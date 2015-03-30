@@ -45,6 +45,7 @@ dependencies {
     compile project(':lenskit-all')
     compile group: 'net.sourceforge.argparse4j', name: 'argparse4j', version: '0.4.4'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
+    compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc2'
 
     runtime group: 'org.fusesource.jansi', name: 'jansi', version: '1.8'
     runtime group: 'org.slf4j', name: 'jul-to-slf4j', version: slf4jVersion
@@ -58,7 +59,7 @@ meta {
 // Build an application
 apply plugin: 'application'
 
-mainClassName = 'org.grouplens.lenskit.cli.Main'
+mainClassName = 'org.lenskit.cli.Main'
 applicationName = 'lenskit'
 
 // Render the manpages

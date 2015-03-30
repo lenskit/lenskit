@@ -18,33 +18,47 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cli;
+package org.lenskit.cli;
 
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.grouplens.lenskit.core.LenskitInfo;
 
 /**
+ * Interface implemented by all CLI subcommands.  Commands are detected by looking for
+ * implementations of this interface using the Java {@link java.util.ServiceLoader} framework.
+ * New implementations can be registered conveniently using the {@link com.google.auto.service.AutoService}
+ * annotation.
+ *
+ * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@CommandSpec(name="version", help="show the LensKit version")
-public class Version implements Command {
-    private final Namespace options;
+public interface Command {
+    /**
+     * Get the name of the command.
+     *
+     * @return The command's name.
+     */
+    String getName();
 
-    public Version(Namespace options) {
-        this.options = options;
-    }
+    /**
+     * Get the command's help.
+     *
+     * @return The command's help.
+     */
+    String getHelp();
 
-    @Override
-    public void execute() throws Exception {
-        String version = LenskitInfo.lenskitVersion();
-        System.out.format("LensKit version %s\n", version);
-        if (version.endsWith("-SNAPSHOT")) {
-            System.out.format("Git revision %s\n", LenskitInfo.getHeadRevision());
-        }
-    }
+    /**
+     * Configure the argument parser for this command.
+     * @param parser The argument parser into which the arguments should be configured.  This will already be a
+     *               subparser, the command is not responsible for creating that.
+     */
+    void configureArguments(ArgumentParser parser);
 
-    public static void configureArguments(ArgumentParser parser) {
-        parser.description("Prints the LensKit version.");
-    }
+    /**
+     * Execute the command.
+     *
+     * @param options The command-line options.
+     * @throws Exception if an error occurs in the command.
+     */
+    void execute(Namespace options) throws Exception;
 }

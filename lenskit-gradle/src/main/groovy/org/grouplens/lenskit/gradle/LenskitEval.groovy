@@ -174,7 +174,7 @@ public class LenskitEval extends ConventionTask {
         // grab reference to make scope clearer
         def lke = this
         invoker {
-            main = 'org.grouplens.lenskit.cli.Main'
+            main = 'org.lenskit.cli.Main'
             args 'eval'
             args "-j$lke.threadCount"
             for (prop in lke.lenskitProperties) {

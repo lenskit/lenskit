@@ -119,6 +119,13 @@ subprojects {
     apply plugin: 'java'
     sourceCompatibility = '1.7'
     targetCompatibility = '1.7'
+
+    // Create a compileOnly configuration
+    configurations {
+        compileOnly.visible = false
+        compile.extendsFrom compileOnly
+    }
+
     sourceSets.all { ss ->
         // generate resources & classes to same dir
         ss.output.resourcesDir = ss.output.classesDir
@@ -170,6 +177,11 @@ subprojects {
     }
 
     configurations.compile.dependencies.all { dep ->
+        if (!(dep instanceof ProjectDependency)) {
+            rootProject.configurations.allDeps.dependencies << dep
+        }
+    }
+    configurations.compileOnly.dependencies.all { dep ->
         if (!(dep instanceof ProjectDependency)) {
             rootProject.configurations.allDeps.dependencies << dep
         }

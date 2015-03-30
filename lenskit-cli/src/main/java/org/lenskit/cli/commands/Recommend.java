@@ -18,8 +18,9 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cli;
+package org.lenskit.cli.commands;
 
+import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -30,6 +31,10 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.dao.ItemNameDAO;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.lenskit.cli.Command;
+import org.lenskit.cli.util.InputData;
+import org.lenskit.cli.util.RecommenderLoader;
+import org.lenskit.cli.util.ScriptEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,27 +47,27 @@ import java.util.List;
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@CommandSpec(name="recommend", help="generate recommendations for users")
+@AutoService(Command.class)
 public class Recommend implements Command {
     private final Logger logger = LoggerFactory.getLogger(Recommend.class);
-    private final Namespace options;
-    private final InputData input;
-    private final ScriptEnvironment environment;
-    private final RecommenderLoader loader;
 
-    public Recommend(Namespace opts) {
-        options = opts;
-        environment = new ScriptEnvironment(opts);
-        input = new InputData(environment, opts);
-        loader = new RecommenderLoader(input, environment, opts);
+    @Override
+    public String getName() {
+        return "recommend";
     }
 
     @Override
-    public void execute() throws IOException, RecommenderBuildException {
-        LenskitRecommenderEngine engine = loader.loadEngine();
+    public String getHelp() {
+        return "generate recommendations for users";
+    }
 
-        List<Long> users = options.get("users");
-        final int n = options.getInt("num_recs");
+    @Override
+    public void execute(Namespace opts) throws IOException, RecommenderBuildException {
+        Context ctx = new Context(opts);
+        LenskitRecommenderEngine engine = ctx.loader.loadEngine();
+
+        List<Long> users = ctx.options.get("users");
+        final int n = ctx.options.getInt("num_recs");
 
         LenskitRecommender rec = engine.createRecommender();
         ItemRecommender irec = rec.getItemRecommender();
@@ -73,7 +78,7 @@ public class Recommend implements Command {
         }
 
         logger.info("recommending for {} users", users.size());
-        Symbol pchan = getPrintChannel();
+        Symbol pchan = getPrintChannel(ctx);
         Stopwatch timer = Stopwatch.createStarted();
         for (long user: users) {
             List<ScoredId> recs = irec.recommend(user, n);
@@ -94,8 +99,8 @@ public class Recommend implements Command {
         logger.info("recommended for {} users in {}", users.size(), timer);
     }
 
-    Symbol getPrintChannel() {
-        String name = options.get("print_channel");
+    Symbol getPrintChannel(Context ctx) {
+        String name = ctx.options.get("print_channel");
         if (name == null) {
             return null;
         } else {
@@ -103,7 +108,7 @@ public class Recommend implements Command {
         }
     }
 
-    public static void configureArguments(ArgumentParser parser) {
+    public void configureArguments(ArgumentParser parser) {
         parser.description("Generates recommendations for a user.");
         InputData.configureArguments(parser);
         ScriptEnvironment.configureArguments(parser);
@@ -123,4 +128,17 @@ public class Recommend implements Command {
               .help("recommend for USERS");
     }
 
+    private static class Context {
+        private final Namespace options;
+        private final InputData input;
+        private final ScriptEnvironment environment;
+        private final RecommenderLoader loader;
+
+        public Context(Namespace opts) {
+            options = opts;
+            environment = new ScriptEnvironment(opts);
+            input = new InputData(environment, opts);
+            loader = new RecommenderLoader(input, environment, opts);
+        }
+    }
 }

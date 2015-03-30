@@ -36,17 +36,6 @@
 apply from: "$rootDir/gradle/maven.gradle"
 apply plugin: 'groovy'
 
-configurations {
-    application {
-        extendsFrom runtime
-    }
-    testRuntime {
-        extendsFrom application
-    }
-    compileOnly.visible = false
-    compile.extendsFrom compileOnly
-}
-
 dependencies {
     compile project(':lenskit-core')
     compile project(':lenskit-groovy')
@@ -58,9 +47,6 @@ dependencies {
         exclude module: 'junit'
     }
     compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc2'
-
-    application group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
-    application group: 'org.slf4j', name: 'jul-to-slf4j', version: slf4jVersion
 }
 
 meta {

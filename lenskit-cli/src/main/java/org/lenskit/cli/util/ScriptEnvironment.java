@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cli;
+package org.lenskit.cli.util;
 
 import com.google.common.collect.Lists;
 import net.sourceforge.argparse4j.impl.Arguments;

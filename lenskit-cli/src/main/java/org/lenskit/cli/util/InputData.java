@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cli;
+package org.lenskit.cli.util;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -60,7 +60,7 @@ public class InputData {
     }
 
     @Nullable
-    DataSource getSource() {
+    public DataSource getSource() {
         TextDataSourceBuilder dsb = new TextDataSourceBuilder();
 
         File sourceFile = options.get("data_source");

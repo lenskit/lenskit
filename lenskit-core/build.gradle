@@ -36,11 +36,6 @@
 apply from: "$rootDir/gradle/maven.gradle"
 apply plugin: 'groovy'
 
-configurations {
-    compileOnly.visible = false
-    compile.extendsFrom compileOnly
-}
-
 dependencies {
     compile project(':lenskit-api')
     compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.10.0-BETA1'
