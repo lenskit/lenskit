@@ -45,13 +45,6 @@ import java.util.EnumSet;
 @AutoService(Command.class)
 public class PackRatings implements Command {
     private final Logger logger = LoggerFactory.getLogger(PackRatings.class);
-    private final Namespace options;
-    private final InputData input;
-
-    public PackRatings(Namespace opts) {
-        options = opts;
-        input = new InputData(null, opts);
-    }
 
     @Override
     public String getName() {
@@ -66,9 +59,9 @@ public class PackRatings implements Command {
     @Override
     public void execute(Namespace opts) throws IOException {
         Context ctx = new Context(opts);
-        logger.info("packing ratings from {}", input);
+        logger.info("packing ratings from {}", ctx.input);
         logger.debug("using delimiter {}", ctx.getDelimiter());
-        EventDAO dao = input.getEventDAO();
+        EventDAO dao = ctx.input.getEventDAO();
         if (dao == null) {
             throw new IOException("no data source specified");
         }

@@ -61,8 +61,6 @@ public class Graph implements Command {
         return "diagram a recommender configuration";
     }
 
-
-
     private LenskitConfiguration makeDataConfig(Context ctx) {
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).toProvider(new DAOProvider());
