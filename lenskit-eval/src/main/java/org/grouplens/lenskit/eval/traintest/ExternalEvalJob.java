@@ -131,7 +131,7 @@ class ExternalEvalJob extends TrainTestJob {
         }
         Thread listen = new LoggingStreamSlurper("external-algo", proc.getErrorStream(),
                                                  logger, "external: ");
-        listen.run();
+        listen.start();
 
         int result = -1;
         boolean done = false;
