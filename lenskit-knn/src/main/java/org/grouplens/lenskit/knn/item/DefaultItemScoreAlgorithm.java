@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import org.grouplens.lenskit.knn.MinNeighbors;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
@@ -33,7 +32,6 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.List;
 
@@ -60,7 +58,6 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
     public void scoreItems(ItemItemModel model, SparseVector userData,
                            MutableSparseVector scores,
                            NeighborhoodScorer scorer) {
-        Predicate<ScoredId> usable = new VectorKeyPredicate(userData);
         List<ScoredId> neighbors = Lists.newArrayListWithCapacity(neighborhoodSize);
 
         // Create a channel for recording the neighborhoodsize
@@ -73,7 +70,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
             for (ScoredId nbr: model.getNeighbors(item)) {
                 if (userData.containsKey(nbr.getId())) {
                     neighbors.add(nbr);
-                    if (neighbors.size() >= neighborhoodSize) {
+                    if (neighborhoodSize > 0 && neighbors.size() >= neighborhoodSize) {
                         break;
                     }
                 }
@@ -95,18 +92,6 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
             }
 
             sizeChannel.set(e, neighbors.size());
-        }
-    }
-
-    private static class VectorKeyPredicate implements Predicate<ScoredId> {
-        private final SparseVector vector;
-
-        public VectorKeyPredicate(SparseVector v) {
-            vector = v;
-        }
-        @Override
-        public boolean apply(@Nullable ScoredId input) {
-            return input != null && vector.containsKey(input.getId());
         }
     }
 }
