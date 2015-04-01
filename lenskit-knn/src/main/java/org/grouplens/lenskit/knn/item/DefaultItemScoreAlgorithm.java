@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.knn.item;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Lists;
 import org.grouplens.lenskit.knn.MinNeighbors;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
@@ -61,6 +61,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
                            MutableSparseVector scores,
                            NeighborhoodScorer scorer) {
         Predicate<ScoredId> usable = new VectorKeyPredicate(userData);
+        List<ScoredId> neighbors = Lists.newArrayListWithCapacity(neighborhoodSize);
 
         // Create a channel for recording the neighborhoodsize
         MutableSparseVector sizeChannel = scores.getOrAddChannelVector(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL);
@@ -69,13 +70,14 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
         for (VectorEntry e : scores.view(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
 
-            // find all potential neighbors
-            FluentIterable<ScoredId> nbrIter = FluentIterable.from(model.getNeighbors(item))
-                                                             .filter(usable);
-            if (neighborhoodSize > 0) {
-                nbrIter = nbrIter.limit(neighborhoodSize);
+            for (ScoredId nbr: model.getNeighbors(item)) {
+                if (userData.containsKey(nbr.getId())) {
+                    neighbors.add(nbr);
+                    if (neighbors.size() >= neighborhoodSize) {
+                        break;
+                    }
+                }
             }
-            List<ScoredId> neighbors = nbrIter.toList();
 
             // compute score & place in vector
             ScoredId score = null;
