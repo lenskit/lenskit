@@ -46,8 +46,7 @@ class BinaryRatingList extends AbstractList<Rating> {
      */
     public BinaryRatingList(BinaryFormat fmt, ByteBuffer buf, IntList idxes) {
         format = fmt;
-        buffer = buf.duplicate();
-        buffer.mark();
+        buffer = buf.slice();
         positions = idxes;
 
         ratingSize = fmt.getRatingSize();
@@ -60,9 +59,9 @@ class BinaryRatingList extends AbstractList<Rating> {
     }
 
     private Rating getRating(int position) {
-        buffer.reset();
-        int bidx = buffer.position() + position * ratingSize;
+        int bidx = position * ratingSize;
         buffer.position(bidx);
+        assert buffer.remaining() >= format.getRatingSize();
         return format.readRating(buffer);
     }
 
