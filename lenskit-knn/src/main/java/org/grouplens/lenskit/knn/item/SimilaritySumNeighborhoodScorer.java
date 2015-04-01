@@ -37,17 +37,11 @@ public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Seri
     private static final long serialVersionUID = 1L;
 
     @Override
-    public ScoredId score(long item, Iterable<ScoredId> neighbors, SparseVector scores) {
-        double sum = 0;
-        int n = 0;
-        for (ScoredId id: neighbors) {
-            sum += id.getScore();
-            n++;
-        }
-        if (n > 0) {
-            return ScoredIds.create(item, sum);
-        } else {
+    public ScoredId score(long item, SparseVector neighbors, SparseVector scores) {
+        if (neighbors.size() == 0) {
             return null;
+        } else {
+            return ScoredIds.create(item, neighbors.sum());
         }
     }
 

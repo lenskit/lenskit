@@ -20,12 +20,14 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.knn.MinNeighbors;
 import org.grouplens.lenskit.knn.NeighborhoodSize;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.TypedSymbol;
+import org.grouplens.lenskit.util.ScoredItemAccumulator;
+import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -33,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.List;
 
 /**
  * Default item scoring algorithm. It uses up to {@link NeighborhoodSize} neighbors to
@@ -58,7 +59,11 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
     public void scoreItems(ItemItemModel model, SparseVector userData,
                            MutableSparseVector scores,
                            NeighborhoodScorer scorer) {
-        List<ScoredId> neighbors = Lists.newArrayListWithCapacity(neighborhoodSize);
+        MutableSparseVector neighbors = userData.mutableCopy();
+        ScoredItemAccumulator acc = null;
+        if (neighborhoodSize > 0) {
+            acc = new TopNScoredItemAccumulator(neighborhoodSize);
+        }
 
         // Create a channel for recording the neighborhoodsize
         MutableSparseVector sizeChannel = scores.getOrAddChannelVector(ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL);
@@ -67,21 +72,26 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
         for (VectorEntry e : scores.view(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
 
-            for (ScoredId nbr: model.getNeighbors(item)) {
-                if (userData.containsKey(nbr.getId())) {
-                    neighbors.add(nbr);
-                    if (neighborhoodSize > 0 && neighbors.size() >= neighborhoodSize) {
-                        break;
-                    }
+            neighbors.clear();
+            // copy the neighbor vector into our work one (efficiently)
+            neighbors.set(model.getNeighbors(item));
+
+            if (neighbors.size() < minNeighbors) {
+                continue;
+            }
+
+            if (acc != null && neighbors.size() < neighborhoodSize) {
+                // compact the neighbors
+                for (VectorEntry ne: neighbors) {
+                    acc.put(ne.getKey(), ne.getValue());
                 }
+                LongSet set = acc.finishSet();
+                // only keep the top N vectors
+                neighbors.keySet().retainAll(set);
             }
 
             // compute score & place in vector
-            ScoredId score = null;
-
-            if (neighbors.size() >= minNeighbors) {
-                score = scorer.score(item, neighbors, userData);
-            }
+            ScoredId score = scorer.score(item, neighbors, userData);
 
             if (score != null) {
                 scores.set(e, score.getScore());

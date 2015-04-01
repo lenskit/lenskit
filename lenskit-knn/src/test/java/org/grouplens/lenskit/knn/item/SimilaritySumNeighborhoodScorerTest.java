@@ -20,18 +20,13 @@
  */
 package org.grouplens.lenskit.knn.item;
 
-import com.google.common.collect.Lists;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.scored.ScoredIds;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Collections;
-import java.util.List;
 
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -50,35 +45,33 @@ public class SimilaritySumNeighborhoodScorerTest {
 
     @Test
     public void testEmpty() {
-        List<ScoredId> nbrs = Collections.emptyList();
+        SparseVector nbrs = ImmutableSparseVector.empty();
         SparseVector scores = MutableSparseVector.create();
         assertThat(scorer.score(42, nbrs, scores), nullValue());
     }
 
     @Test
     public void testEmptyNbrs() {
-        List<ScoredId> nbrs = Collections.emptyList();
+        SparseVector nbrs = ImmutableSparseVector.empty();
         SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
         assertThat(scorer.score(42, nbrs, scores), nullValue());
     }
 
     @Test
     public void testOneNbr() {
-        List<ScoredId> nbrs = Lists.newArrayList(ScoredIds.newBuilder()
-                                                          .setId(5)
-                                                          .setScore(1.0)
-                                                          .build());
+        MutableSparseVector nbrs = MutableSparseVector.create(5);
+        nbrs.set(5, 1.0);
         SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
         assertThat(scorer.score(42, nbrs, scores).getScore(), closeTo(1.0));
     }
 
     @Test
     public void testMultipleNeighbors() {
-        List<ScoredId> nbrs = ScoredIds.newListBuilder()
-                                       .add(2, 0.5)
-                                       .add(5, 1.0)
-                                       .add(7, 0.92)
-                                       .build();
+        MutableSparseVector nbrs = MutableSparseVector.create(2, 5, 7);
+        nbrs.set(2, 0.5);
+        nbrs.set(5, 1.0);
+        nbrs.set(7, 0.92);
+
         long[] scoreKeys = {2, 3, 5, 7};
         double[] scoreValues = {3.7, 4.2, 1.2, 7.8};
         SparseVector scores = MutableSparseVector.wrap(scoreKeys, scoreValues).freeze();

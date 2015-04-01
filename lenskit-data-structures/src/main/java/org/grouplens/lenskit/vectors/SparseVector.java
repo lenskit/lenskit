@@ -520,6 +520,26 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
     }
 
     /**
+     * Compute and return the sum of the absolute values of the vector.
+     *
+     * @return the sum of the vector's absolute values
+     */
+    public double sumAbs() {
+        double result = 0;
+        if (keys.isCompletelySet()) {
+            for (int i = keys.domainSize() - 1; i >= 0; i--) {
+                result += Math.abs(values[i]);
+            }
+        } else {
+            DoubleIterator iter = values().iterator();
+            while (iter.hasNext()) {
+                result += Math.abs(iter.nextDouble());
+            }
+        }
+        return result;
+    }
+
+    /**
      * Compute and return the mean of the vector's values.
      *
      * @return the mean of the vector

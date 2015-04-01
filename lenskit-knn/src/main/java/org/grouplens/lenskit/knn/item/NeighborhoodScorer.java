@@ -50,5 +50,5 @@ public interface NeighborhoodScorer {
      * @return An accumulated score from the neighbors, or {@code null} if
      *         no score could be computed.
      */
-    ScoredId score(long item, Iterable<ScoredId> neighbors, SparseVector scores);
+    ScoredId score(long item, SparseVector neighbors, SparseVector scores);
 }
