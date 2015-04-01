@@ -73,7 +73,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
 
     @Override
     public SimilarityMatrixModel get() {
-        logger.debug("building item-item model");
+        logger.info("building item-item model for {} items", buildContext.getItems().size());
         logger.debug("using similarity function {}", itemSimilarity);
         logger.debug("similarity function is {}",
                      itemSimilarity.isSparse() ? "sparse" : "non-sparse");
