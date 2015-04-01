@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.inject;
 
-import com.google.common.base.Predicate;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
@@ -32,7 +31,6 @@ import org.grouplens.grapht.reflect.Desires;
 import org.grouplens.grapht.reflect.QualifierMatcher;
 import org.grouplens.grapht.reflect.Qualifiers;
 
-import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 
 /**
@@ -63,7 +61,7 @@ public class StaticInjector implements Injector {
         if (e != null) {
             return type.cast(instantiator.instantiate(e.getTail()));
         } else {
-            DAGNode<Component, Dependency> node = findSatisfyingNode(Qualifiers.matchDefault(), type);
+            DAGNode<Component, Dependency> node = GraphtUtils.findSatisfyingNode(graph, Qualifiers.matchDefault(), type);
             if (node != null) {
                 return type.cast(instantiator.instantiate(node));
             } else {
@@ -77,46 +75,13 @@ public class StaticInjector implements Injector {
     }
 
     public <T> T getInstance(QualifierMatcher qmatch, Class<T> type) throws InjectionException {
-        DAGNode<Component, Dependency> node = findSatisfyingNode(qmatch, type);
+        DAGNode<Component, Dependency> node = GraphtUtils.findSatisfyingNode(graph, qmatch, type);
         if (node != null) {
             return type.cast(instantiator.instantiate(node));
         } else {
             return null;
         }
     }
-
-    /**
-     * Find a node with a satisfaction for a specified type. Does a breadth-first
-     * search to find the closest matching one.
-     *
-     * @param type The type to look for.
-     * @return A node whose satisfaction is compatible with {@code type}.
-     * @review Decide how to handle qualifiers and contexts
-     */
-    @Nullable
-    private DAGNode<Component,Dependency> findSatisfyingNode(final QualifierMatcher qmatch, final Class<?> type) {
-        Predicate<DAGEdge<Component,Dependency>> pred = new Predicate<DAGEdge<Component, Dependency>>() {
-            @Override
-            public boolean apply(@Nullable DAGEdge<Component, Dependency> input) {
-                return input != null
-                       && type.isAssignableFrom(input.getTail()
-                                                     .getLabel()
-                                                     .getSatisfaction()
-                                                     .getErasedType())
-                       && qmatch.apply(input.getLabel()
-                                            .getInitialDesire()
-                                            .getInjectionPoint()
-                                            .getQualifier());
-            }
-        };
-        DAGEdge<Component, Dependency> edge = graph.findEdgeBFS(pred);
-        if (edge != null) {
-            return edge.getTail();
-        } else {
-            return null;
-        }
-    }
-
 
     @Override
     public <T> T getInstance(Annotation qualifier, Class<T> type) throws InjectionException {

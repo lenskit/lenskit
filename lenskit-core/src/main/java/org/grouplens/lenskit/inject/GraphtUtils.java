@@ -30,10 +30,7 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.grapht.reflect.AbstractSatisfactionVisitor;
-import org.grouplens.grapht.reflect.Desire;
-import org.grouplens.grapht.reflect.InjectionPoint;
-import org.grouplens.grapht.reflect.Satisfaction;
+import org.grouplens.grapht.reflect.*;
 import org.grouplens.grapht.reflect.internal.*;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.core.Shareable;
@@ -287,5 +284,39 @@ public final class GraphtUtils {
         }
 
         return shared;
+    }
+
+    /**
+     * Find a node with a satisfaction for a specified type. Does a breadth-first
+     * search to find the closest matching one.
+     *
+     * @param type The type to look for.
+     * @return A node whose satisfaction is compatible with {@code type}.
+     * @review Decide how to handle qualifiers and contexts
+     */
+    @Nullable
+    public static DAGNode<Component,Dependency> findSatisfyingNode(DAGNode<Component,Dependency> graph,
+                                                                   final QualifierMatcher qmatch,
+                                                                   final Class<?> type) {
+        Predicate<DAGEdge<Component,Dependency>> pred = new Predicate<DAGEdge<Component, Dependency>>() {
+            @Override
+            public boolean apply(@Nullable DAGEdge<Component, Dependency> input) {
+                return input != null
+                       && type.isAssignableFrom(input.getTail()
+                                                     .getLabel()
+                                                     .getSatisfaction()
+                                                     .getErasedType())
+                       && qmatch.apply(input.getLabel()
+                                            .getInitialDesire()
+                                            .getInjectionPoint()
+                                            .getQualifier());
+            }
+        };
+        DAGEdge<Component, Dependency> edge = graph.findEdgeBFS(pred);
+        if (edge != null) {
+            return edge.getTail();
+        } else {
+            return null;
+        }
     }
 }
