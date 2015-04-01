@@ -24,7 +24,6 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
 import org.grouplens.lenskit.cursors.AbstractCursor;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
 
 import javax.annotation.Nonnull;
@@ -60,18 +59,11 @@ class BinaryRatingList extends AbstractList<Rating> {
         return getRating(position);
     }
 
-    public Rating getRating(int position) {
+    private Rating getRating(int position) {
         buffer.reset();
         int bidx = buffer.position() + position * ratingSize;
         buffer.position(bidx);
         return format.readRating(buffer);
-    }
-
-    private void populateRating(int pos, MutableRating rating) {
-        buffer.reset();
-        int bidx = buffer.position() + pos * ratingSize;
-        buffer.position(bidx);
-        format.readRating(buffer, rating);
     }
 
     @Override
@@ -84,7 +76,6 @@ class BinaryRatingList extends AbstractList<Rating> {
     }
 
     private class CursorImpl extends AbstractCursor<Rating> {
-        private MutableRating rating = new MutableRating();
         private IntIterator posIter = positions.iterator();
 
         @Override
