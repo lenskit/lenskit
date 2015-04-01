@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.knn.item.model;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.collections.LongKeyDomain;
@@ -82,6 +83,7 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
     @Override
     public ItemItemBuildContext get() {
         logger.info("constructing build context");
+        Stopwatch timer = Stopwatch.createStarted();
         logger.debug("using normalizer {}", normalizer);
 
         logger.debug("Building item data");
@@ -126,7 +128,8 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
             itemData[i] = itemVectors.get(itemId);
         }
 
-        logger.debug("item data completed");
+        timer.stop();
+        logger.info("finished build context for {} items in {}", items.size(), timer);
         return new ItemItemBuildContext(items, itemData, userItemSets);
     }
 }
