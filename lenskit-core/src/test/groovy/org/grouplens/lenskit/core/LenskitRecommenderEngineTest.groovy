@@ -29,6 +29,7 @@ import org.grouplens.lenskit.ItemRecommender
 import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.RecommenderBuildException
 import org.grouplens.lenskit.baseline.*
+import org.grouplens.lenskit.basic.PrecomputedItemScorer
 import org.grouplens.lenskit.basic.SimpleRatingPredictor
 import org.grouplens.lenskit.basic.TopNItemRecommender
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
@@ -40,7 +41,6 @@ import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
 import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer
 import org.grouplens.lenskit.util.io.CompressionMode
-import org.grouplens.lenskit.basic.PrecomputedItemScorer
 import org.junit.Before
 import org.junit.Test
 
@@ -69,6 +69,17 @@ public class LenskitRecommenderEngineTest {
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config)
         verifyBasicRecommender(engine.createRecommender())
+    }
+
+    @Test
+    public void testGetComponent() throws RecommenderBuildException {
+        LenskitConfiguration config = configureBasicRecommender(true)
+
+        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config)
+        assertThat(engine.getComponent(ItemScorer.class),
+                   notNullValue());
+        assertThat(engine.getComponent(ItemScorer.class),
+                   instanceOf(ConstantItemScorer.class));
     }
 
     @Test
