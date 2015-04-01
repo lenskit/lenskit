@@ -25,6 +25,9 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.reflect.Qualifiers;
+import org.grouplens.grapht.reflect.Satisfaction;
+import org.grouplens.grapht.reflect.internal.InstanceSatisfaction;
 import org.grouplens.grapht.solver.DependencySolver;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.RecommenderEngine;
@@ -35,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.WillClose;
 import java.io.*;
 
@@ -232,6 +236,28 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     @Nonnull
     public DAGNode<Component, Dependency> getGraph() {
         return graph;
+    }
+
+    /**
+     * Get the component of a particular type, if one is already instantiated.  This is useful to extract pre-built
+     * models from serialized recommender engines, for example.
+     * @param type The required component type.
+     * @param <T> The required component type.
+     * @return The component instance, or {@code null} if no instance can be retreived (either because no such
+     * component is configured, or it is not yet instantiated).
+     */
+    @Nullable
+    public <T> T getComponent(Class<T> type) {
+        DAGNode<Component, Dependency> node = GraphtUtils.findSatisfyingNode(graph, Qualifiers.matchDefault(), type);
+        if (node == null) {
+            return null;
+        }
+        Satisfaction sat = node.getLabel().getSatisfaction();
+        if (sat instanceof InstanceSatisfaction) {
+            return type.cast(((InstanceSatisfaction) sat).getInstance());
+        } else {
+            return null;
+        }
     }
 
     /**
