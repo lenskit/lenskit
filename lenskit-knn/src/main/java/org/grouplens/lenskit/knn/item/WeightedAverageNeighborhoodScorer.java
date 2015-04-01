@@ -25,11 +25,10 @@ import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdBuilder;
 import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import java.io.Serializable;
-
-import static java.lang.Math.abs;
 
 /**
  * Neighborhood scorer that computes the weighted average of neighbor scores.
@@ -43,21 +42,14 @@ public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Se
             Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodWeight");
 
     @Override
-    public ScoredId score(long item, Iterable<ScoredId> neighbors, SparseVector scores) {
-        double sum = 0;
-        double weight = 0;
-        int n = 0;
-        for (ScoredId id: neighbors) {
-            long oi = id.getId();
-            double sim = id.getScore();
-            weight += abs(sim);
-            sum += sim * scores.get(oi);
-            n += 1;
-        }
+    public ScoredId score(long item, SparseVector neighbors, SparseVector scores) {
+        MutableSparseVector work = neighbors.mutableCopy();
+        double weight = neighbors.sumAbs();
+        work.multiply(scores);
         if (weight > 0) {
             ScoredIdBuilder builder = ScoredIds.newBuilder();
             return builder.setId(item)
-                          .setScore(sum/weight)
+                          .setScore(work.sum()/weight)
                           .addChannel(NEIGHBORHOOD_WEIGHT_SYMBOL,weight)
                           .build();
         } else {

@@ -22,10 +22,9 @@ package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 
 /**
  * Item-item similarity model. It makes available the similarities
@@ -53,8 +52,8 @@ public interface ItemItemModel {
      *
      * @param item The item to get the neighborhood for.
      * @return The row of the similarity matrix. If the item is unknown, an empty
-     *         list is returned.  The list is sorted in nonincreasing order by score.
+     *         vector is returned.
      */
     @Nonnull
-    List<ScoredId> getNeighbors(long item);
+    SparseVector getNeighbors(long item);
 }

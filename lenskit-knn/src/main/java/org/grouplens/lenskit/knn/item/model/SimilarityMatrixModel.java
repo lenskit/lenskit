@@ -25,11 +25,11 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.scored.ScoredId;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +50,7 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
     private static final long serialVersionUID = 3L;
 
     private final LongKeyDomain itemDomain;
-    private final List<List<ScoredId>> neighborhoods;
+    private final ImmutableList<ImmutableSparseVector> neighborhoods;
     private transient volatile String stringValue;
 
     /**
@@ -61,7 +61,7 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
      * @deprecated This is deprecated for public usage.  It is better to use the other constructor.
      */
     @Deprecated
-    public SimilarityMatrixModel(LongKeyDomain items, List<List<ScoredId>> nbrs) {
+    public SimilarityMatrixModel(LongKeyDomain items, List<ImmutableSparseVector> nbrs) {
         itemDomain = items.clone();
         neighborhoods = ImmutableList.copyOf(nbrs);
     }
@@ -71,11 +71,11 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
      *
      * @param nbrs  The item neighborhoods.  The item neighborhood lists are not copied.
      */
-    public SimilarityMatrixModel(Map<Long,List<ScoredId>> nbrs) {
+    public SimilarityMatrixModel(Map<Long,ImmutableSparseVector> nbrs) {
         itemDomain = LongKeyDomain.fromCollection(nbrs.keySet(), true);
         int n = itemDomain.domainSize();
         assert n == nbrs.size();
-        ImmutableList.Builder<List<ScoredId>> neighbors = ImmutableList.builder();
+        ImmutableList.Builder<ImmutableSparseVector> neighbors = ImmutableList.builder();
         for (int i = 0; i < n; i++) {
             neighbors.add(nbrs.get(itemDomain.getKey(i)));
         }
@@ -89,10 +89,10 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
 
     @Override
     @Nonnull
-    public List<ScoredId> getNeighbors(long item) {
+    public SparseVector getNeighbors(long item) {
         int idx = itemDomain.getIndex(item);
         if (idx < 0) {
-            return Collections.emptyList();
+            return ImmutableSparseVector.empty();
         } else {
             return neighborhoods.get(idx);
         }
@@ -103,7 +103,7 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
         String val = stringValue;
         if (val == null) {
             int nsims = 0;
-            for (List<ScoredId> nbrs: neighborhoods) {
+            for (SparseVector nbrs: neighborhoods) {
                 nsims += nbrs.size();
             }
             val = String.format("matrix of %d similarities for %d items", nsims, neighborhoods.size());
