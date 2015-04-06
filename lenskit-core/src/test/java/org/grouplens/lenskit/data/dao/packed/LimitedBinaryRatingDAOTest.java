@@ -22,6 +22,7 @@
 package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.SerializationUtils;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.event.Event;
@@ -199,27 +200,39 @@ public class LimitedBinaryRatingDAOTest {
     @Test
     public void testEventsAfterLimit() throws IOException{
         BinaryRatingDAO brDao  = dao.createWindowedView(1650L);
+        verifyDAO(brDao);
+    }
+
+    @Test
+    public void testSerializedDAO() throws IOException {
+        BinaryRatingDAO brDao  = dao.createWindowedView(1650L);
+        BinaryRatingDAO clone = SerializationUtils.clone(brDao);
+        verifyDAO(clone);
+    }
+
+    //verifies Limited BinaryRatingDao with timestamp limit 1650L
+    private void verifyDAO(BinaryRatingDAO brDao) {
         assertThat(Cursors.makeList(brDao.streamEvents()),
-                hasSize(6));
+                   hasSize(6));
 
         //test getters for user
         assertThat(brDao.getUserIds(), containsInAnyOrder(12L, 13L, 39L, 40L, 41L));
         assertThat(brDao.getUsersForItem(105), containsInAnyOrder(39L,41L));
         assertThat(brDao.getUsersForItem(120), nullValue());
         assertThat(brDao.getEventsForUser(39, Rating.class),
-                contains(Ratings.make(39, 105, 3.5, 1000L)));
+                   contains(Ratings.make(39, 105, 3.5, 1000L)));
         assertThat(brDao.getEventsForUser(13, Rating.class),
-                containsInAnyOrder(Ratings.make(13, 102, 3.5, 1000L),
-                        Ratings.make(13, 111, 4.5, 1200L)));
+                   containsInAnyOrder(Ratings.make(13, 102, 3.5, 1000L),
+                                      Ratings.make(13, 111, 4.5, 1200L)));
         assertThat(brDao.getEventsForUser(42), nullValue());
 
         //test getters for item
         assertThat(brDao.getItemIds(), containsInAnyOrder(102L, 105L, 111L));
         assertThat(brDao.getEventsForItem(102, Rating.class),
-                contains(Ratings.make(13, 102, 3.5, 1000L),Ratings.make(12, 102, 2.5, 1050L)));
+                   contains(Ratings.make(13, 102, 3.5, 1000L),Ratings.make(12, 102, 2.5, 1050L)));
         assertThat(brDao.getEventsForItem(105, Rating.class),
-                containsInAnyOrder(Ratings.make(39, 105, 3.5, 1000L),
-                        Ratings.make(41, 105, 2.5, 1400L)));
+                   containsInAnyOrder(Ratings.make(39, 105, 3.5, 1000L),
+                                      Ratings.make(41, 105, 2.5, 1400L)));
         assertThat(brDao.getEventsForItem(120), nullValue());
 
         //test streamEventsByUser
@@ -227,10 +240,10 @@ public class LimitedBinaryRatingDAOTest {
         assertThat(histories, hasSize(6));
         assertThat(histories.get(0).getUserId(), equalTo(12L));
         assertThat(histories.get(0),
-                equalTo(brDao.getEventsForUser(12L)));
+                   equalTo(brDao.getEventsForUser(12L)));
         assertThat(histories.get(1).getUserId(), equalTo(13L));
         assertThat(histories.get(1),
-                equalTo(brDao.getEventsForUser(13)));
+                   equalTo(brDao.getEventsForUser(13)));
 
         //test streamEvents
         List<Rating> events = Cursors.makeList(brDao.streamEvents(Rating.class, SortOrder.USER));

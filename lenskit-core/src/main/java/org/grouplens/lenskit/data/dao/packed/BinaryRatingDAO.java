@@ -78,8 +78,6 @@ import java.util.List;
 public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, UserDAO, ItemDAO, Serializable, Describable {
     private static final long serialVersionUID = -1L;
     private static final Logger logger = LoggerFactory.getLogger(BinaryRatingDAO.class);
-    private static int  limitIndex = -1;
-    private static long limitTimestamp = -1L;
 
     @Nullable
     private final transient File backingFile;
@@ -87,6 +85,8 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     private final ByteBuffer ratingData;
     private final BinaryIndexTable userTable;
     private final BinaryIndexTable itemTable;
+    private final int  limitIndex;
+    private final long limitTimestamp;
 
     private BinaryRatingDAO(@Nullable File file, BinaryHeader hdr, ByteBuffer data, BinaryIndexTable users, BinaryIndexTable items, int idx, Long timestamp) {
         Preconditions.checkArgument(data.position() == 0, "data is not at position 0");
@@ -177,7 +177,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     }
 
     private Object writeReplace() {
-        return new SerialProxy(header, ratingData, userTable, itemTable);
+        return new SerialProxy(header, ratingData, userTable, itemTable, limitIndex, limitTimestamp);
     }
 
     private void readObject(ObjectInputStream in) throws IOException {
@@ -393,18 +393,23 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     }
 
     private static class SerialProxy implements Serializable {
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 2L;
 
         private BinaryHeader header;
         private ByteBuffer ratingData;
         private BinaryIndexTable userTable;
         private BinaryIndexTable itemTable;
+        private int  limitIndex;
+        private long limitTimestamp;
 
-        public SerialProxy(BinaryHeader hdr, ByteBuffer ratings, BinaryIndexTable users, BinaryIndexTable items) {
+
+        public SerialProxy(BinaryHeader hdr, ByteBuffer ratings, BinaryIndexTable users, BinaryIndexTable items, int limitIdx, long limitTms) {
             header = hdr;
             ratingData = ratings.duplicate();
             userTable = users;
             itemTable = items;
+            limitIndex = limitIdx;
+            limitTimestamp = limitTms;
         }
 
         private void writeObject(ObjectOutputStream out) throws IOException {
@@ -416,6 +421,8 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             out.write(headerBytes);
             out.writeObject(userTable);
             out.writeObject(itemTable);
+            out.writeInt(limitIndex);
+            out.writeLong(limitTimestamp);
 
             // TODO Write this with a compound file
             ByteBuffer write = ratingData.duplicate();
@@ -444,6 +451,8 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
 
             userTable = (BinaryIndexTable) in.readObject();
             itemTable = (BinaryIndexTable) in.readObject();
+            limitIndex = in.readInt();
+            limitTimestamp = in.readLong();
 
             int dataLength = in.readInt();
             byte[] buf = new byte[4096];
