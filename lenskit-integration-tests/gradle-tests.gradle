@@ -45,7 +45,7 @@ def ift = task makeTestRepo {
     }
 }
 
-task gradleTests
+task gradleTests(group: 'verification')
 check.dependsOn gradleTests
 
 file('src/it/gradle').eachDir { testDir ->
