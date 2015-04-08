@@ -147,6 +147,28 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
         return this;
     }
 
+    /**
+     * Get the number of header lines that will be skipped.
+     * @return The number of header lines that will be skipped.
+     */
+    public int getHeaderLines() {
+        return format.getHeaderLines();
+    }
+
+    /**
+     * Set the number of header lines to skip.
+     * @param lines The number of header lines to skip.
+     * @return The builder (for chaining).
+     */
+    public TextDataSourceBuilder setHeaderLines(int lines) {
+        if (dceFormat != null) {
+            dceFormat.setHeaderLines(lines);
+        } else {
+            throw new IllegalStateException("event format already specified");
+        }
+        return this;
+    }
+
     public PreferenceDomain getDomain() {
         return domain;
     }
