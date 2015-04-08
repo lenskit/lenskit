@@ -35,6 +35,7 @@ import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
 import org.grouplens.lenskit.data.text.EventFormat;
 import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.specs.SpecificationException;
+import org.grouplens.lenskit.data.text.Formats;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,20 +83,21 @@ public class InputData {
 
         String type = options.get("event_type");
         File nameFile = options.get("item_names");
+        Integer header = options.get("header_lines");
         if (nameFile != null) {
             dsb.setItemNameFile(nameFile);
         }
         File ratingFile = options.get("csv_file");
         if (ratingFile != null) {
             return dsb.setFile(ratingFile)
-                      .setDelimiter(",")
+                      .setFormat(Formats.csvRatings().setHeaderLines(header))
                       .build();
         }
 
         ratingFile = options.get("tsv_file");
         if (ratingFile != null) {
             return dsb.setFile(ratingFile)
-                      .setDelimiter("\t")
+                      .setFormat(Formats.delimitedRatings("\t").setHeaderLines(header))
                       .build();
         }
 
@@ -106,7 +108,8 @@ public class InputData {
         if (ratingFile != null) {
             String delim = options.getString("delimiter");
             EventFormat fmt = DelimitedColumnEventFormat.create(type)
-                                                        .setDelimiter(delim);
+                                                        .setDelimiter(delim)
+                                                        .setHeaderLines(header);
             return dsb.setFormat(fmt)
                       .setFile(ratingFile)
                       .build();
@@ -176,6 +179,11 @@ public class InputData {
                .setDefault(",")
                .metavar("DELIM")
                .help("input file is delimited by DELIM");
+        options.addArgument("-H", "--header-lines")
+               .type(Integer.class)
+               .setDefault(0)
+               .metavar("N")
+               .help("skip N header lines at top of input file");
         options.addArgument("-t", "--event-type")
                .setDefault("rating")
                .metavar("TYPE")
