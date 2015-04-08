@@ -31,8 +31,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Tests for the cursor utility methods.  This has the side effect of also testing some of the
@@ -249,4 +248,25 @@ public class CursorsTest {
         assertThat(cursor.hasNext(), equalTo(false));
     }
     //endregion
+
+    @Test
+    public void testConsumeNone() {
+        Cursor<String> cur = Cursors.of("foo", "bar");
+        cur = Cursors.consume(0, cur);
+        assertThat(cur, contains("foo", "bar"));
+    }
+
+    @Test
+    public void testConsumeOne() {
+        Cursor<String> cur = Cursors.of("foo", "bar");
+        cur = Cursors.consume(1, cur);
+        assertThat(cur, contains("bar"));
+    }
+
+    @Test
+    public void testConsumeTooMany() {
+        Cursor<String> cur = Cursors.of("foo", "bar");
+        cur = Cursors.consume(3, cur);
+        assertThat(cur, contains());
+    }
 }
