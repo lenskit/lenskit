@@ -63,7 +63,7 @@ public final class Formats {
     }
 
     /**
-     * Get a format for reading the MovieLens data sets (other than 100K).
+     * Get a format for reading the MovieLens 1M and 10M data sets.
      *
      * @return A format for using {@link TextEventDAO} to read the ML-1M and ML-10M data sets.
      */
@@ -72,5 +72,17 @@ public final class Formats {
         fmt.setDelimiter("::");
         fmt.setFields(Fields.user(), Fields.item(), Fields.rating(), Fields.timestamp());
         return fmt;
+    }
+
+    /**
+     * Get a format for reading the MovieLens 20M and Latest data sets.
+     * @return A format for using {@link TextEventDAO} to read the ML-10M and ML-Latest data sets.
+     */
+    public static DelimitedColumnEventFormat movieLensLatest() {
+        return DelimitedColumnEventFormat.create(new RatingEventType())
+                                         .setDelimiter(",")
+                                         .setFields(Fields.user(), Fields.item(),
+                                                    Fields.rating(), Fields.timestamp())
+                                         .setHeaderLines(1);
     }
 }
