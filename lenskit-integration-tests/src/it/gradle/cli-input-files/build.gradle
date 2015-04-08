@@ -1,0 +1,41 @@
+apply plugin: 'java'
+
+repositories {
+    maven {
+        url testRepoURI
+    }
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.grouplens.lenskit:lenskit-all:$lenskitVersion"
+    runtime "org.grouplens.lenskit:lenskit-cli:$lenskitVersion"
+}
+
+task packWithHeader(type: JavaExec) {
+    dependsOn classes
+    classpath configurations.runtime
+    inputs.file 'header.csv'
+    outputs.file "$buildDir/header.pack"
+
+    main 'org.grouplens.lenskit.cli.Main'
+    args 'pack-ratings'
+    args '-o', "$buildDir/header.pack"
+    args '--csv-file', file('header.csv')
+    args '--header-lines', 1
+    args '--no-timestamps'
+
+    doFirst {
+        mkdir buildDir
+    }
+}
+
+task check(overwrite: true, type: JavaExec) {
+    dependsOn packWithHeader
+    classpath configurations.runtime
+    inputs.files packWithHeader
+    inputs.file 'check.groovy'
+
+    main 'groovy.ui.GroovyMain'
+    args 'check.groovy'
+}
