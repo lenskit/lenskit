@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -32,7 +33,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 public class BinaryIndexTableTest {
     @Rule
@@ -75,5 +76,33 @@ public class BinaryIndexTableTest {
         assertThat(tbl.getEntry(49), contains(1,3));
         assertThat(tbl.getEntry(67), contains(2,4));
         assertThat(tbl.getEntry(-1), nullValue());
+    }
+
+    @Test
+    public void testLimitedView() throws IOException {
+        File file = folder.newFile();
+        FileChannel chan = new RandomAccessFile(file, "rw").getChannel();
+        BinaryIndexTableWriter writer = BinaryIndexTableWriter.create(BinaryFormat.create(), chan, 3);
+        writer.writeEntry(12, new int[] {0});
+        writer.writeEntry(17, new int[] {1,3});
+        writer.writeEntry(19, new int[] {4,5});
+
+        MappedByteBuffer buffer = chan.map(FileChannel.MapMode.READ_ONLY, 0, chan.size());
+        BinaryIndexTable tbl = BinaryIndexTable.fromBuffer(3, buffer);
+        tbl = tbl.createLimitedView(2);
+        assertThat(tbl.getKeys(), hasSize(2));
+        assertThat(tbl.getKeys(), contains(12L,17L));
+        assertThat(tbl.getEntry(12), contains(0));
+        assertThat(tbl.getEntry(17), contains(1));
+        assertThat(tbl.getEntry(19), nullValue());
+        assertThat(tbl.getEntry(-1), nullValue());
+
+        BinaryIndexTable serializedTbl = SerializationUtils.clone(tbl);
+        assertThat(serializedTbl.getKeys(), hasSize(2));
+        assertThat(serializedTbl.getKeys(), contains(12L,17L));
+        assertThat(serializedTbl.getEntry(12), contains(0));
+        assertThat(serializedTbl.getEntry(17), contains(1));
+        assertThat(serializedTbl.getEntry(19), nullValue());
+        assertThat(serializedTbl.getEntry(-1), nullValue());
     }
 }

@@ -125,6 +125,27 @@ class BinaryIndexTable implements Serializable {
         return new BinaryIndexTable(dom, offsets, sizes, dup.asIntBuffer());
     }
 
+    public  BinaryIndexTable createLimitedView(int limit) {
+        LongKeyDomain newKeys = keys.clone();
+        int[] newSizes = new int[sizes.length];
+        for (int i=0;i<offsets.length;i++) {
+            if (indexStore.get(offsets[i])>=limit||sizes[i]==0) {
+                newSizes[i]=0;
+                newKeys.setActive(i, false);
+            } else {
+                //TODO following loop need to be replaced with binary rating search
+                for (int j= offsets[i];j<(offsets[i]+sizes[i]);j++) {
+                    /*
+                    * find the new 'size' value; this is the number of indexes for this key that
+                    * are less than the limit
+                    */
+                    if(indexStore.get(j)<limit)
+                        newSizes[i]+=1;
+                }
+            }
+        }
+        return new BinaryIndexTable(newKeys,offsets, newSizes, indexStore);
+    }
     public LongSet getKeys() {
         return keys.activeSetView();
     }
@@ -135,11 +156,10 @@ class BinaryIndexTable implements Serializable {
      * @return The position list.
      */
     public IntList getEntry(long key) {
-        int idx = keys.getIndex(key);
+        int idx = keys.getIndexIfActive(key);
         if (idx < 0) {
             return null;
         }
-
         return getEntryInternal(idx);
     }
 
@@ -199,15 +219,15 @@ class BinaryIndexTable implements Serializable {
     }
 
     private static class SerialProxy implements Serializable {
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 2L;
 
-        private final long[] keys;
+        private final LongKeyDomain keys;
         private final int[] offsets;
         private final int[] sizes;
         private transient IntBuffer buffer;
 
         private SerialProxy(LongKeyDomain keys, int [] offsets, int[] sizes, IntBuffer buffer) {
-            this.keys = keys.activeSetView().toLongArray();
+            this.keys = keys.clone();
             this.offsets = offsets;
             this.sizes = sizes;
             this.buffer = buffer.duplicate();
@@ -235,11 +255,10 @@ class BinaryIndexTable implements Serializable {
         }
 
         private Object readResolve() throws ObjectStreamException {
-            if (keys.length != offsets.length || keys.length != sizes.length) {
+            if (keys.domainSize() != offsets.length || keys.domainSize() != sizes.length) {
                 throw new InvalidObjectException("arrays not the same length");
             }
-            return new BinaryIndexTable(LongKeyDomain.wrap(keys, keys.length, true),
-                                        offsets, sizes, buffer.duplicate());
+            return new BinaryIndexTable(keys, offsets, sizes, buffer.duplicate());
         }
     }
 }
