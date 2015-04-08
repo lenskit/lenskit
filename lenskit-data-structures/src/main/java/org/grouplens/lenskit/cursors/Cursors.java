@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.cursors;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
@@ -107,6 +108,22 @@ public final class Cursors {
                 cursor.close();
             }
         };
+    }
+
+    /**
+     * Consume and discard the first {@code n} elements from a cursor.
+     * @param n The number of elements to drop.
+     * @param cursor The cursor.
+     * @param <T> The cursor's element type.
+     * @return The passed-in cursor, for convenience and functional-looking code.  This method immediately consumes the
+     * elements, however, so {@code cursor} is modified.
+     */
+    public static <T> Cursor<T> consume(int n, Cursor<T> cursor) {
+        Preconditions.checkArgument(n >= 0, "number to skip must be non-negative");
+        for (int i = 0; i < n && cursor.hasNext(); i++) {
+            cursor.next();
+        }
+        return cursor;
     }
 
     /**
