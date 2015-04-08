@@ -31,6 +31,11 @@ import org.grouplens.lenskit.data.event.Event;
  */
 public interface EventFormat {
     /**
+     * Get the number of header lines to skip in the file.
+     */
+    int getHeaderLines();
+
+    /**
      * Parse a line into an event.
      *
      * @param line The line to parse.

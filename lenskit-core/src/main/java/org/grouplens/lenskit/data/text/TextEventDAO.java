@@ -108,7 +108,9 @@ public class TextEventDAO implements EventDAO, Describable {
     @Override
     public Cursor<Event> streamEvents() {
         try {
-            return new EventCursor(LineCursor.openFile(inputFile, compression));
+            LineCursor lines = LineCursor.openFile(inputFile, compression);
+            Cursors.consume(eventFormat.getHeaderLines(), lines);
+            return new EventCursor(lines);
         } catch (IOException e) {
             throw new DataAccessException("cannot open " + inputFile, e);
         }
