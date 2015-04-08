@@ -91,6 +91,7 @@ public class RecommenderLoader {
         } else {
             logger.info("loading recommender from {}", modelFile);
             LenskitRecommenderEngineLoader loader = LenskitRecommenderEngine.newLoader();
+            loader.setClassLoader(environment.getClassLoader());
             for (LenskitConfiguration config: environment.loadConfigurations(getConfigFiles())) {
                 loader.addConfiguration(config);
             }
