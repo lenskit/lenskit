@@ -48,6 +48,7 @@ public final class DelimitedColumnEventFormat implements EventFormat {
     private String delimiter = "\t";
     @Nonnull
     private List<Field> fieldList;
+    private int headerLines = 0;
 
     @Inject
     public DelimitedColumnEventFormat(@Nonnull EventTypeDefinition etd) {
@@ -119,6 +120,21 @@ public final class DelimitedColumnEventFormat implements EventFormat {
 
     public DelimitedColumnEventFormat setDelimiter(@Nonnull String delim) {
         delimiter = delim;
+        return this;
+    }
+
+    @Override
+    public int getHeaderLines() {
+        return headerLines;
+    }
+
+    /**
+     * Set the number of lines to skip before reading events.
+     * @param lines The number of lines to skip.
+     * @return The number of header lines to skip.
+     */
+    public DelimitedColumnEventFormat setHeaderLines(int lines) {
+        headerLines = lines;
         return this;
     }
 
