@@ -32,8 +32,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-import org.grouplens.lenskit.build.*
+import org.grouplens.lenskit.build.GitExtension
 
 ext.webUrl = 'http://lenskit.org'
 
@@ -50,7 +49,7 @@ apply plugin: 'base'
 
 allprojects { project ->
     group 'org.grouplens.lenskit'
-    version '2.2-M4'
+    version '2.2-SNAPSHOT'
     
     ext.groovyVersion = '2.1.5'
     ext.logbackVersion = '1.0.13'
