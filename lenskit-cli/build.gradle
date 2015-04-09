@@ -36,8 +36,6 @@
 
 import org.gradle.process.internal.ExecException
 
-import java.util.zip.ZipFile
-
 apply from: "$rootDir/gradle/maven.gradle"
 apply plugin: 'groovy'
 
@@ -55,12 +53,6 @@ meta {
     name 'LensKit CLI'
     description 'Command-line tools for interacting with LensKit.'
 }
-
-// Build an application
-apply plugin: 'application'
-
-mainClassName = 'org.lenskit.cli.Main'
-applicationName = 'lenskit'
 
 // Render the manpages
 task renderManPages(group: 'documentation') {
@@ -140,54 +132,4 @@ title: $name($sec)
             }
         }
     }
-}
-applicationDistribution.from(renderManPages) {
-    into 'man'
-}
-
-// aggregate license info and notices from dependencies
-task notices(group: 'build') {
-    ext.noticeFile = "$buildDir/NOTICE.txt"
-    inputs.files configurations.runtime
-    outputs.file noticeFile
-
-    doLast {
-        def cfg = configurations.runtime.resolvedConfiguration
-        file(noticeFile).withPrintWriter { out ->
-            out.println("This file contains the notices required by the libraries used by LensKit.")
-            out.println()
-
-            cfg.resolvedArtifacts*.file.each { File jar ->
-                def zip = new ZipFile(jar)
-                try {
-                    def noticeEntry = zip.getEntry("META-INF/NOTICE.txt")
-                    if (noticeEntry != null) {
-                        def notice = zip.getInputStream(noticeEntry).text
-                        out.println("${jar.name}:")
-                        notice.eachLine { line ->
-                            out.println("    ${line}")
-                        }
-                        out.println()
-                    }
-                } finally {
-                    zip.close()
-                }
-            }
-        }
-    }
-}
-applicationDistribution.from(notices)
-// copy license texts into the distribution
-applicationDistribution.from('src/licenses')
-// include aggregate javadoc
-applicationDistribution.from(rootProject.tasks['javadoc']) {
-    into 'javadoc'
-}
-
-// make standard tasks build the application
-build.dependsOn installApp
-assemble.dependsOn distZip
-
-if (hasProperty('lenskit.install.dir')) {
-    installApp.destinationDir = rootProject.file(getProperty('lenskit.install.dir'))
 }
