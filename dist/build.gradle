@@ -1,0 +1,78 @@
+import java.util.zip.ZipFile
+
+apply plugin: 'application'
+evaluationDependsOn ':lenskit-cli'
+
+dependencies {
+    runtime project(':lenskit-cli')
+}
+
+mainClassName = 'org.grouplens.lenskit.cli.Main'
+applicationName = 'lenskit'
+
+// We need to be able to start lenskit-eval as well as lenskit
+task evalStartScripts(type: CreateStartScripts) {
+    applicationName = 'lenskit-eval'
+    mainClassName = 'org.grouplens.lenskit.eval.cli.EvalCLI'
+    classpath = startScripts.classpath
+    outputDir = startScripts.outputDir
+    optsEnvironmentVar = 'LENSKIT_OPTS'
+}
+applicationDistribution.from(evalStartScripts) {
+    into 'bin'
+}
+
+applicationDistribution.from(project(':lenskit-cli').tasks['renderManPages']) {
+    into 'man'
+}
+
+applicationDistribution.from('licenses')
+// include aggregate JavaDoc
+applicationDistribution.from(rootProject.tasks['javadoc']) {
+    into 'javadoc'
+}
+
+// aggregate license info and notices from dependencies
+task notices(group: 'build') {
+    ext.noticeFile = "$buildDir/NOTICE.txt"
+    inputs.files configurations.runtime
+    outputs.file noticeFile
+
+    doLast {
+        def cfg = configurations.runtime.resolvedConfiguration
+        file(noticeFile).withPrintWriter { out ->
+            out.println("This file contains the notices required by the libraries used by LensKit.")
+            out.println()
+
+            cfg.resolvedArtifacts*.file.each { File jar ->
+                def zip = new ZipFile(jar)
+                try {
+                    def noticeEntry = zip.getEntry("META-INF/NOTICE.txt")
+                    if (noticeEntry != null) {
+                        def notice = zip.getInputStream(noticeEntry).text
+                        out.println("${jar.name}:")
+                        notice.eachLine { line ->
+                            out.println("    ${line}")
+                        }
+                        out.println()
+                    }
+                } finally {
+                    zip.close()
+                }
+            }
+        }
+    }
+}
+applicationDistribution.from(notices)
+// copy license texts into the distribution
+
+distTar {
+    extension 'tgz'
+    compression Compression.GZIP
+}
+
+build.dependsOn installApp
+
+if (hasProperty('lenskit.install.dir')) {
+    installApp.destinationDir = rootProject.file(getProperty('lenskit.install.dir'))
+}
