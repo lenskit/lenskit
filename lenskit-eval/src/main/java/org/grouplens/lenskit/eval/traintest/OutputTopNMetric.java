@@ -89,6 +89,7 @@ public class OutputTopNMetric extends AbstractMetric<OutputTopNMetric.Context, V
             try {
                 context.writer.writeRow(user.getUserId(), rec.getId(),
                                         counter, rec.getScore());
+                counter += 1;
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
