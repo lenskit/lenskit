@@ -21,9 +21,11 @@
 package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import org.apache.commons.lang3.builder.Builder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.collections.LongUtils;
@@ -135,15 +137,16 @@ public class OutputPredictMetric extends AbstractMetric<OutputPredictMetric.Cont
 
     public static class Factory extends MetricFactory<Context> {
         private final List<Pair<Symbol, String>> predictChannels;
+        private final File file;
 
-        public Factory(List<Pair<Symbol, String>> pchans) {
-            predictChannels = pchans;
+        public Factory(File f, List<Pair<Symbol, String>> pchans) {
+            file = f;
+            predictChannels = ImmutableList.copyOf(pchans);
         }
 
         @Override
         public OutputPredictMetric createMetric(TrainTestEvalTask task) throws IOException {
-            return new OutputPredictMetric(task.getOutputLayout(), task.getPredictOutput(),
-                                           predictChannels);
+            return new OutputPredictMetric(task.getOutputLayout(), file, predictChannels);
         }
 
         @Override
@@ -154,6 +157,42 @@ public class OutputPredictMetric extends AbstractMetric<OutputPredictMetric.Cont
         @Override
         public List<String> getUserColumnLabels() {
             return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Configure the prediction output.
+     */
+    public static class FactoryBuilder implements Builder<Factory> {
+        private File file;
+        private List<Pair<Symbol,String>> channels = Lists.newLinkedList();
+
+        public File getFile() {
+            return file;
+        }
+
+        public void setFile(File f) {
+            file = f;
+        }
+
+        public void addChannel(Symbol chan, String col) {
+            channels.add(Pair.of(chan, col));
+        }
+
+        public void addChannel(String chan, String col) {
+            channels.add(Pair.of(Symbol.of(chan), col));
+        }
+
+        public List<Pair<Symbol,String>> getChannels() {
+            return Collections.unmodifiableList(channels);
+        }
+
+        @Override
+        public Factory build() {
+            if (file == null) {
+                throw new IllegalStateException("no file specified");
+            }
+            return new Factory(file, channels);
         }
     }
 }
