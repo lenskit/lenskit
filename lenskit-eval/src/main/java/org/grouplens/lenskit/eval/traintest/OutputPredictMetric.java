@@ -175,6 +175,10 @@ public class OutputPredictMetric extends AbstractMetric<OutputPredictMetric.Cont
             file = f;
         }
 
+        public void setFile(String fn) {
+            setFile(new File(fn));
+        }
+
         public void addChannel(Symbol chan, String col) {
             channels.add(Pair.of(chan, col));
         }

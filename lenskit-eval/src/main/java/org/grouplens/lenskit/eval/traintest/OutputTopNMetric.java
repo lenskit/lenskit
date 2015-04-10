@@ -164,6 +164,10 @@ public class OutputTopNMetric extends AbstractMetric<OutputTopNMetric.Context, V
             file = f;
         }
 
+        public void setFile(String fn) {
+            setFile(new File(fn));
+        }
+
         @Override
         public Factory build() {
             if (file == null) {

@@ -252,14 +252,8 @@ public class SimpleEvaluator implements Callable<Table> {
      * @param metric The metric to be added.
      * @return Itself for  method chaining.
      */
-    public SimpleEvaluator addMetric(Class<? extends Metric<?>> metric) {
-        try {
-            result.addMetric(metric);
-        } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException(e);
-        } catch (InstantiationException e) {
-            throw new IllegalArgumentException(e);
-        }
+    public <T> SimpleEvaluator addMetric(Class<? extends Metric<T>> metric) {
+        result.addMetric(metric);
         return this;
     }
 
