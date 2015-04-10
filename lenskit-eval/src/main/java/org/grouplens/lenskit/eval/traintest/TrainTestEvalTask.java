@@ -56,7 +56,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -71,17 +74,16 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     private List<AlgorithmInstance> algorithms;
     private List<ExternalAlgorithm> externalAlgorithms;
     private List<MetricFactory<?>> metrics;
-    private List<Pair<Symbol,String>> predictChannels;
     private boolean isolate;
     private boolean separateAlgorithms;
     private File outputFile;
     private File userOutputFile;
-    private File predictOutputFile;
-    private File recommendOutputFile;
     private File cacheDir;
     private File taskGraphFile;
     private File taskStatusFile;
     private boolean cacheAll = false;
+    private OutputPredictMetric.FactoryBuilder defaultPredict = new OutputPredictMetric.FactoryBuilder();
+    private OutputTopNMetric.FactoryBuilder defaultRecommend = new OutputTopNMetric.FactoryBuilder();
 
     private ExperimentSuite experiments;
     private MeasurementSuite measurements;
@@ -98,7 +100,6 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         algorithms = Lists.newArrayList();
         externalAlgorithms = Lists.newArrayList();
         metrics = Lists.newArrayList();
-        predictChannels = Lists.newArrayList();
         outputFile = new File("train-test-results.csv");
         isolate = false;
     }
@@ -125,13 +126,35 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return this;
     }
 
+    /**
+     * Add a metric.
+     * @param metric The metric to add.
+     * @return The task (for chaining).
+     */
     public TrainTestEvalTask addMetric(Metric<?> metric) {
         metrics.add(MetricFactory.forMetric(metric));
         return this;
     }
 
-    public TrainTestEvalTask addMetric(Class<? extends Metric<?>> metricClass) throws IllegalAccessException, InstantiationException {
-        return addMetric(metricClass.newInstance());
+    /**
+     * Add a metric by factory.
+     * @param factory The metric factory to add.
+     * @return The task (for chaining).
+     */
+    public TrainTestEvalTask addMetric(MetricFactory<?> factory) {
+        metrics.add(factory);
+        return this;
+    }
+
+    /**
+     * Add a metric by class.
+     * @param metricClass The metric class.
+     * @param <T> The metric's return type.
+     * @return The task (for chaining).
+     */
+    public <T> TrainTestEvalTask addMetric(Class<? extends Metric<T>> metricClass) {
+        metrics.add(MetricFactory.forMetricClass(metricClass));
+        return this;
     }
 
     /**
@@ -177,15 +200,16 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
      * @param label   The column label. If {@code null}, the channel symbol's name is used.
      * @return The command (for chaining).
      * @see #setPredictOutput(File)
+     * @deprecated Use the {@code predictions} metric.
      */
+    @Deprecated
     public TrainTestEvalTask addWritePredictionChannel(@Nonnull Symbol channelSym,
                                                        @Nullable String label) {
         Preconditions.checkNotNull(channelSym, "channel is null");
         if (label == null) {
             label = channelSym.getName();
         }
-        Pair<Symbol, String> entry = Pair.of(channelSym, label);
-        predictChannels.add(entry);
+        defaultPredict.addChannel(channelSym, label);
         return this;
     }
 
@@ -207,20 +231,26 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
         return setUserOutput(new File(fn));
     }
 
+    @Deprecated
     public TrainTestEvalTask setPredictOutput(File file) {
-        predictOutputFile = file;
+        logger.warn("predictOutput is deprecated, use predictions metric");
+        defaultPredict.setFile(file);
         return this;
     }
 
+    @Deprecated
     public TrainTestEvalTask setPredictOutput(String fn) {
         return setPredictOutput(new File(fn));
     }
 
+    @Deprecated
     public TrainTestEvalTask setRecommendOutput(File file) {
-        recommendOutputFile = file;
+        logger.warn("recommendOutput is deprecated, use predictions metric");
+        defaultRecommend.setFile(file);
         return this;
     }
 
+    @Deprecated
     public TrainTestEvalTask setRecommendOutput(String fn) {
         return setRecommendOutput(new File(fn));
     }
@@ -317,7 +347,7 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     List<Pair<Symbol,String>> getPredictionChannels() {
-        return predictChannels;
+        return defaultPredict.getChannels();
     }
 
     File getOutput() {
@@ -325,11 +355,11 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     }
 
     File getPredictOutput() {
-        return predictOutputFile;
+        return defaultPredict.getFile();
     }
 
     File getRecommendOutput() {
-        return recommendOutputFile;
+        return defaultRecommend.getFile();
     }
 
     /**
@@ -476,11 +506,11 @@ public class TrainTestEvalTask extends AbstractTask<Table> {
     MeasurementSuite createMeasurementSuite() {
         ImmutableList.Builder<MetricFactory<?>> activeMetrics = ImmutableList.builder();
         activeMetrics.addAll(metrics);
-        if (recommendOutputFile != null) {
-            activeMetrics.add(new OutputTopNMetric.Factory());
+        if (defaultRecommend.getFile() != null) {
+            activeMetrics.add(defaultRecommend.build());
         }
-        if (predictOutputFile != null) {
-            activeMetrics.add(new OutputPredictMetric.Factory(predictChannels));
+        if (defaultPredict.getFile() != null) {
+            activeMetrics.add(defaultPredict.build());
         }
         return new MeasurementSuite(activeMetrics.build());
     }
