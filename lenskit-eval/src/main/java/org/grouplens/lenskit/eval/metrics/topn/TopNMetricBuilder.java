@@ -21,12 +21,11 @@
 package org.grouplens.lenskit.eval.metrics.topn;
 
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.eval.metrics.Metric;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public abstract class TopNMetricBuilder<K extends Metric<?>> implements Builder<K> {
+public abstract class TopNMetricBuilder<K> implements Builder<K> {
     protected int listSize = 5;
     protected ItemSelector candidates = ItemSelectors.testItems();
     protected ItemSelector exclude = ItemSelectors.trainingItems();

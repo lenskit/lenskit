@@ -48,6 +48,21 @@ public abstract class MetricFactory<T> {
         return new Preinstantiated<T>(m);
     }
 
+    /**
+     * Create a metric factory that wraps a class.  The class is instantiated immediately.
+     * @param m The metric class.
+     * @return A metric factory that returns {@code m}.
+     */
+    public static <T> MetricFactory<T> forMetricClass(Class<? extends Metric<T>> m) {
+        try {
+            return new Preinstantiated<T>(m.newInstance());
+        } catch (InstantiationException e) {
+            throw new RuntimeException("cannot instantiate " + m, e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("cannot instantiate " + m, e);
+        }
+    }
+
     private static class Preinstantiated<T> extends MetricFactory<T> {
         private final Metric<T> metric;
 

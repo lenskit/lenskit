@@ -1,4 +1,4 @@
-    /*
+/*
  * LensKit, an open source recommender systems toolkit.
  * Copyright 2010-2014 Regents of the University of Minnesota and contributors
  * Work on LensKit has been funded by the National Science Foundation under
@@ -20,7 +20,6 @@
  */
 
 
-import org.grouplens.lenskit.knn.item.model.ItemItemModel
 import org.grouplens.lenskit.knn.item.model.SimilarityMatrixModel
 
 import java.util.zip.GZIPInputStream
@@ -28,7 +27,8 @@ import java.util.zip.GZIPInputStream
 import static org.grouplens.lenskit.util.test.ExtraMatchers.existingFile
 import static org.grouplens.lenskit.util.test.ExtraMatchers.hasLineCount
 import static org.hamcrest.MatcherAssert.assertThat
-import static org.hamcrest.Matchers.*
+import static org.hamcrest.Matchers.allOf
+import static org.hamcrest.Matchers.equalTo
 
 File resultsFile = new File(basedir, "results.csv")
 File userFile = new File(basedir, "users.csv")
@@ -44,6 +44,11 @@ assertThat("output file existence",
            predictFile, existingFile());
 assertThat("output file existence",
            recommendFile, existingFile());
+
+assertThat("output file existence",
+           new File(basedir, "deprecated-predictions.csv"), existingFile());
+assertThat("output file existence",
+           new File(basedir, "deprecated-recommendations.csv.gz"), existingFile());
 
 assertThat(new File(basedir, 'train.1.pack'),
            existingFile())
