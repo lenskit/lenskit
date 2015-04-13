@@ -27,6 +27,7 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelectors;
+import org.grouplens.lenskit.eval.metrics.topn.TopNMetricBuilder;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.util.table.TableLayout;
 import org.grouplens.lenskit.util.table.TableLayoutBuilder;
@@ -88,6 +89,7 @@ public class OutputTopNMetric extends AbstractMetric<OutputTopNMetric.Context, V
             try {
                 context.writer.writeRow(user.getUserId(), rec.getId(),
                                         counter, rec.getScore());
+                counter += 1;
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
@@ -114,11 +116,22 @@ public class OutputTopNMetric extends AbstractMetric<OutputTopNMetric.Context, V
     }
 
     public static class Factory extends MetricFactory<Context> {
+        private final int listSize;
+        private final ItemSelector candidates;
+        private final ItemSelector exclude;
+        private final File file;
+
+        public Factory(File f, int size, ItemSelector cand, ItemSelector excl) {
+            file = f;
+            listSize = size;
+            candidates = cand;
+            exclude = excl;
+        }
+
         @Override
         public OutputTopNMetric createMetric(TrainTestEvalTask task) throws IOException {
-            return new OutputTopNMetric(task.getOutputLayout(), task.getRecommendOutput(), -1,
-                                        ItemSelectors.allItems(),
-                                        ItemSelectors.trainingItems());
+            return new OutputTopNMetric(task.getOutputLayout(), file,
+                                        listSize, candidates, exclude);
         }
 
         @Override
@@ -129,6 +142,39 @@ public class OutputTopNMetric extends AbstractMetric<OutputTopNMetric.Context, V
         @Override
         public List<String> getUserColumnLabels() {
             return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Configure the prediction output.
+     */
+    public static class FactoryBuilder extends TopNMetricBuilder<Factory> {
+        private File file;
+
+        public FactoryBuilder() {
+            setListSize(-1);
+            setCandidates(ItemSelectors.allItems());
+            setCandidates(ItemSelectors.trainingItems());
+        }
+
+        public File getFile() {
+            return file;
+        }
+
+        public void setFile(File f) {
+            file = f;
+        }
+
+        public void setFile(String fn) {
+            setFile(new File(fn));
+        }
+
+        @Override
+        public Factory build() {
+            if (file == null) {
+                throw new IllegalStateException("no file specified");
+            }
+            return new Factory(file, getListSize(), getCandidates(), getExclude());
         }
     }
 }

@@ -19,16 +19,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+
 import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.BaselineScorer
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.baseline.UserMeanBaseline
 import org.grouplens.lenskit.baseline.UserMeanItemScorer
-import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
-import org.grouplens.lenskit.eval.metrics.predict.HLUtilityPredictMetric
-import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
-import org.grouplens.lenskit.eval.metrics.predict.NDCGPredictMetric
-import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
+import org.grouplens.lenskit.eval.metrics.predict.*
 import org.grouplens.lenskit.knn.item.ItemItemScorer
 import org.grouplens.lenskit.knn.item.ModelSize
 
@@ -66,9 +63,15 @@ trainTest {
     metric MAEPredictMetric
     metric NDCGPredictMetric
     metric HLUtilityPredictMetric
+    metric predictions {
+        file 'predictions.csv'
+    }
+    metric recommendations {
+        file 'recommendations.csv.gz'
+    }
 
     output 'results.csv'
     userOutput 'users.csv'
-    predictOutput 'predictions.csv'
-    recommendOutput 'recommendations.csv.gz'
+    predictOutput 'deprecated-predictions.csv'
+    recommendOutput 'deprecated-recommendations.csv.gz'
 }
