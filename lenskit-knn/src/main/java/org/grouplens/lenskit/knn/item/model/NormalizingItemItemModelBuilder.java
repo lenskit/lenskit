@@ -28,11 +28,9 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.scored.ScoredIdListBuilder;
-import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.transform.truncate.VectorTruncator;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.slf4j.Logger;
@@ -93,7 +91,7 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
         LongKeyDomain itemDomain = LongKeyDomain.fromCollection(itemUniverse, true);
         assert itemDomain.size() == itemDomain.domainSize();
         assert itemDomain.domainSize() == nitems;
-        List<List<ScoredId>> matrix = Lists.newArrayListWithCapacity(itemDomain.domainSize());
+        List<ImmutableSparseVector> matrix = Lists.newArrayListWithCapacity(itemDomain.domainSize());
 
         // working space for accumulating each row (reuse between rows)
         MutableSparseVector currentRow = MutableSparseVector.create(itemUniverse);
@@ -123,15 +121,7 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
             MutableSparseVector normalized = rowNormalizer.normalize(rowItem, currentRow, null);
             truncator.truncate(normalized);
 
-            // Build up and save the row
-            ScoredIdListBuilder bld = new ScoredIdListBuilder(normalized.size());
-            // TODO Allow the symbols in use to be customized
-            List<ScoredId> row = bld.addChannels(normalized.getChannelVectorSymbols())
-                                    .addTypedChannels(normalized.getChannelSymbols())
-                                    .addAll(ScoredIds.collectionFromVector(normalized))
-                                    .sort(ScoredIds.scoreOrder().reverse())
-                                    .finish();
-            matrix.add(row);
+            matrix.add(normalized.immutable());
         }
 
         timer.stop();
