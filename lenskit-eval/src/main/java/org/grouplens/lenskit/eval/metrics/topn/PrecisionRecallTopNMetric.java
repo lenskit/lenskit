@@ -89,7 +89,6 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
     @Override
     public Result doMeasureUser(TestUser user, Context context) {
         int tp = 0;
-        int fp = 0;
 
         LongSet items = queryItems.select(user);
 
@@ -101,16 +100,13 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
         for(ScoredId s : recs) {
             if(items.contains(s.getId())) {
                 tp += 1;
-            } else {
-                fp += 1;
             }
         }
-        int fn = items.size() - tp;
 
         if (items.size() > 0 && recs.size() > 0) {
             // if both the items set and recommendations are non-empty (no division by 0).
-            double precision = (double) tp/(tp+fp);
-            double recall = (double) tp/(tp+fn);
+            double precision = (double) tp / recs.size();
+            double recall = (double) tp / items.size();
             context.addUser(precision, recall);
             return new Result(precision, recall);
         } else {
