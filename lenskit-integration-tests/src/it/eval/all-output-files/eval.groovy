@@ -63,6 +63,13 @@ trainTest {
     metric MAEPredictMetric
     metric NDCGPredictMetric
     metric HLUtilityPredictMetric
+    metric precisionRecall {
+        listSize 10
+    }
+    metric topNRecallPrecision {
+        prefix "Deprecated"
+        listSize 10
+    }
     metric predictions {
         file 'predictions.csv'
     }
