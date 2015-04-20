@@ -51,7 +51,7 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
     private final int listSize;
     private final ItemSelector candidates;
     private final ItemSelector exclude;
-    private final ItemSelector queryItems;
+    private final ItemSelector goodItems;
 
     /**
      * Construct a new recall and precision top n metric
@@ -71,7 +71,7 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
         this.listSize = listSize;
         this.candidates = candidates;
         this.exclude = exclude;
-        this.queryItems = goodItems;
+        this.goodItems = goodItems;
     }
 
     @Override
@@ -93,7 +93,7 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
     public Result doMeasureUser(TestUser user, Context context) {
         int tp = 0;
 
-        LongSet items = queryItems.select(user);
+        LongSet items = goodItems.select(user);
         if (items.isEmpty()) {
             logger.warn("no good items for user {}", user.getUserId());
         }
