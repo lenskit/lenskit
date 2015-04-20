@@ -29,6 +29,8 @@ import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.hamcrest.Matchers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -43,6 +45,7 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTopNMetric.Context, PrecisionRecallTopNMetric.Result, PrecisionRecallTopNMetric.Result> {
+    private static final Logger logger = LoggerFactory.getLogger(PrecisionRecallTopNMetric.class);
     private final String prefix;
     private final String suffix;
     private final int listSize;
@@ -91,12 +94,18 @@ public class PrecisionRecallTopNMetric extends AbstractMetric<PrecisionRecallTop
         int tp = 0;
 
         LongSet items = queryItems.select(user);
+        if (items.isEmpty()) {
+            logger.warn("no good items for user {}", user.getUserId());
+        }
 
         List<ScoredId> recs = user.getRecommendations(listSize, candidates, exclude);
         if (recs == null) {
+            logger.warn("no recommendations for user {}", user.getUserId());
             return null;
         }
 
+        logger.debug("searching for {} good items among {} recommendations for {}",
+                     items.size(), recs.size(), user.getUserId());
         for(ScoredId s : recs) {
             if(items.contains(s.getId())) {
                 tp += 1;
