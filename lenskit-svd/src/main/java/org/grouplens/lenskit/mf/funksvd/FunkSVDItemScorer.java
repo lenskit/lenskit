@@ -41,6 +41,8 @@ import org.grouplens.lenskit.mf.svd.DotProductKernel;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -57,7 +59,7 @@ import javax.inject.Inject;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class FunkSVDItemScorer extends AbstractItemScorer {
-
+    private static final Logger logger = LoggerFactory.getLogger(FunkSVDItemScorer.class);
     protected final FunkSVDModel model;
     protected final BiasedMFKernel kernel;
     private UserEventDAO dao;
@@ -145,15 +147,20 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
 
     @Override
     public void score(long user, @Nonnull MutableSparseVector scores) {
+        logger.debug("scoring {} items for user {}", scores.keyDomain().size(), user);
+
         UserHistory<Rating> history = dao.getEventsForUser(user, Rating.class);
         if (history == null) {
+            logger.debug("found no rating history for user {}", user);
             history = History.forUser(user);
         }
         SparseVector ratings = Ratings.userRatingVector(history);
         
         AVector uprefs = model.getUserVector(user);
         if (uprefs == null) {
-            if (ratings.isEmpty()) {
+            logger.debug("no feature vector for user {}", user);
+            if (ratings.isEmpty() || rule == null) {
+                logger.debug("no ratings or rule, bailing out on user {}", user);
                 // no real work to do.
                 return;
             }
@@ -165,6 +172,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         scores.set(estimates);
 
         if (!ratings.isEmpty() && rule != null) {
+            logger.debug("refreshing feature values for user {}", user);
             AVector updated = Vector.create(uprefs);
             for (int f = 0; f < featureCount; f++) {
                 trainUserFeature(user, updated, ratings, estimates, f);

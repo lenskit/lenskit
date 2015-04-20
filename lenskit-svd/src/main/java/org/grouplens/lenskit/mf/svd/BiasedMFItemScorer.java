@@ -26,6 +26,8 @@ import org.grouplens.lenskit.baseline.BaselineScorer;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,6 +40,7 @@ import javax.inject.Inject;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class BiasedMFItemScorer extends AbstractItemScorer {
+    private static final Logger logger = LoggerFactory.getLogger(BiasedMFItemScorer.class);
     private final MFModel model;
     private final BiasedMFKernel kernel;
     private final ItemScorer baseline;
@@ -71,6 +74,7 @@ public class BiasedMFItemScorer extends AbstractItemScorer {
 
     @Override
     public void score(long user, @Nonnull MutableSparseVector scores) {
+        logger.debug("scoring {} items for user {}", scores.keyDomain().size(), user);
         baseline.score(user, scores);
 
         AVector uvec = getUserPreferenceVector(user);
