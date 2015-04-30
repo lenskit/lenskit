@@ -20,12 +20,8 @@
  */
 package org.grouplens.lenskit.data.event;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Ordering;
-import com.google.common.primitives.Longs;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
@@ -35,7 +31,6 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import javax.annotation.Nonnull;
 import javax.annotation.WillClose;
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Utilities for working with ratings.
@@ -43,27 +38,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public final class Ratings {
-    /**
-     * Integer to generate sequential IDs for fresh events.  Used mostly in
-     * test cases.
-     */
-    static final AtomicLong nextEventId = new AtomicLong();
-
-    public static final Ordering<Rating> ITEM_TIME_COMPARATOR = new Ordering<Rating>() {
-        @Override
-        public int compare(Rating r1, Rating r2) {
-            long i1 = r1.getItemId();
-            long i2 = r2.getItemId();
-            if (i1 < i2) {
-                return -1;
-            } else if (i1 > i2) {
-                return 1;
-            } else {
-                return Longs.compare(r1.getTimestamp(), r2.getTimestamp());
-            }
-        }
-    };
-
     /**
      * Construct a rating vector that contains the ratings provided by each user.
      * If all ratings in <var>ratings</var> are for the same item, then this
@@ -146,7 +120,7 @@ public final class Ratings {
         return userRatingVector(Cursors.makeList(ratings));
     }
 
-    private static enum IdExtractor {
+    private enum IdExtractor {
         ITEM {
             @Override
             long getId(Event evt) {
@@ -199,72 +173,5 @@ public final class Ratings {
     @Deprecated
     public static RatingBuilder newBuilder() {
         return new RatingBuilder();
-    }
-
-    /**
-     * Construct a rating builder initialized with the values of a rating.
-     * @param r The rating.
-     * @return A rating builder that will initially build a copy of <var>r</var>.
-     * @since 1.e
-     * @deprecated Use {@link Rating#copyBuilder()}.
-     */
-    @Deprecated
-    public static RatingBuilder copyBuilder(@Nonnull Rating r) {
-        Preconditions.checkNotNull(r, "rating");
-        RatingBuilder rb = newBuilder();
-        rb.setUserId(r.getUserId())
-          .setItemId(r.getItemId())
-          .setTimestamp(r.getTimestamp());
-        Preference pref = r.getPreference();
-        if (pref == null) {
-            rb.clearRating();
-        } else {
-            rb.setRating(pref.getValue());
-        }
-        return rb;
-    }
-
-    /**
-     * Compute the hash code of a rating.  Used to implement {@link #hashCode()} in rating
-     * implementations.
-     * @param rating The rating.
-     * @return The rating's hash code.
-     */
-    public static int hashRating(Rating rating) {
-        HashCodeBuilder hcb = new HashCodeBuilder();
-        hcb.append(rating.getUserId())
-           .append(rating.getItemId());
-        if (rating.hasValue()) {
-            hcb.append(rating.getValue());
-        }
-        return hcb.toHashCode();
-    }
-
-    /**
-     * Compare two ratings for equality.  Used to implement {@link #equals(Object)} in rating
-     * implementations.
-     * @param r1 The first rating.
-     * @param r2 The second rating.
-     * @return Whether the two ratings are equal.
-     */
-    public static boolean equals(Rating r1, Rating r2) {
-        if (r1 == r2) {
-            return true;
-        } else if (r1 == null || r2 == null) {
-            return false;
-        }
-
-        Preference p1 = r1.getPreference();
-        Preference p2 = r2.getPreference();
-        if (p1 != null && p2 != null) {
-            return r1.getUserId() == r2.getUserId()
-                    && r1.getItemId() == r2.getItemId()
-                    && r1.getTimestamp() == r2.getTimestamp();
-        } else if (p1 != null) {
-            return p1.equals(p2);
-        } else {
-            // p1 is null, check p2
-            return p2 == null;
-        }
     }
 }
