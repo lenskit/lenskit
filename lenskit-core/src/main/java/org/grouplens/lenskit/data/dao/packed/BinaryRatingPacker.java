@@ -32,7 +32,6 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.event.Events;
-import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -252,7 +251,6 @@ public class BinaryRatingPacker implements Closeable {
 
         ByteBuffer oldBuffer = ByteBuffer.allocateDirect(format.getRatingSize());
         ByteBuffer newBuffer = ByteBuffer.allocateDirect(newFormat.getRatingSize());
-        MutableRating scratch = new MutableRating();
 
         long oldPos = BinaryHeader.HEADER_SIZE + index * format.getRatingSize();
         Preconditions.checkState(channel.position() == oldPos,
@@ -267,7 +265,7 @@ public class BinaryRatingPacker implements Closeable {
             // read the old rating
             BinaryUtils.readBuffer(channel, oldBuffer, oldPos);
             oldBuffer.flip();
-            format.readRating(oldBuffer, scratch);
+            Rating scratch = format.readRating(oldBuffer);
             oldBuffer.clear();
 
             // write the new rating
@@ -311,7 +309,6 @@ public class BinaryRatingPacker implements Closeable {
 
     private class SortComparator extends AbstractIntComparator {
         private ByteBuffer buf = ByteBuffer.allocateDirect(format.getRatingSize());
-
         @Override
         public int compare(int i1, int i2) {
             if (translationMap != null) {

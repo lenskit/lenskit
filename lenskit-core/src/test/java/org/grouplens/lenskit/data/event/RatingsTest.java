@@ -20,9 +20,6 @@
  */
 package org.grouplens.lenskit.data.event;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
-
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.pref.Preferences;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -31,6 +28,9 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -47,14 +47,6 @@ public class RatingsTest {
     public void testGetValueOfSNR() {
         SimpleNullRating rating = new SimpleNullRating(1, 3, 5);
         assertThat(rating.hasValue(), equalTo(false));
-    }
-
-    @Test
-    public void testGetValueOfMR() {
-        MutableRating rating = new MutableRating();
-        assertThat(rating.hasValue(), equalTo(true));
-        rating.setRating(2.0);
-        assertThat(rating.getValue(), equalTo(2.0));
     }
 
     @Test
