@@ -163,15 +163,4 @@ public final class Ratings {
                                   .setTimestamp(ts)
                                   .build();
     }
-
-    /**
-     * Construct a new {@link RatingBuilder}.
-     * @return A new rating builder.
-     * @since 1.3
-     * @deprecated Use {@link Rating#newBuilder()}.
-     */
-    @Deprecated
-    public static RatingBuilder newBuilder() {
-        return new RatingBuilder();
-    }
 }

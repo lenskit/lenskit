@@ -24,8 +24,8 @@ import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSet;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.event.EventBuilder;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.RatingBuilder;
-import org.grouplens.lenskit.data.event.Ratings;
 
 import java.io.Serializable;
 import java.util.List;
@@ -53,7 +53,7 @@ public class RatingEventType implements EventTypeDefinition, Serializable {
 
     @Override
     public RatingBuilder newBuilder() {
-        return Ratings.newBuilder();
+        return Rating.newBuilder();
     }
 
     @Override
