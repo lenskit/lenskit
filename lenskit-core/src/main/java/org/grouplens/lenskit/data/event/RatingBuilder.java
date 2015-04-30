@@ -49,7 +49,7 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
      * @return A rating builder that will initially build a copy of the specified rating.
      */
     public static RatingBuilder copy(Rating r) {
-        return Ratings.copyBuilder(r);
+        return r.copyBuilder();
     }
 
     @Override
@@ -156,9 +156,9 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
         Preconditions.checkState(hasUserId, "no user ID set");
         Preconditions.checkState(hasItemId, "no item ID set");
         if (hasRating) {
-            return new SimpleRating(userId, itemId, rating, timestamp);
+            return new Rating.RealRating(userId, itemId, rating, timestamp);
         } else {
-            return new SimpleNullRating(userId, itemId, timestamp);
+            return new Rating.Unrate(userId, itemId, timestamp);
         }
     }
 }

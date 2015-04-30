@@ -166,7 +166,9 @@ public final class Ratings {
      * Make a fresh rating object with no timestamp.
      *
      * @see #make(long, long, double, long)
+     * @deprecated Use {@link Rating#create(long, long, double)}.
      */
+    @Deprecated
     public static Rating make(long uid, long iid, double value) {
         return new RatingBuilder().setUserId(uid)
                                   .setItemId(iid)
@@ -175,9 +177,11 @@ public final class Ratings {
     }
 
     /**
-     * Make a fresh rating event. Event IDs are generated sequentially. This is
-     * mostly useful in test cases.
+     * Make a fresh rating event.
+     *
+     * @deprecated Use {@link Rating#create(long, long, double, long)}
      */
+    @Deprecated
     public static Rating make(long uid, long iid, double value, long ts) {
         return new RatingBuilder().setUserId(uid)
                                   .setItemId(iid)
@@ -190,7 +194,9 @@ public final class Ratings {
      * Construct a new {@link RatingBuilder}.
      * @return A new rating builder.
      * @since 1.3
+     * @deprecated Use {@link Rating#newBuilder()}.
      */
+    @Deprecated
     public static RatingBuilder newBuilder() {
         return new RatingBuilder();
     }
@@ -200,7 +206,9 @@ public final class Ratings {
      * @param r The rating.
      * @return A rating builder that will initially build a copy of <var>r</var>.
      * @since 1.e
+     * @deprecated Use {@link Rating#copyBuilder()}.
      */
+    @Deprecated
     public static RatingBuilder copyBuilder(@Nonnull Rating r) {
         Preconditions.checkNotNull(r, "rating");
         RatingBuilder rb = newBuilder();
