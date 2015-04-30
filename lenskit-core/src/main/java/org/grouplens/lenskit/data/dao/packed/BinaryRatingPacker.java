@@ -311,8 +311,6 @@ public class BinaryRatingPacker implements Closeable {
 
     private class SortComparator extends AbstractIntComparator {
         private ByteBuffer buf = ByteBuffer.allocateDirect(format.getRatingSize());
-        private MutableRating r1 = new MutableRating();
-        private MutableRating r2 = new MutableRating();
 
         @Override
         public int compare(int i1, int i2) {
@@ -323,17 +321,18 @@ public class BinaryRatingPacker implements Closeable {
             try {
                 BinaryUtils.readBuffer(channel, buf, ratingPos(i1));
                 buf.flip();
-                format.readRating(buf, r1);
+                Rating r1 = format.readRating(buf);
                 buf.clear();
 
                 BinaryUtils.readBuffer(channel, buf, ratingPos(i2));
                 buf.flip();
-                format.readRating(buf, r2);
+                Rating r2 = format.readRating(buf);
                 buf.clear();
+
+                return Events.TIMESTAMP_COMPARATOR.compare(r1, r2);
             } catch (IOException ex) {
                 throw new RuntimeException("I/O error while sorting", ex);
             }
-            return Events.TIMESTAMP_COMPARATOR.compare(r1, r2);
         }
     }
 
