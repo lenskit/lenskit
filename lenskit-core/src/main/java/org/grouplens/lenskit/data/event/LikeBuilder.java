@@ -64,6 +64,6 @@ public class LikeBuilder implements EventBuilder<Like> {
     public Like build() {
         Preconditions.checkArgument(hasUserId, "no user ID set");
         Preconditions.checkArgument(hasItemId, "no item ID set");
-        return new SimpleLike(userId, itemId, timestamp);
+        return new Like(userId, itemId, timestamp);
     }
 }

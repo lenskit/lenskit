@@ -73,7 +73,9 @@ public final class Events {
      * @param user The user ID.
      * @param item The item ID.
      * @return A {@link Like}.
+     * @deprecated Use {@link Like#create(long, long)}
      */
+    @Deprecated
     public static Like like(long user, long item) {
         return like(user, item, -1);
     }
@@ -85,9 +87,11 @@ public final class Events {
      * @param item The item ID.
      * @param ts The timestamp.
      * @return A {@link Like}.
+     * @deprecated Use {@link Like#create(long, long, long)}
      */
+    @Deprecated
     public static Like like(long user, long item, long ts) {
-        return new SimpleLike(user, item, ts);
+        return Like.create(user, item, ts);
     }
 
     /**
