@@ -25,6 +25,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.data.pref.Preference;
 
 import javax.annotation.Nullable;
+import java.io.Serializable;
 
 /**
  * A rating is an expression of preference for an item by a user.  The preference can be {@code null}, in which case
@@ -35,7 +36,9 @@ import javax.annotation.Nullable;
  *
  * @compat Public
  */
-public abstract class Rating implements Event {
+public abstract class Rating implements Event, Serializable {
+    private static final long serialVersionUID = 1L;
+
     final long user;
     final long item;
     final long timestamp;
@@ -151,6 +154,8 @@ public abstract class Rating implements Event {
     }
 
     static class Unrate extends Rating {
+        private static final long serialVersionUID = 1L;
+
         Unrate(long user, long item, long time) {
             super(user, item, time);
         }
@@ -191,6 +196,8 @@ public abstract class Rating implements Event {
     }
 
     static class RealRating extends Rating implements Preference {
+        private static final long serialVersionUID = 1L;
+
         private final double value;
 
         RealRating(long user, long item, double v, long time) {
