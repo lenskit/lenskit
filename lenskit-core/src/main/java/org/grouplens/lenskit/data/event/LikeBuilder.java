@@ -27,6 +27,7 @@ import com.google.common.base.Preconditions;
  *
  * @since 2.2
  * @see Like
+ * @see Like#newBuilder()
  */
 public class LikeBuilder implements EventBuilder<Like> {
     private long userId;

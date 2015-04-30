@@ -100,8 +100,10 @@ public final class Events {
      * @param item The item ID.
      * @param count The count.
      * @return The new event.
+     * @deprecated Use {@link LikeBatch#create(long, long, int)}.
      */
+    @Deprecated
     public static LikeBatch likeBatch(long user, long item, int count) {
-        return new SimpleLikeBatch(user, item, count);
+        return LikeBatch.create(user, item, count);
     }
 }

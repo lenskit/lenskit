@@ -20,18 +20,102 @@
  */
 package org.grouplens.lenskit.data.event;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 /**
  * Generic interface representing a batch of unary interactions.  Events of this type will generally
  * not have timestamps.  An example of a use of this event type is to represent play counts in a
  * summarized data set.
+ * <p>
+ * Like events can be constructed with {@link LikeBatchBuilder} or {@link #create(long, long, int}).}
  *
  * @since 2.2
  * @see Like
  * @see Events#likeBatch(long, long, int)
  */
-public interface LikeBatch extends Event {
+public class LikeBatch implements Event {
+    private final long userId;
+    private final long itemId;
+    private final int count;
+
+    LikeBatch(long uid, long iid, int ct) {
+        userId = uid;
+        itemId = iid;
+        count = ct;
+    }
+
+    public static LikeBatchBuilder newBuilder() {
+        return new LikeBatchBuilder();
+    }
+
+    public static LikeBatch create(long user, long item, int count) {
+        return new LikeBatch(user, item, count);
+    }
+
+    @Override
+    public long getUserId() {
+        return userId;
+    }
+
+    @Override
+    public long getItemId() {
+        return itemId;
+    }
+
     /**
-     * Get the number of likes
+     * Get the number of items liked.
+     * @return The number of items liked.
      */
-    int getCount();
+    public int getCount() {
+        return count;
+    }
+
+    @Override
+    public long getTimestamp() {
+        return -1;
+    }
+
+    /**
+     * Create a new builder initialized with a copy of this event.
+     * @return A new {@link LikeBatchBuilder} initialized with a copy of this event's data.
+     */
+    public LikeBatchBuilder copyBuilder() {
+        return newBuilder().setUserId(userId)
+                           .setItemId(itemId)
+                           .setCount(count);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof LikeBatch)) return false;
+
+        LikeBatch that = (LikeBatch) o;
+
+        if (count != that.getCount()) return false;
+        if (itemId != that.getItemId()) return false;
+        if (userId != that.getUserId()) return false;
+        if (that.getTimestamp() != -1) return false; //other implementations may have timestamps
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        HashCodeBuilder hcb = new HashCodeBuilder();
+        hcb.append(userId)
+           .append(itemId)
+           .append(count)
+           .append(-1L);
+        return hcb.toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "LikeBatch{" +
+                "userId=" + userId +
+                ", itemId=" + itemId +
+                ", count=" + count +
+                '}';
+    }
 }
