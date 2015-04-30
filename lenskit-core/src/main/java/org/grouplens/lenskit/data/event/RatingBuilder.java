@@ -106,10 +106,17 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
 
     /**
      * Set the rating value.
+     * <p>
+     * In order to prevent computation errors from producing unintended unrate events, this method cannot be used to
+     * create an unrate event.  Instead, use {@link #clearRating()}.
+     * </p>
      * @param r The rating value.
      * @return The builder (for chaining).
      */
     public RatingBuilder setRating(double r) {
+        if (Double.isNaN(r)) {
+            throw new IllegalArgumentException("rating is not a number");
+        }
         rating = r;
         hasRating = true;
         return this;
@@ -156,9 +163,9 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
         Preconditions.checkState(hasUserId, "no user ID set");
         Preconditions.checkState(hasItemId, "no item ID set");
         if (hasRating) {
-            return new Rating.RealRating(userId, itemId, rating, timestamp);
+            return Rating.create(userId, itemId, rating, timestamp);
         } else {
-            return new Rating.Unrate(userId, itemId, timestamp);
+            return Rating.createUnrate(userId, itemId, timestamp);
         }
     }
 }

@@ -28,8 +28,9 @@ import javax.annotation.Nullable;
 import java.io.Serializable;
 
 /**
- * A rating is an expression of preference for an item by a user.  The preference can be {@code null}, in which case
- * the rating is a removal of a previous rating.
+ * A user rating an item. A rating is an expression of preference, in the form of a real-valued rating, for an item by
+ * a user.  Ratings are also used to represent un-rate events, if the system supports them; these are represented by
+ * a rating value of {@link Double#NaN}.
  * <p>
  * To create a rating, use {@link RatingBuilder} or the {@link #create(long, long, double, long)} method.
  * </p>
@@ -54,8 +55,9 @@ public abstract class Rating implements Event, Serializable {
      *
      * @param uid The user ID.
      * @param iid The item ID.
-     * @param rating The rating value.
+     * @param rating The rating value.  Cannot be NaN.
      * @return The new rating object.
+     * @see #create(long, long, double, long)
      */
     public static Rating create(long uid, long iid, double rating) {
         return new RealRating(uid, iid, rating, -1);
@@ -63,14 +65,22 @@ public abstract class Rating implements Event, Serializable {
 
     /**
      * Create a new rating object.
+     * <p>
+     * In order to prevent computation errors from producing unintended unrate events, this method cannot be used to
+     * create an unrate event.  Instead, use {@link #createUnrate(long, long, long)}.
+     * </p>
      *
      * @param uid The user ID.
      * @param iid The item ID.
-     * @param rating The rating value.
+     * @param rating The rating value. Cannot be NaN.
      * @param ts The timestamp.
      * @return The new rating object.
+     * @throws IllegalArgumentException if {@code rating} is NaN.
      */
     public static Rating create(long uid, long iid, double rating, long ts) {
+        if (Double.isNaN(rating)) {
+            throw new IllegalArgumentException("rating is not a number");
+        }
         return new RealRating(uid, iid, rating, ts);
     }
 
@@ -130,12 +140,11 @@ public abstract class Rating implements Event, Serializable {
     }
     
     /**
-     * Get the value rating.
-     * 
-     * @return double The value Rating.
-     * @throws IllegalStateException if the preference is {@code null}.
+     * Get the rating value.
+     *
+     * @return double The rating value, or {@link Double#NaN} if the rating has no value.
      */
-    public abstract double getValue() throws IllegalStateException;
+    public abstract double getValue();
 
     /**
      * Create a new rating builder that will build a copy of this rating.
@@ -167,8 +176,8 @@ public abstract class Rating implements Event, Serializable {
         }
 
         @Override
-        public double getValue() throws IllegalStateException {
-            throw new IllegalStateException("Rating has no preference.");
+        public double getValue() {
+            return Double.NaN;
         }
 
         @Override
