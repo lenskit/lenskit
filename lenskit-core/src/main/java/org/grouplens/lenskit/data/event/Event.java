@@ -29,8 +29,8 @@ package org.grouplens.lenskit.data.event;
  * recommenders, then it should not affect the recommenders.
  *
  * <p>
- * Events are immutable. Deviations must be clearly documented and only
- * used in very limited cases (e.g. to implement fast iterators).
+ * Event objects should always be immutable, and have well-defined {@link #equals(Object)} and {@link #hashCode()}
+ * methods.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
@@ -48,7 +48,7 @@ public interface Event {
      *
      * @return The item ID of the event.
      */
-    abstract long getItemId();
+    long getItemId();
 
     /**
      * Get the event timestamp. A timestamp of -1 indicates that the event has
