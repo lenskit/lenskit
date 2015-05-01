@@ -29,7 +29,8 @@ package org.grouplens.lenskit.data.event;
  * recommenders, then it should not affect the recommenders.
  *
  * <p>
- * Event objects should always be immutable, and have well-defined {@link #equals(Object)} and {@link #hashCode()}
+ * Event objects should always be immutable, and have well-defined
+ * {@link Object#equals(Object)} and {@link Object#hashCode()}
  * methods.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

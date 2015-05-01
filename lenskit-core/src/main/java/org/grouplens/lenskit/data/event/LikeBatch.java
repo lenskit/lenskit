@@ -27,7 +27,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * not have timestamps.  An example of a use of this event type is to represent play counts in a
  * summarized data set.
  * <p>
- * Like events can be constructed with {@link LikeBatchBuilder} or {@link #create(long, long, int}).}
+ * Like batches can be constructed with {@link LikeBatchBuilder} or {@link #create(long, long, int)}.
  *
  * @since 2.2
  * @see Like
