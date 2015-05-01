@@ -25,7 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 public class DelimitedColumnEventFormatTest {
     DelimitedColumnEventFormat format;
@@ -48,7 +48,7 @@ public class DelimitedColumnEventFormatTest {
         Rating r = (Rating) format.parse("42\t39\t3.5");
         assertThat(r.getUserId(), equalTo(42L));
         assertThat(r.getItemId(), equalTo(39L));
-        assertThat(r.getPreference(), notNullValue());
+        assertThat(r.hasValue(), equalTo(true));
         assertThat(r.getValue(), equalTo(3.5));
         assertThat(r.getTimestamp(), equalTo(-1L));
     }
@@ -59,7 +59,7 @@ public class DelimitedColumnEventFormatTest {
         Rating r = (Rating) format.parse("42,39,3.5");
         assertThat(r.getUserId(), equalTo(42L));
         assertThat(r.getItemId(), equalTo(39L));
-        assertThat(r.getPreference(), notNullValue());
+        assertThat(r.hasValue(), equalTo(true));
         assertThat(r.getValue(), equalTo(3.5));
         assertThat(r.getTimestamp(), equalTo(-1L));
     }
@@ -70,7 +70,7 @@ public class DelimitedColumnEventFormatTest {
         Rating r = (Rating) format.parse("42::39::3.5");
         assertThat(r.getUserId(), equalTo(42L));
         assertThat(r.getItemId(), equalTo(39L));
-        assertThat(r.getPreference(), notNullValue());
+        assertThat(r.hasValue(), equalTo(true));
         assertThat(r.getValue(), equalTo(3.5));
         assertThat(r.getTimestamp(), equalTo(-1L));
     }
@@ -81,7 +81,7 @@ public class DelimitedColumnEventFormatTest {
         Rating r = (Rating) format.parse("42::39::3.5::3490298");
         assertThat(r.getUserId(), equalTo(42L));
         assertThat(r.getItemId(), equalTo(39L));
-        assertThat(r.getPreference(), notNullValue());
+        assertThat(r.hasValue(), equalTo(true));
         assertThat(r.getValue(), equalTo(3.5));
         assertThat(r.getTimestamp(), equalTo(3490298L));
     }

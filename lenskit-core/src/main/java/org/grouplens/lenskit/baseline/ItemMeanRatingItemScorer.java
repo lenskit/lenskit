@@ -30,7 +30,6 @@ import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.util.IdMeanAccumulator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -89,9 +88,8 @@ public class ItemMeanRatingItemScorer extends AbstractItemScorer implements Seri
             try {
                 IdMeanAccumulator accum = new IdMeanAccumulator();
                 for (Rating r: ratings) {
-                    Preference p = r.getPreference();
-                    if (p != null) {
-                        accum.put(p.getItemId(), p.getValue());
+                    if (r.hasValue()) {
+                        accum.put(r.getItemId(), r.getValue());
                     }
                 }
                 globalMean = accum.globalMean();

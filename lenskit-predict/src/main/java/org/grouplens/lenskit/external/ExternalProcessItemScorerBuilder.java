@@ -33,7 +33,6 @@ import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.util.DelimitedTextCursor;
 import org.grouplens.lenskit.util.io.LoggingStreamSlurper;
 import org.slf4j.Logger;
@@ -289,9 +288,8 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
                  Cursor<Rating> ratings = eventDAO.streamEvents(Rating.class)) {
                 for (Rating r: ratings) {
                     writer.printf("%d,%d,", r.getUserId(), r.getItemId());
-                    Preference p = r.getPreference();
-                    if (p != null) {
-                        writer.print(p.getValue());
+                    if (r.hasValue()) {
+                        writer.print(r.getValue());
                     }
                     writer.print(",");
                     long ts = r.getTimestamp();

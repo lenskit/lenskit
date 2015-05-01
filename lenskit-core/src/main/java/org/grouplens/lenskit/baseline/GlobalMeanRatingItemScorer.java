@@ -26,7 +26,6 @@ import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.pref.Preference;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -90,9 +89,8 @@ public class GlobalMeanRatingItemScorer extends ConstantItemScorer {
         Cursor<Rating> ratings = dao.streamEvents(Rating.class);
         try {
             for (Rating r : ratings) {
-                Preference p = r.getPreference();
-                if (p != null) {
-                    total += p.getValue();
+                if (r.hasValue()) {
+                    total += r.getValue();
                     count += 1;
                 }
             }

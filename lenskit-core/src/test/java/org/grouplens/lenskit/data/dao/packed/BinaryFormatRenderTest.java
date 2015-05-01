@@ -22,7 +22,6 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.grouplens.lenskit.data.event.MutableRating;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
 import org.junit.BeforeClass;
@@ -36,8 +35,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 /**
  * Test rendering with all possible combinations of flags.
@@ -67,8 +66,7 @@ public class BinaryFormatRenderTest {
         buf.flip();
 
         buf.mark();
-        MutableRating r2 = new MutableRating();
-        format.readRating(buf, r2);
+        Rating r2 = format.readRating(buf);
         assertThat(r2, equalTo(r));
 
         buf.reset();

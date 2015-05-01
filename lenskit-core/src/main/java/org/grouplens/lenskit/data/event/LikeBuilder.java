@@ -27,6 +27,7 @@ import com.google.common.base.Preconditions;
  *
  * @since 2.2
  * @see Like
+ * @see Like#newBuilder()
  */
 public class LikeBuilder implements EventBuilder<Like> {
     private long userId;
@@ -64,6 +65,6 @@ public class LikeBuilder implements EventBuilder<Like> {
     public Like build() {
         Preconditions.checkArgument(hasUserId, "no user ID set");
         Preconditions.checkArgument(hasItemId, "no item ID set");
-        return new SimpleLike(userId, itemId, timestamp);
+        return new Like(userId, itemId, timestamp);
     }
 }

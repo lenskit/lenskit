@@ -23,10 +23,11 @@ package org.grouplens.lenskit.data.event;
 import com.google.common.base.Preconditions;
 
 /**
- * Builder for {@link org.grouplens.lenskit.data.event.Like} events.
+ * Builder for {@link LikeBatch} events.
  *
  * @since 2.2
- * @see org.grouplens.lenskit.data.event.Like
+ * @see LikeBatch
+ * @see LikeBatch#newBuilder()
  */
 public class LikeBatchBuilder implements EventBuilder<LikeBatch> {
     private long userId;
@@ -75,6 +76,6 @@ public class LikeBatchBuilder implements EventBuilder<LikeBatch> {
     public LikeBatch build() {
         Preconditions.checkArgument(hasUserId, "no user ID set");
         Preconditions.checkArgument(hasItemId, "no item ID set");
-        return new SimpleLikeBatch(userId, itemId, count);
+        return new LikeBatch(userId, itemId, count);
     }
 }
