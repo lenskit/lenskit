@@ -113,8 +113,8 @@ public class LimitedBinaryRatingDAOTest {
 
 
     /**
-     * Test for the items who have ratings '<' or '>='  timestamp,
-     * it should not return item which have any rating >= timestamp
+     * Test for the items who have ratings '&lt;' or '&gt;='  timestamp,
+     * it should not return item which have any rating &gt;= timestamp
      * @throws IOException
      */
     @Test
@@ -138,8 +138,8 @@ public class LimitedBinaryRatingDAOTest {
 
 
     /**
-     * Test for the users who have ratings '<' or '>='  timestamp,
-     * it should not return user which have any rating >= timestamp
+     * Test for the users who have ratings '&lt;' or '&gt;='  timestamp,
+     * it should not return user which have any rating &gt;= timestamp
      * @throws IOException
      */
     @Test
@@ -158,7 +158,7 @@ public class LimitedBinaryRatingDAOTest {
 
     /**
      * Test to create a windowed view with lower timestamp than current,
-     * it should create DAO with new timestamp < current timestamp
+     * it should create DAO with new timestamp &lt; current timestamp
      * @throws IOException
      */
     @Test
