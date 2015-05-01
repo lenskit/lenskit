@@ -37,7 +37,6 @@ import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.source.TextDataSource;
 import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
 import org.grouplens.lenskit.data.text.EventFormat;
@@ -227,12 +226,11 @@ class ExternalEvalJob extends TrainTestJob {
             Cursor<Rating> ratings = dao.streamEvents(Rating.class);
             try {
                 for (Rating r: ratings) {
-                    Preference p = r.getPreference();
-                    if (p != null) {
+                    if (r.hasValue()) {
                         row[0] = r.getUserId();
                         row[1] = r.getItemId();
                         if (writeRatings) {
-                            row[2] = p.getValue();
+                            row[2] = r.getValue();
                         }
                         table.writeRow(row);
                     }

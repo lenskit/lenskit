@@ -22,7 +22,6 @@ package org.grouplens.lenskit.eval.data;
 
 import com.google.common.collect.Lists;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 
 import java.io.IOException;
@@ -60,11 +59,10 @@ class CSVRatingWriter implements RatingWriter {
         List<Object> row = Lists.newArrayListWithCapacity(4);
         row.add(r.getUserId());
         row.add(r.getItemId());
-        Preference p = r.getPreference();
-        if (p == null) {
-            row.add(null);
+        if (r.hasValue()) {
+            row.add(r.getValue());
         } else {
-            row.add(p.getValue());
+            row.add(null);
         }
         if (includeTimestamps) {
             row.add(r.getTimestamp());

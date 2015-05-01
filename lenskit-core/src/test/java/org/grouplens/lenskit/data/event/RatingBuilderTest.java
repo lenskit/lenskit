@@ -20,12 +20,10 @@
  */
 package org.grouplens.lenskit.data.event;
 
-import org.grouplens.lenskit.data.pref.Preference;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class RatingBuilderTest {
     @Test
@@ -88,12 +86,8 @@ public class RatingBuilderTest {
         assertThat(r, notNullValue());
         assertThat(r.getUserId(), equalTo(692L));
         assertThat(r.getItemId(), equalTo(483L));
-        Preference pref = r.getPreference();
-        assertThat(pref, notNullValue());
-        assert pref != null;
-        assertThat(pref.getValue(), equalTo(3.5));
-        assertThat(pref.getUserId(), equalTo(692L));
-        assertThat(pref.getItemId(), equalTo(483L));
+        assertThat(r.hasValue(), equalTo(true));
+        assertThat(r.getValue(), equalTo(3.5));
         assertThat(r.getTimestamp(), equalTo(349702L));
     }
 
@@ -107,8 +101,7 @@ public class RatingBuilderTest {
         assertThat(r, notNullValue());
         assertThat(r.getUserId(), equalTo(692L));
         assertThat(r.getItemId(), equalTo(483L));
-        Preference pref = r.getPreference();
-        assertThat(pref, nullValue());
+        assertThat(r.hasValue(), equalTo(false));
         assertThat(r.getTimestamp(), equalTo(349702L));
     }
 }

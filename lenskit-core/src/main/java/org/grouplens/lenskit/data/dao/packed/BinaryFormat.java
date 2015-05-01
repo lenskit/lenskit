@@ -24,7 +24,6 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.RatingBuilder;
-import org.grouplens.lenskit.data.pref.Preference;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -197,12 +196,7 @@ final class BinaryFormat {
     public void renderRating(Rating rating, ByteBuffer buf) {
         writeUserId(buf, rating.getUserId());
         writeItemId(buf, rating.getItemId());
-        Preference pref = rating.getPreference();
-        if (pref == null) {
-            buf.putDouble(Double.NaN);
-        } else {
-            buf.putDouble(pref.getValue());
-        }
+        buf.putDouble(rating.getValue());
         if (hasTimestamps()) {
             buf.putLong(rating.getTimestamp());
         }

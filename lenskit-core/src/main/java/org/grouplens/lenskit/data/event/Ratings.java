@@ -25,7 +25,6 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 import javax.annotation.Nonnull;
@@ -97,10 +96,9 @@ public final class Ratings {
                 }
             }
 
-            Preference p = r.getPreference();
-            if (p != null) {
+            if (r.hasValue()) {
                 // save the preference
-                msv.set(id, p.getValue());
+                msv.set(id, r.getValue());
             } else {
                 msv.unset(id);
             }

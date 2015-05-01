@@ -29,7 +29,7 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.pref.Preference;
+import org.grouplens.lenskit.data.pref.Preferences;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +71,6 @@ public class PackedPreferenceSnapshotBuilder implements Provider<PackedPreferenc
             for (Rating r : ratings) {
                 final long user = r.getUserId();
                 final long item = r.getItemId();
-                final Preference p = r.getPreference();
 
                 // get the item -> index map for this user
                 Long2IntMap imap = uiIndexes.get(user);
@@ -85,18 +84,18 @@ public class PackedPreferenceSnapshotBuilder implements Provider<PackedPreferenc
                 final int index = imap.get(item);
                 if (index < 0) {    // we've never seen (user,item) before
                     // if this is not an unrate (a no-op), add the pref
-                    if (p != null) {
-                        int idx = bld.add(p);
+                    if (r.hasValue()) {
+                        int idx = bld.add(Preferences.make(user, item, r.getValue()));
                         imap.put(item, idx);
                     }
                 } else {            // we have seen this rating before
-                    if (p == null) {
+                    if (r.hasValue()) {
+                        // just overwrite the previous value
+                        bld.set(index, Preferences.make(user, item, r.getValue()));
+                    } else {
                         // free the entry, no rating here
                         bld.release(index);
                         imap.put(item, -1);
-                    } else {
-                        // just overwrite the previous value
-                        bld.set(index, p);
                     }
                 }
             }

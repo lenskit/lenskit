@@ -24,7 +24,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.data.pref.Preference;
 
-import javax.annotation.Nullable;
 import java.io.Serializable;
 
 /**
@@ -120,15 +119,6 @@ public abstract class Rating implements Event, Serializable {
     }
 
     /**
-     * Get the expressed preference. If this is an "unrate" event, the
-     * preference will be {@code null}.
-     *
-     * @return The expressed preference.
-     */
-    @Nullable
-    public abstract Preference getPreference();
-    
-    /**
      * Query whether this rating has a value. Ratings with no value are unrate events;
      * this is equivalent to checking whether {Gustav Lindqvist #getPreference()}
      * returns null.
@@ -136,7 +126,7 @@ public abstract class Rating implements Event, Serializable {
      * @return {code true} if there is a rating (the preference is non-null).
      */
     public boolean hasValue() {
-        return getPreference() != null;
+        return !Double.isNaN(getValue());
     }
     
     /**
@@ -155,9 +145,9 @@ public abstract class Rating implements Event, Serializable {
         rb.setUserId(user)
           .setItemId(item)
           .setTimestamp(timestamp);
-        Preference p = getPreference();
-        if (p != null) {
-            rb.setRating(p.getValue());
+        double v = getValue();
+        if (!Double.isNaN(v)) {
+            rb.setRating(v);
         }
         return rb;
     }
@@ -167,12 +157,6 @@ public abstract class Rating implements Event, Serializable {
 
         Unrate(long user, long item, long time) {
             super(user, item, time);
-        }
-
-        @Nullable
-        @Override
-        public Preference getPreference() {
-            return null;
         }
 
         @Override
@@ -212,12 +196,6 @@ public abstract class Rating implements Event, Serializable {
         RealRating(long user, long item, double v, long time) {
             super(user, item, time);
             value = v;
-        }
-
-        @Nullable
-        @Override
-        public Preference getPreference() {
-            return this;
         }
 
         @Override

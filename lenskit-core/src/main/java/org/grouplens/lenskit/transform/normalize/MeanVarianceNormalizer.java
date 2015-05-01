@@ -28,7 +28,6 @@ import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -95,9 +94,8 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
                 Cursor<Rating> ratings = dao.streamEvents(Rating.class);
                 int numRatings = 0;
                 for (Rating r : ratings) {
-                    Preference p = r.getPreference();
-                    if (p != null) {
-                        sum += p.getValue();
+                    if (r.hasValue()) {
+                        sum += r.getValue();
                         numRatings++;
                     }
                 }
@@ -108,9 +106,8 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
                 sum = 0;
 
                 for (Rating r : ratings) {
-                    Preference p = r.getPreference();
-                    if (p != null) {
-                        double delta = mean - p.getValue();
+                    if (r.hasValue()) {
+                        double delta = mean - r.getValue();
                         sum += delta * delta;
                     }
                 }

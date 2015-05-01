@@ -33,7 +33,6 @@ import org.grouplens.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.source.CSVDataSourceBuilder;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;
@@ -560,11 +559,10 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      * @throws IOException The writer IO error
      */
     protected void writeRating(TableWriter writer, Rating rating) throws IOException {
-        Preference pref = rating.getPreference();
         writer.writeRow(Lists.newArrayList(
                 Long.toString(rating.getUserId()),
                 Long.toString(rating.getItemId()),
-                (pref != null ? Double.toString(pref.getValue()) : "NaN"),
+                (rating.hasValue() ? Double.toString(rating.getValue()) : "NaN"),
                 Long.toString(rating.getTimestamp())
         ));
     }
