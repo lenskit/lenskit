@@ -20,8 +20,6 @@
  */
 package org.grouplens.lenskit.data.event;
 
-import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.data.pref.Preferences;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Test;
 
@@ -58,10 +56,6 @@ public class RatingTest {
         assertThat(r1, not(equalTo(r2)));
         assertThat(rn, not(equalTo(r1)));
         assertThat(r1, not(equalTo(rn)));
-
-        Preference p = Preferences.make(1, 2, 3.0);
-        assertThat((Preference) r1, equalTo(p));
-        assertThat(p, equalTo((Preference) r1));
     }
 
     @Test

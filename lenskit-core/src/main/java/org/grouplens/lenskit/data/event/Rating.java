@@ -22,7 +22,6 @@ package org.grouplens.lenskit.data.event;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.grouplens.lenskit.data.pref.Preference;
 
 import java.io.Serializable;
 
@@ -36,16 +35,18 @@ import java.io.Serializable;
  *
  * @compat Public
  */
-public abstract class Rating implements Event, Serializable {
-    private static final long serialVersionUID = 1L;
+public final class Rating implements Event, Serializable {
+    private static final long serialVersionUID = 2L;
 
-    final long user;
-    final long item;
-    final long timestamp;
+    private final long user;
+    private final long item;
+    private final double value;
+    private final long timestamp;
 
-    Rating(long uid, long iid, long time) {
+    Rating(long uid, long iid, double v, long time) {
         user = uid;
         item = iid;
+        value = v;
         timestamp = time;
     }
 
@@ -59,7 +60,7 @@ public abstract class Rating implements Event, Serializable {
      * @see #create(long, long, double, long)
      */
     public static Rating create(long uid, long iid, double rating) {
-        return new RealRating(uid, iid, rating, -1);
+        return create(uid, iid, rating, -1);
     }
 
     /**
@@ -80,7 +81,7 @@ public abstract class Rating implements Event, Serializable {
         if (Double.isNaN(rating)) {
             throw new IllegalArgumentException("rating is not a number");
         }
-        return new RealRating(uid, iid, rating, ts);
+        return new Rating(uid, iid, rating, ts);
     }
 
     /**
@@ -92,7 +93,7 @@ public abstract class Rating implements Event, Serializable {
      * @return The new rating object.
      */
     public static Rating createUnrate(long uid, long iid, long ts) {
-        return new Unrate(uid, iid, ts);
+        return new Rating(uid, iid, Double.NaN, ts);
     }
 
     /**
@@ -126,7 +127,7 @@ public abstract class Rating implements Event, Serializable {
      * @return {code true} if there is a rating (the preference is non-null).
      */
     public boolean hasValue() {
-        return !Double.isNaN(getValue());
+        return !Double.isNaN(value);
     }
     
     /**
@@ -134,7 +135,9 @@ public abstract class Rating implements Event, Serializable {
      *
      * @return double The rating value, or {@link Double#NaN} if the rating has no value.
      */
-    public abstract double getValue();
+    public double getValue() {
+        return value;
+    }
 
     /**
      * Create a new rating builder that will build a copy of this rating.
@@ -152,86 +155,28 @@ public abstract class Rating implements Event, Serializable {
         return rb;
     }
 
-    static class Unrate extends Rating {
-        private static final long serialVersionUID = 1L;
-
-        Unrate(long user, long item, long time) {
-            super(user, item, time);
-        }
-
-        @Override
-        public double getValue() {
-            return Double.NaN;
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder().append(user)
-                                        .append(item)
-                                        .append(timestamp)
-                                        .toHashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this) {
-                return true;
-            } else if (obj instanceof Unrate) {
-                Rating r = (Rating) obj;
-                return new EqualsBuilder().append(user, r.user)
-                                          .append(item, r.item)
-                                          .append(timestamp, r.timestamp)
-                                          .isEquals();
-            } else {
-                return false;
-            }
-        }
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(user)
+                                    .append(item)
+                                    .append(value)
+                                    .append(timestamp)
+                                    .toHashCode();
     }
 
-    static class RealRating extends Rating implements Preference {
-        private static final long serialVersionUID = 1L;
-
-        private final double value;
-
-        RealRating(long user, long item, double v, long time) {
-            super(user, item, time);
-            value = v;
-        }
-
-        @Override
-        public double getValue() {
-            return value;
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder().append(user)
-                                        .append(item)
-                                        .append(value)
-                                        .append(timestamp)
-                                        .toHashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this) {
-                return true;
-            } else if (obj instanceof RealRating) {
-                RealRating r = (RealRating) obj;
-                return new EqualsBuilder().append(user, r.user)
-                                          .append(item, r.item)
-                                          .append(value, r.value)
-                                          .append(timestamp, r.timestamp)
-                                          .isEquals();
-            } else if (obj instanceof Preference) {
-                Preference p = (Preference) obj;
-                return new EqualsBuilder().append(user, p.getUserId())
-                                          .append(item, p.getItemId())
-                                          .append(value, p.getValue())
-                                          .isEquals();
-            } else {
-                return false;
-            }
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        } else if (obj instanceof Rating) {
+            Rating r = (Rating) obj;
+            return new EqualsBuilder().append(user, r.user)
+                                      .append(item, r.item)
+                                      .append(value, r.value)
+                                      .append(timestamp, r.timestamp)
+                                      .isEquals();
+        } else {
+            return false;
         }
     }
 }
