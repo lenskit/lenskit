@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.event;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serializable;
@@ -115,16 +116,17 @@ public final class Like implements Event, Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Like)) return false;
-
-        Like that = (Like) o;
-
-        if (itemId != that.getItemId()) return false;
-        if (timestamp != that.getTimestamp()) return false;
-        if (userId != that.getUserId()) return false;
-
-        return true;
+        if (o == this) {
+            return true;
+        } else if (o instanceof Like) {
+            Like ol = (Like) o;
+            return new EqualsBuilder().append(userId, ol.userId)
+                                      .append(itemId, ol.itemId)
+                                      .append(timestamp, ol.timestamp)
+                                      .isEquals();
+        } else {
+            return false;
+        }
     }
 
     @Override

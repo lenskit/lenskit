@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.event;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
@@ -86,17 +87,17 @@ public class LikeBatch implements Event {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof LikeBatch)) return false;
-
-        LikeBatch that = (LikeBatch) o;
-
-        if (count != that.getCount()) return false;
-        if (itemId != that.getItemId()) return false;
-        if (userId != that.getUserId()) return false;
-        if (that.getTimestamp() != -1) return false; //other implementations may have timestamps
-
-        return true;
+        if (o == this) {
+            return true;
+        } else if (o instanceof LikeBatch) {
+            LikeBatch olb = (LikeBatch) o;
+            return new EqualsBuilder().append(userId, olb.userId)
+                                      .append(itemId, olb.itemId)
+                                      .append(count, olb.count)
+                                      .build();
+        } else {
+            return false;
+        }
     }
 
     @Override
