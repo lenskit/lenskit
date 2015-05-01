@@ -31,7 +31,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  *
  * @since 2.2
  * @see Like
- * @see Events#likeBatch(long, long, int)
  */
 public class LikeBatch implements Event {
     private final long userId;
@@ -63,8 +62,8 @@ public class LikeBatch implements Event {
     }
 
     /**
-     * Get the number of items liked.
-     * @return The number of items liked.
+     * Get the number of times the item has been liked.
+     * @return The number of times the item has been liked.
      */
     public int getCount() {
         return count;

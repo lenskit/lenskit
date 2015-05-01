@@ -29,12 +29,11 @@ import java.io.Serializable;
  * of likes, clicks, purchases, and other unary interactions.  Applications may want to implement
  * their own events to represent such interactions.
  * <p>
- * This class can be created with {@link LikeBuilder} or the {@link #create(long, long, long)} method.
+ * This class can be created with {@link LikeBuilder} or one of the factory methods {@link #create(long, long, long)}
+ * and {@link #create(long, long)}.
  * </p>
  *
  * @since 2.2
- * @see Events#like(long, long)
- * @see Events#like(long, long, long)
  */
 public final class Like implements Event, Serializable {
     private static final long serialVersionUID = 1L;

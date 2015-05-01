@@ -30,7 +30,8 @@ import java.io.Serializable;
  * a user.  Ratings are also used to represent un-rate events, if the system supports them; these are represented by
  * a rating value of {@link Double#NaN}.
  * <p>
- * To create a rating, use {@link RatingBuilder} or the {@link #create(long, long, double, long)} method.
+ * To create a rating, use {@link RatingBuilder} or the factory methods {@link #create(long, long, double, long)},
+ * {@link #create(long, long, double)}, and {@link #createUnrate(long, long, long)}.
  * </p>
  *
  * @compat Public
