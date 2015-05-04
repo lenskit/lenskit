@@ -54,7 +54,8 @@ meta {
 }
 
 // Render the manpages
-task renderManPages(group: 'build') {
+task renderManPages(group: 'documentation') {
+    description "Renders the man pages with Pandoc."
     ext.manDir = 'src/man'
     ext.outputDir = "$buildDir/man"
     ext.filterScript = 'src/man/filter-manpage.py'
@@ -87,7 +88,8 @@ task renderManPages(group: 'build') {
 }
 
 // Render the manpages
-task prepareManWeb(group: 'build') {
+task prepareManWeb(group: 'documentation') {
+    description "Processes the man pages for use in the web site."
     ext.manDir = 'src/man'
     ext.outputDir = "$buildDir/man-md"
     ext.filterScript = 'src/man/filter-man-html.py'
