@@ -51,6 +51,9 @@ Each command is documented in its own man page, *lenskit-command*(1).
 [recommend](man:lenskit-recommend(1))
 :   Recommend items for users, using a configuration or a trained model.
 
+[global-recommend](man:lenskit-global-recommend(1))
+:   Recommend items with respect to a set of reference items.
+
 [graph](man:lenskit-graph(1))
 :   Output a GraphViz diagram of a recommender configuration (either from configuration files or a
     trained model).
@@ -85,6 +88,7 @@ logback.configurationFile
    [**lenskit-train-model**(1)](man:lenskit-train-model(1)),
    [**lenskit-predict**(1)](man:lenskit-predict(1)),
    [**lenskit-recommend**(1)](man:lenskit-recommend(1)),
+   [**lenskit-global-recommend**(1)](man:lenskit-global-recommend(1)),
    [**lenskit-graph**(1)](man:lenskit-graph(1)),
    [**lenskit-eval**(1)](man:lenskit-eval(1)),
    [**lenskit-pack-ratings**(1)](man:lenskit-pack-ratings(1))
