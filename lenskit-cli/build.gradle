@@ -72,11 +72,55 @@ task renderManPages(group: 'build') {
                     executable 'pandoc'
                     args '-Mheader=LensKit'
                     args "-Mfooter=$version"
-                    args '-Msection=1'
                     args '-F', file(filterScript)
                     args '-s', '-t', 'man'
                     args '-o', file("$outputDir/$name")
                     args doc
+                }
+            } catch (ExecException e) {
+                logger.warn 'pandoc {}: {}', name, e
+                logger.warn 'skipping man page build'
+                throw new StopExecutionException("cannot run pandoc")
+            }
+        }
+    }
+}
+
+// Render the manpages
+task prepareManWeb(group: 'build') {
+    ext.manDir = 'src/man'
+    ext.outputDir = "$buildDir/man-md"
+    ext.filterScript = 'src/man/filter-man-html.py'
+    inputs.source fileTree(manDir) {
+        include '*.md'
+    }
+    inputs.file filterScript
+    outputs.dir outputDir
+    doLast {
+        mkdir outputDir
+        for (doc in inputs.sourceFiles.files) {
+            def match = doc.name =~ /((lenskit[a-z-]*)\.(\d+))\.md/
+            if (!match) {
+                throw new IllegalArgumentException("invalid man source file $doc.name")
+            }
+            def fn = match.group(1)
+            def name = match.group(2)
+            def sec = match.group(3)
+            try {
+                file("$outputDir/${fn}.md").withOutputStream { str ->
+                    def string = """---
+title: $name($sec)
+---
+
+"""
+                    str.write(string.getBytes("UTF-8"))
+                    exec {
+                        executable 'pandoc'
+                        args '-F', file(filterScript)
+                        args '-t', 'markdown'
+                        args doc
+                        standardOutput = str
+                    }
                 }
             } catch (ExecException e) {
                 logger.warn 'pandoc {}: {}', name, e

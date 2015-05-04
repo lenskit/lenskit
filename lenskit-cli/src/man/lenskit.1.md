@@ -39,26 +39,26 @@ detail in its own manual page.
 
 Each command is documented in its own man page, *lenskit-command*(1).
 
-[version](lenskit-version.1.html)
+[version](man:lenskit-version(1))
 :   Print the LensKit version.
 
-[train-model](lenskit-train-model.1.html)
+[train-model](man:lenskit-train-model(1))
 :   Train a recommender model and save it to disk.
 
-[predict](lenskit-predict.1.html)
+[predict](man:lenskit-predict(1))
 :   Predict user ratings for items, using a configuration or a trained model.
 
-[recommend](lenskit-recommend.1.html)
+[recommend](man:lenskit-recommend(1))
 :   Recommend items for users, using a configuration or a trained model.
 
-[graph](lenskit-graph.1.html)
+[graph](man:lenskit-graph(1))
 :   Output a GraphViz diagram of a recommender configuration (either from configuration files or a
     trained model).
 
-[eval](lenskit-eval.1.html)
+[eval](man:lenskit-eval(1))
 :   Run a LensKit evaluation script.
 
-[pack-ratings](lenskit-pack-ratings.1.html)
+[pack-ratings](man:lenskit-pack-ratings(1))
 :   Pack rating data into a binary file for more efficient access.
 
 ## Environment and System Properties
@@ -79,13 +79,15 @@ logback.configurationFile
 
 ## See Also
 
--  Man pages for subcommands: [**lenskit-version**(1)](lenskit-version.1.html),
-   [**lenskit-train-model**(1)](lenskit-train-model.1.html),
-   [**lenskit-predict**(1)](lenskit-predict.1.html),
-   [**lenskit-recommend**(1)](lenskit-recommend.1.html),
-   [**lenskit-graph**(1)](lenskit-graph.1.html),
-   [**lenskit-eval**(1)](lenskit-eval.1.html),
-   [**lenskit-pack-ratings**(1)](lenskit-pack-ratings.1.html)
+-  Common arguments: [**lenskit-input-data**(7)](man:lenskit-input-data(7)),
+   [**lenskit-script-environment**(7)](man:lenskit-script-environment(7))
+-  Man pages for subcommands: [**lenskit-version**(1)](man:lenskit-version(1)),
+   [**lenskit-train-model**(1)](man:lenskit-train-model(1)),
+   [**lenskit-predict**(1)](man:lenskit-predict(1)),
+   [**lenskit-recommend**(1)](man:lenskit-recommend(1)),
+   [**lenskit-graph**(1)](man:lenskit-graph(1)),
+   [**lenskit-eval**(1)](man:lenskit-eval(1)),
+   [**lenskit-pack-ratings**(1)](man:lenskit-pack-ratings(1))
 -  The [LensKit home page](http://lenskit.grouplens.org)
 -  The [LensKit manual](http://github.com/grouplens/lenskit/wiki/Manual)
 

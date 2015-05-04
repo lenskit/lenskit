@@ -40,25 +40,12 @@ experiments.
 :   Force eval tasks to re-run, even if they detect that their outputs are up-to-date.  Not all
     tasks do up-to-date checking.
 
-### Script Environment Options
-
-This command takes the standard LensKit script environment options for controlling how configuration
-scripts are interpreted:
-
--C *URL*, --classpath *URL*
-:   Add *URL* (which can be a path to a local directory or JAR file) to the classpath for loading
-    the evaluation script.  This URL can contain additional components for the recommenders or
-    evaluation.  This option can be specified multiple times to add multiple locations to the
-    classpath.
-
--D *PROP*=*VALUE*, --define *PROP*=*VALUE*
-:   Define the property *PROP* to equal *VALUE*.  These properties are not Java system properties,
-    but are available via the `config` object in evaluation scripts.  This object can be accessed
-    as a hash in Groovy.
+This command also takes the standard [script environment options](man:lenskit-script-environment(7)).
 
 ## See Also
 
--   [**lenskit**(1)](./lenskit.1.html)
+-   [**lenskit**(1)](man:lenskit(1))
+-   [**lenskit-script-environment**(7)](man:lenskit-script-environment(7))
 -   [Using the LensKit Evaluator](http://github.com/grouplens/lenskit/wiki/Evaluator)
 
 ## Project Information

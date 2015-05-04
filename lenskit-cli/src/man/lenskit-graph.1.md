@@ -39,24 +39,11 @@ ueful for debugging configurations and making sure they produce the objects you 
     modifications to the model rather than used to build a graph from scratch.  The mdoel file can
     be compressed.
 
-### Script Environment Options
-
-This command takes the standard LensKit script environment options for controlling how configuration
-scripts are interpreted:
-
--C *URL*, --classpath *URL*
-:   Add *URL* (which can be a path to a local directory or JAR file) to the classpath for loading
-    the configuration scripts.  This URL can contain additional components for the recommenders.
-    This option can be specified multiple times to add multiple locations to the classpath.
-
--D *PROP*=*VALUE*, --define *PROP*=*VALUE*
-:   Define the property *PROP* to equal *VALUE*.  This option is currently ignored for this command.
-    To set Java system properties, use the `JAVA_OPTS` environment variable (see
-    [**lenskit**(1)](lenskit.1.html)).
+This command also takes the standard [script environment options](man:lenskit-script-environment(7)).
 
 ## See Also
 
-[**lenskit**(1)](./lenskit.1.html)
+[**lenskit**(1)](man:lenskit(1)), [**lenskit-script-environment**(7)](man:lenskit-script-environment(7))
 
 ## Project Information
 
