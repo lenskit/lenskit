@@ -30,54 +30,13 @@ into an application or one of the other LensKit commands to provide recommendati
     be gzip-compressed.  Compressed model files can be transparently read by LensKit, so this is
     usually a good idea.
 
-### Input Data Options
-
-This command can read data in several different ways.  To give the model building process some
-data to work with, one of the following mutually-exclusive options must be present:
-
---ratings-file *FILE*
-:   Read ratings from the delimited text file *FILE*.
-
---csv-file *FILE*
-:   Read ratings from the CSV file *FILE*.  This is identical to passing `--ratings-file=FILE` with
-    `--delimiter=,`.
-
---tsv-file *FILE*
-:   Read ratings from the tab-separated file *FILE*. This is identical to passing
-    `--ratings-file=FILE` with `--delimiter=^I`, but doesn't require you to know how to encode
-    tab characters in your shell.
-
---pack-file *FILE*
-:   Read ratings from the packed rating file *FILE*.  Packed files can be created with the
-    [**pack-ratings**](lenskit-pack-ratings.1.html) command.
-
---item-names *FILE*
-:   Load an item ID to name mapping from the CSV file *FILE*.  This will be used to provide an
-    `ItemNameDAO` and `ItemDAO`.
-
-Additionally, the following options provide additional control over the data input:
-
--d *DELIM*, --delimiter *DELIM*
-:   Use *DELIM* as the delimiter for delimited text files.  Only effective in conjunction with
-    `--ratings-file`.
-
-### Script Environment Options
-
-This command takes the standard LensKit script environment options:
-
--C *URL*, --classpath *URL*
-:   Add *URL* (which can be a path to a local directory or JAR file) to the classpath for loading
-    the configuration scripts.  This URL can contain additional components for the recommenders.
-    This option can be specified multiple times to add multiple locations to the classpath.
-
--D *PROP*=*VALUE*, --define *PROP*=*VALUE*
-:   Define the property *PROP* to equal *VALUE*.  This option is currently ignored for this command.
-    To set Java system properties, use the `JAVA_OPTS` environment variable (see
-    [**lenskit**(1)](lenskit.1.html)).
+This command also takes the standard [input data options](man:lenskit-input-data(7))
+and [script environment options](man:lenskit-script-environment(7)).
 
 ## See Also
 
-[**lenskit**(1)](./lenskit.1.html)
+[**lenskit**(1)](man:lenskit(1)), [**lenskit-input-data**(7)](man:lenskit-input-data(7)),
+[**lenskit-script-environment**(7)](man:lenskit-script-environment(7))
 
 ## Project Information
 

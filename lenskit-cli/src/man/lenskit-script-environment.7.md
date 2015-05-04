@@ -1,18 +1,26 @@
-# lenskit-version
+# lenskit-input-data
 
 ## Name
 
-**lenskit version** - print LensKit version info.
-
-## Synopsis
-
-**lenskit** [GLOBAL OPTIONS] **version**
+Configuring the environment for interpreting LensKit scripts.
 
 ## Description
 
-The **version** command prints the current version of LensKit and exits.
+Several subcommands of [`lenskit`(1)](./lenskit.1.html) interpret scripts, either to configure recommenders
+or to run evaluations.  These subcommands support some common options for configuring the Java environment
+in which these scripts are interpreted; this page documents those options.
 
-This subcommand takes no arguments.
+## Script Environment Options
+
+-C *URL*, --classpath *URL*
+:   Add *URL* (which can be a path to a local directory or JAR file) to the classpath for loading
+    the configuration scripts.  This URL can contain additional components for the recommenders.
+    This option can be specified multiple times to add multiple locations to the classpath.
+
+-D *PROP*=*VALUE*, --define *PROP*=*VALUE*
+:   Define the property *PROP* to equal *VALUE*.  These properties will be available in the `properties`
+    object in the interpreted script.  To set Java system properties, use the `JAVA_OPTS` environment 
+    variable (see [**lenskit**(1)](lenskit.1.html)).
 
 ## See Also
 

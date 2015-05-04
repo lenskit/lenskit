@@ -34,44 +34,10 @@ import re
 from collections import OrderedDict
 
 import pandocfilters
-from pandocfilters import walk, stringify, Header, Str, Strong, Span, attributes
+from pandocfilters import walk, Link
 
 
 MetaString = pandocfilters.elt('MetaString', 1)
-
-
-def liftTitle(doc):
-    "Lift the title from the document."
-    meta = doc[0]
-    content = doc[1]
-    heading = None
-
-    if content[0]['t'] == 'Header':
-        if content[0]['c'][0] == 1:
-            heading = content[0]
-
-    if heading is None:
-        print >> sys.stderr, 'warning: first block not a heading'
-        sys.exit(1)
-
-    title = stringify(heading['c'][2])
-    meta['unMeta']['title'] = MetaString(title)
-    return [meta, content[1:]]
-
-
-def upcase(key, value, fmt, meta):
-    if key == 'Str':
-        return Str(value.upper())
-
-
-def liftHeaders(key, value, fmt, meta):
-    if key == 'Header':
-        level, attrs, content = value
-        level -= 1
-        if level == 1:
-            content = walk(content, upcase, fmt, meta)
-        return Header(level, attrs, content)
-
 
 _man_link_re = re.compile(r'^man:(.*)\((\d)\)')
 
@@ -82,21 +48,13 @@ def interpretManLinks(key, value, fmt, meta):
         url, title = link
         match = _man_link_re.match(url)
         if match is not None:
-            str = stringify(text)
-            if str.startswith("lenskit"):
-                return text
-            else:
-                rv = Span(attributes(None),
-                          text + [Str(" ("), Strong([Str(match.group(1))]), Str("(%s))" % (match.group(2),))])
-                print >>sys.stderr, rv
-                return rv
+            html_url = "%s.%s.html" % (match.group(1), match.group(2))
+            return Link(text, (html_url,title))
         else:
             return None
 
 
 doc = json.load(sys.stdin, object_pairs_hook=OrderedDict)
-doc = liftTitle(doc)
-doc = walk(doc, liftHeaders, 'man', doc[0]['unMeta'])
 doc = walk(doc, interpretManLinks, 'man', doc[0]['unMeta'])
 
 json.dump(doc, sys.stdout)

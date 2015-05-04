@@ -26,32 +26,7 @@ intensive, including model building and recommendation with certain algorithms.
 --no-timestamps
 :   Ignore timestamps in the input data and omit them from the packed ratings.
 
-### Input Data Options
-
-This command can read data in several different ways.  One of the following mutually-exclusive
-options must be present:
-
---ratings-file *FILE*
-:   Read ratings from the delimited text file *FILE*.
-
---csv-file *FILE*
-:   Read ratings from the CSV file *FILE*.  This is identical to passing `--ratings-file=FILE` with
-    `--delimiter=,`.
-
---tsv-file *FILE*
-:   Read ratings from the tab-separated file *FILE*. This is identical to passing
-    `--ratings-file=FILE` with `--delimiter=^I`, but doesn't require you to know how to encode
-    tab characters in your shell.
-
---pack-file *FILE*
-:   Read ratings from the packed rating file *FILE*.  Packed files can be created with the
-    [**pack-ratings**](lenskit-pack-ratings.1.html) command.
-
-Additionally, the following options provide additional control over the data input:
-
--d *DELIM*, --delimiter *DELIM*
-:   Use *DELIM* as the delimiter for delimited text files.  Only effective in conjunction with
-    `--ratings-file`.
+This command also takes the standard [input data options](man:lenskit-input-data(7)).
 
 ## Known Issues
 
@@ -60,7 +35,7 @@ be able to sort data in the packing process, but cannot currently do so.
 
 ## See Also
 
-[**lenskit**(1)](./lenskit.1.html)
+[**lenskit**(1)](man:lenskit(1)), [**lenskit-input-data**(7)](man:lenskit-input-data(7))
 
 ## Project Information
 
