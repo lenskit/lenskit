@@ -88,7 +88,6 @@ def interpretManLinks(key, value, fmt, meta):
             else:
                 rv = Span(attributes(None),
                           text + [Str(" ("), Strong([Str(match.group(1))]), Str("(%s))" % (match.group(2),))])
-                print >>sys.stderr, rv
                 return rv
         else:
             return None
