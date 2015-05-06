@@ -68,8 +68,10 @@ allprojects { project ->
             mavenLocal()
         }
         mavenCentral()
-        maven {
-            url "https://oss.sonatype.org/content/repositories/snapshots/"
+        if (project.version.endsWith('-SNAPSHOT')) {
+            maven {
+                url "https://oss.sonatype.org/content/repositories/snapshots/"
+            }
         }
     }
     configurations {
