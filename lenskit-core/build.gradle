@@ -43,7 +43,7 @@ configurations {
 
 dependencies {
     compile project(':lenskit-api')
-    compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.10.0-BETA1'
+    compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.10.0'
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
     compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc2'
 
