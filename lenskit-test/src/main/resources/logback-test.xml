@@ -14,6 +14,7 @@
       <onMatch>ACCEPT</onMatch>
       <onMismatch>DENY</onMismatch>
     </filter>
+    <target>System.err</target>
     <encoder>
       <pattern>%-5level %logger{24} - %msg%n</pattern>
     </encoder>
