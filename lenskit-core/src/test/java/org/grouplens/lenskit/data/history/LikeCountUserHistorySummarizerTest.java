@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.data.history;
 
 import org.grouplens.lenskit.data.event.Events;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
