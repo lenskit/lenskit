@@ -75,7 +75,7 @@ public class Main {
         } catch (ArgumentParserException e) {
             parser.handleError(e);
         } catch (Exception e) {
-            e.printStackTrace(System.err);
+            logger.error("error running command: " + e, e);
             System.exit(2);
         }
     }

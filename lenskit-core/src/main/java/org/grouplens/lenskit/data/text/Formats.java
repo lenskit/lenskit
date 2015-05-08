@@ -35,10 +35,11 @@ public final class Formats {
      * @return An event format for reading ratings from a CSV file.
      */
     public static DelimitedColumnEventFormat delimitedRatings(String delim) {
-        DelimitedColumnEventFormat fmt = new DelimitedColumnEventFormat(new RatingEventType());
-        fmt.setDelimiter(delim);
-        fmt.setFields(Fields.user(), Fields.item(), Fields.rating(), Fields.timestamp(false));
-        return fmt;
+        return DelimitedColumnEventFormat.create(new RatingEventType())
+                                         .setDelimiter(delim)
+                                         .setFields(Fields.user(), Fields.item(),
+                                                    Fields.rating(),
+                                                    Fields.timestamp(false));
     }
 
     /**
@@ -56,8 +57,7 @@ public final class Formats {
      * @return A format for using {@link TextEventDAO} to read the ML-100K data set.
      */
     public static DelimitedColumnEventFormat ml100kFormat() {
-        DelimitedColumnEventFormat fmt = new DelimitedColumnEventFormat(new RatingEventType());
-        fmt.setDelimiter("\t");
+        DelimitedColumnEventFormat fmt = new DelimitedColumnEventFormat(new RatingEventType(), "\t");
         fmt.setFields(Fields.user(), Fields.item(), Fields.rating(), Fields.timestamp());
         return fmt;
     }
@@ -68,10 +68,10 @@ public final class Formats {
      * @return A format for using {@link TextEventDAO} to read the ML-1M and ML-10M data sets.
      */
     public static DelimitedColumnEventFormat movieLensFormat() {
-        DelimitedColumnEventFormat fmt = new DelimitedColumnEventFormat(new RatingEventType());
-        fmt.setDelimiter("::");
-        fmt.setFields(Fields.user(), Fields.item(), Fields.rating(), Fields.timestamp());
-        return fmt;
+        return DelimitedColumnEventFormat.create(new RatingEventType())
+                                         .setDelimiter("::")
+                                         .setFields(Fields.user(), Fields.item(),
+                                                    Fields.rating(), Fields.timestamp());
     }
 
     /**

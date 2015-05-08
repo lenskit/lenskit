@@ -27,7 +27,6 @@ import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -55,18 +54,18 @@ public class LimitedBinaryRatingDAOTest {
     @Before
     public void createDao() throws IOException {
         ImmutableList.Builder<Rating> bld = ImmutableList.builder();
-        bld.add(Ratings.make(13, 102, 3.5, 1000L))
-                .add(Ratings.make(39, 105, 3.5, 1000L))
-                .add(Ratings.make(12, 102, 2.5, 1050L))
-                .add(Ratings.make(40, 111, 4.5, 1050L))
-                .add(Ratings.make(13, 111, 4.5, 1200L))
-                .add(Ratings.make(41, 105, 2.5, 1400L))
-                .add(Ratings.make(39, 120, 4.5, 1650L))
-                .add(Ratings.make(12, 120, 4.5, 1650L))
-                .add(Ratings.make(42, 120, 2.5, 1650L))
-                .add(Ratings.make(40, 120, 2.5, 1650L))
-                .add(Ratings.make(41, 111, 3.5, 1700L))
-                .add(Ratings.make(42, 115, 3.5, 1700L));
+        bld.add(Rating.create(13, 102, 3.5, 1000L))
+                .add(Rating.create(39, 105, 3.5, 1000L))
+                .add(Rating.create(12, 102, 2.5, 1050L))
+                .add(Rating.create(40, 111, 4.5, 1050L))
+                .add(Rating.create(13, 111, 4.5, 1200L))
+                .add(Rating.create(41, 105, 2.5, 1400L))
+                .add(Rating.create(39, 120, 4.5, 1650L))
+                .add(Rating.create(12, 120, 4.5, 1650L))
+                .add(Rating.create(42, 120, 2.5, 1650L))
+                .add(Rating.create(40, 120, 2.5, 1650L))
+                .add(Rating.create(41, 111, 3.5, 1700L))
+                .add(Rating.create(42, 115, 3.5, 1700L));
 
         ratings = bld.build();
 
@@ -127,9 +126,9 @@ public class LimitedBinaryRatingDAOTest {
         assertThat(brDao.getEventsForItem(120), nullValue());
         assertThat(brDao.getEventsForItem(105), hasSize(2));
         assertThat(brDao.getEventsForItem(105, Rating.class),
-                containsInAnyOrder(Ratings.make(39, 105, 3.5, 1000L),Ratings.make(41, 105, 2.5, 1400L)));
+                containsInAnyOrder(Rating.create(39, 105, 3.5, 1000L),Rating.create(41, 105, 2.5, 1400L)));
         assertThat(brDao.getEventsForItem(111, Rating.class),
-                containsInAnyOrder(Ratings.make(13, 111, 4.5, 1200L), Ratings.make(40, 111, 4.5, 1050L)));
+                containsInAnyOrder(Rating.create(13, 111, 4.5, 1200L), Rating.create(40, 111, 4.5, 1050L)));
 
         /*check if assertNotEqual works properly*/
         assertNotEquals(brDao.getUsersForItem(111), containsInAnyOrder(41L));
@@ -153,7 +152,7 @@ public class LimitedBinaryRatingDAOTest {
         assertThat(brDao.getEventsForUser(40), hasSize(1));
         assertThat(brDao.getEventsForUser(41), nullValue());
         assertThat(brDao.getEventsForUser(13, Rating.class),
-                containsInAnyOrder(Ratings.make(13, 102, 3.5, 1000L), Ratings.make(13, 111, 4.5, 1200L)));
+                containsInAnyOrder(Rating.create(13, 102, 3.5, 1000L), Rating.create(13, 111, 4.5, 1200L)));
     }
 
     /**
@@ -220,19 +219,19 @@ public class LimitedBinaryRatingDAOTest {
         assertThat(brDao.getUsersForItem(105), containsInAnyOrder(39L,41L));
         assertThat(brDao.getUsersForItem(120), nullValue());
         assertThat(brDao.getEventsForUser(39, Rating.class),
-                   contains(Ratings.make(39, 105, 3.5, 1000L)));
+                   contains(Rating.create(39, 105, 3.5, 1000L)));
         assertThat(brDao.getEventsForUser(13, Rating.class),
-                   containsInAnyOrder(Ratings.make(13, 102, 3.5, 1000L),
-                                      Ratings.make(13, 111, 4.5, 1200L)));
+                   containsInAnyOrder(Rating.create(13, 102, 3.5, 1000L),
+                                      Rating.create(13, 111, 4.5, 1200L)));
         assertThat(brDao.getEventsForUser(42), nullValue());
 
         //test getters for item
         assertThat(brDao.getItemIds(), containsInAnyOrder(102L, 105L, 111L));
         assertThat(brDao.getEventsForItem(102, Rating.class),
-                   contains(Ratings.make(13, 102, 3.5, 1000L),Ratings.make(12, 102, 2.5, 1050L)));
+                   contains(Rating.create(13, 102, 3.5, 1000L),Rating.create(12, 102, 2.5, 1050L)));
         assertThat(brDao.getEventsForItem(105, Rating.class),
-                   containsInAnyOrder(Ratings.make(39, 105, 3.5, 1000L),
-                                      Ratings.make(41, 105, 2.5, 1400L)));
+                   containsInAnyOrder(Rating.create(39, 105, 3.5, 1000L),
+                                      Rating.create(41, 105, 2.5, 1400L)));
         assertThat(brDao.getEventsForItem(120), nullValue());
 
         //test streamEventsByUser

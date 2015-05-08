@@ -47,6 +47,7 @@ public class RatingEventType implements EventTypeDefinition, Serializable {
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public Class<? extends EventBuilder> getBuilderType() {
         return RatingBuilder.class;
     }

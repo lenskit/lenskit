@@ -194,8 +194,7 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
          * in reverse order (the greatest index is first).
          */
         int[] fidxes = new int[freeList.size()];
-        for (int i = freeList.size() - 1; !freeList.isEmpty(); i--) {
-            assert i >= 0;
+        for (int i = freeList.size() - 1; i >= 0; i--) {
             fidxes[i] = freeList.dequeueInt();
         }
 
@@ -205,7 +204,7 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
          * We then start with the last free index, and copy into it if it
          * isn't at the end of the array.
          */
-        for (int i : fidxes) {
+        for (int i: fidxes) {
             final int lasti = n - 1;    // the index of the last preference
             assert i <= lasti;          // only way for this to fail is duplicate fidxes
             if (i < lasti) {

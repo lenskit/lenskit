@@ -75,6 +75,8 @@ public final class History {
      * @return An empty history for the user.
      */
     @Nonnull
+    @SafeVarargs
+    @SuppressWarnings("varargs") // method is safe MDE 2015-05-08
     public static <E extends Event> UserHistory<E> forUser(long id, E... events) {
         List<E> list = ImmutableList.copyOf(events);
         return new BasicUserHistory<E>(id, list);

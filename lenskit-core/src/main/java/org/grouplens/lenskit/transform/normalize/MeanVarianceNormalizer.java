@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.MeanDamping;
@@ -80,6 +81,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
         @Inject
         public Builder(@Transient EventDAO dao,
                        @MeanDamping double d) {
+            Preconditions.checkArgument(d >= 0, "damping cannot be negative");
             this.dao = dao;
             damping = d;
         }
@@ -88,7 +90,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
         public MeanVarianceNormalizer get() {
             double variance = 0;
 
-            if (damping != 0) {
+            if (damping > 0) {
                 double sum = 0;
 
                 Cursor<Rating> ratings = dao.streamEvents(Rating.class);
@@ -136,6 +138,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
      * @param globalVariance global variance to use in the damping calculations.
      */
     public MeanVarianceNormalizer(double damping, double globalVariance) {
+        Preconditions.checkArgument(damping >= 0, "damping cannot be negative");
         this.damping = damping;
         this.globalVariance = globalVariance;
     }

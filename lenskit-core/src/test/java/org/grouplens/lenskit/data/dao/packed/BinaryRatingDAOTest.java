@@ -27,7 +27,6 @@ import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -43,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -57,9 +56,9 @@ public class BinaryRatingDAOTest {
     @Before
     public void createRatingList() {
         ImmutableList.Builder<Rating> bld = ImmutableList.builder();
-        bld.add(Ratings.make(42, 105, 3.5, 100L))
-           .add(Ratings.make(42, 120, 2.5, 110L))
-           .add(Ratings.make(39, 120, 4.5, 120L));
+        bld.add(Rating.create(42, 105, 3.5, 100L))
+           .add(Rating.create(42, 120, 2.5, 110L))
+           .add(Rating.create(39, 120, 4.5, 120L));
         ratings = bld.build();
     }
 
@@ -134,7 +133,7 @@ public class BinaryRatingDAOTest {
     @Test
     public void testUpgradedDAO() throws IOException {
         List<Rating> all = Lists.newArrayList(ratings);
-        all.add(Ratings.make(39L, Integer.MAX_VALUE + 100L, Math.PI, 23049L));
+        all.add(Rating.create(39L, Integer.MAX_VALUE + 100L, Math.PI, 23049L));
 
         File file = folder.newFile("ratings.bin");
         BinaryRatingPacker packer = BinaryRatingPacker.open(file, BinaryFormatFlag.TIMESTAMPS);
@@ -198,15 +197,15 @@ public class BinaryRatingDAOTest {
         assertThat(dao.getUsersForItem(105), containsInAnyOrder(42L));
         assertThat(dao.getUsersForItem(120), containsInAnyOrder(42L, 39L));
         assertThat(dao.getEventsForUser(39, Rating.class),
-                   contains(Ratings.make(39, 120, 4.5)));
+                   contains(Rating.create(39, 120, 4.5)));
         assertThat(dao.getEventsForUser(42, Rating.class),
-                   containsInAnyOrder(Ratings.make(42, 120, 2.5),
-                                      Ratings.make(42, 105, 3.5)));
+                   containsInAnyOrder(Rating.create(42, 120, 2.5),
+                                      Rating.create(42, 105, 3.5)));
         assertThat(dao.getEventsForItem(105, Rating.class),
-                   contains(Ratings.make(42, 105, 3.5)));
+                   contains(Rating.create(42, 105, 3.5)));
         assertThat(dao.getEventsForItem(120, Rating.class),
-                   containsInAnyOrder(Ratings.make(39, 120, 4.5),
-                                      Ratings.make(42, 120, 2.5)));
+                   containsInAnyOrder(Rating.create(39, 120, 4.5),
+                                      Rating.create(42, 120, 2.5)));
         assertThat(dao.getEventsForItem(42), nullValue());
         assertThat(dao.getEventsForUser(105), nullValue());
 

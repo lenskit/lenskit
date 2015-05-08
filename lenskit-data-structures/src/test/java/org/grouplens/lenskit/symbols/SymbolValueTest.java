@@ -73,6 +73,7 @@ public class SymbolValueTest {
     }
 
     @Test
+    @SuppressWarnings("rawtypes")
     public void testEquals() {
         SymbolValue<String> base = STRING_SYM.withValue("foo");
         SymbolValue<String> eq = STRING_SYM.withValue("foo");

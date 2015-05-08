@@ -22,15 +22,14 @@ package org.grouplens.lenskit.predict.ordrec;
 
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.basic.PrecomputedItemScorer;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.PrefetchingUserEventDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.transform.quantize.Quantizer;
 import org.grouplens.lenskit.transform.quantize.ValueArrayQuantizer;
-import org.grouplens.lenskit.basic.PrecomputedItemScorer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 /**
  * This class use to test OrdRecRatingPrediction class.
@@ -56,15 +55,15 @@ public class OrdRecRatingPredictorTest {
 
 //      build ratings
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(Ratings.make(42, 1, 2));
-        rs.add(Ratings.make(42, 2, 1));
-        rs.add(Ratings.make(42, 3, 3));
-        rs.add(Ratings.make(42, 4, 3));
-        rs.add(Ratings.make(42, 5, 1));
-        rs.add(Ratings.make(42, 6, 2));
-        rs.add(Ratings.make(42, 7, 2));
-        rs.add(Ratings.make(42, 8, 3));
-        rs.add(Ratings.make(42, 9, 1));
+        rs.add(Rating.create(42, 1, 2));
+        rs.add(Rating.create(42, 2, 1));
+        rs.add(Rating.create(42, 3, 3));
+        rs.add(Rating.create(42, 4, 3));
+        rs.add(Rating.create(42, 5, 1));
+        rs.add(Rating.create(42, 6, 2));
+        rs.add(Rating.create(42, 7, 2));
+        rs.add(Rating.create(42, 8, 3));
+        rs.add(Rating.create(42, 9, 1));
 
         dao = new EventCollectionDAO(rs);
         userDAO = new PrefetchingUserEventDAO(dao);

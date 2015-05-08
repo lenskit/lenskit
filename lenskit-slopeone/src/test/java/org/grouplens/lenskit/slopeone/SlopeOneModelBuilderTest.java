@@ -22,7 +22,6 @@ package org.grouplens.lenskit.slopeone;
 
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.knn.item.model.ItemItemBuildContextProvider;
@@ -32,7 +31,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class SlopeOneModelBuilderTest {
 
@@ -53,10 +52,10 @@ public class SlopeOneModelBuilderTest {
     public void testBuild1() {
 
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(Ratings.make(1, 5, 2));
-        rs.add(Ratings.make(2, 5, 4));
-        rs.add(Ratings.make(1, 3, 5));
-        rs.add(Ratings.make(2, 3, 4));
+        rs.add(Rating.create(1, 5, 2));
+        rs.add(Rating.create(2, 5, 4));
+        rs.add(Rating.create(1, 3, 5));
+        rs.add(Rating.create(2, 3, 4));
 
         SlopeOneModel model1 = getModel(rs);
 
@@ -70,15 +69,15 @@ public class SlopeOneModelBuilderTest {
     public void testBuild2() {
 
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(Ratings.make(1, 4, 4));
-        rs.add(Ratings.make(2, 4, 5));
-        rs.add(Ratings.make(3, 4, 4));
-        rs.add(Ratings.make(1, 5, 3));
-        rs.add(Ratings.make(2, 5, 5));
-        rs.add(Ratings.make(3, 5, 1));
-        rs.add(Ratings.make(1, 6, 1));
-        rs.add(Ratings.make(2, 6, 5));
-        rs.add(Ratings.make(3, 6, 3));
+        rs.add(Rating.create(1, 4, 4));
+        rs.add(Rating.create(2, 4, 5));
+        rs.add(Rating.create(3, 4, 4));
+        rs.add(Rating.create(1, 5, 3));
+        rs.add(Rating.create(2, 5, 5));
+        rs.add(Rating.create(3, 5, 1));
+        rs.add(Rating.create(1, 6, 1));
+        rs.add(Rating.create(2, 6, 5));
+        rs.add(Rating.create(3, 6, 3));
 
         SlopeOneModel model2 = getModel(rs);
 
@@ -100,20 +99,20 @@ public class SlopeOneModelBuilderTest {
     public void testBuild3() {
 
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(Ratings.make(1, 6, 4));
-        rs.add(Ratings.make(2, 6, 2));
-        rs.add(Ratings.make(1, 7, 3));
-        rs.add(Ratings.make(2, 7, 2));
-        rs.add(Ratings.make(3, 7, 5));
-        rs.add(Ratings.make(4, 7, 2));
-        rs.add(Ratings.make(1, 8, 3));
-        rs.add(Ratings.make(2, 8, 4));
-        rs.add(Ratings.make(3, 8, 3));
-        rs.add(Ratings.make(4, 8, 2));
-        rs.add(Ratings.make(5, 8, 3));
-        rs.add(Ratings.make(6, 8, 2));
-        rs.add(Ratings.make(1, 9, 3));
-        rs.add(Ratings.make(3, 9, 4));
+        rs.add(Rating.create(1, 6, 4));
+        rs.add(Rating.create(2, 6, 2));
+        rs.add(Rating.create(1, 7, 3));
+        rs.add(Rating.create(2, 7, 2));
+        rs.add(Rating.create(3, 7, 5));
+        rs.add(Rating.create(4, 7, 2));
+        rs.add(Rating.create(1, 8, 3));
+        rs.add(Rating.create(2, 8, 4));
+        rs.add(Rating.create(3, 8, 3));
+        rs.add(Rating.create(4, 8, 2));
+        rs.add(Rating.create(5, 8, 3));
+        rs.add(Rating.create(6, 8, 2));
+        rs.add(Rating.create(1, 9, 3));
+        rs.add(Rating.create(3, 9, 4));
 
         SlopeOneModel model3 = getModel(rs);
 
@@ -146,13 +145,13 @@ public class SlopeOneModelBuilderTest {
     @Test
     public void testBuild4() {
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(Ratings.make(1, 4, 3.5));
-        rs.add(Ratings.make(2, 4, 5));
-        rs.add(Ratings.make(3, 5, 4.25));
-        rs.add(Ratings.make(2, 6, 3));
-        rs.add(Ratings.make(1, 7, 4));
-        rs.add(Ratings.make(2, 7, 4));
-        rs.add(Ratings.make(3, 7, 1.5));
+        rs.add(Rating.create(1, 4, 3.5));
+        rs.add(Rating.create(2, 4, 5));
+        rs.add(Rating.create(3, 5, 4.25));
+        rs.add(Rating.create(2, 6, 3));
+        rs.add(Rating.create(1, 7, 4));
+        rs.add(Rating.create(2, 7, 4));
+        rs.add(Rating.create(3, 7, 1.5));
 
         SlopeOneModel model4 = getModel(rs);
 

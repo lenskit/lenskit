@@ -23,7 +23,6 @@ package org.grouplens.lenskit.baseline;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshotBuilder;
 import org.grouplens.lenskit.iterative.StoppingCondition;
@@ -37,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class LeastSquaresItemScorerTest {
 
@@ -48,23 +47,23 @@ public class LeastSquaresItemScorerTest {
     @Before
     public void createPredictor() {
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(Ratings.make(2, 1, 3));
-        rs.add(Ratings.make(3, 1, 4));
-        rs.add(Ratings.make(4, 1, 3));
-        rs.add(Ratings.make(5, 1, 5));
-        rs.add(Ratings.make(5, 2, 2));
-        rs.add(Ratings.make(2, 2, 2));
-        rs.add(Ratings.make(2, 3, 3));
-        rs.add(Ratings.make(3, 3, 2));
-        rs.add(Ratings.make(1, 4, 3));
-        rs.add(Ratings.make(3, 4, 2));
-        rs.add(Ratings.make(4, 4, 2));
-        rs.add(Ratings.make(3, 5, 4));
-        rs.add(Ratings.make(4, 5, 5));
-        rs.add(Ratings.make(5, 6, 4));
-        rs.add(Ratings.make(6, 6, 2));
-        rs.add(Ratings.make(1, 6, 3));
-        rs.add(Ratings.make(3, 6, 4));
+        rs.add(Rating.create(2, 1, 3));
+        rs.add(Rating.create(3, 1, 4));
+        rs.add(Rating.create(4, 1, 3));
+        rs.add(Rating.create(5, 1, 5));
+        rs.add(Rating.create(5, 2, 2));
+        rs.add(Rating.create(2, 2, 2));
+        rs.add(Rating.create(2, 3, 3));
+        rs.add(Rating.create(3, 3, 2));
+        rs.add(Rating.create(1, 4, 3));
+        rs.add(Rating.create(3, 4, 2));
+        rs.add(Rating.create(4, 4, 2));
+        rs.add(Rating.create(3, 5, 4));
+        rs.add(Rating.create(4, 5, 5));
+        rs.add(Rating.create(5, 6, 4));
+        rs.add(Rating.create(6, 6, 2));
+        rs.add(Rating.create(1, 6, 3));
+        rs.add(Rating.create(3, 6, 4));
 
         final EventDAO dao = EventCollectionDAO.create(rs);
         final Provider<PackedPreferenceSnapshot> provider = new PackedPreferenceSnapshotBuilder(dao, new Random());

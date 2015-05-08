@@ -22,33 +22,60 @@ package org.grouplens.lenskit.data.event;
 
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
-public class SimpleLikeBatchTest {
+public class LikeTest {
     @Test
-    public void testSimpleLikeBatch() {
-        LikeBatch like = Events.likeBatch(42, 67, 39);
+     public void testSimpleLike() {
+        Like like = Like.create(42, 67);
         assertThat(like.getUserId(), equalTo(42L));
         assertThat(like.getItemId(), equalTo(67L));
         assertThat(like.getTimestamp(), equalTo(-1L));
-        assertThat(like.getCount(), equalTo(39));
+    }
+
+    @Test
+    public void testTimestampedLike() {
+        long ts = System.currentTimeMillis() / 1000;
+        Like like = Like.create(42, 67, ts);
+        assertThat(like.getUserId(), equalTo(42L));
+        assertThat(like.getItemId(), equalTo(67L));
+        assertThat(like.getTimestamp(), equalTo(ts));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testDeprecatedLike() {
+        Like like = Events.like(42, 67);
+        assertThat(like.getUserId(), equalTo(42L));
+        assertThat(like.getItemId(), equalTo(67L));
+        assertThat(like.getTimestamp(), equalTo(-1L));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testDeprecatedTimestampedLike() {
+        long ts = System.currentTimeMillis() / 1000;
+        Like like = Events.like(42, 67, ts);
+        assertThat(like.getUserId(), equalTo(42L));
+        assertThat(like.getItemId(), equalTo(67L));
+        assertThat(like.getTimestamp(), equalTo(ts));
     }
 
     @Test
     public void testEquals() {
-        LikeBatch like = Events.likeBatch(42, 67, 1989);
-        LikeBatch equalLike = Events.likeBatch(42, 67, 1989);
-        LikeBatch differentUser = Events.likeBatch(1, 67, 1989);
-        LikeBatch differentItem = Events.likeBatch(42, 42, 1989);
-        LikeBatch differentCount = Events.likeBatch(42, 67, 2014);
+        Like like = Like.create(42, 67, 1989);
+        Like equalLike = Like.create(42, 67, 1989);
+        Like differentUser = Like.create(1, 67, 1989);
+        Like differentItem = Like.create(42, 42, 1989);
+        Like differentTime = Like.create(42, 67, 2014);
 
         assertThat(like.equals(like), equalTo(true));
         assertThat(like.equals(equalLike), equalTo(true));
         assertThat(like.equals(differentUser), equalTo(false));
         assertThat(like.equals(differentItem), equalTo(false));
-        assertThat(like.equals(differentCount), equalTo(false));
+        assertThat(like.equals(differentTime), equalTo(false));
         assertThat(like.equals(null), equalTo(false));
-
+        assertThat(like.equals("false"), equalTo(false));
     }
 }

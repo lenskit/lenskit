@@ -45,6 +45,21 @@ public class RatingTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
+    public void testDeprecatedFactories() {
+        Rating rating = Ratings.make(1, 2, 3.0);
+        Rating withTS = Ratings.make(1, 2, 3.0, 1030);
+        assertThat(rating.getUserId(), equalTo(1L));
+        assertThat(rating.getItemId(), equalTo(2L));
+        assertThat(rating.getValue(), equalTo(3.0));
+
+        assertThat(withTS.getUserId(), equalTo(1L));
+        assertThat(withTS.getItemId(), equalTo(2L));
+        assertThat(withTS.getValue(), equalTo(3.0));
+        assertThat(withTS.getTimestamp(), equalTo(1030L));
+    }
+
+    @Test
     public void testSimpleEquality() {
         Rating r1 = Rating.create(1, 2, 3.0, 0);
         Rating r1a = Rating.create(1, 2, 3.0, 0);

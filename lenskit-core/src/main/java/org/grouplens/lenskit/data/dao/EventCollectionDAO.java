@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.WillClose;
-
 import java.util.*;
 
 /**
@@ -136,9 +135,9 @@ public class EventCollectionDAO implements EventDAO {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
-                      .add("size", events.size())
-                      .add("types", types)
-                      .toString();
+        return MoreObjects.toStringHelper(this)
+                          .add("size", events.size())
+                          .add("types", types)
+                          .toString();
     }
 }

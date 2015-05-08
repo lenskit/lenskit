@@ -22,41 +22,43 @@ package org.grouplens.lenskit.data.event;
 
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-public class SimpleLikeTest {
+public class LikeBatchTest {
     @Test
-    public void testSimpleLike() {
-        Like like = Events.like(42, 67);
+     public void testSimpleLikeBatch() {
+        LikeBatch like = LikeBatch.create(42, 67, 39);
         assertThat(like.getUserId(), equalTo(42L));
         assertThat(like.getItemId(), equalTo(67L));
         assertThat(like.getTimestamp(), equalTo(-1L));
+        assertThat(like.getCount(), equalTo(39));
     }
 
     @Test
-    public void testTimestampedLike() {
-        long ts = System.currentTimeMillis() / 1000;
-        Like like = Events.like(42, 67, ts);
+    @SuppressWarnings("deprecation")
+    public void testDeprecatedLikeBatch() {
+        LikeBatch like = Events.likeBatch(42, 67, 39);
         assertThat(like.getUserId(), equalTo(42L));
         assertThat(like.getItemId(), equalTo(67L));
-        assertThat(like.getTimestamp(), equalTo(ts));
+        assertThat(like.getTimestamp(), equalTo(-1L));
+        assertThat(like.getCount(), equalTo(39));
     }
 
     @Test
     public void testEquals() {
-        Like like = Events.like(42, 67, 1989);
-        Like equalLike = Events.like(42, 67, 1989);
-        Like differentUser = Events.like(1, 67, 1989);
-        Like differentItem = Events.like(42, 42, 1989);
-        Like differentTime = Events.like(42, 67, 2014);
+        LikeBatch like = LikeBatch.create(42, 67, 1989);
+        LikeBatch equalLike = LikeBatch.create(42, 67, 1989);
+        LikeBatch differentUser = LikeBatch.create(1, 67, 1989);
+        LikeBatch differentItem = LikeBatch.create(42, 42, 1989);
+        LikeBatch differentCount = LikeBatch.create(42, 67, 2014);
 
         assertThat(like.equals(like), equalTo(true));
         assertThat(like.equals(equalLike), equalTo(true));
         assertThat(like.equals(differentUser), equalTo(false));
         assertThat(like.equals(differentItem), equalTo(false));
-        assertThat(like.equals(differentTime), equalTo(false));
+        assertThat(like.equals(differentCount), equalTo(false));
         assertThat(like.equals(null), equalTo(false));
-
+        assertThat(like.equals("foo"), equalTo(false));
     }
 }

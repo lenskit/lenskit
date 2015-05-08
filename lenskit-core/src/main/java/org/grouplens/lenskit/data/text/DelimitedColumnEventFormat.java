@@ -51,8 +51,9 @@ public final class DelimitedColumnEventFormat implements EventFormat {
     private int headerLines = 0;
 
     @Inject
-    public DelimitedColumnEventFormat(@Nonnull EventTypeDefinition etd) {
+    public DelimitedColumnEventFormat(@Nonnull EventTypeDefinition etd, @ColumnSeparator String delim) {
         eventTypeDef = etd;
+        delimiter = delim;
         setFields(etd.getDefaultFields());
     }
 
@@ -64,7 +65,7 @@ public final class DelimitedColumnEventFormat implements EventFormat {
     @Nonnull
     public static DelimitedColumnEventFormat create(@Nonnull EventTypeDefinition etd) {
         Preconditions.checkNotNull(etd, "type definition");
-        return new DelimitedColumnEventFormat(etd);
+        return new DelimitedColumnEventFormat(etd, "\t");
     }
 
     /**
@@ -159,6 +160,7 @@ public final class DelimitedColumnEventFormat implements EventFormat {
             throw new IllegalArgumentException("missing fields");
         }
 
+        @SuppressWarnings("rawtypes")
         Predicate<Class<? extends EventBuilder>> canConfigBuilderType = new Predicate<Class<? extends EventBuilder>>() {
             @Override
             public boolean apply(@Nullable Class<? extends EventBuilder> input) {

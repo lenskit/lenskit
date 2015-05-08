@@ -28,7 +28,6 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 public class UserUserRecommenderBuildTest {
 
@@ -46,10 +45,10 @@ public class UserUserRecommenderBuildTest {
     @Before
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(Ratings.make(1, 5, 2));
-        rs.add(Ratings.make(1, 7, 4));
-        rs.add(Ratings.make(8, 4, 5));
-        rs.add(Ratings.make(8, 5, 4));
+        rs.add(Rating.create(1, 5, 2));
+        rs.add(Rating.create(1, 7, 4));
+        rs.add(Rating.create(8, 4, 5));
+        rs.add(Rating.create(8, 5, 4));
 
         EventDAO dao = new EventCollectionDAO(rs);
 
@@ -79,10 +78,10 @@ public class UserUserRecommenderBuildTest {
     @Test
     public void testSnapshot() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(Ratings.make(1, 5, 2));
-        rs.add(Ratings.make(1, 7, 4));
-        rs.add(Ratings.make(8, 4, 5));
-        rs.add(Ratings.make(8, 5, 4));
+        rs.add(Rating.create(1, 5, 2));
+        rs.add(Rating.create(1, 7, 4));
+        rs.add(Rating.create(8, 4, 5));
+        rs.add(Rating.create(8, 5, 4));
 
         EventDAO dao = EventCollectionDAO.create(rs);
 

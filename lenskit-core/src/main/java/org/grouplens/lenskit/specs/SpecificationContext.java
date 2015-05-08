@@ -233,11 +233,13 @@ public class SpecificationContext {
     public <T> T build(Class<T> type, Config config) throws SpecificationException {
         SpecHandlerInterface shi = type.getAnnotation(SpecHandlerInterface.class);
         if (shi != null) {
-            return (T) buildWithHandler((Class) shi.value(), config);
+            @SuppressWarnings("unchecked")
+            Class<? extends SpecHandler<T>> handler = (Class) shi.value();
+            return buildWithHandler(handler, config);
         } else {
             try {
                 Method m = type.getMethod("fromSpec", SpecificationContext.class, Config.class);
-                return (T) m.invoke(null, type, config);
+                return type.cast(m.invoke(null, type, config));
             } catch (NoSuchMethodException e) {
                 throw new IllegalArgumentException("Cannot create type " + type, e);
             } catch (InvocationTargetException e) {

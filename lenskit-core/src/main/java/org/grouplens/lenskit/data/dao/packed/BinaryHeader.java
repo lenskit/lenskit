@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import java.util.Arrays;
  */
 class BinaryHeader {
     public static final int HEADER_SIZE = BinaryFormat.INT_SIZE * 4;
+    private static final byte[] HEADER_MAGIC = "LK".getBytes(Charsets.US_ASCII);
 
     private final BinaryFormat format;
     private final int ratingCount;
@@ -56,7 +58,7 @@ class BinaryHeader {
                                     "buffer not large enough");
         byte[] magic = new byte[2];
         buf.get(magic);
-        if (!Arrays.equals(magic, BinaryFormat.HEADER_MAGIC)) {
+        if (!Arrays.equals(magic, HEADER_MAGIC)) {
             throw new IllegalArgumentException("invalid magic");
         }
         short word = buf.getShort();
@@ -101,7 +103,7 @@ class BinaryHeader {
      * @param buf The target buffer.
      */
     public void render(ByteBuffer buf) {
-        buf.put(BinaryFormat.HEADER_MAGIC);
+        buf.put(HEADER_MAGIC);
         buf.putShort(format.getFlagWord());
         buf.putInt(ratingCount);
         buf.putInt(userCount);

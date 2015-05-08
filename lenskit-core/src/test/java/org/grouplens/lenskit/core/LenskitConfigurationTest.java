@@ -43,6 +43,7 @@ public class LenskitConfigurationTest {
      * @throws InjectionException if there is an (unexpected) injection failure.
      */
     @Test
+    @SuppressWarnings("unchecked")
     public void testSetFile() throws InjectionException {
         LenskitConfiguration config = new LenskitConfiguration();
         config.clearRoots();

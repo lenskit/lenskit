@@ -199,6 +199,8 @@ public final class Cursors {
      * @param <T> The data type.
      * @return The cursor.
      */
+    @SafeVarargs
+    @SuppressWarnings("varargs") // method is safe MDE 2015-05-08
     public static <T> Cursor<T> of(T... contents) {
         return wrap(Arrays.asList(contents));
     }
@@ -217,6 +219,8 @@ public final class Cursors {
      * Concatenate cursors.
      * @see #concat(Iterable)
      */
+    @SafeVarargs
+    @SuppressWarnings("varargs") // method is safe MDE 2015-05-08
     public static <T> Cursor<T> concat(Cursor<? extends T>... cursors) {
         return concat(Arrays.asList(cursors));
     }

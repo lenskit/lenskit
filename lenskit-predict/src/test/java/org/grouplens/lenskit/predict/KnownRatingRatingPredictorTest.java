@@ -27,11 +27,9 @@ import org.grouplens.lenskit.data.dao.PrefetchingUserEventDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.RatingBuilder;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Before;
 import org.junit.Test;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,16 +47,16 @@ public class KnownRatingRatingPredictorTest {
     @Before
     //Setup method
     public void createPredictor() throws RecommenderBuildException {
-        rs.add(Ratings.make(14, 1, 5));
-        rs.add(Ratings.make(14, 2, 4));
-        rs.add(Ratings.make(14, 3, 3));
-        rs.add(Ratings.make(14, 4, 2));
-        rs.add(Ratings.make(14, 5, 0.2));
-        rs.add(Ratings.make(15, 5, 1));
-        rs.add(Ratings.make(15, 6, 2));
-        rs.add(Ratings.make(15, 7, 3));
-        rs.add(Ratings.make(15, 8, 4));
-        rs.add(Ratings.make(15, 9, 5));
+        rs.add(Rating.create(14, 1, 5));
+        rs.add(Rating.create(14, 2, 4));
+        rs.add(Rating.create(14, 3, 3));
+        rs.add(Rating.create(14, 4, 2));
+        rs.add(Rating.create(14, 5, 0.2));
+        rs.add(Rating.create(15, 5, 1));
+        rs.add(Rating.create(15, 6, 2));
+        rs.add(Rating.create(15, 7, 3));
+        rs.add(Rating.create(15, 8, 4));
+        rs.add(Rating.create(15, 9, 5));
 
         dao = new EventCollectionDAO(rs);
         userDAO = new PrefetchingUserEventDAO(dao);

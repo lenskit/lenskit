@@ -38,6 +38,7 @@ import java.util.Set;
  */
 @AutoService(EventTypeDefinition.class) // register this class to be locatable as an event type
 @Shareable
+@SuppressWarnings("rawtypes")
 public class LikeBatchEventType implements EventTypeDefinition, Serializable {
     private static final long serialVersionUID = 1L;
 

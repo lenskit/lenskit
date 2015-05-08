@@ -32,6 +32,7 @@ import java.util.Set;
  *
  * @since 2.2
  */
+@SuppressWarnings("rawtypes")
 public interface EventTypeDefinition {
     /**
      * A simple name for this event
