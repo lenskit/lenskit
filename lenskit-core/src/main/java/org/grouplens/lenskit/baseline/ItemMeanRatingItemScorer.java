@@ -23,6 +23,7 @@
  */
 package org.grouplens.lenskit.baseline;
 
+import com.google.common.base.Preconditions;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.core.Shareable;
@@ -74,6 +75,7 @@ public class ItemMeanRatingItemScorer extends AbstractItemScorer implements Seri
         @Inject
         public Builder(@Transient EventDAO dao,
                        @MeanDamping double damping) {
+            Preconditions.checkArgument(damping >= 0, "Negative damping not allowed");
             this.dao = dao;
             this.damping = damping;
         }
@@ -119,6 +121,7 @@ public class ItemMeanRatingItemScorer extends AbstractItemScorer implements Seri
      * @param damping    The damping factor.
      */
     public ItemMeanRatingItemScorer(ImmutableSparseVector itemMeans, double globalMean, double damping) {
+        Preconditions.checkArgument(damping >= 0, "Negative damping not allowed");
         this.itemMeans = itemMeans;
         this.globalMean = globalMean;
         this.damping = damping;

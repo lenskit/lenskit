@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.baseline;
 
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
@@ -69,6 +70,7 @@ public class UserMeanItemScorer extends AbstractItemScorer {
                               @UserMeanBaseline ItemScorer base,
                               UserHistorySummarizer sum,
                               @MeanDamping double damp) {
+        Preconditions.checkArgument(damp >= 0, "Negative damping not allowed");
         userEventDAO = dao;
         baseline = base;
         summarizer = sum;
