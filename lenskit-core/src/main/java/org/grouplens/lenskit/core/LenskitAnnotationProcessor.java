@@ -107,11 +107,15 @@ public class LenskitAnnotationProcessor extends AbstractProcessor {
         TypeMirror serializable = elementUtils.getTypeElement("java.io.Serializable").asType();
         for (Element elt: elts) {
             note("examining %s", elt);
-            TypeMirror type = elt.asType();
-            if (typeUtils.isAssignable(type, serializable)) {
-                note("shareable type %s is serializable", type);
+            if (elt instanceof TypeElement) {
+                TypeMirror type = elt.asType();
+                if (typeUtils.isAssignable(type, serializable)) {
+                    note("shareable type %s is serializable", type);
+                } else {
+                    warning(elt, "shareable type %s is not serializable", type);
+                }
             } else {
-                warning(elt, "shareable type %s is not serializable", type);
+                warning(elt, "shareable checking not supported for non-types");
             }
         }
     }
