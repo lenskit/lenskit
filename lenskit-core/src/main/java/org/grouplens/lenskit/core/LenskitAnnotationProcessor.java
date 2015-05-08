@@ -115,7 +115,7 @@ public class LenskitAnnotationProcessor extends AbstractProcessor {
                     warning(elt, "shareable type %s is not serializable", type);
                 }
             } else {
-                warning(elt, "shareable checking not supported for non-types");
+                note("non-type element %s cannot be verified serializable", elt);
             }
         }
     }
