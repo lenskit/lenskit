@@ -24,6 +24,7 @@ import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.util.MathUtils;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -74,7 +75,8 @@ public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
         while (i < n) {
             int j;
             for (j = i + 1; j < n; j++) {
-                if (values[j] != values[i]) {
+                // compare difference to 0 with tolerance - more robust
+                if (MathUtils.isZero(values[j] - values[i])) {
                     break;
                 }
             }

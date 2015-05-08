@@ -23,6 +23,7 @@ package org.grouplens.lenskit.vectors.similarity;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.util.MathUtils;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -52,7 +53,7 @@ public class DistanceVectorSimilarity implements VectorSimilarity, Serializable 
     public double similarity(SparseVector vec1, SparseVector vec2) {
         final double distance;
         // One of the vector is empty
-        if (vec1.norm() <= 0 || vec2.norm() <= 0){
+        if (MathUtils.isZero(vec1.norm()) || MathUtils.isZero(vec2.norm())){
             return Double.NaN;
         }
 

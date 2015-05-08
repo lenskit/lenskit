@@ -22,6 +22,7 @@ package org.grouplens.lenskit.vectors.similarity;
 
 import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.util.MathUtils;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.inject.Inject;
@@ -61,10 +62,10 @@ public class CosineVectorSimilarity implements VectorSimilarity, Serializable {
     public double similarity(SparseVector vec1, SparseVector vec2) {
         final double dot = vec1.dot(vec2);
         final double denom = vec1.norm() * vec2.norm() + dampingFactor;
-        if (denom > 0) {
-            return dot / denom;
-        } else {
+        if (MathUtils.isZero(denom)) {
             return 0;
+        } else {
+            return dot / denom;
         }
     }
 
