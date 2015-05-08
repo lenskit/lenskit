@@ -29,9 +29,12 @@ import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.util.MathUtils;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -53,6 +56,10 @@ import java.io.Serializable;
  * towards the average community variance. Accordingly, set smoothing = 0 (or
  * use default constructor) for no smoothing. The 'global variance' parameter
  * only pertains to smoothing, and is unnecessary otherwise.
+ * <p>
+ * If the reference vector has a standard deviation of 0 (as determined by {@link MathUtils#isZero(double)}),
+ * and there is no smoothing, then no scaling is done (it is treated as if the standard deviation is 1). This
+ * is to keep the behavior well-defined in all cases.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -60,6 +67,7 @@ import java.io.Serializable;
 @Shareable
 public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements Serializable {
     private static final long serialVersionUID = -7890335060797112954L;
+    private static final Logger logger = LoggerFactory.getLogger(MeanVarianceNormalizer.class);
 
     /**
      * A Builder for UserVarianceNormalizers that computes the variance from a
@@ -176,6 +184,10 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
                 var += diff * diff;
             }
 
+            if (MathUtils.isZero(var) && MathUtils.isZero(damping)) {
+                logger.warn("found zero variance for {}, and no damping is enabled", reference);
+            }
+
             /* damping calculation as described in Hofmann '04
              * $\sigma_u^2 = \frac{\sigma^2 + q * \={\sigma}^2}{n_u + q}$
              */
@@ -195,10 +207,9 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
+            double recipSD = MathUtils.isZero(stdev) ? 1 : (1 / stdev);
             for (VectorEntry rating : vector) {
-                vector.set(rating.getKey(), /* r' = (r - u) / s */
-                           stdev == 0 ? 0 : // edge case
-                                   (rating.getValue() - mean) / stdev);
+                vector.set(rating, (rating.getValue() - mean) * recipSD);
             }
             return vector;
         }
@@ -206,9 +217,11 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
             for (VectorEntry rating : vector) {
-                vector.set(rating.getKey(), /* r = r' * s + u */
-                           stdev == 0 ? mean : // edge case
-                                   (rating.getValue() * stdev) + mean);
+                double val = rating.getValue();
+                if (!MathUtils.isZero(stdev)) {
+                    val *= stdev;
+                }
+                vector.set(rating, val + mean);
             }
             return vector;
         }
