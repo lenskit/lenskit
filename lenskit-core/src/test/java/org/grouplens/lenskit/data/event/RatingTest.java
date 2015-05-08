@@ -49,12 +49,12 @@ public class RatingTest {
     public void testDeprecatedFactories() {
         Rating rating = Ratings.make(1, 2, 3.0);
         Rating withTS = Ratings.make(1, 2, 3.0, 1030);
-        assertThat(rating.getItemId(), equalTo(1L));
-        assertThat(rating.getUserId(), equalTo(2L));
+        assertThat(rating.getUserId(), equalTo(1L));
+        assertThat(rating.getItemId(), equalTo(2L));
         assertThat(rating.getValue(), equalTo(3.0));
 
-        assertThat(withTS.getItemId(), equalTo(1L));
-        assertThat(withTS.getUserId(), equalTo(2L));
+        assertThat(withTS.getUserId(), equalTo(1L));
+        assertThat(withTS.getItemId(), equalTo(2L));
         assertThat(withTS.getValue(), equalTo(3.0));
         assertThat(withTS.getTimestamp(), equalTo(1030L));
     }
