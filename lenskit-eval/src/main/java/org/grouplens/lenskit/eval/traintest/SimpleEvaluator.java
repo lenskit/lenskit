@@ -40,6 +40,11 @@ import java.io.File;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
+/**
+ * Simplified Java API to train-test evaluation. The train-test evaluator is somewhat difficult to use directly from
+ * Java; this class is intended to make it easier.
+ */
+@SuppressWarnings("unused")
 public class SimpleEvaluator implements Callable<Table> {
     private final EvalProject project;
     private TrainTestEvalTask result;
@@ -81,7 +86,7 @@ public class SimpleEvaluator implements Callable<Table> {
 
     /**
      * An algorithm instance constructed with a name and Lenskit configuration
-     * @param name
+     * @param name The name of the algorithm.
      * @param config Lenskit configuration
      *
      */
@@ -107,7 +112,7 @@ public class SimpleEvaluator implements Callable<Table> {
      *
      * Any exceptions that are thrown are wrapped as {@code RuntimeExceptions}.
      *
-     * @param cross
+     * @param cross The crossfold task.
      * @return Itself to allow for  method chaining.
      */
     public SimpleEvaluator addDataset(CrossfoldTask cross){
@@ -270,10 +275,12 @@ public class SimpleEvaluator implements Callable<Table> {
     /**
      * This provides a wrapper around {@code TrainTestEvalCommand.setPredictOutput}
      * @param file The file set as the prediction output.
-     * @return
+     * @return The evaluator (for chaining)
      */
     public SimpleEvaluator setPredictOutput(File file){
-        result.setPredictOutput(file);
+        OutputPredictMetric.FactoryBuilder factory = new OutputPredictMetric.FactoryBuilder();
+        factory.setFile(file);
+        result.addMetric(factory.build());
         return this;
     }
 
@@ -281,7 +288,7 @@ public class SimpleEvaluator implements Callable<Table> {
     /**
      * This provides a wrapper around {@code TrainTestEvalCommand.setUserOutput}
      * @param file The file set as the prediction user.
-     * @return
+     * @return The evaluator (for chaining)
      */
     public SimpleEvaluator setUserOutput(File file){
         result.setUserOutput(file);
@@ -305,8 +312,7 @@ public class SimpleEvaluator implements Callable<Table> {
      * @return Itself for method chaining
      */
     public SimpleEvaluator setPredictOutputPath(String path){
-        result.setPredictOutput(new File(path));
-        return this;
+        return setPredictOutput(new File(path));
     }
 
     /**
