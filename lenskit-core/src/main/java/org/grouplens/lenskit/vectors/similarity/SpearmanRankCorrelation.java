@@ -76,7 +76,7 @@ public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
             int j;
             for (j = i + 1; j < n; j++) {
                 // compare difference to 0 with tolerance - more robust
-                if (MathUtils.isZero(values[j] - values[i])) {
+                if (!MathUtils.isZero(values[j] - values[i])) {
                     break;
                 }
             }
