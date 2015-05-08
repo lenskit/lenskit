@@ -38,7 +38,6 @@ import java.util.Set;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 final class BinaryFormat {
-    public static final byte[] HEADER_MAGIC = "LK".getBytes(Charsets.US_ASCII);
     static final int INT_SIZE = 4;
     static final int LONG_SIZE = 8;
     static final int DOUBLE_SIZE = 8;
