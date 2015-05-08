@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.vectors.similarity;
 
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.LongArrays;
@@ -43,6 +44,7 @@ public class SpearmanRankCorrelation implements VectorSimilarity, Serializable {
 
     @Inject
     public SpearmanRankCorrelation(@SimilarityDamping double damping) {
+        Preconditions.checkArgument(damping >= 0, "negative damping not allowed");
         pearson = new PearsonCorrelation(damping);
     }
 
