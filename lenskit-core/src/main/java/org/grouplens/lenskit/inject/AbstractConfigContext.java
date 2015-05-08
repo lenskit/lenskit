@@ -78,9 +78,12 @@ public abstract class AbstractConfigContext extends AbstractContext implements L
             throw new IllegalArgumentException(param.toString() + "has no Parameter annotation");
         }
         Class<?> type = annot.value();
-        Binding binding = bind(annot.value());
+        Binding<?> binding;
         if (type.equals(File.class)) {
-            binding = LenskitBindingImpl.wrap(binding, new StringToFileConversion());
+            binding = LenskitBindingImpl.wrap(bind(File.class),
+                                              new StringToFileConversion());
+        } else {
+            binding = bind(annot.value());
         }
         return binding.withQualifier(param);
     }
