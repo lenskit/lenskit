@@ -50,11 +50,26 @@ public final class DelimitedColumnEventFormat implements EventFormat {
     private List<Field> fieldList;
     private int headerLines = 0;
 
+    /**
+     * Construct a new event format.
+     * @param etd The type definition.
+     * @param delim The delimiter.
+     */
     @Inject
     public DelimitedColumnEventFormat(@Nonnull EventTypeDefinition etd, @ColumnSeparator String delim) {
         eventTypeDef = etd;
         delimiter = delim;
         setFields(etd.getDefaultFields());
+    }
+
+    /**
+     * Construct a new event format.
+     * @param etd The type definition
+     * @deprecated Use {@link #create(EventTypeDefinition)} instead.
+     */
+    @Deprecated
+    public DelimitedColumnEventFormat(@Nonnull EventTypeDefinition etd) {
+        this(etd, "\t");
     }
 
     /**
