@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.dao;
+package org.grouplens.lenskit.data.text;
 
 import org.grouplens.grapht.annotation.DefaultString;
 import org.grouplens.lenskit.core.Parameter;
@@ -28,7 +28,7 @@ import java.io.File;
 import java.lang.annotation.*;
 
 /**
- * Field separator for delimited text files.  Controls, for example, {@link org.grouplens.lenskit.data.dao.SimpleFileRatingDAO}.
+ * Column/field separator for delimited text files.  Used by {@link DelimitedColumnEventFormat}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 2.1
@@ -39,5 +39,5 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.METHOD})
 @Documented
-public @interface FieldSeparator {
+public @interface ColumnSeparator {
 }
