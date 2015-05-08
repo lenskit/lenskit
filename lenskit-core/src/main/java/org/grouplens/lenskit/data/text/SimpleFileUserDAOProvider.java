@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.data.text;
 
 import org.grouplens.lenskit.data.dao.DataAccessException;
-import org.grouplens.lenskit.data.dao.UserFile;
 import org.grouplens.lenskit.data.dao.UserListUserDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
