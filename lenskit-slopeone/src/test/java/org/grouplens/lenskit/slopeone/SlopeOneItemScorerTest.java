@@ -27,7 +27,6 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.pref.PreferenceDomainBuilder;
 import org.junit.Test;
@@ -35,7 +34,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class SlopeOneItemScorerTest {
 
@@ -45,20 +44,20 @@ public class SlopeOneItemScorerTest {
     public void testPredict1() throws RecommenderBuildException {
 
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(Ratings.make(1, 6, 4));
-        rs.add(Ratings.make(2, 6, 2));
-        rs.add(Ratings.make(1, 7, 3));
-        rs.add(Ratings.make(2, 7, 2));
-        rs.add(Ratings.make(3, 7, 5));
-        rs.add(Ratings.make(4, 7, 2));
-        rs.add(Ratings.make(1, 8, 3));
-        rs.add(Ratings.make(2, 8, 4));
-        rs.add(Ratings.make(3, 8, 3));
-        rs.add(Ratings.make(4, 8, 2));
-        rs.add(Ratings.make(5, 8, 3));
-        rs.add(Ratings.make(6, 8, 2));
-        rs.add(Ratings.make(1, 9, 3));
-        rs.add(Ratings.make(3, 9, 4));
+        rs.add(Rating.create(1, 6, 4));
+        rs.add(Rating.create(2, 6, 2));
+        rs.add(Rating.create(1, 7, 3));
+        rs.add(Rating.create(2, 7, 2));
+        rs.add(Rating.create(3, 7, 5));
+        rs.add(Rating.create(4, 7, 2));
+        rs.add(Rating.create(1, 8, 3));
+        rs.add(Rating.create(2, 8, 4));
+        rs.add(Rating.create(3, 8, 3));
+        rs.add(Rating.create(4, 8, 2));
+        rs.add(Rating.create(5, 8, 3));
+        rs.add(Rating.create(6, 8, 2));
+        rs.add(Rating.create(1, 9, 3));
+        rs.add(Rating.create(3, 9, 4));
 
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).to(EventCollectionDAO.create(rs));
@@ -85,13 +84,13 @@ public class SlopeOneItemScorerTest {
     @Test
     public void testPredict2() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(Ratings.make(1, 4, 3.5));
-        rs.add(Ratings.make(2, 4, 5));
-        rs.add(Ratings.make(3, 5, 4.25));
-        rs.add(Ratings.make(2, 6, 3));
-        rs.add(Ratings.make(1, 7, 4));
-        rs.add(Ratings.make(2, 7, 4));
-        rs.add(Ratings.make(3, 7, 1.5));
+        rs.add(Rating.create(1, 4, 3.5));
+        rs.add(Rating.create(2, 4, 5));
+        rs.add(Rating.create(3, 5, 4.25));
+        rs.add(Rating.create(2, 6, 3));
+        rs.add(Rating.create(1, 7, 4));
+        rs.add(Rating.create(2, 7, 4));
+        rs.add(Rating.create(3, 7, 1.5));
 
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).to(EventCollectionDAO.create(rs));

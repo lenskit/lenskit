@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import java.util.Collection;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -43,9 +43,9 @@ public class UserVectorTest {
     @Test
     public void testUserRatingVector() {
         Collection<Rating> ratings = Lists.newArrayList(
-                Ratings.make(5, 7, 3.5),
-                Ratings.make(5, 3, 1.5),
-                Ratings.make(5, 8, 2)
+                Rating.create(5, 7, 3.5),
+                Rating.create(5, 3, 1.5),
+                Rating.create(5, 8, 2)
         );
         SparseVector v = Ratings.userRatingVector(ratings);
         assertEquals(3, v.size());

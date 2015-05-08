@@ -24,7 +24,6 @@ import com.google.common.collect.Lists;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 
@@ -32,7 +31,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 public class EventCollectionDAOTest {
     // in this file, we don't bother to close cursors, as they're list-backed.
@@ -52,9 +51,9 @@ public class EventCollectionDAOTest {
     @SuppressWarnings("unchecked")
     public void testRatingStream() {
         List<Rating> ratings = Lists.newArrayList(
-                Ratings.make(1, 2, 3.5),
-                Ratings.make(1, 3, 4),
-                Ratings.make(2, 4, 3)
+                Rating.create(1, 2, 3.5),
+                Rating.create(1, 3, 4),
+                Rating.create(2, 4, 3)
         );
         EventDAO dao = EventCollectionDAO.create(ratings);
         assertThat(Cursors.makeList(dao.streamEvents()),
@@ -68,9 +67,9 @@ public class EventCollectionDAOTest {
     @Test
     public void testFilterOutAllRatings() {
         List<Rating> ratings = Lists.newArrayList(
-                Ratings.make(1, 2, 3.5),
-                Ratings.make(1, 3, 4),
-                Ratings.make(2, 4, 3)
+                Rating.create(1, 2, 3.5),
+                Rating.create(1, 3, 4),
+                Rating.create(2, 4, 3)
         );
         EventDAO dao = EventCollectionDAO.create(ratings);
         assertThat(Cursors.makeList(dao.streamEvents(Purchase.class)),
@@ -82,10 +81,10 @@ public class EventCollectionDAOTest {
     @Test
     public void testFilterMixed() {
         List<Event> ratings = Lists.newArrayList(
-                Ratings.make(1, 2, 3.5),
+                Rating.create(1, 2, 3.5),
                 new Purchase(1, 4),
-                Ratings.make(1, 3, 4),
-                Ratings.make(2, 4, 3)
+                Rating.create(1, 3, 4),
+                Rating.create(2, 4, 3)
         );
         EventDAO dao = EventCollectionDAO.create(ratings);
         assertThat(Cursors.makeList(dao.streamEvents(Purchase.class)),

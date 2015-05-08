@@ -24,14 +24,13 @@ import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
 
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 public class BasicUserHistoryTest {
     @Test
@@ -44,7 +43,7 @@ public class BasicUserHistoryTest {
 
     @Test
     public void testSingletonList() {
-        Rating r = Ratings.make(42, 39, 2.5);
+        Rating r = Rating.create(42, 39, 2.5);
         UserHistory<Rating> history = History.forUser(42, ImmutableList.of(r));
         assertThat(history.size(), equalTo(1));
         assertThat(history.isEmpty(), equalTo(false));
@@ -55,9 +54,9 @@ public class BasicUserHistoryTest {
     @Test
     public void testMemoize() {
         List<Event> events = ImmutableList.of(
-                (Event) Ratings.make(42, 39, 2.5),
-                Ratings.make(42, 62, 3.5),
-                Ratings.make(42, 22, 3));
+                (Event) Rating.create(42, 39, 2.5),
+                Rating.create(42, 62, 3.5),
+                Rating.create(42, 22, 3));
         UserHistory<Event> history = History.forUser(42, events);
         assertThat(history, hasSize(3));
         SparseVector v = history.memoize(RatingVectorUserHistorySummarizer.SummaryFunction.INSTANCE);
@@ -70,9 +69,9 @@ public class BasicUserHistoryTest {
     @Test
     public void testIdSet() {
         List<Event> events = ImmutableList.of(
-                (Event) Ratings.make(42, 39, 2.5),
-                Ratings.make(42, 62, 3.5),
-                Ratings.make(42, 22, 3));
+                (Event) Rating.create(42, 39, 2.5),
+                Rating.create(42, 62, 3.5),
+                Rating.create(42, 22, 3));
         UserHistory<Event> history = History.forUser(42, events);
         assertThat(history, hasSize(3));
         LongSet ids = history.itemSet();

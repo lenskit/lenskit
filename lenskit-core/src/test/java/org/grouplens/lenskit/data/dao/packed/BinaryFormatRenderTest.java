@@ -23,7 +23,6 @@ package org.grouplens.lenskit.data.dao.packed;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.junit.BeforeClass;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
@@ -60,7 +59,7 @@ public class BinaryFormatRenderTest {
     @Theory
     public void testRenderRating(BinaryFormat format) {
         long ts = format.hasTimestamps() ? 34208L : -1;
-        Rating r = Ratings.make(42L, 39L, Math.PI, ts);
+        Rating r = Rating.create(42L, 39L, Math.PI, ts);
         ByteBuffer buf = ByteBuffer.allocate(format.getRatingSize());
         format.renderRating(r, buf);
         buf.flip();

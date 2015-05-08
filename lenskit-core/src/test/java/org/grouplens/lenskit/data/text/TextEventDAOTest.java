@@ -22,7 +22,6 @@ package org.grouplens.lenskit.data.text;
 
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -57,9 +56,9 @@ public class TextEventDAOTest {
         File file = createBasicCSV();
         TextEventDAO dao = TextEventDAO.create(file, Formats.csvRatings());
         List<Rating> ratings = Cursors.makeList(dao.streamEvents(Rating.class));
-        assertThat(ratings, containsInAnyOrder(Ratings.make(1, 10, 3.5),
-                                               Ratings.make(1, 4, 2.5),
-                                               Ratings.make(2, 42, 5)));
+        assertThat(ratings, containsInAnyOrder(Rating.create(1, 10, 3.5),
+                                               Rating.create(1, 4, 2.5),
+                                               Rating.create(2, 42, 5)));
     }
 
     private File createHeaderCSV() throws IOException {
@@ -81,8 +80,8 @@ public class TextEventDAOTest {
         File file = createHeaderCSV();
         TextEventDAO dao = TextEventDAO.create(file, Formats.csvRatings().setHeaderLines(1));
         List<Rating> ratings = Cursors.makeList(dao.streamEvents(Rating.class));
-        assertThat(ratings, containsInAnyOrder(Ratings.make(1, 10, 3.5),
-                                               Ratings.make(1, 4, 2.5),
-                                               Ratings.make(2, 42, 5)));
+        assertThat(ratings, containsInAnyOrder(Rating.create(1, 10, 3.5),
+                                               Rating.create(1, 4, 2.5),
+                                               Rating.create(2, 42, 5)));
     }
 }

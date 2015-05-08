@@ -50,7 +50,6 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
@@ -69,7 +68,7 @@ import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 public class ItemItemGlobalRecommenderTest {
     private LenskitRecommender session;
@@ -79,15 +78,15 @@ public class ItemItemGlobalRecommenderTest {
     @Before
     public void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(Ratings.make(1, 1, 1));
-        rs.add(Ratings.make(1, 5, 1));
-        rs.add(Ratings.make(2, 1, 1));
-        rs.add(Ratings.make(2, 7, 1));
-        rs.add(Ratings.make(3, 7, 1));
-        rs.add(Ratings.make(4, 1, 1));
-        rs.add(Ratings.make(4, 5, 1));
-        rs.add(Ratings.make(4, 7, 1));
-        rs.add(Ratings.make(4, 10, 1));
+        rs.add(Rating.create(1, 1, 1));
+        rs.add(Rating.create(1, 5, 1));
+        rs.add(Rating.create(2, 1, 1));
+        rs.add(Rating.create(2, 7, 1));
+        rs.add(Rating.create(3, 7, 1));
+        rs.add(Rating.create(4, 1, 1));
+        rs.add(Rating.create(4, 5, 1));
+        rs.add(Rating.create(4, 7, 1));
+        rs.add(Rating.create(4, 10, 1));
         EventCollectionDAO dao = new EventCollectionDAO(rs);
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).to(dao);

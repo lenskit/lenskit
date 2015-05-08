@@ -22,14 +22,12 @@ package org.grouplens.lenskit.data.dao;
 
 import com.google.common.collect.Lists;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.junit.Test;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -38,10 +36,10 @@ public class PrefetchingItemDAOTest {
     @Test
     public void testGetItems() {
         List<Rating> ratings = Lists.newArrayList(
-                Ratings.make(1, 2, 3.5),
-                Ratings.make(1, 3, 4),
-                Ratings.make(2, 4, 3),
-                Ratings.make(2, 3, 2)
+                Rating.create(1, 2, 3.5),
+                Rating.create(1, 3, 4),
+                Rating.create(2, 4, 3),
+                Rating.create(2, 3, 2)
         );
         EventDAO dao = EventCollectionDAO.create(ratings);
         ItemDAO idao = new PrefetchingItemDAO(dao);

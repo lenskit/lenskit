@@ -29,7 +29,6 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.scored.ScoredId;
@@ -40,8 +39,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @Ignore("Unstable based on parameters")
 public class FunkSVDRecommenderTest {
@@ -54,20 +52,20 @@ public class FunkSVDRecommenderTest {
     @BeforeClass
     public static void setup() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(Ratings.make(1, 6, 4));
-        rs.add(Ratings.make(2, 6, 2));
-        rs.add(Ratings.make(1, 7, 3));
-        rs.add(Ratings.make(2, 7, 2));
-        rs.add(Ratings.make(3, 7, 5));
-        rs.add(Ratings.make(4, 7, 2));
-        rs.add(Ratings.make(1, 8, 3));
-        rs.add(Ratings.make(2, 8, 4));
-        rs.add(Ratings.make(3, 8, 3));
-        rs.add(Ratings.make(4, 8, 2));
-        rs.add(Ratings.make(5, 8, 3));
-        rs.add(Ratings.make(6, 8, 2));
-        rs.add(Ratings.make(1, 9, 3));
-        rs.add(Ratings.make(3, 9, 4));
+        rs.add(Rating.create(1, 6, 4));
+        rs.add(Rating.create(2, 6, 2));
+        rs.add(Rating.create(1, 7, 3));
+        rs.add(Rating.create(2, 7, 2));
+        rs.add(Rating.create(3, 7, 5));
+        rs.add(Rating.create(4, 7, 2));
+        rs.add(Rating.create(1, 8, 3));
+        rs.add(Rating.create(2, 8, 4));
+        rs.add(Rating.create(3, 8, 3));
+        rs.add(Rating.create(4, 8, 2));
+        rs.add(Rating.create(5, 8, 3));
+        rs.add(Rating.create(6, 8, 2));
+        rs.add(Rating.create(1, 9, 3));
+        rs.add(Rating.create(3, 9, 4));
 
         dao = new EventCollectionDAO(rs);
         LenskitConfiguration config = new LenskitConfiguration();

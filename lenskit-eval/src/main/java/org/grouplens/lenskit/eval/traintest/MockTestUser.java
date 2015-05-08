@@ -23,7 +23,6 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.collect.Lists;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
@@ -103,7 +102,7 @@ public class MockTestUser extends AbstractTestUser {
         }
 
         public Builder addTrainRating(long item, double value) {
-            return addTrainEvent(Ratings.make(userId, item, value));
+            return addTrainEvent(Rating.create(userId, item, value));
         }
 
         public Builder addTestEvent(Event evt) {
@@ -112,7 +111,7 @@ public class MockTestUser extends AbstractTestUser {
         }
 
         public Builder addTestRating(long item, double value) {
-            return addTestEvent(Ratings.make(userId, item, value));
+            return addTestEvent(Rating.create(userId, item, value));
         }
 
         public SparseVector getPredictions() {

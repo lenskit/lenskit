@@ -28,7 +28,6 @@ import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.PrefetchingUserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -38,9 +37,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.closeTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 /**
  * Test baseline predictors that compute means from data.
@@ -54,10 +52,10 @@ public class MeanScorersTest {
     @Before
     public void createRatingSource() {
         List<Rating> rs = new ArrayList<Rating>();
-        rs.add(Ratings.make(1, 5, 2));
-        rs.add(Ratings.make(1, 7, 4));
-        rs.add(Ratings.make(8, 4, 5));
-        rs.add(Ratings.make(8, 5, 4));
+        rs.add(Rating.create(1, 5, 2));
+        rs.add(Rating.create(1, 7, 4));
+        rs.add(Rating.create(8, 4, 5));
+        rs.add(Rating.create(8, 5, 4));
 
         dao = EventCollectionDAO.create(rs);
     }

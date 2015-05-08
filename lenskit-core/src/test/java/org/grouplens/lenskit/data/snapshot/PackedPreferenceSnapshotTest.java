@@ -24,7 +24,6 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.pref.Preferences;
@@ -38,7 +37,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 public class PackedPreferenceSnapshotTest {
@@ -47,7 +46,7 @@ public class PackedPreferenceSnapshotTest {
     private static final double EPSILON = 1.0e-6;
 
     private static Rating rating(long uid, long iid, double value, long ts) {
-        return Ratings.make(uid, iid, value, ts);
+        return Rating.create(uid, iid, value, ts);
     }
 
     private static Preference preference(long uid, long iid, double value) {

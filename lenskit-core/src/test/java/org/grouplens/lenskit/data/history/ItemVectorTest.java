@@ -30,7 +30,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -44,10 +44,10 @@ public class ItemVectorTest {
     @Test
     public void testItemRatingVector() {
         Collection<Rating> ratings = new ArrayList<Rating>();
-        ratings.add(Ratings.make(7, 5, 3.5));
+        ratings.add(Rating.create(7, 5, 3.5));
         RatingBuilder rb = new RatingBuilder();
-        ratings.add(Ratings.make(3, 5, 1.5));
-        ratings.add(Ratings.make(8, 5, 2));
+        ratings.add(Rating.create(3, 5, 1.5));
+        ratings.add(Rating.create(8, 5, 2));
         SparseVector v = Ratings.itemRatingVector(ratings);
         assertEquals(3, v.size());
         assertEquals(7, v.sum(), EPSILON);

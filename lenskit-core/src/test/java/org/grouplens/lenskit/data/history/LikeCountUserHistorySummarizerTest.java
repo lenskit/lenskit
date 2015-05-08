@@ -21,12 +21,11 @@
 package org.grouplens.lenskit.data.history;
 
 import org.grouplens.lenskit.data.event.Events;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 public class LikeCountUserHistorySummarizerTest {
@@ -45,7 +44,7 @@ public class LikeCountUserHistorySummarizerTest {
 
     @Test
     public void testSummarizeNoLike() {
-        SparseVector vec = sum.summarize(History.forUser(42, Ratings.make(42, 39, 2.5)));
+        SparseVector vec = sum.summarize(History.forUser(42, Rating.create(42, 39, 2.5)));
         assertThat(vec.size(), equalTo(0));
     }
 
