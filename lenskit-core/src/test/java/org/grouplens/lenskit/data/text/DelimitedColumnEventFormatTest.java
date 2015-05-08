@@ -32,7 +32,7 @@ public class DelimitedColumnEventFormatTest {
 
     @Before
     public void createFormat() {
-        format = new DelimitedColumnEventFormat(new RatingEventType());
+        format = DelimitedColumnEventFormat.create(new RatingEventType());
     }
 
     @Test
