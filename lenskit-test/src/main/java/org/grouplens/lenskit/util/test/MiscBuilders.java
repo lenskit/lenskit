@@ -37,7 +37,7 @@ public class MiscBuilders {
      * @param block The configuration block.
      * @return The configured object.
      */
-    public static Config configObj(Closure block) {
+    public static Config configObj(Closure<?> block) {
         JsonBuilder bld = new JsonBuilder();
         bld.call(block);
         ConfigParseOptions options = ConfigParseOptions.defaults().setSyntax(ConfigSyntax.JSON);

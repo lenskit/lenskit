@@ -160,6 +160,7 @@ public final class DelimitedColumnEventFormat implements EventFormat {
             throw new IllegalArgumentException("missing fields");
         }
 
+        @SuppressWarnings("rawtypes")
         Predicate<Class<? extends EventBuilder>> canConfigBuilderType = new Predicate<Class<? extends EventBuilder>>() {
             @Override
             public boolean apply(@Nullable Class<? extends EventBuilder> input) {

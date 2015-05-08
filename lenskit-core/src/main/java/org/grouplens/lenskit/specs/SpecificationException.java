@@ -24,6 +24,8 @@ package org.grouplens.lenskit.specs;
  * Exception thrown when there is a problem configuring an object.
  */
 public class SpecificationException extends Exception {
+    private static final long serialVersionUID = 1L;
+
     public SpecificationException() {
     }
 

@@ -44,8 +44,8 @@ public class ItemVectorTest {
     @Test
     public void testItemRatingVector() {
         Collection<Rating> ratings = new ArrayList<Rating>();
-        RatingBuilder rb = new RatingBuilder();
         ratings.add(Ratings.make(7, 5, 3.5));
+        RatingBuilder rb = new RatingBuilder();
         ratings.add(Ratings.make(3, 5, 1.5));
         ratings.add(Ratings.make(8, 5, 2));
         SparseVector v = Ratings.itemRatingVector(ratings);
