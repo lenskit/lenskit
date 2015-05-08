@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.vectors.similarity;
 
+import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.SparseVector;
 
@@ -52,6 +53,7 @@ public class CosineVectorSimilarity implements VectorSimilarity, Serializable {
      */
     @Inject
     public CosineVectorSimilarity(@SimilarityDamping double damping) {
+        Preconditions.checkArgument(damping >= 0, "negative damping not allowed");
         dampingFactor = damping;
     }
 
@@ -59,11 +61,11 @@ public class CosineVectorSimilarity implements VectorSimilarity, Serializable {
     public double similarity(SparseVector vec1, SparseVector vec2) {
         final double dot = vec1.dot(vec2);
         final double denom = vec1.norm() * vec2.norm() + dampingFactor;
-        if (denom == 0) {
+        if (denom > 0) {
+            return dot / denom;
+        } else {
             return 0;
         }
-
-        return dot / denom;
     }
 
     @Override

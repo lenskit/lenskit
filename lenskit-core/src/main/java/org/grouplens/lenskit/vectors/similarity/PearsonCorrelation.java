@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.vectors.similarity;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -57,6 +58,7 @@ public class PearsonCorrelation implements VectorSimilarity, Serializable {
 
     @Inject
     public PearsonCorrelation(@SimilarityDamping double s) {
+        Preconditions.checkArgument(s >= 0, "negative damping not allowed");
         shrinkage = s;
     }
 

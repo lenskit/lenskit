@@ -52,7 +52,7 @@ public class DistanceVectorSimilarity implements VectorSimilarity, Serializable 
     public double similarity(SparseVector vec1, SparseVector vec2) {
         final double distance;
         // One of the vector is empty
-        if (vec1.norm() == 0 || vec2.norm() == 0){
+        if (vec1.norm() <= 0 || vec2.norm() <= 0){
             return Double.NaN;
         }
 
