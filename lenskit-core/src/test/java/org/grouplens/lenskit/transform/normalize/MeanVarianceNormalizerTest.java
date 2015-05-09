@@ -32,7 +32,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.grouplens.lenskit.vectors.SparseVectorTestCommon.closeTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 /**
@@ -116,14 +116,14 @@ public class MeanVarianceNormalizerTest {
         MutableSparseVector nUR = userRatings.mutableCopy();
         trans.apply(nUR);
         //Test apply - shoudl subtract mean
-        assertThat(nUR.get(0L), closeTo(-2.0));
-        assertThat(nUR.get(1L), closeTo(0.0));
-        assertThat(nUR.get(2L), closeTo(2.0));
+        assertThat(nUR.get(0L), closeTo(-2.0, 1.0e-6));
+        assertThat(nUR.get(1L), closeTo(0.0, 1.0e-6));
+        assertThat(nUR.get(2L), closeTo(2.0, 1.0e-6));
         trans.unapply(nUR);
         //Test unapply
-        assertThat(nUR.get(0L), closeTo(0.0));
-        assertThat(nUR.get(1L), closeTo(2.0));
-        assertThat(nUR.get(2L), closeTo(4.0));
+        assertThat(nUR.get(0L), closeTo(0.0, 1.0e-6));
+        assertThat(nUR.get(1L), closeTo(2.0, 1.0e-6));
+        assertThat(nUR.get(2L), closeTo(4.0, 1.0e-6));
     }
 
     @Test
