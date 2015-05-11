@@ -55,14 +55,14 @@ public class SlopeOneModel implements Serializable {
             if (row == null) {
                 return Double.NaN;
             } else {
-                return row.get(item2);
+                return row.get(item2, Double.NaN);
             }
         } else {
             SparseVector row = matrix.get(item2);
             if (row == null) {
                 return Double.NaN;
             } else {
-                return -row.get(item1);
+                return -row.get(item1, Double.NaN);
             }
         }
     }
