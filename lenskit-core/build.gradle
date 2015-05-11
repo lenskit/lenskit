@@ -38,14 +38,14 @@ apply plugin: 'groovy'
 
 dependencies {
     compile project(':lenskit-api')
-    compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.10.0-BETA1'
+    compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.10.0'
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
     compile group: 'com.typesafe', name: 'config', version: '1.2.1'
     compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc2'
 
-    compile group: 'net.mikera', name: 'vectorz', version: '0.41.2'
+    compile group: 'net.mikera', name: 'vectorz', version: '0.46.0'
 
-    compile group: 'org.apache.commons', name: 'commons-compress', version: '1.8'
+    compile group: 'org.apache.commons', name: 'commons-compress', version: '1.9'
 
     testCompile project(':lenskit-test')
     testCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
