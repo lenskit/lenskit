@@ -47,6 +47,8 @@ dependencies {
 
     compile group: 'org.apache.commons', name: 'commons-compress', version: '1.9'
 
+    runtime group: 'org.tukaani', name: 'xz', version: '1.5'
+
     testCompile project(':lenskit-test')
     testCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
     testRuntime group: 'com.h2database', name: 'h2', version: '1.3.176'
