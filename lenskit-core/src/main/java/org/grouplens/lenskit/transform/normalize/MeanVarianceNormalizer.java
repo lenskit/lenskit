@@ -29,10 +29,10 @@ import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.util.MathUtils;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.util.math.Scalars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +57,7 @@ import java.io.Serializable;
  * use default constructor) for no smoothing. The 'global variance' parameter
  * only pertains to smoothing, and is unnecessary otherwise.
  * <p>
- * If the reference vector has a standard deviation of 0 (as determined by {@link MathUtils#isZero(double)}),
+ * If the reference vector has a standard deviation of 0 (as determined by {@link Scalars#isZero(double)}),
  * and there is no smoothing, then no scaling is done (it is treated as if the standard deviation is 1). This
  * is to keep the behavior well-defined in all cases.
  *
@@ -184,7 +184,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
                 var += diff * diff;
             }
 
-            if (MathUtils.isZero(var) && MathUtils.isZero(damping)) {
+            if (Scalars.isZero(var) && Scalars.isZero(damping)) {
                 logger.warn("found zero variance for {}, and no damping is enabled", reference);
             }
 
@@ -207,7 +207,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
-            double recipSD = MathUtils.isZero(stdev) ? 1 : (1 / stdev);
+            double recipSD = Scalars.isZero(stdev) ? 1 : (1 / stdev);
             for (VectorEntry rating : vector) {
                 vector.set(rating, (rating.getValue() - mean) * recipSD);
             }
@@ -218,7 +218,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
         public MutableSparseVector unapply(MutableSparseVector vector) {
             for (VectorEntry rating : vector) {
                 double val = rating.getValue();
-                if (!MathUtils.isZero(stdev)) {
+                if (!Scalars.isZero(stdev)) {
                     val *= stdev;
                 }
                 vector.set(rating, val + mean);
