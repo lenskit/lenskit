@@ -612,7 +612,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
     }
 
     private void partitionUsers(Long2IntMap userMap, LongSet users) {
-        logger.info("Splititng {} users into {} partitions", users.size(), partitionCount);
+        logger.info("Splitting {} users into {} partitions", users.size(), partitionCount);
         long[] userArray = users.toLongArray();
         LongArrays.shuffle(userArray, getProject().getRandom());
         for (int i = 0; i < userArray.length; i++) {
