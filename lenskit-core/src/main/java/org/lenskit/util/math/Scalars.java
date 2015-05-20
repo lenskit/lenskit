@@ -21,7 +21,22 @@
 package org.lenskit.util.math;
 
 public final class Scalars {
+    /**
+     * The default epsilon for checking for zero.  If the Java system property {@code lenskit.zero.epsilon} is set,
+     * the value of that is used; otherwise, {@link Double#MIN_NORMAL}.
+     */
+    public static final double DEFAULT_EPSILON;
+
     private Scalars() {}
+
+    static {
+        String prop = System.getProperty("lenskit.zero.epsilon");
+        if (prop == null) {
+            DEFAULT_EPSILON = Double.MIN_NORMAL;
+        } else {
+            DEFAULT_EPSILON = Double.parseDouble(prop);
+        }
+    }
 
     /**
      * Check whether a value is zero, using a default epsilon.
@@ -29,7 +44,7 @@ public final class Scalars {
      * @return {@code true} if the value is within an epsilon of zero.
      */
     public static boolean isZero(double val) {
-        return isZero(val, Double.MIN_NORMAL);
+        return isZero(val, DEFAULT_EPSILON);
     }
 
     /**
