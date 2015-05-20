@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.gradle
 
 import com.google.common.collect.FluentIterable
+import org.gradle.api.Buildable
 import org.gradle.api.Nullable
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
@@ -144,6 +145,9 @@ public class LenskitEval extends ConventionTask {
 
     public void classpath(FileCollection cp) {
         invoker.classpath = cp
+        if (cp instanceof Buildable) {
+            dependsOn(cp);
+        }
     }
 
     public void maxMemory(String mm) {
