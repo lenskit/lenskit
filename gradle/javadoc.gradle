@@ -36,6 +36,7 @@
 // Aggregate documentation
 ext.masterProjects = ['lenskit-api', 'lenskit-core', 'lenskit-data-structures',
                       'lenskit-groovy', 'lenskit-eval', 'lenskit-cli',
+                      'lenskit-gradle',
                       'lenskit-knn', 'lenskit-svd',
                       'lenskit-slopeone', 'lenskit-predict']
 task javadoc(type: Javadoc, group: 'build') {
@@ -60,8 +61,6 @@ allprojects {
                 tags 'todo:a:To Do:', 'review:a:Review:'
 
                 tags "compat:pt:<a href=\"$webUrl/documentation/versioning/\">Compatibility</a>"
-
-                jFlags "-Dgrouplens.javadoc.versioning.url=$webUrl/documentation/versioning/"
 
                 group 'General API', 'org.grouplens.lenskit'
                 group('Core', 'org.grouplens.lenskit.core',
