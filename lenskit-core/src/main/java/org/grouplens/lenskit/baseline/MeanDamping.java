@@ -33,8 +33,8 @@ import java.lang.annotation.*;
  * The smoothing enabled by this parameter is based on <a
  * href="http://sifter.org/~simon/journal/20061211.html">FunkSVD</a>. The idea
  * is to bias item or user means towards the global mean based on how many items
- * or users are involved. So, if the global mean is \(\mu\) and smoothing \(\gamma\),
- * the mean of some values is \[\frac{\gamma\mu + \sum r}{\gamma + n}\]
+ * or users are involved. So, if the global mean is \\(\mu\\) and smoothing \\(\gamma\\),
+ * the mean of some values is \\[\frac{\gamma\mu + \sum r}{\gamma + n}\\]
  */
 @Documented
 @DefaultDouble(0.0)
