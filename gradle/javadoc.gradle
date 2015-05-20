@@ -52,12 +52,22 @@ task javadoc(type: Javadoc, group: 'build') {
 // Set up JavaDoc configuration
 allprojects {
     logger.info 'configuring JavaDoc for {}', name
+    dependencies {
+        support 'ch.raffael.pegdown-doclet:pegdown-doclet:1.1'
+    }
     tasks.withType(Javadoc) { task ->
         task.configure {
             onlyIf {
                 JavaVersion.current() >= JavaVersion.VERSION_1_7
             }
+            doFirst {
+                for (file in configurations.support) {
+                    options.docletpath file
+                }
+            }
             options {
+                doclet 'ch.raffael.doclets.pegdown.PegdownDoclet'
+
                 tags 'todo:a:To Do:', 'review:a:Review:'
 
                 tags "compat:pt:<a href=\"$webUrl/documentation/versioning/\">Compatibility</a>"
