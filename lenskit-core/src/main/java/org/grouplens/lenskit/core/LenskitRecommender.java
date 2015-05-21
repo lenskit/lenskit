@@ -34,12 +34,11 @@ import java.lang.annotation.Annotation;
  * with {@link LenskitRecommenderEngine} will produce this type of
  * recommender.
  *
- * <p>The {@link Recommender} interface will meet most needs, so most users can
+ * The {@link Recommender} interface will meet most needs, so most users can
  * ignore this class.  However, if you need to inspect internal components of a
  * recommender (e.g. extract the item-item similarity matrix), this class and its
  * {@link #get(Class)} method can be useful.
  *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public class LenskitRecommender implements Recommender {
