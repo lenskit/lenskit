@@ -26,6 +26,7 @@ import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.specs.SpecHandler;
 import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.specs.SpecificationException;
+import org.lenskit.eval.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,15 +85,25 @@ public class CrossfoldSpecHandler implements SpecHandler<Crossfolder> {
         }
 
         if (cfg.hasPath("outputDir")) {
-            // TODO Make CrossfoldTask use an output directory
-            String dir = cfg.getString("outputDir");
-            boolean pack = cfg.hasPath("packOutput") && cfg.getBoolean("packOutput");
-            String suffix = pack ? "pack" : "csv";
-            task.setTrain(dir + "/train.%d." + suffix);
-            task.setTest(dir + "/test.%d." + suffix);
-            task.setSpec(dir + "/split.%d.json");
+            task.setOutputDir(cfg.getString("outputDir"));
         } else {
             logger.warn("no output directory specified for crossfold {}", task.getName());
+        }
+
+        if (cfg.hasPath("outputFormat")) {
+            switch (cfg.getString("outputFormat")) {
+            case "pack":
+                task.setOutputFormat(OutputFormat.PACK);
+                break;
+            case "gzip":
+                task.setOutputFormat(OutputFormat.CSV_GZIP);
+                break;
+            case "xz":
+                task.setOutputFormat(OutputFormat.CSV_GZIP);
+                break;
+            default:
+                throw new SpecificationException("invalid output format " + cfg.getString("outputFormat"));
+            }
         }
 
         if (cfg.hasPath("isolate")) {

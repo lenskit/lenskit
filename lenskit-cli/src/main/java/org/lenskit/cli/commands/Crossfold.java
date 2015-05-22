@@ -146,7 +146,6 @@ public class Crossfold implements Command {
         Config finalSpec = ConfigFactory.parseMap(overrides).withFallback(spec);
         Crossfolder task = SpecificationContext.create().build(Crossfolder.class, finalSpec);
 
-        task.setForce(true);
         task.setProject(new EvalProject(System.getProperties()));
         task.execute();
     }

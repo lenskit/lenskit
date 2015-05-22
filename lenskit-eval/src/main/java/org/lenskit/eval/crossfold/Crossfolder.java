@@ -20,9 +20,8 @@
  */
 package org.lenskit.eval.crossfold;
 
-import com.google.common.collect.Lists;
-import com.google.common.io.Closer;
-import com.google.common.io.Files;
+import com.google.common.base.Charsets;
+import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
@@ -45,14 +44,18 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.specs.SpecHandlerInterface;
 import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
-import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.json.simple.JSONValue;
+import org.lenskit.eval.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 /**
@@ -66,12 +69,11 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
 
     private DataSource source;
     private int partitionCount = 5;
-    private String trainFilePattern;
-    private String testFilePattern;
-    private String specFilePattern;
+    private Path outputDir;
+    private OutputFormat outputFormat = OutputFormat.CSV;
     private Order<Rating> order = new RandomOrder<Rating>();
     private PartitionAlgorithm<Rating> partition = new HoldoutNPartition<Rating>(10);
-    private boolean isForced;
+    private boolean skipIfUpToDate = false;
     private CrossfoldMethod method = CrossfoldMethod.PARTITION_USERS;
     private int sampleSize = 1000;
     private boolean isolate = false;
@@ -112,40 +114,61 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
     }
 
     /**
-     * Set the pattern for the training set files. The pattern should have a single format conversion
-     * capable of taking an integer ('%s' or '%d') which will be replaced with the fold number.
-     *
-     * @param pat The training file name pattern.
-     * @return The CrossfoldCommand object  (for chaining)
-     * @see String#format(String, Object...)
+     * Set the output format for the crossfolder.
+     * @param format The output format.
+     * @return The crossfolder (for chaining).
      */
-    public Crossfolder setTrain(String pat) {
-        trainFilePattern = pat;
+    public Crossfolder setOutputFormat(OutputFormat format) {
+        outputFormat = format;
         return this;
     }
 
     /**
-     * Set the pattern for the test set files.
-     *
-     * @param pat The test file name pattern.
-     * @return The CrossfoldCommand object  (for chaining)
-     * @see #setTrain(String)
+     * Get the output format for the crossfolder.
+     * @return The format the crossfolder will use for writing its output.
      */
-    public Crossfolder setTest(String pat) {
-        testFilePattern = pat;
+    public OutputFormat getOutputFormat() {
+        return outputFormat;
+    }
+
+    /**
+     * Set the output directory for this crossfold operation.
+     * @param dir The output directory.
+     * @return The crossfolder (for chaining).
+     */
+    public Crossfolder setOutputDir(Path dir) {
+        outputDir = dir;
         return this;
     }
 
     /**
-     * Set the pattern for train-test spec files.
-     *
-     * @param pat The train-test spec file pattern.
-     * @return The CrossfoldCommand object  (for chaining)
-     * @see #setTrain(String)
+     * Set the output directory for this crossfold operation.
+     * @param dir The output directory.
+     * @return The crossfolder (for chaining).
      */
-    public Crossfolder setSpec(String pat) {
-        specFilePattern = pat;
-        return this;
+    public Crossfolder setOutputDir(File dir) {
+        return setOutputDir(dir.toPath());
+    }
+
+    /**
+     * Set the output directory for this crossfold operation.
+     * @param dir The output directory.
+     * @return The crossfolder (for chaining).
+     */
+    public Crossfolder setOutputDir(String dir) {
+        return setOutputDir(Paths.get(dir));
+    }
+
+    /**
+     * Get the output directory.
+     * @return The directory into which crossfolding output will be placed.
+     */
+    public Path getOutputDir() {
+        if (outputDir != null) {
+            return outputDir;
+        } else {
+            return Paths.get(getName() + ".split");
+        }
     }
 
     /**
@@ -210,19 +233,6 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
      */
     public Crossfolder setSource(DataSource source) {
         this.source = source;
-        return this;
-    }
-
-    /**
-     * Set the force running option of the command. The crossfold will be forced to
-     * ran with the isForced set to true regardless of whether the partition files
-     * are up to date.
-     *
-     * @param force The force to run option
-     * @return The CrossfoldCommand object  (for chaining)
-     */
-    public Crossfolder setForce(boolean force) {
-        isForced = force;
         return this;
     }
 
@@ -324,44 +334,6 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
         return name;
     }
 
-    public String getTrainPattern() {
-        if (trainFilePattern != null) {
-            return trainFilePattern;
-        } else {
-            StringBuilder sb = new StringBuilder();
-            String dir = getProject().getConfig().getDataDir();
-            if (dir == null) {
-                dir = ".";
-            }
-            return sb.append(dir)
-                     .append(File.separator)
-                     .append(getName())
-                     .append("-crossfold")
-                     .append(File.separator)
-                     .append("train.%d.csv")
-                     .toString();
-        }
-    }
-
-    public String getTestPattern() {
-        if (testFilePattern != null) {
-            return testFilePattern;
-        } else {
-            StringBuilder sb = new StringBuilder();
-            String dir = getProject().getConfig().getDataDir();
-            if (dir == null) {
-                dir = ".";
-            }
-            return sb.append(dir)
-                     .append(File.separator)
-                     .append(getName())
-                     .append("-crossfold")
-                     .append(File.separator)
-                     .append("test.%d.csv")
-                     .toString();
-        }
-    }
-
     /**
      * Get the data source backing this crossfold manager.
      *
@@ -384,8 +356,20 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
         return new Holdout(order, partition);
     }
 
-    public boolean getForce() {
-        return isForced || getProject().getConfig().force();
+    /**
+     * Set whether the crossfolder should skip if all files are up to date.  The default is to always re-crossfold, even
+     * if the files are up to date.
+     *
+     * @param skip `true` to skip crossfolding if files are up to date.
+     * @return The crossfolder (for chaining).
+     */
+    public Crossfolder setSkipIfUpToDate(boolean skip) {
+        skipIfUpToDate = skip;
+        return this;
+    }
+
+    public boolean getSkipIfUpToDate() {
+        return skipIfUpToDate;
     }
 
     /**
@@ -395,18 +379,15 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
      */
     @Override
     public List<TTDataSet> perform() throws TaskExecutionException {
-        if (!getForce()) {
+        if (skipIfUpToDate) {
             UpToDateChecker check = new UpToDateChecker();
             check.addInput(source.lastModified());
-            for (File f: getFiles(getTrainPattern())) {
-                check.addOutput(f);
-            }
-            for (File f: getFiles(getTestPattern())) {
-                check.addOutput(f);
+            for (Path p: Iterables.concat(getTrainingFiles(), getTestFiles(), getSpecFiles())) {
+                check.addOutput(p.toFile());
             }
             if (check.isUpToDate()) {
                 logger.info("crossfold {} up to date", getName());
-                return getTTFiles();
+                return getDataSets();
             }
         }
         try {
@@ -414,7 +395,27 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
         } catch (IOException ex) {
             throw new TaskExecutionException("Error writing data sets", ex);
         }
-        return getTTFiles();
+        return getDataSets();
+    }
+
+    private List<Path> getTrainingFiles() {
+        return getFileList("train.%d." + outputFormat.getSuffix());
+    }
+
+    private List<Path> getTestFiles() {
+        return getFileList("test.%d." + outputFormat.getSuffix());
+    }
+
+    private List<Path> getSpecFiles() {
+        return getFileList("spec.%d.json");
+    }
+
+    private List<Path> getFileList(String pattern) {
+        List<Path> files = new ArrayList<>(partitionCount);
+        for (int i = 1; i <= partitionCount; i++) {
+            files.add(getOutputDir().resolve(String.format(pattern, i)));
+        }
+        return files;
     }
 
     /**
@@ -432,60 +433,102 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
     }
 
     /**
-     * Write train-test split files
+     * Write train-test split files.
      *
      * @throws IOException if there is an error writing the files.
      */
-    @SuppressWarnings("PMD.AvoidCatchingThrowable")
-    protected void createTTFiles() throws IOException {
-        File[] trainFiles = getFiles(getTrainPattern());
-        File[] testFiles = getFiles(getTestPattern());
+    private void createTTFiles() throws IOException {
+        // this method is going to proceed through several others
+        // first, it will set up data structures for building writers, etc.
+        List<Path> trainFiles = getTrainingFiles();
+        List<Path> testFiles = getTestFiles();
         RatingWriter[] trainWriters = new RatingWriter[partitionCount];
         RatingWriter[] testWriters = new RatingWriter[partitionCount];
-        Closer closer = Closer.create();
-        try {
-            for (int i = 0; i < partitionCount; i++) {
-                File train = trainFiles[i];
-                File test = testFiles[i];
-                trainWriters[i] = closer.register(makeWriter(train));
-                testWriters[i] = closer.register(makeWriter(test));
+
+        // now, the openWriteAndCloseFiles method will open each output file in turn, then call the writer method.
+        openWriteAndCloseFiles(trainFiles, testFiles, trainWriters, testWriters, 0);
+
+        List<Path> specFiles = getSpecFiles();
+        List<TTDataSet> dataSets = getDataSets();
+        Path fullSpecFile = getOutputDir().resolve("all-partitions.json");
+        SpecificationContext fullCtx = SpecificationContext.create(fullSpecFile.toUri());
+        List<Object> specs = new ArrayList<>(partitionCount);
+        assert dataSets.size() == partitionCount;
+        for (int i = 0; i < partitionCount; i++) {
+            Path file = specFiles.get(i);
+            TTDataSet ds = dataSets.get(i);
+            SpecificationContext ctx = SpecificationContext.create(file.toUri());
+            specs.add(ds.toSpecification(fullCtx));
+
+            try (BufferedWriter w = Files.newBufferedWriter(file, Charsets.UTF_8,
+                                                            StandardOpenOption.CREATE,
+                                                            StandardOpenOption.TRUNCATE_EXISTING)) {
+                JSONValue.writeJSONString(ds, w);
             }
-            switch (method) {
-            case PARTITION_USERS:
-            case SAMPLE_USERS:
-                writeTTFilesByUsers(trainWriters, testWriters);
-                break;
-            case PARTITION_RATINGS:
-                writeTTFilesByRatings(trainWriters, testWriters);
-                break;
-            }
-        } catch (Throwable th) { // NOSONAR using a closer
-            throw closer.rethrow(th);
-        } finally {
-            closer.close();
         }
 
-        if (specFilePattern != null) {
-            List<TTDataSet> dataSets = getTTFiles();
-            assert dataSets.size() == partitionCount;
-            for (int i = 0; i < partitionCount; i++) {
-                File file = new File(String.format(specFilePattern, i));
-                SpecificationContext ctx = SpecificationContext.create(file.toURI());
-                String json = JSONValue.toJSONString(dataSets.get(i).toSpecification(ctx));
-                Files.write(json, file, Charset.forName("UTF-8"));
+        try (BufferedWriter w = Files.newBufferedWriter(fullSpecFile, Charsets.UTF_8,
+                                                        StandardOpenOption.CREATE,
+                                                        StandardOpenOption.TRUNCATE_EXISTING)) {
+            JSONValue.writeJSONString(specs, w);
+        }
+    }
+
+    /**
+     * Helper method that opens the output files and then writes to them.  This method is recursive so that we can use
+     * Java's built-in resource management to make sure that our writers all get closed properly.
+     *
+     * @param trainFiles The train files.
+     * @param testFiles The test files.
+     * @param trainWriters The train writers (initially empty).
+     * @param testWriters The test writers (initially empty).
+     * @param i The current iteration (the initial call should pass 0 here).
+     */
+    private void openWriteAndCloseFiles(List<Path> trainFiles, List<Path> testFiles, RatingWriter[] trainWriters, RatingWriter[] testWriters, int i) throws IOException {
+        assert trainFiles.size() == testFiles.size();
+        assert trainWriters.length == trainFiles.size();
+        assert testWriters.length == testFiles.size();
+
+        if (i == testWriters.length) {
+            // we have opened all files, now write them
+            writeOutputFiles(trainWriters, testWriters);
+        } else {
+            // use a try-with-resources block to open the writers for partition 'i'
+            // then go recursive to open the next set
+            try (RatingWriter train = makeWriter(trainFiles.get(i));
+                 RatingWriter test = makeWriter(testFiles.get(i))) {
+                trainWriters[i] = train;
+                testWriters[i] = test;
+                openWriteAndCloseFiles(trainFiles, testFiles, trainWriters, testWriters, i + 1);
             }
         }
     }
-    
+
+    /**
+     * Actually write ratings to the output files opened for each partition.
+     * @param trainWriters The train data writers.
+     * @param testWriters The test data writers.
+     * @throws IOException if there is an error writing data
+     */
+    private void writeOutputFiles(RatingWriter[] trainWriters, RatingWriter[] testWriters) throws IOException {
+        switch (method) {
+        case PARTITION_USERS:
+        case SAMPLE_USERS:
+            writeTTFilesByUsers(trainWriters, testWriters);
+            break;
+        case PARTITION_RATINGS:
+            writeTTFilesByRatings(trainWriters, testWriters);
+            break;
+        }
+    }
+
     /**
      * Write the split files by Users from the DAO using specified holdout method
      * 
-     *
      * @param trainWriters The tableWriter that write train files
      * @param testWriters  The tableWriter that writ test files
-     * @throws org.grouplens.lenskit.eval.TaskExecutionException
      */
-    protected void writeTTFilesByUsers(RatingWriter[] trainWriters, RatingWriter[] testWriters) throws TaskExecutionException {
+    protected void writeTTFilesByUsers(RatingWriter[] trainWriters, RatingWriter[] testWriters) throws IOException {
         logger.info("splitting data source {} to {} partitions by users",
                     getName(), partitionCount);
         Long2IntMap splits = splitUsers(source.getUserDAO());
@@ -514,8 +557,6 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
                 }
 
             }
-        } catch (IOException e) {
-            throw new TaskExecutionException("Error writing to the train test files", e);
         } finally {
             historyCursor.close();
         }
@@ -524,47 +565,26 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
     /**
      * Write the split files by Ratings from the DAO
      * 
-     *
      * @param trainWriters The tableWriter that write train files
      * @param testWriters  The tableWriter that writ test files
-     * @throws org.grouplens.lenskit.eval.TaskExecutionException
      */
-    protected void writeTTFilesByRatings(RatingWriter[] trainWriters, RatingWriter[] testWriters) throws TaskExecutionException {
+    protected void writeTTFilesByRatings(RatingWriter[] trainWriters, RatingWriter[] testWriters) throws IOException {
         logger.info("splitting data source {} to {} partitions by ratings",
                     getName(), partitionCount);
         ArrayList<Rating> ratings = Cursors.makeList(source.getEventDAO().streamEvents(Rating.class));
         Collections.shuffle(ratings);
-        try {
-            final int n = ratings.size();
-            for (int i = 0; i < n; i++) {
-                for (int f = 0; f < partitionCount; f++) {
-                    int foldNum = i % partitionCount;
-                    if (f == foldNum) {
-                        testWriters[f].writeRating(ratings.get(i));
-                    } else {
-                        trainWriters[f].writeRating(ratings.get(i));
-                    }
+
+        final int n = ratings.size();
+        for (int i = 0; i < n; i++) {
+            for (int f = 0; f < partitionCount; f++) {
+                int foldNum = i % partitionCount;
+                if (f == foldNum) {
+                    testWriters[f].writeRating(ratings.get(i));
+                } else {
+                    trainWriters[f].writeRating(ratings.get(i));
                 }
             }
-        } catch (IOException e) {
-            throw new TaskExecutionException("Error writing to the train test files", e);
         }
-    }
-
-    /**
-     * Writing a rating event to the file using table writer
-     *
-     * @param writer The table writer to output the rating
-     * @param rating The rating event to output
-     * @throws IOException The writer IO error
-     */
-    protected void writeRating(TableWriter writer, Rating rating) throws IOException {
-        writer.writeRow(Lists.newArrayList(
-                Long.toString(rating.getUserId()),
-                Long.toString(rating.getItemId()),
-                (rating.hasValue() ? Double.toString(rating.getValue()) : "NaN"),
-                Long.toString(rating.getTimestamp())
-        ));
     }
 
     /**
@@ -626,18 +646,18 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
      * 
      * @return The partition files stored as a list of TTDataSet
      */
-    public List<TTDataSet> getTTFiles() {
+    public List<TTDataSet> getDataSets() {
         List<TTDataSet> dataSets = new ArrayList<TTDataSet>(partitionCount);
-        File[] trainFiles = getFiles(getTrainPattern());
-        File[] testFiles = getFiles(getTestPattern());
+        List<Path> trainFiles = getTrainingFiles();
+        List<Path> testFiles = getTestFiles();
         for (int i = 0; i < partitionCount; i++) {
             GenericTTDataBuilder ttBuilder = new GenericTTDataBuilder(getName() + "." + i);
             if (isolate) {
                 ttBuilder.setIsolationGroup(UUID.randomUUID());
             }
 
-            dataSets.add(ttBuilder.setTest(makeDataSource(testFiles[i]))
-                                  .setTrain(makeDataSource(trainFiles[i]))
+            dataSets.add(ttBuilder.setTest(makeDataSource(testFiles.get(i)))
+                                  .setTrain(makeDataSource(trainFiles.get(i)))
                                   .setAttribute("DataSet", getName())
                                   .setAttribute("Partition", i)
                                   .build());
@@ -645,29 +665,31 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
         return dataSets;
     }
 
-    protected RatingWriter makeWriter(File file) throws IOException {
-        Files.createParentDirs(file);
-        if (Files.getFileExtension(file.getName()).equals("pack")) {
+    protected RatingWriter makeWriter(Path file) throws IOException {
+        if (outputFormat.equals(OutputFormat.PACK)) {
             EnumSet<BinaryFormatFlag> flags = BinaryFormatFlag.makeSet();
             if (writeTimestamps) {
                 flags.add(BinaryFormatFlag.TIMESTAMPS);
             }
-            return RatingWriters.packed(file, flags);
+            return RatingWriters.packed(file.toFile(), flags);
         } else {
-            return RatingWriters.csv(file, writeTimestamps);
+            // it is a CSV file
+            return RatingWriters.csv(file.toFile(), writeTimestamps);
         }
     }
 
-    protected DataSource makeDataSource(File file) {
-        if (Files.getFileExtension(file.getName()).equals("pack")) {
+    protected DataSource makeDataSource(Path file) {
+        switch (outputFormat) {
+        case PACK:
             return new PackedDataSourceBuilder()
                     .setDomain(source.getPreferenceDomain())
-                    .setFile(file)
+                    .setFile(file.toFile())
                     .build();
-        } else {
+        default:
+            // TODO Don't just encode compression in file name
             return new CSVDataSourceBuilder()
                     .setDomain(source.getPreferenceDomain())
-                    .setFile(file)
+                    .setFile(file.toFile())
                     .build();
         }
     }
