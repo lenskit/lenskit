@@ -31,12 +31,12 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.TaskExecutionException;
-import org.grouplens.lenskit.eval.data.crossfold.CrossfoldMethod;
-import org.grouplens.lenskit.eval.data.crossfold.CrossfoldTask;
 import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.specs.SpecificationException;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
+import org.lenskit.eval.crossfold.CrossfoldMethod;
+import org.lenskit.eval.crossfold.Crossfolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,7 +144,7 @@ public class Crossfold implements Command {
         }
 
         Config finalSpec = ConfigFactory.parseMap(overrides).withFallback(spec);
-        CrossfoldTask task = SpecificationContext.create().build(CrossfoldTask.class, finalSpec);
+        Crossfolder task = SpecificationContext.create().build(Crossfolder.class, finalSpec);
 
         task.setForce(true);
         task.setProject(new EvalProject(System.getProperties()));

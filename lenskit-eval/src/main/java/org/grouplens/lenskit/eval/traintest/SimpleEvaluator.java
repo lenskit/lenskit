@@ -30,11 +30,11 @@ import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceBuilder;
-import org.grouplens.lenskit.eval.data.crossfold.CrossfoldTask;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.util.table.Table;
+import org.lenskit.eval.crossfold.Crossfolder;
 
 import java.io.File;
 import java.util.Properties;
@@ -115,7 +115,7 @@ public class SimpleEvaluator implements Callable<Table> {
      * @param cross The crossfold task.
      * @return Itself to allow for  method chaining.
      */
-    public SimpleEvaluator addDataset(CrossfoldTask cross){
+    public SimpleEvaluator addDataset(Crossfolder cross){
         cross.setProject(project);
         try {
             for (TTDataSet data: cross.perform()) {
@@ -129,8 +129,8 @@ public class SimpleEvaluator implements Callable<Table> {
     }
 
     /**
-     * Add a new data set to be cross-folded.  This method creates a new {@link CrossfoldTask}
-     * and passes it to {@link #addDataset(CrossfoldTask)}.  All crossfold parameters that are not
+     * Add a new data set to be cross-folded.  This method creates a new {@link Crossfolder}
+     * and passes it to {@link #addDataset(Crossfolder)}.  All crossfold parameters that are not
      * taken as arguments by this method are left at their defaults.
      *
      * @param name The name of the crossfold
@@ -140,7 +140,7 @@ public class SimpleEvaluator implements Callable<Table> {
      * @return Itself for chaining.
      */
     public SimpleEvaluator addDataset(String name, DataSource source, int partitions, double holdout){
-        CrossfoldTask cross = new CrossfoldTask(name)
+        Crossfolder cross = new Crossfolder(name)
                 .setSource(source)
                 .setPartitions(partitions)
                 .setHoldoutFraction(holdout);
@@ -149,8 +149,8 @@ public class SimpleEvaluator implements Callable<Table> {
     }
 
     /**
-     * Add a new data set to be cross-folded.  This method creates a new {@link CrossfoldTask}
-     * and passes it to {@link #addDataset(CrossfoldTask)}.  All crossfold parameters that are not
+     * Add a new data set to be cross-folded.  This method creates a new {@link Crossfolder}
+     * and passes it to {@link #addDataset(Crossfolder)}.  All crossfold parameters that are not
      * taken as arguments by this method are left at their defaults.
      *
      * @param source The source for the crossfold
@@ -162,12 +162,12 @@ public class SimpleEvaluator implements Callable<Table> {
         return addDataset(source.getName(), source, partitions, holdout);
     }
     /**
-     * Add a new data set to be cross-folded.  This method creates a new {@link CrossfoldTask}
-     * and passes it to {@link #addDataset(CrossfoldTask)}.  All crossfold parameters that are not
+     * Add a new data set to be cross-folded.  This method creates a new {@link Crossfolder}
+     * and passes it to {@link #addDataset(Crossfolder)}.  All crossfold parameters that are not
      * taken as arguments by this method are left at their defaults.
      * <p>
      * <strong>Note:</strong> Prior to LensKit 2.2, this method used a holdout fraction of 0.2. In
-     * LensKit 2.2, it was changed to use the {@link CrossfoldTask}'s default holdout.
+     * LensKit 2.2, it was changed to use the {@link Crossfolder}'s default holdout.
      * </p>
      *
      * @param name The name of the crossfold
@@ -176,16 +176,16 @@ public class SimpleEvaluator implements Callable<Table> {
      * @return Itself for chaining.
      */
     public SimpleEvaluator addDataset(String name, DataSource source, int partitions){
-        return addDataset(new CrossfoldTask(name).setSource(source).setPartitions(partitions));
+        return addDataset(new Crossfolder(name).setSource(source).setPartitions(partitions));
     }
 
     /**
-     * Add a new data set to be cross-folded.  This method creates a new {@link CrossfoldTask}
-     * and passes it to {@link #addDataset(CrossfoldTask)}.  All crossfold parameters that are not
+     * Add a new data set to be cross-folded.  This method creates a new {@link Crossfolder}
+     * and passes it to {@link #addDataset(Crossfolder)}.  All crossfold parameters that are not
      * taken as arguments by this method are left at their defaults.
      * <p>
      * <strong>Note:</strong> Prior to LensKit 2.2, this method used a holdout fraction of 0.2. In
-     * LensKit 2.2, it was changed to use the {@link CrossfoldTask}'s default holdout.
+     * LensKit 2.2, it was changed to use the {@link Crossfolder}'s default holdout.
      * </p>
      *
      * @param source The source for the crossfold

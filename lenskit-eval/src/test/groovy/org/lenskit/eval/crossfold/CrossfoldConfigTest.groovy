@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.crossfold
+package org.lenskit.eval.crossfold
 
 import org.grouplens.lenskit.cursors.Cursors
 import org.grouplens.lenskit.data.dao.EventDAO
@@ -31,7 +31,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.lenskit.eval.crossfold.Crossfolder
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
@@ -68,7 +67,7 @@ class CrossfoldConfigTest extends ConfigTestBase {
                 source file
                 partitions 10
                 holdoutFraction 0.5
-                order org.lenskit.eval.crossfold.RandomOrder
+                order RandomOrder
                 train "$folder.root.absolutePath/ratings.train/%d.csv"
                 test "$folder.root.absolutePath/ratings.test/%d.csv"
             }
