@@ -37,6 +37,8 @@ import org.grouplens.lenskit.util.table.Table;
 import org.lenskit.eval.crossfold.Crossfolder;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
@@ -47,6 +49,7 @@ import java.util.concurrent.Callable;
 @SuppressWarnings("unused")
 public class SimpleEvaluator implements Callable<Table> {
     private final EvalProject project;
+    private List<Crossfolder> crossfolders;
     private TrainTestEvalTask result;
 
     /**
@@ -66,6 +69,7 @@ public class SimpleEvaluator implements Callable<Table> {
         result = new TrainTestEvalTask("simple-eval");
         result.setProject(project);
         result.setOutput((File) null);
+        crossfolders = new ArrayList<>();
     }
 
     public EvalConfig getEvalConfig() {
@@ -117,13 +121,9 @@ public class SimpleEvaluator implements Callable<Table> {
      */
     public SimpleEvaluator addDataset(Crossfolder cross){
         cross.setProject(project);
-        try {
-            for (TTDataSet data: cross.perform()) {
-                result.addDataset(data);
-            }
-        }
-        catch (TaskExecutionException e) {
-            throw new RuntimeException(e);
+        crossfolders.add(cross);
+        for (TTDataSet data: cross.getDataSets()) {
+            result.addDataset(data);
         }
         return this;
     }
@@ -347,6 +347,9 @@ public class SimpleEvaluator implements Callable<Table> {
     public Table call() throws TaskExecutionException {
         result.setProject(project);
         try {
+            for (Crossfolder cf: crossfolders) {
+                cf.perform();
+            }
             return result.perform();
         } catch (InterruptedException e) {
             throw new TaskExecutionException("execution interrupted", e);
