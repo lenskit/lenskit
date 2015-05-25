@@ -71,8 +71,7 @@ public class Crossfolder implements Runnable {
     private int partitionCount = 5;
     private Path outputDir;
     private OutputFormat outputFormat = OutputFormat.CSV;
-    private Order<Rating> order = new RandomOrder<Rating>();
-    private PartitionAlgorithm<Rating> partition = new HoldoutNPartition<Rating>(10);
+    private Holdout holdout = new Holdout(new RandomOrder<Rating>(), new HoldoutNPartition<Rating>(10));
     private boolean skipIfUpToDate = false;
     private CrossfoldMethod method = CrossfoldMethod.PARTITION_USERS;
     private int sampleSize = 1000;
@@ -173,59 +172,37 @@ public class Crossfolder implements Runnable {
     }
 
     /**
-     * Set the order for the train-test splitting. To split a user's ratings, the ratings are
-     * first ordered by this order, and then partitioned.
+     * Set the holdout method for preparing train-test splits from a user's ratings.  Will only be used if one of the
+     * user-based {@linkplain #setMethod(CrossfoldMethod) methods} is selected.
      *
-     * @param o The sort order.
-     * @return The CrossfoldCommand object  (for chaining)
-     * @see RandomOrder
-     * @see TimestampOrder
-     * @see #setHoldoutFraction(double)
-     * @see #setHoldout(int)
+     * @param ho The per-user holdout method.
+     * @return The crossfolder (for chaining).
      */
-    public Crossfolder setOrder(Order<Rating> o) {
-        order = o;
+    public Crossfolder setHoldout(Holdout ho) {
+        holdout = ho;
         return this;
     }
 
     /**
-     * Set holdout to a fixed number of items per user.  Only meaningful when the method is
-     * {@link CrossfoldMethod#PARTITION_USERS}.
+     * Set the holdout method for preparing train-test splits from a user's ratings.  Will only be used if one of the
+     * user-based {@linkplain #setMethod(CrossfoldMethod) methods} is selected.
      *
-     * @param n The number of items to hold out from each user's profile.
-     * @return The CrossfoldCommand object  (for chaining)
+     * @param order The holdout order.
+     * @param part The rating partition method.
+     * @return The crossfolder (for chaining).
      */
-    public Crossfolder setHoldout(int n) {
-        partition = new HoldoutNPartition<Rating>(n);
-        return this;
+    public Crossfolder setHoldout(Order<Rating> order, PartitionAlgorithm<Rating> part) {
+        return setHoldout(new Holdout(order, part));
     }
 
     /**
-     * Set holdout from using the retain part to a fixed number of items.
-     * Only meaningful when the method is
-     * {@link CrossfoldMethod#PARTITION_USERS}.
-     * 
-     * @param n The number of items to train data set from each user's profile.
-     * @return The CrossfoldCommand object  (for chaining)
+     * Get the per-user holdout method.
+     * @return The per-user holdout method.
      */
-    public Crossfolder setRetain(int n) {
-        partition = new RetainNPartition<Rating>(n);
-        return this;
+    public Holdout getHoldout() {
+        return holdout;
     }
 
-    /**
-     * Set holdout to a fraction of each user's profile.
-     * Only meaningful when the method is
-     * {@link CrossfoldMethod#PARTITION_USERS}.
-     *
-     * @param f The fraction of a user's ratings to hold out.
-     * @return The CrossfoldCommand object  (for chaining)
-     */
-    public Crossfolder setHoldoutFraction(double f){
-        partition = new FractionPartition<Rating>(f);
-        return this;
-    }
-    
     /**
      * Set the input data source.
      *
@@ -360,10 +337,6 @@ public class Crossfolder implements Runnable {
      */
     public int getPartitionCount() {
         return partitionCount;
-    }
-
-    public Holdout getHoldout() {
-        return new Holdout(order, partition);
     }
 
     /**

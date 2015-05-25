@@ -42,18 +42,19 @@ public class CrossfoldSpecHandler implements SpecHandler<Crossfolder> {
 
     @Override
     public Crossfolder buildFromSpec(SpecificationContext context, Config cfg) throws SpecificationException {
-        Crossfolder task = new Crossfolder();
+        Crossfolder cf = new Crossfolder();
         if (cfg.hasPath("name")) {
-            task.setName(cfg.getString("name"));
+            cf.setName(cfg.getString("name"));
         }
-        task.setSource(context.build(DataSource.class, cfg.getConfig("source")));
+        cf.setSource(context.build(DataSource.class, cfg.getConfig("source")));
         if (cfg.hasPath("partitions")) {
-            task.setPartitions(cfg.getInt("partitions"));
+            cf.setPartitions(cfg.getInt("partitions"));
         }
 
+        Order<Rating> order = new RandomOrder<>();
+        PartitionAlgorithm<Rating> partition = new HoldoutNPartition<>(10);
         if (cfg.hasPath("holdout")) {
-            // TODO Make CrossfoldTask take holdout objects
-            task.setHoldout(cfg.getInt("holdout"));
+            partition = new HoldoutNPartition<>(cfg.getInt("holdout"));
             if (cfg.hasPath("holdoutFraction")) {
                 logger.warn("holdout and holdoutFraction specified, using holdout");
             }
@@ -61,45 +62,48 @@ public class CrossfoldSpecHandler implements SpecHandler<Crossfolder> {
                 logger.warn("holdout and retain specified, using holdout");
             }
         } else if (cfg.hasPath("holdoutFraction")) {
-            task.setHoldoutFraction(cfg.getDouble("holdoutFraction"));
+            partition = new FractionPartition<>(cfg.getDouble("holdoutFraction"));
             if (cfg.hasPath("retain")) {
                 logger.warn("holdoutFraction and retain specified, using holdout");
             }
         } else if (cfg.hasPath("retain")) {
-            task.setRetain(cfg.getInt("retain"));
+            partition = new RetainNPartition<>(cfg.getInt("retain"));
         }
 
         if (cfg.hasPath("order")) {
-            String order = cfg.getString("order");
-            if (order.equalsIgnoreCase("random")) {
-                task.setOrder(new RandomOrder<Rating>());
-            } else if (order.equalsIgnoreCase("timestamp")) {
-                task.setOrder(new TimestampOrder<Rating>());
-            } else {
-                throw new SpecificationException("invalid order " + order + " for crossfold");
+            switch (cfg.getString("order").toLowerCase()) {
+            case "random":
+                order = new RandomOrder<>();
+                break;
+            case "timestamp":
+                order = new TimestampOrder<>();
+                break;
+            default:
+                throw new SpecificationException("invalid order " + cfg.getString("order") + " for crossfold");
             }
         }
+        cf.setHoldout(order, partition);
 
         if (cfg.hasPath("useTimestamps")) {
-            task.setWriteTimestamps(cfg.getBoolean("useTimestamps"));
+            cf.setWriteTimestamps(cfg.getBoolean("useTimestamps"));
         }
 
         if (cfg.hasPath("outputDir")) {
-            task.setOutputDir(cfg.getString("outputDir"));
+            cf.setOutputDir(cfg.getString("outputDir"));
         } else {
-            logger.warn("no output directory specified for crossfold {}", task.getName());
+            logger.warn("no output directory specified for crossfold {}", cf.getName());
         }
 
         if (cfg.hasPath("outputFormat")) {
             switch (cfg.getString("outputFormat")) {
             case "pack":
-                task.setOutputFormat(OutputFormat.PACK);
+                cf.setOutputFormat(OutputFormat.PACK);
                 break;
             case "gzip":
-                task.setOutputFormat(OutputFormat.CSV_GZIP);
+                cf.setOutputFormat(OutputFormat.CSV_GZIP);
                 break;
             case "xz":
-                task.setOutputFormat(OutputFormat.CSV_GZIP);
+                cf.setOutputFormat(OutputFormat.CSV_GZIP);
                 break;
             default:
                 throw new SpecificationException("invalid output format " + cfg.getString("outputFormat"));
@@ -107,9 +111,9 @@ public class CrossfoldSpecHandler implements SpecHandler<Crossfolder> {
         }
 
         if (cfg.hasPath("isolate")) {
-            task.setIsolate(cfg.getBoolean("isolate"));
+            cf.setIsolate(cfg.getBoolean("isolate"));
         }
 
-        return task;
+        return cf;
     }
 }
