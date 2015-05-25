@@ -23,7 +23,6 @@ package org.grouplens.lenskit.test;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.source.GenericDataSource;
-import org.grouplens.lenskit.eval.EvalConfig;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceBuilder;
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric;
@@ -36,10 +35,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
-import java.util.Properties;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 /**
  * A test suite that does cross-validation of an algorithmInfo.
@@ -54,9 +52,8 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
 
     @Test
     public void testAlgorithmAccuracy() throws TaskExecutionException, IOException {
-        Properties props =  new Properties();
-        props.setProperty(EvalConfig.DATA_DIR_PROPERTY, workDir.newFolder("data").getAbsolutePath());
-        SimpleEvaluator evalCommand = new SimpleEvaluator(props);
+        SimpleEvaluator evalCommand = new SimpleEvaluator();
+        evalCommand.setWorkDir(workDir.newFolder("data").toPath());
         AlgorithmInstanceBuilder algo = new AlgorithmInstanceBuilder();
         configureAlgorithm(algo.getConfig());
         evalCommand.addAlgorithm(algo);

@@ -37,6 +37,7 @@ import org.grouplens.lenskit.util.table.Table;
 import org.lenskit.eval.crossfold.Crossfolder;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -51,6 +52,7 @@ public class SimpleEvaluator implements Callable<Table> {
     private final EvalProject project;
     private List<Crossfolder> crossfolders;
     private TrainTestEvalTask result;
+    private Path workDir;
 
     /**
      * Construct a simple evaluator.
@@ -70,6 +72,24 @@ public class SimpleEvaluator implements Callable<Table> {
         result.setProject(project);
         result.setOutput((File) null);
         crossfolders = new ArrayList<>();
+    }
+
+    /**
+     * Get the working directory for the evaluator.
+     * @return The directory in which the evaluator will save its working files.
+     */
+    public Path getWorkDir() {
+        return workDir;
+    }
+
+    /**
+     * Set the working directory for the evaluator.
+     * @param dir The directory in which the evaluator will save its output and temporary files.
+     * @return The evaluator (for chaining).
+     */
+    public SimpleEvaluator setWorkDir(Path dir) {
+        workDir = dir;
+        return this;
     }
 
     public EvalConfig getEvalConfig() {
@@ -143,7 +163,8 @@ public class SimpleEvaluator implements Callable<Table> {
         Crossfolder cross = new Crossfolder(name)
                 .setSource(source)
                 .setPartitions(partitions)
-                .setHoldoutFraction(holdout);
+                .setHoldoutFraction(holdout)
+                .setOutputDir(workDir.resolve(name + ".split"));
         addDataset(cross);
         return this;
     }
@@ -176,7 +197,9 @@ public class SimpleEvaluator implements Callable<Table> {
      * @return Itself for chaining.
      */
     public SimpleEvaluator addDataset(String name, DataSource source, int partitions){
-        return addDataset(new Crossfolder(name).setSource(source).setPartitions(partitions));
+        return addDataset(new Crossfolder(name).setSource(source)
+                                               .setPartitions(partitions)
+                                               .setOutputDir(workDir.resolve(name + ".split")));
     }
 
     /**
