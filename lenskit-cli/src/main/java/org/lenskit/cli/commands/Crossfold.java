@@ -29,7 +29,6 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.data.source.DataSource;
-import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.specs.SpecificationException;
@@ -146,8 +145,7 @@ public class Crossfold implements Command {
         Config finalSpec = ConfigFactory.parseMap(overrides).withFallback(spec);
         Crossfolder task = SpecificationContext.create().build(Crossfolder.class, finalSpec);
 
-        task.setProject(new EvalProject(System.getProperties()));
-        task.execute();
+        task.run();
     }
 
     public void configureArguments(ArgumentParser parser) {

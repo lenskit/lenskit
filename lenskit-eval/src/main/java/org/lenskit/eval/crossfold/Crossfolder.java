@@ -35,8 +35,6 @@ import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.source.CSVDataSourceBuilder;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;
-import org.grouplens.lenskit.eval.AbstractTask;
-import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.data.RatingWriter;
 import org.grouplens.lenskit.eval.data.RatingWriters;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
@@ -64,9 +62,11 @@ import java.util.*;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @SpecHandlerInterface(CrossfoldSpecHandler.class)
-public class Crossfolder extends AbstractTask<List<TTDataSet>> {
+public class Crossfolder implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(Crossfolder.class);
 
+    private Random rng;
+    private String name;
     private DataSource source;
     private int partitionCount = 5;
     private Path outputDir;
@@ -80,11 +80,12 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
     private boolean writeTimestamps = true;
 
     public Crossfolder() {
-        super(null);
+        this(null);
     }
 
     public Crossfolder(String n) {
-        super(n);
+        name = n;
+        rng = new Random();
     }
 
     /**
@@ -325,13 +326,22 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
      *
      * @return The name of the crossfold split.
      */
-    @Override
     public String getName() {
-        String name = super.getName();
         if (name == null) {
-            name = source.getName();
+            return source.getName();
+        } else {
+            return name;
         }
-        return name;
+    }
+
+    /**
+     * Set a name for this crossfolder.  It will be used to generate the names of individual data sets, for example.
+     * @param n The crossfolder name.
+     * @return The crossfolder (for chaining).
+     */
+    public Crossfolder setName(String n) {
+        name = n;
+        return this;
     }
 
     /**
@@ -374,11 +384,8 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
 
     /**
      * Run the crossfold command. Write the partition files to the disk by reading in the source file.
-     *
-     * @return The partition files stored as a list of TTDataSet
      */
-    @Override
-    public List<TTDataSet> perform() throws TaskExecutionException {
+    public void run() {
         if (skipIfUpToDate) {
             UpToDateChecker check = new UpToDateChecker();
             check.addInput(source.lastModified());
@@ -387,15 +394,15 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
             }
             if (check.isUpToDate()) {
                 logger.info("crossfold {} up to date", getName());
-                return getDataSets();
+                return;
             }
         }
         try {
             createTTFiles();
         } catch (IOException ex) {
-            throw new TaskExecutionException("Error writing data sets", ex);
+            // TODO Use application-specific exception
+            throw new RuntimeException("Error writing data sets", ex);
         }
-        return getDataSets();
     }
 
     private List<Path> getTrainingFiles() {
@@ -542,7 +549,7 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
 
                 for (int f = 0; f < partitionCount; f++) {
                     if (f == foldNum) {
-                        final int p = mode.partition(ratings, getProject().getRandom());
+                        final int p = mode.partition(ratings, rng);
                         for (int j = 0; j < p; j++) {
                             trainWriters[f].writeRating(ratings.get(j));
                         }
@@ -620,7 +627,7 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
             logger.info("Sampling {} users into {} disjoint samples of {}",
                         users.size(), partitionCount, sampleSize);
             long[] userArray = users.toLongArray();
-            LongArrays.shuffle(userArray, getProject().getRandom());
+            LongArrays.shuffle(userArray, rng);
             int i = 0;
             for (int p = 0; p < partitionCount; p++) {
                 final int start = i;
@@ -634,7 +641,7 @@ public class Crossfolder extends AbstractTask<List<TTDataSet>> {
     private void partitionUsers(Long2IntMap userMap, LongSet users) {
         logger.info("Splitting {} users into {} partitions", users.size(), partitionCount);
         long[] userArray = users.toLongArray();
-        LongArrays.shuffle(userArray, getProject().getRandom());
+        LongArrays.shuffle(userArray, rng);
         for (int i = 0; i < userArray.length; i++) {
             final long user = userArray[i];
             userMap.put(user, i % partitionCount);

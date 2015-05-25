@@ -140,7 +140,6 @@ public class SimpleEvaluator implements Callable<Table> {
      * @return Itself to allow for  method chaining.
      */
     public SimpleEvaluator addDataset(Crossfolder cross){
-        cross.setProject(project);
         crossfolders.add(cross);
         for (TTDataSet data: cross.getDataSets()) {
             result.addDataset(data);
@@ -371,7 +370,7 @@ public class SimpleEvaluator implements Callable<Table> {
         result.setProject(project);
         try {
             for (Crossfolder cf: crossfolders) {
-                cf.perform();
+                cf.run();
             }
             return result.perform();
         } catch (InterruptedException e) {
