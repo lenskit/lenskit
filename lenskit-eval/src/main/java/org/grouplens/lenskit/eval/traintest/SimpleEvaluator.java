@@ -22,6 +22,7 @@ package org.grouplens.lenskit.eval.traintest;
 
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.GenericDataSource;
@@ -35,6 +36,8 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.util.table.Table;
 import org.lenskit.eval.crossfold.Crossfolder;
+import org.lenskit.eval.crossfold.FractionPartition;
+import org.lenskit.eval.crossfold.RandomOrder;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -161,8 +164,8 @@ public class SimpleEvaluator implements Callable<Table> {
     public SimpleEvaluator addDataset(String name, DataSource source, int partitions, double holdout){
         Crossfolder cross = new Crossfolder(name)
                 .setSource(source)
-                .setPartitions(partitions)
-                .setHoldoutFraction(holdout)
+                .setPartitionCount(partitions)
+                .setHoldout(new RandomOrder<Rating>(), new FractionPartition<Rating>(holdout))
                 .setOutputDir(workDir.resolve(name + ".split"));
         addDataset(cross);
         return this;
@@ -197,7 +200,7 @@ public class SimpleEvaluator implements Callable<Table> {
      */
     public SimpleEvaluator addDataset(String name, DataSource source, int partitions){
         return addDataset(new Crossfolder(name).setSource(source)
-                                               .setPartitions(partitions)
+                                               .setPartitionCount(partitions)
                                                .setOutputDir(workDir.resolve(name + ".split")));
     }
 

@@ -7,16 +7,13 @@ import org.junit.Test
 import static org.hamcrest.Matchers.equalTo
 import static org.junit.Assert.assertThat
 
-/**
- * Created by michael on 5/22/2015.
- */
-class CrossfoldSpecHandlerTest extends GroovyTestCase {
+class CrossfoldSpecHandlerTest {
     @Test
     public void testConfigureCrossfolder() {
         def cfg = MiscBuilders.configObj {
             name "asdf"
             source {
-                type "csvfile"
+                type "csv"
                 file "ratings.csv"
             }
             partitions 12

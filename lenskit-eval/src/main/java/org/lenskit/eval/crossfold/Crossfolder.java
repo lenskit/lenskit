@@ -93,9 +93,17 @@ public class Crossfolder implements Runnable {
      * @param partition The number of paritions
      * @return The CrossfoldCommand object  (for chaining)
      */
-    public Crossfolder setPartitions(int partition) {
+    public Crossfolder setPartitionCount(int partition) {
         partitionCount = partition;
         return this;
+    }
+
+    /**
+     * Get the partition count.
+     * @return The number of partitions that will be generated.
+     */
+    public int getPartitionCount() {
+        return partitionCount;
     }
 
     public int getSampleSize() {
@@ -328,15 +336,6 @@ public class Crossfolder implements Runnable {
      */
     public DataSource getSource() {
         return source;
-    }
-
-    /**
-     * Get the number of folds.
-     *
-     * @return The number of folds in this crossfold.
-     */
-    public int getPartitionCount() {
-        return partitionCount;
     }
 
     /**

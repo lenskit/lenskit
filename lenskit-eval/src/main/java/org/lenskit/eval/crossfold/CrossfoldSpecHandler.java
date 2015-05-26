@@ -48,7 +48,7 @@ public class CrossfoldSpecHandler implements SpecHandler<Crossfolder> {
         }
         cf.setSource(context.build(DataSource.class, cfg.getConfig("source")));
         if (cfg.hasPath("partitions")) {
-            cf.setPartitions(cfg.getInt("partitions"));
+            cf.setPartitionCount(cfg.getInt("partitions"));
         }
 
         Order<Rating> order = new RandomOrder<>();
