@@ -443,7 +443,7 @@ public class Crossfolder implements Runnable {
             try (BufferedWriter w = Files.newBufferedWriter(file, Charsets.UTF_8,
                                                             StandardOpenOption.CREATE,
                                                             StandardOpenOption.TRUNCATE_EXISTING)) {
-                JSONValue.writeJSONString(ds, w);
+                JSONValue.writeJSONString(ds.toSpecification(ctx), w);
             }
         }
 
