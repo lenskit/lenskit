@@ -377,15 +377,15 @@ public class Crossfolder implements Runnable {
         }
     }
 
-    private List<Path> getTrainingFiles() {
+    List<Path> getTrainingFiles() {
         return getFileList("train.%d." + outputFormat.getSuffix());
     }
 
-    private List<Path> getTestFiles() {
+    List<Path> getTestFiles() {
         return getFileList("test.%d." + outputFormat.getSuffix());
     }
 
-    private List<Path> getSpecFiles() {
+    List<Path> getSpecFiles() {
         return getFileList("spec.%d.json");
     }
 
@@ -425,7 +425,9 @@ public class Crossfolder implements Runnable {
         RatingWriter[] testWriters = new RatingWriter[partitionCount];
 
         // now, the openWriteAndCloseFiles method will open each output file in turn, then call the writer method.
-        openWriteAndCloseFiles(trainFiles, testFiles, trainWriters, testWriters, 0);
+        try (CrossfoldOutput out = new CrossfoldOutput(this)) {
+            writeOutputFiles(out);
+        }
 
         List<Path> specFiles = getSpecFiles();
         List<TTDataSet> dataSets = getDataSets();
@@ -454,49 +456,18 @@ public class Crossfolder implements Runnable {
     }
 
     /**
-     * Helper method that opens the output files and then writes to them.  This method is recursive so that we can use
-     * Java's built-in resource management to make sure that our writers all get closed properly.
-     *
-     * @param trainFiles The train files.
-     * @param testFiles The test files.
-     * @param trainWriters The train writers (initially empty).
-     * @param testWriters The test writers (initially empty).
-     * @param i The current iteration (the initial call should pass 0 here).
-     */
-    private void openWriteAndCloseFiles(List<Path> trainFiles, List<Path> testFiles, RatingWriter[] trainWriters, RatingWriter[] testWriters, int i) throws IOException {
-        assert trainFiles.size() == testFiles.size();
-        assert trainWriters.length == trainFiles.size();
-        assert testWriters.length == testFiles.size();
-
-        if (i == testWriters.length) {
-            // we have opened all files, now write them
-            writeOutputFiles(trainWriters, testWriters);
-        } else {
-            // use a try-with-resources block to open the writers for partition 'i'
-            // then go recursive to open the next set
-            try (RatingWriter train = makeWriter(trainFiles.get(i));
-                 RatingWriter test = makeWriter(testFiles.get(i))) {
-                trainWriters[i] = train;
-                testWriters[i] = test;
-                openWriteAndCloseFiles(trainFiles, testFiles, trainWriters, testWriters, i + 1);
-            }
-        }
-    }
-
-    /**
      * Actually write ratings to the output files opened for each partition.
-     * @param trainWriters The train data writers.
-     * @param testWriters The test data writers.
+     * @param out The crossfold output.
      * @throws IOException if there is an error writing data
      */
-    private void writeOutputFiles(RatingWriter[] trainWriters, RatingWriter[] testWriters) throws IOException {
+    private void writeOutputFiles(CrossfoldOutput out) throws IOException {
         switch (method) {
         case PARTITION_USERS:
         case SAMPLE_USERS:
-            writeTTFilesByUsers(trainWriters, testWriters);
+            writeTTFilesByUsers(out);
             break;
         case PARTITION_RATINGS:
-            writeTTFilesByRatings(trainWriters, testWriters);
+            writeTTFilesByRatings(out);
             break;
         }
     }
@@ -504,10 +475,9 @@ public class Crossfolder implements Runnable {
     /**
      * Write the split files by Users from the DAO using specified holdout method
      * 
-     * @param trainWriters The tableWriter that write train files
-     * @param testWriters  The tableWriter that writ test files
+     * @param out The crossfold output.
      */
-    protected void writeTTFilesByUsers(RatingWriter[] trainWriters, RatingWriter[] testWriters) throws IOException {
+    protected void writeTTFilesByUsers(CrossfoldOutput out) throws IOException {
         logger.info("splitting data source {} to {} partitions by users",
                     getName(), partitionCount);
         Long2IntMap splits = splitUsers(source.getUserDAO());
@@ -523,14 +493,14 @@ public class Crossfolder implements Runnable {
                     if (f == foldNum) {
                         final int p = mode.partition(ratings, rng);
                         for (int j = 0; j < p; j++) {
-                            trainWriters[f].writeRating(ratings.get(j));
+                            out.getTrainWriter(f).writeRating(ratings.get(j));
                         }
                         for (int j = p; j < n; j++) {
-                            testWriters[f].writeRating(ratings.get(j));
+                            out.getTestWriter(f).writeRating(ratings.get(j));
                         }
                     } else {
                         for (Rating rating : ratings) {
-                            trainWriters[f].writeRating(rating);
+                            out.getTrainWriter(f).writeRating(rating);
                         }
                     }
                 }
@@ -544,10 +514,9 @@ public class Crossfolder implements Runnable {
     /**
      * Write the split files by Ratings from the DAO
      * 
-     * @param trainWriters The tableWriter that write train files
-     * @param testWriters  The tableWriter that writ test files
+     * @param out The crossfold output.
      */
-    protected void writeTTFilesByRatings(RatingWriter[] trainWriters, RatingWriter[] testWriters) throws IOException {
+    protected void writeTTFilesByRatings(CrossfoldOutput out) throws IOException {
         logger.info("splitting data source {} to {} partitions by ratings",
                     getName(), partitionCount);
         ArrayList<Rating> ratings = Cursors.makeList(source.getEventDAO().streamEvents(Rating.class));
@@ -558,9 +527,9 @@ public class Crossfolder implements Runnable {
             for (int f = 0; f < partitionCount; f++) {
                 int foldNum = i % partitionCount;
                 if (f == foldNum) {
-                    testWriters[f].writeRating(ratings.get(i));
+                    out.getTestWriter(f).writeRating(ratings.get(i));
                 } else {
-                    trainWriters[f].writeRating(ratings.get(i));
+                    out.getTrainWriter(f).writeRating(ratings.get(i));
                 }
             }
         }
@@ -644,7 +613,7 @@ public class Crossfolder implements Runnable {
         return dataSets;
     }
 
-    protected RatingWriter makeWriter(Path file) throws IOException {
+    RatingWriter openWriter(Path file) throws IOException {
         if (outputFormat.equals(OutputFormat.PACK)) {
             EnumSet<BinaryFormatFlag> flags = BinaryFormatFlag.makeSet();
             if (writeTimestamps) {
