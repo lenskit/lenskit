@@ -34,7 +34,6 @@ import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.specs.SpecificationException;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
-import org.lenskit.eval.crossfold.CrossfoldMethod;
 import org.lenskit.eval.crossfold.Crossfolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,19 +107,9 @@ public class Crossfold implements Command {
             overrides.put("useTimestamps", false);
         }
 
-        CrossfoldMethod method = options.get("crossfold_mode");
+        String method = options.get("crossfold_mode");
         if (method != null) {
-            switch (method) {
-            case PARTITION_RATINGS:
-                overrides.put("mode", "partition-ratings");
-                break;
-            case PARTITION_USERS:
-                overrides.put("mode", "partition-users");
-                break;
-            case SAMPLE_USERS:
-                overrides.put("mode", "sample-users");
-                break;
-            }
+            overrides.put("mode", method);
         }
 
         Integer n;
@@ -176,17 +165,17 @@ public class Crossfold implements Command {
         mode.addArgument("--partition-users")
             .dest("crossfold_mode")
             .action(Arguments.storeConst())
-            .setConst(CrossfoldMethod.PARTITION_USERS)
+            .setConst("partition-users")
             .help("Partition users into K partitions (the default)");
         mode.addArgument("--partition-ratings")
             .dest("crossfold_mode")
             .action(Arguments.storeConst())
-            .setConst(CrossfoldMethod.PARTITION_RATINGS)
+            .setConst("partition-ratings")
             .help("Partition ratings into K partitions");
         mode.addArgument("--sample-users")
             .dest("crossfold_mode")
             .action(Arguments.storeConst())
-            .setConst(CrossfoldMethod.SAMPLE_USERS)
+            .setConst("sample-users")
             .help("Generate K samples of users");
 
         parser.addArgument("--sample-size")

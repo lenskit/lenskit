@@ -22,16 +22,8 @@ package org.lenskit.eval.crossfold;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
-import it.unimi.dsi.fastutil.longs.Long2IntMap;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongArrays;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.source.CSVDataSourceBuilder;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;
@@ -71,10 +63,8 @@ public class Crossfolder implements Runnable {
     private int partitionCount = 5;
     private Path outputDir;
     private OutputFormat outputFormat = OutputFormat.CSV;
-    private Holdout holdout = new Holdout(new RandomOrder<Rating>(), new HoldoutNPartition<Rating>(10));
     private boolean skipIfUpToDate = false;
-    private CrossfoldMethod method = CrossfoldMethod.PARTITION_USERS;
-    private int sampleSize = 1000;
+    private CrossfoldMethod method = CrossfoldMethods.partitionUsers(new RandomOrder<Rating>(), new HoldoutNPartition<Rating>(10));
     private boolean isolate = false;
     private boolean writeTimestamps = true;
 
@@ -104,21 +94,6 @@ public class Crossfolder implements Runnable {
      */
     public int getPartitionCount() {
         return partitionCount;
-    }
-
-    public int getSampleSize() {
-        return sampleSize;
-    }
-
-    /**
-     * Set the sample size (# of users sampled per partition).  Only meaningful when the method is
-     * {@link CrossfoldMethod#SAMPLE_USERS}.
-     * @param n The number of users to sample for each partition.
-     * @return The task (for chaining).
-     */
-    public Crossfolder setSampleSize(int n) {
-        sampleSize = n;
-        return this;
     }
 
     /**
@@ -180,38 +155,6 @@ public class Crossfolder implements Runnable {
     }
 
     /**
-     * Set the holdout method for preparing train-test splits from a user's ratings.  Will only be used if one of the
-     * user-based {@linkplain #setMethod(CrossfoldMethod) methods} is selected.
-     *
-     * @param ho The per-user holdout method.
-     * @return The crossfolder (for chaining).
-     */
-    public Crossfolder setHoldout(Holdout ho) {
-        holdout = ho;
-        return this;
-    }
-
-    /**
-     * Set the holdout method for preparing train-test splits from a user's ratings.  Will only be used if one of the
-     * user-based {@linkplain #setMethod(CrossfoldMethod) methods} is selected.
-     *
-     * @param order The holdout order.
-     * @param part The rating partition method.
-     * @return The crossfolder (for chaining).
-     */
-    public Crossfolder setHoldout(Order<Rating> order, PartitionAlgorithm<Rating> part) {
-        return setHoldout(new Holdout(order, part));
-    }
-
-    /**
-     * Get the per-user holdout method.
-     * @return The per-user holdout method.
-     */
-    public Holdout getHoldout() {
-        return holdout;
-    }
-
-    /**
      * Set the input data source.
      *
      * @param source The data source to use.
@@ -223,19 +166,13 @@ public class Crossfolder implements Runnable {
     }
 
     /**
-     * Configure whether it splits per-user or per-rating.
-     *
-     * @param splitUsers {@code true} to split by users ({@link CrossfoldMethod#PARTITION_USERS}),
-     *                   {@code false} to split by rating ({@link CrossfoldMethod#PARTITION_RATINGS}).
-     * @deprecated Use {@link #setMethod(CrossfoldMethod)} instead.
+     * Set the method to be used by the crossfolder.
+     * @param meth The method to use.
+     * @return The crossfolder (for chaining).
      */
-    @Deprecated
-    public void setSplitUsers(boolean splitUsers) {
-        if (splitUsers) {
-            setMethod(CrossfoldMethod.PARTITION_USERS);
-        } else {
-            setMethod(CrossfoldMethod.PARTITION_RATINGS);
-        }
+    public Crossfolder setMethod(CrossfoldMethod meth) {
+        method = meth;
+        return this;
     }
 
     /**
@@ -244,28 +181,6 @@ public class Crossfolder implements Runnable {
      */
     public CrossfoldMethod getMethod() {
         return method;
-    }
-
-    /**
-     * Set the crossfold method.  The default is {@link CrossfoldMethod#PARTITION_USERS}.
-     *
-     * @param m The crossfold method to use.
-     */
-    public Crossfolder setMethod(CrossfoldMethod m) {
-        method = m;
-        return this;
-    }
-
-    /**
-     * Configure whether the data sets created by the crossfold will have
-     * caching turned on.
-     *
-     * @param on Whether the data sets returned should cache.
-     * @return The command (for chaining)
-     */
-    public Crossfolder setCache(boolean on) {
-        logger.warn("crossfold cache directive is now a no-op");
-        return this;
     }
 
     /**
@@ -417,16 +332,8 @@ public class Crossfolder implements Runnable {
      * @throws IOException if there is an error writing the files.
      */
     private void createTTFiles() throws IOException {
-        // this method is going to proceed through several others
-        // first, it will set up data structures for building writers, etc.
-        List<Path> trainFiles = getTrainingFiles();
-        List<Path> testFiles = getTestFiles();
-        RatingWriter[] trainWriters = new RatingWriter[partitionCount];
-        RatingWriter[] testWriters = new RatingWriter[partitionCount];
-
-        // now, the openWriteAndCloseFiles method will open each output file in turn, then call the writer method.
-        try (CrossfoldOutput out = new CrossfoldOutput(this)) {
-            writeOutputFiles(out);
+        try (CrossfoldOutput out = new CrossfoldOutput(this, rng)) {
+            method.crossfold(source, out);
         }
 
         List<Path> specFiles = getSpecFiles();
@@ -452,140 +359,6 @@ public class Crossfolder implements Runnable {
                                                         StandardOpenOption.CREATE,
                                                         StandardOpenOption.TRUNCATE_EXISTING)) {
             JSONValue.writeJSONString(specs, w);
-        }
-    }
-
-    /**
-     * Actually write ratings to the output files opened for each partition.
-     * @param out The crossfold output.
-     * @throws IOException if there is an error writing data
-     */
-    private void writeOutputFiles(CrossfoldOutput out) throws IOException {
-        switch (method) {
-        case PARTITION_USERS:
-        case SAMPLE_USERS:
-            writeTTFilesByUsers(out);
-            break;
-        case PARTITION_RATINGS:
-            writeTTFilesByRatings(out);
-            break;
-        }
-    }
-
-    /**
-     * Write the split files by Users from the DAO using specified holdout method
-     * 
-     * @param out The crossfold output.
-     */
-    protected void writeTTFilesByUsers(CrossfoldOutput out) throws IOException {
-        logger.info("splitting data source {} to {} partitions by users",
-                    getName(), partitionCount);
-        Long2IntMap splits = splitUsers(source.getUserDAO());
-        Cursor<UserHistory<Rating>> historyCursor = source.getUserEventDAO().streamEventsByUser(Rating.class);
-        Holdout mode = this.getHoldout();
-        try {
-            for (UserHistory<Rating> history : historyCursor) {
-                int foldNum = splits.get(history.getUserId());
-                List<Rating> ratings = new ArrayList<Rating>(history);
-                final int n = ratings.size();
-
-                for (int f = 0; f < partitionCount; f++) {
-                    if (f == foldNum) {
-                        final int p = mode.partition(ratings, rng);
-                        for (int j = 0; j < p; j++) {
-                            out.getTrainWriter(f).writeRating(ratings.get(j));
-                        }
-                        for (int j = p; j < n; j++) {
-                            out.getTestWriter(f).writeRating(ratings.get(j));
-                        }
-                    } else {
-                        for (Rating rating : ratings) {
-                            out.getTrainWriter(f).writeRating(rating);
-                        }
-                    }
-                }
-
-            }
-        } finally {
-            historyCursor.close();
-        }
-    }
-    
-    /**
-     * Write the split files by Ratings from the DAO
-     * 
-     * @param out The crossfold output.
-     */
-    protected void writeTTFilesByRatings(CrossfoldOutput out) throws IOException {
-        logger.info("splitting data source {} to {} partitions by ratings",
-                    getName(), partitionCount);
-        ArrayList<Rating> ratings = Cursors.makeList(source.getEventDAO().streamEvents(Rating.class));
-        Collections.shuffle(ratings);
-
-        final int n = ratings.size();
-        for (int i = 0; i < n; i++) {
-            for (int f = 0; f < partitionCount; f++) {
-                int foldNum = i % partitionCount;
-                if (f == foldNum) {
-                    out.getTestWriter(f).writeRating(ratings.get(i));
-                } else {
-                    out.getTrainWriter(f).writeRating(ratings.get(i));
-                }
-            }
-        }
-    }
-
-    /**
-     * Split users ids to n splits, where n is the partitionCount
-     *
-     * @param dao The DAO of the source file
-     * @return a map of users to partition numbers. Users not in a partition will return -1.
-     */
-    protected Long2IntMap splitUsers(UserDAO dao) {
-        Long2IntMap userMap = new Long2IntOpenHashMap();
-        userMap.defaultReturnValue(-1);
-
-        switch (method) {
-        case PARTITION_USERS:
-            partitionUsers(userMap, dao.getUserIds());
-            break;
-        case SAMPLE_USERS:
-            sampleUsers(userMap, dao.getUserIds());
-            break;
-        default:
-            throw new RuntimeException("why is splitUsers running for non-user method?");
-        }
-
-        return userMap;
-    }
-
-    private void sampleUsers(Long2IntMap userMap, LongSet users) {
-        if (partitionCount * sampleSize > users.size()) {
-            logger.warn("cannot make {} disjoint samples of {} from {} users, partitioning",
-                        partitionCount, sampleSize, users.size());
-            partitionUsers(userMap, users);
-        } else {
-            logger.info("Sampling {} users into {} disjoint samples of {}",
-                        users.size(), partitionCount, sampleSize);
-            long[] userArray = users.toLongArray();
-            LongArrays.shuffle(userArray, rng);
-            int i = 0;
-            for (int p = 0; p < partitionCount; p++) {
-                final int start = i;
-                for (; i < userArray.length && i - start < sampleSize; i++) {
-                    userMap.put(userArray[i], p);
-                }
-            }
-        }
-    }
-
-    private void partitionUsers(Long2IntMap userMap, LongSet users) {
-        logger.info("Splitting {} users into {} partitions", users.size(), partitionCount);
-        long[] userArray = users.toLongArray();
-        LongArrays.shuffle(userArray, rng);
-        for (int i = 0; i < userArray.length; i++) {
-            final long user = userArray[i];
-            userMap.put(user, i % partitionCount);
         }
     }
 

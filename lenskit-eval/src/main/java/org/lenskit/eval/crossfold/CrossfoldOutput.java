@@ -8,16 +8,19 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Manager for outputs for a crossfold operation.
  */
 class CrossfoldOutput implements Closeable {
+    private final Random random;
     private final Closer closer;
     private final int count;
     private final List<RatingWriter> trainWriters, testWriters;
 
-    public CrossfoldOutput(Crossfolder cf) throws IOException {
+    public CrossfoldOutput(Crossfolder cf, Random rng) throws IOException {
+        random = rng;
         closer = Closer.create();
         count = cf.getPartitionCount();
         trainWriters = Lists.newArrayListWithCapacity(count);
@@ -39,6 +42,14 @@ class CrossfoldOutput implements Closeable {
             }
         }
         // the constructor has succeeded - closing will be handled by the close method
+    }
+
+    /**
+     * Get the RNG for this output.
+     * @return The output's RNG.
+     */
+    public Random getRandom() {
+        return random;
     }
 
     public int getCount() {

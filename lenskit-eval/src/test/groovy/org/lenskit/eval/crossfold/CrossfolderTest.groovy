@@ -53,7 +53,7 @@ class CrossfolderTest {
     public void testFreshCFState() {
         assertThat(cf.name, equalTo("test"))
         assertThat(cf.partitionCount, equalTo(5))
-        assertThat(cf.method, equalTo(CrossfoldMethod.PARTITION_USERS))
+        assertThat(cf.method, instanceOf(UserPartitionCrossfoldMethod))
         assertThat(cf.skipIfUpToDate, equalTo(false))
         assertThat(cf.writeTimestamps, equalTo(true))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
@@ -137,7 +137,6 @@ class CrossfolderTest {
             }
         }
         assertThat(allUsers, hasSize(100))
-
         for (int i = 1; i <= 10; i++) {
             def train = tmp.root.toPath().resolve("train.${i}.csv")
             assertThat(Files.exists(train), equalTo(true))

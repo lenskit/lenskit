@@ -30,6 +30,8 @@ import org.lenskit.eval.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
+
 /**
  * Specification handler to configure a crossfold task from a specification.
  */
@@ -51,38 +53,25 @@ public class CrossfoldSpecHandler implements SpecHandler<Crossfolder> {
             cf.setPartitionCount(cfg.getInt("partitions"));
         }
 
-        Order<Rating> order = new RandomOrder<>();
-        PartitionAlgorithm<Rating> partition = new HoldoutNPartition<>(10);
-        if (cfg.hasPath("holdout")) {
-            partition = new HoldoutNPartition<>(cfg.getInt("holdout"));
-            if (cfg.hasPath("holdoutFraction")) {
-                logger.warn("holdout and holdoutFraction specified, using holdout");
-            }
-            if (cfg.hasPath("retain")) {
-                logger.warn("holdout and retain specified, using holdout");
-            }
-        } else if (cfg.hasPath("holdoutFraction")) {
-            partition = new FractionPartition<>(cfg.getDouble("holdoutFraction"));
-            if (cfg.hasPath("retain")) {
-                logger.warn("holdoutFraction and retain specified, using holdout");
-            }
-        } else if (cfg.hasPath("retain")) {
-            partition = new RetainNPartition<>(cfg.getInt("retain"));
+        String method = cfg.hasPath("method") ? cfg.getString("method") : "partition-users";
+        switch (method) {
+        case "partition-users": {
+            PartitionAlgorithm<Rating> partition = getRatingPartitionAlgorithm(cfg);
+            Order<Rating> order = getRatingOrder(cfg);
+            cf.setMethod(CrossfoldMethods.partitionUsers(order, partition));
         }
-
-        if (cfg.hasPath("order")) {
-            switch (cfg.getString("order").toLowerCase()) {
-            case "random":
-                order = new RandomOrder<>();
-                break;
-            case "timestamp":
-                order = new TimestampOrder<>();
-                break;
-            default:
-                throw new SpecificationException("invalid order " + cfg.getString("order") + " for crossfold");
-            }
+        case "sample-users": {
+            PartitionAlgorithm<Rating> partition = getRatingPartitionAlgorithm(cfg);
+            Order<Rating> order = getRatingOrder(cfg);
+            int sampleSize = cfg.hasPath("sampleSize") ? cfg.getInt("sampleSize") : 100;
+            cf.setMethod(CrossfoldMethods.sampleUsers(order, partition, sampleSize));
         }
-        cf.setHoldout(order, partition);
+        case "partition-ratings":
+            cf.setMethod(CrossfoldMethods.partitionRatings());
+            break;
+        default:
+            throw new SpecificationException("invalid crossfold method " + method);
+        }
 
         if (cfg.hasPath("useTimestamps")) {
             cf.setWriteTimestamps(cfg.getBoolean("useTimestamps"));
@@ -115,5 +104,45 @@ public class CrossfoldSpecHandler implements SpecHandler<Crossfolder> {
         }
 
         return cf;
+    }
+
+    @Nonnull
+    private PartitionAlgorithm<Rating> getRatingPartitionAlgorithm(Config cfg) {
+        PartitionAlgorithm<Rating> partition = new HoldoutNPartition<>(10);
+        if (cfg.hasPath("holdout")) {
+            partition = new HoldoutNPartition<>(cfg.getInt("holdout"));
+            if (cfg.hasPath("holdoutFraction")) {
+                logger.warn("holdout and holdoutFraction specified, using holdout");
+            }
+            if (cfg.hasPath("retain")) {
+                logger.warn("holdout and retain specified, using holdout");
+            }
+        } else if (cfg.hasPath("holdoutFraction")) {
+            partition = new FractionPartition<>(cfg.getDouble("holdoutFraction"));
+            if (cfg.hasPath("retain")) {
+                logger.warn("holdoutFraction and retain specified, using holdout");
+            }
+        } else if (cfg.hasPath("retain")) {
+            partition = new RetainNPartition<>(cfg.getInt("retain"));
+        }
+        return partition;
+    }
+
+    @Nonnull
+    private Order<Rating> getRatingOrder(Config cfg) throws SpecificationException {
+        Order<Rating> order = new RandomOrder<>();
+        if (cfg.hasPath("order")) {
+            switch (cfg.getString("order").toLowerCase()) {
+            case "random":
+                order = new RandomOrder<>();
+                break;
+            case "timestamp":
+                order = new TimestampOrder<>();
+                break;
+            default:
+                throw new SpecificationException("invalid order " + cfg.getString("order") + " for crossfold");
+            }
+        }
+        return order;
     }
 }

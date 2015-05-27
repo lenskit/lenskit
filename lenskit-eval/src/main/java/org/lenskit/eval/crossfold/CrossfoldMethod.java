@@ -20,25 +20,20 @@
  */
 package org.lenskit.eval.crossfold;
 
+import org.grouplens.lenskit.data.source.DataSource;
+
+import java.io.IOException;
+
 /**
  * The method to be used for crossfolding.
  *
- * @since 2.1
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public enum CrossfoldMethod {
+public interface CrossfoldMethod {
     /**
-     * Partition the users into (roughly) equal sets.
+     * Crossfold an input into some outputs.
+     *
+     * @param input  The input.
+     * @param output The outputs.
      */
-    PARTITION_USERS,
-
-    /**
-     * Partition the ratings into (roughly) equal sets.
-     */
-    PARTITION_RATINGS,
-
-    /**
-     * Sample users for each partition.
-     */
-    SAMPLE_USERS
+    void crossfold(DataSource input, CrossfoldOutput output) throws IOException;
 }
