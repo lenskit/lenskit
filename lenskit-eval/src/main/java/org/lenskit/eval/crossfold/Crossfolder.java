@@ -293,15 +293,15 @@ public class Crossfolder implements Runnable {
     }
 
     List<Path> getTrainingFiles() {
-        return getFileList("train.%d." + outputFormat.getSuffix());
+        return getFileList("part%02d.train." + outputFormat.getSuffix());
     }
 
     List<Path> getTestFiles() {
-        return getFileList("test.%d." + outputFormat.getSuffix());
+        return getFileList("part%02d.test." + outputFormat.getSuffix());
     }
 
     List<Path> getSpecFiles() {
-        return getFileList("spec.%d.json");
+        return getFileList("part%02d.json");
     }
 
     private List<Path> getFileList(String pattern) {
@@ -332,6 +332,7 @@ public class Crossfolder implements Runnable {
      * @throws IOException if there is an error writing the files.
      */
     private void createTTFiles() throws IOException {
+        Files.createDirectories(outputDir);
         try (CrossfoldOutput out = new CrossfoldOutput(this, rng)) {
             method.crossfold(source, out);
         }

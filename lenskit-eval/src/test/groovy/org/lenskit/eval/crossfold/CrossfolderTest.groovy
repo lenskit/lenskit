@@ -114,11 +114,11 @@ class CrossfolderTest {
         assertThat(allUsers, hasSize(100))
 
         for (int i = 1; i <= 5; i++) {
-            def train = tmp.root.toPath().resolve("train.${i}.csv")
+            def train = tmp.root.toPath().resolve(String.format("part%02d.train.csv", i))
             assertThat(Files.exists(train), equalTo(true))
-            def test = tmp.root.toPath().resolve("test.${i}.csv")
+            def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-            def spec = tmp.root.toPath().resolve("spec.${i}.json")
+            def spec = tmp.root.toPath().resolve(String.format("part%02d.json", i))
             assertThat(Files.exists(spec), equalTo(true))
             def specURI = spec.toUri()
             def obj = SpecificationContext.build(TTDataSet, specURI)
@@ -158,11 +158,11 @@ class CrossfolderTest {
         }
         assertThat(allUsers, hasSize(100))
         for (int i = 1; i <= 10; i++) {
-            def train = tmp.root.toPath().resolve("train.${i}.csv")
+            def train = tmp.root.toPath().resolve(String.format("part%02d.train.csv", i))
             assertThat(Files.exists(train), equalTo(true))
-            def test = tmp.root.toPath().resolve("test.${i}.csv")
+            def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-            def spec = tmp.root.toPath().resolve("spec.${i}.json")
+            def spec = tmp.root.toPath().resolve(String.format("part%02d.json", i))
             assertThat(Files.exists(spec), equalTo(true))
             def specURI = spec.toUri()
             def obj = SpecificationContext.build(TTDataSet, specURI)

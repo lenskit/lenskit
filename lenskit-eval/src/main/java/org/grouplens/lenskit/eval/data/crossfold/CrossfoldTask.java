@@ -25,6 +25,7 @@ import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.lenskit.eval.OutputFormat;
 import org.lenskit.eval.crossfold.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,6 +96,13 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
         String dir = pat.replaceFirst("%d\\.?", "");
         logger.warn("setTrain deprecated; treating pattern '{}' as dir '{}'", pat, dir);
         crossfolder.setOutputDir(dir);
+        if (pat.endsWith(".pack")) {
+            crossfolder.setOutputFormat(OutputFormat.PACK);
+        } else if (pat.endsWith(".csv.gz")) {
+            crossfolder.setOutputFormat(OutputFormat.CSV_GZIP);
+        } else if (pat.endsWith(".csv.xz")) {
+            crossfolder.setOutputFormat(OutputFormat.CSV_XZ);
+        }
         return this;
     }
 

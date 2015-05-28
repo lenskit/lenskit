@@ -101,7 +101,7 @@ public class Crossfold implements Command {
             overrides.put("outputDir", dir);
         }
         if (options.getBoolean("pack_output")) {
-            overrides.put("packOutput", true);
+            overrides.put("outputFormat", "pack");
         }
         if (!options.getBoolean("use_timestamps")) {
             overrides.put("useTimestamps", false);
