@@ -20,24 +20,9 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
-
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Events;
-
 /**
- * Order an event sequence by timestamp.
- *
- * @param <E>
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Use {@link org.lenskit.eval.crossfold.TimestampOrder}.
  */
-public class TimestampOrder<E extends Event> implements Order<E> {
-
-    @Override
-    public void apply(List<E> list, Random rng) {
-        Collections.sort(list, Events.TIMESTAMP_COMPARATOR);
-    }
-
+@Deprecated
+public class TimestampOrder extends org.lenskit.eval.crossfold.TimestampOrder {
 }
