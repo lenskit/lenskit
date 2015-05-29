@@ -51,7 +51,8 @@ class UserSampleCrossfoldMethod extends UserBasedCrossfoldMethod {
             LongArrays.shuffle(userArray, rng);
             for (int p = 0; p < np; p++) {
                 for (int i = 0; i < sampleSize; i++) {
-                    userMap.put(userArray[i+p], p);
+                    long u = userArray[p*sampleSize + i];
+                    userMap.put(u, p);
                 }
             }
             return userMap;

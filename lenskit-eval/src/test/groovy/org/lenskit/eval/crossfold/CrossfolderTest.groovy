@@ -22,8 +22,10 @@ package org.lenskit.eval.crossfold
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.java.quickcheck.Generator
+import org.grouplens.lenskit.cursors.Cursors
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
+import org.grouplens.lenskit.data.event.Event
 import org.grouplens.lenskit.data.event.Rating
 import org.grouplens.lenskit.data.source.DataSource
 import org.grouplens.lenskit.data.source.GenericDataSource
@@ -48,21 +50,22 @@ class CrossfolderTest {
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder()
 
+    private List<Rating> ratings
     private EventDAO sourceDAO
     private DataSource source
     private Crossfolder cf
 
     @Before
     public void createEvents() {
-        def events = []
+        ratings = []
         Generator<Integer> sizes = integers(20, 50);
         for (user in toIterable(longs(), 100)) {
             for (item in toIterable(longs(), sizes.next())) {
                 double rating = doubles().next()
-                events << Rating.create(user, item, rating)
+                ratings << Rating.create(user, item, rating)
             }
         }
-        sourceDAO = EventCollectionDAO.create(events)
+        sourceDAO = EventCollectionDAO.create(ratings)
         source = new GenericDataSource("test", sourceDAO)
         cf = new Crossfolder()
         cf.source = source
@@ -146,7 +149,7 @@ class CrossfolderTest {
             // test the users
             def users = ds.testData.userDAO.userIds
             allUsers += users
-            // each test set should have 20 users
+            // each test set should have 100/10 users
             assertThat(users, hasSize(10))
             // train data should have all users
             assertThat(ds.trainingData.userDAO.userIds, hasSize(100))
@@ -172,5 +175,164 @@ class CrossfolderTest {
             assertThat(obj.trainingDAO.inputFile, equalTo(dss[i-1].trainingDAO.inputFile))
             assertThat(obj.testDAO.inputFile, equalTo(dss[i-1].testDAO.inputFile))
         }
+    }
+
+    @Test
+    public void testUserSample() {
+        cf.method = CrossfoldMethods.sampleUsers(new RandomOrder<Rating>(),
+                                                 new HoldoutNPartition<Rating>(5),
+                                                 5);
+        cf.run()
+        def dss = cf.dataSets
+        assertThat(dss, hasSize(5))
+        def allUsers = new LongOpenHashSet()
+        for (ds in dss) {
+            def train = ds.trainingDAO as TextEventDAO
+            def test = ds.testDAO as TextEventDAO
+            assertThat(train.inputFile.exists(), equalTo(true))
+            assertThat(test.inputFile.exists(), equalTo(true))
+
+            // test the users
+            def users = ds.testData.userDAO.userIds
+            allUsers += users
+            // each test set should have 5 users
+            assertThat(users, hasSize(5))
+            // train data should have all users
+            assertThat(ds.trainingData.userDAO.userIds, hasSize(100))
+            // each test user should have 10 ratings
+            def ued = ds.testData.userEventDAO
+            for (user in users) {
+                assertThat(ued.getEventsForUser(user), hasSize(5))
+            }
+        }
+        assertThat(allUsers, hasSize(25))
+        for (int i = 1; i <= 5; i++) {
+            def train = tmp.root.toPath().resolve(String.format("part%02d.train.csv", i))
+            assertThat(Files.exists(train), equalTo(true))
+            def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
+            assertThat(Files.exists(test), equalTo(true))
+            def spec = tmp.root.toPath().resolve(String.format("part%02d.json", i))
+            assertThat(Files.exists(spec), equalTo(true))
+            def specURI = spec.toUri()
+            def obj = SpecificationContext.build(TTDataSet, specURI)
+            assertThat(obj.trainingData, instanceOf(TextDataSource))
+            assertThat(obj.testData, instanceOf(TextDataSource))
+            assertThat(obj.queryData, nullValue())
+            assertThat(obj.trainingDAO.inputFile, equalTo(dss[i-1].trainingDAO.inputFile))
+            assertThat(obj.testDAO.inputFile, equalTo(dss[i-1].testDAO.inputFile))
+        }
+    }
+
+    @Test
+    public void testPartitionRatings() {
+        cf.method = CrossfoldMethods.partitionRatings()
+        cf.run()
+        def dss = cf.dataSets
+        assertThat(dss, hasSize(5))
+        def allEvents = new HashSet<Event>();
+
+        double perPart = ratings.size() / 5.0
+        for (ds in dss) {
+            def train = ds.trainingDAO as TextEventDAO
+            def test = ds.testDAO as TextEventDAO
+            assertThat(train.inputFile.exists(), equalTo(true))
+            assertThat(test.inputFile.exists(), equalTo(true))
+
+            // test the users
+            def events = Cursors.makeList ds.testData.eventDAO.streamEvents()
+            allEvents += events;
+
+
+
+            assertThat(events, hasSize(allOf(greaterThanOrEqualTo((Integer) Math.floor(perPart)),
+                                             lessThanOrEqualTo((Integer) Math.ceil(perPart)))));
+
+            // train data should have all the other ratings
+            def tes = Cursors.makeList ds.trainingDAO.streamEvents()
+            assertThat(tes.size() + events.size(), equalTo(ratings.size()))
+        }
+        assertThat(allEvents, hasSize(ratings.size()))
+        for (int i = 1; i <= 5; i++) {
+            def train = tmp.root.toPath().resolve(String.format("part%02d.train.csv", i))
+            assertThat(Files.exists(train), equalTo(true))
+            def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
+            assertThat(Files.exists(test), equalTo(true))
+            def spec = tmp.root.toPath().resolve(String.format("part%02d.json", i))
+            assertThat(Files.exists(spec), equalTo(true))
+            def specURI = spec.toUri()
+            def obj = SpecificationContext.build(TTDataSet, specURI)
+            assertThat(obj.trainingData, instanceOf(TextDataSource))
+            assertThat(obj.testData, instanceOf(TextDataSource))
+            assertThat(obj.queryData, nullValue())
+            assertThat(obj.trainingDAO.inputFile, equalTo(dss[i - 1].trainingDAO.inputFile))
+            assertThat(obj.testDAO.inputFile, equalTo(dss[i - 1].testDAO.inputFile))
+        }
+    }
+
+    @Test
+    public void testUserTimestampOrder() {
+        cf.method = CrossfoldMethods.partitionUsers(new TimestampOrder<Rating>(), new HoldoutNPartition<Rating>(5))
+        cf.run()
+        def dss = cf.dataSets
+        assertThat(dss, hasSize(5))
+        def allUsers = new LongOpenHashSet()
+        for (ds in dss) {
+            def train = ds.trainingDAO as TextEventDAO
+            def test = ds.testDAO as TextEventDAO
+            assertThat(train.inputFile.exists(), equalTo(true))
+            assertThat(test.inputFile.exists(), equalTo(true))
+
+            // test the users
+            def users = ds.testData.userDAO.userIds
+            allUsers += users
+            // each test set should have 20 users
+            assertThat(users, hasSize(20))
+            // train data should have all users
+            assertThat(ds.trainingData.userDAO.userIds, hasSize(100))
+            // each test user should have 10 ratings
+            def ued = ds.testData.userEventDAO
+            for (user in users) {
+                def uevts = ued.getEventsForUser(user)
+                def trainEvts = ds.trainingData.userEventDAO.getEventsForUser(user)
+                def minTest = uevts*.timestamp.min()
+                def maxTrain = trainEvts*.timestamp.max()
+                assertThat(minTest, greaterThanOrEqualTo(maxTrain))
+            }
+        }
+        assertThat(allUsers, hasSize(100))
+    }
+
+    @Test
+    public void testRetainNPartition() {
+        cf.method = CrossfoldMethods.partitionUsers(new TimestampOrder<Rating>(), new RetainNPartition<Rating>(5));
+        cf.run()
+        def dss = cf.dataSets
+        assertThat(dss, hasSize(5))
+        def allUsers = new LongOpenHashSet()
+        for (ds in dss) {
+            def train = ds.trainingDAO as TextEventDAO
+            def test = ds.testDAO as TextEventDAO
+            assertThat(train.inputFile.exists(), equalTo(true))
+            assertThat(test.inputFile.exists(), equalTo(true))
+
+            // test the users
+            def users = ds.testData.userDAO.userIds
+            allUsers += users
+            // each test set should have 20 users
+            assertThat(users, hasSize(20))
+            // train data should have all users
+            assertThat(ds.trainingData.userDAO.userIds, hasSize(100))
+            // each test user should have 10 ratings
+            def ued = ds.testData.userEventDAO
+            for (user in users) {
+                def uevts = ued.getEventsForUser(user)
+                def trainEvts = ds.trainingData.userEventDAO.getEventsForUser(user)
+                assertThat(trainEvts, hasSize(5));
+                def minTest = uevts*.timestamp.min()
+                def maxTrain = trainEvts*.timestamp.max()
+                assertThat(minTest, greaterThanOrEqualTo(maxTrain))
+            }
+        }
+        assertThat(allUsers, hasSize(100))
     }
 }

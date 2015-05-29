@@ -49,6 +49,7 @@ abstract class UserBasedCrossfoldMethod implements CrossfoldMethod {
         logger.info("splitting data source {} to {} partitions by users",
                     input.getName(), count);
         Long2IntMap splits = splitUsers(input.getUserDAO().getUserIds(), count, output.getRandom());
+        splits.defaultReturnValue(-1); // unpartitioned users should only be trained
         Cursor<UserHistory<Rating>> historyCursor = input.getUserEventDAO().streamEventsByUser(Rating.class);
 
         try {
