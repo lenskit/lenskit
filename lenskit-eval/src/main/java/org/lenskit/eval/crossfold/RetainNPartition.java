@@ -18,34 +18,34 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.crossfold;
-
-import static java.lang.Math.max;
+package org.lenskit.eval.crossfold;
 
 import java.util.List;
 
+import static java.lang.Math.min;
+
 /**
- * Partition the last part of list by holding out a fixed number of elements.
+ * Partition the event list by retaining a fixed number of elements.
  *
  * @param <E>
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class HoldoutNPartition<E> implements PartitionAlgorithm<E> {
+public class RetainNPartition<E> implements PartitionAlgorithm<E> {
 
     final private int count;
 
     /**
      * Create a count partitioner.
      *
-     * @param n The number of items to put in the second partition.
+     * @param n The number of items to put in the train partition.
      */
-    public HoldoutNPartition(int n) {
+    public RetainNPartition(int n) {
         count = n;
     }
 
     @Override
     public int partition(List<E> data) {
-        return max(0, data.size() - count);
+        return min(count, data.size());
     }
 
 }

@@ -18,11 +18,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.crossfold;
+package org.lenskit.eval.crossfold;
+
+import java.util.List;
 
 /**
- * @deprecated Use {@link org.lenskit.eval.crossfold.RandomOrder}.
+ * Partitioning algorithmInfo for an ordered sequence of stuff. Partition
+ * algorithms are typically used to hold out some items by putting
+ * them into the second partition.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@Deprecated
-public class RandomOrder extends org.lenskit.eval.crossfold.RandomOrder {
+public interface PartitionAlgorithm<E> {
+    /**
+     * Compute a partition of some data.
+     *
+     * @param data The data to partition.
+     * @return The index of the start of the second partition.
+     */
+    int partition(List<E> data);
 }

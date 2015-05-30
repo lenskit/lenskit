@@ -18,35 +18,26 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.crossfold;
+package org.lenskit.eval.crossfold;
 
-import static java.lang.Math.max;
-import static java.lang.Math.round;
+import org.grouplens.lenskit.data.event.Event;
+import org.grouplens.lenskit.data.event.Events;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 /**
- * Partition a list by fraction.
+ * Order an event sequence by timestamp.
  *
  * @param <E>
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class FractionPartition<E> implements PartitionAlgorithm<E> {
-
-    private double fraction;
-
-    /**
-     * The fraction to hold out (put in the second partition).
-     *
-     * @param f The fraction of users to hold out.
-     */
-    public FractionPartition(double f) {
-        fraction = f;
-    }
+public class TimestampOrder<E extends Event> implements Order<E> {
 
     @Override
-    public int partition(List<E> data) {
-        int n = (int) round(data.size() * fraction);
-        return max(0, data.size() - n);
+    public void apply(List<E> list, Random rng) {
+        Collections.sort(list, Events.TIMESTAMP_COMPARATOR);
     }
+
 }

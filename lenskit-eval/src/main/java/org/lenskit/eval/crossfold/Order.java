@@ -18,11 +18,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.crossfold;
+package org.lenskit.eval.crossfold;
+
+import java.util.List;
+import java.util.Random;
 
 /**
- * @deprecated Use {@link org.lenskit.eval.crossfold.RandomOrder}.
+ * An order for a list.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@Deprecated
-public class RandomOrder extends org.lenskit.eval.crossfold.RandomOrder {
+public interface Order<E> {
+    /**
+     * Apply the ordering.
+     *
+     * @param list The list to order.
+     * @param rng  The random number generator to use, if necessary.
+     */
+    void apply(List<E> list, Random rng);
 }

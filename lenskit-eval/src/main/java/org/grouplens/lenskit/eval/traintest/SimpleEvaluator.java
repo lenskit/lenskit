@@ -22,6 +22,7 @@ package org.grouplens.lenskit.eval.traintest;
 
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.GenericDataSource;
@@ -30,13 +31,19 @@ import org.grouplens.lenskit.eval.EvalProject;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstanceBuilder;
-import org.grouplens.lenskit.eval.data.crossfold.CrossfoldTask;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.util.table.Table;
+import org.lenskit.eval.crossfold.CrossfoldMethods;
+import org.lenskit.eval.crossfold.Crossfolder;
+import org.lenskit.eval.crossfold.FractionPartition;
+import org.lenskit.eval.crossfold.RandomOrder;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
@@ -47,7 +54,9 @@ import java.util.concurrent.Callable;
 @SuppressWarnings("unused")
 public class SimpleEvaluator implements Callable<Table> {
     private final EvalProject project;
+    private List<Crossfolder> crossfolders;
     private TrainTestEvalTask result;
+    private Path workDir;
 
     /**
      * Construct a simple evaluator.
@@ -66,6 +75,25 @@ public class SimpleEvaluator implements Callable<Table> {
         result = new TrainTestEvalTask("simple-eval");
         result.setProject(project);
         result.setOutput((File) null);
+        crossfolders = new ArrayList<>();
+    }
+
+    /**
+     * Get the working directory for the evaluator.
+     * @return The directory in which the evaluator will save its working files.
+     */
+    public Path getWorkDir() {
+        return workDir;
+    }
+
+    /**
+     * Set the working directory for the evaluator.
+     * @param dir The directory in which the evaluator will save its output and temporary files.
+     * @return The evaluator (for chaining).
+     */
+    public SimpleEvaluator setWorkDir(Path dir) {
+        workDir = dir;
+        return this;
     }
 
     public EvalConfig getEvalConfig() {
@@ -115,22 +143,17 @@ public class SimpleEvaluator implements Callable<Table> {
      * @param cross The crossfold task.
      * @return Itself to allow for  method chaining.
      */
-    public SimpleEvaluator addDataset(CrossfoldTask cross){
-        cross.setProject(project);
-        try {
-            for (TTDataSet data: cross.perform()) {
-                result.addDataset(data);
-            }
-        }
-        catch (TaskExecutionException e) {
-            throw new RuntimeException(e);
+    public SimpleEvaluator addDataset(Crossfolder cross){
+        crossfolders.add(cross);
+        for (TTDataSet data: cross.getDataSets()) {
+            result.addDataset(data);
         }
         return this;
     }
 
     /**
-     * Add a new data set to be cross-folded.  This method creates a new {@link CrossfoldTask}
-     * and passes it to {@link #addDataset(CrossfoldTask)}.  All crossfold parameters that are not
+     * Add a new data set to be cross-folded.  This method creates a new {@link Crossfolder}
+     * and passes it to {@link #addDataset(Crossfolder)}.  All crossfold parameters that are not
      * taken as arguments by this method are left at their defaults.
      *
      * @param name The name of the crossfold
@@ -140,17 +163,19 @@ public class SimpleEvaluator implements Callable<Table> {
      * @return Itself for chaining.
      */
     public SimpleEvaluator addDataset(String name, DataSource source, int partitions, double holdout){
-        CrossfoldTask cross = new CrossfoldTask(name)
+        Crossfolder cross = new Crossfolder(name)
                 .setSource(source)
-                .setPartitions(partitions)
-                .setHoldoutFraction(holdout);
+                .setPartitionCount(partitions)
+                .setMethod(CrossfoldMethods.partitionUsers(new RandomOrder<Rating>(),
+                                                           new FractionPartition<Rating>(holdout)))
+                .setOutputDir(workDir.resolve(name + ".split"));
         addDataset(cross);
         return this;
     }
 
     /**
-     * Add a new data set to be cross-folded.  This method creates a new {@link CrossfoldTask}
-     * and passes it to {@link #addDataset(CrossfoldTask)}.  All crossfold parameters that are not
+     * Add a new data set to be cross-folded.  This method creates a new {@link Crossfolder}
+     * and passes it to {@link #addDataset(Crossfolder)}.  All crossfold parameters that are not
      * taken as arguments by this method are left at their defaults.
      *
      * @param source The source for the crossfold
@@ -162,12 +187,12 @@ public class SimpleEvaluator implements Callable<Table> {
         return addDataset(source.getName(), source, partitions, holdout);
     }
     /**
-     * Add a new data set to be cross-folded.  This method creates a new {@link CrossfoldTask}
-     * and passes it to {@link #addDataset(CrossfoldTask)}.  All crossfold parameters that are not
+     * Add a new data set to be cross-folded.  This method creates a new {@link Crossfolder}
+     * and passes it to {@link #addDataset(Crossfolder)}.  All crossfold parameters that are not
      * taken as arguments by this method are left at their defaults.
      * <p>
      * <strong>Note:</strong> Prior to LensKit 2.2, this method used a holdout fraction of 0.2. In
-     * LensKit 2.2, it was changed to use the {@link CrossfoldTask}'s default holdout.
+     * LensKit 2.2, it was changed to use the {@link Crossfolder}'s default holdout.
      * </p>
      *
      * @param name The name of the crossfold
@@ -176,16 +201,18 @@ public class SimpleEvaluator implements Callable<Table> {
      * @return Itself for chaining.
      */
     public SimpleEvaluator addDataset(String name, DataSource source, int partitions){
-        return addDataset(new CrossfoldTask(name).setSource(source).setPartitions(partitions));
+        return addDataset(new Crossfolder(name).setSource(source)
+                                               .setPartitionCount(partitions)
+                                               .setOutputDir(workDir.resolve(name + ".split")));
     }
 
     /**
-     * Add a new data set to be cross-folded.  This method creates a new {@link CrossfoldTask}
-     * and passes it to {@link #addDataset(CrossfoldTask)}.  All crossfold parameters that are not
+     * Add a new data set to be cross-folded.  This method creates a new {@link Crossfolder}
+     * and passes it to {@link #addDataset(Crossfolder)}.  All crossfold parameters that are not
      * taken as arguments by this method are left at their defaults.
      * <p>
      * <strong>Note:</strong> Prior to LensKit 2.2, this method used a holdout fraction of 0.2. In
-     * LensKit 2.2, it was changed to use the {@link CrossfoldTask}'s default holdout.
+     * LensKit 2.2, it was changed to use the {@link Crossfolder}'s default holdout.
      * </p>
      *
      * @param source The source for the crossfold
@@ -347,6 +374,9 @@ public class SimpleEvaluator implements Callable<Table> {
     public Table call() throws TaskExecutionException {
         result.setProject(project);
         try {
+            for (Crossfolder cf: crossfolders) {
+                cf.run();
+            }
             return result.perform();
         } catch (InterruptedException e) {
             throw new TaskExecutionException("execution interrupted", e);

@@ -18,40 +18,31 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.crossfold;
+package org.lenskit.eval.crossfold;
 
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrays;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.event.Rating;
-import org.lenskit.eval.crossfold.Order;
-import org.lenskit.eval.crossfold.PartitionAlgorithm;
 
-import java.util.List;
 import java.util.Random;
 
-/**
- * A train-test holdout method.
- */
-public class Holdout {
-    private final Order<Rating> order;
-    private final PartitionAlgorithm<Rating> partitionMethod;
-
-    public Holdout(Order<Rating> ord, PartitionAlgorithm<Rating> part) {
-        order = ord;
-        partitionMethod = part;
+class UserPartitionCrossfoldMethod extends UserBasedCrossfoldMethod {
+    public UserPartitionCrossfoldMethod(Order<Rating> ord, PartitionAlgorithm<Rating> pa) {
+        super(ord, pa);
     }
 
-    public Order<Rating> getOrder() {
-        return order;
-    }
-
-    public PartitionAlgorithm<Rating> getPartitionMethod() {
-        return partitionMethod;
-    }
-
-    public int partition(List<Rating> ratings, Random rng) {
-        if (order == null || partitionMethod == null) {
-            throw new IllegalStateException("Unconfigured holdout");
+    @Override
+    protected Long2IntMap splitUsers(LongSet users, int np, Random rng) {
+        Long2IntMap userMap = new Long2IntOpenHashMap(users.size());
+        logger.info("Splitting {} users into {} partitions", users.size(), np);
+        long[] userArray = users.toLongArray();
+        LongArrays.shuffle(userArray, rng);
+        for (int i = 0; i < userArray.length; i++) {
+            final long user = userArray[i];
+            userMap.put(user, i % np);
         }
-        order.apply(ratings, rng);
-        return partitionMethod.partition(ratings);
+        return userMap;
     }
 }

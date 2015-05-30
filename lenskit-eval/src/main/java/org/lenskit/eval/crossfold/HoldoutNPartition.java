@@ -18,22 +18,34 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.crossfold;
+package org.lenskit.eval.crossfold;
 
 import java.util.List;
-import java.util.Random;
+
+import static java.lang.Math.max;
 
 /**
- * An order for a list.
+ * Partition the last part of list by holding out a fixed number of elements.
  *
+ * @param <E>
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public interface Order<E> {
+public class HoldoutNPartition<E> implements PartitionAlgorithm<E> {
+
+    final private int count;
+
     /**
-     * Apply the ordering.
+     * Create a count partitioner.
      *
-     * @param list The list to order.
-     * @param rng  The random number generator to use, if necessary.
+     * @param n The number of items to put in the second partition.
      */
-    void apply(List<E> list, Random rng);
+    public HoldoutNPartition(int n) {
+        count = n;
+    }
+
+    @Override
+    public int partition(List<E> data) {
+        return max(0, data.size() - count);
+    }
+
 }

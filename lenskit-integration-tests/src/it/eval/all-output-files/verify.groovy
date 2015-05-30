@@ -50,7 +50,7 @@ assertThat("output file existence",
 assertThat("output file existence",
            new File(basedir, "deprecated-recommendations.csv.gz"), existingFile());
 
-assertThat(new File(basedir, 'train.1.pack'),
+assertThat(new File(basedir, 'train.pack/part01.train.pack'),
            existingFile())
 
 // Verify that we have 5 distinct item-item models

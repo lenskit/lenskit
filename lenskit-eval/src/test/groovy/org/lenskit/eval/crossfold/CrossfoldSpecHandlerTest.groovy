@@ -18,11 +18,28 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.crossfold;
+package org.lenskit.eval.crossfold
 
-/**
- * @deprecated Use {@link org.lenskit.eval.crossfold.RandomOrder}.
- */
-@Deprecated
-public class RandomOrder extends org.lenskit.eval.crossfold.RandomOrder {
+import org.grouplens.lenskit.specs.SpecificationContext
+import org.grouplens.lenskit.util.test.MiscBuilders
+import org.junit.Test
+
+import static org.hamcrest.Matchers.equalTo
+import static org.junit.Assert.assertThat
+
+class CrossfoldSpecHandlerTest {
+    @Test
+    public void testConfigureCrossfolder() {
+        def cfg = MiscBuilders.configObj {
+            name "asdf"
+            source {
+                type "csv"
+                file "ratings.csv"
+            }
+            partitions 12
+        }
+        def cf = SpecificationContext.create().build(Crossfolder, cfg)
+        assertThat cf.name, equalTo("asdf")
+        assertThat cf.partitionCount, equalTo(12)
+    }
 }
