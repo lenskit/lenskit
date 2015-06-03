@@ -20,57 +20,44 @@
  */
 package org.lenskit.util.keys;
 
+import com.google.common.base.Preconditions;
+
 import javax.annotation.Nonnull;
 import java.util.Arrays;
-import java.util.BitSet;
 
 /**
- * Compact implementation of {@link LongKeyDomain}.  This implementation stores the data as ints,
- * saving a lot of memory.
+ * Full 64-bit implementation of {@link LongKeyIndex}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class CompactLongKeyDomain extends LongKeyDomain {
+class FullLongKeyIndex extends LongKeyIndex {
     private static final long serialVersionUID = 1L;
-    private final int[] keys;
+    private final long[] keys;
 
-    public CompactLongKeyDomain(@Nonnull int[] ks, int size, BitSet m) {
-        super(size, m);
-        assert ks.length >= size;
+    public FullLongKeyIndex(@Nonnull long[] ks, int lb, int ub) {
+        super(lb, ub);
+        assert ks.length >= ub;
         keys = ks;
     }
 
     public int getIndex(long key) {
-        // this domain does not contain anything outside the range of integers
-        if (key > Integer.MAX_VALUE || key < Integer.MIN_VALUE) {
-            return -1;
-        } else {
-            return Arrays.binarySearch(keys, 0, domainSize, (int) key);
-        }
+        return Arrays.binarySearch(keys, lowerBound, upperBound, key);
     }
 
     @Override
     public long getKey(int idx) {
-        assert idx >= 0 && idx < domainSize;
+        if (idx < lowerBound || idx >= upperBound) {
+            throw new IndexOutOfBoundsException("index " + idx + " is not in range [" + lowerBound + "," + upperBound + ")");
+        }
+        assert idx >= lowerBound && idx < upperBound;
         return keys[idx];
     }
 
     @Override
-    public boolean isCompatibleWith(@Nonnull LongKeyDomain other) {
-        return other instanceof CompactLongKeyDomain && keys == ((CompactLongKeyDomain) other).keys;
-    }
-
-    @Override
-    protected LongKeyDomain makeClone(BitSet mask) {
-        return new CompactLongKeyDomain(keys, domainSize, mask);
-    }
-
-    @Override
-    LongKeyDomain makeCompactCopy(BitSet m) {
-        if (domainSize == keys.length) {
-            return new CompactLongKeyDomain(keys, domainSize, m);
-        } else {
-            return new CompactLongKeyDomain(Arrays.copyOf(keys, domainSize), domainSize, m);
-        }
+    public LongKeyIndex subIndex(int lb, int ub) {
+        Preconditions.checkArgument(lb >= lowerBound && lb <= upperBound, "lower bound out of range");
+        Preconditions.checkArgument(lb <= ub, "range is negative");
+        Preconditions.checkArgument(ub >= lowerBound && ub <= upperBound, "upper bound out of range");
+        return new FullLongKeyIndex(keys, lb, ub);
     }
 }

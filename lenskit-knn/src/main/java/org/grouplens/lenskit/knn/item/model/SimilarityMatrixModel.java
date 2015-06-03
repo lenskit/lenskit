@@ -26,7 +26,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.lenskit.util.keys.LongKeyDomain;
+import org.lenskit.util.keys.LongKeyIndex;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -49,7 +49,7 @@ import java.util.Map;
 public class SimilarityMatrixModel implements Serializable, ItemItemModel {
     private static final long serialVersionUID = 3L;
 
-    private final LongKeyDomain itemDomain;
+    private final LongKeyIndex itemDomain;
     private final ImmutableList<ImmutableSparseVector> neighborhoods;
     private transient volatile String stringValue;
 
@@ -61,8 +61,8 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
      * @deprecated This is deprecated for public usage.  It is better to use the other constructor.
      */
     @Deprecated
-    public SimilarityMatrixModel(LongKeyDomain items, List<ImmutableSparseVector> nbrs) {
-        itemDomain = items.clone();
+    public SimilarityMatrixModel(LongKeyIndex items, List<ImmutableSparseVector> nbrs) {
+        itemDomain = items;
         neighborhoods = ImmutableList.copyOf(nbrs);
     }
 
@@ -72,8 +72,8 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
      * @param nbrs  The item neighborhoods.  The item neighborhood lists are not copied.
      */
     public SimilarityMatrixModel(Map<Long,ImmutableSparseVector> nbrs) {
-        itemDomain = LongKeyDomain.fromCollection(nbrs.keySet(), true);
-        int n = itemDomain.domainSize();
+        itemDomain = LongKeyIndex.fromCollection(nbrs.keySet());
+        int n = itemDomain.size();
         assert n == nbrs.size();
         ImmutableList.Builder<ImmutableSparseVector> neighbors = ImmutableList.builder();
         for (int i = 0; i < n; i++) {
@@ -84,7 +84,7 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
 
     @Override
     public LongSortedSet getItemUniverse() {
-        return itemDomain.activeSetView();
+        return itemDomain.keySet();
     }
 
     @Override

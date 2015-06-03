@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSets;
 import org.junit.Test;
-import org.lenskit.util.keys.LongKeyDomain;
+import org.lenskit.util.keys.LongKeyIndex;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -42,8 +42,8 @@ public class LongUtilsTest {
 
     @Test
     public void testUnionSizeEmptyLSAS() {
-        LongKeyDomain kd = LongKeyDomain.empty();
-        assertThat(unionSize(kd.activeSetView(), kd.clone().activeSetView()),
+        LongKeyIndex kd = LongKeyIndex.empty();
+        assertThat(unionSize(kd.keySet(), kd.keySet()),
                    equalTo(0));
     }
 
@@ -55,8 +55,8 @@ public class LongUtilsTest {
 
     @Test
     public void testUnionSizeCompatLSAS() {
-        LongKeyDomain lkd = LongKeyDomain.create(5, 3, 27);
-        assertThat(unionSize(lkd.activeSetView(), lkd.clone().activeSetView()), equalTo(3));
+        LongKeyIndex lkd = LongKeyIndex.create(5, 3, 27);
+        assertThat(unionSize(lkd.keySet(), lkd.keySet()), equalTo(3));
     }
 
     @Test
@@ -88,21 +88,6 @@ public class LongUtilsTest {
     }
 
     @Test
-    public void testUnionSizeCommonCompat() {
-        LongKeyDomain lkd = LongKeyDomain.create(1, 2, 3, 4, 5);
-        LongKeyDomain lkd2 = lkd.clone();
-        // set1 will have 1, 3, 5
-        lkd.setActive(1, false);
-        lkd.setActive(3, false);
-        // set2 will have 2, 3, 4
-        lkd.setActive(0, false);
-        lkd.setActive(4, false);
-        LongSortedSet s1 = lkd.activeSetView();
-        LongSortedSet s2 = lkd2.activeSetView();
-        assertThat(unionSize(s1, s2), equalTo(5));
-    }
-
-    @Test
     public void testSetUnionEmptySS() {
         assertThat(setUnion(LongSortedSets.EMPTY_SET, LongSortedSets.EMPTY_SET),
                    hasSize(0));
@@ -110,8 +95,8 @@ public class LongUtilsTest {
 
     @Test
     public void testSetUnionEmptyLSAS() {
-        LongKeyDomain kd = LongKeyDomain.empty();
-        assertThat(setUnion(kd.activeSetView(), kd.clone().activeSetView()),
+        LongKeyIndex kd = LongKeyIndex.empty();
+        assertThat(setUnion(kd.keySet(), kd.keySet()),
                    hasSize(0));
     }
 
@@ -123,8 +108,8 @@ public class LongUtilsTest {
 
     @Test
     public void testSetUnionCompatLSAS() {
-        LongKeyDomain lkd = LongKeyDomain.create(5, 3, 27);
-        assertThat(setUnion(lkd.activeSetView(), lkd.clone().activeSetView()),
+        LongKeyIndex lkd = LongKeyIndex.create(5, 3, 27);
+        assertThat(setUnion(lkd.keySet(), lkd.keySet()),
                    contains(3L, 5L, 27L));
     }
 
@@ -156,22 +141,6 @@ public class LongUtilsTest {
     public void testSetUnionCommon() {
         LongSortedSet s1 = packedSet(1, 3, 5);
         LongSortedSet s2 = packedSet(2, 3, 4);
-        assertThat(setUnion(s1, s2),
-                   contains(1L, 2L, 3L, 4L, 5L));
-    }
-
-    @Test
-    public void testSetUnionCommonCompat() {
-        LongKeyDomain lkd = LongKeyDomain.create(1, 2, 3, 4, 5);
-        LongKeyDomain lkd2 = lkd.clone();
-        // set1 will have 1, 3, 5
-        lkd.setActive(1, false);
-        lkd.setActive(3, false);
-        // set2 will have 2, 3, 4
-        lkd.setActive(0, false);
-        lkd.setActive(4, false);
-        LongSortedSet s1 = lkd.activeSetView();
-        LongSortedSet s2 = lkd2.activeSetView();
         assertThat(setUnion(s1, s2),
                    contains(1L, 2L, 3L, 4L, 5L));
     }

@@ -21,10 +21,12 @@
 package org.lenskit.util.collections;
 
 import it.unimi.dsi.fastutil.longs.*;
-import org.lenskit.util.keys.LongKeyDomain;
-import org.lenskit.util.keys.LongSortedArraySet;
+import org.lenskit.util.keys.LongKeyIndex;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * Utilities for working with longs and collections of them from Fastutil.
@@ -42,7 +44,7 @@ public final class LongUtils {
      * @return An efficient sorted set containing the numbers in {@code longs}.
      */
     public static LongSortedSet packedSet(Collection<Long> longs) {
-        return LongKeyDomain.fromCollection(longs, true).activeSetView();
+        return LongKeyIndex.fromCollection(longs).keySet();
     }
 
     /**
@@ -51,7 +53,7 @@ public final class LongUtils {
      * @return An efficient sorted set containing the numbers in {@code longs}.
      */
     public static LongSortedSet packedSet(long... longs) {
-        return LongKeyDomain.create(longs).activeSetView();
+        return LongKeyIndex.create(longs).keySet();
     }
 
     /**
@@ -111,7 +113,7 @@ public final class LongUtils {
         if (data.length * 2 > i * 3) {
             data = Arrays.copyOf(data, i);
         }
-        return LongKeyDomain.wrap(data, i, true).activeSetView();
+        return LongKeyIndex.wrap(data, i).keySet();
     }
 
     /**
@@ -121,16 +123,6 @@ public final class LongUtils {
      * @return The size of the union of the two sets.
      */
     public static int unionSize(LongSortedSet a, LongSortedSet b) {
-        if (a instanceof LongSortedArraySet && b instanceof LongSortedArraySet) {
-            LongKeyDomain da = ((LongSortedArraySet) a).getDomain();
-            LongKeyDomain db = ((LongSortedArraySet) b).getDomain();
-            if (da.isCompatibleWith(db)) {
-                BitSet bits = (BitSet) da.getActiveMask().clone();
-                bits.or(db.getActiveMask());
-                return bits.cardinality();
-            }
-        }
-
         // we can't do fast bit operations, scan both sets instead
         LongIterator ait = a.iterator();
         LongIterator bit = b.iterator();
@@ -165,17 +157,6 @@ public final class LongUtils {
      * @return The elements of <var>items</var> that are not in <var>exclude</var>.
      */
     public static LongSortedSet setUnion(LongSortedSet a, LongSortedSet b) {
-        if (a instanceof LongSortedArraySet && b instanceof LongSortedArraySet) {
-            LongKeyDomain da = ((LongSortedArraySet) a).getDomain();
-            LongKeyDomain db = ((LongSortedArraySet) b).getDomain();
-            if (da.isCompatibleWith(db)) {
-                LongKeyDomain result = da.clone();
-                // we're in-package, go ahead and modify. our job to know it's safe.
-                result.getActiveMask().or(db.getActiveMask());
-                return result.activeSetView();
-            }
-        }
-
         long[] data = new long[unionSize(a, b)];
 
         LongIterator ait = a.iterator();
@@ -209,7 +190,7 @@ public final class LongUtils {
         }
         assert i == data.length;
 
-        return LongKeyDomain.wrap(data, data.length, true).activeSetView();
+        return LongKeyIndex.wrap(data, data.length).keySet();
     }
 
     /**

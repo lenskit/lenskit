@@ -29,7 +29,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.lenskit.util.keys.LongKeyDomain;
+import org.lenskit.util.keys.LongKeyIndex;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -53,7 +53,7 @@ public class ItemItemBuildContext implements Serializable {
 
     @Nonnull
     private
-    LongKeyDomain items;
+    LongKeyIndex items;
     @Nonnull
     private
     SparseVector[] itemVectors;
@@ -68,7 +68,7 @@ public class ItemItemBuildContext implements Serializable {
      * @param vectors  Map of item IDs to item rating vectors.
      * @param userItems Map of user IDs to candidate items
      */
-    ItemItemBuildContext(@Nonnull LongKeyDomain universe,
+    ItemItemBuildContext(@Nonnull LongKeyIndex universe,
                          @Nonnull SparseVector[] vectors,
                          @Nonnull Long2ObjectMap<LongSortedSet> userItems) {
         this.userItems = userItems;
@@ -83,7 +83,7 @@ public class ItemItemBuildContext implements Serializable {
      */
     @Nonnull
     public LongSortedSet getItems() {
-        return items.activeSetView();
+        return items.keySet();
     }
 
     /**
@@ -143,7 +143,7 @@ public class ItemItemBuildContext implements Serializable {
      */
     @Deprecated
     public Iterator<ItemVecPair> getItemPairIterator() {
-        return new FastIteratorImpl(items.activeSetView(), items.activeSetView());
+        return new FastIteratorImpl(items.keySet(), items.keySet());
     }
 
     /**

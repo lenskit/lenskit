@@ -25,8 +25,10 @@ import it.unimi.dsi.fastutil.longs.LongBidirectionalIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.junit.Test;
+import org.lenskit.util.collections.LongUtils;
 
 import java.util.Collections;
+import java.util.NoSuchElementException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.*;
@@ -171,106 +173,18 @@ public class LongSortedArraySetTest {
     }
 
     @Test
-    public void testMaskFirst() {
-        LongKeyDomain keys = LongKeyDomain.create(2, 7, 8, 42, 639);
-        keys.setActive(0, false);
-        LongSortedSet set = new LongSortedArraySet(keys);
-        assertThat(set, hasSize(4));
-        assertThat(set.first(), equalTo(7l));
-        assertThat(set.last(), equalTo(639l));
-        assertTrue(set.contains(7));
-        assertTrue(set.contains(42));
-        assertFalse(set.contains(2));
-        assertThat(LongIterators.unwrap(set.iterator()),
-                   equalTo(new long[]{7, 8, 42, 639}));
-        assertThat(LongIterators.unwrap(set.iterator(2)),
-                   equalTo(new long[]{7, 8, 42, 639}));
-        assertThat(LongIterators.unwrap(set.iterator(7)),
-                   equalTo(new long[]{8, 42, 639}));
-        assertThat(set.headSet(42), hasSize(2));
-    }
-
-    @Test
-    public void testMaskMid() {
-        LongKeyDomain keys = LongKeyDomain.create(2, 7, 8, 42, 639);
-        keys.setActive(2, false);
-        LongSortedSet set = new LongSortedArraySet(keys);
-        assertThat(set, hasSize(4));
-        assertThat(set.first(), equalTo(2l));
-        assertThat(set.last(), equalTo(639l));
-        assertTrue(set.contains(7));
-        assertTrue(set.contains(42));
-        assertFalse(set.contains(8));
-        assertThat(LongIterators.unwrap(set.iterator()),
-                   equalTo(new long[]{2, 7, 42, 639}));
-        assertThat(LongIterators.unwrap(set.iterator(2)),
-                   equalTo(new long[]{7, 42, 639}));
-        assertThat(LongIterators.unwrap(set.iterator(7)),
-                   equalTo(new long[]{42, 639}));
-        assertThat(set.headSet(42), hasSize(2));
-        assertThat(set.toLongArray(),
-                   equalTo(new long[]{2, 7, 42, 639}));
-    }
-
-    @Test
-    public void testMaskLast() {
-        LongKeyDomain keys = LongKeyDomain.create(2, 7, 8, 42, 639);
-        keys.setActive(4, false);
-        LongSortedSet set = new LongSortedArraySet(keys);
-        assertThat(set, hasSize(4));
-        assertThat(set.first(), equalTo(2l));
-        assertThat(set.last(), equalTo(42l));
-        assertTrue(set.contains(8));
-        assertFalse(set.contains(639));
-        assertThat(LongIterators.unwrap(set.iterator()),
-                   equalTo(new long[]{2, 7, 8, 42}));
-        assertThat(LongIterators.unwrap(set.iterator(2)),
-                   equalTo(new long[]{7, 8, 42}));
-        assertThat(LongIterators.unwrap(set.iterator(7)),
-                   equalTo(new long[]{8, 42}));
-        assertThat(set.headSet(42).toLongArray(),
-                   equalTo(new long[]{2, 7, 8}));
-        assertThat(set.tailSet(7).toLongArray(),
-                   equalTo(new long[]{7, 8, 42}));
-    }
-
-    @Test
-    public void testMaskEmpty() {
-        LongKeyDomain keys = LongKeyDomain.create(2, 7, 8, 42, 639);
-        keys.setAllActive(false);
-        LongSortedSet set = new LongSortedArraySet(keys);
-
-        assertThat(set.size(), equalTo(0));
-        assertTrue(set.isEmpty());
-        assertFalse(set.iterator().hasNext());
-        for (int i = 0; i < keys.domainSize(); i++) {
-            assertFalse(set.contains(keys.getKey(i)));
+    public void testSubsetIterator() {
+        LongSortedSet set = LongUtils.packedSet(1L, 3L, 5L, 10L);
+        LongSortedSet subset = set.subSet(3L, 6L);
+        assertThat(subset, hasSize(2));
+        assertThat(subset, contains(3L, 5L));
+        LongBidirectionalIterator iter = subset.iterator();
+        assertThat(iter.hasPrevious(), equalTo(false));
+        try {
+            iter.previousLong();
+            fail("previousLong should fail");
+        } catch (NoSuchElementException e) {
+            /* expected */
         }
-    }
-
-    @Test
-    public void testMaskedIterator() {
-        LongKeyDomain keys = LongKeyDomain.create(2, 7, 8, 42, 639);
-        keys.setAllActive(true);
-        keys.setActive(0, false);
-        keys.setActive(4, false);
-        LongSortedSet set = new LongSortedArraySet(keys);
-        assertTrue(set.iterator(7).hasNext());
-        assertTrue(set.iterator(7).hasPrevious());
-        assertThat(set.iterator(7).nextLong(), equalTo(8l));
-        assertThat(set.iterator(7).previousLong(), equalTo(7l));
-    }
-
-    @Test
-    public void testMaskedIteratorMid() {
-        LongKeyDomain keys = LongKeyDomain.create(2, 7, 8, 42, 639);
-        keys.setAllActive(true);
-        keys.setActive(0, false);
-        keys.setActive(2, false);
-        LongSortedSet set = new LongSortedArraySet(keys);
-        assertTrue(set.iterator(8).hasNext());
-        assertTrue(set.iterator(8).hasPrevious());
-        assertThat(set.iterator(8).nextLong(), equalTo(42l));
-        assertThat(set.iterator(8).previousLong(), equalTo(7l));
     }
 }
