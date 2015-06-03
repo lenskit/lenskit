@@ -28,7 +28,7 @@ import java.util.Collection;
  * scores, purchase probabilities, or any other real-valued score which can be
  * assigned to an item for a particular user.
  *
- * @compat Public
+ *  @compat Public
  */
 public interface ItemScorer {
     /**
