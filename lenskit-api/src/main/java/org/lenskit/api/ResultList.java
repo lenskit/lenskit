@@ -38,19 +38,4 @@ public interface ResultList<E extends Result> extends List<E> {
      * @return The list of IDs.
      */
     List<Long> idList();
-
-    /**
-     * Convert this result list to a list with a different type of result.  Technically, this provides a runtime-checked
-     * means of making the result list type *covariant* in its result type, since Java does not allow us to encode this
-     * allowance in the type system.
-     *
-     * @param type The result type to cast to.  It is always valid for this type to be a supertype of `E`; the method
-     *             will also succeed if every non-null result is an instance of this type (or one of its subtypes).
-     * @param <T> The result type.
-     * @return A result list statically typed to contain results of type `T`.
-     * @throws IllegalArgumentException if not all results can be cast type type `T`.
-     * @throws UnsupportedOperationException if the result list is mutable (very rare, only used for intermediate
-     * working objects).
-     */
-    <T extends Result> ResultList<T> castResults(Class<T> type);
 }

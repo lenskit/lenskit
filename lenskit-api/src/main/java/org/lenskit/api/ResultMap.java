@@ -44,19 +44,4 @@ public interface ResultMap<E extends Result> extends Map<Long,E>, Iterable<E> {
      * @return The score associated with `id`, or {@link Double#NaN} if there is no score.
      */
     double getScore(long id);
-
-    /**
-     * Convert this result map to a map with a different type of result.  Technically, this provides a runtime-checked
-     * means of making the result map type *covariant* in its result type, since Java does not allow us to encode this
-     * allowance in the type system.
-     *
-     * @param type The result type to cast to.  It is always valid for this type to be a supertype of `E`; the method
-     *             will also succeed if every non-null result is an instance of this type (or one of its subtypes).
-     * @param <T> The result type.
-     * @return A result map statically typed to contain results of type `T`.
-     * @throws IllegalArgumentException if not all results can be cast type type `T`.
-     * @throws UnsupportedOperationException if the result map is mutable (very rare, only used for intermediate
-     * working objects).
-     */
-    <T extends Result> ResultMap<T> castResults(Class<T> type);
 }
