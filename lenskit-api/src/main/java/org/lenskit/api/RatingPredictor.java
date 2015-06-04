@@ -50,7 +50,7 @@ public interface RatingPredictor {
      *         not contain all requested items.
      */
     @Nonnull
-    ResultMap<Result> predict(long user, @Nonnull Collection<Long> items);
+    ResultMap predict(long user, @Nonnull Collection<Long> items);
 
     /**
      * Predict the user's preference for a collection of items, potentially with additional details.
@@ -61,5 +61,5 @@ public interface RatingPredictor {
      *         not contain all requested items.
      */
     @Nonnull
-    ResultMap<? extends Result> predictWithDetails(long user, @Nonnull Collection<Long> items);
+    ResultMap predictWithDetails(long user, @Nonnull Collection<Long> items);
 }

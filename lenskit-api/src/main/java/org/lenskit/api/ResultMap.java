@@ -21,22 +21,24 @@
 package org.lenskit.api;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
- * A set of results from a recommender operation.  Recommendation results conceptually map item
- * (or user, for a few operations) IDs to corresponding scores, and have some order over their IDs.
- * Depending on the operation that produced the result set, that order may be arbitrary, but
- * operations that find things (recommendation, related item and user queries) will usually
- * return results in order from most to least relevant or wanted.
- *
- * @param <E> The entry type (parameterized to make extension cleaner).
+ * A map of results from a recommender operation.  This is returned from operations such as *predict* that provide
+ * scores or values for a collection of items, but do not rank or find items.
  */
-public interface ResultMap<E extends Result> extends Map<Long,E>, Iterable<E> {
+public interface ResultMap extends Map<Long,Result>, Iterable<Result> {
     /**
      * View this result set as a map from longs to doubles.
      * @return A map view of this result set.
      */
     Map<Long,Double> scoreMap();
+
+    /**
+     * View the results as a set.
+     * @return The result set.
+     */
+    Set<Result> resultSet();
 
     /**
      * Get the score associated with an ID.

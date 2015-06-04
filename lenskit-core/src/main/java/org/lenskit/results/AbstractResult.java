@@ -24,11 +24,13 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.lenskit.api.Result;
 
+import javax.annotation.Nonnull;
+
 /**
  * Base class for basic result types.  It provides storage for the ID and score, as well as helper methods for hashing
  * and equality checking.  This type does not directly enforce immutability, but subclasses should be immutable.
  */
-public class AbstractResult implements Result {
+public abstract class AbstractResult implements Result {
     protected long id;
     protected double score;
 
@@ -60,6 +62,30 @@ public class AbstractResult implements Result {
     @Override
     public boolean hasScore() {
         return !Double.isNaN(score);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * The default implementation simply casts the result to type `type` if possible.
+     */
+    @Override
+    public <T extends Result> T as(@Nonnull Class<T> type) {
+        if (type.isInstance(this)) {
+            return type.cast(this);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * The default implementation simply calls {@link #as(Class)}.
+     */
+    @Override
+    public <T extends Result> T find(@Nonnull Class<T> type) {
+        return as(type);
     }
 
     /**

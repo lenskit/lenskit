@@ -23,15 +23,10 @@ package org.lenskit.api;
 import java.util.List;
 
 /**
- * A set of results from a recommender operation.  Recommendation results conceptually map item
- * (or user, for a few operations) IDs to corresponding scores, and have some order over their IDs.
- * Depending on the operation that produced the result set, that order may be arbitrary, but
- * operations that find things (recommendation, related item and user queries) will usually
- * return results in order from most to least relevant or wanted.
- *
- * @param <E> The entry type (parameterized to make extension cleaner).
+ * A list of results from a recommender operation.  This is used for operations such as top-*N* recommendation that
+ * produce a list (or occasionally set) of items.
  */
-public interface ResultList<E extends Result> extends List<E> {
+public interface ResultList extends List<Result> {
     /**
      * Return a list of the item (or user) IDs in this result list.
      *

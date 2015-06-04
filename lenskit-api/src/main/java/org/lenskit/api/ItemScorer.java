@@ -48,7 +48,7 @@ public interface ItemScorer {
      * @return The scores for the items. This result set may not contain all requested items.
      */
     @Nonnull
-    ResultMap<Result> score(long user, @Nonnull Collection<Long> items);
+    ResultMap score(long user, @Nonnull Collection<Long> items);
 
     /**
      * Score a collection of items and potentially return more details on the scores.
@@ -59,5 +59,5 @@ public interface ItemScorer {
      * support additional details will return a subclass of {@link ResultMap} that provides access to those details.
      */
     @Nonnull
-    ResultMap<? extends Result> scoreWithDetails(long user, @Nonnull Collection<Long> items);
+    ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items);
 }

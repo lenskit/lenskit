@@ -35,20 +35,20 @@ import java.util.List;
 /**
  * Basic list-based implementation of a result list.
  */
-public class BasicResultList<E extends Result> extends AbstractList<E> implements LenskitResultList<E> {
-    private final ImmutableList<E> results;
+public class BasicResultList extends AbstractList<Result> implements LenskitResultList {
+    private final ImmutableList<Result> results;
     private final IdList idList = new IdList();
 
     /**
      * Create a new result list from a list of results.
      * @param rss The result list.
      */
-    public BasicResultList(List<? extends E> rss) {
+    public BasicResultList(List<? extends Result> rss) {
         results = ImmutableList.copyOf(rss);
     }
 
     @Override
-    public E get(int index) {
+    public Result get(int index) {
         return results.get(index);
     }
 
@@ -58,17 +58,17 @@ public class BasicResultList<E extends Result> extends AbstractList<E> implement
     }
 
     @Override
-    public UnmodifiableIterator<E> iterator() {
+    public UnmodifiableIterator<Result> iterator() {
         return results.iterator();
     }
 
     @Override
-    public UnmodifiableListIterator<E> listIterator() {
+    public UnmodifiableListIterator<Result> listIterator() {
         return results.listIterator();
     }
 
     @Override
-    public UnmodifiableListIterator<E> listIterator(int index) {
+    public UnmodifiableListIterator<Result> listIterator(int index) {
         return results.listIterator(index);
     }
 
@@ -88,7 +88,7 @@ public class BasicResultList<E extends Result> extends AbstractList<E> implement
     }
 
     @Override
-    public ImmutableList<E> subList(int fromIndex, int toIndex) {
+    public ImmutableList<Result> subList(int fromIndex, int toIndex) {
         return results.subList(fromIndex, toIndex);
     }
 

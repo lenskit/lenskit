@@ -27,8 +27,7 @@ import org.lenskit.api.ResultMap;
 
 /**
  * LensKit refinement of the general result map type.
- * @param <E> The result type.
  */
-public interface LenskitResultMap<E extends Result> extends ResultMap<E>, Long2ObjectMap<E> {
+public interface LenskitResultMap extends ResultMap, Long2ObjectMap<Result> {
     Long2DoubleMap scoreMap();
 }

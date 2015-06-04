@@ -62,7 +62,7 @@ public interface ItemRecommender {
      * @return The recommended items.
      * @see #recommend(long, int, Set, Set)
      */
-    ResultList<Result> recommend(long user);
+    ResultList recommend(long user);
 
     /**
      * Recommend up to <var>n</var> items for a user using the default exclude
@@ -73,7 +73,7 @@ public interface ItemRecommender {
      * @return The recommended items.
      * @see #recommend(long, int, Set, Set)
      */
-    ResultList<Result> recommend(long user, int n);
+    ResultList recommend(long user, int n);
 
     /**
      * Recommend all possible items for a user from a set of candidates using
@@ -85,7 +85,7 @@ public interface ItemRecommender {
      * @return The recommended items.
      * @see #recommend(long, int, Set, Set)
      */
-    ResultList<Result> recommend(long user, @Nullable Set<Long> candidates);
+    ResultList recommend(long user, @Nullable Set<Long> candidates);
 
     /**
      * Produce a set of recommendations for the user. This is the most general
@@ -107,7 +107,7 @@ public interface ItemRecommender {
      *         decreasing order of score. This is not a hard requirement — e.g.
      *         set recommenders are allowed to be more flexible.
      */
-    ResultList<Result> recommend(long user, int n, @Nullable Set<Long> candidates,
+    ResultList recommend(long user, int n, @Nullable Set<Long> candidates,
                                  @Nullable Set<Long> exclude);
 
     /**
@@ -128,6 +128,6 @@ public interface ItemRecommender {
      *         decreasing order of score. This is not a hard requirement — e.g.
      *         set recommenders are allowed to be more flexible.
      */
-    ResultList<? extends Result> recommendWithDetails(long user, int n, @Nullable Set<Long> candidates,
-                                                      @Nullable Set<Long> exclude);
+    ResultList recommendWithDetails(long user, int n, @Nullable Set<Long> candidates,
+                                    @Nullable Set<Long> exclude);
 }
