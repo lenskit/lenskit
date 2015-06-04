@@ -1,5 +1,7 @@
 package org.lenskit.results;
 
+import com.google.common.base.Equivalence;
+import com.google.common.base.Function;
 import org.lenskit.api.Result;
 
 /**
@@ -30,6 +32,34 @@ public final class Results {
             return (BasicResult) r;
         } else {
             return create(r.getId(), r.getScore());
+        }
+    }
+
+    /**
+     * Guava function that converts a result to a basic result.  This is just {@link #basicCopy(Result)} exposed as
+     * a Guava {@link Function} for use in processing lists, etc.
+     *
+     * @return A function that maps results to basic (only score and ID) versions of them.
+     */
+    public static Function<Result,BasicResult> basicCopyFunction() {
+        return BasicCopyFunction.INSTANCE;
+    }
+
+    /**
+     * An equivalence relation that considers objects to be equal if they are equal after being converted to
+     * basic results (that is, their IDs and scores are equal).
+     * @return The equivalence relation.
+     */
+    public static Equivalence<Result> basicEquivalence() {
+        return Equivalence.equals().onResultOf(basicCopyFunction());
+    }
+
+    private enum BasicCopyFunction implements Function<Result,BasicResult> {
+        INSTANCE {
+            @Override
+            public BasicResult apply(Result result) {
+                return basicCopy(result);
+            }
         }
     }
 }

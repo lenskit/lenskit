@@ -1,0 +1,66 @@
+package org.lenskit.results;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.lenskit.api.Result;
+
+/**
+ * Base class for basic result types.  It provides storage for the ID and score, as well as helper methods for hashing
+ * and equality checking.  This type does not directly enforce immutability, but subclasses should be immutable.
+ */
+public class AbstractResult implements Result {
+    protected long id;
+    protected double score;
+
+    /**
+     * Create a new result.
+     * @param id The result ID.
+     * @param score The result score.
+     */
+    protected AbstractResult(long id, double score) {
+        this.id = id;
+        this.score = score;
+    }
+
+    /**
+     * Create a new, uninitialized result.
+     */
+    protected AbstractResult() {}
+
+    @Override
+    public long getId() {
+        return id;
+    }
+
+    @Override
+    public double getScore() {
+        return score;
+    }
+
+    @Override
+    public boolean hasScore() {
+        return !Double.isNaN(score);
+    }
+
+    /**
+     * Create a hash code builder, populated with the ID and score.  Subclasses can use this as a starting point for
+     * building a hash code.
+     *
+     * @return A hash code builder that has the ID and score already appended.
+     */
+    protected HashCodeBuilder startHashCode() {
+        return new HashCodeBuilder().append(id).append(score);
+    }
+
+    /**
+     * Create an equality builder, populated with the ID and score.  Subclasses can use this as a starting point for
+     * checking equality.
+     *
+     * @param r The other result.
+     * @return An equality builder, that has the ID and score of this result and `r` already appended to it.
+     */
+    protected EqualsBuilder startEquality(Result r) {
+        return new EqualsBuilder().append(id, r.getId())
+                                  .append(score, r.getScore());
+    }
+}
