@@ -20,6 +20,7 @@
  */
 package org.lenskit.results;
 
+import com.google.common.base.MoreObjects;
 import org.lenskit.api.Result;
 
 import javax.annotation.concurrent.Immutable;
@@ -81,5 +82,13 @@ public final class BasicResult extends AbstractResult implements Serializable {
     @Override
     public int hashCode() {
         return startHashCode().toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                          .add("id", id)
+                          .add("score", score)
+                          .toString();
     }
 }
