@@ -16,8 +16,8 @@ import java.io.Serializable;
 public class BasicResult implements Result, Serializable {
     private static final long serialVersionUID = 1L;
 
-    private final long id;
-    private final double score;
+    protected final long id;
+    protected final double score;
 
     public BasicResult(long id, double score) {
         this.id = id;
@@ -42,16 +42,18 @@ public class BasicResult implements Result, Serializable {
     /**
      * Compare this result with another for equality.  Instance of this result type are only equal with other basic
      * result instances; to compare general results for equality, first convert them to basic results with
-     * {@link Results#basicCopy(Result)}.
+     * {@link Results#basicCopy(Result)}.  Detailed results that extend this class **must** override both this method
+     * and {@link #hashCode()}.
      *
      * @param o The object to compare with.
      * @return `true` if the objects are equivalent.
      */
     @Override
     public boolean equals(Object o) {
+        assert getClass().equals(BasicResult.class): "subclass failed to override equals()";
         if (o == this) {
             return true;
-        } else if (o instanceof BasicResult) {
+        } else if (o != null && o.getClass().equals(BasicResult.class)) {
             BasicResult or = (BasicResult) o;
             return new EqualsBuilder().append(id, or.id)
                                       .append(score, or.score)
@@ -63,6 +65,7 @@ public class BasicResult implements Result, Serializable {
 
     @Override
     public int hashCode() {
+        assert getClass().equals(BasicResult.class): "subclass failed to override hashCode()";
         return new HashCodeBuilder().append(id).append(score).toHashCode();
     }
 }
