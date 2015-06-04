@@ -2,7 +2,12 @@ package org.lenskit.results;
 
 import com.google.common.base.Equivalence;
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
 import org.lenskit.api.Result;
+import org.lenskit.api.ResultList;
+
+import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * Utility functions for working with results.
@@ -33,6 +38,29 @@ public final class Results {
         } else {
             return create(r.getId(), r.getScore());
         }
+    }
+
+    /**
+     * Create a new result list.
+     * @param results The results to include in the list.
+     * @param <R> the result type
+     * @return The result list.
+     */
+    @Nonnull
+    public static <R extends Result> ResultList<R> newResultList(@Nonnull List<? extends R> results) {
+        return new BasicResultList<>(results);
+    }
+
+    /**
+     * Create a new result list.
+     * @param results The results to include in the list.
+     * @param <R> the result type
+     * @return The result list.
+     */
+    @SafeVarargs
+    @Nonnull
+    public static <R extends Result> ResultList<R> newResultList(R... results) {
+        return new BasicResultList<R>(ImmutableList.copyOf(results));
     }
 
     /**
