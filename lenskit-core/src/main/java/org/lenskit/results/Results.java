@@ -63,12 +63,11 @@ public final class Results {
     /**
      * Create a new result list.
      * @param results The results to include in the list.
-     * @param <R> the result type
      * @return The result list.
      */
     @Nonnull
-    public static <R extends Result> ResultList<R> newResultList(@Nonnull List<? extends R> results) {
-        return new BasicResultList<>(results);
+    public static ResultList newResultList(@Nonnull List<? extends Result> results) {
+        return new BasicResultList(results);
     }
 
     /**
@@ -79,8 +78,8 @@ public final class Results {
      */
     @SafeVarargs
     @Nonnull
-    public static <R extends Result> ResultList<R> newResultList(R... results) {
-        return new BasicResultList<R>(ImmutableList.copyOf(results));
+    public static <R extends Result> ResultList newResultList(R... results) {
+        return new BasicResultList(ImmutableList.copyOf(results));
     }
 
     /**
