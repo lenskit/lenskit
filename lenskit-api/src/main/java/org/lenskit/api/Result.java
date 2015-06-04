@@ -20,12 +20,19 @@
  */
 package org.lenskit.api;
 
+/**
+ * A LensKit result, consisting of a score and an ID.  Individual recommenders may subclass this component to provide
+ * more detailed results.
+ *
+ * Implementations must create well-defined equality. However, instances of different implementations are not required
+ * or expected to be able to be equal to each other.
+ */
 public interface Result {
     /**
      * Get the ID for the result.
      * @return The user or item ID for this result.
      */
-    int getId();
+    long getId();
 
     /**
      * Get the score (value) associated with this result.
