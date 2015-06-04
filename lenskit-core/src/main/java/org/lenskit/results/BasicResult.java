@@ -45,6 +45,9 @@ public class BasicResult implements Result, Serializable {
      * {@link Results#basicCopy(Result)}.  Detailed results that extend this class **must** override both this method
      * and {@link #hashCode()}.
      *
+     * Subclasses should **not** call this method; they can use {@link #startEquality(Result)} to reuse the logic for
+     * checking ID and score.
+     *
      * @param o The object to compare with.
      * @return `true` if the objects are equivalent.
      */
@@ -55,17 +58,43 @@ public class BasicResult implements Result, Serializable {
             return true;
         } else if (o != null && o.getClass().equals(BasicResult.class)) {
             BasicResult or = (BasicResult) o;
-            return new EqualsBuilder().append(id, or.id)
-                                      .append(score, or.score)
-                                      .isEquals();
+            return startEquality(or).isEquals();
         } else {
             return false;
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * Subclasses should **not** call this method; they can use {@link #startHashCode()} to reuse the logic for
+     * hashing the ID and score.
+     */
     @Override
     public int hashCode() {
         assert getClass().equals(BasicResult.class): "subclass failed to override hashCode()";
-        return new HashCodeBuilder().append(id).append(score).toHashCode();
+        return startHashCode().toHashCode();
+    }
+
+    /**
+     * Create a hash code builder, populated with the ID and score.  Subclasses can use this as a starting point for
+     * building a hash code.
+     *
+     * @return A hash code builder that has the ID and score already appended.
+     */
+    protected HashCodeBuilder startHashCode() {
+        return new HashCodeBuilder().append(id).append(score);
+    }
+
+    /**
+     * Create an equality builder, populated with the ID and score.  Subclasses can use this as a starting point for
+     * checking equality.
+     *
+     * @param r The other result.
+     * @return An equality builder, that has the ID and score of this result and `r` already appended to it.
+     */
+    protected EqualsBuilder startEquality(Result r) {
+        return new EqualsBuilder().append(id, r.getId())
+                                  .append(score, r.getScore());
     }
 }
