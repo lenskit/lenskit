@@ -22,11 +22,15 @@ package org.lenskit.results;
 
 import com.google.common.base.Equivalence;
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Ordering;
+import com.google.common.primitives.Doubles;
+import com.google.common.primitives.Longs;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
+import org.lenskit.api.ResultMap;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -79,7 +83,29 @@ public final class Results {
     @SafeVarargs
     @Nonnull
     public static <R extends Result> ResultList newResultList(R... results) {
-        return new BasicResultList(ImmutableList.copyOf(results));
+        return new BasicResultList(Arrays.asList(results));
+    }
+
+    /**
+     * Create a new result list.
+     * @param results The results to include in the list.
+     * @return The result list.
+     */
+    @Nonnull
+    public static ResultMap newResultMap(@Nonnull List<? extends Result> results) {
+        return new BasicResultMap(results);
+    }
+
+    /**
+     * Create a new result list.
+     * @param results The results to include in the list.
+     * @param <R> the result type
+     * @return The result list.
+     */
+    @SafeVarargs
+    @Nonnull
+    public static <R extends Result> ResultMap newResultMap(R... results) {
+        return new BasicResultMap(Arrays.asList(results));
     }
 
     /**
@@ -101,12 +127,44 @@ public final class Results {
         return Equivalence.equals().onResultOf(basicCopyFunction());
     }
 
+    /**
+     * Get an ordering (comparator) that orders results by ID.
+     * @return An ordering that orders results by ID (increasing).
+     */
+    public static Ordering<Result> idOrder() {
+        return IdOrder.INSTANCE;
+    }
+
+    /**
+     * Get an ordering (comparator) that orders results by score.
+     * @return An ordering that orders results by score (increasing).
+     */
+    public static Ordering<Result> scoreOrder() {
+        return ScoreOrder.INSTANCE;
+    }
+
     private enum BasicCopyFunction implements Function<Result,BasicResult> {
         INSTANCE {
             @Override
             public BasicResult apply(Result result) {
                 return basicCopy(result);
             }
+        }
+    }
+
+    private static class IdOrder extends Ordering<Result> {
+        private static final IdOrder INSTANCE = new IdOrder();
+        @Override
+        public int compare(Result left, Result right) {
+            return Longs.compare(left.getId(), right.getId());
+        }
+    }
+
+    private static class ScoreOrder extends Ordering<Result> {
+        private static final ScoreOrder INSTANCE = new ScoreOrder();
+        @Override
+        public int compare(Result left, Result right) {
+            return Doubles.compare(left.getScore(), right.getScore());
         }
     }
 }

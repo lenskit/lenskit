@@ -28,7 +28,7 @@ import javax.annotation.Nullable;
  * more detailed results.
  *
  * Implementations must create well-defined equality. However, instances of different implementations are not required
- * or expected to be able to be equal to each other.
+ * or expected to be able to be equal to each other.  Instances are not allowed to be equal if they have different IDs.
  */
 public interface Result {
     /**

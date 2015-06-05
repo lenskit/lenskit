@@ -28,6 +28,7 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 
+import javax.annotation.concurrent.Immutable;
 import java.util.AbstractList;
 import java.util.Collection;
 import java.util.List;
@@ -35,6 +36,7 @@ import java.util.List;
 /**
  * Basic list-based implementation of a result list.
  */
+@Immutable
 public class BasicResultList extends AbstractList<Result> implements LenskitResultList {
     private final ImmutableList<Result> results;
     private final IdList idList = new IdList();
