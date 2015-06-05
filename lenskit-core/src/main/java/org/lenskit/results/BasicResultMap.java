@@ -26,16 +26,15 @@ import it.unimi.dsi.fastutil.objects.*;
 import org.lenskit.api.Result;
 
 import javax.annotation.concurrent.Immutable;
-import java.util.AbstractSet;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Standard result map implementation.
  */
 @Immutable
 public class BasicResultMap extends AbstractLong2ObjectMap<Result> implements LenskitResultMap {
+    private static final long serialVersionUID = 1L;
+
     private final Long2ObjectMap<Result> delegate;
 
     /**
@@ -67,6 +66,26 @@ public class BasicResultMap extends AbstractLong2ObjectMap<Result> implements Le
     @Override
     public Result get(long l) {
         return delegate.get(l);
+    }
+
+    @Override
+    public boolean containsKey(long l) {
+        return delegate.containsKey(l);
+    }
+
+    @Override
+    public ObjectCollection<Result> values() {
+        return ObjectCollections.unmodifiable(delegate.values());
+    }
+
+    @Override
+    public ObjectSet<Map.Entry<Long, Result>> entrySet() {
+        return ObjectSets.unmodifiable(delegate.entrySet());
+    }
+
+    @Override
+    public LongSet keySet() {
+        return LongSets.unmodifiable(delegate.keySet());
     }
 
     @Override
