@@ -30,12 +30,9 @@ import java.util.List;
 
 import static net.java.quickcheck.generator.CombinedGeneratorsIterables.someNonEmptyLists;
 import static net.java.quickcheck.generator.CombinedGeneratorsIterables.someSortedLists;
-import static net.java.quickcheck.generator.PrimitiveGenerators.integers;
-import static net.java.quickcheck.generator.PrimitiveGenerators.longs;
-import static net.java.quickcheck.generator.PrimitiveGenerators.strings;
+import static net.java.quickcheck.generator.PrimitiveGenerators.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeThat;
 
 public class BinarySearchTest {
     @Test
@@ -157,13 +154,21 @@ public class BinarySearchTest {
 
     @Test
     public void testRandomSubsetSearches() {
-        for (List<Long> keys: someSortedLists(longs(), 10, 50)) {
-            long key = longs().next();
+        // Test over some random lists, from 10 to 150 items long
+        // Use bytes, so we have a decent probability of picking a key in the list
+        for (List<Byte> keys: someSortedLists(bytes(), 10, 50)) {
+            // Randomly pick a search key
+            byte key = bytes().next();
             BinarySearch search = BinarySearch.forList(key, keys);
+            // Randomly pick start and end positions within the list
             int start = integers(0, keys.size()).next();
             int end = integers(start, keys.size()).next();
+
+            // Search...
             int rv = search.search(start, end);
             int idx = BinarySearch.resultToIndex(rv);
+
+            // and make sure the result is right
             assertThat(idx, greaterThanOrEqualTo(start));
             assertThat(idx, lessThanOrEqualTo(end));
             if (rv >= 0) {
