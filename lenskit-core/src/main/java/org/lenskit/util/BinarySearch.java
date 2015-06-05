@@ -65,7 +65,7 @@ public abstract class BinarySearch {
                 start = pos + 1;
             } else {
                 // we found it - walk backwards to first
-                while (pos > 0 && test(pos-1) == 0) {
+                while (pos > start && test(pos-1) == 0) {
                     pos -= 1;
                 }
                 return pos;

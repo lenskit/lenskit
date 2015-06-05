@@ -35,6 +35,7 @@ import static net.java.quickcheck.generator.PrimitiveGenerators.longs;
 import static net.java.quickcheck.generator.PrimitiveGenerators.strings;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeThat;
 
 public class BinarySearchTest {
     @Test
@@ -150,6 +151,31 @@ public class BinarySearchTest {
             if (rv > 0) {
                 // this is the first one
                 assertThat(keys.get(rv-1), lessThan(dupKey));
+            }
+        }
+    }
+
+    @Test
+    public void testRandomSubsetSearches() {
+        for (List<Long> keys: someSortedLists(longs(), 10, 50)) {
+            long key = longs().next();
+            BinarySearch search = BinarySearch.forList(key, keys);
+            int start = integers(0, keys.size()).next();
+            int end = integers(start, keys.size()).next();
+            int rv = search.search(start, end);
+            int idx = BinarySearch.resultToIndex(rv);
+            assertThat(idx, greaterThanOrEqualTo(start));
+            assertThat(idx, lessThanOrEqualTo(end));
+            if (rv >= 0) {
+                assertThat(rv, lessThan(end));
+                assertThat(keys.get(rv), equalTo(key));
+            } else {
+                if (idx < end) {
+                    assertThat(keys.get(idx), greaterThan(key));
+                }
+                if (idx > start) {
+                    assertThat(keys.get(idx - 1), lessThan(key));
+                }
             }
         }
     }
