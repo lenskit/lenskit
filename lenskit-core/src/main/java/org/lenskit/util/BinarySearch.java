@@ -52,18 +52,17 @@ public abstract class BinarySearch {
     public int search(int start, int end) {
         Preconditions.checkArgument(start >= 0, "Start position is negative");
         Preconditions.checkArgument(end >= start, "End is before start");
-        if (end == start) {
-            return -end - 1;
-        } else {
+
+        while (end > start) {
             int off = (end - start) / 2;
             int pos = start + off;
             int cmp = test(pos);
             if (cmp < 0) {
                 // target less than pos, go left
-                return search(start, pos);
+                end = pos;
             } else if (cmp > 0) {
                 // target more than pos, go right
-                return search(pos + 1, end);
+                start = pos + 1;
             } else {
                 // we found it - walk backwards to first
                 while (pos > 0 && test(pos-1) == 0) {
@@ -72,6 +71,9 @@ public abstract class BinarySearch {
                 return pos;
             }
         }
+
+        // never found it
+        return -end - 1;
     }
 
     /**
