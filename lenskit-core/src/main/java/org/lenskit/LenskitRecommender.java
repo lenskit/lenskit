@@ -18,14 +18,19 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
+package org.lenskit;
 
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.inject.StaticInjector;
+import org.lenskit.api.ItemRecommender;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.api.RatingPredictor;
+import org.lenskit.api.Recommender;
 
 import java.lang.annotation.Annotation;
 
@@ -50,7 +55,7 @@ public class LenskitRecommender implements Recommender {
      *
      * @param graph This recommender's configuration graph.
      */
-    public LenskitRecommender(DAGNode<Component,Dependency> graph) {
+    public LenskitRecommender(DAGNode<Component, Dependency> graph) {
         injector = new StaticInjector(graph);
     }
 
@@ -112,48 +117,22 @@ public class LenskitRecommender implements Recommender {
 
     @Override
     public ItemScorer getItemScorer() {
-        ItemScorer scorer = get(ItemScorer.class);
-        if (scorer == null) {
-            org.lenskit.api.ItemScorer ns = get(org.lenskit.api.ItemScorer.class);
-            if (ns != null) {
-                scorer = new ItemScorerCompatWrapper(ns);
-            }
-        }
-        return scorer;
-    }
-
-    @Override
-    public GlobalItemScorer getGlobalItemScorer() {
-        return get(GlobalItemScorer.class);
+        return get(ItemScorer.class);
     }
 
     @Override
     public RatingPredictor getRatingPredictor() {
-        RatingPredictor scorer = get(RatingPredictor.class);
-        if (scorer == null) {
-            org.lenskit.api.RatingPredictor ns = get(org.lenskit.api.RatingPredictor.class);
-            if (ns != null) {
-                scorer = new RatingPredictorCompatWrapper(ns);
-            }
-        }
-        return scorer;
+        return get(RatingPredictor.class);
     }
 
     @Override
     public ItemRecommender getItemRecommender() {
-        ItemRecommender rec = get(ItemRecommender.class);
-        if (rec == null) {
-            org.lenskit.api.ItemRecommender ns = get(org.lenskit.api.ItemRecommender.class);
-            if (ns != null) {
-                rec = new ItemRecommenderCompatWrapper(ns);
-            }
-        }
-        return rec;
+        return get(ItemRecommender.class);
     }
 
     @Override
-    public GlobalItemRecommender getGlobalItemRecommender() {
-        return get(GlobalItemRecommender.class);
+    public void close() {
+        // TODO Implement closing
     }
 
     /**

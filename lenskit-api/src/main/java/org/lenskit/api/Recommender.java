@@ -57,6 +57,13 @@ public interface Recommender extends AutoCloseable {
     ItemRecommender getItemRecommender();
 
     /**
+     * Get the recommender's item scorer.
+     * @return The item scorer for the configured recommender, or {@code null} if item scoring is not supported.
+     */
+    @Nullable
+    ItemScorer getItemScorer();
+
+    /**
      * Close the recommender.  This closes underlying resources such as database collections. Components retrieved
      * from the recommender cannot be used once the recommender is closed.
      */
