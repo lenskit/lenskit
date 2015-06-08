@@ -21,14 +21,15 @@
 package org.grouplens.lenskit.core;
 
 
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.api.RatingPredictor;
 import org.lenskit.api.Result;
-import org.lenskit.api.ResultMap;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.Map;
 
 class RatingPredictorCompatWrapper implements org.grouplens.lenskit.RatingPredictor {
     private final RatingPredictor delegate;
@@ -57,9 +58,7 @@ class RatingPredictorCompatWrapper implements org.grouplens.lenskit.RatingPredic
 
     @Override
     public void predict(long user, @Nonnull MutableSparseVector scores) {
-        ResultMap results = delegate.predict(user, scores.keyDomain());
-        for (Result r: results) {
-            scores.set(r.getId(), r.getScore());
-        }
+        Map<Long, Double> results = delegate.predict(user, scores.keyDomain());
+        scores.set(ImmutableSparseVector.create(results));
     }
 }

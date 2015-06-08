@@ -22,6 +22,7 @@ package org.lenskit.api;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Score items for users.  These scores can be predicted ratings, relevance
@@ -48,7 +49,7 @@ public interface ItemScorer {
      * @return The scores for the items. This result set may not contain all requested items.
      */
     @Nonnull
-    ResultMap score(long user, @Nonnull Collection<Long> items);
+    Map<Long,Double> score(long user, @Nonnull Collection<Long> items);
 
     /**
      * Score a collection of items and potentially return more details on the scores.

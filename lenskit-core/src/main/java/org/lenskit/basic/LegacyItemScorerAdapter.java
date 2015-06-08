@@ -32,6 +32,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class LegacyItemScorerAdapter implements ItemScorer {
     private final org.grouplens.lenskit.ItemScorer delegate;
@@ -53,18 +54,18 @@ public class LegacyItemScorerAdapter implements ItemScorer {
 
     @Nonnull
     @Override
-    public ResultMap score(long user, @Nonnull Collection<Long> items) {
+    public Map<Long,Double> score(long user, @Nonnull Collection<Long> items) {
+        return scoreWithDetails(user, items).scoreMap();
+    }
+
+    @Nonnull
+    @Override
+    public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
         SparseVector res = delegate.score(user, items);
         List<Result> results = new ArrayList<>(res.size());
         for (VectorEntry e: res) {
             results.add(Results.create(e.getKey(), e.getValue()));
         }
         return Results.newResultMap(results);
-    }
-
-    @Nonnull
-    @Override
-    public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
-        return score(user, items);
     }
 }

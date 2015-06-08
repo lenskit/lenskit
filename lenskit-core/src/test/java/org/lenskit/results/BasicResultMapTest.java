@@ -34,7 +34,6 @@ public class BasicResultMapTest {
         ResultMap r = Results.newResultMap();
         assertThat(r.isEmpty(), equalTo(true));
         assertThat(r.size(), equalTo(0));
-        assertThat(r.resultSet(), hasSize(0));
         assertThat(r.scoreMap().size(), equalTo(0));
         assertThat(r.getScore(42), notANumber());
     }
@@ -43,8 +42,7 @@ public class BasicResultMapTest {
     public void testSingletonMap() {
         ResultMap r = Results.<Result>newResultMap(Results.create(42L, 3.5));
         assertThat(r.size(), equalTo(1));
-        assertThat(r.resultSet(), contains((Result) Results.create(42L, 3.5)));
-        assertThat(r.resultSet(), hasSize(1));
+        assertThat(r, contains((Result) Results.create(42L, 3.5)));
         assertThat(r.get(42L), equalTo((Result) Results.create(42L, 3.5)));
         assertThat(r.getScore(42), equalTo(3.5));
     }
@@ -55,8 +53,8 @@ public class BasicResultMapTest {
                                                    Results.create(37L, 4.2));
         assertThat(r.size(), equalTo(2));
         assertThat(r.keySet(), contains(42L, 37L));
-        assertThat(r.resultSet(), contains((Result) Results.create(42L, 3.5),
-                                           (Result) Results.create(37L, 4.2)));
+        assertThat(r, contains((Result) Results.create(42L, 3.5),
+                               (Result) Results.create(37L, 4.2)));
         assertThat(r.getScore(42), equalTo(3.5));
         assertThat(r.getScore(37), equalTo(4.2));
         assertThat(r.getScore(28), notANumber());

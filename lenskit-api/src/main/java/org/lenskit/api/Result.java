@@ -57,21 +57,8 @@ public interface Result {
      * @param type The desired result type.
      * @param <T> The desired result type.
      * @return The result as a result of type `T`, or `null` if the type cannot be cast.  This may be done by casting
-     * this type, or by unwrapping wrapper result types, but it will not search multiple alternatives.
-     * @see #find(Class)
+     * this type, or by unwrapping wrapper result types.
      */
     @Nullable
     <T extends Result> T as(@Nonnull Class<T> type);
-
-    /**
-     * Attempt to view this result as another type, searching through alternatives if necessary.
-     *
-     * @param type The type to find.
-     * @param <T> The desired result type.
-     * @return The first result of type `T` found by searching this result and all results it contains.  Each type of
-     * result will define some search order for the purpose of defining the 'first' result of type `T`.
-     * @see #as(Class)
-     */
-    @Nullable
-    <T extends Result> T find(@Nonnull Class<T> type);
 }

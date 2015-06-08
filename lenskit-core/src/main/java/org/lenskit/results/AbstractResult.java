@@ -79,16 +79,6 @@ public abstract class AbstractResult implements Result {
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * The default implementation simply calls {@link #as(Class)}.
-     */
-    @Override
-    public <T extends Result> T find(@Nonnull Class<T> type) {
-        return as(type);
-    }
-
-    /**
      * Create a hash code builder, populated with the ID and score.  Subclasses can use this as a starting point for
      * building a hash code.
      *

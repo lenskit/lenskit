@@ -21,7 +21,6 @@
 package org.lenskit.api;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A map of results from a recommender operation.  This is returned from operations such as *predict* that provide
@@ -33,12 +32,6 @@ public interface ResultMap extends Map<Long,Result>, Iterable<Result> {
      * @return A map view of this result set.
      */
     Map<Long,Double> scoreMap();
-
-    /**
-     * View the results as a set.
-     * @return The result set.
-     */
-    Set<Result> resultSet();
 
     /**
      * Get the score associated with an ID.

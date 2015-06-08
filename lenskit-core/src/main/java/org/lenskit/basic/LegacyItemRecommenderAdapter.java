@@ -20,6 +20,8 @@
  */
 package org.lenskit.basic;
 
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.lenskit.api.ItemRecommender;
 import org.lenskit.api.Result;
@@ -48,28 +50,36 @@ public class LegacyItemRecommenderAdapter implements ItemRecommender {
         return Results.newResultList(results);
     }
 
-    @Override
-    public ResultList recommend(long user) {
-        return makeResultList(delegate.recommend(user));
+    private List<Long> idList(List<ScoredId> sids) {
+        LongList results = new LongArrayList(sids.size());
+        for (ScoredId r: sids) {
+            results.add(r.getId());
+        }
+        return results;
     }
 
     @Override
-    public ResultList recommend(long user, int n) {
-        return makeResultList(delegate.recommend(user, n));
+    public List<Long> recommend(long user) {
+        return idList(delegate.recommend(user));
     }
 
     @Override
-    public ResultList recommend(long user, @Nullable Set<Long> candidates) {
-        return makeResultList(delegate.recommend(user, candidates));
+    public List<Long> recommend(long user, int n) {
+        return idList(delegate.recommend(user, n));
     }
 
     @Override
-    public ResultList recommend(long user, int n, @Nullable Set<Long> candidates, @Nullable Set<Long> exclude) {
-        return makeResultList(delegate.recommend(user, n, candidates, exclude));
+    public List<Long> recommend(long user, @Nullable Set<Long> candidates) {
+        return idList(delegate.recommend(user, candidates));
+    }
+
+    @Override
+    public List<Long> recommend(long user, int n, @Nullable Set<Long> candidates, @Nullable Set<Long> exclude) {
+        return idList(delegate.recommend(user, n, candidates, exclude));
     }
 
     @Override
     public ResultList recommendWithDetails(long user, int n, @Nullable Set<Long> candidates, @Nullable Set<Long> exclude) {
-        return recommend(user, n, candidates, exclude);
+        return makeResultList(delegate.recommend(user, n, candidates, exclude));
     }
 }

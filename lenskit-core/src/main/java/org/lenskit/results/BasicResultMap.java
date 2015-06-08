@@ -26,7 +26,9 @@ import it.unimi.dsi.fastutil.objects.*;
 import org.lenskit.api.Result;
 
 import javax.annotation.concurrent.Immutable;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Standard result map implementation.
@@ -94,11 +96,6 @@ public class BasicResultMap extends AbstractLong2ObjectMap<Result> implements Le
     }
 
     @Override
-    public Set<Result> resultSet() {
-        return new ResultSetImpl();
-    }
-
-    @Override
     public double getScore(long id) {
         Result r = delegate.get(id);
         if (r == null) {
@@ -146,29 +143,6 @@ public class BasicResultMap extends AbstractLong2ObjectMap<Result> implements Le
         @Override
         public boolean containsKey(long l) {
             return delegate.containsKey(l);
-        }
-
-        @Override
-        public int size() {
-            return delegate.size();
-        }
-    }
-
-    private class ResultSetImpl extends AbstractSet<Result> {
-        @Override
-        public Iterator<Result> iterator() {
-            return Iterators.unmodifiableIterator(delegate.values().iterator());
-        }
-
-        @Override
-        public boolean contains(Object o) {
-            if (o instanceof Result) {
-                Result or = (Result) o;
-                Result found = delegate.get(or.getId());
-                return or.equals(found);
-            } else {
-                return false;
-            }
         }
 
         @Override

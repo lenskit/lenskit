@@ -21,17 +21,16 @@
 package org.lenskit.api;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Set;
 
 /**
- * Interface for recommending items. Several methods are provided, of varying
- * generality.
+ * Interface for recommending items. This interface provides APIs for both basic (recommend for a given user)
+ * and complex (recommend at most *n* items from a given set to the user) recommendation tasks.
  *
- * The core idea of the recommend API is to recommend <i>n</i> items for a user,
+ * The core idea of the recommend API is to recommend *n* items for a user,
  * where the items recommended are taken from a set of candidate items and
- * further constrained by an exclude set of forbidden items. Items in the
- * candidate set but not in the exclude set are considered viable for
- * recommendation.
+ * further constrained by an exclude set of forbidden items.
  *
  * ## Candidate Items
  *
@@ -62,18 +61,19 @@ public interface ItemRecommender {
      * @return The recommended items.
      * @see #recommend(long, int, Set, Set)
      */
-    ResultList recommend(long user);
+    List<Long> recommend(long user);
 
     /**
-     * Recommend up to <var>n</var> items for a user using the default exclude
+     * Recommend up to `n` items for a user using the default exclude
      * set.
      *
      * @param user The user ID.
-     * @param n    The number of recommendations to return.
+     * @param n    The number of recommendations to return.  Negative values indicate no preference of recommendation
+     *             list size.
      * @return The recommended items.
      * @see #recommend(long, int, Set, Set)
      */
-    ResultList recommend(long user, int n);
+    List<Long> recommend(long user, int n);
 
     /**
      * Recommend all possible items for a user from a set of candidates using
@@ -85,7 +85,7 @@ public interface ItemRecommender {
      * @return The recommended items.
      * @see #recommend(long, int, Set, Set)
      */
-    ResultList recommend(long user, @Nullable Set<Long> candidates);
+    List<Long> recommend(long user, @Nullable Set<Long> candidates);
 
     /**
      * Produce a set of recommendations for the user. This is the most general
@@ -101,14 +101,10 @@ public interface ItemRecommender {
      *                   {@code null}, all items are considered candidates.
      * @param exclude    A set of items to be excluded. If {@code null}, a default
      *                   exclude set is used.
-     * @return A list of recommended items. If the recommender cannot assign
-     *         meaningful scores, the scores will be {@link Double#NaN}. For
-     *         most scoring recommenders, the items will be ordered in
-     *         decreasing order of score. This is not a hard requirement — e.g.
-     *         set recommenders are allowed to be more flexible.
+     * @return A list of recommended items.
      */
-    ResultList recommend(long user, int n, @Nullable Set<Long> candidates,
-                                 @Nullable Set<Long> exclude);
+    List<Long> recommend(long user, int n, @Nullable Set<Long> candidates,
+                         @Nullable Set<Long> exclude);
 
     /**
      * Produce a set of recommendations for the user with additional details. This method functions identically to

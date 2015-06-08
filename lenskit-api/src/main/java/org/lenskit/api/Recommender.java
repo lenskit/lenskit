@@ -28,12 +28,11 @@ import javax.annotation.Nullable;
  * object, likely connected to a database connection or persistence session, that
  * needs to be closed when the client code is finished with it.
  *
- * <p>The various methods in this class return {@code null} if the corresponding
+ * The various methods in this class return {@code null} if the corresponding
  * operation is not supported by the underlying recommender configuration.  This
  * ensures that, if you can actually get an object implementing a particular interface,
  * you are guaranteed to be able to use it.
  *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  * @see RecommenderEngine
  */
@@ -65,7 +64,10 @@ public interface Recommender extends AutoCloseable {
 
     /**
      * Close the recommender.  This closes underlying resources such as database collections. Components retrieved
-     * from the recommender cannot be used once the recommender is closed.
+     * from the recommender must be used once the recommender is closed.  Components capable of explicitly detecting
+     * use-after-close will indicate such invalid use by throwing {@link IllegalStateException}, although they may
+     * fail with other exceptions.  The results of using a component after its recommender has been closed are formally
+     * undefined.
      */
     @Override
     void close();

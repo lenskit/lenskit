@@ -49,21 +49,21 @@ class ItemRecommenderCompatWrapper implements org.grouplens.lenskit.ItemRecommen
 
     @Override
     public List<ScoredId> recommend(long user) {
-        return makeResultList(delegate.recommend(user));
+        return makeResultList(delegate.recommendWithDetails(user, -1, null, null));
     }
 
     @Override
     public List<ScoredId> recommend(long user, int n) {
-        return makeResultList(delegate.recommend(user, n));
+        return makeResultList(delegate.recommendWithDetails(user, n, null, null));
     }
 
     @Override
     public List<ScoredId> recommend(long user, @Nullable Set<Long> candidates) {
-        return makeResultList(delegate.recommend(user, candidates));
+        return makeResultList(delegate.recommendWithDetails(user, -1, candidates, null));
     }
 
     @Override
     public List<ScoredId> recommend(long user, int n, @Nullable Set<Long> candidates, @Nullable Set<Long> exclude) {
-        return makeResultList(delegate.recommend(user, n, candidates, exclude));
+        return makeResultList(delegate.recommendWithDetails(user, n, candidates, exclude));
     }
 }

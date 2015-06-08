@@ -32,6 +32,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class LegacyRatingPredictorAdapter implements RatingPredictor {
     private final org.grouplens.lenskit.RatingPredictor delegate;
@@ -53,18 +54,18 @@ public class LegacyRatingPredictorAdapter implements RatingPredictor {
 
     @Nonnull
     @Override
-    public ResultMap predict(long user, @Nonnull Collection<Long> items) {
+    public Map<Long, Double> predict(long user, @Nonnull Collection<Long> items) {
+        return predictWithDetails(user, items).scoreMap();
+    }
+
+    @Nonnull
+    @Override
+    public ResultMap predictWithDetails(long user, @Nonnull Collection<Long> items) {
         SparseVector res = delegate.predict(user, items);
         List<Result> results = new ArrayList<>(res.size());
         for (VectorEntry e: res) {
             results.add(Results.create(e.getKey(), e.getValue()));
         }
         return Results.newResultMap(results);
-    }
-
-    @Nonnull
-    @Override
-    public ResultMap predictWithDetails(long user, @Nonnull Collection<Long> items) {
-        return predict(user, items);
     }
 }

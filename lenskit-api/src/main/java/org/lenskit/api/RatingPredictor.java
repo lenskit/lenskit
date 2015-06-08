@@ -22,12 +22,14 @@ package org.lenskit.api;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.Map;
 
 /**
- * Predict user ratings.  A rating predictor is like an {@link ItemScorer}, but its output will be
- * predicted ratings.
+ * Predict user ratings.  A rating predictor is like an {@link ItemScorer}, but its output is scaled or otherwise
+ * transformed for rating prediction.  An item score can be anything that meets the requirement 'higher is better';
+ * a rating prediction can be interpreted as an estimate of the user's expected rating, within the system's stated
+ * range of valid ratings.  Depending on the predictor used, rating predictions may also be quantized.
  *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public interface RatingPredictor {
@@ -50,7 +52,7 @@ public interface RatingPredictor {
      *         not contain all requested items.
      */
     @Nonnull
-    ResultMap predict(long user, @Nonnull Collection<Long> items);
+    Map<Long,Double> predict(long user, @Nonnull Collection<Long> items);
 
     /**
      * Predict the user's preference for a collection of items, potentially with additional details.

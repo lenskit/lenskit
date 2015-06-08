@@ -57,7 +57,7 @@ class ItemScorerCompatWrapper implements org.grouplens.lenskit.ItemScorer {
 
     @Override
     public void score(long user, @Nonnull MutableSparseVector scores) {
-        ResultMap results = delegate.score(user, scores.keyDomain());
+        ResultMap results = delegate.scoreWithDetails(user, scores.keyDomain());
         for (Result r: results) {
             scores.set(r.getId(), r.getScore());
         }
