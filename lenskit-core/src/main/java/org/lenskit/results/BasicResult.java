@@ -45,6 +45,7 @@ public final class BasicResult extends AbstractResult implements Serializable {
         super(id, score);
     }
 
+    //region Serialization support
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeLong(id);
         out.writeDouble(score);
@@ -58,7 +59,9 @@ public final class BasicResult extends AbstractResult implements Serializable {
     private void readObjectNoData() throws ObjectStreamException {
         throw new InvalidObjectException("basic result must have data");
     }
+    //endregion
 
+    //region Value object behavior
     /**
      * Compare this result with another for equality.  Instance of this result type are only equal with other basic
      * result instances; to compare general results for equality, first convert them to basic results with
@@ -91,4 +94,5 @@ public final class BasicResult extends AbstractResult implements Serializable {
                           .add("score", score)
                           .toString();
     }
+    //endregion
 }
