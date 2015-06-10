@@ -32,6 +32,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.process.JavaExecSpec
 import org.gradle.process.internal.DefaultJavaExecAction
 import org.gradle.util.ConfigureUtil
+import org.lenskit.gradle.LenskitExtension
 
 /**
  * Task to run LensKit evaluations.

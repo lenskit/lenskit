@@ -18,17 +18,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.gradle
+package org.lenskit.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.grouplens.lenskit.gradle.LenskitEval
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
- * Plugin for LensKit evaluations.
+ * Plugin for LensKit evaluations.  This sets up the basic infrastructure required for LensKit tasks to work.
+ * To use, add the following to your `build.gradle`:
  *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * ```groovy
+ * apply plugin: 'lenskit'
+ * ```
+ *
+ * This task only sets up infrastructure and configuration defaults. It does *not* create any tasks.
  */
 public class LenskitPlugin implements Plugin<Project> {
     private static final Logger logger = LoggerFactory.getLogger(LenskitPlugin.class);
