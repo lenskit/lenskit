@@ -31,25 +31,27 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.JavaExecSpec
 import org.gradle.process.internal.DefaultJavaExecAction
+import org.gradle.process.internal.JavaExecHandleBuilder
 import org.gradle.util.ConfigureUtil
 import org.lenskit.gradle.LenskitExtension
+import org.lenskit.gradle.LenskitTask
 
 /**
  * Task to run LensKit evaluations.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class LenskitEval extends ConventionTask {
+public class LenskitEval extends LenskitTask {
     private Object script = "eval.groovy"
     private List<String> targets = new ArrayList<String>()
     private Map<String,Object> lkProps = new HashMap<String, Object>()
     def int threadCount
-    def String maxMemory
-    final def JavaExecSpec invoker
 
     public LenskitEval() {
-        invoker = new DefaultJavaExecAction(services.get(FileResolver))
         invoker.classpath = project.configurations.getByName('lenskit')
+        conventionMapping.threadCount = {
+            project.extensions.getByType(LenskitExtension).threadCount
+        }
     }
 
     /**
@@ -132,33 +134,6 @@ public class LenskitEval extends ConventionTask {
         return (LenskitExtension) getProject().getExtensions().findByName("lenskit");
     }
 
-    public void threadCount(int tc) {
-        setThreadCount(tc);
-    }
-
-    public FileCollection getClasspath() {
-        return invoker.classpath
-    }
-
-    public void setClasspath(FileCollection cp) {
-        invoker.classpath = cp
-    }
-
-    public void classpath(FileCollection cp) {
-        invoker.classpath = cp
-        if (cp instanceof Buildable) {
-            dependsOn(cp);
-        }
-    }
-
-    public void maxMemory(String mm) {
-        maxMemory = mm
-    }
-
-    public void invoker(Closure block) {
-        ConfigureUtil.configure(block, invoker)
-    }
-
     /**
      * Get the script file to run.
      *
@@ -178,6 +153,7 @@ public class LenskitEval extends ConventionTask {
         logger.info 'Max memory: {}', maxMemory
         // grab reference to make scope clearer
         def lke = this
+        applyFinalSettings()
         invoker {
             main = 'org.lenskit.cli.Main'
             args 'eval'
@@ -189,10 +165,8 @@ public class LenskitEval extends ConventionTask {
                 args '-f', lke.scriptFile
             }
             args lke.targets
-            if (lke.maxMemory != null) {
-                maxHeapSize = lke.maxMemory
-            }
         }
-        invoker.execute()
+        def bld = invoker as JavaExecHandleBuilder
+        bld.build().start().waitForFinish().assertNormalExitValue()
     }
 }

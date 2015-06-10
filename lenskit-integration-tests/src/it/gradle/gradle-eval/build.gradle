@@ -1,0 +1,43 @@
+buildscript {
+    repositories {
+        maven {
+            url testRepoURI
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.grouplens.lenskit:lenskit-gradle:$lenskitVersion"
+    }
+}
+
+import org.grouplens.lenskit.gradle.*
+
+apply plugin: 'lenskit'
+
+repositories {
+    maven {
+        url testRepoURI
+    }
+    mavenCentral()
+}
+
+configurations {
+    lenskit
+}
+
+dependencies {
+    lenskit "org.grouplens.lenskit:lenskit-cli:$lenskitVersion"
+    lenskit "org.grouplens.lenskit:lenskit-test:$lenskitVersion"
+}
+
+task evaluate(type: LenskitEval) {
+    lenskitProperties 'ml100k.ratings': ratingsFile
+}
+
+task check(overwrite: true, type: JavaExec) {
+    dependsOn evaluate
+    classpath configurations.lenskit
+
+    main 'groovy.ui.GroovyMain'
+    args 'verify.groovy'
+}

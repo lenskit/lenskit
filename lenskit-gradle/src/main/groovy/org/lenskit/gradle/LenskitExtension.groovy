@@ -19,6 +19,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.lenskit.gradle
+
+import org.gradle.api.file.FileCollection
+
 /**
  * Extension for configuring LensKit.  This is registered as `lenskit` by the LensKit plugin, so you can globally
  * configure LensKit options:
@@ -46,9 +49,14 @@ public class LenskitExtension {
     def int threadCount = 0
 
     /**
-     * The maximum heap size for the LensKit JVM.
+     * The maximum heap size for the LensKit JVM.  Defaults to `null` (no specfied heap size).
      *
      * @see org.gradle.process.JavaForkOptions#setMaxHeapSize(java.lang.String)
      */
     def String maxMemory
+
+    /**
+     * The classpath to use for LensKit.  Defaults to the runtime classpath of the `main` source set.
+     */
+    def FileCollection classpath
 }
