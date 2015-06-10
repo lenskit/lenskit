@@ -1,0 +1,84 @@
+/*
+ * Build system for LensKit, and open-source recommender systems toolkit.
+ * Copyright 2010-2014 Regents of the University of Minnesota and contributors
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * - Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the
+ *   distribution.
+ *
+ * - Neither the name of the University of Minnesota nor the names of
+ *   its contributors may be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+ * Integration tests built with Gradle.
+ */
+
+task makeTestRepo {
+    dependsOn installForTesting
+//    for (prj in rootProject.childProjects.values()) {
+//        if (prj.name =~ /^lenskit-(?!integration-tests)/) {
+//            dependsOn "$prj.path:installForTesting"
+//        }
+//    }
+}
+
+task gradleTests(group: 'verification')
+check.dependsOn gradleTests
+
+file('src/it/gradle').eachDir { testDir ->
+    def fname = testDir.name
+    def tname = fname.replaceAll(/(?:^|-)(.)/) { m -> m[1].toUpperCase() }
+    def workDir = file("build/gradle-tests/$fname")
+
+    task("test$tname", type: GradleBuild) {
+        dependsOn makeTestRepo
+        inputs.dir testDir
+        inputs.dir "$buildDir/test-repo"
+        outputs.dir workDir
+
+        startParameter.projectProperties = [
+                testRepoURI: rootProject.uri("build/test-repo"),
+                lenskitVersion: project.version
+        ]
+        dir = workDir
+        buildFile = "$workDir/build.gradle"
+        tasks = ['check']
+
+        onlyIf {
+            !file("$testDir/ignore").exists()
+        }
+        doFirst {
+            copy {
+                from testDir
+                into workDir
+            }
+            println "running gradle build for $testDir"
+        }
+    }
+
+    gradleTests.dependsOn "test$tname"
+}

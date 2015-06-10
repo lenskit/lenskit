@@ -20,23 +20,35 @@
  */
 package org.grouplens.lenskit.gradle
 /**
- * Extension for configuring LensKit.
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Extension for configuring LensKit.  This is registered as `lenskit` by the LensKit plugin, so you can globally
+ * configure LensKit options:
+ *
+ * ```groovy
+ * lenskit {
+ *     maxMemory '10g'
+ *     threadCount 16
+ * }
+ * ```
+ *
+ * Each property has a default value; the LensKit plugin also examines the project properties for properties starting
+ * with `lenskit.` to initialize the extension properties.  This allows you to override property defaults on the
+ * command line:
+ *
+ * ```
+ * ./gradlew evaluate -Plenskit.threadCount=10
+ * ```
  */
 public class LenskitExtension {
-    def Integer threadCount = 0
+    /**
+     * The maximum number of threads LensKit should use.  Defaults to 0, which instructs LensKit to use all available
+     * threads.
+     */
+    def int threadCount = 0
+
+    /**
+     * The maximum heap size for the LensKit JVM.
+     *
+     * @see org.gradle.process.JavaForkOptions#setMaxHeapSize(java.lang.String)
+     */
     def String maxMemory
-    def String version = 'LATEST'
-
-    public void threadCount(int tc) {
-        setThreadCount(tc);
-    }
-
-    public void maxMemory(String mm) {
-        maxMemory = mm
-    }
-
-    public void version(String v) {
-        version = v
-    }
 }
