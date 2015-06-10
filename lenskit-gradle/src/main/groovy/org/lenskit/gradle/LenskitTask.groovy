@@ -23,6 +23,7 @@ package org.lenskit.gradle
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.ConventionTask
 import org.gradle.api.internal.file.FileResolver
+import org.gradle.api.tasks.TaskAction
 import org.gradle.process.JavaExecSpec
 import org.gradle.process.internal.JavaExecHandleBuilder
 import org.gradle.util.ConfigureUtil;
@@ -76,4 +77,25 @@ public abstract class LenskitTask extends ConventionTask {
     public void invoker(Closure block) {
         ConfigureUtil.configure(block, invoker)
     }
+
+    /**
+     * Execute the LensKit task.
+     */
+    @TaskAction
+    public void exec() {
+        logger.info 'Running evaluation {}', scriptFile
+        // FIXME It isn't obvious why the thread count has to be this way
+        // It has to do with convention mappings, but we need to be clearer
+        logger.info 'Thread count: {}', getThreadCount()
+        logger.info 'Max memory: {}', maxMemory
+        applyFinalSettings()
+        invoker.main = 'org.lenskit.cli.Main'
+        invoker.args command
+        invoker.args commandArgs
+        def bld = invoker as JavaExecHandleBuilder
+        bld.build().start().waitForFinish().assertNormalExitValue()
+    }
+
+    abstract String getCommand();
+    abstract List getCommandArgs();
 }
