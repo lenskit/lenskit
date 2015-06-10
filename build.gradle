@@ -135,9 +135,8 @@ subprojects {
 
     // don't package until testing
     jar.mustRunAfter 'test'
-    tasks.withType(Upload) { task ->
-        // check before uploading. upload, not jar, waits in case a check requires the jar
-        task.mustRunAfter 'check'
+    tasks.matching({it.name == 'uploadArchives'}).each { task ->
+        task.mustRunAfter check
     }
     // defer javadoc until after the build
     javadoc.mustRunAfter 'classes'

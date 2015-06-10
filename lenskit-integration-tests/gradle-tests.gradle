@@ -60,7 +60,7 @@ file('src/it/gradle').eachDir { testDir ->
         outputs.dir workDir
 
         startParameter.projectProperties = [
-                testRepoURI: uri("$buildDir/test-repo"),
+                testRepoURI: rootProject.uri("build/test-repo"),
                 lenskitVersion: project.version,
                 ratingsFile: "$mlDataDir/u.data"
         ]
