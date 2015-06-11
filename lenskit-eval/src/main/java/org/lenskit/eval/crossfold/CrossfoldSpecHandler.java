@@ -48,7 +48,7 @@ public class CrossfoldSpecHandler implements SpecHandler<Crossfolder> {
         if (cfg.hasPath("name")) {
             cf.setName(cfg.getString("name"));
         }
-        cf.setSource(context.build(DataSource.class, cfg.getConfig("source")));
+        cf.setSource(context.build(DataSource.class, cfg.getConfig("input")));
         if (cfg.hasPath("partitions")) {
             cf.setPartitionCount(cfg.getInt("partitions"));
         }
@@ -73,8 +73,8 @@ public class CrossfoldSpecHandler implements SpecHandler<Crossfolder> {
             throw new SpecificationException("invalid crossfold method " + method);
         }
 
-        if (cfg.hasPath("useTimestamps")) {
-            cf.setWriteTimestamps(cfg.getBoolean("useTimestamps"));
+        if (cfg.hasPath("includeTimestamps")) {
+            cf.setWriteTimestamps(cfg.getBoolean("includeTimestamps"));
         }
 
         if (cfg.hasPath("outputDir")) {

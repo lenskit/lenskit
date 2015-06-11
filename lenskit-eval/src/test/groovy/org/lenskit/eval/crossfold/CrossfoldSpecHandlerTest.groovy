@@ -32,7 +32,7 @@ class CrossfoldSpecHandlerTest {
     public void testConfigureCrossfolder() {
         def cfg = MiscBuilders.configObj {
             name "asdf"
-            source {
+            input {
                 type "csv"
                 file "ratings.csv"
             }

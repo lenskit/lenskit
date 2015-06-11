@@ -54,7 +54,8 @@ public abstract class LenskitTask extends ConventionTask {
         invoker = new JavaExecHandleBuilder(services.get(FileResolver))
         def ext = project.extensions.getByType(LenskitExtension)
         conventionMapping.maxMemory = { ext.maxMemory }
-        conventionMapping.classpath = { ext.classpath }
+        // FIXME Make dependencies work!
+        conventionMapping.classpath = { ext.classpath ?: project.sourceSets.main.runtimeClasspath }
     }
 
     /**
@@ -82,11 +83,8 @@ public abstract class LenskitTask extends ConventionTask {
      * Execute the LensKit task.
      */
     @TaskAction
-    public void exec() {
-        logger.info 'Running evaluation {}', scriptFile
-        // FIXME It isn't obvious why the thread count has to be this way
-        // It has to do with convention mappings, but we need to be clearer
-        logger.info 'Thread count: {}', getThreadCount()
+    public void perform() {
+        logger.info 'running LensKit command {}', command
         logger.info 'Max memory: {}', maxMemory
         applyFinalSettings()
         invoker.main = 'org.lenskit.cli.Main'

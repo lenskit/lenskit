@@ -161,6 +161,7 @@ public class LenskitEval extends LenskitTask {
             args << '-f'
             args << scriptFile
         }
-        args << targets
+        args.addAll(targets)
+        args
     }
 }

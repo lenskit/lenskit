@@ -30,6 +30,10 @@ dependencies {
     lenskit "org.grouplens.lenskit:lenskit-test:$lenskitVersion"
 }
 
+lenskit {
+    classpath = configurations.lenskit
+}
+
 task evaluate(type: LenskitEval) {
     lenskitProperties 'ml100k.ratings': ratingsFile
 }
