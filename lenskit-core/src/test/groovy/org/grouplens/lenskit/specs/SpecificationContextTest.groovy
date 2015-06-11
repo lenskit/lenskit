@@ -20,9 +20,11 @@
  */
 package org.grouplens.lenskit.specs
 
+import com.typesafe.config.Config
 import org.grouplens.lenskit.data.pref.PreferenceDomain
 import org.grouplens.lenskit.util.test.MiscBuilders
 import org.junit.Test
+import org.junit.experimental.theories.suppliers.TestedOn
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
@@ -109,5 +111,30 @@ class SpecificationContextTest {
         assertThat(domain.getMinimum(), equalTo(-1.0d))
         assertThat(domain.getMaximum(), equalTo(1.0d))
         assertThat(domain.getPrecision(), equalTo(0.0d))
+    }
+
+    @Test
+    public void testWrappedURI() {
+        def context = SpecificationContext.create(URI.create("http://example.com/"))
+        def spec = MiscBuilders.configObj {
+            _wrapped {
+                value "heffalump"
+            }
+            _base_uri "forest/"
+        }
+        def result = context.buildWithHandler(WrappedURIHandler.class, spec)
+        assertThat(result, equalTo(URI.create("http://example.com/forest/heffalump")));
+    }
+
+    static class WrappedURIHandler implements SpecHandler<URI> {
+        @Override
+        boolean handlesType(String type) {
+            return "dummy";
+        }
+
+        @Override
+        URI buildFromSpec(SpecificationContext context, Config cfg) throws SpecificationException {
+            return context.resolve(cfg.getString("value"));
+        }
     }
 }

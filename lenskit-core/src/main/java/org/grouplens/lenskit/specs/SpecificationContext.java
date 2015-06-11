@@ -23,6 +23,7 @@ package org.grouplens.lenskit.specs;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.grouplens.grapht.util.ClassLoaders;
+import org.lenskit.util.DynamicVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,12 +42,15 @@ import java.util.ServiceLoader;
 public class SpecificationContext {
     private static final Logger logger = LoggerFactory.getLogger(SpecificationContext.class);
     private final ClassLoader classLoader;
-    @Nullable
-    private final URI baseURI;
+    private final DynamicVariable<URI> baseURI;
 
     private SpecificationContext(@Nonnull ClassLoader loader, @Nullable URI base) {
         classLoader = loader;
-        baseURI = base;
+        if (base == null) {
+            baseURI = new DynamicVariable<>();
+        } else {
+            baseURI = new DynamicVariable<>(base);
+        }
     }
 
     /**
@@ -87,7 +91,7 @@ public class SpecificationContext {
      */
     @Nullable
     public URI getBaseURI() {
-        return baseURI;
+        return baseURI.get();
     }
 
     /**
@@ -99,10 +103,11 @@ public class SpecificationContext {
      */
     @Nonnull
     public URI getBaseOrCurrentURI() {
-        if (baseURI == null) {
+        URI uri = getBaseURI();
+        if (uri == null) {
             return new File(".").getAbsoluteFile().toURI();
         } else {
-            return baseURI;
+            return uri;
         }
     }
 
@@ -159,10 +164,11 @@ public class SpecificationContext {
      */
     public String relativize(File file) {
         URI fileURI = file.toURI();
-        if (baseURI == null) {
+        URI uri = getBaseURI();
+        if (uri == null) {
             return fileURI.toString();
         } else {
-            return baseURI.relativize(fileURI).toString();
+            return uri.relativize(fileURI).toString();
         }
     }
 
@@ -178,6 +184,22 @@ public class SpecificationContext {
      * @return A configured object.
      */
     public <T> T buildWithHandler(Class<? extends SpecHandler<T>> specClass, Config config) throws SpecificationException {
+        if (config.hasPath("_wrapped")) {
+            // we are wrapping an object
+            DynamicVariable.Scope scope = null;
+            if (config.hasPath("_base_uri")) {
+                String newBase = config.getString("_base_uri");
+                URI base = resolve(newBase);
+                scope = baseURI.assign(base);
+            }
+            try {
+                return buildWithHandler(specClass, config.getConfig("_wrapped"));
+            } finally {
+                if (scope != null) {
+                    scope.close();
+                }
+            }
+        }
         SpecHandler<T> cfg = null;
         try {
             Constructor<? extends SpecHandler<T>> ctor = specClass.getConstructor();
@@ -187,11 +209,7 @@ public class SpecificationContext {
             }
         } catch (NoSuchMethodException e) {
             /* no ctor found, that's fine */
-        } catch (InvocationTargetException e) {
-            throw new SpecificationException("Could not instantiate handler " + specClass, e);
-        } catch (InstantiationException e) {
-            throw new SpecificationException("Could not instantiate handler " + specClass, e);
-        } catch (IllegalAccessException e) {
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw new SpecificationException("Could not instantiate handler " + specClass, e);
         }
 
@@ -231,6 +249,22 @@ public class SpecificationContext {
      * @return A configured object.
      */
     public <T> T build(Class<T> type, Config config) throws SpecificationException {
+        if (config.hasPath("_wrapped")) {
+            // we are wrapping an object
+            DynamicVariable.Scope scope = null;
+            if (config.hasPath("_base_uri")) {
+                String newBase = config.getString("_base_uri");
+                URI base = resolve(newBase);
+                scope = baseURI.assign(base);
+            }
+            try {
+                return build(type, config.getConfig("_wrapped"));
+            } finally {
+                if (scope != null) {
+                    scope.close();
+                }
+            }
+        }
         SpecHandlerInterface shi = type.getAnnotation(SpecHandlerInterface.class);
         if (shi != null) {
             @SuppressWarnings("unchecked")
