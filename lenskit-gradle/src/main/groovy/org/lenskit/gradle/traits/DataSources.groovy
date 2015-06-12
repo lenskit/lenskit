@@ -33,6 +33,7 @@ trait DataSources {
      * Configure a text file data source.
      * @param block The configuration block.
      * @return A JSON specification of a text file data source.
+     * @see TextFileDelegate
      */
     Map<String,Object> textFile(@DelegatesTo(TextFileDelegate) Closure block) {
         def dlg = new TextFileDelegate(project)

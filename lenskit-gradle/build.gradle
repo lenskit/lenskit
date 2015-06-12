@@ -11,6 +11,7 @@ check.dependsOn gradleTests
 
 javadoc {
     onlyIf {
-        false
+        // FIXME Get some documentation going!
+        sourceSets.main.java.files.size() > 0
     }
 }
