@@ -45,7 +45,7 @@ extensions.create('website', Website)
 website.project = project
 
 task fetchSite {
-    mustRunAfter javadoc
+    mustRunAfter javadoc, ':lenskit-gradle:groovydoc'
 
     doLast {
         if (!website.directory.exists()) {
@@ -70,8 +70,20 @@ task fetchSite {
 }
 
 task copyJavadoc(type: Sync, dependsOn: [javadoc, fetchSite]) {
-    from javadoc.destinationDir
-    into "$website.directory/master/apidocs"
+    into "$website.directory/master"
+
+    from(javadoc.destinationDir) {
+        into 'apidocs'
+    }
+}
+
+project('lenskit-gradle').afterEvaluate { gprj ->
+    copyJavadoc {
+        dependsOn ':lenskit-gradle:groovydoc'
+        from(gprj.groovydoc.destinationDir) {
+            into 'gradle-docs'
+        }
+    }
 }
 
 task uploadWeb {
