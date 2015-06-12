@@ -24,6 +24,7 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.ConventionTask
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.api.tasks.TaskAction
+import org.gradle.process.ExecResult
 import org.gradle.process.JavaExecSpec
 import org.gradle.process.internal.JavaExecHandleBuilder
 import org.gradle.util.ConfigureUtil;
@@ -80,10 +81,23 @@ public abstract class LenskitTask extends ConventionTask {
     }
 
     /**
+     * Method run before running the command. Used to set up (e.g. write spec files) before the command can be run.
+     */
+    protected void doPrepare() {}
+
+    /**
+     * Method run after running the command.  It is run if there is a failure running the LensKit command, but not
+     * if the setup for the command ({@link #doPrepare()}, {@link #getCommandArgs()}, etc.) fail.
+     * @param The result, or `null` if the command could not be executed at all.
+     */
+    protected void doCleanup(ExecResult result) {}
+
+    /**
      * Execute the LensKit task.
      */
     @TaskAction
     public void perform() {
+
         logger.info 'running LensKit command {}', command
         logger.info 'Max memory: {}', maxMemory
         applyFinalSettings()
@@ -91,7 +105,13 @@ public abstract class LenskitTask extends ConventionTask {
         invoker.args command
         invoker.args commandArgs
         def bld = invoker as JavaExecHandleBuilder
-        bld.build().start().waitForFinish().assertNormalExitValue()
+        ExecResult result = null
+        try {
+            result = bld.build().start().waitForFinish()
+        } finally {
+            doCleanup(result)
+        }
+        result.assertNormalExitValue()
     }
 
     abstract String getCommand();

@@ -32,7 +32,7 @@ import org.gradle.api.tasks.OutputFiles
  * multiple cross-validation splits.
  *
  * In addition to the methods and properties specified in this class, the crossfolder also supports all configuration
- * directives supported by the {@link org.lenskit.eval.crossfold.CrossfoldSpecHandler}.  For example, you can say:
+ * directives supported by the crossfold operation.  For example, you can say:
  *
  * ```
  * includeTimestamps false
@@ -121,13 +121,11 @@ class Crossfold extends LenskitTask {
     }
 
     @Override
-    void perform() {
+    void doPrepare() {
         project.mkdir getOutputDir()
         logger.info 'preparing spec file {}', specFile
         specBuilder.content['name'] = name
         specFile.text = JsonOutput.toJson(specBuilder.content)
-
-        super.perform()
     }
 
     @Override
