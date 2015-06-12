@@ -97,7 +97,7 @@ public abstract class LenskitTask extends ConventionTask {
      */
     @TaskAction
     public void perform() {
-
+        doPrepare()
         logger.info 'running LensKit command {}', command
         logger.info 'Max memory: {}', maxMemory
         applyFinalSettings()

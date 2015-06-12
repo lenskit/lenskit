@@ -31,8 +31,7 @@ dependencies {
 }
 
 task crossfold(type: Crossfold) {
-    input {
-        type "text"
+    input textFile {
         file ratingsFile
         delimiter "\t"
     }

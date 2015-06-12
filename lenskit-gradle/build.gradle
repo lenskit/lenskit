@@ -8,3 +8,9 @@ dependencies {
 
 apply from: 'integration-tests.gradle'
 check.dependsOn gradleTests
+
+javadoc {
+    onlyIf {
+        false
+    }
+}

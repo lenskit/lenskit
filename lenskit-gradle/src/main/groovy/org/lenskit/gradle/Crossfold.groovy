@@ -26,6 +26,7 @@ import groovy.json.JsonOutput
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFiles
+import org.lenskit.gradle.traits.DataSources
 
 /**
  * Crossfold a data set.  This task can only crossfold a single data set; multiple tasks must be used to produce
@@ -39,7 +40,7 @@ import org.gradle.api.tasks.OutputFiles
  * partitions 10
  * ```
  */
-class Crossfold extends LenskitTask {
+class Crossfold extends LenskitTask implements DataSources {
     /**
      * The crossfold specification.
      */
@@ -57,12 +58,24 @@ class Crossfold extends LenskitTask {
     }
 
     /**
-     * Configure the input data.  This should be an input specification in Groovy {@link JsonBuilder} syntax.  For
-     * example:
+     * Configure the input data.  This should be an input specification in Groovy {@link JsonBuilder} syntax.  Common
+     * input types should be configured with {@link #input(Map)}.
+     *
+     * @param input The closure expressing the input specification.
+     */
+    void input(Closure input) {
+        specBuilder.input {
+            _base_uri project.rootDir.toURI().toString()
+            _wrapped input
+        }
+    }
+
+    /**
+     * Configure the input data.  For convenience, you can use the helper methods inherited from {@link DataSources} to
+     * create this bit of specification.  For example:
      *
      * ```
-     * input {
-     *     type "text"
+     * input textFile {
      *     file "ratings.csv"
      *     delimiter ","
      *     domain {
@@ -73,9 +86,9 @@ class Crossfold extends LenskitTask {
      * }
      * ```
      *
-     * @param input The closure expressing the input specification.
+     * @param input
      */
-    void input(Closure input) {
+    void input(Map input) {
         specBuilder.input {
             _base_uri project.rootDir.toURI().toString()
             _wrapped input
@@ -89,7 +102,7 @@ class Crossfold extends LenskitTask {
     void inputFile(File csv) {
         input {
             type "csv"
-            file csv.toString()
+            file csv.toURI()
         }
     }
 
