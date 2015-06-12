@@ -125,7 +125,7 @@ class Crossfold extends LenskitTask {
         project.mkdir getOutputDir()
         logger.info 'preparing spec file {}', specFile
         specBuilder.content['name'] = name
-        specFile.text = JsonOutput.toJson(specBuilder.content)
+        specFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(specBuilder.content))
     }
 
     @Override
