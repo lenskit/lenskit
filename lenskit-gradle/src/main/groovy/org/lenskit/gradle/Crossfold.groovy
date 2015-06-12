@@ -21,12 +21,12 @@
 package org.lenskit.gradle
 
 import groovy.json.JsonBuilder
-import groovy.json.JsonDelegate
 import groovy.json.JsonOutput
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFiles
 import org.lenskit.gradle.traits.DataSources
+import org.lenskit.gradle.traits.SpecBuilder
 
 /**
  * Crossfold a data set.  This task can only crossfold a single data set; multiple tasks must be used to produce
@@ -40,12 +40,7 @@ import org.lenskit.gradle.traits.DataSources
  * partitions 10
  * ```
  */
-class Crossfold extends LenskitTask implements DataSources {
-    /**
-     * The crossfold specification.
-     */
-    private JsonDelegate specBuilder = new JsonDelegate()
-
+class Crossfold extends LenskitTask implements DataSources, SpecBuilder {
     /**
      * The output directory for cross-validation.  Defaults to "build/$name.out", where $name is the name of the task.
      */
@@ -64,10 +59,7 @@ class Crossfold extends LenskitTask implements DataSources {
      * @param input The closure expressing the input specification.
      */
     void input(Closure input) {
-        specBuilder.input {
-            _base_uri project.rootDir.toURI().toString()
-            _wrapped input
-        }
+        spec.input = _rebase(input)
     }
 
     /**
@@ -89,10 +81,7 @@ class Crossfold extends LenskitTask implements DataSources {
      * @param input
      */
     void input(Map input) {
-        specBuilder.input {
-            _base_uri project.rootDir.toURI().toString()
-            _wrapped input
-        }
+        spec.input = _rebase(input)
     }
 
     /**
@@ -107,13 +96,17 @@ class Crossfold extends LenskitTask implements DataSources {
     }
 
     def methodMissing(String name, def args) {
-        specBuilder.invokeMethod(name, args)
+        def argArr = args as Object[]
+        if (argArr.length == 1) {
+            spec[name] = argArr[0]
+        } else {
+            throw new MissingMethodException(name, getClass(), argArr)
+        }
     }
 
     @InputFile
     File guessInputFile() {
-        def map = specBuilder.content
-        def f = map?.get('input')?.get('_wrapped')?.get('file')
+        def f = spec.get('input')?.get('_wrapped')?.get('file')
         if (f != null) {
             project.file(f)
         } else {
@@ -137,8 +130,8 @@ class Crossfold extends LenskitTask implements DataSources {
     void doPrepare() {
         project.mkdir getOutputDir()
         logger.info 'preparing spec file {}', specFile
-        specBuilder.content['name'] = name
-        specFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(specBuilder.content))
+        spec.name = name
+        specFile.text = JsonOutput.prettyPrint(specJSON)
     }
 
     @Override
