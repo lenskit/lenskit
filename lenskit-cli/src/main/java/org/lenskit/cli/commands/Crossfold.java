@@ -109,7 +109,7 @@ public class Crossfold implements Command {
             overrides.put("outputFormat", "pack");
         }
         if (!options.getBoolean("use_timestamps")) {
-            overrides.put("useTimestamps", false);
+            overrides.put("includeTimestamps", false);
         }
 
         String method = options.get("crossfold_mode");
