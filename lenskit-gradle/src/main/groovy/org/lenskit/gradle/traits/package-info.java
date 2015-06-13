@@ -18,28 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.eval.crossfold
-
-import org.grouplens.lenskit.specs.SpecificationContext
-import org.grouplens.lenskit.util.test.MiscBuilders
-import org.junit.Test
-
-import static org.hamcrest.Matchers.equalTo
-import static org.junit.Assert.assertThat
-
-class CrossfoldSpecHandlerTest {
-    @Test
-    public void testConfigureCrossfolder() {
-        def cfg = MiscBuilders.configObj {
-            name "asdf"
-            input {
-                type "csv"
-                file "ratings.csv"
-            }
-            partitions 12
-        }
-        def cf = SpecificationContext.create().build(Crossfolder, cfg)
-        assertThat cf.name, equalTo("asdf")
-        assertThat cf.partitionCount, equalTo(12)
-    }
-}
+/**
+ * Traits providing common configuration behavior for LensKit tasks.
+ */
+package org.lenskit.gradle.traits;

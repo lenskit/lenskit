@@ -18,25 +18,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.gradle
+package org.lenskit.gradle.traits
+
 /**
- * Extension for configuring LensKit.
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * General interface for configuration delegates
  */
-public class LenskitExtension {
-    def Integer threadCount = 0
-    def String maxMemory
-    def String version = 'LATEST'
+abstract class ConfigDelegate {
+    protected final def Map<String,Object> spec
 
-    public void threadCount(int tc) {
-        setThreadCount(tc);
+    ConfigDelegate() {
+        spec = new LinkedHashMap<>()
     }
 
-    public void maxMemory(String mm) {
-        maxMemory = mm
-    }
-
-    public void version(String v) {
-        version = v
+    Map<String,Object> call(Closure block) {
+        def c = block.clone() as Closure
+        c.setDelegate(this)
+        c.setResolveStrategy(Closure.DELEGATE_FIRST)
+        c.call()
+        return spec
     }
 }

@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 
@@ -79,6 +80,10 @@ public class Crossfold implements Command {
         Config spec = null;
         File specFile = options.get("spec");
         if (specFile != null) {
+            if (!specFile.exists()) {
+                logger.error("Spec file {} does not exist", specFile);
+                throw new FileNotFoundException("specification " + specFile);
+            }
             spec = ConfigFactory.parseFile(specFile);
             spec = spec.withFallback(defaults);
         } else {
@@ -89,7 +94,7 @@ public class Crossfold implements Command {
 
         DataSource src = input.getSource();
         if (src != null) {
-            overrides.put("source", src.toSpecification(SpecificationContext.create()));
+            overrides.put("input", src.toSpecification(SpecificationContext.create()));
         }
         Integer k = options.get("partitions");
         if (k != null) {
@@ -104,7 +109,7 @@ public class Crossfold implements Command {
             overrides.put("outputFormat", "pack");
         }
         if (!options.getBoolean("use_timestamps")) {
-            overrides.put("useTimestamps", false);
+            overrides.put("includeTimestamps", false);
         }
 
         String method = options.get("crossfold_mode");

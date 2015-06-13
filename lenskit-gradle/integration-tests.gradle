@@ -33,81 +33,52 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class Website {
-    def String repo = 'lenskit/lenskit.github.io'
-    def Project project
+/**
+ * Integration tests built with Gradle.
+ */
 
-    def getDirectory() {
-        project.file("$project.buildDir/website")
-    }
+task makeTestRepo {
+    dependsOn installForTesting
+//    for (prj in rootProject.childProjects.values()) {
+//        if (prj.name =~ /^lenskit-(?!integration-tests)/) {
+//            dependsOn "$prj.path:installForTesting"
+//        }
+//    }
 }
-extensions.create('website', Website)
-website.project = project
 
-task fetchSite {
-    mustRunAfter javadoc, ':lenskit-gradle:groovydoc'
+task gradleTests(group: 'verification')
+check.dependsOn gradleTests
 
-    doLast {
-        if (!website.directory.exists()) {
-            exec {
-                executable 'git'
-                args 'clone', "git@github.com:${website.repo}.git"
-                args website.directory
+file('src/it/gradle').eachDir { testDir ->
+    def fname = testDir.name
+    def tname = fname.replaceAll(/(?:^|-)(.)/) { m -> m[1].toUpperCase() }
+    def workDir = file("build/gradle-tests/$fname")
+
+    task("test$tname", type: GradleBuild) {
+        dependsOn makeTestRepo
+        inputs.dir testDir
+        inputs.dir "$buildDir/test-repo"
+        outputs.dir workDir
+
+        startParameter.projectProperties = [
+                testRepoURI: rootProject.uri("build/test-repo"),
+                lenskitVersion: project.version
+        ]
+        dir = workDir
+        buildFile = "$workDir/build.gradle"
+        tasks = ['check']
+
+        onlyIf {
+            !file("$testDir/ignore").exists()
+        }
+        doFirst {
+            copy {
+                from testDir
+                into workDir
             }
-        } else {
-            exec {
-                executable 'git'
-                args 'checkout', '--', '.'
-                workingDir website.directory
-            }
-            exec {
-                executable 'git'
-                args 'pull'
-                workingDir website.directory
-            }
+            println "running gradle build for $testDir"
         }
     }
-}
 
-task copyJavadoc(type: Sync, dependsOn: [javadoc, fetchSite]) {
-    into "$website.directory/master"
-
-    from(javadoc.destinationDir) {
-        into 'apidocs'
-    }
-}
-
-project('lenskit-gradle').afterEvaluate { gprj ->
-    copyJavadoc {
-        dependsOn ':lenskit-gradle:groovydoc'
-        from(gprj.groovydoc.destinationDir) {
-            into 'gradle-docs'
-        }
-    }
-}
-
-task uploadWeb {
-    dependsOn copyJavadoc
-
-    doLast {
-        def commit = git.headRevision.abbreviate(8).name()
-        exec {
-            executable 'git'
-            args 'add', '-A', 'master/apidocs'
-            workingDir website.directory
-        }
-        exec {
-            executable 'git'
-            args 'commit', '-m', "rebuild website for $commit"
-            workingDir website.directory
-        }
-        exec {
-            executable 'git'
-            args 'push'
-            workingDir website.directory
-        }
-    }
-}
-if (System.getenv("BRANCH") == "master") {
-    ciPublish.dependsOn uploadWeb
+    gradleTests.dependsOn "test$tname"
 }

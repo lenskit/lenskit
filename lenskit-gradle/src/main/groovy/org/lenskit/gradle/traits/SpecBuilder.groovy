@@ -18,28 +18,33 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.eval.crossfold
+package org.lenskit.gradle.traits
 
-import org.grouplens.lenskit.specs.SpecificationContext
-import org.grouplens.lenskit.util.test.MiscBuilders
-import org.junit.Test
+import groovy.json.JsonOutput
+import org.gradle.api.Project
+import org.gradle.api.tasks.Input
 
-import static org.hamcrest.Matchers.equalTo
-import static org.junit.Assert.assertThat
+trait SpecBuilder {
+    protected final Map<String,Object> spec = new LinkedHashMap<>()
 
-class CrossfoldSpecHandlerTest {
-    @Test
-    public void testConfigureCrossfolder() {
-        def cfg = MiscBuilders.configObj {
-            name "asdf"
-            input {
-                type "csv"
-                file "ratings.csv"
-            }
-            partitions 12
-        }
-        def cf = SpecificationContext.create().build(Crossfolder, cfg)
-        assertThat cf.name, equalTo("asdf")
-        assertThat cf.partitionCount, equalTo(12)
+    abstract Project getProject();
+
+    Map<String,Object> getSpec() {
+        return spec;
+    }
+
+    @Input
+    public String getSpecJSON() {
+        return JsonOutput.toJson(spec)
+    }
+
+    /**
+     * Helper method to wrap some JSON configuration in a URI rebase.
+     * @param obj The configuration.
+     * @return The rebased URI.
+     */
+    Map<String,Object> _rebase(Object obj) {
+        return [_base_uri: project.rootDir.toURI().toString(),
+                _wrapped: obj]
     }
 }

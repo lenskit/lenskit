@@ -5,3 +5,13 @@ dependencies {
     compile gradleApi()
     compile localGroovy()
 }
+
+apply from: 'integration-tests.gradle'
+check.dependsOn gradleTests
+
+javadoc {
+    onlyIf {
+        // FIXME Get some documentation going!
+        sourceSets.main.java.files.size() > 0
+    }
+}

@@ -1,0 +1,29 @@
+buildscript {
+    repositories {
+        maven {
+            url "$project.testRepoURI"
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.hamcrest:hamcrest-library:1.3'
+        classpath "org.grouplens.lenskit:lenskit-gradle:$project.lenskitVersion"
+    }
+}
+
+import static org.hamcrest.MatcherAssert.assertThat
+import static org.hamcrest.Matchers.*
+
+apply plugin: 'lenskit'
+
+lenskit {
+    maxMemory '16g'
+    threadCount 5
+}
+
+task check {
+    doLast {
+        assertThat(lenskit.maxMemory, equalTo('16g'))
+        assertThat(lenskit.threadCount, equalTo(5))
+    }
+}
