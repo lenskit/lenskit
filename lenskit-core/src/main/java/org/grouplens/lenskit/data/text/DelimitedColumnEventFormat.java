@@ -214,9 +214,7 @@ public final class DelimitedColumnEventFormat implements EventFormat {
             if (token == null && !field.isOptional()) {
                 throw new InvalidRowException("Non-optional field " + field.toString() + " missing");
             }
-            if (field != null) {
-                field.apply(token, builder);
-            }
+            field.apply(token, builder);
         }
         return builder.build();
     }
