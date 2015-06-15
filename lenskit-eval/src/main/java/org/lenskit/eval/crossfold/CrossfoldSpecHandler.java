@@ -59,12 +59,14 @@ public class CrossfoldSpecHandler implements SpecHandler<Crossfolder> {
             PartitionAlgorithm<Rating> partition = getRatingPartitionAlgorithm(cfg);
             Order<Rating> order = getRatingOrder(cfg);
             cf.setMethod(CrossfoldMethods.partitionUsers(order, partition));
+            break;
         }
         case "sample-users": {
             PartitionAlgorithm<Rating> partition = getRatingPartitionAlgorithm(cfg);
             Order<Rating> order = getRatingOrder(cfg);
             int sampleSize = cfg.hasPath("sampleSize") ? cfg.getInt("sampleSize") : 1000;
             cf.setMethod(CrossfoldMethods.sampleUsers(order, partition, sampleSize));
+            break;
         }
         case "partition-ratings":
             cf.setMethod(CrossfoldMethods.partitionRatings());
