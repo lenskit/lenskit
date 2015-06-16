@@ -26,9 +26,13 @@ detail in its own manual page.
 --log-file *FILE*
 :   Write logging output to *FILE*.
 
--d, --debug
-:   Increase verbosity, printing debug messages to the console.  By default, only messages at INFO
-    and higher levels are logged.  The log file, if specified, always receives debug-level output.
+--log-level *LEVEL*
+:   Output log messages at level *LEVEL* (or higher).  Can be one of ‘TRACE’, ‘DEBUG’, ‘INFO’, ‘WARN’, or ‘ERROR’.
+    The default is ‘INFO’.
+    
+--log-file-level *LEVEL*
+:   Specify a different level for the log file (specified with `--log-file`).  If this option is not specified, then
+    the log level set with `--log-level` is used for both the console and the log file.
 
 --debug-grapht
 :   Output INFO (or DEBUG, if **--debug** is also used) logging messages from Grapht.  Grapht is
@@ -78,7 +82,7 @@ Also, the following Java system properties can be set for useful effects:
 
 logback.configurationFile
 :   The location of a Logback configuration file.  This overrides all built-in or command line
-    logging configuration.
+    logging configuration (e.g. `--log-file`).
 
 ## See Also
 
