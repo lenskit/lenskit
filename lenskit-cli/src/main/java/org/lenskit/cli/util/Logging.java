@@ -58,10 +58,11 @@ public final class Logging {
         logging.addArgument("--log-level")
                .type(String.class)
                .metavar("LEVEL")
-               .help("include logging messages at LEVEL in log file");
-        logging.addArgument("-d", "--debug")
-               .action(Arguments.storeTrue())
-               .help("include debug logging in console output");
+               .help("include logging messages at LEVEL in log output");
+        logging.addArgument("--log-file-level")
+               .type(String.class)
+               .metavar("LEVEL")
+               .help("include logging messages at LEVEL in log file (defaults to --log-level value)");
         logging.addArgument("--debug-grapht")
                .action(Arguments.storeTrue())
                .help("include debug output from Grapht");
@@ -72,9 +73,14 @@ public final class Logging {
         if (System.getProperty("logback.configurationFile") != null) {
             return;
         }
-        boolean debug = options.getBoolean("debug");
         boolean debugGrapht = options.getBoolean("debug_grapht");
         File logFile = options.get("log_file");
+
+        String lstr = options.getString("log_level");
+        Level logLevel = Level.toLevel(lstr, Level.INFO);
+        String lfstr = options.getString("log_file_level");
+        Level logFileLevel;
+        logFileLevel = Level.toLevel(lfstr, logLevel);
 
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger root = context.getLogger(Logger.ROOT_LOGGER_NAME);
@@ -91,10 +97,20 @@ public final class Logging {
         console.setEncoder(consolePat);
         root.addAppender(console);
 
+        // figure out the root appender's level
+        Level rootLevel = logLevel;
+        if (logFileLevel.toInt() < logLevel.toInt()) {
+            rootLevel = logFileLevel;
+            ThresholdFilter filter = new ThresholdFilter();
+            filter.setContext(context);
+            filter.setLevel(logLevel.toString());
+            filter.start();
+            console.addFilter(filter);
+        }
+        root.setLevel(rootLevel);
+
         if (logFile != null) {
-            String lstr = options.getString("log_level");
-            Level logLevel = Level.toLevel(lstr, Level.INFO);
-            FileAppender<ILoggingEvent> fileOutput = new FileAppender<ILoggingEvent>();
+            FileAppender<ILoggingEvent> fileOutput = new FileAppender<>();
             fileOutput.setAppend(false);
             fileOutput.setContext(context);
             fileOutput.setFile(logFile.getAbsolutePath());
@@ -103,20 +119,18 @@ public final class Logging {
             filePat.setPattern(FILE_PATTERN);
             filePat.start();
             fileOutput.setEncoder(filePat);
+
+            ThresholdFilter filter = new ThresholdFilter();
+            filter.setContext(context);
+            filter.setLevel(logFileLevel.toString());
+            filter.start();
+            fileOutput.addFilter(filter);
+
             fileOutput.start();
+
             root.addAppender(fileOutput);
-            root.setLevel(logLevel);
-            if (!debug) {
-                ThresholdFilter filter = new ThresholdFilter();
-                filter.setContext(context);
-                filter.setLevel("INFO");
-                filter.start();
-                console.addFilter(filter);
-            }
-        } else if (debug) {
-            root.setLevel(Level.DEBUG);
-        } else {
-            root.setLevel(Level.INFO);
+
+            root.setLevel(logFileLevel);
         }
 
         console.start();
