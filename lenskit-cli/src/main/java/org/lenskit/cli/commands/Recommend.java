@@ -82,7 +82,7 @@ public class Recommend implements Command {
         Stopwatch timer = Stopwatch.createStarted();
         for (long user: users) {
             List<ScoredId> recs = irec.recommend(user, n);
-            System.out.format("recommendations for user %d:\n", user);
+            System.out.format("recommendations for user %d:%n", user);
             for (ScoredId item: recs) {
                 System.out.format("  %d", item.getId());
                 if (indao != null) {

@@ -44,9 +44,9 @@ public class Version implements Command {
     @Override
     public void execute(Namespace opts) throws Exception {
         String version = LenskitInfo.lenskitVersion();
-        System.out.format("LensKit version %s\n", version);
+        System.out.format("LensKit version %s%n", version);
         if (version.endsWith("-SNAPSHOT")) {
-            System.out.format("Git revision %s\n", LenskitInfo.getHeadRevision());
+            System.out.format("Git revision %s%n", LenskitInfo.getHeadRevision());
         }
     }
 
