@@ -57,30 +57,6 @@ public final class GraphtUtils {
     private GraphtUtils() {
     }
 
-//    public static Node replaceNodeWithPlaceholder(InjectSPI spi, Graph graph, Node node) {
-//        // replace it with a null satisfaction
-//        final Component daoLbl = node.getLabel();
-//        assert daoLbl != null;
-//        final Satisfaction oldSat = daoLbl.getSatisfaction();
-//        final Class<?> type = oldSat.getErasedType();
-//        final Satisfaction sat = spi.satisfyWithNull(type);
-//        final Node placeholder = new Node(sat, CachePolicy.MEMOIZE);
-//        graph.replaceNode(node, placeholder);
-//
-//        // replace desires on edges (truncates desire chains to only contain head, dropping refs)
-//        for (Edge e: Lists.newArrayList(graph.getIncomingEdges(placeholder))) {
-//            Desire d = e.getDesire();
-//            List<Desire> lbl = null;
-//            if (d != null) {
-//                lbl = Collections.singletonList(d);
-//            }
-//            Edge replacement = new Edge(e.getHead(), e.getTail(), lbl);
-//            graph.replaceEdge(e, replacement);
-//        }
-//
-//        return placeholder;
-//    }
-
     /**
      * Check a graph for placeholder satisfactions.
      *
@@ -130,9 +106,6 @@ public final class GraphtUtils {
      */
     public static boolean isShareable(DAGNode<Component, Dependency> node) {
         Component label = node.getLabel();
-        if (label == null) {
-            return false;
-        }
 
         if (label.getSatisfaction().hasInstance()) {
             return true;
@@ -248,7 +221,7 @@ public final class GraphtUtils {
     /**
      * An ordering over dependency edges.
      */
-    public static Ordering<DAGEdge<Component, Dependency>> DEP_EDGE_ORDER =
+    public static final Ordering<DAGEdge<Component, Dependency>> DEP_EDGE_ORDER =
             Ordering.<String>natural()
                     .lexicographical()
                     .onResultOf(ORDER_KEY);
@@ -292,7 +265,6 @@ public final class GraphtUtils {
      *
      * @param type The type to look for.
      * @return A node whose satisfaction is compatible with {@code type}.
-     * @review Decide how to handle qualifiers and contexts
      */
     @Nullable
     public static DAGNode<Component,Dependency> findSatisfyingNode(DAGNode<Component,Dependency> graph,
