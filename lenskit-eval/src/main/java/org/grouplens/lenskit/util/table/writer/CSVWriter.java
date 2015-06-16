@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.util.table.writer;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -46,7 +47,7 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeCsv;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class CSVWriter extends AbstractTableWriter {
-    private Writer writer;
+    private BufferedWriter writer;
     private TableLayout layout;
 
     /**
@@ -59,7 +60,11 @@ public class CSVWriter extends AbstractTableWriter {
     public CSVWriter(@Nonnull Writer w, @Nullable TableLayout l) throws IOException {
         Preconditions.checkNotNull(w, "writer must not be null");
         layout = l;
-        writer = w;
+        if (w instanceof BufferedWriter) {
+            writer = (BufferedWriter) w;
+        } else {
+            writer = new BufferedWriter(w);
+        }
         if (layout != null) {
             writeRow(layout.getColumns().toArray(new Object[l.getColumnCount()]));
         }
@@ -88,7 +93,7 @@ public class CSVWriter extends AbstractTableWriter {
                 writer.write(escapeCsv(val.toString()));
             }
         }
-        writer.write('\n');
+        writer.newLine();
         writer.flush();
     }
 
