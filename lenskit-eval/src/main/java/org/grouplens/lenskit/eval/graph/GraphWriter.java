@@ -73,8 +73,8 @@ class GraphWriter implements Closeable {
     public void close() throws IOException {
         // write the end of the GraphViz file, closing the writer when we're done
         try (BufferedWriter w = output) {
-            output.write("}");
-            output.newLine();
+            w.write("}");
+            w.newLine();
         }
     }
 
@@ -130,7 +130,8 @@ class GraphWriter implements Closeable {
         if (name != null) {
             output.append(name).append(" ");
         }
-        output.append("{\n");
+        output.append("{");
+        output.newLine();
         for (Map.Entry<String,Object> e: subgraph.getAttributes().entrySet()) {
             output.append("    ")
                   .append(e.getKey())
