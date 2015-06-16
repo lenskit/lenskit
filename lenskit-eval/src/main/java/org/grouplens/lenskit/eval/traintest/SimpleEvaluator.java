@@ -375,7 +375,7 @@ public class SimpleEvaluator implements Callable<Table> {
         result.setProject(project);
         try {
             for (Crossfolder cf: crossfolders) {
-                cf.run();
+                cf.execute();
             }
             return result.perform();
         } catch (InterruptedException e) {

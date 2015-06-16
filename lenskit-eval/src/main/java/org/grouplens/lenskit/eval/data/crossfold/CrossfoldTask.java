@@ -356,7 +356,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
         case SAMPLE_USERS:
             crossfolder.setMethod(CrossfoldMethods.sampleUsers(order, partition, sampleSize));
         }
-        crossfolder.run();
+        crossfolder.execute();
         return crossfolder.getDataSets();
     }
 

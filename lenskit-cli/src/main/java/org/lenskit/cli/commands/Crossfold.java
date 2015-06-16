@@ -139,7 +139,7 @@ public class Crossfold implements Command {
         Config finalSpec = ConfigFactory.parseMap(overrides).withFallback(spec);
         Crossfolder task = SpecificationContext.create().build(Crossfolder.class, finalSpec);
 
-        task.run();
+        task.execute();
     }
 
     public void configureArguments(ArgumentParser parser) {

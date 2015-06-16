@@ -91,7 +91,7 @@ class CrossfolderTest {
 
     @Test
     public void testFreshCFRun() {
-        cf.run()
+        cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))
         def allUsers = new LongOpenHashSet()
@@ -136,7 +136,7 @@ class CrossfolderTest {
     @Test
     public void test10PartCFRun() {
         cf.partitionCount = 10
-        cf.run()
+        cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(10))
         def allUsers = new LongOpenHashSet()
@@ -182,7 +182,7 @@ class CrossfolderTest {
         cf.method = CrossfoldMethods.sampleUsers(new RandomOrder<Rating>(),
                                                  new HoldoutNPartition<Rating>(5),
                                                  5);
-        cf.run()
+        cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))
         def allUsers = new LongOpenHashSet()
@@ -226,7 +226,7 @@ class CrossfolderTest {
     @Test
     public void testPartitionRatings() {
         cf.method = CrossfoldMethods.partitionRatings()
-        cf.run()
+        cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))
         def allEvents = new HashSet<Event>();
@@ -272,7 +272,7 @@ class CrossfolderTest {
     @Test
     public void testUserTimestampOrder() {
         cf.method = CrossfoldMethods.partitionUsers(new TimestampOrder<Rating>(), new HoldoutNPartition<Rating>(5))
-        cf.run()
+        cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))
         def allUsers = new LongOpenHashSet()
@@ -305,7 +305,7 @@ class CrossfolderTest {
     @Test
     public void testRetainNPartition() {
         cf.method = CrossfoldMethods.partitionUsers(new TimestampOrder<Rating>(), new RetainNPartition<Rating>(5));
-        cf.run()
+        cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))
         def allUsers = new LongOpenHashSet()

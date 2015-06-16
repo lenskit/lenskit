@@ -54,7 +54,7 @@ import java.util.*;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @SpecHandlerInterface(CrossfoldSpecHandler.class)
-public class Crossfolder implements Runnable {
+public class Crossfolder {
     private static final Logger logger = LoggerFactory.getLogger(Crossfolder.class);
 
     private Random rng;
@@ -272,7 +272,7 @@ public class Crossfolder implements Runnable {
     /**
      * Run the crossfold command. Write the partition files to the disk by reading in the source file.
      */
-    public void run() {
+    public void execute() {
         if (skipIfUpToDate) {
             UpToDateChecker check = new UpToDateChecker();
             check.addInput(source.lastModified());
