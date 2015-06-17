@@ -38,6 +38,7 @@ apply plugin: 'groovy'
 
 dependencies {
     compile project(':lenskit-api')
+    compile project(':lenskit-specs')
     compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.10.0'
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
     compile group: 'com.typesafe', name: 'config', version: '1.2.1'

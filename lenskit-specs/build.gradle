@@ -33,17 +33,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-rootProject.name = 'lenskit'
+apply from: "$rootDir/gradle/maven.gradle"
+apply plugin: 'java'
 
-include 'lenskit-test'
-include 'lenskit-data-structures'
-include 'lenskit-api'
-include 'lenskit-specs'
-include 'lenskit-core', 'lenskit-groovy'
-include 'lenskit-eval'
-include 'lenskit-gradle'
-include 'lenskit-knn', 'lenskit-svd', 'lenskit-slopeone', 'lenskit-predict'
-include 'lenskit-all'
-include 'lenskit-cli'
-include 'lenskit-integration-tests'
-include 'dist'
+dependencies {
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.5.4'
+}
+
+meta {
+    name 'LensKit Object Specification Beans'
+    description '''
+JavaBeans describing various LensKit objects, used for serializing between Gradle and the CLI.
+'''
+}
