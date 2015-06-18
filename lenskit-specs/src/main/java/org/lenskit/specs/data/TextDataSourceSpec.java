@@ -23,7 +23,7 @@ package org.lenskit.specs.data;
 /**
  * Specification of a text data source.
  */
-public class TextDataSourceSpec {
+public class TextDataSourceSpec extends DataSourceSpec {
     private String file;
     private String delimiter = ",";
     private PrefDomainSpec domain;
