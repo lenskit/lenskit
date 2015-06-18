@@ -31,6 +31,7 @@ import org.grouplens.lenskit.specs.Specifiable;
 import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.specs.data.PrefDomainSpec;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -227,6 +228,15 @@ public final class PreferenceDomain implements Serializable, Specifiable {
         } else {
             return new PreferenceDomain(min, max);
         }
+    }
+
+    /**
+     * Build a preference domain from a specification.
+     * @param spec The preference domain spec.
+     * @return The preference domain.
+     */
+    public static PreferenceDomain fromSpec(PrefDomainSpec spec) {
+        return new PreferenceDomain(spec.getMinimum(), spec.getMaximum(), spec.getPrecision());
     }
 
     /**
