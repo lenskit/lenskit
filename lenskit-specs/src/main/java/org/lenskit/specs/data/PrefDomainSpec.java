@@ -20,10 +20,12 @@
  */
 package org.lenskit.specs.data;
 
+import org.lenskit.specs.AbstractSpec;
+
 /**
  * Specification for a preference domain.
  */
-public class PrefDomainSpec {
+public class PrefDomainSpec extends AbstractSpec {
     private double minimum;
     private double maximum;
     private double precision;

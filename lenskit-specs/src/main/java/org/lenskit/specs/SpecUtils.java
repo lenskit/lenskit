@@ -20,8 +20,10 @@
  */
 package org.lenskit.specs;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -31,7 +33,13 @@ import java.nio.file.Path;
 /**
  * Utility functions for working with specifications.
  */
-public class SpecUtils {
+public final class SpecUtils {
+    private SpecUtils() {}
+
+    static ObjectMapper createMapper() {
+        return new ObjectMapper();
+    }
+
     /**
      * Read a specification type from a file.
      * @param type The specification type.
@@ -41,8 +49,7 @@ public class SpecUtils {
      * @throws IOException if there is an error reading the file.
      */
     public static <T> T load(Class<T> type, Path file) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectReader reader = mapper.reader(type);
+        ObjectReader reader = createMapper().reader(type);
         try (Reader r = Files.newBufferedReader(file)) {
             return reader.readValue(r);
         }
@@ -56,12 +63,36 @@ public class SpecUtils {
      * @return A deserialized specification.
      */
     public static <T> T parse(Class<T> type, String json) {
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectReader reader = mapper.reader(type);
+        ObjectReader reader = createMapper().reader(type);
         try {
             return reader.readValue(json);
         } catch (IOException e) {
             throw new RuntimeException("error parsing JSON specification", e);
         }
+    }
+
+    /**
+     * Convert a specification to a string.
+     * @param spec The specification.
+     * @return The JSON string representation of the specification.
+     */
+    public static String stringify(AbstractSpec spec) {
+        ObjectWriter writer = createMapper().writer();
+        try {
+            return writer.writeValueAsString(spec);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error stringifying JSON", e);
+        }
+    }
+
+    /**
+     * Write a specification to a file.
+     * @param spec The specification.
+     * @param file The file to write to.
+     * @throws IOException if there is an error writing the specification.
+     */
+    public static void write(AbstractSpec spec, Path file) throws IOException {
+        ObjectWriter writer = createMapper().writer();
+        writer.writeValue(file.toFile(), spec);
     }
 }

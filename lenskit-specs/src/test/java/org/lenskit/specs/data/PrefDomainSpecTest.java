@@ -20,8 +20,6 @@
  */
 package org.lenskit.specs.data;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import net.java.quickcheck.Generator;
 import net.java.quickcheck.generator.PrimitiveGenerators;
 import net.java.quickcheck.generator.distribution.Distribution;
@@ -43,8 +41,7 @@ public class PrefDomainSpecTest {
         Generator<Double> maxes = PrimitiveGenerators.doubles(4, 6, Distribution.INVERTED_NORMAL);
         Generator<Double> precs = PrimitiveGenerators.doubles(4, 6, Distribution.INVERTED_NORMAL);
         Generator<Boolean> hasPrecision = PrimitiveGenerators.booleans();
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectWriter w = mapper.writer();
+
         for (int i = 0; i < 50; i++) {
             PrefDomainSpec dom = new PrefDomainSpec();
             dom.setMaximum(maxes.next());
@@ -55,7 +52,7 @@ public class PrefDomainSpecTest {
                 dom.setPrecision(Double.NaN);
             }
 
-            String json = w.writeValueAsString(dom);
+            String json = SpecUtils.stringify(dom);
 
             PrefDomainSpec d2 = SpecUtils.parse(PrefDomainSpec.class, json);
 
