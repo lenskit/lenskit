@@ -27,8 +27,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.lang3.reflect.MethodUtils;
-import sun.reflect.misc.MethodUtil;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
@@ -117,15 +118,20 @@ public final class SpecUtils {
      * 1.  Load the {@link SpecHandler}s using {@link java.util.ServiceLoader}.
      * 2.  Query each spec handler, in turn, to try to find one that can build an object of type `type` from the spec.
      * 3.  If no such handler is found, try to invoke a static `fromSpec(AbstractSpec)` method on `type`.
-     * 4.  Otherwise, throw {@link NoSpecHandlerFound}.
+     * 4.  If no such method is found, or it returns `null`, throw {@link NoSpecHandlerFound}.
      *
      * @param type The type of object to build.
      * @param spec The specification to use.
      * @param <T> The built object type.
-     * @return The built object.  Will be `null` if `spec` is `null`.
+     * @return The built object.  Will be `null` if and only if `spec` is `null`.
      * @throws NoSpecHandlerFound if no spec handler or `fromSpec` method can be found.
      */
-    public static <T> T buildObject(Class<T> type, AbstractSpec spec) {
+    @Nullable
+    public static <T> T buildObject(@Nonnull Class<T> type, @Nullable AbstractSpec spec) {
+        if (spec == null) {
+            return null;
+        }
+
         ServiceLoader<SpecHandler> loader = ServiceLoader.load(SpecHandler.class);
         for (SpecHandler h: loader) {
             T obj = h.build(type, spec);
@@ -135,9 +141,14 @@ public final class SpecUtils {
         }
 
         try {
-            return type.cast(MethodUtils.invokeStaticMethod(type, "fromSpec", spec));
+            T obj = type.cast(MethodUtils.invokeStaticMethod(type, "fromSpec", spec));
+            if (obj == null) {
+                throw new NoSpecHandlerFound("No spec handler to build " + type + " from " + spec);
+            } else {
+                return obj;
+            }
         } catch (NoSuchMethodException e) {
-            throw new NoSpecHandlerFound();
+            throw new NoSpecHandlerFound("No spec handler to build " + type + " from " + spec);
         } catch (IllegalAccessException e) {
             throw new RuntimeException("access error invoking fromSpec on " + type, e);
         } catch (InvocationTargetException e) {
