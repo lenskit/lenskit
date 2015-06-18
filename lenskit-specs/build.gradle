@@ -39,6 +39,8 @@ apply plugin: 'java'
 dependencies {
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.5.4'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3'
+
+    testCompile group: 'net.java.quickcheck', name: 'quickcheck', version: '0.6'
 }
 
 meta {
