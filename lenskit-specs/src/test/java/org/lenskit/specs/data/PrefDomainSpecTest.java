@@ -21,12 +21,12 @@
 package org.lenskit.specs.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import net.java.quickcheck.Generator;
 import net.java.quickcheck.generator.PrimitiveGenerators;
 import net.java.quickcheck.generator.distribution.Distribution;
 import org.junit.Test;
+import org.lenskit.specs.SpecUtils;
 
 import java.io.IOException;
 
@@ -45,7 +45,6 @@ public class PrefDomainSpecTest {
         Generator<Boolean> hasPrecision = PrimitiveGenerators.booleans();
         ObjectMapper mapper = new ObjectMapper();
         ObjectWriter w = mapper.writer();
-        ObjectReader r = mapper.reader(PrefDomainSpec.class);
         for (int i = 0; i < 50; i++) {
             PrefDomainSpec dom = new PrefDomainSpec();
             dom.setMaximum(maxes.next());
@@ -58,7 +57,7 @@ public class PrefDomainSpecTest {
 
             String json = w.writeValueAsString(dom);
 
-            PrefDomainSpec d2 = r.readValue(json);
+            PrefDomainSpec d2 = SpecUtils.parse(PrefDomainSpec.class, json);
 
             assertThat(d2.getMinimum(), equalTo(dom.getMinimum()));
             assertThat(d2.getMaximum(), equalTo(dom.getMaximum()));
