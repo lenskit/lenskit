@@ -20,8 +20,40 @@
  */
 package org.lenskit.specs;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 /**
- * Base class for specification beans.
+ * Base class for specification beans.  This class provides default implementations of {@link #equals(Object)} and
+ * {@link #hashCode()} for specifications.
  */
 public abstract class AbstractSpec {
+    /**
+     * Test this spec for equality with another spec.  This implementation uses {@link EqualsBuilder#reflectionEquals(Object, Object, boolean)},
+     * with transient fields excluded.
+     *
+     * @param o The object with which this spec should be compared.
+     * @return `true` if the specs are equal.
+     */
+    @Override
+    public boolean equals(Object o) {
+        return EqualsBuilder.reflectionEquals(this, o, false);
+    }
+
+    /**
+     * Compute a hash code for this spec.  This implementation uses {@link HashCodeBuilder#reflectionHashCode(Object, boolean)},
+     * with transient fields excluded.
+     *
+     * @return The hash code.
+     */
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this, false);
+    }
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this);
+    }
 }

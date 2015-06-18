@@ -59,6 +59,8 @@ public class PrefDomainSpecTest {
             assertThat(d2.getMinimum(), equalTo(dom.getMinimum()));
             assertThat(d2.getMaximum(), equalTo(dom.getMaximum()));
             assertThat(d2.getPrecision(), equalTo(dom.getPrecision()));
+
+            assertThat(d2, equalTo(dom));
         }
     }
 }
