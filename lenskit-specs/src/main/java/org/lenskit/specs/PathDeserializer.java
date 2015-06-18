@@ -18,30 +18,26 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.specs.data;
+package org.lenskit.specs;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+
+import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
-/**
- * Specification of a binary packed data source.
- */
-public class PackedDataSourceSpec extends DataSourceSpec {
-    private Path file;
-    private PrefDomainSpec domain;
-
-    public Path getFile() {
-        return file;
+public class PathDeserializer extends JsonDeserializer<Path> {
+    @Override
+    public Class<Path> handledType() {
+        return Path.class;
     }
 
-    public void setFile(Path file) {
-        this.file = file;
-    }
-
-    public PrefDomainSpec getDomain() {
-        return domain;
-    }
-
-    public void setDomain(PrefDomainSpec domain) {
-        this.domain = domain;
+    @Override
+    public Path deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        String path = p.readValueAs(String.class);
+        return Paths.get(path);
     }
 }

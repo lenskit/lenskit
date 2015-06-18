@@ -20,19 +20,21 @@
  */
 package org.lenskit.specs.data;
 
+import java.nio.file.Path;
+
 /**
  * Specification of a text data source.
  */
 public class TextDataSourceSpec extends DataSourceSpec {
-    private String file;
+    private Path file;
     private String delimiter = ",";
     private PrefDomainSpec domain;
 
-    public String getFile() {
+    public Path getFile() {
         return file;
     }
 
-    public void setFile(String file) {
+    public void setFile(Path file) {
         this.file = file;
     }
 

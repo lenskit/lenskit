@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -38,7 +39,12 @@ public final class SpecUtils {
     private SpecUtils() {}
 
     static ObjectMapper createMapper() {
-        return new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule mod = new SimpleModule("LenskitSpecs");
+        mod.addSerializer(Path.class, new PathSerializer());
+        mod.addDeserializer(Path.class, new PathDeserializer());
+        mapper.registerModule(mod);
+        return mapper;
     }
 
     /**
