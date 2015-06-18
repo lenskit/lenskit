@@ -38,7 +38,7 @@ apply plugin: 'groovy'
 
 dependencies {
     compile project(':lenskit-core')
-    testCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
+    testCompile project(':lenskit-test')
     testCompile project(':lenskit-groovy')
 }
 

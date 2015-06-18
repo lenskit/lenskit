@@ -38,6 +38,7 @@ apply from: "$rootDir/gradle/maven.gradle"
 dependencies {
     compile project(':lenskit-core')
     compile project(':lenskit-knn')
+    testCompile project(':lenskit-test')
 }
 
 meta {

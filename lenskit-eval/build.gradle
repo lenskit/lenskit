@@ -47,6 +47,8 @@ dependencies {
         exclude module: 'junit'
     }
     compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc2'
+
+    testCompile project(':lenskit-test')
 }
 
 meta {
