@@ -23,7 +23,7 @@ package org.lenskit.specs.data;
 /**
  * Specification of a binary packed data source.
  */
-public class PackedDataSourceSpec {
+public class PackedDataSourceSpec extends DataSourceSpec {
     private String file;
     private PrefDomainSpec domain;
 

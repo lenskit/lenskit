@@ -21,12 +21,13 @@
 package org.lenskit.specs.data;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.lenskit.specs.AbstractSpec;
 
 /**
  * Base class for data source specifications.
  */
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS)
-public abstract class DataSourceSpec {
+public abstract class DataSourceSpec extends AbstractSpec {
     private String name;
 
     public String getName() {
