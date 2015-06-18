@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -92,7 +93,8 @@ public final class SpecUtils {
      * @throws IOException if there is an error writing the specification.
      */
     public static void write(AbstractSpec spec, Path file) throws IOException {
-        ObjectWriter writer = createMapper().writer();
+        ObjectWriter writer = createMapper().writer()
+                                            .with(SerializationFeature.INDENT_OUTPUT);
         writer.writeValue(file.toFile(), spec);
     }
 }
