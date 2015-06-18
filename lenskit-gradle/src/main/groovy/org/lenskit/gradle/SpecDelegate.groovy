@@ -16,7 +16,22 @@ class SpecDelegate {
     }
 
     @Override
+    Object getProperty(String property) {
+        return spec.metaClass.getProperty(spec, property)
+    }
+
+    @Override
+    void setProperty(String property, Object newValue) {
+        spec.metaClass.setProperty(spec, property, newValue)
+    }
+
+    @Override
     Object invokeMethod(String name, Object args) {
+        try {
+            return spec.metaClass.invokeMethod(spec, name, args)
+        } catch (MissingMethodException ignored) {
+            /* no method, continue with fallback code */
+        }
         def argArray = args as Object[]
         if (argArray.length != 1) {
             throw missing(name, argArray, null)
