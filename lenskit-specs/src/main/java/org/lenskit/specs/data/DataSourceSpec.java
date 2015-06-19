@@ -20,8 +20,13 @@
  */
 package org.lenskit.specs.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.lenskit.specs.AbstractSpec;
+
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Base class for data source specifications.
@@ -38,5 +43,14 @@ public abstract class DataSourceSpec extends AbstractSpec {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * Get the input files for this data source.
+     * @return The input files.
+     */
+    @JsonIgnore
+    public Set<Path> getInputFiles() {
+        return Collections.emptySet();
     }
 }

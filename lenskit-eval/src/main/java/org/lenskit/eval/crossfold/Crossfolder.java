@@ -90,7 +90,8 @@ public class Crossfolder {
         cf.setName(spec.getName())
           .setPartitionCount(spec.getPartitionCount())
           .setWriteTimestamps(spec.getIncludeTimesamps())
-          .setOutputFormat(spec.getOutputFormat());
+          .setOutputFormat(spec.getOutputFormat())
+          .setOutputDir(spec.getOutputDir());
 
         Order<Rating> order = null;
         PartitionAlgorithm<Rating> part = null;

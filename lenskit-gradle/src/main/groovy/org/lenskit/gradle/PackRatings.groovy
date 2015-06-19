@@ -22,15 +22,17 @@ package org.lenskit.gradle
 
 import groovy.json.JsonBuilder
 import groovy.json.JsonOutput
-import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import org.lenskit.gradle.traits.DataSources
-import org.lenskit.gradle.traits.SpecBuilder
+import org.lenskit.specs.SpecUtils
+import org.lenskit.specs.data.DataSourceSpec
 
 /**
  * Pack a data set.
  */
-class PackRatings extends LenskitTask implements DataSources, SpecBuilder {
+class PackRatings extends LenskitTask implements DataSources {
+    DataSourceSpec inputSpec
     /**
      * The output file.  Defaults to "build/$name.pack", where $name is the name of the task.
      */
@@ -51,27 +53,10 @@ class PackRatings extends LenskitTask implements DataSources, SpecBuilder {
      * Configure the input data.  This should be an input specification in Groovy {@link JsonBuilder} syntax.  Common
      * input types should be configured with {@link #input(Map)}.
      *
-     * @param input The closure expressing the input specification.
+     * @param inputSpec The input specification.
      */
-    void input(Closure input) {
-        spec.putAll(_rebase(input))
-    }
-
-    /**
-     * Configure the input data.  For convenience, you can use the helper methods inherited from {@link DataSources} to
-     * create this bit of specification.  For example:
-     *
-     * ```
-     * input textFile {
-     *     file "ratings.csv"
-     *     delimiter ","
-     * }
-     * ```
-     *
-     * @param input
-     */
-    void input(Map input) {
-        spec.putAll(_rebase(input))
+    void input(DataSourceSpec src) {
+        inputSpec = src
     }
 
     /**
@@ -79,20 +64,15 @@ class PackRatings extends LenskitTask implements DataSources, SpecBuilder {
      * @param csv A CSV file containing ratings.
      */
     void inputFile(File csv) {
-        input {
+        input textFile {
             type "csv"
-            file csv.toURI()
+            file csv
         }
     }
 
-    @InputFile
-    File guessInputFile() {
-        def f = spec.get('_wrapped')?.get('file')
-        if (f != null) {
-            project.file(f)
-        } else {
-            null
-        }
+    @InputFiles
+    Set<File> getInputFiles() {
+        return inputSpec.inputFiles.collect {it.toFile()}
     }
 
     @OutputFile
@@ -109,7 +89,7 @@ class PackRatings extends LenskitTask implements DataSources, SpecBuilder {
     void doPrepare() {
         project.mkdir outputFile.parentFile
         logger.info 'preparing spec file {}', specFile
-        specFile.text = JsonOutput.prettyPrint(specJSON)
+        SpecUtils.write(inputSpec, specFile.toPath())
     }
 
     @Override

@@ -20,13 +20,16 @@
  */
 package org.lenskit.gradle
 
-import groovy.json.JsonBuilder
-import groovy.json.JsonOutput
 import org.gradle.api.file.FileCollection
-import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
 import org.lenskit.gradle.traits.DataSources
-import org.lenskit.gradle.traits.SpecBuilder
+import org.lenskit.specs.SpecUtils
+import org.lenskit.specs.data.DataSourceSpec
+import org.lenskit.specs.data.TextDataSourceSpec
+import org.lenskit.specs.eval.CrossfoldSpec
+
+import java.nio.file.Path
 
 /**
  * Crossfold a data set.  This task can only crossfold a single data set; multiple tasks must be used to produce
@@ -40,7 +43,10 @@ import org.lenskit.gradle.traits.SpecBuilder
  * partitions 10
  * ```
  */
-class Crossfold extends LenskitTask implements DataSources, SpecBuilder {
+class Crossfold extends LenskitTask implements DataSources {
+    private def spec = new CrossfoldSpec();
+    private def specDelegate = new SpecDelegate(spec)
+
     /**
      * The output directory for cross-validation.  Defaults to "build/$name.out", where $name is the name of the task.
      */
@@ -52,65 +58,29 @@ class Crossfold extends LenskitTask implements DataSources, SpecBuilder {
         }
     }
 
-    /**
-     * Configure the input data.  This should be an input specification in Groovy {@link JsonBuilder} syntax.  Common
-     * input types should be configured with {@link #input(Map)}.
-     *
-     * @param input The closure expressing the input specification.
-     */
-    void input(Closure input) {
-        spec.input = _rebase(input)
+    void input(DataSourceSpec src) {
+        spec.source = src
     }
 
     /**
-     * Configure the input data.  For convenience, you can use the helper methods inherited from {@link DataSources} to
-     * create this bit of specification.  For example:
-     *
-     * ```
-     * input textFile {
-     *     file "ratings.csv"
-     *     delimiter ","
-     *     domain {
-     *         minimum 1.0
-     *         maximum 5.0
-     *         precision 1.0
-     *     }
-     * }
-     * ```
-     *
-     * @param input
-     */
-    void input(Map input) {
-        spec.input = _rebase(input)
-    }
-
-    /**
-     * Configure an input CSV file of ratings.  Convenience method; {@link #input(Closure)} is more general.
+     * Configure an input CSV file of ratings.  Convenience method; {@link #input(DataSourceSpec)} is more general.
      * @param csv A CSV file containing ratings.
      */
     void inputFile(File csv) {
-        input {
-            type "csv"
-            file csv.toURI()
-        }
+        def src = new TextDataSourceSpec()
+        src.delimiter = ","
+        src.file = csv.toPath()
+        input src
     }
 
     def methodMissing(String name, def args) {
-        def argArr = args as Object[]
-        if (argArr.length == 1) {
-            spec[name] = argArr[0]
-        } else {
-            throw new MissingMethodException(name, getClass(), argArr)
-        }
+        specDelegate.invokeMethod(name, args)
     }
 
-    @InputFile
-    File guessInputFile() {
-        def f = spec.get('input')?.get('_wrapped')?.get('file')
-        if (f != null) {
-            project.file(f)
-        } else {
-            null
+    @InputFiles
+    Set<File> getInputFiles() {
+        return spec.source.inputFiles.collect {
+            it.toFile()
         }
     }
 
@@ -131,7 +101,7 @@ class Crossfold extends LenskitTask implements DataSources, SpecBuilder {
         project.mkdir getOutputDir()
         logger.info 'preparing spec file {}', specFile
         spec.name = name
-        specFile.text = JsonOutput.prettyPrint(specJSON)
+        SpecUtils.write(spec, specFile)
     }
 
     @Override
@@ -142,8 +112,7 @@ class Crossfold extends LenskitTask implements DataSources, SpecBuilder {
         args << specFile
     }
 
-    File getSpecFile() {
-        File specFile = new File(project.file(getOutputDir()), "crossfold.json")
-        return specFile
+    Path getSpecFile() {
+        return project.file(getOutputDir()).toPath().resolve("crossfold.json")
     }
 }

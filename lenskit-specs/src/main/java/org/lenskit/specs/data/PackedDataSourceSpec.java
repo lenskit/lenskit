@@ -21,6 +21,8 @@
 package org.lenskit.specs.data;
 
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Specification of a binary packed data source.
@@ -43,5 +45,10 @@ public class PackedDataSourceSpec extends DataSourceSpec {
 
     public void setDomain(PrefDomainSpec domain) {
         this.domain = domain;
+    }
+
+    @Override
+    public Set<Path> getInputFiles() {
+        return Collections.singleton(file);
     }
 }
