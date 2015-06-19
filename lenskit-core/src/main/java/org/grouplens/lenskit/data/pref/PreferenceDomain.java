@@ -236,6 +236,9 @@ public final class PreferenceDomain implements Serializable, Specifiable {
      * @return The preference domain.
      */
     public static PreferenceDomain fromSpec(PrefDomainSpec spec) {
+        if (spec == null) {
+            return null;
+        }
         return new PreferenceDomain(spec.getMinimum(), spec.getMaximum(), spec.getPrecision());
     }
 

@@ -25,9 +25,9 @@ import org.grouplens.grapht.util.Providers;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.text.*;
-import org.grouplens.lenskit.data.text.SimpleFileItemDAOProvider;
 import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.lenskit.specs.data.TextDataSourceSpec;
 
 import javax.annotation.Nonnull;
 import javax.inject.Provider;
@@ -150,6 +150,20 @@ public class TextDataSource extends AbstractDataSource {
         if (domain != null) {
             bld.put("domain", domain.toSpecification(context));
         }
+        return bld.build();
+    }
+
+    /**
+     * Build a text data source from a spec.
+     * @param spec The spec.
+     * @return The data source.
+     */
+    public static TextDataSource fromSpec(TextDataSourceSpec spec) {
+        TextDataSourceBuilder bld = new TextDataSourceBuilder();
+        bld.setName(spec.getName())
+                .setFile(spec.getFile().toFile())
+                .setDelimiter(spec.getDelimiter())
+                .setDomain(PreferenceDomain.fromSpec(spec.getDomain()));
         return bld.build();
     }
 }

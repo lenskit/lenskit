@@ -30,6 +30,7 @@ import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.util.MoreSuppliers;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
+import org.lenskit.specs.data.PackedDataSourceSpec;
 
 import javax.annotation.Nonnull;
 import javax.inject.Provider;
@@ -126,6 +127,14 @@ public class PackedDataSource implements DataSource {
             bld.put("domain", domain.toSpecification(context));
         }
         return bld.build();
+    }
+
+    public static PackedDataSource fromSpec(PackedDataSourceSpec spec) {
+        PackedDataSourceBuilder dsb = new PackedDataSourceBuilder();
+        dsb.setName(spec.getName())
+           .setFile(spec.getFile().toFile())
+           .setDomain(PreferenceDomain.fromSpec(spec.getDomain()));
+        return dsb.build();
     }
 
     private class DAOProvider implements Provider<BinaryRatingDAO>, Describable {
