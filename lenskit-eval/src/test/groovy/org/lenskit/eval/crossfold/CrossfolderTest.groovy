@@ -37,7 +37,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.lenskit.eval.OutputFormat
+import org.lenskit.specs.eval.OutputFormat
 
 import java.nio.file.Files
 
@@ -76,7 +76,7 @@ class CrossfolderTest {
     public void testFreshCFState() {
         assertThat(cf.name, equalTo("test"))
         assertThat(cf.partitionCount, equalTo(5))
-        assertThat(cf.method, instanceOf(UserPartitionCrossfoldMethod))
+        assertThat(cf.method, instanceOf(UserPartitionSplitMethod))
         assertThat(cf.skipIfUpToDate, equalTo(false))
         assertThat(cf.writeTimestamps, equalTo(true))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
@@ -179,7 +179,7 @@ class CrossfolderTest {
 
     @Test
     public void testUserSample() {
-        cf.method = CrossfoldMethods.sampleUsers(new RandomOrder<Rating>(),
+        cf.method = SplitMethods.sampleUsers(new RandomOrder<Rating>(),
                                                  new HoldoutNPartition<Rating>(5),
                                                  5);
         cf.execute()
@@ -225,7 +225,7 @@ class CrossfolderTest {
 
     @Test
     public void testPartitionRatings() {
-        cf.method = CrossfoldMethods.partitionRatings()
+        cf.method = SplitMethods.partitionRatings()
         cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))
@@ -271,7 +271,7 @@ class CrossfolderTest {
 
     @Test
     public void testUserTimestampOrder() {
-        cf.method = CrossfoldMethods.partitionUsers(new TimestampOrder<Rating>(), new HoldoutNPartition<Rating>(5))
+        cf.method = SplitMethods.partitionUsers(new TimestampOrder<Rating>(), new HoldoutNPartition<Rating>(5))
         cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))
@@ -304,7 +304,7 @@ class CrossfolderTest {
 
     @Test
     public void testRetainNPartition() {
-        cf.method = CrossfoldMethods.partitionUsers(new TimestampOrder<Rating>(), new RetainNPartition<Rating>(5));
+        cf.method = SplitMethods.partitionUsers(new TimestampOrder<Rating>(), new RetainNPartition<Rating>(5));
         cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))

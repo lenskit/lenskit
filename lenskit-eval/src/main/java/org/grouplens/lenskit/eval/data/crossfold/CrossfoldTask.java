@@ -25,8 +25,8 @@ import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.lenskit.eval.OutputFormat;
 import org.lenskit.eval.crossfold.*;
+import org.lenskit.specs.eval.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -348,13 +348,13 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
         }
         switch (method) {
         case PARTITION_RATINGS:
-            crossfolder.setMethod(CrossfoldMethods.partitionRatings());
+            crossfolder.setMethod(SplitMethods.partitionRatings());
             break;
         case PARTITION_USERS:
-            crossfolder.setMethod(CrossfoldMethods.partitionUsers(order, partition));
+            crossfolder.setMethod(SplitMethods.partitionUsers(order, partition));
             break;
         case SAMPLE_USERS:
-            crossfolder.setMethod(CrossfoldMethods.sampleUsers(order, partition, sampleSize));
+            crossfolder.setMethod(SplitMethods.sampleUsers(order, partition, sampleSize));
         }
         crossfolder.execute();
         return crossfolder.getDataSets();

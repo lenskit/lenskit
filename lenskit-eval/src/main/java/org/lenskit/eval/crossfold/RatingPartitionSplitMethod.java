@@ -33,8 +33,8 @@ import java.util.Collections;
 /**
  * Partition ratings into outputs.
  */
-class RatingPartitionCrossfoldMethod implements CrossfoldMethod {
-    private static final Logger logger = LoggerFactory.getLogger(RatingPartitionCrossfoldMethod.class);
+class RatingPartitionSplitMethod implements SplitMethod {
+    private static final Logger logger = LoggerFactory.getLogger(RatingPartitionSplitMethod.class);
 
     @Override
     public void crossfold(DataSource input, CrossfoldOutput output) throws IOException {

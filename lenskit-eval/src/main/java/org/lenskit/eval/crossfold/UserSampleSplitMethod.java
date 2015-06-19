@@ -28,10 +28,10 @@ import org.grouplens.lenskit.data.event.Rating;
 
 import java.util.Random;
 
-class UserSampleCrossfoldMethod extends UserBasedCrossfoldMethod {
+class UserSampleSplitMethod extends UserBasedSplitMethod {
     final int sampleSize;
 
-    UserSampleCrossfoldMethod(Order<Rating> ord, PartitionAlgorithm<Rating> part, int size) {
+    UserSampleSplitMethod(Order<Rating> ord, PartitionAlgorithm<Rating> part, int size) {
         super(ord, part);
         sampleSize = size;
     }
@@ -41,7 +41,7 @@ class UserSampleCrossfoldMethod extends UserBasedCrossfoldMethod {
         if (np * sampleSize > users.size()) {
             logger.warn("cannot make {} disjoint samples of {} from {} users, partitioning",
                         np, sampleSize, users.size());
-            UserPartitionCrossfoldMethod upcm = new UserPartitionCrossfoldMethod(order, partition);
+            UserPartitionSplitMethod upcm = new UserPartitionSplitMethod(order, partition);
             return upcm.splitUsers(users, np, rng);
         } else {
             Long2IntMap userMap = new Long2IntOpenHashMap(users.size());

@@ -34,12 +34,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-abstract class UserBasedCrossfoldMethod implements CrossfoldMethod {
+abstract class UserBasedSplitMethod implements SplitMethod {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     protected final Order<Rating> order;
     protected final PartitionAlgorithm<Rating> partition;
 
-    UserBasedCrossfoldMethod(Order<Rating> ord, PartitionAlgorithm<Rating> pa) {
+    UserBasedSplitMethod(Order<Rating> ord, PartitionAlgorithm<Rating> pa) {
         order = ord;
         partition = pa;
     }

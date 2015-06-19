@@ -26,7 +26,7 @@ import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.specs.SpecHandler;
 import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.specs.SpecificationException;
-import org.lenskit.eval.OutputFormat;
+import org.lenskit.specs.eval.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,18 +58,18 @@ public class CrossfoldSpecHandler implements SpecHandler<Crossfolder> {
         case "partition-users": {
             PartitionAlgorithm<Rating> partition = getRatingPartitionAlgorithm(cfg);
             Order<Rating> order = getRatingOrder(cfg);
-            cf.setMethod(CrossfoldMethods.partitionUsers(order, partition));
+            cf.setMethod(SplitMethods.partitionUsers(order, partition));
             break;
         }
         case "sample-users": {
             PartitionAlgorithm<Rating> partition = getRatingPartitionAlgorithm(cfg);
             Order<Rating> order = getRatingOrder(cfg);
             int sampleSize = cfg.hasPath("sampleSize") ? cfg.getInt("sampleSize") : 1000;
-            cf.setMethod(CrossfoldMethods.sampleUsers(order, partition, sampleSize));
+            cf.setMethod(SplitMethods.sampleUsers(order, partition, sampleSize));
             break;
         }
         case "partition-ratings":
-            cf.setMethod(CrossfoldMethods.partitionRatings());
+            cf.setMethod(SplitMethods.partitionRatings());
             break;
         default:
             throw new SpecificationException("invalid crossfold method " + method);
