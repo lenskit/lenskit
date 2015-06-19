@@ -26,7 +26,10 @@ import org.lenskit.specs.AbstractSpec;
 /**
  * Base class for data source specifications.
  */
-@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS)
+@JsonTypeInfo(
+        use=JsonTypeInfo.Id.CLASS,
+        include=JsonTypeInfo.As.WRAPPER_OBJECT,
+        defaultImpl=TextDataSourceSpec.class)
 public abstract class DataSourceSpec extends AbstractSpec {
     private String name;
 
