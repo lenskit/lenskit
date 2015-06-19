@@ -128,11 +128,39 @@ public final class SpecUtils {
      */
     @Nullable
     public static <T> T buildObject(@Nonnull Class<T> type, @Nullable AbstractSpec spec) {
+        return buildObject(type, spec, null);
+    }
+
+    /**
+     * Build an object from a specification.  On its own, this method does very little.  It depends on support from
+     * objects in order to work.
+     *
+     * It operates as follows:
+     *
+     * 1.  Load the {@link SpecHandler}s using {@link java.util.ServiceLoader}.
+     * 2.  Query each spec handler, in turn, to try to find one that can build an object of type `type` from the spec.
+     * 3.  If no such handler is found, try to invoke a static `fromSpec(AbstractSpec)` method on `type`.
+     * 4.  If no such method is found, or it returns `null`, throw {@link NoSpecHandlerFound}.
+     *
+     * @param type The type of object to build.
+     * @param spec The specification to use.
+     * @param cl The class loader to search.
+     * @param <T> The built object type.
+     * @return The built object.  Will be `null` if and only if `spec` is `null`.
+     * @throws NoSpecHandlerFound if no spec handler or `fromSpec` method can be found.
+     */
+    @Nullable
+    public static <T> T buildObject(@Nonnull Class<T> type, @Nullable AbstractSpec spec, ClassLoader cl) {
         if (spec == null) {
             return null;
         }
 
-        ServiceLoader<SpecHandler> loader = ServiceLoader.load(SpecHandler.class);
+        ServiceLoader<SpecHandler> loader;
+        if (cl == null) {
+            loader = ServiceLoader.load(SpecHandler.class);
+        } else {
+            loader = ServiceLoader.load(SpecHandler.class, cl);
+        }
         for (SpecHandler h: loader) {
             T obj = h.build(type, spec);
             if (obj != null) {
