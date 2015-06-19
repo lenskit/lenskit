@@ -31,13 +31,15 @@ import org.grouplens.lenskit.data.source.DataSource
 import org.grouplens.lenskit.data.source.GenericDataSource
 import org.grouplens.lenskit.data.source.TextDataSource
 import org.grouplens.lenskit.data.text.TextEventDAO
+import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet
-import org.grouplens.lenskit.specs.SpecificationContext
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.eval.OutputFormat
+import org.lenskit.specs.eval.TTDataSetSpec
 
 import java.nio.file.Files
 
@@ -121,10 +123,10 @@ class CrossfolderTest {
             assertThat(Files.exists(train), equalTo(true))
             def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-            def spec = tmp.root.toPath().resolve(String.format("part%02d.json", i))
-            assertThat(Files.exists(spec), equalTo(true))
-            def specURI = spec.toUri()
-            def obj = SpecificationContext.build(TTDataSet, specURI)
+            def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
+            assertThat(Files.exists(specFile), equalTo(true))
+            def spec = SpecUtils.load(TTDataSetSpec, specFile)
+            def obj = GenericTTDataSet.fromSpec(spec)
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
@@ -165,10 +167,10 @@ class CrossfolderTest {
             assertThat(Files.exists(train), equalTo(true))
             def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-            def spec = tmp.root.toPath().resolve(String.format("part%02d.json", i))
-            assertThat(Files.exists(spec), equalTo(true))
-            def specURI = spec.toUri()
-            def obj = SpecificationContext.build(TTDataSet, specURI)
+            def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
+            assertThat(Files.exists(specFile), equalTo(true))
+            def spec = SpecUtils.load(TTDataSetSpec, specFile)
+            def obj = GenericTTDataSet.fromSpec(spec)
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
@@ -211,10 +213,10 @@ class CrossfolderTest {
             assertThat(Files.exists(train), equalTo(true))
             def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-            def spec = tmp.root.toPath().resolve(String.format("part%02d.json", i))
-            assertThat(Files.exists(spec), equalTo(true))
-            def specURI = spec.toUri()
-            def obj = SpecificationContext.build(TTDataSet, specURI)
+            def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
+            assertThat(Files.exists(specFile), equalTo(true))
+            def spec = SpecUtils.load(TTDataSetSpec, specFile)
+            def obj = GenericTTDataSet.fromSpec(spec)
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
@@ -257,10 +259,10 @@ class CrossfolderTest {
             assertThat(Files.exists(train), equalTo(true))
             def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-            def spec = tmp.root.toPath().resolve(String.format("part%02d.json", i))
-            assertThat(Files.exists(spec), equalTo(true))
-            def specURI = spec.toUri()
-            def obj = SpecificationContext.build(TTDataSet, specURI)
+            def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
+            assertThat(Files.exists(specFile), equalTo(true))
+            def spec = SpecUtils.load(TTDataSetSpec, specFile)
+            def obj = GenericTTDataSet.fromSpec(spec)
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())

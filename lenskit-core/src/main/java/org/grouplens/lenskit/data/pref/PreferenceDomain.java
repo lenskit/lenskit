@@ -21,21 +21,16 @@
 package org.grouplens.lenskit.data.pref;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.grapht.annotation.DefaultNull;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.specs.SpecHandlerInterface;
-import org.grouplens.lenskit.specs.Specifiable;
-import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.specs.data.PrefDomainSpec;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,8 +41,7 @@ import java.util.regex.Pattern;
  */
 @Shareable
 @DefaultNull
-@SpecHandlerInterface(PreferenceDomainBuilder.class)
-public final class PreferenceDomain implements Serializable, Specifiable {
+public final class PreferenceDomain implements Serializable {
     public static final long serialVersionUID = 1L;
 
     private final double minimum;
@@ -186,18 +180,6 @@ public final class PreferenceDomain implements Serializable, Specifiable {
         }
     }
 
-    @Nonnull
-    @Override
-    public Map<String, Object> toSpecification(SpecificationContext context) {
-        ImmutableMap.Builder<String,Object> bld = ImmutableMap.builder();
-        bld.put("minimum", minimum);
-        bld.put("maximum", maximum);
-        if (precision > 0) {
-            bld.put("precision", precision);
-        }
-        return bld.build();
-    }
-
     private static Pattern specRE =
             Pattern.compile("\\s*\\[\\s*((?:\\d*\\.)?\\d+)\\s*,\\s*((?:\\d*\\.)?\\d+)\\s*\\]\\s*(?:/\\s*((?:\\d*\\.)?\\d+))?\\s*");
 
@@ -248,5 +230,13 @@ public final class PreferenceDomain implements Serializable, Specifiable {
      */
     public static PreferenceDomainBuilder newBuilder() {
         return new PreferenceDomainBuilder();
+    }
+
+    public PrefDomainSpec toSpec() {
+        PrefDomainSpec spec = new PrefDomainSpec();
+        spec.setMinimum(minimum);
+        spec.setMaximum(maximum);
+        spec.setPrecision(precision);
+        return spec;
     }
 }

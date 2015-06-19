@@ -28,7 +28,6 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.TaskExecutionException;
-import org.grouplens.lenskit.specs.SpecificationException;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.eval.crossfold.*;
@@ -67,7 +66,7 @@ public class Crossfold implements Command {
     }
 
     @Override
-    public void execute(Namespace options) throws IOException, TaskExecutionException, SpecificationException {
+    public void execute(Namespace options) throws IOException, TaskExecutionException {
         InputData input = new InputData(null, options);
         logger.info("packing ratings from {}", input);
         logger.debug("using delimiter {}", getDelimiter(options));

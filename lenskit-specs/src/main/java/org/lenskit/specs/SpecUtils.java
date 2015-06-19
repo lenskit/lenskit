@@ -103,7 +103,7 @@ public final class SpecUtils {
      * @param file The file to write to.
      * @throws IOException if there is an error writing the specification.
      */
-    public static void write(AbstractSpec spec, Path file) throws IOException {
+    public static void write(Object spec, Path file) throws IOException {
         ObjectWriter writer = createMapper().writer()
                                             .with(SerializationFeature.INDENT_OUTPUT);
         writer.writeValue(file.toFile(), spec);

@@ -20,7 +20,6 @@
  */
 package org.lenskit.eval.crossfold;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.event.Rating;
@@ -31,24 +30,20 @@ import org.grouplens.lenskit.eval.data.RatingWriter;
 import org.grouplens.lenskit.eval.data.RatingWriters;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.specs.SpecHandlerInterface;
-import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
-import org.json.simple.JSONValue;
 import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.eval.CrossfoldSpec;
 import org.lenskit.specs.eval.OutputFormat;
 import org.lenskit.specs.eval.PartitionMethodSpec;
+import org.lenskit.specs.eval.TTDataSetSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 /**
@@ -56,7 +51,6 @@ import java.util.*;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@SpecHandlerInterface(CrossfoldSpecHandler.class)
 public class Crossfolder {
     private static final Logger logger = LoggerFactory.getLogger(Crossfolder.class);
 
@@ -400,27 +394,17 @@ public class Crossfolder {
         List<Path> specFiles = getSpecFiles();
         List<TTDataSet> dataSets = getDataSets();
         Path fullSpecFile = getOutputDir().resolve("all-partitions.json");
-        SpecificationContext fullCtx = SpecificationContext.create(fullSpecFile.toUri());
         List<Object> specs = new ArrayList<>(partitionCount);
         assert dataSets.size() == partitionCount;
         for (int i = 0; i < partitionCount; i++) {
             Path file = specFiles.get(i);
             TTDataSet ds = dataSets.get(i);
-            SpecificationContext ctx = SpecificationContext.create(file.toUri());
-            specs.add(ds.toSpecification(fullCtx));
-
-            try (BufferedWriter w = Files.newBufferedWriter(file, Charsets.UTF_8,
-                                                            StandardOpenOption.CREATE,
-                                                            StandardOpenOption.TRUNCATE_EXISTING)) {
-                JSONValue.writeJSONString(ds.toSpecification(ctx), w);
-            }
+            TTDataSetSpec spec = ds.toSpec();
+            specs.add(spec);
+            SpecUtils.write(spec, file);
         }
 
-        try (BufferedWriter w = Files.newBufferedWriter(fullSpecFile, Charsets.UTF_8,
-                                                        StandardOpenOption.CREATE,
-                                                        StandardOpenOption.TRUNCATE_EXISTING)) {
-            JSONValue.writeJSONString(specs, w);
-        }
+        SpecUtils.write(specs, fullSpecFile);
     }
 
     /**

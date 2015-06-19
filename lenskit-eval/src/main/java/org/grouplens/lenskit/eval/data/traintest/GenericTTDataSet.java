@@ -27,7 +27,8 @@ import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.data.dao.UserListUserDAO;
 import org.grouplens.lenskit.data.source.DataSource;
-import org.grouplens.lenskit.specs.SpecificationContext;
+import org.lenskit.specs.SpecUtils;
+import org.lenskit.specs.eval.TTDataSetSpec;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -72,6 +73,16 @@ public class GenericTTDataSet implements TTDataSet {
         } else {
             attributes = ImmutableMap.copyOf(attrs);
         }
+    }
+
+    public static TTDataSet fromSpec(TTDataSetSpec spec) {
+        GenericTTDataBuilder bld = new GenericTTDataBuilder();
+        // TODO support query sets
+        bld.setName(spec.getName())
+           .setTest(SpecUtils.buildObject(DataSource.class, spec.getTestSource()))
+           .setTrain(SpecUtils.buildObject(DataSource.class, spec.getTrainSource()));
+        bld.getAttributes().putAll(spec.getAttributes());
+        return bld.build();
     }
 
     @Override
@@ -140,19 +151,15 @@ public class GenericTTDataSet implements TTDataSet {
         return String.format("{TTDataSet %s}", name);
     }
 
-    @Nonnull
     @Override
-    public Map<String, Object> toSpecification(SpecificationContext context) {
-        ImmutableMap.Builder<String,Object> bld = ImmutableMap.builder();
-        if (name != null) {
-            bld.put("name", name);
-        }
-        bld.put("train", trainData.toSpecification(context));
-        bld.put("test", testData.toSpecification(context));
-        if (queryData != null) {
-            bld.put("query", queryData);
-        }
-        return bld.build();
+    public TTDataSetSpec toSpec() {
+        TTDataSetSpec spec = new TTDataSetSpec();
+        spec.setName(name);
+        spec.setTrainSource(trainData.toSpec());
+        spec.setTestSource(testData.toSpec());
+        spec.setAttributes(attributes);
+        // TODO support query data
+        return spec;
     }
 
     /**
