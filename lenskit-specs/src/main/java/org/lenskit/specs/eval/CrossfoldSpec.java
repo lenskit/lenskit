@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.lenskit.specs.AbstractSpec;
 import org.lenskit.specs.data.DataSourceSpec;
 
+import java.nio.file.Path;
+
 /**
  * Specification for running a crossfold operation.
  */
@@ -20,6 +22,7 @@ public class CrossfoldSpec extends AbstractSpec {
     private boolean includeTimesamps = false;
 
     private OutputFormat outputFormat = OutputFormat.CSV;
+    private Path outputDir;
 
     public CrossfoldSpec() {
         PartitionMethodSpec.Holdout hold = new PartitionMethodSpec.Holdout();
@@ -91,5 +94,13 @@ public class CrossfoldSpec extends AbstractSpec {
     @JsonProperty(required=false)
     public void setSampleSize(Integer sz) {
         sampleSize = sz;
+    }
+
+    public Path getOutputDir() {
+        return outputDir;
+    }
+
+    public void setOutputDir(Path outputDir) {
+        this.outputDir = outputDir;
     }
 }
