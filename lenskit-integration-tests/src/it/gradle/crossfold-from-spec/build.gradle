@@ -34,7 +34,7 @@ task crossfold(type: JavaExec) {
     main 'org.lenskit.cli.Main'
     args 'crossfold'
     args '--tsv-file', ratingsFile
-    args 'crossfold.conf'
+    args 'crossfold.json'
 }
 
 check {

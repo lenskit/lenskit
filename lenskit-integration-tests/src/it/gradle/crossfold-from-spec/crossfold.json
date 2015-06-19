@@ -1,0 +1,6 @@
+{
+  "partitions": 10,
+  "includeTimestamps": false,
+  "outputDir": "split",
+  "outputFormat": "pack"
+}
