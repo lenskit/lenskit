@@ -37,7 +37,9 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 
 /**
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * CLI support for configuring the logging infrastructure.
+ *
+ * @see org.lenskit.cli.Main
  */
 public final class Logging {
     private Logging() {}
@@ -79,12 +81,11 @@ public final class Logging {
         String lstr = options.getString("log_level");
         Level logLevel = Level.toLevel(lstr, Level.INFO);
 
-
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger root = context.getLogger(Logger.ROOT_LOGGER_NAME);
         root.detachAndStopAllAppenders();
 
-        ConsoleAppender<ILoggingEvent> console = new ConsoleAppender<ILoggingEvent>();
+        ConsoleAppender<ILoggingEvent> console = new ConsoleAppender<>();
         console.setContext(context);
         console.setTarget("System.err");
         console.setWithJansi(true);
