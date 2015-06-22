@@ -78,9 +78,7 @@ public final class Logging {
 
         String lstr = options.getString("log_level");
         Level logLevel = Level.toLevel(lstr, Level.INFO);
-        String lfstr = options.getString("log_file_level");
-        Level logFileLevel;
-        logFileLevel = Level.toLevel(lfstr, logLevel);
+
 
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger root = context.getLogger(Logger.ROOT_LOGGER_NAME);
@@ -97,19 +95,27 @@ public final class Logging {
         console.setEncoder(consolePat);
         root.addAppender(console);
 
-        // figure out the root appender's level
         Level rootLevel = logLevel;
-        if (logFileLevel.toInt() < logLevel.toInt()) {
-            rootLevel = logFileLevel;
-            ThresholdFilter filter = new ThresholdFilter();
-            filter.setContext(context);
-            filter.setLevel(logLevel.toString());
-            filter.start();
-            console.addFilter(filter);
-        }
-        root.setLevel(rootLevel);
 
         if (logFile != null) {
+            // sort out the log level situation
+            String lfstr = options.getString("log_file_level");
+            Level logFileLevel = Level.toLevel(lfstr, logLevel);
+
+            if (!logFileLevel.equals(logLevel)) {
+                // filter the console log
+                ThresholdFilter filter = new ThresholdFilter();
+                filter.setContext(context);
+                filter.setLevel(logLevel.toString());
+                filter.start();
+                console.addFilter(filter);
+
+                // root level needs to be decreased
+                if (logLevel.isGreaterOrEqual(logFileLevel)) {
+                    rootLevel = logFileLevel;
+                }
+            }
+
             FileAppender<ILoggingEvent> fileOutput = new FileAppender<>();
             fileOutput.setAppend(false);
             fileOutput.setContext(context);
@@ -120,6 +126,7 @@ public final class Logging {
             filePat.start();
             fileOutput.setEncoder(filePat);
 
+            // filter the file output
             ThresholdFilter filter = new ThresholdFilter();
             filter.setContext(context);
             filter.setLevel(logFileLevel.toString());
@@ -129,12 +136,14 @@ public final class Logging {
             fileOutput.start();
 
             root.addAppender(fileOutput);
-
-            root.setLevel(logFileLevel);
         }
+
+        // set root level to min needed to pass a filter
+        root.setLevel(rootLevel);
 
         console.start();
 
+        // tone down Grapht logging
         if (!debugGrapht) {
             context.getLogger("org.grouplens.grapht").setLevel(Level.WARN);
         }
