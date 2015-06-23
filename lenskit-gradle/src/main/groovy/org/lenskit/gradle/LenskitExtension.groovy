@@ -59,4 +59,15 @@ public class LenskitExtension {
      * The classpath to use for LensKit.  Defaults to the runtime classpath of the `main` source set.
      */
     def FileCollection classpath
+
+    /**
+     * The log level to use.  Defaults to 'INFO'.
+     */
+    def String logLevel = 'INFO'
+
+    /**
+     * The log level to use for log files.  Default is unset, resulting in the same level being applied to the console
+     * and the log file.
+     */
+    def String logFileLevel
 }

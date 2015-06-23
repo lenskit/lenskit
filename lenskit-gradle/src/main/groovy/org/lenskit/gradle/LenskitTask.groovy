@@ -23,6 +23,7 @@ package org.lenskit.gradle
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.ConventionTask
 import org.gradle.api.internal.file.FileResolver
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecResult
 import org.gradle.process.JavaExecSpec
@@ -44,6 +45,26 @@ public abstract class LenskitTask extends ConventionTask {
     def FileCollection classpath
 
     /**
+     * The log file.  Defaults to no log file.
+     */
+    def logFile
+
+    /**
+     * The output logging level.
+     */
+    def logLevel
+
+    /**
+     * The log file output level..
+     */
+    def logFileLevel
+
+    /**
+     * A Logback configuration file.  If specified, its content overrides all other logging-related options.
+     */
+    def logbackConfiguration
+
+    /**
      * Access the underlying invoker that will be used to run the LensKit code.  Most code will not need this; it allows
      * build scripts to set additional JVM options that are not exposed as specific properties if necessary.  Properties
      * exposed by LensKit tasks (such as {@link #getMaxMemory()}) will generally override their corresponding settings
@@ -55,6 +76,8 @@ public abstract class LenskitTask extends ConventionTask {
         invoker = new JavaExecHandleBuilder(services.get(FileResolver))
         def ext = project.extensions.getByType(LenskitExtension)
         conventionMapping.maxMemory = { ext.maxMemory }
+        conventionMapping.logLevel = { ext.logLevel }
+        conventionMapping.logFileLevel = { ext.logFileLevel }
         // FIXME Make dependencies work!
         conventionMapping.classpath = { ext.classpath ?: project.sourceSets.main.runtimeClasspath }
     }
@@ -70,6 +93,9 @@ public abstract class LenskitTask extends ConventionTask {
         if (getClasspath() != null) {
             invoker.classpath = getClasspath()
         }
+        if (logbackConfiguration) {
+            invoker.systemProperties 'logback.configurationFile': project.file(logbackConfiguration)
+        }
     }
 
     /**
@@ -78,6 +104,11 @@ public abstract class LenskitTask extends ConventionTask {
      */
     public void invoker(Closure block) {
         ConfigureUtil.configure(block, invoker)
+    }
+
+    @InputFiles
+    public FileCollection getClasspathFiles() {
+        return getClasspath()
     }
 
     /**
@@ -97,11 +128,24 @@ public abstract class LenskitTask extends ConventionTask {
      */
     @TaskAction
     public void perform() {
+        applyFinalSettings()
         doPrepare()
         logger.info 'running LensKit command {}', command
-        logger.info 'Max memory: {}', maxMemory
-        applyFinalSettings()
+        logger.info 'Max memory: {}', getMaxMemory()
+        if (logger.infoEnabled) {
+            logger.info('classpath:')
+            for (f in getClasspath().files) {
+                logger.info('  {}', f)
+            }
+        }
         invoker.main = 'org.lenskit.cli.Main'
+        if (getLogFile() != null) {
+            invoker.args '--log-file', project.file(getLogFile())
+        }
+        if (getLogFileLevel() != null) {
+            invoker.args '--log-file-level', getLogFileLevel()
+        }
+
         invoker.args command
         invoker.args commandArgs
         def bld = invoker as JavaExecHandleBuilder

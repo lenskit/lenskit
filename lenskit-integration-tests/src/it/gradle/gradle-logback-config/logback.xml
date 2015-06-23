@@ -1,0 +1,12 @@
+<configuration>
+    <appender name="OutFile" class="ch.qos.logback.core.FileAppender">
+        <file>test-log.log</file>
+        <encoder>
+            <pattern>%-5level %logger{24} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="${log.level:-INFO}">
+        <appender-ref ref="OutFile" />
+    </root>
+</configuration>
