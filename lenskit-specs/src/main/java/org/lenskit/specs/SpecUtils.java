@@ -63,9 +63,7 @@ public final class SpecUtils {
      */
     public static <T> T load(Class<T> type, Path file) throws IOException {
         ObjectReader reader = createMapper().reader(type);
-        try (Reader r = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
-            return reader.readValue(r);
-        }
+        return reader.readValue(file.toFile());
     }
 
     /**
