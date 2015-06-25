@@ -33,6 +33,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ServiceLoader;
@@ -62,7 +63,7 @@ public final class SpecUtils {
      */
     public static <T> T load(Class<T> type, Path file) throws IOException {
         ObjectReader reader = createMapper().reader(type);
-        try (Reader r = Files.newBufferedReader(file)) {
+        try (Reader r = Files.newBufferedReader(file, Charset.forName("UTF-8"))) {
             return reader.readValue(r);
         }
     }
