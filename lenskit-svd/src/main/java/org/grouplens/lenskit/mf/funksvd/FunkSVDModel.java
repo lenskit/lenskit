@@ -21,9 +21,9 @@
 package org.grouplens.lenskit.mf.funksvd;
 
 import com.google.common.collect.ImmutableList;
-import mikera.matrixx.impl.ImmutableMatrix;
-import mikera.vectorz.AVector;
-import mikera.vectorz.impl.ImmutableVector;
+import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.MatrixUtils;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.indexes.IdIndexMapping;
@@ -43,9 +43,9 @@ public final class FunkSVDModel extends MFModel {
     private static final long serialVersionUID = 3L;
 
     private final List<FeatureInfo> featureInfo;
-    private final AVector averageUser;
+    private final RealVector averageUser;
 
-    public FunkSVDModel(ImmutableMatrix umat, ImmutableMatrix imat,
+    public FunkSVDModel(RealMatrix umat, RealMatrix imat,
                         IdIndexMapping uidx, IdIndexMapping iidx,
                         List<FeatureInfo> features) {
         super(umat, imat, uidx, iidx);
@@ -56,7 +56,7 @@ public final class FunkSVDModel extends MFModel {
         for (int f = featureCount - 1; f >= 0; f--) {
             means[f] = featureInfo.get(f).getUserAverage();
         }
-        averageUser = ImmutableVector.wrap(means);
+        averageUser = MatrixUtils.createRealVector(means);
     }
 
     /**
@@ -76,7 +76,7 @@ public final class FunkSVDModel extends MFModel {
         return featureInfo;
     }
 
-    public AVector getAverageUserVector() {
+    public RealVector getAverageUserVector() {
         return averageUser;
     }
 }

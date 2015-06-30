@@ -22,8 +22,7 @@ package org.grouplens.lenskit.mf.funksvd;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import mikera.vectorz.AVector;
-import mikera.vectorz.Vector;
+import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.baseline.BaselineScorer;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
@@ -112,10 +111,10 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
      * @param output The output vector, whose key domain is the items to predict for. It must
      *               be initialized to the user's baseline predictions.
      */
-    private void computeScores(long user, AVector uprefs, MutableSparseVector output) {
+    private void computeScores(long user, RealVector uprefs, MutableSparseVector output) {
         for (VectorEntry e : output) {
             final long item = e.getKey();
-            AVector ivec = model.getItemVector(item);
+            RealVector ivec = model.getItemVector(item);
             if (ivec == null) {
                 // no item-vector, cannot make an informed prediction.
                 // unset the baseline to note that we are not predicting for this item.
@@ -151,7 +150,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         }
         SparseVector ratings = Ratings.userRatingVector(history);
         
-        AVector uprefs = model.getUserVector(user);
+        RealVector uprefs = model.getUserVector(user);
         if (uprefs == null) {
             if (ratings.isEmpty()) {
                 // no real work to do.
@@ -165,34 +164,34 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         scores.set(estimates);
 
         if (!ratings.isEmpty() && rule != null) {
-            AVector updated = Vector.create(uprefs);
+            //RealVector updated = uprefs.copy();
             for (int f = 0; f < featureCount; f++) {
-                trainUserFeature(user, updated, ratings, estimates, f);
+                trainUserFeature(user, uprefs, ratings, estimates, f); // changed updated to uprefs
             }
-            uprefs = updated;
+            //uprefs = updated;
         }
 
         // scores are the estimates, uprefs are trained up.
         computeScores(user, uprefs, scores);
     }
 
-    private void trainUserFeature(long user, AVector uprefs, SparseVector ratings,
+    private void trainUserFeature(long user, RealVector uprefs, SparseVector ratings,
                                   MutableSparseVector estimates, int feature) {
         assert rule != null;
-        assert uprefs.length() == featureCount;
+        assert uprefs.getDimension() == featureCount;
         assert feature >= 0 && feature < featureCount;
 
         int tailStart = feature + 1;
         int tailSize = featureCount - feature - 1;
-        AVector utail = uprefs.subVector(tailStart, tailSize);
+        RealVector utail = uprefs.getSubVector(tailStart, tailSize);
         MutableSparseVector tails = MutableSparseVector.create(ratings.keySet());
         for (VectorEntry e: tails.view(VectorEntry.State.EITHER)) {
-            AVector ivec = model.getItemVector(e.getKey());
+            RealVector ivec = model.getItemVector(e.getKey());
             if (ivec == null) {
                 // FIXME Do this properly
                 tails.set(e, 0);
             } else {
-                ivec = ivec.subVector(tailStart, tailSize);
+                ivec = ivec.getSubVector(tailStart, tailSize);
                 tails.set(e, utail.dotProduct(ivec));
             }
         }
@@ -204,7 +203,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         }
     }
 
-    private double doFeatureIteration(long user, AVector uprefs,
+    private double doFeatureIteration(long user, RealVector uprefs,
                                       SparseVector ratings, MutableSparseVector estimates,
                                       int feature, SparseVector itemTails) {
         assert rule != null;
@@ -212,15 +211,15 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         FunkSVDUpdater updater = rule.createUpdater();
         for (VectorEntry e: ratings) {
             final long iid = e.getKey();
-            final AVector ivec = model.getItemVector(iid);
+            final RealVector ivec = model.getItemVector(iid);
             if (ivec == null) {
                 continue;
             }
 
             updater.prepare(feature, e.getValue(), estimates.get(iid),
-                            uprefs.get(feature), ivec.get(feature), itemTails.get(iid));
+                            uprefs.getEntry(feature), ivec.getEntry(feature), itemTails.get(iid));
             // Step 4: update user preferences
-            uprefs.addAt(feature, updater.getUserFeatureUpdate());
+            uprefs.setEntry(feature, updater.getUserFeatureUpdate());
         }
         return updater.getRMSE();
     }

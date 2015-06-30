@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.mf.svd;
 
 import com.google.common.base.Preconditions;
-import mikera.vectorz.AVector;
+import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 
@@ -49,13 +49,13 @@ public class DomainClampingKernel implements BiasedMFKernel, Serializable {
     }
 
     @Override
-    public double apply(double bias, @Nonnull AVector user, @Nonnull AVector item) {
-        final int n = user.length();
-        Preconditions.checkArgument(item.length() == n, "vectors have different lengths");
+    public double apply(double bias, @Nonnull RealVector user, @Nonnull RealVector item) {
+        final int n = user.getDimension();
+        Preconditions.checkArgument(item.getDimension() == n, "vectors have different lengths");
 
         double result = bias;
         for (int i = 0; i < n; i++) {
-            result = domain.clampValue(result + user.get(i) * item.get(i));
+            result = domain.clampValue(result + user.getEntry(i) * item.getEntry(i));
         }
         return result;
     }

@@ -20,7 +20,8 @@
  */
 package org.grouplens.lenskit.mf.svd;
 
-import mikera.vectorz.Vector;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.junit.Test;
 
@@ -36,22 +37,22 @@ public class DomainClampingKernelTest {
 
     @Test
     public void testEmptyVectors() throws Exception {
-        assertThat(kernel.apply(Math.PI, Vector.createLength(0), Vector.createLength(0)),
+        assertThat(kernel.apply(Math.PI, MatrixUtils.createRealVector(new double [0]), MatrixUtils.createRealVector(new double [0])),
                    equalTo(Math.PI));
     }
 
     @Test
     public void testBasicVectors() throws Exception {
-        Vector uv = Vector.create(new double[]{0.1, 0.2});
-        Vector iv = Vector.create(new double[]{0.1, -0.5});
+        RealVector uv = MatrixUtils.createRealVector(new double[]{0.1, 0.2});
+        RealVector iv = MatrixUtils.createRealVector(new double[]{0.1, -0.5});
         assertThat(kernel.apply(Math.PI, uv, iv),
                    closeTo(Math.PI + 0.01 - 0.1, 1.0e-5));
     }
 
     @Test
     public void testClamping() throws Exception {
-        Vector uv = Vector.create(new double[]{2, 0.2});
-        Vector iv = Vector.create(new double[]{2, -0.5});
+        RealVector uv = MatrixUtils.createRealVector(new double[]{2, 0.2});
+        RealVector iv = MatrixUtils.createRealVector(new double[]{2, -0.5});
         assertThat(kernel.apply(3, uv, iv),
                    closeTo(4.9, 1.0e-5));
     }

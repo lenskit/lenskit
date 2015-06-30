@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.mf.svd;
 
-import mikera.vectorz.AVector;
+import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 
 import javax.annotation.Nonnull;
@@ -48,5 +48,5 @@ public interface BiasedMFKernel {
      * @return The kernel function value (combined score).
      * @throws IllegalArgumentException if the user and item vectors have different lengths.
      */
-    double apply(double bias, @Nonnull AVector user, @Nonnull AVector item);
+    double apply(double bias, @Nonnull RealVector user, @Nonnull RealVector item);
 }
