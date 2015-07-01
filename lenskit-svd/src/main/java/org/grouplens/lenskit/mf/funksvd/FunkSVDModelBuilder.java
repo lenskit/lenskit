@@ -195,8 +195,8 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
                             userFeatureVector.getEntry(uidx), itemFeatureVector.getEntry(iidx), trail);
 
             // Step 3: Update feature values
-            userFeatureVector.setEntry(uidx, updater.getUserFeatureUpdate());
-            itemFeatureVector.setEntry(iidx, updater.getItemFeatureUpdate());
+            userFeatureVector.addToEntry(uidx, updater.getUserFeatureUpdate());
+            itemFeatureVector.addToEntry(iidx, updater.getItemFeatureUpdate());
         }
 
         return updater.getRMSE();

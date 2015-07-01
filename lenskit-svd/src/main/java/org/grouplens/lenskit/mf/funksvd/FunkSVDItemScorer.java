@@ -219,7 +219,7 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
             updater.prepare(feature, e.getValue(), estimates.get(iid),
                             uprefs.getEntry(feature), ivec.getEntry(feature), itemTails.get(iid));
             // Step 4: update user preferences
-            uprefs.setEntry(feature, updater.getUserFeatureUpdate());
+            uprefs.addToEntry(feature, updater.getUserFeatureUpdate());
         }
         return updater.getRMSE();
     }
