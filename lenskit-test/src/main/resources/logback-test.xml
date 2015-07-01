@@ -2,7 +2,7 @@
 <configuration>
   <appender name="TESTFILE" class="ch.qos.logback.core.FileAppender">
     <file>${log.file:-build/test.log}</file>
-    <append>true</append>
+    <append>false</append>
     <encoder>
       <pattern>%-5level %logger{24} - %msg%n</pattern>
     </encoder>
