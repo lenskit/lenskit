@@ -210,8 +210,17 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      * @param fib  The feature info builder.
      */
     protected void summarizeFeature(RealVector ufv, RealVector ifv, FeatureInfo.Builder fib) {
-        fib.setUserAverage(ufv.getL1Norm() / ufv.getDimension())
-           .setItemAverage(ifv.getL1Norm() / ifv.getDimension())
+        fib.setUserAverage(realVectorSum(ufv) / ufv.getDimension())
+           .setItemAverage(realVectorSum(ifv) / ifv.getDimension())
            .setSingularValue(ufv.getNorm() * ifv.getNorm());
+    }
+
+    // TODO Find a better solution than this
+    private double realVectorSum (RealVector rv){
+        double total = 0;
+        for (double i : rv.toArray()){
+            total += i;
+        }
+        return total;
     }
 }
