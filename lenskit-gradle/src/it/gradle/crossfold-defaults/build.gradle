@@ -22,6 +22,7 @@ task crossfold(type: Crossfold)
 task check {
     doLast {
         assertThat(crossfold.maxMemory, nullValue())
-        assertThat(crossfold.specFile, equalTo(file("$buildDir/crossfold.out/crossfold.json")))
+        assertThat(crossfold.specFile.toFile(),
+                   equalTo(file("$buildDir/crossfold.out/crossfold.json")))
     }
 }
