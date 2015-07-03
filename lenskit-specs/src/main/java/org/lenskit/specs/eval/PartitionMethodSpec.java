@@ -22,6 +22,7 @@ package org.lenskit.specs.eval;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.lenskit.specs.AbstractSpec;
 
 @JsonSubTypes({
@@ -29,7 +30,8 @@ import org.lenskit.specs.AbstractSpec;
         @Type(value=PartitionMethodSpec.HoldoutFraction.class, name="holdout-fraction"),
         @Type(value=PartitionMethodSpec.Retain.class, name="retain")
 })
-public class PartitionMethodSpec extends AbstractSpec {
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+public abstract class PartitionMethodSpec extends AbstractSpec {
     private String order = "random";
 
     public String getOrder() {

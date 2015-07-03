@@ -35,11 +35,11 @@ public class CrossfoldSpec extends AbstractSpec {
 
     private int partitionCount = 5;
 
-    private CrossfoldMethod method;
+    private CrossfoldMethod method = CrossfoldMethod.PARTITION_USERS;
     private PartitionMethodSpec userPartitionMethod;
     private Integer sampleSize;
 
-    private boolean includeTimesamps = false;
+    private boolean includeTimestamps = false;
 
     private OutputFormat outputFormat = OutputFormat.CSV;
     private Path outputDir;
@@ -91,12 +91,12 @@ public class CrossfoldSpec extends AbstractSpec {
         this.userPartitionMethod = userPartitionMethod;
     }
 
-    public boolean getIncludeTimesamps() {
-        return includeTimesamps;
+    public boolean getIncludeTimestamps() {
+        return includeTimestamps;
     }
 
-    public void setIncludeTimesamps(boolean includeTimesamps) {
-        this.includeTimesamps = includeTimesamps;
+    public void setIncludeTimestamps(boolean includeTimestamps) {
+        this.includeTimestamps = includeTimestamps;
     }
 
     public OutputFormat getOutputFormat() {

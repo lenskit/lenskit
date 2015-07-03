@@ -32,10 +32,7 @@ import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.CrossfoldSpec;
-import org.lenskit.specs.eval.OutputFormat;
-import org.lenskit.specs.eval.PartitionMethodSpec;
-import org.lenskit.specs.eval.TTDataSetSpec;
+import org.lenskit.specs.eval.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +80,7 @@ public class Crossfolder {
         Crossfolder cf = new Crossfolder();
         cf.setName(spec.getName())
           .setPartitionCount(spec.getPartitionCount())
-          .setWriteTimestamps(spec.getIncludeTimesamps())
+          .setWriteTimestamps(spec.getIncludeTimestamps())
           .setOutputFormat(spec.getOutputFormat())
           .setOutputDir(spec.getOutputDir());
 
@@ -112,6 +109,10 @@ public class Crossfolder {
             }
         }
 
+        CrossfoldMethod method = spec.getMethod();
+        if (method == null) {
+
+        }
         switch (spec.getMethod()) {
         case PARTITION_RATINGS:
             cf.setMethod(SplitMethods.partitionRatings());
