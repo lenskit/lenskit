@@ -20,7 +20,6 @@
  */
 package org.lenskit.eval.crossfold;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.event.Rating;
@@ -31,21 +30,17 @@ import org.grouplens.lenskit.eval.data.RatingWriter;
 import org.grouplens.lenskit.eval.data.RatingWriters;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.specs.SpecHandlerInterface;
-import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
-import org.json.simple.JSONValue;
-import org.lenskit.eval.OutputFormat;
+import org.lenskit.specs.SpecUtils;
+import org.lenskit.specs.eval.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 /**
@@ -53,7 +48,6 @@ import java.util.*;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@SpecHandlerInterface(CrossfoldSpecHandler.class)
 public class Crossfolder {
     private static final Logger logger = LoggerFactory.getLogger(Crossfolder.class);
 
@@ -64,7 +58,7 @@ public class Crossfolder {
     private Path outputDir;
     private OutputFormat outputFormat = OutputFormat.CSV;
     private boolean skipIfUpToDate = false;
-    private CrossfoldMethod method = CrossfoldMethods.partitionUsers(new RandomOrder<Rating>(), new HoldoutNPartition<Rating>(10));
+    private SplitMethod method = SplitMethods.partitionUsers(new RandomOrder<Rating>(), new HoldoutNPartition<Rating>(10));
     private boolean isolate = false;
     private boolean writeTimestamps = true;
 
@@ -75,6 +69,66 @@ public class Crossfolder {
     public Crossfolder(String n) {
         name = n;
         rng = new Random();
+    }
+
+    /**
+     * Instantiate a crossfolder from a spec.
+     * @param spec The crossfold spec.
+     * @return The crossfolder.
+     */
+    public static Crossfolder fromSpec(CrossfoldSpec spec) {
+        Crossfolder cf = new Crossfolder();
+        cf.setName(spec.getName())
+          .setPartitionCount(spec.getPartitionCount())
+          .setWriteTimestamps(spec.getIncludeTimestamps())
+          .setOutputFormat(spec.getOutputFormat())
+          .setOutputDir(spec.getOutputDir());
+
+        Order<Rating> order = null;
+        PartitionAlgorithm<Rating> part = null;
+        PartitionMethodSpec pm = spec.getUserPartitionMethod();
+        if (pm != null) {
+            switch (pm.getOrder()) {
+            case "random":
+                order = new RandomOrder<>();
+                break;
+            case "timestamp":
+                order = new TimestampOrder<>();
+                break;
+            default:
+                throw new IllegalArgumentException("invalid partition order " + pm.getOrder());
+            }
+            if (pm instanceof PartitionMethodSpec.Holdout) {
+                part = new HoldoutNPartition<>(((PartitionMethodSpec.Holdout) pm).getCount());
+            } else if (pm instanceof PartitionMethodSpec.HoldoutFraction) {
+                part = new FractionPartition<>(((PartitionMethodSpec.HoldoutFraction) pm).getFraction());
+            } else if (pm instanceof PartitionMethodSpec.Retain) {
+                part = new RetainNPartition<>(((PartitionMethodSpec.Retain) pm).getCount());
+            } else {
+                throw new IllegalArgumentException("invalid partition method " + pm);
+            }
+        }
+
+        CrossfoldMethod method = spec.getMethod();
+        if (method == null) {
+
+        }
+        switch (spec.getMethod()) {
+        case PARTITION_RATINGS:
+            cf.setMethod(SplitMethods.partitionRatings());
+            break;
+        case PARTITION_USERS:
+            cf.setMethod(SplitMethods.partitionUsers(order, part));
+            break;
+        case SAMPLE_USERS:
+            cf.setMethod(SplitMethods.sampleUsers(order, part, spec.getSampleSize()));
+            break;
+        }
+
+        // TODO Support custom class loader
+        cf.setSource(SpecUtils.buildObject(DataSource.class, spec.getSource()));
+
+        return cf;
     }
 
     /**
@@ -170,7 +224,7 @@ public class Crossfolder {
      * @param meth The method to use.
      * @return The crossfolder (for chaining).
      */
-    public Crossfolder setMethod(CrossfoldMethod meth) {
+    public Crossfolder setMethod(SplitMethod meth) {
         method = meth;
         return this;
     }
@@ -179,7 +233,7 @@ public class Crossfolder {
      * Get the method to be used for crossfolding.
      * @return The configured crossfold method.
      */
-    public CrossfoldMethod getMethod() {
+    public SplitMethod getMethod() {
         return method;
     }
 
@@ -293,35 +347,36 @@ public class Crossfolder {
     }
 
     List<Path> getTrainingFiles() {
-        return getFileList("part%02d.train." + outputFormat.getSuffix());
+        return getFileList("part%02d.train." + getOutputSuffix());
     }
 
     List<Path> getTestFiles() {
-        return getFileList("part%02d.test." + outputFormat.getSuffix());
+        return getFileList("part%02d.test." + getOutputSuffix());
     }
 
     List<Path> getSpecFiles() {
         return getFileList("part%02d.json");
     }
 
+    String getOutputSuffix() {
+        switch (outputFormat) {
+        case CSV:
+            return "csv";
+        case CSV_GZIP:
+            return "csv.gz";
+        case CSV_XZ:
+            return "csv.xz";
+        case PACK:
+            return "pack";
+        default:
+            throw new IllegalArgumentException("invalid output format");
+        }
+    }
+
     private List<Path> getFileList(String pattern) {
         List<Path> files = new ArrayList<>(partitionCount);
         for (int i = 1; i <= partitionCount; i++) {
             files.add(getOutputDir().resolve(String.format(pattern, i)));
-        }
-        return files;
-    }
-
-    /**
-     * Get the list of files satisfying the specified name pattern
-     *
-     * @param pattern The file name pattern
-     * @return The list of files
-     */
-    protected File[] getFiles(String pattern) {
-        File[] files = new File[partitionCount];
-        for (int i = 0; i < partitionCount; i++) {
-            files[i] = new File(String.format(pattern, i));
         }
         return files;
     }
@@ -340,27 +395,17 @@ public class Crossfolder {
         List<Path> specFiles = getSpecFiles();
         List<TTDataSet> dataSets = getDataSets();
         Path fullSpecFile = getOutputDir().resolve("all-partitions.json");
-        SpecificationContext fullCtx = SpecificationContext.create(fullSpecFile.toUri());
         List<Object> specs = new ArrayList<>(partitionCount);
         assert dataSets.size() == partitionCount;
         for (int i = 0; i < partitionCount; i++) {
             Path file = specFiles.get(i);
             TTDataSet ds = dataSets.get(i);
-            SpecificationContext ctx = SpecificationContext.create(file.toUri());
-            specs.add(ds.toSpecification(fullCtx));
-
-            try (BufferedWriter w = Files.newBufferedWriter(file, Charsets.UTF_8,
-                                                            StandardOpenOption.CREATE,
-                                                            StandardOpenOption.TRUNCATE_EXISTING)) {
-                JSONValue.writeJSONString(ds.toSpecification(ctx), w);
-            }
+            TTDataSetSpec spec = ds.toSpec();
+            specs.add(spec);
+            SpecUtils.write(spec, file);
         }
 
-        try (BufferedWriter w = Files.newBufferedWriter(fullSpecFile, Charsets.UTF_8,
-                                                        StandardOpenOption.CREATE,
-                                                        StandardOpenOption.TRUNCATE_EXISTING)) {
-            JSONValue.writeJSONString(specs, w);
-        }
+        SpecUtils.write(specs, fullSpecFile);
     }
 
     /**
@@ -395,7 +440,7 @@ public class Crossfolder {
             }
             return RatingWriters.packed(file.toFile(), flags);
         } else {
-            // it is a CSV file
+            // it is a CSV file, and the file name already has compression
             return RatingWriters.csv(file.toFile(), writeTimestamps);
         }
     }

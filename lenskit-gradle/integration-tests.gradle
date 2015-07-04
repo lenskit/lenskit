@@ -38,12 +38,7 @@
  */
 
 task makeTestRepo {
-    dependsOn installForTesting
-//    for (prj in rootProject.childProjects.values()) {
-//        if (prj.name =~ /^lenskit-(?!integration-tests)/) {
-//            dependsOn "$prj.path:installForTesting"
-//        }
-//    }
+    dependsOn installForTesting, ':lenskit-specs:installForTesting'
 }
 
 task gradleTests(group: 'verification')

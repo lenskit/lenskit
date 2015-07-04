@@ -35,7 +35,7 @@ import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.util.table.Table;
-import org.lenskit.eval.crossfold.CrossfoldMethods;
+import org.lenskit.eval.crossfold.SplitMethods;
 import org.lenskit.eval.crossfold.Crossfolder;
 import org.lenskit.eval.crossfold.FractionPartition;
 import org.lenskit.eval.crossfold.RandomOrder;
@@ -166,8 +166,8 @@ public class SimpleEvaluator implements Callable<Table> {
         Crossfolder cross = new Crossfolder(name)
                 .setSource(source)
                 .setPartitionCount(partitions)
-                .setMethod(CrossfoldMethods.partitionUsers(new RandomOrder<Rating>(),
-                                                           new FractionPartition<Rating>(holdout)))
+                .setMethod(SplitMethods.partitionUsers(new RandomOrder<Rating>(),
+                                                       new FractionPartition<Rating>(holdout)))
                 .setOutputDir(workDir.resolve(name + ".split"));
         addDataset(cross);
         return this;

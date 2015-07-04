@@ -35,12 +35,13 @@
 
 apply from: "$rootDir/gradle/maven.gradle"
 apply plugin: 'groovy'
+apply from: "$rootDir/gradle/test-utils.gradle"
 
 dependencies {
     compile project(':lenskit-api')
+    compile project(':lenskit-specs')
     compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.10.0'
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
-    compile group: 'com.typesafe', name: 'config', version: '1.2.1'
     compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc2'
 
     compile group: 'net.mikera', name: 'vectorz', version: '0.46.0'
@@ -49,7 +50,6 @@ dependencies {
 
     runtime group: 'org.tukaani', name: 'xz', version: '1.5'
 
-    testCompile project(':lenskit-test')
     testRuntime group: 'com.h2database', name: 'h2', version: '1.3.176'
 }
 

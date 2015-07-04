@@ -21,11 +21,11 @@
 package org.grouplens.lenskit.data.pref;
 
 import org.junit.Test;
+import org.lenskit.specs.SpecUtils;
+import org.lenskit.specs.data.PrefDomainSpec;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -61,5 +61,20 @@ public class PreferenceDomainTest {
         assertThat(d.getMaximum(), closeTo(5.0, 1.0e-6));
         assertTrue(d.hasPrecision());
         assertThat(d.getPrecision(), equalTo(1.0));
+    }
+
+    @Test
+    public void testBuildFromSpec() {
+        PrefDomainSpec spec = new PrefDomainSpec();
+        spec.setMinimum(1.0);
+        spec.setMaximum(10.0);
+        spec.setPrecision(0.2);
+
+        PreferenceDomain dom = SpecUtils.buildObject(PreferenceDomain.class, spec);
+        assertThat(dom, notNullValue());
+
+        assertThat(dom.getMinimum(), equalTo(1.0));
+        assertThat(dom.getMaximum(), equalTo(10.0));
+        assertThat(dom.getPrecision(), equalTo(0.2));
     }
 }

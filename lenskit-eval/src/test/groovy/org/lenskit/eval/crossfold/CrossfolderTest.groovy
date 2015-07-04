@@ -31,13 +31,15 @@ import org.grouplens.lenskit.data.source.DataSource
 import org.grouplens.lenskit.data.source.GenericDataSource
 import org.grouplens.lenskit.data.source.TextDataSource
 import org.grouplens.lenskit.data.text.TextEventDAO
+import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet
-import org.grouplens.lenskit.specs.SpecificationContext
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.lenskit.eval.OutputFormat
+import org.lenskit.specs.SpecUtils
+import org.lenskit.specs.eval.OutputFormat
+import org.lenskit.specs.eval.TTDataSetSpec
 
 import java.nio.file.Files
 
@@ -76,7 +78,7 @@ class CrossfolderTest {
     public void testFreshCFState() {
         assertThat(cf.name, equalTo("test"))
         assertThat(cf.partitionCount, equalTo(5))
-        assertThat(cf.method, instanceOf(UserPartitionCrossfoldMethod))
+        assertThat(cf.method, instanceOf(UserPartitionSplitMethod))
         assertThat(cf.skipIfUpToDate, equalTo(false))
         assertThat(cf.writeTimestamps, equalTo(true))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
@@ -121,10 +123,10 @@ class CrossfolderTest {
             assertThat(Files.exists(train), equalTo(true))
             def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-            def spec = tmp.root.toPath().resolve(String.format("part%02d.json", i))
-            assertThat(Files.exists(spec), equalTo(true))
-            def specURI = spec.toUri()
-            def obj = SpecificationContext.build(TTDataSet, specURI)
+            def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
+            assertThat(Files.exists(specFile), equalTo(true))
+            def spec = SpecUtils.load(TTDataSetSpec, specFile)
+            def obj = GenericTTDataSet.fromSpec(spec)
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
@@ -165,10 +167,10 @@ class CrossfolderTest {
             assertThat(Files.exists(train), equalTo(true))
             def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-            def spec = tmp.root.toPath().resolve(String.format("part%02d.json", i))
-            assertThat(Files.exists(spec), equalTo(true))
-            def specURI = spec.toUri()
-            def obj = SpecificationContext.build(TTDataSet, specURI)
+            def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
+            assertThat(Files.exists(specFile), equalTo(true))
+            def spec = SpecUtils.load(TTDataSetSpec, specFile)
+            def obj = GenericTTDataSet.fromSpec(spec)
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
@@ -179,7 +181,7 @@ class CrossfolderTest {
 
     @Test
     public void testUserSample() {
-        cf.method = CrossfoldMethods.sampleUsers(new RandomOrder<Rating>(),
+        cf.method = SplitMethods.sampleUsers(new RandomOrder<Rating>(),
                                                  new HoldoutNPartition<Rating>(5),
                                                  5);
         cf.execute()
@@ -211,10 +213,10 @@ class CrossfolderTest {
             assertThat(Files.exists(train), equalTo(true))
             def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-            def spec = tmp.root.toPath().resolve(String.format("part%02d.json", i))
-            assertThat(Files.exists(spec), equalTo(true))
-            def specURI = spec.toUri()
-            def obj = SpecificationContext.build(TTDataSet, specURI)
+            def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
+            assertThat(Files.exists(specFile), equalTo(true))
+            def spec = SpecUtils.load(TTDataSetSpec, specFile)
+            def obj = GenericTTDataSet.fromSpec(spec)
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
@@ -225,7 +227,7 @@ class CrossfolderTest {
 
     @Test
     public void testPartitionRatings() {
-        cf.method = CrossfoldMethods.partitionRatings()
+        cf.method = SplitMethods.partitionRatings()
         cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))
@@ -257,10 +259,10 @@ class CrossfolderTest {
             assertThat(Files.exists(train), equalTo(true))
             def test = tmp.root.toPath().resolve(String.format("part%02d.test.csv", i))
             assertThat(Files.exists(test), equalTo(true))
-            def spec = tmp.root.toPath().resolve(String.format("part%02d.json", i))
-            assertThat(Files.exists(spec), equalTo(true))
-            def specURI = spec.toUri()
-            def obj = SpecificationContext.build(TTDataSet, specURI)
+            def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
+            assertThat(Files.exists(specFile), equalTo(true))
+            def spec = SpecUtils.load(TTDataSetSpec, specFile)
+            def obj = GenericTTDataSet.fromSpec(spec)
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
             assertThat(obj.queryData, nullValue())
@@ -271,7 +273,7 @@ class CrossfolderTest {
 
     @Test
     public void testUserTimestampOrder() {
-        cf.method = CrossfoldMethods.partitionUsers(new TimestampOrder<Rating>(), new HoldoutNPartition<Rating>(5))
+        cf.method = SplitMethods.partitionUsers(new TimestampOrder<Rating>(), new HoldoutNPartition<Rating>(5))
         cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))
@@ -304,7 +306,7 @@ class CrossfolderTest {
 
     @Test
     public void testRetainNPartition() {
-        cf.method = CrossfoldMethods.partitionUsers(new TimestampOrder<Rating>(), new RetainNPartition<Rating>(5));
+        cf.method = SplitMethods.partitionUsers(new TimestampOrder<Rating>(), new RetainNPartition<Rating>(5));
         cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))

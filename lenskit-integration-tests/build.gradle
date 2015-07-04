@@ -36,6 +36,7 @@
 import org.gradle.process.internal.ExecException
 
 apply plugin: 'groovy'
+apply from: "$rootDir/gradle/test-utils.gradle"
 
 dependencies {
     compile project(':lenskit-all')

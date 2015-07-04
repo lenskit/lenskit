@@ -20,8 +20,11 @@
  */
 package org.lenskit.gradle.traits
 
-import groovy.json.JsonDelegate
 import org.gradle.api.Project
+import org.gradle.util.ConfigureUtil
+import org.lenskit.gradle.SpecDelegate
+import org.lenskit.specs.data.DataSourceSpec
+import org.lenskit.specs.data.TextDataSourceSpec
 
 /**
  * Support for specifying various types of data sources.
@@ -31,66 +34,15 @@ trait DataSources {
 
     /**
      * Configure a text file data source.
-     * @param block The configuration block.
+     * @param block The configuration block, used to configure a {@link TextDataSourceSpec}.
      * @return A JSON specification of a text file data source.
-     * @see TextFileDelegate
+     * @see TextDataSourceSpec
+     * @see SpecDelegate
      */
-    Map<String,Object> textFile(@DelegatesTo(TextFileDelegate) Closure block) {
-        def dlg = new TextFileDelegate(project)
-        def c = block.clone() as Closure
-        c.setDelegate(dlg)
-        c.setResolveStrategy(Closure.DELEGATE_FIRST)
-        c.call()
-        dlg.spec
-    }
-
-    static class TextFileDelegate extends ConfigDelegate {
-        private final Project project
-
-        TextFileDelegate(Project prj) {
-            project = prj
-            spec.type = 'text'
-        }
-
-        /**
-         * Configure the input file of the text source.
-         * @param obj The input file (passed to {@link Project#file(Object)}).
-         */
-        void file(obj) {
-            spec.file = project.file(obj).toURI().toString()
-        }
-
-        /**
-         * Configure the text file delimiter.  The default delimiter is ",".
-         * @param delim The delimiter
-         */
-        void delimiter(String delim) {
-            spec.delimiter = delim
-        }
-
-        /**
-         * Configure the data source name.
-         * @param name The data source name.
-         */
-        void name(String name) {
-            spec.name = name
-        }
-
-        /**
-         * Configure the preference domain.
-         * @param dom A map configuring the preference domain.  Valid keys are `minimum`, `maximum`, and `precision`.
-         */
-        void domain(Map dom) {
-            spec.domain = dom
-        }
-
-        /**
-         * Configure the preference domain with a closure.
-         * @param dom A closure configuring the preference domain, using JsonBuilder syntax.  Valid keys are `minimum`,
-         * `maximum`, and `precision`.
-         */
-        void domain(Closure dom) {
-            spec.domain = JsonDelegate.cloneDelegateAndGetContent(dom)
-        }
+    DataSourceSpec textFile(Closure block) {
+        def spec = new TextDataSourceSpec()
+        def dlg = new SpecDelegate(spec)
+        ConfigureUtil.configure(block, dlg)
+        spec
     }
 }

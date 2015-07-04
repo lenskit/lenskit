@@ -35,7 +35,7 @@ task crossfold(type: Crossfold) {
         file ratingsFile
         delimiter "\t"
     }
-    outputFormat "pack"
+    outputFormat "PACK"
     includeTimestamps false
 }
 
