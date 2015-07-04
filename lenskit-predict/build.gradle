@@ -35,10 +35,10 @@
 
 apply from: "$rootDir/gradle/maven.gradle"
 apply plugin: 'groovy'
+apply from: "$rootDir/gradle/test-utils.gradle"
 
 dependencies {
     compile project(':lenskit-core')
-    testCompile project(':lenskit-test')
     testCompile project(':lenskit-groovy')
 }
 

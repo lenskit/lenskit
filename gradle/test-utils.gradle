@@ -33,18 +33,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-apply from: "$rootDir/gradle/maven.gradle"
-apply plugin: 'java'
-apply from: "$rootDir/gradle/test-utils.gradle"
+/*
+ * This build script contains setup for importing common test utilities.
+ */
 
 dependencies {
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.5.4'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3'
+    testCompile project(':lenskit-test')
 }
 
-meta {
-    name 'LensKit Object Specification Beans'
-    description '''
-JavaBeans describing various LensKit objects, used for serializing between Gradle and the CLI.
-'''
+test {
+    systemProperties listener: 'org.grouplens.lenskit.util.test.LoggingListener'
+    systemProperties 'log.file': "$buildDir/test.log"
 }

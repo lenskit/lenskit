@@ -35,12 +35,11 @@
 
 apply from: "$rootDir/gradle/maven.gradle"
 apply plugin: 'groovy'
+apply from: "$rootDir/gradle/test-utils.gradle"
 
 dependencies {
     compile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
     compile project(':lenskit-core')
-
-    testCompile project(':lenskit-test')
 }
 
 meta {

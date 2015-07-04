@@ -35,6 +35,7 @@
 
 apply from: "$rootDir/gradle/maven.gradle"
 apply plugin: 'groovy'
+apply from: "$rootDir/gradle/test-utils.gradle"
 
 dependencies {
     compile project(':lenskit-api')
@@ -49,7 +50,6 @@ dependencies {
 
     runtime group: 'org.tukaani', name: 'xz', version: '1.5'
 
-    testCompile project(':lenskit-test')
     testRuntime group: 'com.h2database', name: 'h2', version: '1.3.176'
 }
 

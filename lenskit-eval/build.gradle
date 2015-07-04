@@ -35,6 +35,7 @@
 
 apply from: "$rootDir/gradle/maven.gradle"
 apply plugin: 'groovy'
+apply from: "$rootDir/gradle/test-utils.gradle"
 
 dependencies {
     compile project(':lenskit-core')
@@ -44,8 +45,6 @@ dependencies {
     compile group: 'org.apache.ant', name: 'ant', version: '1.8.4'
     compile group: 'org.hamcrest', name: 'hamcrest-library', version: '1.3'
     compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc2'
-
-    testCompile project(':lenskit-test')
 }
 
 meta {

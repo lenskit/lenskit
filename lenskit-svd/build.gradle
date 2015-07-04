@@ -34,10 +34,10 @@
  */
 
 apply from: "$rootDir/gradle/maven.gradle"
+apply from: "$rootDir/gradle/test-utils.gradle"
 
 dependencies {
     compile project(':lenskit-core')
-    testCompile project(':lenskit-test')
 }
 
 meta {
