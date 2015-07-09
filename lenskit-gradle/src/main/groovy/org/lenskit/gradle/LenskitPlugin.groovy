@@ -54,15 +54,6 @@ public class LenskitPlugin implements Plugin<Project> {
             }
         }
 
-        project.tasks.withType(LenskitEval) { LenskitEval task ->
-            task.conventionMapping.threadCount = {
-                lenskit.threadCount
-            }
-            task.conventionMapping.maxMemory = {
-                lenskit.maxMemory
-            }
-        }
-
         addLenskitConfiguration(project, lenskit)
     }
 
