@@ -95,6 +95,7 @@ allprojects {
                       'org.grouplens.lenskit.inject',
                       'org.grouplens.lenskit.iterative')
 
+                links 'http://docs.oracle.com/javase/7/docs/api/'
                 links 'http://fastutil.di.unimi.it/docs/'
                 links 'http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/'
                 links 'http://dev.grouplens.org/grapht/apidocs/'
