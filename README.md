@@ -141,8 +141,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## Contributing to LensKit
   
 We welcome contribution to LensKit.  If you are looking for something
-to work on, we recommend perusing the open tickets on our [Trac][wiki]
-or asking on the [mailing list][].
+to work on, we recommend perusing the open tickets on GitHub
+or asking on the [mailing list](https://wwws.cs.umn.edu/mm-cs/listinfo/lenskit).
 
 We prefer to receive code submissions as GitHub pull requests.  To
 do this:
