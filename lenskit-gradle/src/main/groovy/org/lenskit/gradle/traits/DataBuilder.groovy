@@ -25,7 +25,8 @@ import org.gradle.api.Task
 import org.lenskit.specs.data.DataSourceSpec
 
 /**
- * Something that builds data sources.
+ * Something that builds data sources.  Tasks can implement this interface to be able to provide
+ * individual data sources that will be automatically routed to other tasks.
  */
 trait DataBuilder implements Task {
     abstract DataSourceSpec getDataSourceSpec();
