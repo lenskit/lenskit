@@ -20,18 +20,18 @@
  */
 package org.lenskit.gradle
 
-import groovy.json.JsonBuilder
-import groovy.json.JsonOutput
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
+import org.lenskit.gradle.traits.DataBuilder
 import org.lenskit.gradle.traits.DataSources
 import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.data.DataSourceSpec
+import org.lenskit.specs.data.PackedDataSourceSpec
 
 /**
  * Pack a data set.
  */
-class PackRatings extends LenskitTask implements DataSources {
+class PackRatings extends LenskitTask implements DataBuilder, DataSources {
     DataSourceSpec inputSpec
     /**
      * The output file.  Defaults to "build/$name.pack", where $name is the name of the task.
@@ -50,8 +50,7 @@ class PackRatings extends LenskitTask implements DataSources {
     }
 
     /**
-     * Configure the input data.  This should be an input specification in Groovy {@link JsonBuilder} syntax.  Common
-     * input types should be configured with {@link #input(Map)}.
+     * Configure the input data.
      *
      * @param inputSpec The input specification.
      */
@@ -60,7 +59,7 @@ class PackRatings extends LenskitTask implements DataSources {
     }
 
     /**
-     * Configure an input CSV file of ratings.  Convenience method; {@link #input(Closure)} is more general.
+     * Configure an input CSV file of ratings.  Convenience method; {@link #input(DataSourceSpec)} is more general.
      * @param csv A CSV file containing ratings.
      */
     void inputFile(File csv) {
@@ -107,5 +106,16 @@ class PackRatings extends LenskitTask implements DataSources {
     File getSpecFile() {
         File specFile = new File(project.buildDir, "${name}.input.json")
         return specFile
+    }
+
+    @Override
+    DataSourceSpec getDataSourceSpec() {
+        def spec = new PackedDataSourceSpec()
+        spec.name = name
+        spec.file = getOutputFile().toPath()
+        if (inputSpec.hasProperty('domain')) {
+            spec.domain = inputSpec.domain
+        }
+        return spec
     }
 }

@@ -38,6 +38,7 @@ apply plugin: 'java'
 apply from: "$rootDir/gradle/test-utils.gradle"
 
 dependencies {
+    compile group: 'com.google.guava', name: 'guava', version: '18.0'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.5.4'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3'
 }

@@ -23,6 +23,7 @@ package org.lenskit.gradle
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
+import org.lenskit.gradle.traits.DataBuilder
 import org.lenskit.gradle.traits.DataSources
 import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.data.DataSourceSpec
@@ -60,6 +61,11 @@ class Crossfold extends LenskitTask implements DataSources {
 
     void input(DataSourceSpec src) {
         spec.source = src
+    }
+
+    void input(DataBuilder bld) {
+        dependsOn bld
+        spec.deferredSource = bld.deferredDataSourceSpec
     }
 
     /**
