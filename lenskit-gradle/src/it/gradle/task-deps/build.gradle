@@ -1,0 +1,29 @@
+buildscript {
+    repositories {
+        maven {
+            url "$project.testRepoURI"
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.hamcrest:hamcrest-library:1.3'
+        classpath "org.grouplens.lenskit:lenskit-gradle:$project.lenskitVersion"
+    }
+}
+
+import static org.hamcrest.MatcherAssert.assertThat
+import static org.hamcrest.Matchers.*
+import org.lenskit.gradle.*
+
+apply plugin: 'java'
+apply plugin: 'lenskit'
+
+task crossfold(type: Crossfold)
+
+task('check', overwrite: true) {
+    doLast {
+        def dep = crossfold.taskDependencies
+        def deps = dep.getDependencies(crossfold)
+        assertThat(deps, hasItem(classes))
+    }
+}

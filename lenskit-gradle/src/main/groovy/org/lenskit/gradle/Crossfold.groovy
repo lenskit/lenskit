@@ -79,9 +79,9 @@ class Crossfold extends LenskitTask implements DataSources {
 
     @InputFiles
     Set<File> getInputFiles() {
-        return spec.source.inputFiles.collect {
+        return spec.source?.inputFiles?.collect {
             it.toFile()
-        }
+        } ?: []
     }
 
     @OutputFiles
