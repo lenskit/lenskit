@@ -21,12 +21,13 @@
 package org.lenskit.util.collections;
 
 import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.objects.AbstractObjectIterator;
+import it.unimi.dsi.fastutil.objects.AbstractObjectSet;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.lenskit.util.keys.LongKeyIndex;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Utilities for working with longs and collections of them from Fastutil.
@@ -69,6 +70,14 @@ public final class LongUtils {
             return (LongCollection) longs;
         } else {
             return new LongCollectionWrapper(longs);
+        }
+    }
+
+    public static Long2DoubleMap asLong2DoubleMap(final Map<Long,Double> map) {
+        if (map instanceof Long2DoubleMap) {
+            return (Long2DoubleMap) map;
+        } else {
+            return new MapWrapper(map);
         }
     }
 
@@ -421,6 +430,59 @@ public final class LongUtils {
         @Override
         public int hashCode() {
             return base.hashCode();
+        }
+    }
+
+    private static class MapWrapper extends AbstractLong2DoubleMap {
+        private static final long serialVersionUID = 1L;
+        private final Map<Long, Double> map;
+
+        public MapWrapper(Map<Long, Double> map) {
+            this.map = map;
+        }
+
+        @Override
+        public ObjectSet<Entry> long2DoubleEntrySet() {
+            return new AbstractObjectSet<Entry>() {
+                Set<Map.Entry<Long,Double>> set = map.entrySet();
+
+                @Override
+                public ObjectIterator<Entry> iterator() {
+                    return new AbstractObjectIterator<Entry>() {
+                        Iterator<Map.Entry<Long,Double>> iter = set.iterator();
+
+                        public boolean hasNext() {
+                            return iter.hasNext();
+                        }
+
+                        @Override
+                        public Entry next() {
+                            Map.Entry<Long,Double> e = iter.next();
+                            return new BasicEntry(e.getKey(), e.getValue());
+                        }
+                    };
+                }
+
+                @Override
+                public int size() {
+                    return 0;
+                }
+            };
+        }
+
+        @Override
+        public double get(long l) {
+            Double d = map.get(l);
+            if (d == null) {
+                return defaultReturnValue();
+            } else {
+                return d;
+            }
+        }
+
+        @Override
+        public int size() {
+            return map.size();
         }
     }
 }
