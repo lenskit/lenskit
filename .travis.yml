@@ -6,14 +6,12 @@ branches:
   except:
   - www
 cache:
-  apt: true
   directories:
   - $HOME/.gradle/caches
   - $HOME/.gradle/wrapper
+  - $HOME/.local/lib/python2.7
 before_install:
-- sudo apt-get -q update
-- sudo apt-get -q install --no-install-recommends pandoc python-pandas
-- pip install --user pandocfilters
+- pip install --user pandas
 - git fetch --depth=10000 origin
 install: ./gradlew ciPrep
 script: ./gradlew ciTest
@@ -21,3 +19,4 @@ env:
   global:
   - TERM=dumb
   - TZ=CST6CDT
+sudo: false
