@@ -21,6 +21,8 @@
 package org.lenskit.specs.eval;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import org.lenskit.specs.AbstractSpec;
 import org.lenskit.specs.data.DataSourceSpec;
 
@@ -31,7 +33,8 @@ import java.nio.file.Path;
  */
 public class CrossfoldSpec extends AbstractSpec {
     private String name;
-    private DataSourceSpec source;
+    // source is a supplier to allow it to be deferred
+    private Supplier<DataSourceSpec> source;
 
     private int partitionCount = 5;
 
@@ -49,6 +52,7 @@ public class CrossfoldSpec extends AbstractSpec {
         hold.setOrder("random");
         hold.setCount(10);
         userPartitionMethod = hold;
+        source = Suppliers.ofInstance(null);
     }
 
     public String getName() {
@@ -60,11 +64,15 @@ public class CrossfoldSpec extends AbstractSpec {
     }
 
     public DataSourceSpec getSource() {
-        return source;
+        return source.get();
+    }
+
+    public void setDeferredSource(Supplier<DataSourceSpec> deferredSource) {
+        source = deferredSource;
     }
 
     public void setSource(DataSourceSpec source) {
-        this.source = source;
+        setDeferredSource(Suppliers.ofInstance(source));
     }
 
     public int getPartitionCount() {

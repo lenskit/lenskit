@@ -78,7 +78,6 @@ public abstract class LenskitTask extends ConventionTask {
         conventionMapping.maxMemory = { ext.maxMemory }
         conventionMapping.logLevel = { ext.logLevel }
         conventionMapping.logFileLevel = { ext.logFileLevel }
-        // FIXME Make dependencies work!
         conventionMapping.classpath = { ext.classpath ?: project.sourceSets.main.runtimeClasspath }
     }
 
