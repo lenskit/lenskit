@@ -2,6 +2,10 @@ language: java
 jdk:
 - oraclejdk7
 - oraclejdk8
+addons:
+  apt:
+    packages:
+      - python-pandas
 branches:
   except:
   - www
@@ -9,9 +13,7 @@ cache:
   directories:
   - $HOME/.gradle/caches
   - $HOME/.gradle/wrapper
-  - $HOME/.local/lib/python2.7
 before_install:
-- pip install --user pandas
 - git fetch --depth=10000 origin
 install: ./gradlew ciPrep
 script: ./gradlew ciTest
