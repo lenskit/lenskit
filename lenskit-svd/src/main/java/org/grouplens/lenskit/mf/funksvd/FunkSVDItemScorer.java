@@ -27,7 +27,6 @@ import mikera.vectorz.Vector;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.baseline.BaselineScorer;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.Ratings;
@@ -41,6 +40,7 @@ import org.grouplens.lenskit.mf.svd.DotProductKernel;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

@@ -26,10 +26,10 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSets;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.util.keys.LongKeyDomain;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;

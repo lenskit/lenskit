@@ -24,10 +24,10 @@ import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.apache.commons.lang3.text.StrTokenizer;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.util.LineCursor;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

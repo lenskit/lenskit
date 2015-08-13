@@ -25,7 +25,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.knn.item.ItemSimilarity;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
@@ -33,6 +32,7 @@ import org.grouplens.lenskit.transform.truncate.VectorTruncator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.util.keys.LongKeyDomain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

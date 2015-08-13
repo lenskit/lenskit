@@ -22,13 +22,13 @@ package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.knn.item.model.ItemItemBuildContext.ItemVecPair;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
+import org.lenskit.util.keys.LongKeyDomain;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class ItemItemBuildContextTest {
 

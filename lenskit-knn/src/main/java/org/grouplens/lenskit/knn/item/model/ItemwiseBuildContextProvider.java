@@ -23,8 +23,6 @@ package org.grouplens.lenskit.knn.item.model;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.collections.LongKeyDomain;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.ItemDAO;
@@ -37,6 +35,8 @@ import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.keys.LongKeyDomain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

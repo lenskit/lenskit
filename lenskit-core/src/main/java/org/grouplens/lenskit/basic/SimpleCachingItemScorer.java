@@ -22,10 +22,10 @@ package org.grouplens.lenskit.basic;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
