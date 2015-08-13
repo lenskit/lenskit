@@ -35,7 +35,7 @@ lenskit {
 }
 
 task evaluate(type: LenskitEval) {
-    invoker.maxHeapSize '256m'
+    maxMemory '256m'
     lenskitProperties 'ml100k.ratings': ratingsFile
 }
 
