@@ -35,6 +35,7 @@ lenskit {
 }
 
 task evaluate(type: LenskitEval) {
+    maxMemory '256m'
     lenskitProperties 'ml100k.ratings': ratingsFile
 }
 

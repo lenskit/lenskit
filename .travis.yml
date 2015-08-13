@@ -2,22 +2,23 @@ language: java
 jdk:
 - oraclejdk7
 - oraclejdk8
+addons:
+  apt:
+    packages:
+      - python-pandas
 branches:
   except:
   - www
 cache:
-  apt: true
   directories:
   - $HOME/.gradle/caches
   - $HOME/.gradle/wrapper
 before_install:
-- sudo apt-get -q update
-- sudo apt-get -q install --no-install-recommends pandoc python-pandas
-- pip install --user pandocfilters
 - git fetch --depth=10000 origin
-install: ./gradlew ciPrep
-script: ./gradlew ciTest
+install: ./gradlew ciPrep --stacktrace
+script: ./gradlew ciTest --stacktrace
 env:
   global:
   - TERM=dumb
   - TZ=CST6CDT
+sudo: false
