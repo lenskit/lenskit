@@ -100,4 +100,24 @@ public class LongKeyIndexTest {
         assertThat(keys.findLowerBound(8), equalTo(2));
         assertThat(keys.findLowerBound(10), equalTo(3));
     }
+
+    @Test
+    public void testSubViewLowerBound() {
+        LongKeyIndex keys = LongKeyIndex.create(0,1,2,3,4,5,6,7);
+        LongKeyIndex subk = keys.subIndex(1, 5);
+        assertThat(subk.getLowerBound(), equalTo(1));
+        assertThat(subk.getUpperBound(), equalTo(5));
+        assertThat(subk.getIndex(1), equalTo(1));
+        assertThat(subk.getIndex(4), equalTo(4));
+        assertThat(subk.getIndex(5), lessThan(0));
+        assertThat(subk.getIndex(6), lessThan(0));
+        assertThat(subk.getIndex(0), lessThan(0));
+        assertThat(subk.findLowerBound(1L), equalTo(1));
+        assertThat(subk.findLowerBound(0L), equalTo(1));
+        assertThat(subk.findLowerBound(2L), equalTo(2));
+        assertThat(subk.findLowerBound(7L), equalTo(5));
+        assertThat(subk.findUpperBound(1), equalTo(2));
+        assertThat(subk.findUpperBound(5), equalTo(5));
+        assertThat(subk.findUpperBound(4), equalTo(5));
+    }
 }
