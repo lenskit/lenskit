@@ -5,13 +5,13 @@ branches:
   - /release\/.*/
 skip_tags: true
 cache:
-- C:\Users\appveyor\.gradle\wrapper
+- C:\Users\appveyor\.gradle\wrapper -> gradle\wrapper\gradle-wrapper.properties
 - C:\Users\appveyor\.gradle\caches
 environment:
   JAVA_HOME: C:\Program Files\Java\jdk1.7.0
 install:
 - path C:\Miniconda-x64;C:\Miniconda-x64\Scripts;%PATH%
-- conda env create -f etc\environment.yml
+- conda env create -q -f etc\environment.yml
 - activate lenskit
 - gradlew.bat ciPrep
 build_script:
