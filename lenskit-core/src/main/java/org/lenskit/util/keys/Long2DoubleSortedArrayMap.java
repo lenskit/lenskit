@@ -50,7 +50,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
     }
 
     @Override
-    public ObjectSortedSet<Entry> long2DoubleEntrySet() {
+    public FastSortedEntrySet long2DoubleEntrySet() {
         return new EntrySet();
     }
 
@@ -124,8 +124,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
     private class EntrySet extends AbstractObjectSortedSet<Entry> implements FastSortedEntrySet {
         @Override
         public ObjectBidirectionalIterator<Entry> iterator(Entry entry) {
-            // TODO implement start-from iterator
-            return null;
+            return new EntryIter(entry.getLongKey());
         }
 
         @Override
@@ -135,8 +134,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
 
         @Override
         public ObjectBidirectionalIterator<Entry> fastIterator(Entry entry) {
-            // TODO implement start-from iterator
-            return null;
+            return new EntryIter(entry.getLongKey());
         }
 
         @Override
@@ -200,7 +198,18 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
     }
 
     private class EntryIter extends AbstractObjectBidirectionalIterator<Entry> {
-        IntBidirectionalIterator iter = IntIterators.fromTo(keys.getLowerBound(), keys.getUpperBound());
+        IntBidirectionalIterator iter;
+
+        public EntryIter() {
+            iter = IntIterators.fromTo(keys.getLowerBound(), keys.getUpperBound());
+        }
+
+        public EntryIter(long k) {
+            this();
+            // skip past the item
+            int idx = keys.findUpperBound(k);
+            iter.skip(idx);
+        }
 
         public boolean hasNext() {
             return iter.hasNext();

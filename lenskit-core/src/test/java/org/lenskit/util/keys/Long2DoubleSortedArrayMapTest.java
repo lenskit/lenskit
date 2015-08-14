@@ -1,12 +1,13 @@
 package org.lenskit.util.keys;
 
+import it.unimi.dsi.fastutil.longs.AbstractLong2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleSortedMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
+import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 import org.lenskit.util.collections.LongUtils;
-import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
-import org.lenskit.util.keys.LongKeyIndex;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -109,5 +110,31 @@ public class Long2DoubleSortedArrayMapTest {
         assertThat(sub.containsKey(5L), equalTo(false));
         assertThat(sub.containsKey(4L), equalTo(true));
         assertThat(sub.keySet(), contains(2L, 3L, 4L));
+    }
+
+    @Test
+    public void testIterStartFrom() {
+        double[] values = { 1.5, 2.4, -3.2, 4.3, -5.7 };
+        Long2DoubleSortedMap map = new Long2DoubleSortedArrayMap(LongKeyIndex.create(1, 2, 3, 4, 5),
+                                                                 values);
+
+        AbstractLong2DoubleMap.BasicEntry key = new AbstractLong2DoubleMap.BasicEntry(2, 2.0);
+        ObjectBidirectionalIterator<Long2DoubleMap.Entry> iter = map.long2DoubleEntrySet().iterator(key);
+        assertThat(iter.next().getLongKey(), equalTo(3L));
+        assertThat(iter.previous().getLongKey(), equalTo(3L));
+        assertThat(iter.previous().getLongKey(), equalTo(2L));
+    }
+
+    @Test
+    public void testFastIterStartFrom() {
+        double[] values = { 1.5, 2.4, -3.2, 4.3, -5.7 };
+        Long2DoubleSortedArrayMap map = new Long2DoubleSortedArrayMap(LongKeyIndex.create(1, 2, 3, 4, 5),
+                                                                      values);
+
+        AbstractLong2DoubleMap.BasicEntry key = new AbstractLong2DoubleMap.BasicEntry(2, 2.0);
+        ObjectBidirectionalIterator<Long2DoubleMap.Entry> iter = map.long2DoubleEntrySet().fastIterator(key);
+        assertThat(iter.next().getLongKey(), equalTo(3L));
+        assertThat(iter.previous().getLongKey(), equalTo(3L));
+        assertThat(iter.previous().getLongKey(), equalTo(2L));
     }
 }
