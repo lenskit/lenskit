@@ -4,10 +4,7 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.IntBidirectionalIterator;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.longs.*;
-import it.unimi.dsi.fastutil.objects.AbstractObjectBidirectionalIterator;
-import it.unimi.dsi.fastutil.objects.AbstractObjectSortedSet;
-import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
-import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
+import it.unimi.dsi.fastutil.objects.*;
 import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.concurrent.Immutable;
@@ -22,23 +19,23 @@ import java.util.NoSuchElementException;
 public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
     private static final long serialVersionUID = 1L;
 
-    private final LongKeyIndex index;
+    private final LongKeyIndex keys;
     private final double[] values;
 
-    Long2DoubleSortedArrayMap(LongKeyIndex keys, double[] vs) {
-        Preconditions.checkArgument(vs.length >= keys.getUpperBound(),
+    Long2DoubleSortedArrayMap(LongKeyIndex ks, double[] vs) {
+        Preconditions.checkArgument(vs.length >= ks.getUpperBound(),
                                     "index and value sizes mismatched");
-        index = keys;
+        keys = ks;
         values = vs;
     }
 
     public Long2DoubleSortedArrayMap(Map<Long,Double> data) {
         Long2DoubleMap wrapped = LongUtils.asLong2DoubleMap(data);
-        index = LongKeyIndex.fromCollection(wrapped.keySet());
-        int size = index.size();
+        keys = LongKeyIndex.fromCollection(wrapped.keySet());
+        int size = keys.size();
         values = new double[size];
         for (int i = 0; i < size; i++) {
-            values[i] = wrapped.get(index.getKey(i));
+            values[i] = wrapped.get(keys.getKey(i));
         }
     }
 
@@ -59,7 +56,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
 
     @Override
     public LongSortedSet keySet() {
-        return index.keySet();
+        return keys.keySet();
     }
 
     @Override
@@ -68,26 +65,26 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
     }
 
     private Long2DoubleSortedMap createSubMap(int lb, int ub) {
-        return new Long2DoubleSortedArrayMap(index.subIndex(lb, ub), values);
+        return new Long2DoubleSortedArrayMap(keys.subIndex(lb, ub), values);
     }
 
     @Override
     public Long2DoubleSortedMap subMap(long from, long to) {
-        int startIdx = index.findLowerBound(from); // include 'from'
-        int endIdx = index.findLowerBound(to); // lower bound so we don't include 'to'
+        int startIdx = keys.findLowerBound(from); // include 'from'
+        int endIdx = keys.findLowerBound(to); // lower bound so we don't include 'to'
         return createSubMap(startIdx, endIdx);
     }
 
     @Override
     public Long2DoubleSortedMap headMap(long l) {
-        int endIdx = index.findLowerBound(l); // lower bound so we don't include 'l'
-        return createSubMap(index.getLowerBound(), endIdx);
+        int endIdx = keys.findLowerBound(l); // lower bound so we don't include 'l'
+        return createSubMap(keys.getLowerBound(), endIdx);
     }
 
     @Override
     public Long2DoubleSortedMap tailMap(long l) {
-        int startIdx = index.findLowerBound(l); // include 'l'
-        return createSubMap(startIdx, index.getUpperBound());
+        int startIdx = keys.findLowerBound(l); // include 'l'
+        return createSubMap(startIdx, keys.getUpperBound());
     }
 
     @Override
@@ -102,7 +99,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
 
     @Override
     public double get(long l) {
-        int idx = index.getIndex(l);
+        int idx = keys.getIndex(l);
         if (idx >= 0) {
             return values[idx];
         } else {
@@ -112,7 +109,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
 
     @Override
     public boolean containsKey(long k) {
-        return index.containsKey(k);
+        return keys.containsKey(k);
     }
 
     @Override
@@ -121,18 +118,30 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
     }
 
     private Entry entry(int idx) {
-        return new BasicEntry(index.getKey(idx), values[idx]);
+        return new BasicEntry(keys.getKey(idx), values[idx]);
     }
 
-    private class EntrySet extends AbstractObjectSortedSet<Entry> {
+    private class EntrySet extends AbstractObjectSortedSet<Entry> implements FastSortedEntrySet {
         @Override
         public ObjectBidirectionalIterator<Entry> iterator(Entry entry) {
+            // TODO implement start-from iterator
             return null;
         }
 
         @Override
         public ObjectBidirectionalIterator<Entry> iterator() {
             return new EntryIter();
+        }
+
+        @Override
+        public ObjectBidirectionalIterator<Entry> fastIterator(Entry entry) {
+            // TODO implement start-from iterator
+            return null;
+        }
+
+        @Override
+        public ObjectIterator<Entry> fastIterator() {
+            return new FastEntryIter();
         }
 
         @Override
@@ -160,7 +169,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
             if (isEmpty()) {
                 throw new NoSuchElementException();
             }
-            return entry(index.getLowerBound());
+            return entry(keys.getLowerBound());
         }
 
         @Override
@@ -168,7 +177,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
             if (isEmpty()) {
                 throw new NoSuchElementException();
             }
-            return entry(index.getUpperBound() - 1);
+            return entry(keys.getUpperBound() - 1);
         }
 
         @Override
@@ -176,7 +185,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
             if (o instanceof Map.Entry) {
                 Map.Entry<?,?> e = (Map.Entry) o;
                 long key = e instanceof Entry ? ((Entry) e).getLongKey() : (Long) e.getKey();
-                int idx = index.getIndex(key);
+                int idx = keys.getIndex(key);
                 if (idx >= 0) {
                     return e.getValue().equals(values[idx]);
                 }
@@ -191,7 +200,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
     }
 
     private class EntryIter extends AbstractObjectBidirectionalIterator<Entry> {
-        IntBidirectionalIterator iter = IntIterators.fromTo(index.getLowerBound(), index.getUpperBound());
+        IntBidirectionalIterator iter = IntIterators.fromTo(keys.getLowerBound(), keys.getUpperBound());
 
         public boolean hasNext() {
             return iter.hasNext();
@@ -210,6 +219,70 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
         @Override
         public boolean hasPrevious() {
             return iter.hasPrevious();
+        }
+    }
+
+    private class FastEntryIter extends AbstractObjectBidirectionalIterator<Entry> {
+        IntBidirectionalIterator iter = IntIterators.fromTo(keys.getLowerBound(), keys.getUpperBound());
+        IndirectEntry entry = new IndirectEntry(0);
+
+        public boolean hasNext() {
+            return iter.hasNext();
+        }
+
+        @Override
+        public Entry next() {
+            entry.index = iter.nextInt();
+            return entry;
+        }
+
+        @Override
+        public Entry previous() {
+            entry.index = iter.nextInt();
+            return entry;
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return iter.hasPrevious();
+        }
+    }
+
+    private class IndirectEntry implements Entry {
+        int index;
+
+        public IndirectEntry(int idx) {
+            index = idx;
+        }
+
+        @Override
+        public long getLongKey() {
+            return keys.getKey(index);
+        }
+
+        @Override
+        public double setValue(double v) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public double getDoubleValue() {
+            return values[index];
+        }
+
+        @Override
+        public Long getKey() {
+            return getLongKey();
+        }
+
+        @Override
+        public Double getValue() {
+            return getDoubleValue();
+        }
+
+        @Override
+        public Double setValue(Double value) {
+            throw new UnsupportedOperationException();
         }
     }
 }
