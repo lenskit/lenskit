@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.longs.AbstractLong2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleSortedMap;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 import java.util.Iterator;
@@ -76,13 +77,35 @@ public final class Vectors {
      */
     public static double dotProduct(Long2DoubleMap v1, Long2DoubleMap v2) {
         double result = 0;
-        Long2DoubleFunction v2d = adaptDefaultValue(v2, 0.0);
-        Iterator<Long2DoubleMap.Entry> iter = fastEntryIterator(v1);
-        while (iter.hasNext()) {
-            Long2DoubleMap.Entry e = iter.next();
-            long k = e.getLongKey();
-            result += e.getDoubleValue() * v2d.get(k); // since default is 0
+
+        if (v1 instanceof Long2DoubleSortedMap && v2 instanceof Long2DoubleSortedMap) {
+            Iterator<Long2DoubleMap.Entry> it1 = fastEntryIterator(v1);
+            Iterator<Long2DoubleMap.Entry> it2 = fastEntryIterator(v2);
+            Long2DoubleMap.Entry e1 = it1.hasNext() ? it1.next() : null;
+            Long2DoubleMap.Entry e2 = it2.hasNext() ? it2.next() : null;
+            while (e1 != null && e2 != null) {
+                long k1 = e1.getLongKey();
+                long k2 = e2.getLongKey();
+                if (k1 == k2) {
+                    result += e1.getDoubleValue() * e2.getDoubleValue();
+                    e1 = it1.hasNext() ? it1.next() : null;
+                    e2 = it2.hasNext() ? it2.next() : null;
+                } else if (k1 < k2) {
+                    e1 = it1.hasNext() ? it1.next() : null;
+                } else { // k2 < k1
+                    e2 = it2.hasNext() ? it2.next() : null;
+                }
+            }
+        } else {
+            Long2DoubleFunction v2d = adaptDefaultValue(v2, 0.0);
+            Iterator<Long2DoubleMap.Entry> iter = fastEntryIterator(v1);
+            while (iter.hasNext()) {
+                Long2DoubleMap.Entry e = iter.next();
+                long k = e.getLongKey();
+                result += e.getDoubleValue() * v2d.get(k); // since default is 0
+            }
         }
+
         return result;
     }
 
