@@ -32,7 +32,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
         values = vs;
     }
 
-    Long2DoubleSortedArrayMap(Map<Long,Double> data) {
+    public Long2DoubleSortedArrayMap(Map<Long,Double> data) {
         Long2DoubleMap wrapped = LongUtils.asLong2DoubleMap(data);
         index = LongKeyIndex.fromCollection(wrapped.keySet());
         int size = index.size();
@@ -40,6 +40,16 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
         for (int i = 0; i < size; i++) {
             values[i] = wrapped.get(index.getKey(i));
         }
+    }
+
+    /**
+     * Create a new long-to-double map backed by a key index and a corresponding value array.
+     * @param keys The keys.
+     * @param vs The values (the array is used as-is, it is *not* copied).
+     * @return The array map.
+     */
+    public static Long2DoubleSortedArrayMap wrap(LongKeyIndex keys, double[] vs) {
+        return new Long2DoubleSortedArrayMap(keys, vs);
     }
 
     @Override
