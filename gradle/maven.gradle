@@ -169,7 +169,7 @@ afterEvaluate {
         packaging 'jar'
         // optionally artifactId can be defined here
         description meta.description
-        url 'http://lenskit.grouplens.org'
+        url 'http://lenskit.org'
 
         scm {
             connection 'scm:git:http://github.com/grouplens/lenskit.git'

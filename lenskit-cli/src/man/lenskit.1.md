@@ -96,7 +96,7 @@ logback.configurationFile
    [**lenskit-graph**(1)](man:lenskit-graph(1)),
    [**lenskit-eval**(1)](man:lenskit-eval(1)),
    [**lenskit-pack-ratings**(1)](man:lenskit-pack-ratings(1))
--  The [LensKit home page](http://lenskit.grouplens.org)
+-  The [LensKit home page](http://lenskit.org)
 -  The [LensKit manual](http://github.com/grouplens/lenskit/wiki/Manual)
 
 ## Project Information
