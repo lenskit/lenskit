@@ -22,7 +22,7 @@ package org.grouplens.lenskit.mf.funksvd;
 
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
-import mikera.vectorz.AVector;
+import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
@@ -84,11 +84,11 @@ public final class TrainingEstimator {
      * @param ufvs The user feature values.
      * @param ifvs The item feature values.
      */
-    public void update(AVector ufvs, AVector ifvs) {
+    public void update(RealVector ufvs, RealVector ifvs) {
         for (IndexedPreference r : ratings) {
             int idx = r.getIndex();
             double est = estimates[idx];
-            est += ufvs.get(r.getUserIndex()) * ifvs.get(r.getItemIndex());
+            est += ufvs.getEntry(r.getUserIndex()) * ifvs.getEntry(r.getItemIndex());
             if (domain != null) {
                 est = domain.clampValue(est);
             }

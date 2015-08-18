@@ -21,10 +21,9 @@
 package org.grouplens.lenskit.mf.svd;
 
 import com.google.common.base.Preconditions;
-import mikera.matrixx.IMatrix;
-import mikera.matrixx.Matrix;
-import mikera.matrixx.impl.ImmutableMatrix;
-import mikera.vectorz.AVector;
+import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.MatrixUtils;
 import org.grouplens.lenskit.indexes.IdIndexMapping;
 
 import javax.annotation.Nullable;
@@ -44,8 +43,8 @@ public class MFModel implements Serializable {
     protected int userCount;
     protected int itemCount;
 
-    protected ImmutableMatrix userMatrix;
-    protected ImmutableMatrix itemMatrix;
+    protected RealMatrix userMatrix;
+    protected RealMatrix itemMatrix;
     protected IdIndexMapping userIndex;
     protected IdIndexMapping itemIndex;
 
@@ -58,19 +57,19 @@ public class MFModel implements Serializable {
      * @param uidx The user index mapping.
      * @param iidx The item index mapping.
      */
-    public MFModel(ImmutableMatrix umat, ImmutableMatrix imat,
+    public MFModel(RealMatrix umat, RealMatrix imat,
                    IdIndexMapping uidx, IdIndexMapping iidx) {
-        Preconditions.checkArgument(umat.columnCount() == imat.columnCount(),
+        Preconditions.checkArgument(umat.getColumnDimension() == imat.getColumnDimension(),
                                     "mismatched matrix sizes");
-        featureCount = umat.columnCount();
+        featureCount = umat.getColumnDimension();
         userCount = uidx.size();
         itemCount = iidx.size();
-        Preconditions.checkArgument(umat.rowCount() == userCount,
+        Preconditions.checkArgument(umat.getRowDimension() == userCount,
                                     "user matrix has %s rows, expected %s",
-                                    umat.rowCount(), userCount);
-        Preconditions.checkArgument(imat.rowCount() == itemCount,
+                                    umat.getRowDimension(), userCount);
+        Preconditions.checkArgument(imat.getRowDimension() == itemCount,
                                     "item matrix has %s rows, expected %s",
-                                    imat.rowCount(), itemCount);
+                                    imat.getRowDimension(), itemCount);
         userMatrix = umat;
         itemMatrix = imat;
         userIndex = uidx;
@@ -84,13 +83,13 @@ public class MFModel implements Serializable {
 
         for (int i = 0; i < userCount; i++) {
             for (int j = 0; j < featureCount; j++) {
-                out.writeDouble(userMatrix.get(i, j));
+                out.writeDouble(userMatrix.getEntry(i, j));
             }
         }
 
         for (int i = 0; i < itemCount; i++) {
             for (int j = 0; j < featureCount; j++) {
-                out.writeDouble(itemMatrix.get(i, j));
+                out.writeDouble(itemMatrix.getEntry(i, j));
             }
         }
 
@@ -103,29 +102,29 @@ public class MFModel implements Serializable {
         userCount = input.readInt();
         itemCount = input.readInt();
 
-        Matrix umat = Matrix.create(userCount, featureCount);
+        RealMatrix umat = MatrixUtils.createRealMatrix(userCount, featureCount);
         for (int i = 0; i < userCount; i++) {
             for (int j = 0; j < featureCount; j++) {
-                umat.set(i, j, input.readDouble());
+                umat.setEntry(i, j, input.readDouble());
             }
         }
-        userMatrix = ImmutableMatrix.wrap(umat);
+        userMatrix = umat;
 
-        Matrix imat = Matrix.create(itemCount, featureCount);
+        RealMatrix imat = MatrixUtils.createRealMatrix(itemCount, featureCount);
         for (int i = 0; i < itemCount; i++) {
             for (int j = 0; j < featureCount; j++) {
-                imat.set(i, j, input.readDouble());
+                imat.setEntry(i, j, input.readDouble());
             }
         }
-        itemMatrix = ImmutableMatrix.wrap(imat);
+        itemMatrix = imat;
 
         userIndex = (IdIndexMapping) input.readObject();
         itemIndex = (IdIndexMapping) input.readObject();
 
-        if (userIndex.size() != userMatrix.rowCount()) {
+        if (userIndex.size() != userMatrix.getRowDimension()) {
             throw new InvalidObjectException("user matrix and index have different row counts");
         }
-        if (itemIndex.size() != itemMatrix.rowCount()) {
+        if (itemIndex.size() != itemMatrix.getRowDimension()) {
             throw new InvalidObjectException("item matrix and index have different row counts");
         }
     }
@@ -171,7 +170,7 @@ public class MFModel implements Serializable {
      * Get the user matrix.
      * @return The user matrix (users x features).
      */
-    public IMatrix getUserMatrix() {
+    public RealMatrix getUserMatrix() {
         return userMatrix;
     }
 
@@ -179,27 +178,27 @@ public class MFModel implements Serializable {
      * Get the item matrix.
      * @return The item matrix (items x features).
      */
-    public IMatrix getItemMatrix() {
+    public RealMatrix getItemMatrix() {
         return itemMatrix;
     }
 
     @Nullable
-    public AVector getUserVector(long user) {
+    public RealVector getUserVector(long user) {
         int uidx = userIndex.tryGetIndex(user);
         if (uidx < 0) {
             return null;
         } else {
-            return userMatrix.getRow(uidx);
+            return userMatrix.getRowVector(uidx);
         }
     }
 
     @Nullable
-    public AVector getItemVector(long item) {
+    public RealVector getItemVector(long item) {
         int iidx = itemIndex.tryGetIndex(item);
         if (iidx < 0) {
             return null;
         } else {
-            return itemMatrix.getRow(iidx);
+            return itemMatrix.getRowVector(iidx);
         }
     }
 
@@ -214,7 +213,7 @@ public class MFModel implements Serializable {
         if (uidx < 0) {
             return 0;
         } else {
-            return userMatrix.get(uidx, feature);
+            return userMatrix.getEntry(uidx, feature);
         }
     }
 
@@ -229,7 +228,7 @@ public class MFModel implements Serializable {
         if (iidx < 0) {
             return 0;
         } else {
-            return itemMatrix.get(iidx, feature);
+            return itemMatrix.getEntry(iidx, feature);
         }
     }
 
