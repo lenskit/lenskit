@@ -18,16 +18,16 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.transform.quantize;
+package org.lenskit.transform.quantize;
 
-import mikera.vectorz.impl.ImmutableVector;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.closeTo;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -42,13 +42,13 @@ public class PreferenceDomainQuantizerTest {
 
     @Test
     public void testMakeValues() {
-        ImmutableVector vals = PreferenceDomainQuantizer.makeValues(domain);
-        ImmutableVector evals = ImmutableVector.of(0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0);
-        assertThat(vals.length(), equalTo(evals.length()));
-        for (int i = 0; i < vals.length(); i++) {
+        RealVector vals = PreferenceDomainQuantizer.makeValues(domain);
+        RealVector evals = new ArrayRealVector(new double[]{0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0});
+        assertThat(vals.getDimension(), equalTo(evals.getDimension()));
+        for (int i = 0; i < vals.getDimension(); i++) {
             assertThat("element " + i,
-                       vals.get(i),
-                       closeTo(evals.get(i), 1.0e-6));
+                       vals.getEntry(i),
+                       closeTo(evals.getEntry(i), 1.0e-6));
         }
     }
 

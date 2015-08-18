@@ -18,13 +18,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.transform.quantize;
+package org.lenskit.transform.quantize;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
 
-import org.grouplens.lenskit.transform.quantize.Quantizer;
-import org.grouplens.lenskit.transform.quantize.ValueArrayQuantizer;
 import org.junit.Test;
 
 /**
