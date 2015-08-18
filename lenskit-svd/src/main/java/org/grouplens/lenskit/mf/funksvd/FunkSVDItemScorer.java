@@ -164,11 +164,11 @@ public class FunkSVDItemScorer extends AbstractItemScorer {
         scores.set(estimates);
 
         if (!ratings.isEmpty() && rule != null) {
-            //RealVector updated = uprefs.copy();
+            RealVector updated = uprefs.copy();
             for (int f = 0; f < featureCount; f++) {
-                trainUserFeature(user, uprefs, ratings, estimates, f); // changed updated to uprefs
+                trainUserFeature(user, updated, ratings, estimates, f); // changed updated to uprefs
             }
-            //uprefs = updated;
+            uprefs = updated;
         }
 
         // scores are the estimates, uprefs are trained up.
