@@ -21,17 +21,16 @@
 package org.grouplens.lenskit.data.text;
 
 import it.unimi.dsi.fastutil.longs.LongLists;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.data.dao.UserListUserDAO;
+import org.lenskit.util.collections.LongUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 public class UserListUserDAOTest {
     public void testEmptyDAO() {

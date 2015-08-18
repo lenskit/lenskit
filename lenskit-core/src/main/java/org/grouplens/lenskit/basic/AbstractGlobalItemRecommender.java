@@ -22,8 +22,8 @@ package org.grouplens.lenskit.basic;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.GlobalItemRecommender;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.scored.ScoredId;
+import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nullable;
 import java.util.List;

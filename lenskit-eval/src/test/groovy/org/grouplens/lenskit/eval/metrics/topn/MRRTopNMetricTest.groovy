@@ -21,12 +21,12 @@
 package org.grouplens.lenskit.eval.metrics.topn
 
 import it.unimi.dsi.fastutil.longs.LongSet
-import org.grouplens.lenskit.collections.LongUtils
 import org.grouplens.lenskit.eval.traintest.MockTestUser
 import org.grouplens.lenskit.scored.ScoredIds
 import org.hamcrest.Matcher
 import org.junit.Before
 import org.junit.Test
+import org.lenskit.util.collections.LongUtils
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat

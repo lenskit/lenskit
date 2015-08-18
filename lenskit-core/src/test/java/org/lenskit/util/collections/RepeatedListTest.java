@@ -18,42 +18,48 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.baseline;
+package org.lenskit.util.collections;
 
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
-import org.lenskit.util.collections.LongUtils;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class ConstantItemScorerTest {
+public class RepeatedListTest {
 
     @Test
-    public void testSingleScore() {
-        ItemScorer pred = new ConstantItemScorer(5);
-        assertThat(pred.score(5, 10), equalTo(5.0));
+    public void testEmpty() {
+        RepeatedList<Integer> rl = new RepeatedList<Integer>(7, 0);
+        assertThat(rl.size(), equalTo(0));
+        try {
+            rl.get(-1);
+            fail("Should throw an exception!");
+        } catch(IndexOutOfBoundsException e) { /* expected */ }
+        try {
+            rl.get(0);
+            fail("Should throw an exception!");
+        } catch(IndexOutOfBoundsException e) { /* expected */ }
+
+        try {
+            rl.get(1);
+            fail("Should throw an exception!");
+        } catch(IndexOutOfBoundsException e) { /* expected */ }
     }
 
     @Test
-    public void testScoreSet() {
-        ItemScorer pred = new ConstantItemScorer(5);
-        SparseVector v = pred.score(42, LongUtils.packedSet(1, 2, 3, 5, 7));
-        assertThat(v.keySet(), contains(1L, 2L, 3L, 5L, 7L));
-        assertThat(v.values(), everyItem(equalTo(5.0)));
+    public void testSingle() {
+        RepeatedList<Integer> rl = new RepeatedList<Integer>(7, 1);
+        assertThat(rl.size(), equalTo(1));
+        assertThat(rl.get(0).intValue(), equalTo(7));
+        
+        try {
+            rl.get(1);
+            fail("Should throw an exception!");
+        } catch(IndexOutOfBoundsException e) { /* expected */ }
+  
     }
 
-    @Test
-    public void testScoreVector() {
-        ItemScorer pred = new ConstantItemScorer(5);
-        MutableSparseVector v = MutableSparseVector.create(1, 2, 3, 5, 7);
-        pred.score(42, v);
-        assertThat(v.keySet(), contains(1L, 2L, 3L, 5L, 7L));
-        assertThat(v.values(), everyItem(equalTo(5.0)));
-    }
-}
+ }

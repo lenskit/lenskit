@@ -23,8 +23,6 @@ package org.grouplens.lenskit.knn.item.model;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.collections.LongKeyDomain;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.ItemDAO;
@@ -37,6 +35,8 @@ import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.keys.LongKeyIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,8 +121,8 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
             userItemSets.put(entry.getLongKey(), LongUtils.packedSet(entry.getValue()));
         }
 
-        LongKeyDomain items = LongKeyDomain.fromCollection(itemVectors.keySet(), true);
-        SparseVector[] itemData = new SparseVector[items.domainSize()];
+        LongKeyIndex items = LongKeyIndex.fromCollection(itemVectors.keySet());
+        SparseVector[] itemData = new SparseVector[items.size()];
         for (int i = 0; i < itemData.length; i++) {
             long itemId = items.getKey(i);
             itemData[i] = itemVectors.get(itemId);

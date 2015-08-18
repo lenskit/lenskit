@@ -21,16 +21,15 @@
 package org.grouplens.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.util.collections.LongUtils;
 
 import static java.lang.Math.sqrt;
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.Matchers.closeTo;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 public class UnitVectorNormalizerTest {
     UnitVectorNormalizer norm = new UnitVectorNormalizer();

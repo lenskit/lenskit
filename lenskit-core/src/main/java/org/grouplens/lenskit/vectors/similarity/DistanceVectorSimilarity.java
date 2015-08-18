@@ -21,10 +21,10 @@
 package org.grouplens.lenskit.vectors.similarity;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.math.Scalars;
 
 import javax.inject.Inject;
