@@ -22,10 +22,8 @@ package org.grouplens.lenskit.predict.ordrec;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import mikera.vectorz.AVector;
-import mikera.vectorz.IVector;
-import mikera.vectorz.Vector;
-import mikera.vectorz.impl.ImmutableVector;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.basic.AbstractRatingPredictor;
 import org.grouplens.lenskit.collections.LongUtils;
@@ -37,10 +35,10 @@ import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.symbols.TypedSymbol;
-import org.grouplens.lenskit.transform.quantize.Quantizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.transform.quantize.Quantizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,8 +57,8 @@ import javax.inject.Inject;
  */
 public class OrdRecRatingPredictor extends AbstractRatingPredictor {
     private static final Logger logger = LoggerFactory.getLogger(OrdRecRatingPredictor.class);
-    public static final TypedSymbol<IVector> RATING_PROBABILITY_CHANNEL =
-            TypedSymbol.of(IVector.class, "org.grouplens.lenskit.predict.ordrec.RatingProbability");
+    public static final TypedSymbol<RealVector> RATING_PROBABILITY_CHANNEL =
+            TypedSymbol.of(RealVector.class, "org.grouplens.lenskit.predict.ordrec.RatingProbability");
 
     private ItemScorer itemScorer;
     private UserEventDAO userEventDao;
@@ -80,8 +78,8 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
 
         private int levelCount;
         private double t1;
-        private AVector beta;
-        private ImmutableVector qtzValues;
+        private ArrayRealVector beta;
+        private RealVector qtzValues;
 
         /**
          * The constructor of OrdRecParameter.
@@ -94,14 +92,14 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
          */
         private OrdRecModel (Quantizer qtz) {
             qtzValues = qtz.getValues();
-            levelCount = qtzValues.length();
-            t1 = (qtzValues.get(0) + qtzValues.get(1))/2;
-            beta = Vector.createLength(levelCount - 2);
+            levelCount = qtzValues.getDimension();
+            t1 = (qtzValues.getEntry(0) + qtzValues.getEntry(1))/2;
+            beta = new ArrayRealVector(levelCount - 2);
 
             double tr = t1;
-            for (int i = 1; i <= beta.length(); i++) {
-                double trnext = (qtzValues.get(i) + qtzValues.get(i+1)) * 0.5;
-                beta.set(i-1, Math.log(trnext - tr));
+            for (int i = 1; i <= beta.getDimension(); i++) {
+                double trnext = (qtzValues.getEntry(i) + qtzValues.getEntry(i + 1)) * 0.5;
+                beta.setEntry(i - 1, Math.log(trnext - tr));
                 tr = trnext;
             }
         }
@@ -120,7 +118,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
          *
          * @return beta set.
          */
-        public AVector getBeta() {
+        public RealVector getBeta() {
             return beta;
         }
 
@@ -145,11 +143,12 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
                 return Double.NEGATIVE_INFINITY;
             } else if(thresholdIndex == 0){
                 return tr;
-            } else if(thresholdIndex > beta.length()) {
+            } else if(thresholdIndex > beta.getDimension()) {
                 return Double.POSITIVE_INFINITY;
             } else {
-                for(int k = 0; k < thresholdIndex; k++)
-                    tr += Math.exp(beta.get(k));
+                for(int k = 0; k < thresholdIndex; k++) {
+                    tr += Math.exp(beta.getEntry(k));
+                }
                 return tr;
             }
         }
@@ -205,7 +204,7 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         private void train(SparseVector ratings, MutableSparseVector scores) {
 
 
-            Vector dbeta = Vector.createLength(beta.length());
+            RealVector dbeta = new ArrayRealVector(beta.getDimension());
             double dt1;
             // n is the number of iteration;
             for (int j = 0; j < iterationCount; j++ ) {
@@ -222,14 +221,14 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
                             - probLessR_1 * (1 - probLessR_1) * derivateOfBeta(r-1, 0, t1) - regTerm*t1);
 
                     double dbetaK;
-                    for(int k = 0; k < beta.length(); k++) {
+                    for(int k = 0; k < beta.getDimension(); k++) {
                         dbetaK = learningRate / probEqualR * ( probLessR * (1 - probLessR) *
-                                derivateOfBeta(r, k+1, beta.get(k)) - probLessR_1 * (1 - probLessR_1) *
-                                derivateOfBeta(r-1, k+1, beta.get(k)) - regTerm*beta.get(k));
-                        dbeta.set(k, dbetaK);
+                                derivateOfBeta(r, k+1, beta.getEntry(k)) - probLessR_1 * (1 - probLessR_1) *
+                                derivateOfBeta(r-1, k+1, beta.getEntry(k)) - regTerm*beta.getEntry(k));
+                        dbeta.setEntry(k, dbetaK);
                     }
                     t1 = t1 + dt1;
-                    beta.add(dbeta);
+                    beta.combineToSelf(1, 1, dbeta);
                 }
             }
         }
@@ -239,12 +238,12 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
          * @param score The score
          * @param vec The MutableVec to be filled in.
          */
-        public void getProbDistribution(double score, Vector vec) {
+        public void getProbDistribution(double score, RealVector vec) {
             double pre = getProbLE(score, 0);
-            vec.set(0, pre);
+            vec.setEntry(0, pre);
             for(int i = 1; i < getLevelCount(); i++) {
                 double pro = getProbLE(score, i);
-                vec.set(i, pro - pre);
+                vec.setEntry(i, pro - pre);
                 pre = pro;
             }
 
@@ -327,8 +326,8 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
         params.train(ratings, scores);
         logger.debug("trained parameters for {}: {}", uid, params);
 
-        Vector probabilities = Vector.createLength(params.getLevelCount());
-        Long2ObjectMap<IVector> distChannel = null;
+        RealVector probabilities = new ArrayRealVector(params.getLevelCount());
+        Long2ObjectMap<RealVector> distChannel = null;
         if (reportDistribution) {
             distChannel = predictions.addChannel(RATING_PROBABILITY_CHANNEL);
         }
@@ -338,11 +337,11 @@ public class OrdRecRatingPredictor extends AbstractRatingPredictor {
             double score = scores.get(iid);
             params.getProbDistribution(score, probabilities);
 
-            int mlIdx = probabilities.maxElementIndex();
+            int mlIdx = probabilities.getMaxIndex();
 
             predictions.set(e, quantizer.getIndexValue(mlIdx));
             if (distChannel != null) {
-                distChannel.put(e.getKey(), probabilities.immutable());
+                distChannel.put(e.getKey(), new ArrayRealVector(probabilities));
             }
         }
     }
