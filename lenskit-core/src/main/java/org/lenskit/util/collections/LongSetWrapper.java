@@ -22,13 +22,13 @@ package org.lenskit.util.collections;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import java.util.Collection;
+import java.util.Set;
 
 /**
  * Collection wrapper for a long set.
  */
 class LongSetWrapper extends LongCollectionWrapper implements LongSet {
-    LongSetWrapper(Collection<Long> base) {
+    LongSetWrapper(Set<Long> base) {
         super(base);
     }
 
