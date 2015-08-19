@@ -128,7 +128,9 @@ public class KeyedObjectMapTest {
     }
 
     static KeyedObjectMap<String> createMap(String... strings) {
-        return new KeyedObjectMap<>(Arrays.asList(strings), StringEx.INSTANCE);
+        return KeyedObjectMap.newBuilder(StringEx.INSTANCE)
+                             .add(strings)
+                             .build();
     }
 
     enum StringEx implements KeyExtractor<String> {

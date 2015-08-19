@@ -28,10 +28,7 @@ import org.lenskit.util.BinarySearch;
 
 import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * A mapping that indexes keyed objects by their keys.  This structure works on objects that have an associated key,
@@ -48,6 +45,10 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
     private final ImmutableList<T> data;
     private transient KeySet keySet;
     private transient EntrySet entrySet;
+
+    public static <T> KeyedObjectMapBuilder<T> newBuilder(KeyExtractor<? super T> ex) {
+        return new KeyedObjectMapBuilder<>(ex);
+    }
 
     /**
      * Create a new keyed object map from a collection of data.
