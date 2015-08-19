@@ -20,10 +20,13 @@
  */
 package org.lenskit.results;
 
-import com.google.common.collect.Iterators;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.AbstractLong2DoubleMap;
+import it.unimi.dsi.fastutil.longs.AbstractLong2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.*;
 import org.lenskit.api.Result;
+import org.lenskit.util.keys.KeyedObjectMap;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.Collection;
@@ -37,17 +40,14 @@ import java.util.Map;
 public class BasicResultMap extends AbstractLong2ObjectMap<Result> implements LenskitResultMap {
     private static final long serialVersionUID = 1L;
 
-    private final Long2ObjectMap<Result> delegate;
+    private final KeyedObjectMap<Result> delegate;
 
     /**
      * Create a new result map from a collection of results.
      * @param objs The results.
      */
     public BasicResultMap(Collection<? extends Result> objs) {
-        delegate = new Long2ObjectLinkedOpenHashMap<>();
-        for (Result r: objs) {
-            delegate.put(r.getId(), r);
-        }
+        delegate = new KeyedObjectMap<>(objs, Results.keyExtractor());
     }
 
     @Override
@@ -57,12 +57,12 @@ public class BasicResultMap extends AbstractLong2ObjectMap<Result> implements Le
 
     @Override
     public Iterator<Result> iterator() {
-        return Iterators.unmodifiableIterator(delegate.values().iterator());
+        return delegate.values().iterator();
     }
 
     @Override
     public ObjectSet<Entry<Result>> long2ObjectEntrySet() {
-        return ObjectSets.unmodifiable(delegate.long2ObjectEntrySet());
+        return delegate.long2ObjectEntrySet();
     }
 
     @Override
@@ -77,17 +77,17 @@ public class BasicResultMap extends AbstractLong2ObjectMap<Result> implements Le
 
     @Override
     public ObjectCollection<Result> values() {
-        return ObjectCollections.unmodifiable(delegate.values());
+        return delegate.values();
     }
 
     @Override
     public ObjectSet<Map.Entry<Long, Result>> entrySet() {
-        return ObjectSets.unmodifiable(delegate.entrySet());
+        return delegate.entrySet();
     }
 
     @Override
     public LongSet keySet() {
-        return LongSets.unmodifiable(delegate.keySet());
+        return delegate.keySet();
     }
 
     @Override
