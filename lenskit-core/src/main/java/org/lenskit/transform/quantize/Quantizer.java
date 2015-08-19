@@ -18,9 +18,9 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.transform.quantize;
+package org.lenskit.transform.quantize;
 
-import mikera.vectorz.impl.ImmutableVector;
+import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.grapht.annotation.DefaultProvider;
 
 /**
@@ -39,7 +39,7 @@ public interface Quantizer {
      *
      * @return The values of the discrete bins.
      */
-    ImmutableVector getValues();
+    RealVector getValues();
 
     /**
      * Get the value corresponding to a quantized value, based on the index into

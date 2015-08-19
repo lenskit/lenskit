@@ -18,9 +18,10 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.transform.quantize;
+package org.lenskit.transform.quantize;
 
-import mikera.vectorz.impl.ImmutableVector;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 
@@ -36,11 +37,11 @@ import javax.inject.Provider;
  */
 @Shareable
 public class PreferenceDomainQuantizer extends ValueArrayQuantizer {
-    private static final long serialVersionUID = 8258336921679357985L;
+    private static final long serialVersionUID = 2L;
 
     private final PreferenceDomain domain;
 
-    static ImmutableVector makeValues(PreferenceDomain domain) {
+    static RealVector makeValues(PreferenceDomain domain) {
         if (!domain.hasPrecision()) {
             throw new IllegalArgumentException("domain is not discrete");
         }
@@ -59,7 +60,7 @@ public class PreferenceDomainQuantizer extends ValueArrayQuantizer {
         for (int i = 0; i <= n; i++) {
             values[i] = min + (prec * i);
         }
-        return ImmutableVector.wrap(values);
+        return new ArrayRealVector(values);
     }
 
     /**

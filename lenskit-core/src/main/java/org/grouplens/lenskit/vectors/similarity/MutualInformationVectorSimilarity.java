@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.vectors.similarity;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.transform.quantize.Quantizer;
+import org.lenskit.transform.quantize.Quantizer;
 import org.grouplens.lenskit.util.statistics.MutualInformationAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;

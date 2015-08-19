@@ -21,4 +21,4 @@
 /**
  * Quantize values.
  */
-package org.grouplens.lenskit.transform.quantize;
+package org.lenskit.transform.quantize;

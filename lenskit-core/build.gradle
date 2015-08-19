@@ -44,7 +44,7 @@ dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
     compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc2'
 
-    compile group: 'net.mikera', name: 'vectorz', version: '0.46.0'
+    compile group:'org.apache.commons', name:'commons-math3', version:'3.5'
 
     compile group: 'org.apache.commons', name: 'commons-compress', version: '1.9'
 
