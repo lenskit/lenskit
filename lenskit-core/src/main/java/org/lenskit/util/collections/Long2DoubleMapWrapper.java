@@ -89,7 +89,7 @@ class Long2DoubleMapWrapper extends AbstractLong2DoubleMap {
 
         @Override
         public boolean contains(Object o) {
-            return set.contains(this);
+            return set.contains(o);
         }
     }
 
