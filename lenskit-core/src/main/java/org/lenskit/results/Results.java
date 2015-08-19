@@ -28,6 +28,7 @@ import com.google.common.primitives.Longs;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.api.ResultMap;
+import org.lenskit.util.keys.KeyExtractor;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -143,6 +144,14 @@ public final class Results {
         return ScoreOrder.INSTANCE;
     }
 
+    /**
+     * Get a key extractor that extracts the result's ID as its key.
+     * @return The key extractor.
+     */
+    public static KeyExtractor<Result> keyExtractor() {
+        return KeyEx.INSTANCE;
+    }
+
     private enum BasicCopyFunction implements Function<Result,BasicResult> {
         INSTANCE {
             @Override
@@ -165,6 +174,14 @@ public final class Results {
         @Override
         public int compare(Result left, Result right) {
             return Doubles.compare(left.getScore(), right.getScore());
+        }
+    }
+
+    private static class KeyEx implements KeyExtractor<Result> {
+        private static final KeyEx INSTANCE = new KeyEx();
+        @Override
+        public long getKey(Result obj) {
+            return obj.getId();
         }
     }
 }
