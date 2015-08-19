@@ -30,8 +30,6 @@ import java.util.Collection;
 /**
  * Wrapper class that implements a {@link LongCollection} by delegating to
  * a {@link Collection}.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class LongCollectionWrapper implements LongCollection {
     protected final Collection<Long> base;
