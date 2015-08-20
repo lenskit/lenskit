@@ -48,24 +48,24 @@ public class LimitedBinaryRatingDAOTest {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
-    public  BinaryRatingDAO dao;
+    public BinaryRatingDAO dao;
     List<Rating> ratings;
 
     @Before
     public void createDao() throws IOException {
         ImmutableList.Builder<Rating> bld = ImmutableList.builder();
         bld.add(Rating.create(13, 102, 3.5, 1000L))
-                .add(Rating.create(39, 105, 3.5, 1000L))
-                .add(Rating.create(12, 102, 2.5, 1050L))
-                .add(Rating.create(40, 111, 4.5, 1050L))
-                .add(Rating.create(13, 111, 4.5, 1200L))
-                .add(Rating.create(41, 105, 2.5, 1400L))
-                .add(Rating.create(39, 120, 4.5, 1650L))
-                .add(Rating.create(12, 120, 4.5, 1650L))
-                .add(Rating.create(42, 120, 2.5, 1650L))
-                .add(Rating.create(40, 120, 2.5, 1650L))
-                .add(Rating.create(41, 111, 3.5, 1700L))
-                .add(Rating.create(42, 115, 3.5, 1700L));
+           .add(Rating.create(39, 105, 3.5, 1000L))
+           .add(Rating.create(12, 102, 2.5, 1050L))
+           .add(Rating.create(40, 111, 4.5, 1050L))
+           .add(Rating.create(13, 111, 4.5, 1200L))
+           .add(Rating.create(41, 105, 2.5, 1400L))
+           .add(Rating.create(39, 120, 4.5, 1650L))
+           .add(Rating.create(12, 120, 4.5, 1650L))
+           .add(Rating.create(42, 120, 2.5, 1650L))
+           .add(Rating.create(40, 120, 2.5, 1650L))
+           .add(Rating.create(41, 111, 3.5, 1700L))
+           .add(Rating.create(42, 115, 3.5, 1700L));
 
         ratings = bld.build();
 
@@ -84,6 +84,7 @@ public class LimitedBinaryRatingDAOTest {
     /**
      * Test with the minimum timestamp in DAO,
      * it should return empty DAO
+     *
      * @throws IOException
      */
     @Test
@@ -96,8 +97,24 @@ public class LimitedBinaryRatingDAOTest {
     }
 
     /**
+     * Test for the minimum timestamp value in DAO,
+     * it should return empty DAO
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testLimitForMin() throws IOException {
+        BinaryRatingDAO brDao = dao.createWindowedView(1000L);
+        assertThat(ObjectStreams.makeList(brDao.streamEvents()),
+                   hasSize(0));
+        assertThat(brDao.getUserIds(), hasSize(0));
+        assertThat(brDao.getItemIds(), hasSize(0));
+    }
+
+    /**
      * Test for timestamp greater than highest timestamp in ratings list,
      * all the values in ratings list should match
+     *
      * @throws IOException
      */
     @Test
@@ -114,6 +131,7 @@ public class LimitedBinaryRatingDAOTest {
     /**
      * Test for the items who have ratings '&lt;' or '&gt;='  timestamp,
      * it should not return item which have any rating &gt;= timestamp
+     *
      * @throws IOException
      */
     @Test
@@ -126,19 +144,17 @@ public class LimitedBinaryRatingDAOTest {
         assertThat(brDao.getEventsForItem(120), nullValue());
         assertThat(brDao.getEventsForItem(105), hasSize(2));
         assertThat(brDao.getEventsForItem(105, Rating.class),
-                containsInAnyOrder(Rating.create(39, 105, 3.5, 1000L),Rating.create(41, 105, 2.5, 1400L)));
+                   containsInAnyOrder(Rating.create(39, 105, 3.5, 1000L), Rating.create(41, 105, 2.5, 1400L)));
         assertThat(brDao.getEventsForItem(111, Rating.class),
-                containsInAnyOrder(Rating.create(13, 111, 4.5, 1200L), Rating.create(40, 111, 4.5, 1050L)));
-
-        /*check if assertNotEqual works properly*/
+                   containsInAnyOrder(Rating.create(13, 111, 4.5, 1200L), Rating.create(40, 111, 4.5, 1050L)));
         assertNotEquals(brDao.getUsersForItem(111), containsInAnyOrder(41L));
-
     }
 
 
     /**
      * Test for the users who have ratings '&lt;' or '&gt;='  timestamp,
      * it should not return user which have any rating &gt;= timestamp
+     *
      * @throws IOException
      */
     @Test
@@ -152,12 +168,13 @@ public class LimitedBinaryRatingDAOTest {
         assertThat(brDao.getEventsForUser(40), hasSize(1));
         assertThat(brDao.getEventsForUser(41), nullValue());
         assertThat(brDao.getEventsForUser(13, Rating.class),
-                containsInAnyOrder(Rating.create(13, 102, 3.5, 1000L), Rating.create(13, 111, 4.5, 1200L)));
+                   containsInAnyOrder(Rating.create(13, 102, 3.5, 1000L), Rating.create(13, 111, 4.5, 1200L)));
     }
 
     /**
      * Test to create a windowed view with lower timestamp than current,
      * it should create DAO with new timestamp &lt; current timestamp
+     *
      * @throws IOException
      */
     @Test
@@ -167,14 +184,15 @@ public class LimitedBinaryRatingDAOTest {
         assertThat(ObjectStreams.makeList(lowLimitDao.streamEvents()),
                 hasSize(4));
         assertThat(lowLimitDao.getEventsForUser(12), hasSize(1));
-        assertThat(lowLimitDao.getUserIds(), containsInAnyOrder(12L,13L,39L,40L));
-        assertThat(lowLimitDao.getItemIds(), containsInAnyOrder(102L,105L,111L));
+        assertThat(lowLimitDao.getUserIds(), containsInAnyOrder(12L, 13L, 39L, 40L));
+        assertThat(lowLimitDao.getItemIds(), containsInAnyOrder(102L, 105L, 111L));
 
     }
 
     /**
      * Test to create a windowed view with higher timestamp than current,
      * it should create DAO with timestamp = current timestamp
+     *
      * @throws IOException
      */
 
@@ -193,18 +211,19 @@ public class LimitedBinaryRatingDAOTest {
     }
 
     /**
-     *Test all the events  after limit and verify data
+     * Test all the events  after limit and verify data
+     *
      * @throws IOException
      */
     @Test
-    public void testEventsAfterLimit() throws IOException{
-        BinaryRatingDAO brDao  = dao.createWindowedView(1650L);
+    public void testEventsAfterLimit() throws IOException {
+        BinaryRatingDAO brDao = dao.createWindowedView(1650L);
         verifyDAO(brDao);
     }
 
     @Test
     public void testSerializedDAO() throws IOException {
-        BinaryRatingDAO brDao  = dao.createWindowedView(1650L);
+        BinaryRatingDAO brDao = dao.createWindowedView(1650L);
         BinaryRatingDAO clone = SerializationUtils.clone(brDao);
         verifyDAO(clone);
     }
@@ -216,7 +235,7 @@ public class LimitedBinaryRatingDAOTest {
 
         //test getters for user
         assertThat(brDao.getUserIds(), containsInAnyOrder(12L, 13L, 39L, 40L, 41L));
-        assertThat(brDao.getUsersForItem(105), containsInAnyOrder(39L,41L));
+        assertThat(brDao.getUsersForItem(105), containsInAnyOrder(39L, 41L));
         assertThat(brDao.getUsersForItem(120), nullValue());
         assertThat(brDao.getEventsForUser(39, Rating.class),
                    contains(Rating.create(39, 105, 3.5, 1000L)));
@@ -228,7 +247,7 @@ public class LimitedBinaryRatingDAOTest {
         //test getters for item
         assertThat(brDao.getItemIds(), containsInAnyOrder(102L, 105L, 111L));
         assertThat(brDao.getEventsForItem(102, Rating.class),
-                   contains(Rating.create(13, 102, 3.5, 1000L),Rating.create(12, 102, 2.5, 1050L)));
+                   contains(Rating.create(13, 102, 3.5, 1000L), Rating.create(12, 102, 2.5, 1050L)));
         assertThat(brDao.getEventsForItem(105, Rating.class),
                    containsInAnyOrder(Rating.create(39, 105, 3.5, 1000L),
                                       Rating.create(41, 105, 2.5, 1400L)));
