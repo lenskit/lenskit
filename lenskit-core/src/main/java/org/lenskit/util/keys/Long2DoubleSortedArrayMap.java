@@ -55,7 +55,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
         int size = keys.size();
         values = new double[size];
         for (int i = 0; i < size; i++) {
-            values[i] = data.get(keys.getKey(i));
+            values[i] = vf.get(keys.getKey(i));
         }
     }
 
@@ -231,6 +231,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
             iter.skip(idx);
         }
 
+        @Override
         public boolean hasNext() {
             return iter.hasNext();
         }
@@ -255,6 +256,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
         IntBidirectionalIterator iter = IntIterators.fromTo(keys.getLowerBound(), keys.getUpperBound());
         IndirectEntry entry = new IndirectEntry(0);
 
+        @Override
         public boolean hasNext() {
             return iter.hasNext();
         }
