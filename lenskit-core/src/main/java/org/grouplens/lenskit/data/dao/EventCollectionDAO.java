@@ -61,6 +61,14 @@ public class EventCollectionDAO implements EventDAO {
     }
 
     /**
+     * Empty event collection DAO.
+     * @return An empty DAO.
+     */
+    public static EventDAO empty() {
+        return create(Collections.<Event>emptyList());
+    }
+
+    /**
      * Create a new data source from a collection of events.
      *
      * @param evts          The events collection to be used.

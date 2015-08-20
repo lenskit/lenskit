@@ -52,7 +52,10 @@ public class LenskitConfiguration extends AbstractConfigContext {
             ItemScorer.class,
             GlobalItemScorer.class,
             ItemRecommender.class,
-            GlobalItemRecommender.class
+            GlobalItemRecommender.class,
+            org.lenskit.api.ItemRecommender.class,
+            org.lenskit.api.ItemScorer.class,
+            org.lenskit.api.RatingPredictor.class
     };
 
     private final BindingFunctionBuilder bindings;

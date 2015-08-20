@@ -28,7 +28,9 @@ import org.lenskit.api.ResultMap;
 import org.lenskit.results.Results;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -67,5 +69,23 @@ public class LegacyRatingPredictorAdapter implements RatingPredictor {
             results.add(Results.create(e.getKey(), e.getValue()));
         }
         return Results.newResultMap(results);
+    }
+
+    public static class DynamicProvider implements Provider<LegacyRatingPredictorAdapter> {
+        private final org.grouplens.lenskit.RatingPredictor delegate;
+
+        @Inject
+        public DynamicProvider(@Nullable org.grouplens.lenskit.RatingPredictor old) {
+            delegate = old;
+        }
+
+        @Override
+        public LegacyRatingPredictorAdapter get() {
+            if (delegate == null) {
+                return null;
+            } else {
+                return new LegacyRatingPredictorAdapter(delegate);
+            }
+        }
     }
 }
