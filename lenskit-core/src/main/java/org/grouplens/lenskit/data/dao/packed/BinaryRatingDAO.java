@@ -25,6 +25,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -43,6 +44,7 @@ import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
+import org.lenskit.util.BinarySearch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -156,18 +158,12 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             return this;
         }
 
-        Rating r = new RatingBuilder().setUserId(0).setItemId(0).setRating(0).setTimestamp(timestamp).build();
+        List<Rating> ratingsList = getRatingList();
+        SearchBinaryRating search = new SearchBinaryRating( timestamp, ratingsList);
+        int idx = search.search(0, getRatingList().size());
 
-        int idx = Collections.binarySearch(getRatingList(), r, Events.TIMESTAMP_COMPARATOR);
+        idx = BinarySearch.resultToIndex(idx);
 
-        if (idx < 0) {
-            idx = -idx - 1;
-        } else {
-            while (getRatingList().get(idx).getTimestamp() >= timestamp) {
-                idx--;//will reach the position of timestamp < limitTimestamp
-            }
-            ++idx;//position of first timestamp >= limitTimestamp
-        }
         ByteBuffer data = ratingData.duplicate();
         data.limit(idx*header.getFormat().getRatingSize());
 
@@ -457,7 +453,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             itemTable = (BinaryIndexTable) in.readObject();
             limitIndex = in.readInt();
             limitTimestamp = in.readLong();
-
+;
             int dataLength = in.readInt();
             byte[] buf = new byte[4096];
             ByteBuffer data = ByteBuffer.allocateDirect(dataLength);
@@ -479,4 +475,21 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             return new BinaryRatingDAO(null, header, ratingData, userTable, itemTable,limitIndex, limitTimestamp);
         }
     }
+    private class SearchBinaryRating extends BinarySearch {
+
+        Long timeStamp;
+        List<Rating> ratingsList;
+        SearchBinaryRating (Long timeStmp, List<Rating> ratings ) {
+            timeStamp = timeStmp;
+            ratingsList = ratings;
+        }
+
+        protected int test (int pos) {
+            return timeStamp.compareTo(ratingsList.get(pos).getTimestamp());
+        }
+
+
+    }
+
 }
+
