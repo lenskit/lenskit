@@ -31,11 +31,12 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * A mapping that indexes keyed objects by their keys.  This structure works on objects that have an associated key,
- * such as recommendation results or ratings (keyed by user or item ID).  The key is extracted from an object by means
- * of a {@link KeyExtractor}.  This allows the objects to be stored directly, without separate storage for keys.  This
- * map stores objects in a list sorted by key, and looks them up with binary search.  Therefore, the key extractor
- * should generally be fast (e.g. just calling a getter), in order for this class to be performant.
+ * A map that allows objects with long keys to be looked up by key.
+ * This structure works on objects that have an associated key, such as recommendation results or ratings (keyed by user
+ * or item ID).  The key is extracted from an object by means of a {@link KeyExtractor}.  This allows the objects to be
+ * stored directly, without separate storage for keys.  This map stores objects in a list sorted by key, and looks them
+ * up with binary search.  Therefore, the key extractor should generally be fast (e.g. just calling a getter), in order
+ * for this class to be performant.
  */
 @Immutable
 public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implements Serializable {
@@ -46,6 +47,12 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
     private transient KeySet keySet;
     private transient EntrySet entrySet;
 
+    /**
+     * Create a new builder for a keyed object map.
+     * @param ex The key extractor.
+     * @param <T> The keyed object type.
+     * @return A builder for a keyed object map.
+     */
     public static <T> KeyedObjectMapBuilder<T> newBuilder(KeyExtractor<? super T> ex) {
         return new KeyedObjectMapBuilder<>(ex);
     }
