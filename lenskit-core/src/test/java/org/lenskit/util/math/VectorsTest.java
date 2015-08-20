@@ -23,7 +23,6 @@ package org.lenskit.util.math;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.junit.Test;
-import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 import java.util.Map;
@@ -62,7 +61,7 @@ public class VectorsTest {
     @Test
     public void testDotVectors() {
         for (Map<Long,Double> map: someMaps(longs(), doubles(-1000, 1000))) {
-            Long2DoubleMap m = LongUtils.asLong2DoubleMap(map);
+            Long2DoubleMap m = new Long2DoubleOpenHashMap(map);
             assertThat(Vectors.dotProduct(m, m),
                        equalTo(Vectors.sumOfSquares(m)));
             if (!m.isEmpty()) {

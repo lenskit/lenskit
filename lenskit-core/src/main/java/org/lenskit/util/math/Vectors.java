@@ -21,7 +21,6 @@
 package org.lenskit.util.math;
 
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
-import it.unimi.dsi.fastutil.longs.AbstractLong2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleSortedMap;
@@ -133,32 +132,88 @@ public final class Vectors {
      * Wrap a long-to-double function in another w/ the a different default return value.
      * @param f The function to wrap.
      * @param dft The new
-     * @return
+     * @return A function with a different default value.
      */
+    @SuppressWarnings("FloatingPointEquality")
     static Long2DoubleFunction adaptDefaultValue(final Long2DoubleFunction f, final double dft) {
         if (f.defaultReturnValue() == dft) {
             return f;
         }
 
-        return new AbstractLong2DoubleFunction() {
-            @Override
-            public double get(long l) {
-                if (f.containsKey(l)) {
-                    return f.get(l);
-                } else {
-                    return dft;
-                }
-            }
+        return new DftAdaptingL2DFunction(f, dft);
+    }
 
-            @Override
-            public boolean containsKey(long l) {
-                return f.containsKey(l);
-            }
+    private static class DftAdaptingL2DFunction implements Long2DoubleFunction {
+        private final Long2DoubleFunction delegate;
+        private final double dft;
 
-            @Override
-            public int size() {
-                return f.size();
+        public DftAdaptingL2DFunction(Long2DoubleFunction f, double dft) {
+            this.delegate = f;
+            this.dft = dft;
+        }
+
+        @Override
+        public double get(long l) {
+            if (delegate.containsKey(l)) {
+                return delegate.get(l);
+            } else {
+                return dft;
             }
-        };
+        }
+
+        @Override
+        public boolean containsKey(long l) {
+            return delegate.containsKey(l);
+        }
+
+        @Override
+        public int size() {
+            return delegate.size();
+        }
+
+        @Override
+        public double put(long key, double value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public double remove(long key) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void defaultReturnValue(double rv) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public double defaultReturnValue() {
+            return dft;
+        }
+
+        @Override
+        public Double put(Long key, Double value) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Double get(Object key) {
+            return delegate.get(key);
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            return delegate.containsKey(key);
+        }
+
+        @Override
+        public Double remove(Object key) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException();
+        }
     }
 }

@@ -50,12 +50,12 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
     }
 
     public Long2DoubleSortedArrayMap(Map<Long,Double> data) {
-        Long2DoubleMap wrapped = LongUtils.asLong2DoubleMap(data);
-        keys = LongKeyIndex.fromCollection(wrapped.keySet());
+        Long2DoubleFunction vf = LongUtils.asLong2DoubleFunction(data);
+        keys = LongKeyIndex.fromCollection(data.keySet());
         int size = keys.size();
         values = new double[size];
         for (int i = 0; i < size; i++) {
-            values[i] = wrapped.get(keys.getKey(i));
+            values[i] = data.get(keys.getKey(i));
         }
     }
 

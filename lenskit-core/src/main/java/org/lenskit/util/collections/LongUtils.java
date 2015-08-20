@@ -69,19 +69,25 @@ public final class LongUtils {
         }
     }
 
-    public static Long2DoubleMap asLong2DoubleMap(final Map<Long,Double> map) {
-        if (map instanceof Long2DoubleMap) {
-            return (Long2DoubleMap) map;
+    /**
+     * Create a long-to-double function from a map, casting if appropriate. Useful to allow unboxed access to maps that
+     * are really fastutil maps.
+     * @param map The map.
+     * @return A function backed by {@code map}, or {@code map} if it is a Fastutil map.
+     */
+    public static Long2DoubleFunction asLong2DoubleFunction(final Map<Long,Double> map) {
+        if (map instanceof Long2DoubleFunction) {
+            return (Long2DoubleFunction) map;
         } else {
-            return new Long2DoubleMapWrapper(map);
+            return new Long2DoubleFunctionWrapper(map);
         }
     }
 
     /**
-     * Get a Fastutil {@link it.unimi.dsi.fastutil.longs.LongSet} from a {@link java.util.Set} of longs.
+     * Get a Fastutil {@link LongSet} from a {@link java.util.Set} of longs.
      *
      * @param longs The set of longs.
-     * @return {@code longs} as a fastutil {@link it.unimi.dsi.fastutil.longs.LongSet}. If {@code longs} is already
+     * @return {@code longs} as a fastutil {@link LongSet}. If {@code longs} is already
      *         a LongSet, it is cast.
      */
     public static LongSet asLongSet(final Set<Long> longs) {
@@ -257,5 +263,4 @@ public final class LongUtils {
         return LongUtils.packedSet(selected);
 
     }
-
 }
