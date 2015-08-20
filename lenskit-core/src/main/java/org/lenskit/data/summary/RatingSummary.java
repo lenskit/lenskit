@@ -1,7 +1,7 @@
 package org.lenskit.data.summary;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.lenskit.util.keys.KeyExtractor;
+import org.lenskit.util.keys.KeyedObject;
 import org.lenskit.util.keys.KeyedObjectMap;
 
 import java.io.Serializable;
@@ -62,7 +62,7 @@ public class RatingSummary implements Serializable {
         return sum != null ? sum.getRatingCount() : 0;
     }
 
-    static class ItemSummary implements Serializable {
+    static class ItemSummary implements Serializable, KeyedObject {
         private static final long serialVersionUID = 1L;
 
         private final long id;
@@ -79,21 +79,17 @@ public class RatingSummary implements Serializable {
             return id;
         }
 
+        @Override
+        public long getKey() {
+            return id;
+        }
+
         public double getMeanRating() {
             return meanRating;
         }
 
         public int getRatingCount() {
             return ratingCount;
-        }
-    }
-
-    enum KeyEx implements KeyExtractor<ItemSummary> {
-        INSTANCE {
-            @Override
-            public long getKey(ItemSummary obj) {
-                return obj.getId();
-            }
         }
     }
 }

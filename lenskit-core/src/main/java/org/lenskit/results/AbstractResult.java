@@ -23,6 +23,7 @@ package org.lenskit.results;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.lenskit.api.Result;
+import org.lenskit.util.keys.KeyedObject;
 
 import javax.annotation.Nonnull;
 
@@ -30,7 +31,7 @@ import javax.annotation.Nonnull;
  * Base class for basic result types.  It provides storage for the ID and score, as well as helper methods for hashing
  * and equality checking.  This type does not directly enforce immutability, but subclasses should be immutable.
  */
-public abstract class AbstractResult implements Result {
+public abstract class AbstractResult implements Result, KeyedObject {
     protected long id;
     protected double score;
 
@@ -48,6 +49,11 @@ public abstract class AbstractResult implements Result {
      * Create a new, uninitialized result.
      */
     protected AbstractResult() {}
+
+    @Override
+    public long getKey() {
+        return getId();
+    }
 
     @Override
     public long getId() {

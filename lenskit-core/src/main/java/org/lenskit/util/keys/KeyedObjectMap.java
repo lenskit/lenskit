@@ -28,7 +28,10 @@ import org.lenskit.util.BinarySearch;
 
 import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 /**
  * A map that allows objects with long keys to be looked up by key.
@@ -55,6 +58,36 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
      */
     public static <T> KeyedObjectMapBuilder<T> newBuilder(KeyExtractor<? super T> ex) {
         return new KeyedObjectMapBuilder<>(ex);
+    }
+
+    /**
+     * Create a new builder for a keyed object map over a self-keying type.
+     * @param <T> The keyed object type.
+     * @return A builder for a keyed object map.
+     */
+    public static <T extends KeyedObject> KeyedObjectMapBuilder<T> newBuilder() {
+        return new KeyedObjectMapBuilder<>(Keys.selfExtractor());
+    }
+
+    /**
+     * Create a new keyed object map.
+     * @param objs A collection of objects to put in the map.
+     * @param <T> The keyed object type.
+     * @return A keyed object map of the objects in {@code objs}.
+     */
+    public static <T extends KeyedObject> KeyedObjectMap<T> create(Collection<? extends T> objs) {
+        return new KeyedObjectMap<>(objs, Keys.selfExtractor());
+    }
+
+    /**
+     * Create a new keyed object map.
+     * @param objs A collection of objects to put in the map.
+     * @param ex The key extractor.
+     * @param <T> The keyed object type.
+     * @return A keyed object map of the objects in {@code objs}.
+     */
+    public static <T> KeyedObjectMap<T> create(Collection<? extends T> objs, KeyExtractor<? super T> ex) {
+        return new KeyedObjectMap<>(objs, ex);
     }
 
     /**

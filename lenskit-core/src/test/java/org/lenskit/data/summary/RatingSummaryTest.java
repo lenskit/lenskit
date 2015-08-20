@@ -12,7 +12,7 @@ public class RatingSummaryTest {
     @Test
     public void testEmptySummary() {
         KeyedObjectMap<RatingSummary.ItemSummary> items =
-                KeyedObjectMap.newBuilder(RatingSummary.KeyEx.INSTANCE)
+                KeyedObjectMap.<RatingSummary.ItemSummary>newBuilder()
                               .build();
         RatingSummary sum = new RatingSummary(3.5, items);
         assertThat(sum.getGlobalMean(), equalTo(3.5));
@@ -25,7 +25,7 @@ public class RatingSummaryTest {
     public void testSummaryItem() {
         RatingSummary.ItemSummary item = new RatingSummary.ItemSummary(37, 3.9, 100);
         KeyedObjectMap<RatingSummary.ItemSummary> items =
-                KeyedObjectMap.newBuilder(RatingSummary.KeyEx.INSTANCE)
+                KeyedObjectMap.<RatingSummary.ItemSummary>newBuilder()
                               .add(item)
                               .build();
         RatingSummary sum = new RatingSummary(3.5, items);

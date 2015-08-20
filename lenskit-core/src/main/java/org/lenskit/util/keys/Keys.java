@@ -37,4 +37,17 @@ public final class Keys {
             }
         };
     }
+
+    public static KeyExtractor<KeyedObject> selfExtractor() {
+        return SelfExtractor.INSTANCE;
+    }
+
+    enum SelfExtractor implements KeyExtractor<KeyedObject> {
+        INSTANCE {
+            @Override
+            public long getKey(KeyedObject obj) {
+                return obj.getKey();
+            }
+        }
+    }
 }
