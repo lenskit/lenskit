@@ -18,16 +18,12 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.util.keys;
-
 /**
- * Interface for objects that can be identified by long key. This can be implemented by objects that have a natural
- * notion of a 'key', so that a separate key extractor is not required.
+ * Baseline predictors.
+ *
+ * <p>Baseline predictors are like rating predictors, but they provide an unboxed
+ * {@link org.grouplens.lenskit.vectors.SparseVector}-based interface and are
+ * guaranteed to be able to predict for all users and items.  They are used for
+ * things like normalizations and starting points for iterative methods.</p>
  */
-public interface KeyedObject {
-    /**
-     * Get the key for this object.
-     * @return A key identifying this object.
-     */
-    long getKey();
-}
+package org.lenskit.baseline;

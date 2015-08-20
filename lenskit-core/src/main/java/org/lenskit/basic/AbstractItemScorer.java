@@ -18,16 +18,39 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.util.keys;
+package org.lenskit.basic;
+
+import it.unimi.dsi.fastutil.longs.LongSets;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.api.Result;
+import org.lenskit.api.ResultMap;
+
+import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.Map;
 
 /**
- * Interface for objects that can be identified by long key. This can be implemented by objects that have a natural
- * notion of a 'key', so that a separate key extractor is not required.
+ * Base class to make item scorers easier to implement. Delegates all score methods to
+ * {@link #scoreWithDetails(long, Collection)}.
+ *
+ * @since 3.0
  */
-public interface KeyedObject {
+public abstract class AbstractItemScorer implements ItemScorer {
     /**
-     * Get the key for this object.
-     * @return A key identifying this object.
+     * {@inheritDoc}
+     *
+     * This implementation delegates to {@link #scoreWithDetails(long, Collection)}.
      */
-    long getKey();
+    @Override
+    public Result score(long user, long item) {
+        ResultMap results = scoreWithDetails(user, LongSets.singleton(item));
+        return results.get(item);
+    }
+
+    @Nonnull
+    @Override
+    public Map<Long, Double> score(long user, @Nonnull Collection<Long> items) {
+        ResultMap results = scoreWithDetails(user, items);
+        return results.scoreMap();
+    }
 }

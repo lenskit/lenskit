@@ -18,16 +18,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.util.keys;
+package org.lenskit.basic;
+
+import org.grouplens.grapht.annotation.AllowUnqualifiedMatch;
+import org.grouplens.lenskit.baseline.FallbackItemScorer;
+
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
- * Interface for objects that can be identified by long key. This can be implemented by objects that have a natural
- * notion of a 'key', so that a separate key extractor is not required.
+ * The primary scorer for a {@link FallbackItemScorer}.
+ *
+ * @since 1.1
  */
-public interface KeyedObject {
-    /**
-     * Get the key for this object.
-     * @return A key identifying this object.
-     */
-    long getKey();
+@Documented
+@Qualifier
+@AllowUnqualifiedMatch
+@Target({ElementType.METHOD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface PrimaryScorer {
 }

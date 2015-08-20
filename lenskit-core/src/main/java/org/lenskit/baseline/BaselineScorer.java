@@ -18,16 +18,24 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.util.keys;
+package org.lenskit.baseline;
+
+import org.grouplens.grapht.annotation.DefaultNull;
+
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
- * Interface for objects that can be identified by long key. This can be implemented by objects that have a natural
- * notion of a 'key', so that a separate key extractor is not required.
+ * Annotation for the baseline scorer of a stacked item scorer, or an item scorer used as a baseline
+ * in another component.  A baseline scorer should generally have full coverage (be able to predict
+ * for any item).
+ *
+ * @since 2.0
  */
-public interface KeyedObject {
-    /**
-     * Get the key for this object.
-     * @return A key identifying this object.
-     */
-    long getKey();
+@Documented
+@Qualifier
+@DefaultNull
+@Target({ElementType.METHOD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface BaselineScorer {
 }

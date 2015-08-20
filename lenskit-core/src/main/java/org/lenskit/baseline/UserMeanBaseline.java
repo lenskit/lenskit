@@ -18,16 +18,24 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.util.keys;
+package org.lenskit.baseline;
+
+import org.grouplens.grapht.annotation.DefaultImplementation;
+import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer;
+import org.grouplens.lenskit.baseline.UserMeanItemScorer;
+
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
- * Interface for objects that can be identified by long key. This can be implemented by objects that have a natural
- * notion of a 'key', so that a separate key extractor is not required.
+ * Baseline scores for user mean ratings.
+ *
+ * @see UserMeanItemScorer
  */
-public interface KeyedObject {
-    /**
-     * Get the key for this object.
-     * @return A key identifying this object.
-     */
-    long getKey();
+@Documented
+@Qualifier
+@DefaultImplementation(GlobalMeanRatingItemScorer.class)
+@Target({ElementType.METHOD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface UserMeanBaseline {
 }

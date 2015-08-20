@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.baseline;
 
+import org.grouplens.grapht.annotation.AliasFor;
 import org.grouplens.grapht.annotation.DefaultDouble;
 import org.grouplens.lenskit.core.Parameter;
 
@@ -42,5 +43,7 @@ import java.lang.annotation.*;
 @Qualifier
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
+@AliasFor(org.lenskit.baseline.MeanDamping.class)
+@Deprecated
 public @interface MeanDamping {
 }
