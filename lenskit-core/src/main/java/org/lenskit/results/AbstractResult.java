@@ -91,7 +91,7 @@ public abstract class AbstractResult implements Result, KeyedObject {
      * @return A hash code builder that has the ID and score already appended.
      */
     protected HashCodeBuilder startHashCode() {
-        return new HashCodeBuilder().append(id).append(score);
+        return startHashCode(this);
     }
 
     /**
@@ -102,7 +102,29 @@ public abstract class AbstractResult implements Result, KeyedObject {
      * @return An equality builder, that has the ID and score of this result and `r` already appended to it.
      */
     protected EqualsBuilder startEquality(Result r) {
-        return new EqualsBuilder().append(id, r.getId())
-                                  .append(score, r.getScore());
+        return startEquality(this, r);
+    }
+
+    /**
+     * Create an equality builder, populated with the ID and score.  Subclasses can use this as a starting point for
+     * checking equality.
+     *
+     * @param r The other result.
+     * @return An equality builder, that has the ID and score of this result and `r` already appended to it.
+     */
+    public static EqualsBuilder startEquality(Result r1, Result r2) {
+        return new EqualsBuilder().append(r1.getId(), r2.getId())
+                                  .append(r1.getScore(), r2.getScore());
+    }
+
+    /**
+     * Create an equality builder, populated with the ID and score.  Subclasses can use this as a starting point for
+     * checking equality.
+     *
+     * @param r The other result.
+     * @return An equality builder, that has the ID and score of this result and `r` already appended to it.
+     */
+    public static HashCodeBuilder startHashCode(Result r) {
+        return new HashCodeBuilder().append(r.getId()).append(r.getScore());
     }
 }
