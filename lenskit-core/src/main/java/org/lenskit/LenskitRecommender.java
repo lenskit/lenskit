@@ -90,7 +90,7 @@ public class LenskitRecommender implements Recommender {
      */
     public <T> T get(Class<? extends Annotation> qual, Class<T> cls) {
         try {
-            return injector.getInstance(qual, cls);
+            return injector.tryGetInstance(qual, cls);
         } catch (InjectionException e) {
             throw new RuntimeException("error instantiating component", e);
         }
