@@ -24,11 +24,9 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.baseline.BaselineScorer;
 import org.grouplens.lenskit.baseline.PrimaryScorer;
 import org.grouplens.lenskit.baseline.ScoreSource;
-import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -45,9 +43,6 @@ import javax.inject.Inject;
  *
  * <p>If a baseline predictor is provided, then it is used to supply predictions that the item
  * scorer could not.
- *
- * <p>This class has a provider {@link SimpleRatingPredictor.Provider} that is the default provider
- * for {@link RatingPredictor}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
@@ -124,42 +119,6 @@ public final class SimpleRatingPredictor extends AbstractRatingPredictor {
 
         if (preferenceDomain != null) {
             preferenceDomain.clampVector(scores);
-        }
-    }
-
-    /**
-     * An intelligent provider for simple rating predictors. It provides a simple rating predictor
-     * if there are an {@link ItemScorer} and {@link UserEventDAO} available, and returns
-     * {@code null} otherwise.  This is the default provider for {@link RatingPredictor}.
-     */
-    public static class Provider implements javax.inject.Provider<RatingPredictor> {
-        private final ItemScorer scorer;
-        private final ItemScorer baseline;
-        private final PreferenceDomain domain;
-
-        /**
-         * Construct an automatic provider.
-         *
-         * @param s The item scorer.  If {@code null}, no rating predictor will be supplied.
-         * @param bp The baseline predictor, if configured.
-         * @param dom The preference domain, if known.
-         */
-        @Inject
-        public Provider(@Nullable ItemScorer s,
-                        @Nullable @BaselineScorer ItemScorer bp,
-                        @Nullable PreferenceDomain dom) {
-            scorer = s;
-            baseline = bp;
-            domain = dom;
-        }
-
-        @Override
-        public RatingPredictor get() {
-            if (scorer == null) {
-                return null;
-            } else {
-                return new SimpleRatingPredictor(scorer, baseline, domain);
-            }
         }
     }
 }
