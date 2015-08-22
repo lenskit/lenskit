@@ -1,0 +1,14 @@
+repositories {
+    maven {
+        url testRepoURI
+    }
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.grouplens.lenskit:lenskit-all:$lenskitVersion"
+    runtime "org.grouplens.lenskit:lenskit-cli:$lenskitVersion"
+}

@@ -1,16 +1,5 @@
 apply plugin: 'java'
-
-repositories {
-    maven {
-        url testRepoURI
-    }
-    mavenCentral()
-}
-
-dependencies {
-    compile "org.grouplens.lenskit:lenskit-all:$lenskitVersion"
-    runtime "org.grouplens.lenskit:lenskit-cli:$lenskitVersion"
-}
+apply from: 'common.gradle'
 
 task recommend(type: JavaExec) {
     dependsOn classes

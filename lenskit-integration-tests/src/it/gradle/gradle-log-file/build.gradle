@@ -17,18 +17,7 @@ import static org.hamcrest.Matchers.*
 
 apply plugin: 'java'
 apply plugin: 'lenskit'
-
-repositories {
-    maven {
-        url testRepoURI
-    }
-    mavenCentral()
-}
-
-dependencies {
-    compile "org.grouplens.lenskit:lenskit-all:$lenskitVersion"
-    runtime "org.grouplens.lenskit:lenskit-cli:$lenskitVersion"
-}
+apply from: 'common.gradle'
 
 task version(type: Version) {
     logFile "$buildDir/version.log"

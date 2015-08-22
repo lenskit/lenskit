@@ -12,18 +12,9 @@ buildscript {
 
 import org.grouplens.lenskit.gradle.*
 
+apply plugin: 'java'
 apply plugin: 'lenskit'
-
-repositories {
-    maven {
-        url testRepoURI
-    }
-    mavenCentral()
-}
-
-configurations {
-    lenskit
-}
+apply from: 'common.gradle'
 
 dependencies {
     lenskit "org.grouplens.lenskit:lenskit-cli:$lenskitVersion"
