@@ -62,4 +62,9 @@ class ItemScorerCompatWrapper implements org.grouplens.lenskit.ItemScorer {
             scores.set(r.getId(), r.getScore());
         }
     }
+
+    @Override
+    public String toString() {
+        return "CompatWrapper{" + delegate + "}";
+    }
 }

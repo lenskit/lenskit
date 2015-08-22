@@ -66,4 +66,9 @@ class ItemRecommenderCompatWrapper implements org.grouplens.lenskit.ItemRecommen
     public List<ScoredId> recommend(long user, int n, @Nullable Set<Long> candidates, @Nullable Set<Long> exclude) {
         return makeResultList(delegate.recommendWithDetails(user, n, candidates, exclude));
     }
+
+    @Override
+    public String toString() {
+        return "CompatWrapper{" + delegate + "}";
+    }
 }
