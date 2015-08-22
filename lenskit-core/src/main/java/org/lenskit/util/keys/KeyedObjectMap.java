@@ -28,10 +28,7 @@ import org.lenskit.util.BinarySearch;
 
 import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * A map that allows objects with long keys to be looked up by key.
@@ -42,7 +39,7 @@ import java.util.NoSuchElementException;
  * for this class to be performant.
  */
 @Immutable
-public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implements Serializable {
+public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implements Serializable, Iterable<T> {
     private static final long serialVersionUID = 1L;
 
     private final KeyExtractor<? super T> extractor;
@@ -133,7 +130,7 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
         return new AbstractObjectCollection<T>() {
             @Override
             public ObjectIterator<T> iterator() {
-                return ObjectIterators.asObjectIterator(data.iterator());
+                return new ValueIterator(data.listIterator());
             }
 
             @Override
@@ -141,6 +138,11 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
                 return data.size();
             }
         };
+    }
+
+    @Override
+    public ObjectBidirectionalIterator<T> iterator() {
+        return new ValueIterator(data.listIterator());
     }
 
     @Override
@@ -383,6 +385,34 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
         @Override
         protected int test(int pos) {
             return Longs.compare(target, extractor.getKey(data.get(pos)));
+        }
+    }
+
+    private class ValueIterator extends AbstractObjectBidirectionalIterator<T> {
+        private final ListIterator<T> delegate;
+
+        public ValueIterator(ListIterator<T> iter) {
+            delegate = iter;
+        }
+
+        @Override
+        public T previous() {
+            return delegate.previous();
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return delegate.hasPrevious();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return delegate.hasNext();
+        }
+
+        @Override
+        public T next() {
+            return delegate.next();
         }
     }
 }
