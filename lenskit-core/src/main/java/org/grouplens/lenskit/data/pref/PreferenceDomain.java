@@ -21,6 +21,8 @@
 package org.grouplens.lenskit.data.pref;
 
 import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
+import it.unimi.dsi.fastutil.longs.Long2DoubleSortedMap;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.grapht.annotation.DefaultNull;
@@ -28,9 +30,13 @@ import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.specs.data.PrefDomainSpec;
+import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
+import org.lenskit.util.keys.LongKeyIndex;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -140,6 +146,18 @@ public final class PreferenceDomain implements Serializable {
             final double v = ve.getValue();
             vec.set(ve, clampValue(v));
         }
+    }
+
+    public Long2DoubleSortedMap clampVector(Map<Long,Double> scores) {
+        LongKeyIndex keys = LongKeyIndex.fromCollection(scores.keySet());
+        Long2DoubleFunction baseVals = LongUtils.asLong2DoubleFunction(scores);
+        double[] values = new double[keys.size()];
+        for (int i = 0; i < values.length; i++) {
+            long item = keys.getKey(i);
+            values[i] = clampValue(baseVals.get(item));
+        }
+
+        return Long2DoubleSortedArrayMap.wrap(keys, values);
     }
 
     @Override

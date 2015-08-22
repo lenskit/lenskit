@@ -20,10 +20,16 @@
  */
 package org.grouplens.lenskit.data.pref;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.junit.Test;
 import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.data.PrefDomainSpec;
 
+import java.util.Map;
+
+import static net.java.quickcheck.generator.CombinedGeneratorsIterables.someMaps;
+import static net.java.quickcheck.generator.PrimitiveGenerators.doubles;
+import static net.java.quickcheck.generator.PrimitiveGenerators.longs;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
@@ -76,5 +82,25 @@ public class PreferenceDomainTest {
         assertThat(dom.getMinimum(), equalTo(1.0));
         assertThat(dom.getMaximum(), equalTo(10.0));
         assertThat(dom.getPrecision(), equalTo(0.2));
+    }
+
+    @Test
+    public void testClampValue()  {
+        PreferenceDomain d = PreferenceDomain.fromString("[1.0,5.0]");
+        for (Map<Long,Double> vec: someMaps(longs(), doubles(0.0, 8.0))) {
+            Long2DoubleMap clamped = d.clampVector(vec);
+            assertThat(clamped.keySet(), equalTo(vec.keySet()));
+
+            for (Long k: vec.keySet()) {
+                double v = vec.get(k);
+                if (v < 1.0) {
+                    assertThat(clamped, hasEntry(k, 1.0));
+                } else if (v > 5.0) {
+                    assertThat(clamped, hasEntry(k, 5.0));
+                } else {
+                    assertThat(clamped, hasEntry(k, v));
+                }
+            }
+        }
     }
 }
