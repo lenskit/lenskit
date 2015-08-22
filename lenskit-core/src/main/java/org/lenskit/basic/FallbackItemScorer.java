@@ -33,7 +33,9 @@ import org.lenskit.baseline.BaselineScorer;
 import org.lenskit.results.BasicResultMap;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -121,4 +123,28 @@ public class FallbackItemScorer extends AbstractItemScorer {
         return baselineScorer;
     }
 
+    /**
+     * An item scorer provider for opportunistically creating fallback scorers.  If a baseline scorer is configured,
+     * this provider returns a fallback scorer that uses it; otherwise, it just returns the primary scorer.
+     */
+    public static class DynamicProvider implements Provider<ItemScorer> {
+        private final ItemScorer primary;
+        private final ItemScorer fallback;
+
+        @Inject
+        public DynamicProvider(@PrimaryScorer ItemScorer prim,
+                               @Nullable @BaselineScorer ItemScorer fb) {
+            primary = prim;
+            fallback = fb;
+        }
+
+        @Override
+        public ItemScorer get() {
+            if (fallback == null) {
+                return primary;
+            } else {
+                return new FallbackItemScorer(primary, fallback);
+            }
+        }
+    }
 }
