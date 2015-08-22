@@ -20,6 +20,7 @@
  */
 package org.lenskit.api;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
@@ -32,6 +33,14 @@ public interface ResultMap extends Map<Long,Result>, Iterable<Result> {
      * @return A map view of this result set.
      */
     Map<Long,Double> scoreMap();
+
+    /**
+     * Get a result without boxing the key.
+     * @param key The item ID.
+     * @return The result, or {@code null} if the key is not in the map.
+     */
+    @Nullable
+    Result get(long key);
 
     /**
      * Get the score associated with an ID.
