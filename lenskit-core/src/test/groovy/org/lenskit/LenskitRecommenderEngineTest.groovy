@@ -25,7 +25,6 @@ import org.grouplens.grapht.Dependency
 import org.grouplens.grapht.graph.DAGNode
 import org.grouplens.grapht.reflect.Satisfaction
 import org.grouplens.grapht.reflect.internal.InstanceSatisfaction
-import org.grouplens.grapht.solver.DesireChain
 import org.grouplens.lenskit.RecommenderBuildException
 import org.grouplens.lenskit.core.*
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
@@ -40,15 +39,13 @@ import org.grouplens.lenskit.util.io.CompressionMode
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
+import org.lenskit.LenskitRecommender
+import org.lenskit.LenskitRecommenderEngine
+import org.lenskit.LenskitRecommenderEngineBuilder
 import org.lenskit.api.ItemRecommender
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.BaselineScorer
-import org.lenskit.basic.ConstantItemScorer
-import org.lenskit.basic.FallbackItemScorer
-import org.lenskit.basic.PrecomputedItemScorer
-import org.lenskit.basic.PrimaryScorer
-import org.lenskit.basic.SimpleRatingPredictor
-import org.lenskit.basic.TopNItemRecommender
+import org.lenskit.basic.*
 
 import javax.inject.Inject
 import javax.inject.Provider
