@@ -46,7 +46,7 @@ public class BasicResultMap extends AbstractLong2ObjectMap<Result> implements Le
      * Create a new result map from a collection of results.
      * @param objs The results.
      */
-    public BasicResultMap(Collection<? extends Result> objs) {
+    public BasicResultMap(Iterable<? extends Result> objs) {
         delegate = new KeyedObjectMap<>(objs, Results.keyExtractor());
     }
 

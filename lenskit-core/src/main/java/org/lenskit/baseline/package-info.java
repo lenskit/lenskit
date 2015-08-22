@@ -19,11 +19,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 /**
- * Baseline predictors.
- *
- * <p>Baseline predictors are like rating predictors, but they provide an unboxed
- * {@link org.grouplens.lenskit.vectors.SparseVector}-based interface and are
- * guaranteed to be able to predict for all users and items.  They are used for
- * things like normalizations and starting points for iterative methods.</p>
+ * Baseline scorers.  This package provides basic mean baselines for scoring items in simple ways.
  */
 package org.lenskit.baseline;

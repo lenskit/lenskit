@@ -20,7 +20,9 @@
  */
 package org.lenskit.data.summary;
 
+import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
+import org.grouplens.lenskit.data.dao.EventDAO;
 import org.lenskit.util.keys.KeyedObject;
 import org.lenskit.util.keys.KeyedObjectMap;
 
@@ -28,8 +30,11 @@ import java.io.Serializable;
 
 /**
  * A summary of the ratings data.
+ *
+ * @since 3.0
  */
 @Shareable
+@DefaultProvider(RatingSummaryBuilder.class)
 public class RatingSummary implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -44,6 +49,16 @@ public class RatingSummary implements Serializable {
     RatingSummary(double mean, KeyedObjectMap<ItemSummary> items) {
         globalMean = mean;
         itemSummaries = items;
+    }
+
+    /**
+     * Create a rating summary from an event DAO. This uses {@link FastRatingSummaryBuilder} and is therefore efficient
+     * but does not handle unrate events.
+     * @param dao The events.
+     * @return The rating summary.
+     */
+    public static RatingSummary create(EventDAO dao) {
+        return new FastRatingSummaryBuilder(dao).get();
     }
 
     public double getGlobalMean() {
@@ -86,12 +101,12 @@ public class RatingSummary implements Serializable {
         private static final long serialVersionUID = 1L;
 
         private final long id;
-        private final double meanRating;
+        private final double sumOfRatings;
         private final int ratingCount;
 
-        public ItemSummary(long item, double mean, int count) {
+        public ItemSummary(long item, double sum, int count) {
             id = item;
-            meanRating = mean;
+            sumOfRatings = sum;
             ratingCount = count;
         }
 
@@ -105,7 +120,7 @@ public class RatingSummary implements Serializable {
         }
 
         public double getMeanRating() {
-            return meanRating;
+            return sumOfRatings;
         }
 
         public int getRatingCount() {

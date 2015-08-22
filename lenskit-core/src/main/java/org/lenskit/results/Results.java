@@ -106,7 +106,7 @@ public final class Results {
      * @return The result list.
      */
     @Nonnull
-    public static ResultMap newResultMap(@Nonnull List<? extends Result> results) {
+    public static ResultMap newResultMap(@Nonnull Iterable<? extends Result> results) {
         return new BasicResultMap(results);
     }
 

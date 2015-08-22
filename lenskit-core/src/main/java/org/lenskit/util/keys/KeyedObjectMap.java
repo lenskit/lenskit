@@ -86,7 +86,7 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
      * @param <T> The keyed object type.
      * @return A keyed object map of the objects in {@code objs}.
      */
-    public static <T> KeyedObjectMap<T> create(Collection<? extends T> objs, KeyExtractor<? super T> ex) {
+    public static <T> KeyedObjectMap<T> create(Iterable<? extends T> objs, KeyExtractor<? super T> ex) {
         return new KeyedObjectMap<>(objs, ex);
     }
 
@@ -94,12 +94,12 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
      * Create a new keyed object map from a collection of data.
      * @param objs The input data.
      */
-    public KeyedObjectMap(Collection<? extends T> objs, KeyExtractor<? super T> ex) {
+    public KeyedObjectMap(Iterable<? extends T> objs, KeyExtractor<? super T> ex) {
         this(objs, ex, false);
     }
 
     @SuppressWarnings("unchecked")
-    private KeyedObjectMap(Collection<? extends T> objs, KeyExtractor<? super T> ex, boolean sorted) {
+    private KeyedObjectMap(Iterable<? extends T> objs, KeyExtractor<? super T> ex, boolean sorted) {
         if (sorted) {
             if (objs instanceof ImmutableList) {
                 data = (ImmutableList<T>) objs;
@@ -107,7 +107,7 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
                 data = ImmutableList.copyOf(objs);
             }
         } else {
-            data = Keys.keyOrdering(ex).immutableSortedCopy((Collection<T>) objs);
+            data = Keys.keyOrdering(ex).immutableSortedCopy((Iterable<T>) objs);
         }
         extractor = ex;
     }
