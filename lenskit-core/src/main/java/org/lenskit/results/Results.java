@@ -25,14 +25,17 @@ import com.google.common.base.Function;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.api.ResultMap;
 import org.lenskit.util.keys.KeyExtractor;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Utility functions for working with results.
@@ -63,6 +66,16 @@ public final class Results {
         } else {
             return create(r.getId(), r.getScore());
         }
+    }
+
+    /**
+     * Create a rescored result.
+     * @param r The result to score.
+     * @param s The new score.
+     * @return A {@link RescoredResult} that wraps {@code r} with a new score of {@code s}.
+     */
+    public static RescoredResult rescore(Result r, double s) {
+        return new RescoredResult(r, s);
     }
 
     /**
@@ -120,6 +133,28 @@ public final class Results {
     }
 
     /**
+     * Convert a map entry to a basic result.
+     * @param entry The map entry.
+     * @return The basic result.
+     */
+    public static BasicResult fromEntry(Map.Entry<Long,Double> entry) {
+        if (entry instanceof Long2DoubleMap.Entry) {
+            Long2DoubleMap.Entry e = (Long2DoubleMap.Entry) entry;
+            return create(e.getLongKey(), e.getDoubleValue());
+        } else {
+            return create(entry.getKey(), entry.getValue());
+        }
+    }
+
+    /**
+     * Function to convert map entries to basic results.
+     * @return A function that converts map entries to basic results.
+     */
+    public static Function<Map.Entry<Long,Double>,Result> fromEntryFunction() {
+        return FromEntryFunction.INSTANCE;
+    }
+
+    /**
      * An equivalence relation that considers objects to be equal if they are equal after being converted to
      * basic results (that is, their IDs and scores are equal).
      * @return The equivalence relation.
@@ -157,6 +192,15 @@ public final class Results {
             @Override
             public BasicResult apply(Result result) {
                 return basicCopy(result);
+            }
+        }
+    }
+    private enum FromEntryFunction implements Function<Map.Entry<Long,Double>,Result> {
+        INSTANCE {
+            @Nullable
+            @Override
+            public Result apply(Map.Entry<Long, Double> input) {
+                return input != null ? fromEntry(input) : null;
             }
         }
     }
