@@ -40,9 +40,6 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven {
-            url 'https://oss.sonatype.org/content/repositories/snapshots/'
-        }
     }
     dependencies {
         classpath 'net.elehack.gradle:gradle-util:0.3'
@@ -124,6 +121,15 @@ task installForTesting(type: Upload) {
         }
     }
     configuration = configurations.archives
+}
+// enforce ordering on the testing-install operation for parallel builds
+// FIXME enforce ordering between adjacent projects
+afterEvaluate {
+    def pdeps = configurations.runtime.allDependencies.withType(ProjectDependency)
+    def pdNames = pdeps*.dependencyProject*.path
+    pdNames.each {
+        installForTesting.mustRunAfter "$it:installForTesting"
+    }
 }
 
 uploadArchives {

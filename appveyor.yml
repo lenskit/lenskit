@@ -18,7 +18,7 @@ install:
 - activate lenskit
 - gradlew.bat ciPrep
 build_script:
-- gradlew.bat ciBuild
+- gradlew.bat ciBuild --parallel
 test_script:
 - gradlew.bat check -Pjavadoc.skip=true
 deploy: off

@@ -16,7 +16,7 @@ cache:
 before_install:
 - git fetch --depth=10000 origin
 install: ./gradlew ciPrep --stacktrace
-script: ./gradlew ciTest --stacktrace
+script: ./gradlew ciTest --stacktrace --parallel
 env:
   global:
   - TERM=dumb
