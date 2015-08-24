@@ -1,6 +1,6 @@
 /*
  * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2014 Regents of the University of Minnesota and contributors
+ * Copyright 2010-2014 LensKit Contributors.  See CONTRIBUTORS.md.
  * Work on LensKit has been funded by the National Science Foundation under
  * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
  *
@@ -18,25 +18,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.lenskit.mf.funksvd;
 
+import org.grouplens.grapht.annotation.DefaultDouble;
+import org.grouplens.lenskit.core.Parameter;
 
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
-import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.BaselineScorer
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
-import org.grouplens.lenskit.baseline.UserMeanBaseline
-import org.grouplens.lenskit.baseline.UserMeanItemScorer
-import org.grouplens.lenskit.iterative.IterationCount
-import org.lenskit.mf.funksvd.FeatureCount
-import org.lenskit.mf.funksvd.FunkSVDItemScorer
-
-dumpGraph {
-    output "${config.analysisDir}/funksvd.dot"
-    algorithm {
-        bind ItemScorer to FunkSVDItemScorer
-        bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
-        bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
-        set IterationCount to 125
-        set FeatureCount to 25
-    }
+/**
+ * The initial value for each feature.
+ */
+@Documented
+@DefaultDouble(0.1)
+@Parameter(Double.class)
+@Qualifier
+@Target({ElementType.METHOD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface InitialFeatureValue {
 }

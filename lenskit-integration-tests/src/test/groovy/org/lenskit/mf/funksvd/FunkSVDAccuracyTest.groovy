@@ -18,56 +18,49 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.predict.ordrec;
+package org.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.RatingPredictor;
+import org.grouplens.lenskit.config.ConfigHelpers;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.iterative.IterationCount;
-import org.lenskit.mf.funksvd.FeatureCount;
-import org.lenskit.mf.funksvd.FunkSVDItemScorer;
 import org.grouplens.lenskit.test.CrossfoldTestSuite;
-import org.grouplens.lenskit.util.table.Table;
-import org.junit.Ignore;
-import org.lenskit.api.ItemScorer;
-import org.lenskit.baseline.*;
-import org.lenskit.transform.quantize.PreferenceDomainQuantizer;
-import org.lenskit.transform.quantize.Quantizer;
+import org.grouplens.lenskit.util.table.Table
+import org.lenskit.api.ItemScorer
+import org.lenskit.baseline.BaselineScorer
+import org.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.baseline.MeanDamping
+import org.lenskit.baseline.UserMeanBaseline
+import org.lenskit.baseline.UserMeanItemScorer;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.closeTo;
+import static org.junit.Assert.assertThat;
 
 /**
- * Do major tests on the OrdRec recommender.
+ * Do major tests on the FunkSVD recommender.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@Ignore("disabled until further testing done")
-public class OrdRecAccuracyTest extends CrossfoldTestSuite {
+public class FunkSVDAccuracyTest extends CrossfoldTestSuite {
     @SuppressWarnings("unchecked")
     @Override
     protected void configureAlgorithm(LenskitConfiguration config) {
-        config.bind(ItemScorer.class)
-              .to(FunkSVDItemScorer.class);
-        config.bind(BaselineScorer.class, ItemScorer.class)
-              .to(UserMeanItemScorer.class);
-        config.bind(UserMeanBaseline.class, ItemScorer.class)
-              .to(ItemMeanRatingItemScorer.class);
-        config.within(BaselineScorer.class, ItemScorer.class)
-              .set(MeanDamping.class)
-              .to(10);
-        config.set(FeatureCount.class).to(25);
-        config.set(IterationCount.class).to(125);
-        config.bind(RatingPredictor.class)
-              .to(OrdRecRatingPredictor.class);
-        config.bind(Quantizer.class)
-              .to(PreferenceDomainQuantizer.class);
+        ConfigHelpers.configure(config) {
+            bind ItemScorer to FunkSVDItemScorer
+            bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
+            bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
+            within (BaselineScorer, ItemScorer) {
+                set MeanDamping to 10
+            }
+            set FeatureCount to 25
+            set IterationCount to 125
+        }
     }
 
     @Override
     protected void checkResults(Table table) {
         assertThat(table.column("MAE.ByRating").average(),
-                   closeTo(0.74, 0.025));
+                   closeTo(0.74d, 0.025d))
         assertThat(table.column("RMSE.ByUser").average(),
-                   closeTo(0.92 , 0.05));
+                   closeTo(0.92d, 0.05d))
     }
 }
