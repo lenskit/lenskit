@@ -24,6 +24,9 @@ import org.grouplens.lenskit.core.LenskitConfiguration
 import org.grouplens.lenskit.data.dao.ItemDAO
 import org.grouplens.lenskit.test.ML100KTestSuite
 
+/**
+ * Test FunkSVD with a subset of the data.
+ */
 class FunkSVDSubsetAccuracyTest extends FunkSVDAccuracyTest {
     @Override
     protected void configureAlgorithm(LenskitConfiguration config) {
