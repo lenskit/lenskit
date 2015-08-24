@@ -20,16 +20,24 @@
  */
 package org.grouplens.lenskit.mf.svd;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.apache.commons.math3.linear.RealVector;
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.baseline.BaselineScorer;
-import org.grouplens.lenskit.basic.AbstractItemScorer;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.api.Result;
+import org.lenskit.api.ResultMap;
+import org.lenskit.baseline.BaselineScorer;
+import org.lenskit.basic.AbstractItemScorer;
+import org.lenskit.results.Results;
+import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Item scorer using biased matrix factorization.  This implements SVD-style item scorers.
@@ -69,22 +77,31 @@ public class BiasedMFItemScorer extends AbstractItemScorer {
         return model.getUserVector(user);
     }
 
+    public MFModel getModel() {
+        return model;
+    }
+
+    @Nonnull
     @Override
-    public void score(long user, @Nonnull MutableSparseVector scores) {
-        baseline.score(user, scores);
+    public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
+        Long2DoubleFunction base = LongUtils.asLong2DoubleFunction(baseline.score(user, items));
 
         RealVector uvec = getUserPreferenceVector(user);
         if (uvec == null) {
-            return;
+            return Results.newResultMap();
         }
 
-        // scores is now prepopulated with biases, vector is loaded
-        for (VectorEntry e: scores) {
-            long item = e.getKey();
+        List<Result> results = new ArrayList<>(items.size());
+        LongIterator iter = LongIterators.asLongIterator(items.iterator());
+        while (iter.hasNext()) {
+            long item = iter.nextLong();
             RealVector ivec = model.getItemVector(item);
             if (ivec != null) {
-                scores.set(e, kernel.apply(e.getValue(), uvec, ivec));
+                double score = kernel.apply(base.get(item), uvec, ivec);
+                results.add(Results.create(item, score));
             }
         }
+
+        return Results.newResultMap(results);
     }
 }

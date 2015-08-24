@@ -20,8 +20,6 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.baseline.BaselineScorer;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
@@ -29,6 +27,8 @@ import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.baseline.BaselineScorer;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;

@@ -20,10 +20,10 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;

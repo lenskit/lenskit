@@ -20,25 +20,27 @@
  */
 package org.grouplens.lenskit.mf.funksvd
 
-import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.RecommenderBuildException
-import org.grouplens.lenskit.baseline.*
 import org.grouplens.lenskit.config.ConfigHelpers
-import org.grouplens.lenskit.core.LenskitRecommender
-import org.grouplens.lenskit.core.LenskitRecommenderEngine
 import org.grouplens.lenskit.core.ModelDisposition
 import org.grouplens.lenskit.data.dao.ItemDAO
 import org.grouplens.lenskit.iterative.IterationCount
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.junit.Test
+import org.lenskit.LenskitRecommender
+import org.lenskit.LenskitRecommenderEngine
+import org.lenskit.api.ItemScorer
+import org.lenskit.baseline.BaselineScorer
+import org.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.baseline.MeanDamping
+import org.lenskit.baseline.UserMeanBaseline
+import org.lenskit.baseline.UserMeanItemScorer
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
 /**
- * Do major tests on the FunkSVD recommender.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Do major infrastructure tests on the FunkSVD recommender.
  */
 public class FunkSVDBuildSerializeTest extends ML100KTestSuite {
     def config = ConfigHelpers.load {

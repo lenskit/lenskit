@@ -20,21 +20,21 @@
  */
 package org.grouplens.lenskit.predict.ordrec;
 
-import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.baseline.*;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.mf.funksvd.FeatureCount;
 import org.grouplens.lenskit.mf.funksvd.FunkSVDItemScorer;
 import org.grouplens.lenskit.test.CrossfoldTestSuite;
-import org.lenskit.transform.quantize.PreferenceDomainQuantizer;
-import org.lenskit.transform.quantize.Quantizer;
 import org.grouplens.lenskit.util.table.Table;
 import org.junit.Ignore;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.baseline.*;
+import org.lenskit.transform.quantize.PreferenceDomainQuantizer;
+import org.lenskit.transform.quantize.Quantizer;
 
-import static org.hamcrest.Matchers.closeTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 /**
  * Do major tests on the OrdRec recommender.

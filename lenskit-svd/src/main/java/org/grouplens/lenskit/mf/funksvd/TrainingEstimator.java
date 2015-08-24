@@ -20,15 +20,16 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.apache.commons.math3.linear.RealVector;
-import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.util.collections.LongUtils;
 
 import java.util.Collection;
 
@@ -61,8 +62,7 @@ public final class TrainingEstimator {
         while (userIter.hasNext()) {
             long uid = userIter.nextLong();
             SparseVector rvector = snap.userRatingVector(uid);
-            MutableSparseVector blpreds = MutableSparseVector.create(rvector.keySet());
-            baseline.score(uid, blpreds);
+            Long2DoubleFunction blpreds = LongUtils.asLong2DoubleFunction(baseline.score(uid, rvector.keySet()));
 
             for (IndexedPreference r : snap.getUserRatings(uid)) {
                 estimates[r.getIndex()] = blpreds.get(r.getItemId());

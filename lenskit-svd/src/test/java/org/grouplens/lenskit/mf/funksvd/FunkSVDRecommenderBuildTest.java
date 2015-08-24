@@ -20,19 +20,8 @@
  */
 package org.grouplens.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.baseline.BaselineScorer;
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer;
-import org.grouplens.lenskit.baseline.UserMeanBaseline;
-import org.grouplens.lenskit.baseline.UserMeanItemScorer;
-import org.grouplens.lenskit.basic.SimpleRatingPredictor;
-import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.LenskitRecommender;
-import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
@@ -44,6 +33,17 @@ import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.lenskit.LenskitRecommender;
+import org.lenskit.LenskitRecommenderEngine;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.api.RatingPredictor;
+import org.lenskit.api.Recommender;
+import org.lenskit.baseline.BaselineScorer;
+import org.lenskit.baseline.ItemMeanRatingItemScorer;
+import org.lenskit.baseline.UserMeanBaseline;
+import org.lenskit.baseline.UserMeanItemScorer;
+import org.lenskit.basic.SimpleRatingPredictor;
+import org.lenskit.basic.TopNItemRecommender;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -99,11 +99,10 @@ public class FunkSVDRecommenderBuildTest {
         assertThat(rec.getItemRecommender(),
                    instanceOf(TopNItemRecommender.class));
         RatingPredictor pred = rec.getRatingPredictor();
+        assertThat(pred, notNullValue());
         assertThat(pred, instanceOf(SimpleRatingPredictor.class));
-        assertThat(((SimpleRatingPredictor) pred).getScorer(),
+        assertThat(((SimpleRatingPredictor) pred).getItemScorer(),
                    sameInstance(rec.getItemScorer()));
-        assertThat(((FunkSVDItemScorer) rec.getItemScorer()).getUpdateRule(),
-                   nullValue());
     }
 
     @Test
@@ -134,34 +133,5 @@ public class FunkSVDRecommenderBuildTest {
                    not(sameInstance(rec2.getItemScorer())));
         assertThat(rec1.get(FunkSVDModel.class),
                    sameInstance(rec2.get(FunkSVDModel.class)));
-    }
-
-    /**
-     * Test whether we can build a recommender with predict-time updates.
-     */
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testPredictUpdates() throws RecommenderBuildException {
-        LenskitConfiguration config = new LenskitConfiguration();
-        config.bind(EventDAO.class).to(dao);
-        config.bind(ItemScorer.class)
-              .to(FunkSVDItemScorer.class);
-        config.bind(BaselineScorer.class, ItemScorer.class)
-              .to(UserMeanItemScorer.class);
-        config.bind(UserMeanBaseline.class, ItemScorer.class)
-              .to(ItemMeanRatingItemScorer.class);
-        config.set(IterationCount.class)
-              .to(10);
-        config.bind(RuntimeUpdate.class, FunkSVDUpdateRule.class)
-              .to(FunkSVDUpdateRule.class);
-
-        LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
-
-        LenskitRecommender rec = engine.createRecommender();
-        ItemScorer scorer = rec.getItemScorer();
-        assertThat(scorer, instanceOf(FunkSVDItemScorer.class));
-        FunkSVDItemScorer fsvd = (FunkSVDItemScorer) scorer;
-        assertThat(fsvd.getUpdateRule(),
-                   not(nullValue()));
     }
 }
