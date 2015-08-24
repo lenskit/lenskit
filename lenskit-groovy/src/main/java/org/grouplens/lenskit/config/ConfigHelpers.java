@@ -22,6 +22,7 @@ package org.grouplens.lenskit.config;
 
 import com.google.common.base.Preconditions;
 import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
 import groovy.lang.GroovyRuntimeException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
@@ -47,7 +48,7 @@ public class ConfigHelpers {
      * @return The LensKit configuration.
      * @see ConfigurationLoader#load(groovy.lang.Closure)
      */
-    public static LenskitConfiguration load(Closure<?> block) throws RecommenderConfigurationException {
+    public static LenskitConfiguration load(@DelegatesTo(LenskitConfigDSL.class) Closure<?> block) throws RecommenderConfigurationException {
         Preconditions.checkNotNull(block, "Configuration block");
         LenskitConfiguration config = new LenskitConfiguration();
         configure(config, block);
