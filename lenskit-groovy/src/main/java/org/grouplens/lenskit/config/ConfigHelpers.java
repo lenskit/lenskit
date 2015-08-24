@@ -92,7 +92,8 @@ public class ConfigHelpers {
      * @param block The block to evaluate. This block will be evaluated with a delegate providing
      *              the LensKit DSL and the {@link Closure#DELEGATE_FIRST} resolution strategy.
      */
-    public static void configure(LenskitConfiguration config, @Nonnull Closure<?> block) throws RecommenderConfigurationException {
+    public static void configure(LenskitConfiguration config,
+                                 @Nonnull @DelegatesTo(LenskitConfigDSL.class) Closure<?> block) throws RecommenderConfigurationException {
         Preconditions.checkNotNull(block, "Configuration block");
         BindingDSL delegate = LenskitConfigDSL.forConfig(config);
         try {

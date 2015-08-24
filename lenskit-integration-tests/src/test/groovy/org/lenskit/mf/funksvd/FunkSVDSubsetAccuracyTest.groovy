@@ -30,7 +30,7 @@ import org.grouplens.lenskit.test.ML100KTestSuite
 class FunkSVDSubsetAccuracyTest extends FunkSVDAccuracyTest {
     @Override
     protected void configureAlgorithm(LenskitConfiguration config) {
-        Object.configureAlgorithm(config)
+        super.configureAlgorithm(config)
         config.bind(ItemDAO).toProvider(ML100KTestSuite.SubsetProvider)
     }
 }
