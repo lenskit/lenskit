@@ -26,6 +26,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleSortedMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.lenskit.indexes.MutableIdIndexMapping;
 import org.junit.Test;
 import org.lenskit.util.collections.LongUtils;
 
@@ -156,5 +157,20 @@ public class Long2DoubleSortedArrayMapTest {
         assertThat(iter.next().getLongKey(), equalTo(3L));
         assertThat(iter.previous().getLongKey(), equalTo(3L));
         assertThat(iter.previous().getLongKey(), equalTo(2L));
+    }
+
+    @Test
+    public void testFromArray() {
+        MutableIdIndexMapping map = new MutableIdIndexMapping();
+        map.internId(42);
+        map.internId(37);
+        map.internId(62);
+        double[] values = { 3.5, 4.9, 1.8 };
+        Long2DoubleMap res = Long2DoubleSortedArrayMap.fromArray(map, values);
+        assertThat(res.size(), equalTo(3));
+        assertThat(res.keySet(), contains(37L, 42L, 62L));
+        assertThat(res, hasEntry(37L, 4.9));
+        assertThat(res, hasEntry(42L, 3.5));
+        assertThat(res, hasEntry(62L, 1.8));
     }
 }

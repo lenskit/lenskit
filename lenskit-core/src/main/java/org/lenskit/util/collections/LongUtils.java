@@ -21,6 +21,7 @@
 package org.lenskit.util.collections;
 
 import it.unimi.dsi.fastutil.longs.*;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.LongKeyIndex;
 
 import java.util.*;
@@ -34,6 +35,22 @@ import java.util.*;
  */
 public final class LongUtils {
     private LongUtils() {}
+
+    /**
+     * Create a frozen long-to-double map.  This effectively creates a copy of a map, but if the provided map is an
+     * instance of {@link org.lenskit.util.keys.Long2DoubleSortedArrayMap}, which is immutable, it is returned as-is
+     * for efficiency.
+     *
+     * @param map The source map.
+     * @return An immutable map with the same data as {@code map}.
+     */
+    public static Long2DoubleSortedMap frozenMap(Map<Long,Double> map) {
+        if (map instanceof Long2DoubleSortedArrayMap) {
+            return (Long2DoubleSortedMap) map;
+        } else {
+            return new Long2DoubleSortedArrayMap(map);
+        }
+    }
 
     /**
      * Pack longs into a sorted set.

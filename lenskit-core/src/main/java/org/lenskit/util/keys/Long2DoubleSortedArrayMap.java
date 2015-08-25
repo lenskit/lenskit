@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.ints.IntBidirectionalIterator;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.*;
+import org.grouplens.lenskit.indexes.IdIndexMapping;
 import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.concurrent.Immutable;
@@ -67,6 +68,28 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
      */
     public static Long2DoubleSortedArrayMap wrap(LongKeyIndex keys, double[] vs) {
         return new Long2DoubleSortedArrayMap(keys, vs);
+    }
+
+    /**
+     * Create a map from an array and index mapping.
+     *
+     * @param mapping The index mapping specifying the keys.
+     * @param values The array of values.
+     * @return A sparse vector mapping the IDs in {@code map} to the values in {@code values}.
+     * @throws IllegalArgumentException if {@code values} not the same size as {@code idx}.
+     */
+    public static Long2DoubleSortedArrayMap fromArray(IdIndexMapping mapping, double[] values) {
+        Preconditions.checkArgument(values.length == mapping.size(),
+                                    "value array and index have different sizes: " + values.length + " != " + mapping.size());
+        final int n = values.length;
+        double[] nvs = new double[n];
+        LongKeyIndex index = LongKeyIndex.fromCollection(mapping.getIdList());
+        for (int i = 0; i < n; i++) {
+            long item = index.getKey(i);
+            int origIndex = mapping.getIndex(item);
+            nvs[i] = values[origIndex];
+        }
+        return wrap(index, nvs);
     }
 
     @Override
