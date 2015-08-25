@@ -23,10 +23,7 @@ package org.grouplens.lenskit.eval.traintest
 import org.grouplens.grapht.Component
 import org.grouplens.grapht.Dependency
 import org.grouplens.grapht.graph.MergePool
-import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
-import org.grouplens.lenskit.baseline.UserMeanBaseline
-import org.grouplens.lenskit.baseline.UserMeanItemScorer
+import org.lenskit.api.ItemScorer
 import org.grouplens.lenskit.config.ConfigHelpers
 import org.grouplens.lenskit.core.LenskitConfiguration
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
@@ -37,6 +34,9 @@ import org.grouplens.lenskit.eval.data.traintest.TTDataSet
 import org.grouplens.lenskit.inject.GraphtUtils
 import org.junit.Before
 import org.junit.Test
+import org.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.baseline.UserMeanBaseline
+import org.lenskit.baseline.UserMeanItemScorer
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat

@@ -20,11 +20,14 @@
  */
 package org.lenskit.data.summary;
 
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.lenskit.util.keys.KeyedObject;
 import org.lenskit.util.keys.KeyedObjectMap;
+import org.omg.CORBA.LongSeqHelper;
 
 import java.io.Serializable;
 
@@ -63,6 +66,10 @@ public class RatingSummary implements Serializable {
 
     public double getGlobalMean() {
         return globalMean;
+    }
+
+    public LongSet getItems() {
+        return itemSummaries.keySet();
     }
 
     /**

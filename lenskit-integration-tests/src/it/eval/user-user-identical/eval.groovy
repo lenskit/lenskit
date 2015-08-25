@@ -19,22 +19,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.RatingPredictor
-import org.grouplens.lenskit.baseline.BaselineScorer
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
+
+import org.lenskit.api.ItemScorer
 import org.grouplens.lenskit.eval.metrics.predict.*
-import org.lenskit.knn.NeighborhoodSize
-import org.lenskit.knn.item.ItemItemScorer
-import org.lenskit.knn.item.ModelSize
 import org.grouplens.lenskit.knn.item.model.*
-import org.lenskit.knn.user.NeighborFinder
-import org.lenskit.knn.user.SnapshotNeighborFinder
-import org.lenskit.knn.user.UserUserItemScorer
 import org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer
-import org.grouplens.lenskit.transform.truncate.VectorTruncator
+import org.lenskit.knn.NeighborhoodSize
+import org.lenskit.knn.user.NeighborFinder
+import org.lenskit.knn.user.SnapshotNeighborFinder
+import org.lenskit.knn.user.UserUserItemScorer
 
 def dataDir = config['lenskit.movielens.100k']
 

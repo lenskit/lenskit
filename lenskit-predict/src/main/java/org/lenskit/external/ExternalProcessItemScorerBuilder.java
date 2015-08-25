@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.external;
+package org.lenskit.external;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
@@ -26,8 +26,6 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.basic.PrecomputedItemScorer;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.ItemDAO;
@@ -35,6 +33,8 @@ import org.grouplens.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.util.DelimitedTextCursor;
 import org.grouplens.lenskit.util.io.LoggingStreamSlurper;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.basic.PrecomputedItemScorer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

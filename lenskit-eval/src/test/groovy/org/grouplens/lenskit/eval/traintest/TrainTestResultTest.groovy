@@ -20,10 +20,6 @@
  */
 package org.grouplens.lenskit.eval.traintest
 
-import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.BaselineScorer
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
-import org.grouplens.lenskit.baseline.UserMeanItemScorer
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
 import org.grouplens.lenskit.eval.script.ConfigTestBase
@@ -33,6 +29,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.lenskit.api.ItemScorer
+import org.lenskit.baseline.BaselineScorer
+import org.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.baseline.UserMeanItemScorer
 
 import static org.hamcrest.Matchers.instanceOf
 import static org.hamcrest.Matchers.nullValue

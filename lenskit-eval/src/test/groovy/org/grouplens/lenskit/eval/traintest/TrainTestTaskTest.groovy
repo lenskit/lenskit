@@ -24,12 +24,6 @@ import com.google.common.base.Throwables
 import com.google.common.collect.Sets
 import com.google.common.io.Closer
 import org.apache.commons.lang3.tuple.Pair
-import org.grouplens.lenskit.ItemRecommender
-import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
-import org.grouplens.lenskit.baseline.UserMeanBaseline
-import org.grouplens.lenskit.baseline.UserMeanItemScorer
 import org.grouplens.lenskit.core.LenskitRecommender
 import org.grouplens.lenskit.data.dao.DataAccessException
 import org.grouplens.lenskit.data.source.TextDataSource
@@ -50,6 +44,13 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.lenskit.api.ItemRecommender
+import org.lenskit.api.ItemScorer
+import org.lenskit.baseline.GlobalMeanRatingItemScorer
+import org.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.baseline.UserMeanBaseline
+import org.lenskit.baseline.UserMeanItemScorer
+import org.lenskit.data.summary.RatingSummary
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.*
@@ -274,9 +275,8 @@ class TrainTestTaskTest {
             // FIXME This should work without the file object
             def innerFile = new File("${folder.root.absolutePath}/measure.csv")
             multiMetric(innerFile, ["Item", "MeanRating"]) { LenskitRecommender rec ->
-                def scorer = rec.get(ItemMeanRatingItemScorer)
-                def means = scorer.itemMeans
-                means.collect { e -> [e.key, e.value]}
+                def summary = rec.get(RatingSummary)
+                summary.items.collect { i -> [i, summary.getItemOffset(i)] }
             }
             algorithm {
                 bind ItemScorer to ItemMeanRatingItemScorer
