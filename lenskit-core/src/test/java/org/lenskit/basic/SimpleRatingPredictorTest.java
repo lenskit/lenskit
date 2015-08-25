@@ -20,13 +20,10 @@
  */
 package org.lenskit.basic;
 
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.api.ItemScorer;
-import org.lenskit.api.RatingPredictor;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.results.Results;
@@ -59,7 +56,7 @@ public class SimpleRatingPredictorTest {
     public void testBasicPredict() {
         assertThat(pred.predict(40, 1).getScore(),
                    closeTo(4.0, EPSILON));
-        assertThat(pred.predict(40, 1).getInnerResult(),
+        assertThat(pred.predict(40, 1).getOriginalResult(),
                    equalTo((Result) Results.create(1, 4.0)));
     }
 

@@ -18,38 +18,35 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.predict
+package org.lenskit.predict
 
-import org.grouplens.lenskit.ItemRecommender
-import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.RatingPredictor
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
-import org.grouplens.lenskit.basic.RescoringItemRecommender
-import org.grouplens.lenskit.basic.SimpleRatingPredictor
-import org.grouplens.lenskit.basic.TopNItemRecommender
+import org.lenskit.basic.RescoringItemRecommender
 import org.grouplens.lenskit.config.ConfigHelpers
-import org.grouplens.lenskit.core.LenskitRecommender
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
-import org.grouplens.lenskit.data.event.Ratings
+import org.grouplens.lenskit.data.event.Rating
 import org.junit.Ignore
-import org.lenskit.transform.quantize.QuantizedRatingPredictor;
 import org.junit.Test
+import org.lenskit.LenskitRecommender
+import org.lenskit.api.ItemRecommender
+import org.lenskit.api.ItemScorer
+import org.lenskit.api.RatingPredictor
+import org.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.basic.SimpleRatingPredictor
+import org.lenskit.basic.TopNItemRecommender
 
-import static org.hamcrest.Matchers.closeTo
-import static org.hamcrest.Matchers.hasSize
-import static org.hamcrest.Matchers.instanceOf
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*
+import static org.junit.Assert.assertThat
+import static org.junit.Assert.fail
 
 class RatingPredictorItemScorerTest {
     @Test
-    @Ignore("will not work until moved")
     void testSophisticatedConfig() {
         def dao = EventCollectionDAO.create([
-                Ratings.make(1, 11, 3.0),
-                Ratings.make(1, 12, 5.0),
-                Ratings.make(2, 12, 3.5),
-                Ratings.make(2, 11, 3.0)
+                Rating.create(1, 11, 3.0),
+                Rating.create(1, 12, 5.0),
+                Rating.create(2, 12, 3.5),
+                Rating.create(2, 11, 3.0)
         ])
         def config = ConfigHelpers.load {
             domain minimum: 1.0, maximum: 5.0, precision: 1.0
@@ -72,7 +69,7 @@ class RatingPredictorItemScorerTest {
         assertThat(rec.ratingPredictor, instanceOf(QuantizedRatingPredictor))
 
         def irec = rec.itemRecommender
-        def recs = irec.recommend(3)
+        def recs = irec.recommendWithDetails(3, -1, null, null)
         assertThat(recs, hasSize(2))
         for (sid in recs) {
             if (sid.id == 11) {

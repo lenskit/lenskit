@@ -86,7 +86,7 @@ allprojects {
                       'org.grouplens.lenskit.baseline*', 'org.grouplens.lenskit.transform*',
                       'org.grouplens.lenskit.vectors.*')
                 group('Recommender Implementations',
-                      'org.grouplens.lenskit.predict*', 'org.grouplens.lenskit.knn*',
+                      'org.lenskit.predict*', 'org.grouplens.lenskit.knn*',
                       'org.grouplens.lenskit.mf*', 'org.grouplens.lenskit.slopeone*')
                 group('Recommender Evaluation and Tooling',
                       'org.grouplens.lenskit.eval*',

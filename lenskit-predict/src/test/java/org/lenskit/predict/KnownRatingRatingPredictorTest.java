@@ -18,34 +18,37 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.predict;
+package org.lenskit.predict;
 
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.PrefetchingUserEventDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.data.event.RatingBuilder;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 public class KnownRatingRatingPredictorTest {
 
     private EventDAO dao;
     private UserEventDAO userDAO;
-    private List<Rating> rs = new ArrayList<Rating>();
+    private List<Rating> rs = new ArrayList<>();
 
     @SuppressWarnings("deprecation")
     @Before
-    //Setup method
     public void createPredictor() throws RecommenderBuildException {
         rs.add(Rating.create(14, 1, 5));
         rs.add(Rating.create(14, 2, 4));
@@ -62,45 +65,42 @@ public class KnownRatingRatingPredictorTest {
         userDAO = new PrefetchingUserEventDAO(dao);
     }
 
+    /**
+     * Test method that tests predicting for a user not in the data set
+     */
     @Test
-    /*
-    * Test method that tests predicting for a user not in the data set
-    * */
     public void testPredictForMissingUser() {
-        KnownRatingRatingPredictor KnownPredict = new KnownRatingRatingPredictor(userDAO);
-        MutableSparseVector predictItems = MutableSparseVector.create(1, 2);
-        KnownPredict.predict(5, predictItems);
-        assertThat(predictItems.size(), equalTo(0));
+        KnownRatingRatingPredictor pred = new KnownRatingRatingPredictor(userDAO);
+        Map<Long,Double> results = pred.predict(5, LongUtils.packedSet(1L, 2L));
+        assertThat(results.size(), equalTo(0));
     }
 
+    /**
+     * Test method that tests predicting for a user in the data set,
+     * only with items they have rated.
+     */
     @Test
-     /*
-    * Test method that tests predicting for a user in the data set,
-    * only with items they have rated.
-    * */
     public void testPredictForRatingByGivenUser() {
-        KnownRatingRatingPredictor KnownPredict = new KnownRatingRatingPredictor(userDAO);
-        long[] keys= {1,3,5};
-        double[] values= {1.0,2.0,4.0};
-        MutableSparseVector predictItems = MutableSparseVector.wrap(keys, values);
-        KnownPredict.predict(14, predictItems);
-        assertThat(predictItems.get(1), equalTo(5.0));
-        assertThat(predictItems.get(3), equalTo(3.0));
-        assertThat(predictItems.get(5), equalTo(0.2));
+        KnownRatingRatingPredictor pred = new KnownRatingRatingPredictor(userDAO);
+        Map<Long,Double> results = pred.predict(14, LongUtils.packedSet(1, 3, 5));
+        assertThat(results.size(), equalTo(3));
+        assertThat(results.get(1L), equalTo(5.0));
+        assertThat(results.get(3L), equalTo(3.0));
+        assertThat(results.get(5L), equalTo(0.2));
     }
 
+    /**
+     * Test method that tests predicting for a user in the data set,
+     * returning the rating of item for given user only.
+     */
     @Test
-     /*
-    * Test method that tests predicting for a user in the data set,
-    * returning the rating of item for given user only.
-    * */
     public void  testPredictForOnlyRatedItems() {
-        KnownRatingRatingPredictor KnownPredict = new KnownRatingRatingPredictor(userDAO);
-        MutableSparseVector predictItems = MutableSparseVector.create(5, 7, 1);
-        KnownPredict.predict(15, predictItems);
-        assertThat(predictItems.get(5), equalTo(1.0));
-        assertThat(predictItems.get(7), equalTo(3.0));
-        assertFalse(predictItems.containsKey(1));
+        KnownRatingRatingPredictor pred = new KnownRatingRatingPredictor(userDAO);
+        Map<Long,Double> results = pred.predict(15, LongUtils.packedSet(5, 7, 1));
+        assertThat(results.get(5L), equalTo(1.0));
+        assertThat(results.get(7L), equalTo(3.0));
+        assertThat(results.keySet(),
+                   not(hasItem(1L)));
 
     }
     @SuppressWarnings("deprecation")
@@ -110,7 +110,6 @@ public class KnownRatingRatingPredictorTest {
     * it shouldn't return any value.
     * */
     public void  testPredictForUnratedItems() {
-
         RatingBuilder rb = new RatingBuilder().setUserId(420);
         rs.add(rb.setItemId(840).setRating(3.5).setTimestamp(10).build());
         rs.add(rb.setItemId(390).setRating(4.5).setTimestamp(20).build());
@@ -119,11 +118,10 @@ public class KnownRatingRatingPredictorTest {
         dao = new EventCollectionDAO(rs);
         userDAO = new PrefetchingUserEventDAO(dao);
 
-        KnownRatingRatingPredictor KnownPredict = new KnownRatingRatingPredictor(userDAO);
-        MutableSparseVector predictItems = MutableSparseVector.create(840,390);
-        KnownPredict.predict(420, predictItems);
-        assertThat(predictItems.get(390), equalTo(4.5));
-        assertFalse(predictItems.containsKey(840));
-
+        KnownRatingRatingPredictor pred = new KnownRatingRatingPredictor(userDAO);
+        Map<Long,Double> results = pred.predict(420, LongUtils.packedSet(840, 390));
+        assertThat(results, hasEntry(390L, 4.5));
+        assertThat(results.keySet(),
+                   not(Matchers.hasItem(840L)));
     }
 }

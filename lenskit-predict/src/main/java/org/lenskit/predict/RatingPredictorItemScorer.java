@@ -18,23 +18,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.predict;
+package org.lenskit.predict;
 
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.api.RatingPredictor;
+import org.lenskit.api.Result;
+import org.lenskit.api.ResultMap;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Item scorer that uses rating predictions.  Use this if you want to use the outputs of a
  * sophisticated rating predictor somewhere that requires item scorers.
  *
  * @since 2.1
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class RatingPredictorItemScorer implements ItemScorer {
     private final RatingPredictor predictor;
@@ -44,19 +44,20 @@ public class RatingPredictorItemScorer implements ItemScorer {
         predictor = pred;
     }
 
+    @Nonnull
     @Override
-    public double score(long user, long item) {
+    public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
+        return predictor.predictWithDetails(user, items);
+    }
+
+    @Override
+    public Result score(long user, long item) {
         return predictor.predict(user, item);
     }
 
     @Nonnull
     @Override
-    public SparseVector score(long user, @Nonnull Collection<Long> items) {
+    public Map<Long, Double> score(long user, @Nonnull Collection<Long> items) {
         return predictor.predict(user, items);
-    }
-
-    @Override
-    public void score(long user, @Nonnull MutableSparseVector scores) {
-        predictor.predict(user, scores);
     }
 }

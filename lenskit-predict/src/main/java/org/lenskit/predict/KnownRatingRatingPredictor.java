@@ -18,17 +18,24 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.predict;
+package org.lenskit.predict;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.basic.AbstractRatingPredictor;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.baseline.FallbackItemScorer;
+import org.lenskit.api.Result;
+import org.lenskit.api.ResultMap;
+import org.lenskit.basic.AbstractRatingPredictor;
+import org.lenskit.basic.FallbackItemScorer;
+import org.lenskit.results.Results;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -49,22 +56,25 @@ public class KnownRatingRatingPredictor extends AbstractRatingPredictor {
         this.dao = uedao;
     }
 
+    @Nonnull
     @Override
-    public void predict(long user, @Nonnull MutableSparseVector predictions) {
-        LongSortedSet items = predictions.keyDomain();
-        predictions.clear();
-
+    public ResultMap predictWithDetails(long user, @Nonnull Collection<Long> items) {
         List<Rating> ratings = dao.getEventsForUser(user, Rating.class);
-        if (ratings !=null) {
-            for (Rating r : ratings) {
-                if (items.contains(r.getItemId())) {
-                    if (r.hasValue()) {
-                        predictions.set(r.getItemId(), r.getValue());
-                    } else {
-                        predictions.unset(r.getItemId());
-                    }
+        if (ratings == null) {
+            return Results.newResultMap();
+        }
+        LongSortedSet wantedItems = LongUtils.packedSet(items);
+        Long2ObjectMap<Result> results = new Long2ObjectOpenHashMap<>();
+        for (Rating r: ratings) {
+            long item = r.getItemId();
+            if (wantedItems.contains(r.getItemId())) {
+                if (r.hasValue()) {
+                    results.put(item, Results.create(item, r.getValue()));
+                } else {
+                    results.remove(item);
                 }
             }
         }
+        return Results.newResultMap(results.values());
     }
 }

@@ -22,6 +22,7 @@ package org.lenskit.basic;
 
 import it.unimi.dsi.fastutil.longs.LongSets;
 import org.lenskit.api.ItemScorer;
+import org.lenskit.api.RatingPredictor;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 
@@ -31,31 +32,31 @@ import java.util.Map;
 
 /**
  * Base class to make item scorers easier to implement. Delegates all score methods to
- * {@link #scoreWithDetails(long, Collection)}.
+ * {@link #predictWithDetails(long, Collection)}.
  *
  * @since 3.0
  */
-public abstract class AbstractItemScorer implements ItemScorer {
+public abstract class AbstractRatingPredictor implements RatingPredictor {
     /**
      * {@inheritDoc}
      *
-     * This implementation delegates to {@link #scoreWithDetails(long, Collection)}.
+     * This implementation delegates to {@link #predictWithDetails(long, Collection)}.
      */
     @Override
-    public Result score(long user, long item) {
-        ResultMap results = scoreWithDetails(user, LongSets.singleton(item));
+    public Result predict(long user, long item) {
+        ResultMap results = predictWithDetails(user, LongSets.singleton(item));
         return results.get(item);
     }
 
     /**
      * {@inheritDoc}
      *
-     * This implementation delegates to {@link #scoreWithDetails(long, Collection)}.
+     * This implementation delegates to {@link #predictWithDetails(long, Collection)}.
      */
     @Nonnull
     @Override
-    public Map<Long, Double> score(long user, @Nonnull Collection<Long> items) {
-        ResultMap results = scoreWithDetails(user, items);
+    public Map<Long, Double> predict(long user, @Nonnull Collection<Long> items) {
+        ResultMap results = predictWithDetails(user, items);
         return results.scoreMap();
     }
 }

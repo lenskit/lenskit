@@ -75,7 +75,17 @@ public final class Results {
      * @return A {@link RescoredResult} that wraps {@code r} with a new score of {@code s}.
      */
     public static RescoredResult rescore(Result r, double s) {
-        return new RescoredResult(r, s);
+        return rescore(r, create(r.getId(), s));
+    }
+
+    /**
+     * Create a rescored result with details.
+     * @param orig The original result.
+     * @param score The new result, or {@code null} for no score  (the resulting result will have no score).
+     * @return A rescored result with the ID but the new score.
+     */
+    public static RescoredResult rescore(@Nonnull Result orig, @Nullable Result score) {
+        return new RescoredResult(orig, score);
     }
 
     /**
