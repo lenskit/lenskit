@@ -20,16 +20,16 @@
  */
 package org.lenskit.knn.item;
 
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 public class SimilaritySumNeighborhoodScorerTest {
     SimilaritySumNeighborhoodScorer scorer;
@@ -45,36 +45,37 @@ public class SimilaritySumNeighborhoodScorerTest {
 
     @Test
     public void testEmpty() {
-        SparseVector nbrs = ImmutableSparseVector.empty();
-        SparseVector scores = MutableSparseVector.create();
+        Long2DoubleMap nbrs = Long2DoubleMaps.EMPTY_MAP;
+        Long2DoubleMap scores = Long2DoubleMaps.EMPTY_MAP;
         assertThat(scorer.score(42, nbrs, scores), nullValue());
     }
 
     @Test
     public void testEmptyNbrs() {
-        SparseVector nbrs = ImmutableSparseVector.empty();
-        SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
+        Long2DoubleMap nbrs = Long2DoubleMaps.EMPTY_MAP;
+        Long2DoubleMap scores = Long2DoubleMaps.singleton(5, 3.7);
         assertThat(scorer.score(42, nbrs, scores), nullValue());
     }
 
     @Test
     public void testOneNbr() {
-        MutableSparseVector nbrs = MutableSparseVector.create(5);
-        nbrs.set(5, 1.0);
-        SparseVector scores = MutableSparseVector.wrap(new long[]{5}, new double[]{3.7}).freeze();
+        Long2DoubleMap nbrs = Long2DoubleMaps.singleton(5, 1.0);
+        Long2DoubleMap scores = Long2DoubleMaps.singleton(5, 3.7);
         assertThat(scorer.score(42, nbrs, scores).getScore(), closeTo(1.0));
     }
 
     @Test
     public void testMultipleNeighbors() {
-        MutableSparseVector nbrs = MutableSparseVector.create(2, 5, 7);
-        nbrs.set(2, 0.5);
-        nbrs.set(5, 1.0);
-        nbrs.set(7, 0.92);
+        Long2DoubleMap nbrs = new Long2DoubleOpenHashMap();
+        nbrs.put(2, 0.5);
+        nbrs.put(5, 1.0);
+        nbrs.put(7, 0.92);
 
-        long[] scoreKeys = {2, 3, 5, 7};
-        double[] scoreValues = {3.7, 4.2, 1.2, 7.8};
-        SparseVector scores = MutableSparseVector.wrap(scoreKeys, scoreValues).freeze();
+        Long2DoubleMap scores = new Long2DoubleOpenHashMap();
+        scores.put(2, 3.7);
+        scores.put(3, 4.2);
+        scores.put(5, 1.2);
+        scores.put(7, 7.8);
         assertThat(scorer.score(42, nbrs, scores).getScore(), closeTo(2.42));
     }
 }

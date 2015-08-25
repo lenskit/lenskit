@@ -20,10 +20,9 @@
  */
 package org.lenskit.knn.item;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.scored.ScoredIds;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.util.math.Vectors;
 
 import java.io.Serializable;
 
@@ -37,11 +36,11 @@ public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Seri
     private static final long serialVersionUID = 1L;
 
     @Override
-    public ScoredId score(long item, SparseVector neighbors, SparseVector scores) {
+    public ItemItemResult score(long item, Long2DoubleMap neighbors, Long2DoubleMap scores) {
         if (neighbors.size() == 0) {
             return null;
         } else {
-            return ScoredIds.create(item, neighbors.sum());
+            return new ItemItemResult(item, Vectors.sum(neighbors), neighbors.size());
         }
     }
 

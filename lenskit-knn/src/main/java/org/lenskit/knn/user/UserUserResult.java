@@ -34,4 +34,23 @@ public class UserUserResult extends AbstractResult {
     public double getTotalNeighborWeight() {
         return neighborWeight;
     }
+
+    @Override
+    public int hashCode() {
+        return startHashCode().append(neighborhoodSize)
+                              .append(neighborWeight)
+                              .toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof UserUserResult) {
+            UserUserResult or = (UserUserResult) obj;
+            return startEquality(or).append(neighborhoodSize, or.neighborhoodSize)
+                                    .append(neighborWeight, or.neighborWeight)
+                                    .isEquals();
+        } else {
+            return false;
+        }
+    }
 }

@@ -20,13 +20,10 @@
  */
 package org.lenskit.knn.item;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.scored.ScoredIdBuilder;
-import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.symbols.Symbol;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.util.math.Vectors;
 
 import java.io.Serializable;
 
@@ -42,16 +39,11 @@ public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Se
             Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodWeight");
 
     @Override
-    public ScoredId score(long item, SparseVector neighbors, SparseVector scores) {
-        MutableSparseVector work = neighbors.mutableCopy();
-        double weight = neighbors.sumAbs();
-        work.multiply(scores);
+    public ItemItemResult score(long item, Long2DoubleMap neighbors, Long2DoubleMap scores) {
+        double weight = Vectors.sumAbs(neighbors);
         if (weight > 0) {
-            ScoredIdBuilder builder = ScoredIds.newBuilder();
-            return builder.setId(item)
-                          .setScore(work.sum()/weight)
-                          .addChannel(NEIGHBORHOOD_WEIGHT_SYMBOL,weight)
-                          .build();
+            double weightedSum = Vectors.dotProduct(neighbors, scores);
+            return new ItemItemResult(item, weightedSum / weight, neighbors.size());
         } else {
             return null;
         }

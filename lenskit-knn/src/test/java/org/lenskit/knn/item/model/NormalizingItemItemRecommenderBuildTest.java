@@ -20,24 +20,24 @@
  */
 package org.lenskit.knn.item.model;
 
+import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.GlobalItemScorer;
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.basic.SimpleRatingPredictor;
 import org.grouplens.lenskit.basic.TopNGlobalItemRecommender;
-import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.LenskitRecommender;
-import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.lenskit.knn.item.ItemItemGlobalScorer;
-import org.lenskit.knn.item.ItemItemScorer;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.lenskit.LenskitRecommender;
+import org.lenskit.LenskitRecommenderEngine;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.basic.SimpleRatingPredictor;
+import org.lenskit.basic.TopNItemRecommender;
+import org.lenskit.knn.item.ItemItemGlobalScorer;
+import org.lenskit.knn.item.ItemItemScorer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +74,7 @@ public class NormalizingItemItemRecommenderBuildTest {
     @Test
     @Ignore("will not work until moved")
     public void testItemItemRecommenderEngineCreate() {
-        Recommender rec = engine.createRecommender();
+        LenskitRecommender rec = engine.createRecommender();
 
         assertThat(rec.getItemScorer(),
                 instanceOf(ItemItemScorer.class));
@@ -82,9 +82,9 @@ public class NormalizingItemItemRecommenderBuildTest {
                 instanceOf(SimpleRatingPredictor.class));
         assertThat(rec.getItemRecommender(),
                 instanceOf(TopNItemRecommender.class));
-        assertThat(rec.getGlobalItemRecommender(),
+        assertThat(rec.get(GlobalItemRecommender.class),
                 instanceOf(TopNGlobalItemRecommender.class));
-        assertThat(rec.getGlobalItemScorer(),
+        assertThat(rec.get(GlobalItemScorer.class),
                 instanceOf(ItemItemGlobalScorer.class));
     }
 

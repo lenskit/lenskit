@@ -24,6 +24,8 @@ import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMaps;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.collections.CompactableLongArrayList;
@@ -31,6 +33,7 @@ import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdListBuilder;
 import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 import java.util.List;
 
@@ -184,6 +187,31 @@ public final class TopNScoredItemAccumulator implements ScoredItemAccumulator {
         clear();
 
         return MutableSparseVector.wrapUnsorted(keys, values);
+    }
+
+    @Override
+    public Long2DoubleMap finishMap() {
+        if (scores == null) {
+            return Long2DoubleMaps.EMPTY_MAP;
+        }
+
+        assert size == heap.size();
+        int[] indices = new int[size];
+        // Copy backwards so the scored list is sorted.
+        for (int i = size - 1; i >= 0; i--) {
+            indices[i] = heap.dequeue();
+        }
+        assert heap.isEmpty();
+
+        long[] keys = new long[indices.length];
+        double[] values = new double[indices.length];
+        for (int i = 0; i < indices.length; i++) {
+            keys[i] = items.get(indices[i]);
+            values[i] = scores.get(indices[i]);
+        }
+        clear();
+
+        return Long2DoubleSortedArrayMap.wrapUnsorted(keys, values);
     }
 
     @Override

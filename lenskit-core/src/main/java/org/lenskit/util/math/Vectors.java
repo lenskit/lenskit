@@ -64,6 +64,20 @@ public final class Vectors {
     }
 
     /**
+     * Compute the sum of the elements of a map.
+     * @param v The vector
+     * @return The sum of the values of {@code v}.
+     */
+    public static double sumAbs(Long2DoubleMap v) {
+        double sum = 0;
+        DoubleIterator iter = v.values().iterator();
+        while (iter.hasNext()) {
+            sum += Math.abs(iter.nextDouble());
+        }
+        return sum;
+    }
+
+    /**
      * Compute the sum of the squares of elements of a map.
      * @param v The vector
      * @return The sum of the squares of the values of {@code v}.

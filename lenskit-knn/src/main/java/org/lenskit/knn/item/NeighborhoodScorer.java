@@ -20,6 +20,7 @@
  */
 package org.lenskit.knn.item;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -50,5 +51,5 @@ public interface NeighborhoodScorer {
      * @return An accumulated score from the neighbors, or {@code null} if
      *         no score could be computed.
      */
-    ScoredId score(long item, SparseVector neighbors, SparseVector scores);
+    ItemItemResult score(long item, Long2DoubleMap neighbors, Long2DoubleMap scores);
 }

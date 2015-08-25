@@ -20,10 +20,17 @@
  */
 package org.lenskit.knn.item;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.basic.AbstractGlobalItemScorer;
-import org.lenskit.knn.item.model.ItemItemModel;
+import org.grouplens.lenskit.util.ScoredItemAccumulator;
+import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
+import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.knn.NeighborhoodSize;
+import org.lenskit.knn.item.model.ItemItemModel;
 import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
@@ -40,16 +47,14 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer {
     @Nonnull
     protected final
     NeighborhoodScorer scorer;
-    @Nonnull
-    protected final
-    ItemScoreAlgorithm algorithm;
+    private final int neighborhoodSize;
 
     @Inject
-    public ItemItemGlobalScorer(ItemItemModel m, ItemScoreAlgorithm algo) {
+    public ItemItemGlobalScorer(ItemItemModel m, @NeighborhoodSize int nnbrs) {
         model = m;
         // The global item scorer use the SimilaritySumNeighborhoodScorer for the unary ratings
         this.scorer = new SimilaritySumNeighborhoodScorer();
-        algorithm = algo;
+        neighborhoodSize = nnbrs;
     }
 
     @Override
@@ -57,9 +62,34 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer {
                             @Nonnull MutableSparseVector output) {
         // create the unary rating for the items
         LongSortedSet qItems = LongUtils.packedSet(queryItems);
-        MutableSparseVector basket = MutableSparseVector.create(qItems, 1.0);
+        Long2DoubleMap basket = MutableSparseVector.create(qItems, 1.0).asMap();
 
         output.clear();
-        algorithm.scoreItems(model, basket, output, scorer);
+        for (VectorEntry e: output.view(VectorEntry.State.EITHER)) {
+            ItemItemResult result = scoreItem(basket, e.getKey());
+            if (result != null) {
+                output.set(e, result.getScore());
+            }
+        }
+    }
+
+    protected ItemItemResult scoreItem(Long2DoubleMap scores, long item) {
+        SparseVector allNeighbors = model.getNeighbors(item);
+        ScoredItemAccumulator acc = null;
+        if (neighborhoodSize > 0) {
+            // FIXME Abstract accumulator selection logic
+            acc = new TopNScoredItemAccumulator(neighborhoodSize);
+        } else {
+            acc = new UnlimitedScoredItemAccumulator();
+        }
+
+        for (VectorEntry e: allNeighbors) {
+            if (scores.containsKey(e.getKey())) {
+                acc.put(e.getKey(), e.getValue());
+            }
+        }
+
+        Long2DoubleMap neighborhood = acc.finishMap();
+        return scorer.score(item, neighborhood, scores);
     }
 }

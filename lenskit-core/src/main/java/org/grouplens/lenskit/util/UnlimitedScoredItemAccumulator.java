@@ -20,9 +20,7 @@
  */
 package org.grouplens.lenskit.util;
 
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongSets;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.scored.ScoredIdListBuilder;
 import org.grouplens.lenskit.scored.ScoredIds;
@@ -79,6 +77,16 @@ public final class UnlimitedScoredItemAccumulator implements ScoredItemAccumulat
         scores.clear();
         scores = null;
         return vec;
+    }
+
+    @Override
+    public Long2DoubleMap finishMap() {
+        // FIXME Make this efficient
+        Long2DoubleMap set = new Long2DoubleOpenHashMap(scores.size());
+        for (ScoredId id: finish()) {
+            set.put(id.getId(), id.getScore());
+        }
+        return set;
     }
 
     @Override
