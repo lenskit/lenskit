@@ -18,11 +18,13 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.baseline;
+package org.lenskit.baseline;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleSortedMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.basic.AbstractItemScorer;
-import org.grouplens.lenskit.collections.CollectionUtils;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
@@ -31,55 +33,64 @@ import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
-import org.grouplens.lenskit.vectors.VectorEntry.State;
-import org.grouplens.lenskit.vectors.Vectors;
+import org.lenskit.api.Result;
+import org.lenskit.api.ResultMap;
+import org.lenskit.basic.AbstractItemScorer;
+import org.lenskit.results.Results;
+import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
  * Baseline scorer using least-squares estimates of preferences, trained by gradient descent.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultProvider(LeastSquaresItemScorer.Builder.class)
 @Shareable
 public class LeastSquaresItemScorer extends AbstractItemScorer implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private final ImmutableSparseVector userOffsets;
-    private final ImmutableSparseVector itemOffsets;
-    private final double mean;
+    private final Long2DoubleSortedMap userBiases;
+    private final Long2DoubleSortedMap itemBiases;
+    private final double globalMean;
 
     private static final Logger logger = LoggerFactory.getLogger(LeastSquaresItemScorer.class);
 
     /**
      * Construct a new least-squares scorer.
      *
-     * @param uoff the user offsets
-     * @param ioff the item offsets
+     * @param ubs the user biases
+     * @param ibs the item biases
      * @param mean the global mean rating
      */
-    public LeastSquaresItemScorer(ImmutableSparseVector uoff, ImmutableSparseVector ioff, double mean) {
-        this.userOffsets = uoff;
-        this.itemOffsets = ioff;
-        this.mean = mean;
+    public LeastSquaresItemScorer(Long2DoubleMap ubs, Long2DoubleMap ibs, double mean) {
+        this.userBiases = LongUtils.frozenMap(ubs);
+        this.itemBiases = LongUtils.frozenMap(ibs);
+        this.globalMean = mean;
     }
 
+    @Nonnull
     @Override
-    public void score(long user, MutableSparseVector output) {
-        for (VectorEntry e : output.view(State.EITHER)) {
-            double score = mean + userOffsets.get(user, 0) + itemOffsets.get(e.getKey(), 0);
-            output.set(e, score);
+    public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
+        double userScore = globalMean + userBiases.get(user);
+
+        List<Result> results = new ArrayList<>();
+        LongIterator iter = LongIterators.asLongIterator(items.iterator());
+        while (iter.hasNext()) {
+            long item = iter.nextLong();
+            double score = userScore + itemBiases.get(item);
+            results.add(Results.create(item, score));
         }
+        return Results.newResultMap(results);
     }
 
     /**
@@ -148,10 +159,11 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
             logger.info("trained baseline on {} ratings in {} iterations (final rmse={})", ratings.size(), trainingController.getIterationCount(), rmse);
 
             // Convert the uoff array to a SparseVector
-            MutableSparseVector svuoff = Vectors.fromArray(snapshot.userIndex(), uoff);
+
+            Long2DoubleMap svuoff = Long2DoubleSortedArrayMap.fromArray(snapshot.userIndex(), uoff);
             // Convert the ioff array to a SparseVector
-            MutableSparseVector svioff = Vectors.fromArray(snapshot.itemIndex(), ioff);
-            return new LeastSquaresItemScorer(svuoff.freeze(), svioff.freeze(), mean);
+            Long2DoubleMap svioff = Long2DoubleSortedArrayMap.fromArray(snapshot.itemIndex(), ioff);
+            return new LeastSquaresItemScorer(svuoff, svioff, mean);
         }
     }
 }

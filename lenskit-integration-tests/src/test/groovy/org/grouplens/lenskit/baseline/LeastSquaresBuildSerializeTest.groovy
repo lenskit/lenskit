@@ -29,6 +29,7 @@ import org.grouplens.lenskit.core.LenskitRecommenderEngine
 import org.grouplens.lenskit.core.ModelDisposition
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.junit.Test
+import org.lenskit.baseline.LeastSquaresItemScorer
 
 import static org.hamcrest.Matchers.instanceOf
 import static org.hamcrest.Matchers.notNullValue
