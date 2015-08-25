@@ -21,8 +21,6 @@
 package org.lenskit.baseline;
 
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer;
-import org.grouplens.lenskit.baseline.UserMeanItemScorer;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.*;

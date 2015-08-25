@@ -64,7 +64,6 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
                    .addMetric(new RMSEPredictMetric())
                    .addMetric(new MAEPredictMetric());
 
-
         Table result = evalCommand.call();
         assertThat(result, notNullValue());
         checkResults(result);

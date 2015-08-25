@@ -20,25 +20,25 @@
  */
 package org.lenskit.knn.item
 
-import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.RecommenderBuildException
-import org.grouplens.lenskit.baseline.BaselineScorer
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
-import org.grouplens.lenskit.baseline.UserMeanBaseline
-import org.grouplens.lenskit.baseline.UserMeanItemScorer
 import org.grouplens.lenskit.config.ConfigHelpers
-import org.grouplens.lenskit.core.LenskitRecommender
-import org.grouplens.lenskit.core.LenskitRecommenderEngine
 import org.grouplens.lenskit.core.ModelDisposition
 import org.grouplens.lenskit.data.dao.ItemDAO
-import org.lenskit.knn.item.model.ItemItemModel
-import org.lenskit.knn.item.model.StandardVectorTruncatorProvider
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
 import org.grouplens.lenskit.transform.truncate.VectorTruncator
 import org.junit.Test
+import org.lenskit.LenskitRecommender
+import org.lenskit.LenskitRecommenderEngine
+import org.lenskit.api.ItemScorer
+import org.lenskit.baseline.BaselineScorer
+import org.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.baseline.UserMeanBaseline
+import org.lenskit.baseline.UserMeanItemScorer
+import org.lenskit.knn.item.model.ItemItemModel
 import org.lenskit.knn.item.model.NormalizingItemItemModelBuilder
+import org.lenskit.knn.item.model.StandardVectorTruncatorProvider
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat

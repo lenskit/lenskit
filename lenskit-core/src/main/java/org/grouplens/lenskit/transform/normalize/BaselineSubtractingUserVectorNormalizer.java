@@ -20,14 +20,18 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.baseline.BaselineScorer;
+import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.baseline.BaselineScorer;
+import org.lenskit.util.collections.LongUtils;
 
 import javax.inject.Inject;
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * User vector normalizer that subtracts a user's baseline scores.
@@ -64,17 +68,21 @@ public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorN
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
-            MutableSparseVector base = MutableSparseVector.create(vector.keySet());
-            baselineScorer.score(user, base);
-            vector.subtract(base);
+            Map<Long,Double> base = baselineScorer.score(user, vector.keySet());
+            Long2DoubleFunction bf = LongUtils.asLong2DoubleFunction(base);
+            for (VectorEntry e: vector.view(VectorEntry.State.SET)) {
+                vector.set(e, e.getValue() - bf.get(e.getKey()));
+            }
             return vector;
         }
 
         @Override
         public MutableSparseVector unapply(MutableSparseVector vector) {
-            MutableSparseVector base = MutableSparseVector.create(vector.keySet());
-            baselineScorer.score(user, base);
-            vector.add(base);
+            Map<Long,Double> base = baselineScorer.score(user, vector.keySet());
+            Long2DoubleFunction bf = LongUtils.asLong2DoubleFunction(base);
+            for (VectorEntry e: vector.view(VectorEntry.State.SET)) {
+                vector.set(e, e.getValue() + bf.get(e.getKey()));
+            }
             return vector;
         }
     }
