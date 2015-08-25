@@ -18,21 +18,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.predict.ordrec;
+package org.lenskit.predict.ordrec;
 
-import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.basic.PrecomputedItemScorer;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.PrefetchingUserEventDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
-import org.lenskit.transform.quantize.Quantizer;
-import org.lenskit.transform.quantize.ValueArrayQuantizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.api.ResultMap;
+import org.lenskit.basic.PrecomputedItemScorer;
+import org.lenskit.transform.quantize.Quantizer;
+import org.lenskit.transform.quantize.ValueArrayQuantizer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,11 +42,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
-/**
- * This class use to test OrdRecRatingPrediction class.
- */
 public class OrdRecRatingPredictorTest {
-
     private EventDAO dao;
     private UserEventDAO userDAO;
     private Quantizer qtz;
@@ -95,12 +93,10 @@ public class OrdRecRatingPredictorTest {
                 .build();
 
         OrdRecRatingPredictor ordrec = new OrdRecRatingPredictor(scorer, userDAO, qtz);
-        MutableSparseVector predictItem = MutableSparseVector.create(10, 11, 12);
-        ordrec.predict(42, predictItem);
-        assertThat(predictItem.get(10), equalTo(1.0));
-        assertThat(predictItem.get(11), equalTo(2.0));
-        assertThat(predictItem.get(12), equalTo(3.0));
-
+        ResultMap preds = ordrec.predictWithDetails(42, LongUtils.packedSet(10, 11, 12));
+        assertThat(preds.getScore(10), equalTo(1.0));
+        assertThat(preds.getScore(11), equalTo(2.0));
+        assertThat(preds.getScore(12), equalTo(3.0));
     }
 
     /**
@@ -127,12 +123,10 @@ public class OrdRecRatingPredictorTest {
                 .build();
 
         OrdRecRatingPredictor ordrec = new OrdRecRatingPredictor(scorer, userDAO, qtz);
-        MutableSparseVector predictItem = MutableSparseVector.create(10, 11, 12);
-        ordrec.predict(42, predictItem);
-        assertThat(predictItem.get(10), equalTo(1.0));
-        assertThat(predictItem.get(11), equalTo(2.0));
-        assertThat(predictItem.get(12), equalTo(3.0));
-
+        ResultMap preds = ordrec.predictWithDetails(42, LongUtils.packedSet(10, 11, 12));
+        assertThat(preds.getScore(10), equalTo(1.0));
+        assertThat(preds.getScore(11), equalTo(2.0));
+        assertThat(preds.getScore(12), equalTo(3.0));
     }
 
     /**
@@ -160,11 +154,9 @@ public class OrdRecRatingPredictorTest {
 
 
         OrdRecRatingPredictor ordrec = new OrdRecRatingPredictor(scorer, userDAO, qtz);
-        MutableSparseVector predictItem = MutableSparseVector.create(10, 11, 12);
-        ordrec.predict(42, predictItem);
-        assertThat(predictItem.get(10), equalTo(1.0));
-        assertThat(predictItem.get(11), equalTo(2.0));
-        assertThat(predictItem.get(12), equalTo(3.0));
-
+        ResultMap preds = ordrec.predictWithDetails(42, LongUtils.packedSet(10, 11, 12));
+        assertThat(preds.getScore(10), equalTo(1.0));
+        assertThat(preds.getScore(11), equalTo(2.0));
+        assertThat(preds.getScore(12), equalTo(3.0));
     }
 }

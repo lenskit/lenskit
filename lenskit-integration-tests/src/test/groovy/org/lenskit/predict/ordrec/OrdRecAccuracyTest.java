@@ -18,18 +18,18 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.predict.ordrec;
+package org.lenskit.predict.ordrec;
 
-import org.grouplens.lenskit.RatingPredictor;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.iterative.IterationCount;
-import org.lenskit.mf.funksvd.FeatureCount;
-import org.lenskit.mf.funksvd.FunkSVDItemScorer;
 import org.grouplens.lenskit.test.CrossfoldTestSuite;
 import org.grouplens.lenskit.util.table.Table;
 import org.junit.Ignore;
 import org.lenskit.api.ItemScorer;
+import org.lenskit.api.RatingPredictor;
 import org.lenskit.baseline.*;
+import org.lenskit.mf.funksvd.FeatureCount;
+import org.lenskit.mf.funksvd.FunkSVDItemScorer;
 import org.lenskit.transform.quantize.PreferenceDomainQuantizer;
 import org.lenskit.transform.quantize.Quantizer;
 
@@ -38,10 +38,8 @@ import static org.junit.Assert.*;
 
 /**
  * Do major tests on the OrdRec recommender.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@Ignore("disabled until further testing done")
+@Ignore("not ready to really test accuracy")
 public class OrdRecAccuracyTest extends CrossfoldTestSuite {
     @SuppressWarnings("unchecked")
     @Override
