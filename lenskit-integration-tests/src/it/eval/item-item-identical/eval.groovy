@@ -24,13 +24,18 @@ import org.grouplens.lenskit.RatingPredictor
 import org.grouplens.lenskit.baseline.BaselineScorer
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.eval.metrics.predict.*
-import org.grouplens.lenskit.knn.NeighborhoodSize
-import org.grouplens.lenskit.knn.item.ItemItemScorer
-import org.grouplens.lenskit.knn.item.ModelSize
+import org.lenskit.knn.NeighborhoodSize
+import org.lenskit.knn.item.ItemItemScorer
+import org.lenskit.knn.item.ModelSize
 import org.grouplens.lenskit.knn.item.model.*
 import org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer
 import org.grouplens.lenskit.transform.truncate.VectorTruncator
+import org.lenskit.knn.item.model.ItemItemBuildContext
+import org.lenskit.knn.item.model.ItemItemModel
+import org.lenskit.knn.item.model.ItemwiseBuildContextProvider
+import org.lenskit.knn.item.model.NormalizingItemItemModelBuilder
+import org.lenskit.knn.item.model.StandardVectorTruncatorProvider
 
 def dataDir = config['lenskit.movielens.100k']
 

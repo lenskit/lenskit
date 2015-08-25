@@ -30,7 +30,7 @@ import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.pref.PreferenceDomainBuilder;
-import org.grouplens.lenskit.knn.item.model.ItemItemBuildContextProvider;
+import org.lenskit.knn.item.model.ItemItemBuildContextProvider;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.junit.Test;
 

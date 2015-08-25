@@ -23,6 +23,7 @@ package org.lenskit.util.collections;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.LongKeyIndex;
+import org.lenskit.util.keys.LongSortedArraySet;
 
 import java.util.*;
 
@@ -49,6 +50,21 @@ public final class LongUtils {
             return (Long2DoubleSortedMap) map;
         } else {
             return new Long2DoubleSortedArrayMap(map);
+        }
+    }
+
+    /**
+     * Create a frozen long set.  If the underlying collection is already an immutable sorted set (specifically, a
+     * {@link LongSortedArraySet}, it is used as-is. Otherwise, it is copied into a sorted array set.
+     *
+     * @param longs The collection.
+     * @return The sorted array set.
+     */
+    public static LongSortedSet frozenSet(Collection<Long> longs) {
+        if (longs instanceof LongSortedArraySet) {
+            return (LongSortedSet) longs;
+        } else {
+            return packedSet(longs);
         }
     }
 

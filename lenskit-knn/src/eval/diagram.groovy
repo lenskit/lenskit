@@ -27,10 +27,10 @@ import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.baseline.UserMeanBaseline
 import org.grouplens.lenskit.baseline.UserMeanItemScorer
-import org.grouplens.lenskit.knn.NeighborhoodSize
-import org.grouplens.lenskit.knn.item.ItemItemGlobalScorer
-import org.grouplens.lenskit.knn.item.ItemItemScorer
-import org.grouplens.lenskit.knn.user.UserUserItemScorer
+import org.lenskit.knn.NeighborhoodSize
+import org.lenskit.knn.item.ItemItemGlobalScorer
+import org.lenskit.knn.item.ItemItemScorer
+import org.lenskit.knn.user.UserUserItemScorer
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
 

@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.dao.ItemDAO;
-import org.grouplens.lenskit.knn.item.model.ItemItemBuildContext;
+import org.lenskit.knn.item.model.ItemItemBuildContext;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;

@@ -26,8 +26,8 @@ import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.baseline.UserMeanBaseline
 import org.grouplens.lenskit.baseline.UserMeanItemScorer
 import org.grouplens.lenskit.eval.metrics.predict.*
-import org.grouplens.lenskit.knn.item.ItemItemScorer
-import org.grouplens.lenskit.knn.item.ModelSize
+import org.lenskit.knn.item.ItemItemScorer
+import org.lenskit.knn.item.ModelSize
 
 def dataDir = config['lenskit.movielens.100k']
 
