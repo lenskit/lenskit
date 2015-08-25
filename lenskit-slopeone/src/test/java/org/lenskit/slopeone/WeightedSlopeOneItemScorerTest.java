@@ -18,27 +18,41 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.slopeone;
+package org.lenskit.slopeone;
 
-import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.dao.EventDAO;
+import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.pref.PreferenceDomainBuilder;
+import org.lenskit.LenskitRecommenderEngine;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.knn.item.model.ItemItemBuildContextProvider;
+import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.*;
 
-public class SlopeOneItemScorerTest {
+public class WeightedSlopeOneItemScorerTest {
 
     private static final double EPSILON = 1.0e-6;
+
+    private SlopeOneModel getModel(EventDAO dao) {
+        UserEventDAO uedao = new PrefetchingUserEventDAO(dao);
+        ItemDAO idao = new PrefetchingItemDAO(dao);
+        UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
+        ItemItemBuildContextProvider contextFactory = new ItemItemBuildContextProvider(
+                uedao, new DefaultUserVectorNormalizer(), summarizer);
+        SlopeOneModelBuilder provider = new SlopeOneModelBuilder(idao, contextFactory.get(), 0);
+        return provider.get();
+    }
 
     @Test
     public void testPredict1() throws RecommenderBuildException {
@@ -61,7 +75,7 @@ public class SlopeOneItemScorerTest {
 
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).to(EventCollectionDAO.create(rs));
-        config.bind(ItemScorer.class).to(SlopeOneItemScorer.class);
+        config.bind(ItemScorer.class).to(WeightedSlopeOneItemScorer.class);
         config.bind(PreferenceDomain.class).to(new PreferenceDomainBuilder(1, 5)
                                                        .setPrecision(1)
                                                        .build());
@@ -69,16 +83,17 @@ public class SlopeOneItemScorerTest {
                                                        .createRecommender()
                                                        .getItemScorer();
 
-        assertEquals(7 / 3.0, predictor.score(2, 9), EPSILON);
-        assertEquals(13 / 3.0, predictor.score(3, 6), EPSILON);
-        assertEquals(2, predictor.score(4, 6), EPSILON);
-        assertEquals(2, predictor.score(4, 9), EPSILON);
-        assertEquals(2.5, predictor.score(5, 6), EPSILON);
-        assertEquals(3, predictor.score(5, 7), EPSILON);
-        assertEquals(3.5, predictor.score(5, 9), EPSILON);
-        assertEquals(1.5, predictor.score(6, 6), EPSILON);
-        assertEquals(2, predictor.score(6, 7), EPSILON);
-        assertEquals(2.5, predictor.score(6, 9), EPSILON);
+        assertThat(predictor, notNullValue());
+        assertEquals(2.6, predictor.score(2, 9).getScore(), EPSILON);
+        assertEquals(4.2, predictor.score(3, 6).getScore(), EPSILON);
+        assertEquals(2, predictor.score(4, 6).getScore(), EPSILON);
+        assertEquals(2, predictor.score(4, 9).getScore(), EPSILON);
+        assertEquals(2.5, predictor.score(5, 6).getScore(), EPSILON);
+        assertEquals(3, predictor.score(5, 7).getScore(), EPSILON);
+        assertEquals(3.5, predictor.score(5, 9).getScore(), EPSILON);
+        assertEquals(1.5, predictor.score(6, 6).getScore(), EPSILON);
+        assertEquals(2, predictor.score(6, 7).getScore(), EPSILON);
+        assertEquals(2.5, predictor.score(6, 9).getScore(), EPSILON);
     }
 
     @Test
@@ -94,7 +109,7 @@ public class SlopeOneItemScorerTest {
 
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).to(EventCollectionDAO.create(rs));
-        config.bind(ItemScorer.class).to(SlopeOneItemScorer.class);
+        config.bind(ItemScorer.class).to(WeightedSlopeOneItemScorer.class);
         config.bind(PreferenceDomain.class).to(new PreferenceDomainBuilder(1, 5)
                                                        .setPrecision(1)
                                                        .build());
@@ -102,10 +117,11 @@ public class SlopeOneItemScorerTest {
                                                        .createRecommender()
                                                        .getItemScorer();
 
-        assertEquals(5, predictor.score(1, 5), EPSILON);
-        assertEquals(2.25, predictor.score(1, 6), EPSILON);
-        assertEquals(5, predictor.score(2, 5), EPSILON);
-        assertEquals(1.75, predictor.score(3, 4), EPSILON);
-        assertEquals(1, predictor.score(3, 6), EPSILON);
+        assertThat(predictor, notNullValue());
+        assertEquals(5, predictor.score(1, 5).getScore(), EPSILON);
+        assertEquals(2.25, predictor.score(1, 6).getScore(), EPSILON);
+        assertEquals(5, predictor.score(2, 5).getScore(), EPSILON);
+        assertEquals(1.75, predictor.score(3, 4).getScore(), EPSILON);
+        assertEquals(1, predictor.score(3, 6).getScore(), EPSILON);
     }
 }

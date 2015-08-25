@@ -18,21 +18,10 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.slopeone;
+package org.lenskit.slopeone;
 
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.RatingPredictor;
-import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.baseline.BaselineScorer;
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer;
-import org.grouplens.lenskit.baseline.UserMeanBaseline;
-import org.grouplens.lenskit.baseline.UserMeanItemScorer;
-import org.grouplens.lenskit.basic.SimpleRatingPredictor;
-import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.LenskitRecommender;
-import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.event.Rating;
@@ -40,6 +29,17 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.lenskit.LenskitRecommender;
+import org.lenskit.LenskitRecommenderEngine;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.api.RatingPredictor;
+import org.lenskit.api.Recommender;
+import org.lenskit.baseline.BaselineScorer;
+import org.lenskit.baseline.ItemMeanRatingItemScorer;
+import org.lenskit.baseline.UserMeanBaseline;
+import org.lenskit.baseline.UserMeanItemScorer;
+import org.lenskit.basic.SimpleRatingPredictor;
+import org.lenskit.basic.TopNItemRecommender;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,8 +82,9 @@ public class SlopeOneItemRecommenderTest {
         assertThat(rec.getItemScorer(),
                    instanceOf(SlopeOneItemScorer.class));
         RatingPredictor rp = rec.getRatingPredictor();
+        assertThat(rp, notNullValue());
         assertThat(rp, instanceOf(SimpleRatingPredictor.class));
-        assertThat(((SimpleRatingPredictor) rp).getScorer(),
+        assertThat(((SimpleRatingPredictor) rp).getItemScorer(),
                    sameInstance(rec.getItemScorer()));
         assertThat(rec.getItemRecommender(),
                    instanceOf(TopNItemRecommender.class));

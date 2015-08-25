@@ -18,22 +18,28 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.slopeone;
+package org.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
-import org.grouplens.lenskit.data.history.History;
-import org.grouplens.lenskit.data.history.UserHistory;
+import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Rating;
+import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.api.Result;
+import org.lenskit.api.ResultMap;
+import org.lenskit.results.Results;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * An {@link org.grouplens.lenskit.ItemScorer} that implements a weighted Slope One algorithm.
@@ -45,39 +51,40 @@ public class WeightedSlopeOneItemScorer extends SlopeOneItemScorer {
         super(dao, model, dom);
     }
 
+    @Nonnull
     @Override
-    public void score(long uid, @Nonnull MutableSparseVector scores) {
-        UserHistory<Rating> history = dao.getEventsForUser(uid, Rating.class);
+    public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
+        UserHistory<Rating> history = dao.getEventsForUser(user, Rating.class);
         if (history == null) {
-            history = History.forUser(uid);
+            history = History.forUser(user);
         }
-        SparseVector ratings = RatingVectorUserHistorySummarizer.makeRatingVector(history);
+        SparseVector userVector = RatingVectorUserHistorySummarizer.makeRatingVector(history);
 
-        for (VectorEntry e : scores.view(VectorEntry.State.EITHER)) {
-            final long predicteeItem = e.getKey();
-            if (!ratings.containsKey(predicteeItem)) {
+        List<Result> results = new ArrayList<>();
+        LongIterator iter = LongIterators.asLongIterator(items.iterator());
+        while (iter.hasNext()) {
+            final long predicteeItem = iter.nextLong();
+            if (!userVector.containsKey(predicteeItem)) {
                 double total = 0;
-                int nusers = 0;
-                LongIterator ratingIter = ratings.keySet().iterator();
-                while (ratingIter.hasNext()) {
-                    long currentItem = ratingIter.nextLong();
+                int nitems = 0;
+                for (VectorEntry e: userVector) {
+                    long currentItem = e.getKey();
                     double currentDev = model.getDeviation(predicteeItem, currentItem);
                     if (!Double.isNaN(currentDev)) {
                         int weight = model.getCoratings(predicteeItem, currentItem);
-                        total += (currentDev + ratings.get(currentItem)) * weight;
-                        nusers += weight;
+                        total += (currentDev + e.getValue()) * weight;
+                        nitems += weight;
                     }
                 }
-                if (nusers == 0) {
-                    scores.unset(e);
-                } else {
-                    double predValue = total / nusers;
+                if (nitems != 0) {
+                    double predValue = total / nitems;
                     if (domain != null) {
                         predValue = domain.clampValue(predValue);
                     }
-                    scores.set(e, predValue);
+                    results.add(Results.create(predicteeItem, predValue));
                 }
             }
         }
+        return Results.newResultMap(results);
     }
 }
