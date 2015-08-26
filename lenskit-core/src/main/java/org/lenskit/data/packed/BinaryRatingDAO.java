@@ -191,7 +191,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     public Long getLimitTimestamp() {
         return limitTimestamp;
     }
-    
+
     @Override
     public ObjectStream<Event> streamEvents() {
         return streamEvents(Event.class);
