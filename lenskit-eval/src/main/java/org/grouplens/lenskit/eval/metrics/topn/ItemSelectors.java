@@ -30,7 +30,6 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.ItemDAO;
@@ -43,6 +42,7 @@ import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.hamcrest.Matcher;
+import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

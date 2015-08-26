@@ -36,6 +36,7 @@
 // Aggregate documentation
 ext.masterProjects = ['lenskit-api', 'lenskit-core', 'lenskit-data-structures',
                       'lenskit-groovy', 'lenskit-eval', 'lenskit-cli',
+                      'lenskit-gradle',
                       'lenskit-knn', 'lenskit-svd',
                       'lenskit-slopeone', 'lenskit-predict']
 task javadoc(type: Javadoc, group: 'build') {
@@ -51,24 +52,34 @@ task javadoc(type: Javadoc, group: 'build') {
 // Set up JavaDoc configuration
 allprojects {
     logger.info 'configuring JavaDoc for {}', name
+    dependencies {
+        support 'ch.raffael.pegdown-doclet:pegdown-doclet:1.1'
+    }
     tasks.withType(Javadoc) { task ->
         task.configure {
             onlyIf {
                 JavaVersion.current() >= JavaVersion.VERSION_1_7
             }
+            doFirst {
+                for (file in configurations.support) {
+                    options.docletpath file
+                }
+            }
             options {
+                doclet 'ch.raffael.doclets.pegdown.PegdownDoclet'
+
                 tags 'todo:a:To Do:', 'review:a:Review:'
 
                 tags "compat:pt:<a href=\"$webUrl/documentation/versioning/\">Compatibility</a>"
 
-                jFlags "-Dgrouplens.javadoc.versioning.url=$webUrl/documentation/versioning/"
-
-                group 'General API', 'org.grouplens.lenskit'
+                group 'General API', 'org.grouplens.lenskit', 'org.lenskit', 'org.lenskit.api'
                 group('Core', 'org.grouplens.lenskit.core',
-                      'org.grouplens.lenskit.basic', 'org.grouplens.lenskit.config')
+                      'org.grouplens.lenskit.basic', 'org.grouplens.lenskit.config',
+                      'org.lenskit.basic')
                 group('Data Structures', 'org.grouplens.lenskit.vectors',
                       'org.grouplens.lenskit.collections', 'org.grouplens.lenskit.symbols',
-                      'org.grouplens.lenskit.scored', 'org.grouplens.lenskit.indexes')
+                      'org.grouplens.lenskit.scored', 'org.grouplens.lenskit.indexes',
+                      'org.lenskit.results')
                 group('Data Access', 'org.grouplens.lenskit.data*',
                       'org.grouplens.lenskit.cursors')
                 group('Data Transformation',
@@ -79,16 +90,21 @@ allprojects {
                       'org.grouplens.lenskit.mf*', 'org.grouplens.lenskit.slopeone*')
                 group('Recommender Evaluation and Tooling',
                       'org.grouplens.lenskit.eval*',
-                      'org.grouplens.lenskit.cli*')
+                      'org.grouplens.lenskit.cli*',
+                      'org.lenskit.cli*',
+                      'org.lenskit.eval*')
                 group('Utility Classes',
                       'org.grouplens.lenskit.util*',
+                      'org.lenskit.util*',
                       'org.grouplens.lenskit.test*',
                       'org.grouplens.lenskit.inject',
                       'org.grouplens.lenskit.iterative')
 
+                links 'http://docs.oracle.com/javase/7/docs/api/'
                 links 'http://fastutil.di.unimi.it/docs/'
                 links 'http://docs.guava-libraries.googlecode.com/git-history/release/javadoc/'
                 links 'http://dev.grouplens.org/grapht/apidocs/'
+                links 'http://www.atetric.com/atetric/javadoc/com.google.auto.service/auto-service/1.0-rc1/'
 
                 footer "<script type=\"text/javascript\" src=\"http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML\"></script>"
             }

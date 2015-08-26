@@ -22,7 +22,6 @@ package org.grouplens.lenskit.eval.metrics.topn;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
@@ -33,12 +32,13 @@ import org.grouplens.lenskit.eval.traintest.MockTestUser;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.util.collections.LongUtils;
 
 import javax.inject.Inject;
 import java.util.Collections;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

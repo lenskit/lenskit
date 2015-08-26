@@ -22,9 +22,9 @@ package org.grouplens.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.basic.AbstractGlobalItemScorer;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.knn.item.model.ItemItemModel;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;

@@ -26,9 +26,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.ItemRecommender;
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.event.Event;
@@ -43,6 +41,7 @@ import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -195,33 +194,5 @@ public class TopNItemRecommender extends AbstractItemRecommender {
      */
     protected LongSet getPredictableItems(long user) {
         return itemDAO.getItemIds();
-    }
-
-    /**
-     * An intelligent provider for Top-N recommenders. It provides a Top-N recommender
-     * if there is an {@link ItemScorer} available, and returns {@code null} otherwise.  This is
-     * the default provider for {@link ItemRecommender}.
-     */
-    public static class Provider implements javax.inject.Provider<TopNItemRecommender> {
-        private final UserEventDAO userEventDAO;
-        private final ItemDAO itemDAO;
-        private final ItemScorer scorer;
-
-        @Inject
-        public Provider(UserEventDAO uedao, ItemDAO idao,
-                        @Nullable ItemScorer s) {
-            userEventDAO = uedao;
-            itemDAO = idao;
-            scorer = s;
-        }
-
-        @Override
-        public TopNItemRecommender get() {
-            if (scorer == null) {
-                return null;
-            } else {
-                return new TopNItemRecommender(userEventDAO, itemDAO, scorer);
-            }
-        }
     }
 }

@@ -11,9 +11,9 @@ can also find information on the [wiki][] about how to use LensKit
 without downloading the source code.  If this is your first time working
 with LensKit we recommend checking out the [Getting Started][] guide.
 
-[web site]: http://lenskit.grouplens.org
-[wiki]: http://github.com/grouplens/lenskit/wiki/
-[Getting Started]: http://github.com/grouplens/lenskit/wiki/GettingStarted
+[web site]: http://lenskit.org
+[wiki]: http://github.com/lenskit/lenskit/wiki/
+[Getting Started]: http://github.com/lenskit/lenskit/wiki/GettingStarted
 [mailing list]: https://wwws.cs.umn.edu/mm-cs/listinfo/lenskit
 
 LensKit is made available under the GNU Lesser General Public License
@@ -141,13 +141,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## Contributing to LensKit
   
 We welcome contribution to LensKit.  If you are looking for something
-to work on, we recommend perusing the open tickets on our [Trac][wiki]
-or asking on the [mailing list][].
+to work on, we recommend perusing the open tickets on GitHub
+or asking on the [mailing list](https://wwws.cs.umn.edu/mm-cs/listinfo/lenskit).
 
 We prefer to receive code submissions as GitHub pull requests.  To
 do this:
 
-1. Fork the LensKit repository (`grouplens/lenskit`) on GitHub
+1. Fork the LensKit repository (`lenskit/lenskit`) on GitHub
 2. Push your changes to your fork
 3. Submit a pull request via the GitHub web interface
    

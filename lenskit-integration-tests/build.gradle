@@ -1,5 +1,3 @@
-import org.gradle.process.internal.ExecException
-
 /*
  * Build system for LensKit, and open-source recommender systems toolkit.
  * Copyright 2010-2014 Regents of the University of Minnesota and contributors
@@ -35,13 +33,16 @@ import org.gradle.process.internal.ExecException
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import org.gradle.process.internal.ExecException
+
+apply plugin: 'groovy'
+apply from: "$rootDir/gradle/test-utils.gradle"
+
 dependencies {
     compile project(':lenskit-all')
     compile project(':lenskit-test')
     testRuntime project(':lenskit-cli')
 }
-
-apply plugin: 'groovy'
 
 // These tests require the MovieLens data set - arrange to download it
 ext.mlDataDir = file("$buildDir/ml-100k")
@@ -57,7 +58,7 @@ task fetchData(group: 'build') {
     onlyIf { !gradle.startParameter.isOffline() }
 }
 fetchData << {
-    logger.lifecycle "This analysis makes use of the MovieLens 100K data set from GroupLens Research.  Use of this data set is restricted to non-commercial purposes and is only permitted in accordance with the license terms.  More information is available at <http://lenskit.grouplens.org/ML100K>."
+    logger.lifecycle "This analysis makes use of the MovieLens 100K data set from GroupLens Research.  Use of this data set is restricted to non-commercial purposes and is only permitted in accordance with the license terms.  More information is available at <http://lenskit.org/ML100K>."
     mkdir buildDir
     ant {
         get src: mlDataURL, dest: mlDataFile, skipexisting: true

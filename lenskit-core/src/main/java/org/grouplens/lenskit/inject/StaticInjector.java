@@ -20,10 +20,7 @@
  */
 package org.grouplens.lenskit.inject;
 
-import org.grouplens.grapht.Component;
-import org.grouplens.grapht.Dependency;
-import org.grouplens.grapht.InjectionException;
-import org.grouplens.grapht.Injector;
+import org.grouplens.grapht.*;
 import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.Desire;
@@ -31,6 +28,7 @@ import org.grouplens.grapht.reflect.Desires;
 import org.grouplens.grapht.reflect.QualifierMatcher;
 import org.grouplens.grapht.reflect.Qualifiers;
 
+import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 
 /**
@@ -54,6 +52,25 @@ public class StaticInjector implements Injector {
 
     @Override
     public <T> T getInstance(Class<T> type) throws InjectionException {
+        T obj = tryGetInstance(Qualifiers.matchDefault(), type);
+        if (obj == null) {
+            throw new ResolutionException("no resolution available for " + type);
+        } else {
+            return obj;
+        }
+    }
+
+    public <T> T tryGetInstance(Class<? extends Annotation> qual, Class<T> type) throws InjectionException {
+        return tryGetInstance(Qualifiers.match(qual), type);
+    }
+
+    public <T> T tryGetInstance(QualifierMatcher qmatch, Class<T> type) throws InjectionException {
+        DAGNode<Component, Dependency> node = GraphtUtils.findSatisfyingNode(graph, qmatch, type);
+        return node != null ? type.cast(instantiator.instantiate(node)) : null;
+    }
+
+    @Nullable
+    public <T> T tryGetInstance(Class<T> type) throws InjectionException {
         Desire d = Desires.create(null, type, true);
         DAGEdge<Component, Dependency> e =
                 graph.getOutgoingEdgeWithLabel(Dependency.hasInitialDesire(d));
@@ -70,21 +87,19 @@ public class StaticInjector implements Injector {
         }
     }
 
-    public <T> T getInstance(Class<? extends Annotation> qual, Class<T> type) throws InjectionException {
-        return getInstance(Qualifiers.match(qual), type);
-    }
-
-    public <T> T getInstance(QualifierMatcher qmatch, Class<T> type) throws InjectionException {
-        DAGNode<Component, Dependency> node = GraphtUtils.findSatisfyingNode(graph, qmatch, type);
-        if (node != null) {
-            return type.cast(instantiator.instantiate(node));
-        } else {
-            return null;
-        }
+    @Nullable
+    @Override
+    public <T> T tryGetInstance(Annotation qualifier, Class<T> type) throws InjectionException {
+        return tryGetInstance(Qualifiers.match(qualifier), type);
     }
 
     @Override
     public <T> T getInstance(Annotation qualifier, Class<T> type) throws InjectionException {
-        return getInstance(Qualifiers.match(qualifier), type);
+        T obj = tryGetInstance(Qualifiers.match(qualifier), type);
+        if (obj == null) {
+            throw new ResolutionException("no resolution available for " + type + " with qualifier " + qualifier);
+        } else {
+            return obj;
+        }
     }
 }

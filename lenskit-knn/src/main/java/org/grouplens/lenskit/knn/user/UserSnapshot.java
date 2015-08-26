@@ -24,8 +24,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.collections.LongKeyDomain;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
@@ -36,6 +34,8 @@ import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.keys.LongKeyIndex;
 
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
@@ -53,7 +53,7 @@ import java.util.List;
 @DefaultProvider(UserSnapshot.Builder.class)
 public class UserSnapshot implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final LongKeyDomain users;
+    private final LongKeyIndex users;
     private final List<ImmutableSparseVector> vectors;
     private final List<ImmutableSparseVector> normedVectors;
     private final Long2ObjectMap<LongSortedSet> itemUserSets;
@@ -64,26 +64,26 @@ public class UserSnapshot implements Serializable {
      * @param vs The list of raw user vectors.
      * @param nvs The list of normalized user vectors.
      */
-    UserSnapshot(LongKeyDomain us, List<ImmutableSparseVector> vs, List<ImmutableSparseVector> nvs,
+    UserSnapshot(LongKeyIndex us, List<ImmutableSparseVector> vs, List<ImmutableSparseVector> nvs,
                  Long2ObjectMap<LongSortedSet> iuSets) {
-        Preconditions.checkArgument(vs.size() == us.domainSize(),
+        Preconditions.checkArgument(vs.size() == us.size(),
                                     "incorrectly sized vector list");
-        Preconditions.checkArgument(nvs.size() == us.domainSize(),
+        Preconditions.checkArgument(nvs.size() == us.size(),
                                     "incorrectly sized normalized vector list");
-        users = us.clone();
+        users = us;
         vectors = ImmutableList.copyOf(vs);
         normedVectors = ImmutableList.copyOf(nvs);
         itemUserSets = iuSets;
     }
 
     public ImmutableSparseVector getUserVector(long user) {
-        int idx = users.getIndexIfActive(user);
+        int idx = users.getIndex(user);
         Preconditions.checkArgument(idx >= 0, "invalid user " + user);
         return vectors.get(idx);
     }
 
     public ImmutableSparseVector getNormalizedUserVector(long user) {
-        int idx = users.getIndexIfActive(user);
+        int idx = users.getIndex(user);
         Preconditions.checkArgument(idx >= 0, "invalid user " + user);
         return normedVectors.get(idx);
     }
@@ -120,11 +120,10 @@ public class UserSnapshot implements Serializable {
             }
 
             Long2ObjectMap<LongList> itemUserLists = new Long2ObjectOpenHashMap<LongList>();
-            LongKeyDomain domain = LongKeyDomain.fromCollection(vectors.keySet()).compactCopy(true);
-            assert domain.size() == domain.domainSize();
+            LongKeyIndex domain = LongKeyIndex.fromCollection(vectors.keySet());
             ImmutableList.Builder<ImmutableSparseVector> vecs = ImmutableList.builder();
             ImmutableList.Builder<ImmutableSparseVector> nvecs = ImmutableList.builder();
-            for (LongIterator uiter = domain.activeSetView().iterator(); uiter.hasNext();) {
+            for (LongIterator uiter = domain.keyIterator(); uiter.hasNext();) {
                 final long user = uiter.nextLong();
                 MutableSparseVector vec = vectors.get(user);
                 // save user's original vector
@@ -149,7 +148,7 @@ public class UserSnapshot implements Serializable {
             for (Long2ObjectMap.Entry<LongList> entry: itemUserLists.long2ObjectEntrySet()) {
                 itemUserSets.put(entry.getLongKey(), LongUtils.packedSet(entry.getValue()));
             }
-            return new UserSnapshot(domain.unowned(), vecs.build(), nvecs.build(), itemUserSets);
+            return new UserSnapshot(domain, vecs.build(), nvecs.build(), itemUserSets);
         }
     }
 }

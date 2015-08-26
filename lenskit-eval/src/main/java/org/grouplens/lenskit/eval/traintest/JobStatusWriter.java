@@ -127,7 +127,7 @@ class JobStatusWriter {
                     writer.print("- task: ");
                     writer.println(job);
                     DateTime start = startTime.get(job);
-                    writer.format("  started: %s\n", format.print(start));
+                    writer.format("  started: %s%n", format.print(start));
                     writer.println("  thread: " + threads.get(job).getName());
                 }
             } finally {

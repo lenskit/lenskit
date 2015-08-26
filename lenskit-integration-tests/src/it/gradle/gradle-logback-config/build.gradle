@@ -1,0 +1,33 @@
+buildscript {
+    repositories {
+        maven {
+            url "$project.testRepoURI"
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.hamcrest:hamcrest-library:1.3'
+        classpath "org.grouplens.lenskit:lenskit-gradle:$project.lenskitVersion"
+    }
+}
+
+import org.lenskit.gradle.*
+import static org.hamcrest.MatcherAssert.*
+import static org.hamcrest.Matchers.*
+
+apply plugin: 'java'
+apply plugin: 'lenskit'
+apply from: 'common.gradle'
+
+task version(type: Version) {
+    logbackConfiguration 'logback.xml'
+    logFile 'unused.log'
+}
+
+check {
+    dependsOn 'version'
+    doLast {
+        assertThat "log file test-log.log exists", file('test-log.log').exists()
+        assertThat "log file unused.log does not exist", !file('unused.log').exists()
+    }
+}

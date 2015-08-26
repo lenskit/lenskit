@@ -93,7 +93,7 @@ public class Predict implements Command {
                 }
             }
         }
-        System.out.format("predictions for user %d:\n", user);
+        System.out.format("predictions for user %d:%n", user);
         for (VectorEntry e: preds) {
             System.out.format("  %d", e.getKey());
             if (names != null) {

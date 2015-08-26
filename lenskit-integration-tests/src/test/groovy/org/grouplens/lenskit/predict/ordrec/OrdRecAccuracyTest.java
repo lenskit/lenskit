@@ -28,8 +28,8 @@ import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.mf.funksvd.FeatureCount;
 import org.grouplens.lenskit.mf.funksvd.FunkSVDItemScorer;
 import org.grouplens.lenskit.test.CrossfoldTestSuite;
-import org.grouplens.lenskit.transform.quantize.PreferenceDomainQuantizer;
-import org.grouplens.lenskit.transform.quantize.Quantizer;
+import org.lenskit.transform.quantize.PreferenceDomainQuantizer;
+import org.lenskit.transform.quantize.Quantizer;
 import org.grouplens.lenskit.util.table.Table;
 import org.junit.Ignore;
 

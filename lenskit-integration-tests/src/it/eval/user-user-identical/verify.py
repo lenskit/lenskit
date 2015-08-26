@@ -25,8 +25,8 @@ import pandas as pd
 
 preds = pd.read_csv('predictions.csv')
 algos = set(preds['Algorithm'])
-preds_wide = preds.pivot_table(rows=['User', 'Item', 'Rating'],
-                               cols='Algorithm',
+preds_wide = preds.pivot_table(index=['User', 'Item', 'Rating'],
+                               columns='Algorithm',
                                values='Prediction')
 pred_range = preds_wide.max(1) - preds_wide.min(1)
 

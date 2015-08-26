@@ -27,10 +27,10 @@ import com.google.common.escape.Escaper;
 import com.google.common.escape.Escapers;
 
 import javax.annotation.Nullable;
+import javax.annotation.WillCloseWhenClosed;
 import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -52,23 +52,30 @@ class GraphWriter implements Closeable {
 
     private final BufferedWriter output;
 
-    public GraphWriter(Writer out) throws IOException {
-        output = new BufferedWriter(out);
-        output.append("digraph {\n");
+    public GraphWriter(@WillCloseWhenClosed BufferedWriter out) throws IOException {
+        output = out;
+        output.append("digraph {");
+        output.newLine();
         output.append("  node [fontname=\"Helvetica\"")
               .append(",color=\"").append(ComponentNodeBuilder.UNSHARED_BGCOLOR).append("\"")
-              .append("];\n");
-        output.append("  graph [rankdir=LR];\n");
+              .append("];");
+        output.newLine();
+        output.append("  graph [rankdir=LR];");
+        output.newLine();
         output.append("  edge [")
               .append("color=\"")
               .append(ComponentNodeBuilder.UNSHARED_BGCOLOR).append("\"")
-              .append("];\n");
+              .append("];");
+        output.newLine();
     }
 
     @Override
     public void close() throws IOException {
-        output.write("}\n");
-        output.close();
+        // write the end of the GraphViz file, closing the writer when we're done
+        try (BufferedWriter w = output) {
+            w.write("}");
+            w.newLine();
+        }
     }
 
     private String safeValue(Object obj) {
@@ -101,7 +108,8 @@ class GraphWriter implements Closeable {
         output.append("  ")
               .append(id);
         putAttributes(node.getAttributes());
-        output.append(";\n");
+        output.append(";");
+        output.newLine();
     }
 
     public void putEdge(GVEdge edge) throws IOException {
@@ -112,7 +120,8 @@ class GraphWriter implements Closeable {
               .append(" -> ")
               .append(dst);
         putAttributes(edge.getAttributes());
-        output.append(";\n");
+        output.append(";");
+        output.newLine();
     }
 
     public void putSubgraph(GVSubgraph subgraph) throws IOException {
@@ -121,13 +130,15 @@ class GraphWriter implements Closeable {
         if (name != null) {
             output.append(name).append(" ");
         }
-        output.append("{\n");
+        output.append("{");
+        output.newLine();
         for (Map.Entry<String,Object> e: subgraph.getAttributes().entrySet()) {
             output.append("    ")
                   .append(e.getKey())
                   .append("=")
                   .append(safeValue(e.getValue()))
-                  .append(";\n");
+                  .append(";");
+            output.newLine();
         }
         for (GVNode node: subgraph.getNodes()) {
             putNode(node);
@@ -135,6 +146,7 @@ class GraphWriter implements Closeable {
         for (GVEdge edge: subgraph.getEdges()) {
             putEdge(edge);
         }
-        output.append("  }\n");
+        output.append("  }");
+        output.newLine();
     }
 }

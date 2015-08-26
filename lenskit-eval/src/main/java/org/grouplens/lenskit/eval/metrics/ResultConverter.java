@@ -24,14 +24,13 @@ import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.primitives.Ints;
+import com.google.common.collect.Ordering;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -101,12 +100,23 @@ public class ResultConverter<T> {
                 columns.add(new FieldColumn(f));
             }
         }
-        Collections.sort(columns);
 
-        return new ResultConverter<T>(type, columns);
+        ImmutableList<Column> sorted = 
+                Ordering.natural()
+                        .onResultOf(new Function<Column, Integer>() {
+                            @Override
+                            public Integer apply(@Nullable Column input) {
+                                assert input != null;
+                                int c = input.getInfo().order();
+                                // negative values should sort last
+                                return c >= 0 ? c : Integer.MAX_VALUE;
+                            }
+                        })
+                        .immutableSortedCopy(columns);
+        return new ResultConverter<>(type, sorted);
     }
 
-    private abstract static class Column implements Comparable<Column> {
+    private abstract static class Column {
         private final ResultColumn info;
 
         Column(AnnotatedElement elem) {
@@ -117,17 +127,8 @@ public class ResultConverter<T> {
             return info.value();
         }
 
-        @Override
-        public int compareTo(Column o) {
-            int col1 = info.order();
-            if (col1 < 0) {
-                col1 = Integer.MAX_VALUE;
-            }
-            int col2 = o.info.order();
-            if (col2 < 0) {
-                col2 = Integer.MAX_VALUE;
-            }
-            return Ints.compare(col1, col2);
+        public ResultColumn getInfo() {
+            return info;
         }
 
         public abstract Object getValue(Object obj);

@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.eval.temporal;
 
+import com.google.common.base.Preconditions;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
@@ -42,8 +43,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-;
-
 public class TemporalEvaluator {
     private BinaryRatingDAO dataSource;
     private AlgorithmInstance algorithm;
@@ -52,26 +51,8 @@ public class TemporalEvaluator {
     private TableWriter tableWriter;
 
     /**
-     * Construct a temporal evaluator.
-     */
-    public TemporalEvaluator() {
-        this(null);
-    }
-
-    /**
-     * Create a temporal evaluator with a custom configuration.
-     * TODO fix required
-     *
-     * @param props Properties for the eval configuration.
-     */
-    public TemporalEvaluator(Properties props) {
-        //predictOutputFile = new File("temporal-eval-results.csv");
-        predictOutputFile = new File("predictions.csv");
-    }
-
-    /**
      * Adds an algorithmInfo
-     * <p/>
+     * <p>
      * If any exception is thrown while the command is called it is rethrown as a runtime error.
      *
      * @param algo The algorithmInfo added
@@ -99,7 +80,7 @@ public class TemporalEvaluator {
      * @param data The dataset to be added to the command.
      * @return Itself to allow for  method chaining.
      */
-    public TemporalEvaluator setDataSet(BinaryRatingDAO dao) {
+    public TemporalEvaluator setDataSource(BinaryRatingDAO dao) {
         dataSource = dao;
         return this;
     }
@@ -108,7 +89,7 @@ public class TemporalEvaluator {
      * @param file
      * @return
      */
-    public TemporalEvaluator setDataSet(File file) throws IOException {
+    public TemporalEvaluator setDataSource(File file) throws IOException {
         dataSource = BinaryRatingDAO.open(file);
         return this;
     }
@@ -147,6 +128,24 @@ public class TemporalEvaluator {
     }
 
     /**
+     * Returns prediction output file
+     *
+     * @return
+     */
+    public File getPredictOutputFile() {
+        return predictOutputFile;
+    }
+
+    /**
+     * Returns rebuild period
+     *
+     * @return
+     */
+    public Long getRebuildPeriod() {
+        return rebuildPeriod;
+    }
+
+    /**
      * when the evaluation is run, it will replay the ratings, try to predict each one, and
      * write the prediction and the rating to the output file (using a TableWriter)
      *
@@ -154,42 +153,44 @@ public class TemporalEvaluator {
      */
 
     public TemporalEvaluator execute() throws IOException, RecommenderBuildException {
+        Preconditions.checkState(algorithm != null, "no algorithm specified");
+        Preconditions.checkState(dataSource != null, "no input data specified");
+        Preconditions.checkState(predictOutputFile != null, "no output file specified");
+
         TableLayoutBuilder tlb = new TableLayoutBuilder();
         tlb.addColumn("User")
-           .addColumn("Item")
-           .addColumn("Rating")
-           .addColumn("Prediction")
-           .addColumn("TimeStamp");
+                .addColumn("Item")
+                .addColumn("Rating")
+                .addColumn("Timestamp")
+                .addColumn("Prediction");
 
         TableLayout tl = tlb.build();
         tableWriter = CSVWriter.open(predictOutputFile, tl, CompressionMode.AUTO);
 
         List<Rating> ratings = Cursors.makeList(dataSource.streamEvents(Rating.class, SortOrder.TIMESTAMP));
-        BinaryRatingDAO limitedDao = null;
-        LenskitConfiguration config = new LenskitConfiguration();
-        LenskitRecommenderEngine lre = null;
-        Recommender recommender = null;
+        BinaryRatingDAO limitedDao = dataSource.createWindowedView(0);
+        LenskitRecommenderEngine lre;
+        Recommender recommender;
 
-        for (Rating r : ratings) {
-            if (limitedDao == null || limitedDao.getLimitTimestamp() < r.getTimestamp()) {
-                limitedDao = dataSource.createWindowedView(r.getTimestamp());
+        try {
+            for (Rating r : ratings) {
+                if (r.getTimestamp() > 0 && limitedDao.getLimitTimestamp() < r.getTimestamp()) {
+                    limitedDao = dataSource.createWindowedView(r.getTimestamp());
+                }
+                LenskitConfiguration config = new LenskitConfiguration();
                 config.addComponent(limitedDao);
                 lre = LenskitRecommenderEngine.newBuilder()
-                                              .addConfiguration(algorithm.getConfig())
-                                              .addConfiguration(config, ModelDisposition.EXCLUDED)
-                                              .build();
+                        .addConfiguration(algorithm.getConfig())
+                        .addConfiguration(config, ModelDisposition.EXCLUDED)
+                        .build();
                 recommender = lre.createRecommender(config);
+                double prediction = recommender.getRatingPredictor().predict(r.getUserId(), r.getItemId());
+                tableWriter.writeRow(r.getUserId(), r.getItemId(), r.getValue(), r.getTimestamp(), prediction);
             }
-
-            double prediction = recommender.getRatingPredictor().predict(r.getUserId(), r.getItemId());
-            tableWriter.writeRow(r.getUserId(), r.getItemId(), r.getValue(), prediction, r.getTimestamp());
-
+        } finally {
+            tableWriter.close();
         }
         return this;
-    }
-
-    public void close() throws IOException {
-        tableWriter.close();
     }
 }
 

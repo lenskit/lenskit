@@ -56,11 +56,12 @@ file('src/it/gradle').eachDir { testDir ->
     task("test$tname", type: GradleBuild) {
         dependsOn makeTestRepo, fetchData
         inputs.dir testDir
+        inputs.file 'src/it/gradle/common.gradle'
         inputs.dir "$buildDir/test-repo"
         outputs.dir workDir
 
         startParameter.projectProperties = [
-                testRepoURI: uri("$buildDir/test-repo"),
+                testRepoURI: rootProject.uri("build/test-repo"),
                 lenskitVersion: project.version,
                 ratingsFile: "$mlDataDir/u.data"
         ]
@@ -75,6 +76,11 @@ file('src/it/gradle').eachDir { testDir ->
             copy {
                 from testDir
                 into workDir
+            }
+            copy {
+                from 'src/it/gradle'
+                into workDir
+                include 'common.gradle'
             }
             println "running gradle build for $testDir"
         }

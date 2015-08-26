@@ -67,9 +67,8 @@ public class Main {
                          SystemUtils.JAVA_VM_NAME,
                          SystemUtils.JAVA_VM_VERSION,
                          SystemUtils.JAVA_VM_VENDOR);
-            logger.debug("Memory limit of {} MiB",
-                         rt.maxMemory() >> 20);
-            logger.debug("Have {} processors", rt.availableProcessors());
+            logger.info("Have {} processors and heap limit of {} MiB",
+                        rt.availableProcessors(), rt.maxMemory() >> 20);
             Command cmd = options.get("command");
             cmd.execute(options);
         } catch (ArgumentParserException e) {

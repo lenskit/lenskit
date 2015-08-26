@@ -34,12 +34,11 @@ import java.lang.annotation.Annotation;
  * with {@link LenskitRecommenderEngine} will produce this type of
  * recommender.
  *
- * <p>The {@link Recommender} interface will meet most needs, so most users can
+ * The {@link Recommender} interface will meet most needs, so most users can
  * ignore this class.  However, if you need to inspect internal components of a
  * recommender (e.g. extract the item-item similarity matrix), this class and its
  * {@link #get(Class)} method can be useful.
  *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public class LenskitRecommender implements Recommender {
@@ -67,7 +66,7 @@ public class LenskitRecommender implements Recommender {
      */
     public <T> T get(Class<T> cls) {
         try {
-            return injector.getInstance(cls);
+            return injector.tryGetInstance(cls);
         } catch (InjectionException e) {
             throw new RuntimeException("error instantiating component", e);
         }
@@ -86,7 +85,7 @@ public class LenskitRecommender implements Recommender {
      */
     public <T> T get(Class<? extends Annotation> qual, Class<T> cls) {
         try {
-            return injector.getInstance(qual, cls);
+            return injector.tryGetInstance(qual, cls);
         } catch (InjectionException e) {
             throw new RuntimeException("error instantiating component", e);
         }
@@ -105,7 +104,7 @@ public class LenskitRecommender implements Recommender {
      */
     public <T> T get(Annotation qual, Class<T> cls) {
         try {
-            return injector.getInstance(qual, cls);
+            return injector.tryGetInstance(qual, cls);
         } catch (InjectionException e) {
             throw new RuntimeException("error instantiating component", e);
         }
@@ -113,7 +112,14 @@ public class LenskitRecommender implements Recommender {
 
     @Override
     public ItemScorer getItemScorer() {
-        return get(ItemScorer.class);
+        ItemScorer scorer = get(ItemScorer.class);
+        if (scorer == null) {
+            org.lenskit.api.ItemScorer ns = get(org.lenskit.api.ItemScorer.class);
+            if (ns != null) {
+                scorer = new ItemScorerCompatWrapper(ns);
+            }
+        }
+        return scorer;
     }
 
     @Override
@@ -123,12 +129,26 @@ public class LenskitRecommender implements Recommender {
 
     @Override
     public RatingPredictor getRatingPredictor() {
-        return get(RatingPredictor.class);
+        RatingPredictor scorer = get(RatingPredictor.class);
+        if (scorer == null) {
+            org.lenskit.api.RatingPredictor ns = get(org.lenskit.api.RatingPredictor.class);
+            if (ns != null) {
+                scorer = new RatingPredictorCompatWrapper(ns);
+            }
+        }
+        return scorer;
     }
 
     @Override
     public ItemRecommender getItemRecommender() {
-        return get(ItemRecommender.class);
+        ItemRecommender rec = get(ItemRecommender.class);
+        if (rec == null) {
+            org.lenskit.api.ItemRecommender ns = get(org.lenskit.api.ItemRecommender.class);
+            if (ns != null) {
+                rec = new ItemRecommenderCompatWrapper(ns);
+            }
+        }
+        return rec;
     }
 
     @Override

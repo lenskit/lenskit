@@ -34,14 +34,12 @@
  */
 
 apply from: "$rootDir/gradle/maven.gradle"
+apply from: "$rootDir/gradle/test-utils.gradle"
 
 dependencies {
-    compile group: 'it.unimi.dsi', name:'fastutil', version: '6.6.1'
+    compile group: 'it.unimi.dsi', name:'fastutil', version: '7.0.7'
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3'
-
-    testCompile project(':lenskit-test')
-    testCompile group: 'net.java.quickcheck', name: 'quickcheck', version: '0.6'
 }
 
 meta {

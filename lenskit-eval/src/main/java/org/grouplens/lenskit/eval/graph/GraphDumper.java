@@ -41,10 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Provider;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
@@ -337,7 +334,8 @@ public class GraphDumper {
         DAGNode<Component, Dependency> unshared = instantiator.simulate();
         logger.debug("unshared graph has {} nodes", unshared.getReachableNodes().size());
         try (Writer writer = new FileWriter(graphvizFile);
-             GraphWriter gw = new GraphWriter(writer)) {
+             BufferedWriter bw = new BufferedWriter(writer);
+             GraphWriter gw = new GraphWriter(bw)) {
 
             GraphDumper dumper = new GraphDumper(graph, unshared.getReachableNodes(), gw);
             logger.debug("writing root node");

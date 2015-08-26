@@ -39,5 +39,5 @@ public interface RecommenderEngine {
      *
      * @return A recommender ready for use.
      */
-    public Recommender createRecommender();
+    Recommender createRecommender();
 }

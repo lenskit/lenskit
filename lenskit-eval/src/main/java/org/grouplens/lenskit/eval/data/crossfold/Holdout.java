@@ -20,10 +20,12 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
+import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.eval.crossfold.Order;
+import org.lenskit.eval.crossfold.PartitionAlgorithm;
+
 import java.util.List;
 import java.util.Random;
-
-import org.grouplens.lenskit.data.event.Rating;
 
 /**
  * A train-test holdout method.

@@ -21,16 +21,15 @@
 package org.grouplens.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.collections.LongKeyDomain;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.keys.LongKeyIndex;
 
 import java.util.NoSuchElementException;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class AdaptiveSparseItemIteratorTest {
     ItemItemBuildContext context;
@@ -41,7 +40,7 @@ public class AdaptiveSparseItemIteratorTest {
         userItems.put(42, LongUtils.packedSet(2, 5, 9));
         userItems.put(39, LongUtils.packedSet(2, 7, 9, 13));
         userItems.put(12, universe.subSet(2, 97));
-        context = new ItemItemBuildContext(LongKeyDomain.fromCollection(universe),
+        context = new ItemItemBuildContext(LongKeyIndex.fromCollection(universe),
                                            null, userItems);
     }
 

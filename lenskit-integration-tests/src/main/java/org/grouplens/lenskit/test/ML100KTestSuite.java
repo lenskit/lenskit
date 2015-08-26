@@ -82,11 +82,11 @@ public class ML100KTestSuite {
                        " MovieLens 100K data set into data/ml-100k, or set the" +
                        " lenskit.movielens.100k property to point to the location" +
                        " of an unpacked copy of the data set.  For more details, see" +
-                       " http://lenskit.grouplens.org/ML100K", inputFile.exists());
+                       " http://lenskit.org/ML100K", inputFile.exists());
         } else if (!inputFile.exists()) {
             // if the property is set, fail fatally if it doesn't work
             throw new FileNotFoundException("ML data set at " + inputFile + ". " +
-                                            "See <http://lenskit.grouplens.org/ML100K>.");
+                                            "See <http://lenskit.org/ML100K>.");
         }
         ratingDAO = TextEventDAO.create(inputFile, Formats.ml100kFormat());
         DelimitedColumnEventFormat format = DelimitedColumnEventFormat.create("like");

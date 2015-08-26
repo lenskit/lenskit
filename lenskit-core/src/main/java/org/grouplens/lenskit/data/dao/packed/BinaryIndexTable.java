@@ -125,7 +125,7 @@ class BinaryIndexTable implements Serializable {
         return new BinaryIndexTable(dom, offsets, sizes, dup.asIntBuffer());
     }
 
-    public  BinaryIndexTable createLimitedView(int limit) {
+    public BinaryIndexTable createLimitedView(int limit) {
         LongKeyDomain newKeys = keys.clone();
         int[] newSizes = new int[sizes.length];
         for (int i=0;i<offsets.length;i++) {
@@ -146,6 +146,7 @@ class BinaryIndexTable implements Serializable {
         }
         return new BinaryIndexTable(newKeys,offsets, newSizes, indexStore);
     }
+
     public LongSet getKeys() {
         return keys.activeSetView();
     }

@@ -21,14 +21,14 @@
 package org.grouplens.lenskit.basic;
 
 
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.util.collections.LongUtils;
 
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 
 public class SimpleCachingItemScorerTest {

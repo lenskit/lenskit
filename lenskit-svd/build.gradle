@@ -34,9 +34,11 @@
  */
 
 apply from: "$rootDir/gradle/maven.gradle"
+apply from: "$rootDir/gradle/test-utils.gradle"
 
 dependencies {
     compile project(':lenskit-core')
+    compile group:'org.apache.commons', name:'commons-math3', version:'3.5'
 }
 
 meta {

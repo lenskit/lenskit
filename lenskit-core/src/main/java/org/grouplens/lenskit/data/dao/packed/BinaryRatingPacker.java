@@ -30,9 +30,9 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.event.Events;
 import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

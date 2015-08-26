@@ -91,18 +91,18 @@ class InputDataTest {
 
     @Test
     public void testDataSource() {
-        def file = File.createTempFile("input", ".conf")
-        file.text = """\
-type: text
-file: foo.tsv
-delimiter: "\\t"
-domain: {
-  minimum: 0.5
-  maximum: 5.0
-  precision: 0.5
-}
-"""
+        def file = File.createTempFile("input", ".json")
+        file.text = """{
+  "file": "foo.tsv",
+  "delimiter": "\\t",
+  "domain": {
+    "minimum": 0.5,
+    "maximum": 5.0,
+    "precision": 0.5
+  }
+}"""
         def data = parse('--data-source', file.absolutePath)
+        assertThat(data.source, instanceOf(TextDataSource))
         def input = data.source as TextDataSource
         assertThat(input.file.name, equalTo('foo.tsv'))
         assertThat(input.format.delimiter, equalTo('\t'))
@@ -111,17 +111,18 @@ domain: {
 
     @Test
     public void testPackDataSource() {
-        def file = File.createTempFile("input", ".conf")
-        file.text = """\
-type: pack
-file: foo.pack
-domain: {
-  minimum: 0.5
-  maximum: 5.0
-  precision: 0.5
-}
-"""
+        def file = File.createTempFile("input", ".json")
+        file.text = """{
+  "@class": "org.lenskit.specs.data.PackedDataSourceSpec",
+  "file": "foo.pack",
+  "domain": {
+    "minimum": 0.5,
+    "maximum": 5.0,
+    "precision": 0.5
+  }
+}"""
         def data = parse('--data-source', file.absolutePath)
+        assertThat(data.source, instanceOf(PackedDataSource))
         def input = data.source as PackedDataSource
         assertThat(input.file.name, equalTo('foo.pack'))
         assertThat(input.preferenceDomain, equalTo(PreferenceDomain.fromString("[0.5,5.0]/0.5")))

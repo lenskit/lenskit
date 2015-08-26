@@ -20,8 +20,6 @@
  */
 package org.lenskit.cli.util;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
@@ -33,9 +31,9 @@ import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;
 import org.grouplens.lenskit.data.source.TextDataSourceBuilder;
 import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
 import org.grouplens.lenskit.data.text.EventFormat;
-import org.grouplens.lenskit.specs.SpecificationContext;
-import org.grouplens.lenskit.specs.SpecificationException;
 import org.grouplens.lenskit.data.text.Formats;
+import org.lenskit.specs.SpecUtils;
+import org.lenskit.specs.data.DataSourceSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,19 +64,18 @@ public class InputData {
 
         File sourceFile = options.get("data_source");
         if (sourceFile != null) {
-            SpecificationContext ctx;
+            ClassLoader cl = null;
             if (environment != null) {
-                ctx = SpecificationContext.create(environment.getClassLoader(),
-                                                  new File(".").toURI());
-            } else {
-                ctx = SpecificationContext.create(new File(".").toURI());
+                cl = environment.getClassLoader();
             }
-            Config cfg = ConfigFactory.parseFile(sourceFile);
+            DataSourceSpec spec = null;
             try {
-                return ctx.build(DataSource.class, cfg);
-            } catch (SpecificationException e) {
-                throw new RuntimeException("Cannot configure data source", e);
+                spec = SpecUtils.load(DataSourceSpec.class, sourceFile.toPath());
+            } catch (IOException e) {
+                logger.error("error loading " + sourceFile, e);
+                throw new RuntimeException("error loading " + sourceFile, e);
             }
+            return SpecUtils.buildObject(DataSource.class, spec, cl);
         }
 
         String type = options.get("event_type");

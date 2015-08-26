@@ -21,21 +21,19 @@
 package org.grouplens.lenskit.data.source;
 
 import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableMap;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.specs.SpecificationContext;
 import org.grouplens.lenskit.util.MoreSuppliers;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
+import org.lenskit.specs.data.DataSourceSpec;
+import org.lenskit.specs.data.PackedDataSourceSpec;
 
-import javax.annotation.Nonnull;
 import javax.inject.Provider;
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * Data source backed by a packed rating file.
@@ -115,17 +113,23 @@ public class PackedDataSource implements DataSource {
         }
     }
 
-    @Nonnull
     @Override
-    public Map<String, Object> toSpecification(SpecificationContext context) {
-        ImmutableMap.Builder<String,Object> bld = ImmutableMap.builder();
-        bld.put("type", "pack")
-           .put("name", getName())
-           .put("file", context.relativize(file));
+    public DataSourceSpec toSpec() {
+        PackedDataSourceSpec spec = new PackedDataSourceSpec();
+        spec.setName(getName());
+        spec.setFile(getPackedFile().toPath());
         if (domain != null) {
-            bld.put("domain", domain.toSpecification(context));
+            spec.setDomain(domain.toSpec());
         }
-        return bld.build();
+        return spec;
+    }
+
+    public static PackedDataSource fromSpec(PackedDataSourceSpec spec) {
+        PackedDataSourceBuilder dsb = new PackedDataSourceBuilder();
+        dsb.setName(spec.getName())
+           .setFile(spec.getFile().toFile())
+           .setDomain(PreferenceDomain.fromSpec(spec.getDomain()));
+        return dsb.build();
     }
 
     private class DAOProvider implements Provider<BinaryRatingDAO>, Describable {

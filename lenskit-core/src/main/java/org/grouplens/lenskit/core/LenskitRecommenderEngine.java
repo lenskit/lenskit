@@ -46,13 +46,17 @@ import java.io.*;
  * LensKit implementation of a recommender engine.  It uses containers set up by
  * the {@link LenskitConfiguration} to set up actual recommenders, and can build
  * multiple recommenders from the same model.
- * <p>If you just want to quick create a recommender for evaluation or testing,
- * consider using {@link LenskitRecommender#build(LenskitConfiguration)}.</p>
  *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * If you just want to quick create a recommender for evaluation or testing,
+ * consider using {@link LenskitRecommender#build(LenskitConfiguration)}.  For more
+ * control, use {@link LenskitRecommenderEngineBuilder}; to load a pre-built recommender
+ * engine, use {@link LenskitRecommenderEngineLoader}.
+ *
  * @compat Public
  * @see LenskitConfiguration
  * @see LenskitRecommender
+ * @see LenskitRecommenderEngineBuilder
+ * @see LenskitRecommenderEngineLoader
  */
 public final class LenskitRecommenderEngine implements RecommenderEngine {
     private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngine.class);
@@ -204,6 +208,12 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @throws RecommenderConfigurationException if there is an error configuring the recommender.
      */
     public LenskitRecommender createRecommender(LenskitConfiguration config) throws RecommenderConfigurationException {
+        final DAGNode<Component, Dependency> toBuild = createRecommenderGraph(config);
+
+        return new LenskitRecommender(toBuild);
+    }
+
+    public DAGNode<Component, Dependency> createRecommenderGraph(LenskitConfiguration config) throws RecommenderConfigurationException {
         Preconditions.checkNotNull(config, "extra configuration");
         final DAGNode<Component, Dependency> toBuild;
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
@@ -215,8 +225,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
             throw new RecommenderConfigurationException("error reconfiguring recommender", ex);
         }
         GraphtUtils.checkForPlaceholders(toBuild, logger);
-
-        return new LenskitRecommender(toBuild);
+        return toBuild;
     }
 
     /**

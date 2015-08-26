@@ -23,8 +23,6 @@ package org.grouplens.lenskit.knn.item.model;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.collections.LongKeyDomain;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
@@ -37,6 +35,8 @@ import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.keys.LongKeyIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,8 +81,8 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
         Long2ObjectMap<LongSortedSet> userItems = new Long2ObjectOpenHashMap<LongSortedSet>(1000);
         buildItemRatings(itemRatingData, userItems);
 
-        LongKeyDomain items = LongKeyDomain.fromCollection(itemRatingData.keySet(), true);
-        final int n = items.domainSize();
+        LongKeyIndex items = LongKeyIndex.fromCollection(itemRatingData.keySet());
+        final int n = items.size();
         assert n == itemRatingData.size();
         // finalize the item data into vectors
         SparseVector[] itemRatings = new SparseVector[n];

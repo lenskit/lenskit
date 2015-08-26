@@ -21,15 +21,13 @@
 package org.grouplens.lenskit.baseline;
 
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
+import org.lenskit.util.collections.LongUtils;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.everyItem;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

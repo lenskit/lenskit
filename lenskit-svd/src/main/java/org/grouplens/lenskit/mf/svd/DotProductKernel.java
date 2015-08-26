@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.mf.svd;
 
-import mikera.vectorz.AVector;
+import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.core.Shareable;
 
 import javax.annotation.Nonnull;
@@ -39,7 +39,7 @@ public class DotProductKernel implements BiasedMFKernel, Serializable {
     private static final long serialVersionUID = 1L;
 
     @Override
-    public double apply(double bias, @Nonnull AVector user, @Nonnull AVector item) {
+    public double apply(double bias, @Nonnull RealVector user, @Nonnull RealVector item) {
         return bias + user.dotProduct(item);
     }
 

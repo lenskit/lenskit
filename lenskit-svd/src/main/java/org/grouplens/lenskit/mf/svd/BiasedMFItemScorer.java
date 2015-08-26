@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.mf.svd;
 
-import mikera.vectorz.AVector;
+import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.baseline.BaselineScorer;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
@@ -65,7 +65,7 @@ public class BiasedMFItemScorer extends AbstractItemScorer {
      *         user.
      */
     @Nullable
-    protected AVector getUserPreferenceVector(long user) {
+    protected RealVector getUserPreferenceVector(long user) {
         return model.getUserVector(user);
     }
 
@@ -73,7 +73,7 @@ public class BiasedMFItemScorer extends AbstractItemScorer {
     public void score(long user, @Nonnull MutableSparseVector scores) {
         baseline.score(user, scores);
 
-        AVector uvec = getUserPreferenceVector(user);
+        RealVector uvec = getUserPreferenceVector(user);
         if (uvec == null) {
             return;
         }
@@ -81,7 +81,7 @@ public class BiasedMFItemScorer extends AbstractItemScorer {
         // scores is now prepopulated with biases, vector is loaded
         for (VectorEntry e: scores) {
             long item = e.getKey();
-            AVector ivec = model.getItemVector(item);
+            RealVector ivec = model.getItemVector(item);
             if (ivec != null) {
                 scores.set(e, kernel.apply(e.getValue(), uvec, ivec));
             }

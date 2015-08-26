@@ -21,17 +21,15 @@
 package org.grouplens.lenskit.basic;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.GlobalItemScorer;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.util.collections.LongUtils;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.Collections;
 import java.util.List;
@@ -46,6 +44,7 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
     protected final ItemDAO itemDAO;
     protected final GlobalItemScorer scorer;
 
+    @Inject
     public TopNGlobalItemRecommender(ItemDAO idao, GlobalItemScorer scorer) {
         itemDAO = idao;
         this.scorer = scorer;
@@ -106,31 +105,5 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
         }
 
         return accum.finish();
-    }
-
-    /**
-     * An intelligent provider for Top-N global recommenders. It provides a Top-N global recommender
-     * if there is an {@link GlobalItemScorer} available, and returns {@code null} otherwise.  This is
-     * the default provider for {@link GlobalItemRecommender}.
-     */
-    public static class Provider implements javax.inject.Provider<TopNGlobalItemRecommender> {
-        private final ItemDAO itemDAO;
-        private final GlobalItemScorer scorer;
-
-        @Inject
-        public Provider(ItemDAO dao,
-                        @Nullable GlobalItemScorer s) {
-            itemDAO = dao;
-            scorer = s;
-        }
-
-        @Override
-        public TopNGlobalItemRecommender get() {
-            if (scorer == null) {
-                return null;
-            } else {
-                return new TopNGlobalItemRecommender(itemDAO, scorer);
-            }
-        }
     }
 }

@@ -22,9 +22,9 @@ package org.grouplens.lenskit.data.dao;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.util.io.LKFileUtils;
+import org.lenskit.util.collections.LongUtils;
 
 import java.io.File;
 import java.io.IOException;

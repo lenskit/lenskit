@@ -40,9 +40,6 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven {
-            url 'https://oss.sonatype.org/content/repositories/snapshots/'
-        }
     }
     dependencies {
         classpath 'net.elehack.gradle:gradle-util:0.3'
@@ -120,10 +117,19 @@ install {
 task installForTesting(type: Upload) {
     repositories {
         mavenDeployer {
-            repository(url: rootProject.project('lenskit-integration-tests').uri('build/test-repo'))
+            repository(url: rootProject.uri('build/test-repo'))
         }
     }
     configuration = configurations.archives
+}
+// enforce ordering on the testing-install operation for parallel builds
+// FIXME enforce ordering between adjacent projects
+afterEvaluate {
+    def pdeps = configurations.runtime.allDependencies.withType(ProjectDependency)
+    def pdNames = pdeps*.dependencyProject*.path
+    pdNames.each {
+        installForTesting.mustRunAfter "$it:installForTesting"
+    }
 }
 
 uploadArchives {
@@ -169,7 +175,7 @@ afterEvaluate {
         packaging 'jar'
         // optionally artifactId can be defined here
         description meta.description
-        url 'http://lenskit.grouplens.org'
+        url 'http://lenskit.org'
 
         scm {
             connection 'scm:git:http://github.com/grouplens/lenskit.git'

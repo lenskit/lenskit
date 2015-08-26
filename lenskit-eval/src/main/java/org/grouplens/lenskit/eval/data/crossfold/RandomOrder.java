@@ -20,20 +20,9 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
-
 /**
- * Ordering that randomizes the list.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Use {@link org.lenskit.eval.crossfold.RandomOrder}.
  */
-public class RandomOrder<E> implements Order<E> {
-
-    @Override
-    public void apply(List<E> list, Random rng) {
-        Collections.shuffle(list, rng);
-    }
-
+@Deprecated
+public class RandomOrder extends org.lenskit.eval.crossfold.RandomOrder {
 }

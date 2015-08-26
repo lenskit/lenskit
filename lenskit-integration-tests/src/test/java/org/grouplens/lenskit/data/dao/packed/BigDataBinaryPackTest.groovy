@@ -21,10 +21,8 @@
 package org.grouplens.lenskit.data.dao.packed
 
 import com.google.common.collect.Iterables
-import groovy.transform.CompileStatic
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongSet
-import org.grouplens.lenskit.collections.LongUtils
 import org.grouplens.lenskit.cursors.Cursor
 import org.grouplens.lenskit.data.dao.*
 import org.grouplens.lenskit.data.event.Event
@@ -35,6 +33,7 @@ import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.lenskit.util.collections.LongUtils
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
