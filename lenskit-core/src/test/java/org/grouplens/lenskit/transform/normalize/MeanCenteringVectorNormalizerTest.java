@@ -23,7 +23,6 @@ package org.grouplens.lenskit.transform.normalize;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
-import org.lenskit.util.math.InvertibleIdRealFunction;
 
 import static org.hamcrest.Matchers.closeTo;
 import static org.junit.Assert.assertThat;

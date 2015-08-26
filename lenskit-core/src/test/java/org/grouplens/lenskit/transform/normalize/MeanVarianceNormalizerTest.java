@@ -28,7 +28,6 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.lenskit.util.math.InvertibleIdRealFunction;
 
 import java.util.ArrayList;
 import java.util.List;
