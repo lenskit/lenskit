@@ -18,16 +18,16 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data.traintest;
+package org.lenskit.eval.traintest;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.data.dao.UserListUserDAO;
 import org.grouplens.lenskit.data.source.DataSource;
-import org.lenskit.eval.traintest.DataSet;
+import org.grouplens.lenskit.eval.data.traintest.QueryData;
 import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.eval.TTDataSetSpec;
 
@@ -38,12 +38,9 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * A train-test data set backed by a pair of factories.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 0.8
+ * A train-test data set.
  */
-public class GenericTTDataSet implements TTDataSet {
+public class DataSet {
     @Nonnull
     private final String name;
     @Nonnull
@@ -56,12 +53,21 @@ public class GenericTTDataSet implements TTDataSet {
     private final UUID group;
     private final Map<String, Object> attributes;
 
-    public GenericTTDataSet(@Nonnull String name,
-                            @Nonnull DataSource train,
-                            @Nullable DataSource query,
-                            @Nonnull DataSource test,
-                            UUID grp,
-                            Map<String, Object> attrs) {
+    /**
+     * Create a new data set.
+     * @param name The name.
+     * @param train The training source.
+     * @param query The query source (if any).
+     * @param test The test data source.
+     * @param grp The data set isolation group.
+     * @param attrs The data set attributes.
+     */
+    public DataSet(@Nonnull String name,
+                   @Nonnull DataSource train,
+                   @Nullable DataSource query,
+                   @Nonnull DataSource test,
+                   @Nonnull UUID grp,
+                   Map<String, Object> attrs) {
         Preconditions.checkNotNull(train, "no training data");
         Preconditions.checkNotNull(test, "no test data");
         this.name = name;
@@ -76,8 +82,13 @@ public class GenericTTDataSet implements TTDataSet {
         }
     }
 
-    public static TTDataSet fromSpec(TTDataSetSpec spec) {
-        GenericTTDataBuilder bld = new GenericTTDataBuilder();
+    /**
+     * Create a train-test data set from a specification.
+     * @param spec The specification.
+     * @return The train-test data set.
+     */
+    public static DataSet fromSpec(TTDataSetSpec spec) {
+        DataSetBuilder bld = new DataSetBuilder();
         // TODO support query sets
         bld.setName(spec.getName())
            .setTest(SpecUtils.buildObject(DataSource.class, spec.getTestSource()))
@@ -86,73 +97,78 @@ public class GenericTTDataSet implements TTDataSet {
         return bld.build();
     }
 
-    @Override
+    /**
+     * Get the data set name.
+     *
+     * @return A name for the data set. Used in the output file.
+     */
     @Nonnull
     public String getName() {
         return name;
     }
 
-    @Override
+    /**
+     * Get the data set attributes (used for identification in output).
+     *
+     * @return A key &rarr; value map of the attributes used to identify this data
+     *         set. For example, a crossfold data set may include the source
+     *         name and fold number.
+     */
     public Map<String, Object> getAttributes() {
         return attributes;
     }
 
-    @Override
+    /**
+     * Get the isolation group ID for this data set.  Data sets in the same group will be allowed to
+     * run in parallel.  This is used to implement data set isolation.
+     *
+     * @return The group ID for this data set.
+     */
     public UUID getIsolationGroup() {
         return group;
     }
 
-    @Override
-    public long lastModified() {
-        return Math.max(trainData.lastModified(),
-                        testData.lastModified());
-    }
-
-    @Override
-    public EventDAO getTrainingDAO() {
-        return trainData.getEventDAO();
-    }
-
-    @Override
-    public EventDAO getQueryDAO() {
-        return queryData.getEventDAO();
-    }
-
-    @Override
-    public EventDAO getTestDAO() {
-        return testData.getEventDAO();
-    }
-
-    @Override
+    /**
+     * Get the training data.
+     *
+     * @return A data source containing the test data.
+     */
     @Nonnull
     public DataSource getTestData() {
         return testData;
     }
 
-    @Override
+    /**
+     * Get the training data.
+     *
+     * @return A data source containing the training data.
+     */
     @Nonnull
     public DataSource getTrainingData() {
         return trainData;
     }
 
-    @Override
+    /**
+     * Get the query data.
+     *
+     * @return A data source containing the query data.
+     */
     public DataSource getQueryData() {
         return queryData;
     }
 
-    @Override
+    /**
+     * Configure LensKit to have the training data from this data source.
+     *
+     * @param config A configuration in which the training data for this data set should be
+     *               configured.
+     */
     public void configure(LenskitConfiguration config) {
         trainData.configure(config);
         config.bind(QueryData.class, UserDAO.class)
               .to(new UserListUserDAO(getTestData().getUserDAO().getUserIds()));
     }
 
-    @Override
-    public String toString() {
-        return String.format("{TTDataSet %s}", name);
-    }
-
-    @Override
     public TTDataSetSpec toSpec() {
         TTDataSetSpec spec = new TTDataSetSpec();
         spec.setName(name);
@@ -163,12 +179,28 @@ public class GenericTTDataSet implements TTDataSet {
         return spec;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("DataSet(")
+          .append(getName())
+          .append(")");
+        if (!attributes.isEmpty()) {
+            sb.append("[");
+            Joiner.on(", ")
+                  .withKeyValueSeparator("=")
+                  .appendTo(sb, attributes);
+            sb.append("]");
+        }
+        return sb.toString();
+    }
+
     /**
      * Create a new generic train-test data set builder.
      * @return The new builder.
      */
-    public static GenericTTDataBuilder newBuilder() {
-        return new GenericTTDataBuilder();
+    public static DataSetBuilder newBuilder() {
+        return new DataSetBuilder();
     }
 
     /**
@@ -176,15 +208,15 @@ public class GenericTTDataSet implements TTDataSet {
      * @param name The data set name.
      * @return The new builder.
      */
-    public static GenericTTDataBuilder newBuilder(String name) {
-        return new GenericTTDataBuilder(name);
+    public static DataSetBuilder newBuilder(String name) {
+        return new DataSetBuilder(name);
     }
 
     /**
      * Create a new builder initialized with this data set's values.
      * @return A new builder initialized to make a copy of this data set definition.
      */
-    public GenericTTDataBuilder copyBuilder() {
+    public DataSetBuilder copyBuilder() {
         return copyBuilder(this);
     }
 
@@ -192,8 +224,8 @@ public class GenericTTDataSet implements TTDataSet {
      * Create a new builder initialized with this data set's values.
      * @return A new builder initialized to make a copy of this data set definition.
      */
-    public static GenericTTDataBuilder copyBuilder(TTDataSet data) {
-        GenericTTDataBuilder builder = newBuilder(data.getName());
+    public static DataSetBuilder copyBuilder(DataSet data) {
+        DataSetBuilder builder = newBuilder(data.getName());
         builder.setTest(data.getTestData())
                .setQuery(data.getQueryData())
                .setTrain(data.getTrainingData())
@@ -202,17 +234,5 @@ public class GenericTTDataSet implements TTDataSet {
             builder.setAttribute(attr.getKey(), attr.getValue());
         }
         return builder;
-    }
-
-    public static TTDataSet fromDS(DataSet data) {
-        GenericTTDataBuilder builder = newBuilder(data.getName());
-        builder.setTest(data.getTestData())
-               .setQuery(data.getQueryData())
-               .setTrain(data.getTrainingData())
-               .setIsolationGroup(data.getIsolationGroup());
-        for (Map.Entry<String,Object> attr: data.getAttributes().entrySet()) {
-            builder.setAttribute(attr.getKey(), attr.getValue());
-        }
-        return builder.build();
     }
 }

@@ -24,12 +24,15 @@ import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
+import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.lenskit.eval.crossfold.*;
+import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.specs.eval.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -357,7 +360,11 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
             crossfolder.setMethod(SplitMethods.sampleUsers(order, partition, sampleSize));
         }
         crossfolder.execute();
-        return crossfolder.getDataSets();
+        List<TTDataSet> results = new ArrayList<>();
+        for (DataSet ds: crossfolder.getDataSets()) {
+            results.add(GenericTTDataSet.fromDS(ds));
+        }
+        return results;
     }
 
     @Override

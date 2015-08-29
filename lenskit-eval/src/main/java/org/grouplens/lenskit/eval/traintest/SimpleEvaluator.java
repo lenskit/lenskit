@@ -39,6 +39,7 @@ import org.lenskit.eval.crossfold.SplitMethods;
 import org.lenskit.eval.crossfold.Crossfolder;
 import org.lenskit.eval.crossfold.FractionPartition;
 import org.lenskit.eval.crossfold.RandomOrder;
+import org.lenskit.eval.traintest.DataSet;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -145,8 +146,8 @@ public class SimpleEvaluator implements Callable<Table> {
      */
     public SimpleEvaluator addDataset(Crossfolder cross){
         crossfolders.add(cross);
-        for (TTDataSet data: cross.getDataSets()) {
-            result.addDataset(data);
+        for (DataSet data: cross.getDataSets()) {
+            result.addDataset(GenericTTDataSet.fromDS(data));
         }
         return this;
     }
@@ -226,7 +227,7 @@ public class SimpleEvaluator implements Callable<Table> {
     /**
      * Adds a single {@code TTDataSet} to the {@code TrainTestEvalCommand}.
      *
-     * This acts a wrapper around {@code TrainTestEvalCommand.addDataset}
+     * This acts a wrapper around {@code TrainTestEvalCommand.addDataSet}
      * @param data The dataset to be added to the command.
      * @return Itself to allow for  method chaining.
      */

@@ -31,6 +31,8 @@ import org.grouplens.lenskit.eval.data.RatingWriters;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
+import org.lenskit.eval.traintest.DataSet;
+import org.lenskit.eval.traintest.DataSetBuilder;
 import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.eval.*;
 import org.slf4j.Logger;
@@ -393,13 +395,13 @@ public class Crossfolder {
         }
 
         List<Path> specFiles = getSpecFiles();
-        List<TTDataSet> dataSets = getDataSets();
+        List<DataSet> dataSets = getDataSets();
         Path fullSpecFile = getOutputDir().resolve("all-partitions.json");
         List<Object> specs = new ArrayList<>(partitionCount);
         assert dataSets.size() == partitionCount;
         for (int i = 0; i < partitionCount; i++) {
             Path file = specFiles.get(i);
-            TTDataSet ds = dataSets.get(i);
+            DataSet ds = dataSets.get(i);
             TTDataSetSpec spec = ds.toSpec();
             specs.add(spec);
             SpecUtils.write(spec, file);
@@ -411,23 +413,23 @@ public class Crossfolder {
     /**
      * Get the train-test splits as data sets.
      * 
-     * @return The partition files stored as a list of TTDataSet
+     * @return The data sets produced by this crossfolder.
      */
-    public List<TTDataSet> getDataSets() {
-        List<TTDataSet> dataSets = new ArrayList<TTDataSet>(partitionCount);
+    public List<DataSet> getDataSets() {
+        List<DataSet> dataSets = new ArrayList<>(partitionCount);
         List<Path> trainFiles = getTrainingFiles();
         List<Path> testFiles = getTestFiles();
         for (int i = 0; i < partitionCount; i++) {
-            GenericTTDataBuilder ttBuilder = new GenericTTDataBuilder(getName() + "." + i);
+            DataSetBuilder dsb = new DataSetBuilder(getName() + "." + i);
             if (isolate) {
-                ttBuilder.setIsolationGroup(UUID.randomUUID());
+                dsb.setIsolationGroup(UUID.randomUUID());
             }
 
-            dataSets.add(ttBuilder.setTest(makeDataSource(testFiles.get(i)))
-                                  .setTrain(makeDataSource(trainFiles.get(i)))
-                                  .setAttribute("DataSet", getName())
-                                  .setAttribute("Partition", i)
-                                  .build());
+            dataSets.add(dsb.setTest(makeDataSource(testFiles.get(i)))
+                            .setTrain(makeDataSource(trainFiles.get(i)))
+                            .setAttribute("DataSet", getName())
+                            .setAttribute("Partition", i)
+                            .build());
         }
         return dataSets;
     }
