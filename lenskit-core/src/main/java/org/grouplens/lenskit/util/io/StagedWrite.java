@@ -23,7 +23,10 @@ package org.grouplens.lenskit.util.io;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.*;
 import java.util.UUID;
 
@@ -31,25 +34,18 @@ import java.util.UUID;
  * Helper to do staged file writes.  In a staged write, code first writes the output to a temporary
  * file, then renames the temporary file on top of the target file. To use this file:
  *
- * <pre>{@code
- * StagedWrite stage = StagedWrite.begin(outputFile);
- * try {
- *     OutputStream stream = stage.openOutputStream();
- *     // write to stream
- *     stream.close();
+ * ```java
+ * try (StagedWrite stage = StagedWrite.begin(outputFile)) {
+ *     try (OutputStream stream = stage.openOutputStream()) {
+ *         // write to stream
+ *     }
  *     stage.commit();
- * } finally {
- *     stage.close();
- * }}</pre>
+ * ```
  *
- * <p>
- * The logic used to implement this class is subject to race conditions, so it should not be used
- * when multiple threads or processes may attempt to write the same file.  In LensKit 3.0, the race
- * condition will be removed on systems exposing POSIX file system semantics, but the APIs needed
- * for us to provide that capability are not present on Java 6.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 2.1
+ * The rename operation is atomic, so outside code will either see the old target file (or lack thereof), or the entire
+ * contents of the new target file; it will not see any intermediate states.  It is possible that this code will fail
+ * on old versions of Windows, or on certain file systems; if you encounter problems with it, especially if it raises
+ * {@link AtomicMoveNotSupportedException}, please file a bug report.
  */
 public class StagedWrite implements Closeable {
     private static final Logger logger = LoggerFactory.getLogger(StagedWrite.class);
@@ -138,7 +134,8 @@ public class StagedWrite implements Closeable {
                        StandardCopyOption.REPLACE_EXISTING,
                        StandardCopyOption.ATOMIC_MOVE);
         } catch (AtomicMoveNotSupportedException ex) {
-            logger.warn("writing {}: atomic move not supported", targetFile);
+            logger.error("file system does not support atomic moves", ex);
+            logger.info("for more information, see: http://lenskit.org/master/apidocs/org/lenskit/util.io/StagedWrite.html");
             throw ex;
         }
         committed = true;
