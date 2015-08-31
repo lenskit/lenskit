@@ -34,7 +34,7 @@ import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.util.io.StagedWrite;
+import org.lenskit.util.io.StagedWrite;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

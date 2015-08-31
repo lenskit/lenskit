@@ -18,12 +18,13 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.io
+package org.lenskit.util.io
 
 import com.google.common.base.Charsets
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.lenskit.util.io.StagedWrite
 
 import java.nio.file.Files
 

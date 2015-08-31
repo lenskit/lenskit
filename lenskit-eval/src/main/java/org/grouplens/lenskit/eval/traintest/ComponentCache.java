@@ -36,6 +36,7 @@ import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.NodeInstantiator;
 import org.grouplens.lenskit.inject.NodeProcessor;
 import org.grouplens.lenskit.util.io.*;
+import org.lenskit.util.io.StagedWrite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

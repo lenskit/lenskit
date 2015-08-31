@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.io;
+package org.lenskit.util.io;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
