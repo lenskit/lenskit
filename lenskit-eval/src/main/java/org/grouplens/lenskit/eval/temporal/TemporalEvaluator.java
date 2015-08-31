@@ -40,20 +40,18 @@ import org.grouplens.lenskit.util.table.writer.TableWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
+import static java.lang.Math.sqrt;
 
 public class TemporalEvaluator {
     private BinaryRatingDAO dataSource;
     private AlgorithmInstance algorithm;
     private File predictOutputFile;
     private Long rebuildPeriod;
-    private TableWriter tableWriter;
 
     /**
      * Adds an algorithmInfo
-     * <p>
-     * If any exception is thrown while the command is called it is rethrown as a runtime error.
      *
      * @param algo The algorithmInfo added
      * @return Itself to allow  chaining
@@ -66,7 +64,7 @@ public class TemporalEvaluator {
     /**
      * An algorithm instance constructed with a name and Lenskit configuration
      *
-     * @param name
+     * @param name   Name of algorithm instance
      * @param config Lenskit configuration
      */
     public TemporalEvaluator setAlgorithm(String name, LenskitConfiguration config) {
@@ -75,9 +73,8 @@ public class TemporalEvaluator {
     }
 
 
-    /*
-     * Adds a single {@code TTDataSet}
-     * @param data The dataset to be added to the command.
+    /**
+     * @param dao The datasource to be added to the command.
      * @return Itself to allow for  method chaining.
      */
     public TemporalEvaluator setDataSource(BinaryRatingDAO dao) {
@@ -86,8 +83,8 @@ public class TemporalEvaluator {
     }
 
     /**
-     * @param file
-     * @return
+     * @param file The file contains the ratings input data
+     * @return itself
      */
     public TemporalEvaluator setDataSource(File file) throws IOException {
         dataSource = BinaryRatingDAO.open(file);
@@ -103,15 +100,24 @@ public class TemporalEvaluator {
         return this;
     }
 
+    /**
+     * *
+     *
+     * @param file  The file set as the output of the command
+     * @param cMode Compression Mode
+     * @return Itself for  method chaining
+     */
+
+    //TODO Set compression mode in file
     public TemporalEvaluator setPredictOutputFile(File file, CompressionMode cMode) {
         predictOutputFile = file;
         return this;
     }
 
     /**
-     * @param time
-     * @param unit
-     * @return
+     * @param time The time to rebuild
+     * @param unit Unit of time set
+     * @return Itself for  method chaining
      */
     public TemporalEvaluator setRebuildPeriod(Long time, TimeUnit unit) {
         rebuildPeriod = unit.toSeconds(time);
@@ -119,8 +125,8 @@ public class TemporalEvaluator {
     }
 
     /**
-     * @param seconds
-     * @return
+     * @param seconds default rebuild period in seconds
+     * @return Itself for  method chaining
      */
     public TemporalEvaluator setRebuildPeriod(Long seconds) {
         rebuildPeriod = seconds;
@@ -128,28 +134,24 @@ public class TemporalEvaluator {
     }
 
     /**
-     * Returns prediction output file
-     *
-     * @return
+     * @return Returns prediction output file
      */
     public File getPredictOutputFile() {
         return predictOutputFile;
     }
 
     /**
-     * Returns rebuild period
-     *
-     * @return
+     * @return Returns rebuild period
      */
     public Long getRebuildPeriod() {
         return rebuildPeriod;
     }
 
     /**
-     * when the evaluation is run, it will replay the ratings, try to predict each one, and
-     * write the prediction and the rating to the output file (using a TableWriter)
+     * During the evaluation, it will replay the ratings, try to predict each one, and
+     * write the prediction, TARMSE and the rating to the output file
      *
-     * @return
+     * @return Itself for  method chaining
      */
 
     public TemporalEvaluator execute() throws IOException, RecommenderBuildException {
@@ -157,12 +159,16 @@ public class TemporalEvaluator {
         Preconditions.checkState(dataSource != null, "no input data specified");
         Preconditions.checkState(predictOutputFile != null, "no output file specified");
 
+        TableWriter tableWriter;
+        //Builds file layout
         TableLayoutBuilder tlb = new TableLayoutBuilder();
+        //file headers
         tlb.addColumn("User")
-                .addColumn("Item")
-                .addColumn("Rating")
-                .addColumn("Timestamp")
-                .addColumn("Prediction");
+           .addColumn("Item")
+           .addColumn("Rating")
+           .addColumn("Timestamp")
+           .addColumn("Prediction")
+           .addColumn("TARMSE");
 
         TableLayout tl = tlb.build();
         tableWriter = CSVWriter.open(predictOutputFile, tl, CompressionMode.AUTO);
@@ -171,6 +177,8 @@ public class TemporalEvaluator {
         BinaryRatingDAO limitedDao = dataSource.createWindowedView(0);
         LenskitRecommenderEngine lre;
         Recommender recommender;
+        double sse = 0;
+        int n = 0;
 
         try {
             for (Rating r : ratings) {
@@ -180,12 +188,24 @@ public class TemporalEvaluator {
                 LenskitConfiguration config = new LenskitConfiguration();
                 config.addComponent(limitedDao);
                 lre = LenskitRecommenderEngine.newBuilder()
-                        .addConfiguration(algorithm.getConfig())
-                        .addConfiguration(config, ModelDisposition.EXCLUDED)
-                        .build();
+                                              .addConfiguration(algorithm.getConfig())
+                                              .addConfiguration(config, ModelDisposition.EXCLUDED)
+                                              .build();
                 recommender = lre.createRecommender(config);
+                //gets prediction
                 double prediction = recommender.getRatingPredictor().predict(r.getUserId(), r.getItemId());
-                tableWriter.writeRow(r.getUserId(), r.getItemId(), r.getValue(), r.getTimestamp(), prediction);
+                //calculates time averaged RMSE
+                if (!Double.isNaN(prediction)) {
+                    double err = prediction - r.getValue();
+                    sse += err * err;
+                    n++;
+                }
+                double rmse = 0.0;
+                if (n > 0) {
+                    rmse = sqrt(sse / n);
+                }
+                //writes the Prediction Score and TARMSE on file
+                tableWriter.writeRow(r.getUserId(), r.getItemId(), r.getValue(), r.getTimestamp(), prediction, rmse);
             }
         } finally {
             tableWriter.close();
