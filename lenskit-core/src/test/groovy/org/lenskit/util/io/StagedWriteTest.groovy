@@ -24,12 +24,11 @@ import com.google.common.base.Charsets
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import org.lenskit.util.io.StagedWrite
 
 import java.nio.file.Files
 
-import static org.junit.Assert.assertThat
 import static org.hamcrest.Matchers.*
+import static org.junit.Assert.assertThat
 
 /**
  * Tests for the staged write facility.
