@@ -139,25 +139,18 @@ public class PackTask extends AbstractTask<List<Object>> {
         }
 
         logger.info("packing {} to {}", data, outFile);
-        StagedWrite stage = StagedWrite.begin(outFile);
         try {
-            BinaryRatingPacker packer = BinaryRatingPacker.open(stage.getStagingFile(), binaryFlags);
-            try {
-                Cursor<Rating> ratings = data.getEventDAO().streamEvents(Rating.class);
-                try {
+            try (StagedWrite stage = StagedWrite.begin(outFile)) {
+                try (BinaryRatingPacker packer = BinaryRatingPacker.open(stage.getStagingFile().toFile(),
+                                                                         binaryFlags);
+                     Cursor<Rating> ratings = data.getEventDAO().streamEvents(Rating.class)) {
                     packer.writeRatings(ratings);
-                } finally {
-                    ratings.close();
                 }
-            } finally {
-                packer.close();
+                stage.commit();
             }
-            stage.commit();
         } catch (IOException ex) {
             logger.error("error packing {}: {}", outFile, ex);
             throw new TaskExecutionException("error packing " + outFile, ex);
-        } finally {
-            stage.close();
         }
 
         return source;

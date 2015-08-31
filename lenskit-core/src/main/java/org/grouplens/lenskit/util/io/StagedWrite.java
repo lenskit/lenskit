@@ -23,10 +23,8 @@ package org.grouplens.lenskit.util.io;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.*;
 import java.util.UUID;
 
 /**
@@ -55,12 +53,12 @@ import java.util.UUID;
  */
 public class StagedWrite implements Closeable {
     private static final Logger logger = LoggerFactory.getLogger(StagedWrite.class);
-    private final File targetFile;
-    private final File stagingFile;
+    private final Path targetFile;
+    private final Path stagingFile;
     private boolean opened = false;
     private boolean committed = false;
 
-    private StagedWrite(File target, File temp) {
+    private StagedWrite(Path target, Path temp) {
         targetFile = target;
         stagingFile = temp;
     }
@@ -70,19 +68,27 @@ public class StagedWrite implements Closeable {
      * @param target The file to write.
      * @return A staged file
      */
-    public static StagedWrite begin(File target) {
-        File dir = target.getParentFile();
+    public static StagedWrite begin(Path target) {
         UUID key = UUID.randomUUID();
-        String stageName = ".tmp." + key + "." + target.getName();
-        File stage = new File(dir, stageName);
+        String stageName = ".tmp." + key + "." + target.getFileName().toString();
+        Path stage = target.resolveSibling(stageName);
         return new StagedWrite(target, stage);
+    }
+
+    /**
+     * Begin a staged file writing operation.
+     * @param target The file to write.
+     * @return A staged file
+     */
+    public static StagedWrite begin(File target) {
+        return begin(target.toPath());
     }
 
     /**
      * Get the target file for this staging file.
      * @return The target file that will be written.
      */
-    public File getTargetFile() {
+    public Path getTargetFile() {
         return targetFile;
     }
 
@@ -91,7 +97,7 @@ public class StagedWrite implements Closeable {
      * this file.
      * @return The working file.
      */
-    public File getStagingFile() {
+    public Path getStagingFile() {
         return stagingFile;
     }
 
@@ -102,13 +108,16 @@ public class StagedWrite implements Closeable {
      *         before calling {@link #commit()}.
      * @throws IOException if there is an error opening the output stream.
      */
-    public FileOutputStream openOutputStream() throws IOException {
+    public OutputStream openOutputStream() throws IOException {
         if (committed) {
             throw new IllegalStateException("staged write already committed");
         } else if (opened) {
             throw new IllegalStateException("staged write already opened");
         }
-        FileOutputStream stream = new FileOutputStream(stagingFile);
+        OutputStream stream = Files.newOutputStream(stagingFile,
+                                                    StandardOpenOption.WRITE,
+                                                    StandardOpenOption.CREATE,
+                                                    StandardOpenOption.CREATE_NEW);
         opened = true;
         return stream;
     }
@@ -123,17 +132,14 @@ public class StagedWrite implements Closeable {
             throw new IllegalStateException("staged write already committed");
         }
         logger.debug("finishing write of {}", targetFile);
-        if (!stagingFile.renameTo(targetFile)) {
-            logger.debug("cannot rename staging file {}, trying to delete", stagingFile);
-            // FIXME This is racy - in LensKit 3.0, replace with Files.move
-            if (!targetFile.delete()) {
-                logger.debug("cannot delete {}", targetFile);
-                throw new IOException("cannot delete " + targetFile);
-            }
-            if (!stagingFile.renameTo(targetFile)) {
-                logger.debug("cannot rename {} in second attempt", targetFile);
-                throw new IOException("failed to create " + targetFile);
-            }
+
+        try {
+            Files.move(stagingFile, targetFile,
+                       StandardCopyOption.REPLACE_EXISTING,
+                       StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException ex) {
+            logger.warn("writing {}: atomic move not supported", targetFile);
+            throw ex;
         }
         committed = true;
     }
@@ -141,15 +147,14 @@ public class StagedWrite implements Closeable {
     /**
      * Clean up the staged write, deleting the staging file if it still exists.  It is safe to call
      * this method multiple times, and safe to call it after calling {@link #commit()}.  Typical
-     * use of a staged write will call this method in a {@code finally} block.
+     * use of a staged write will call this method in a {@code finally} block, or use the staged write
+     * in a try-with-resources block.
      */
     @Override
-    public void close() {
+    public void close() throws IOException {
         if (!committed) {
             logger.debug("aborting write of {}", targetFile);
         }
-        if (stagingFile.delete()) {
-            logger.debug("deleted staging file {}", stagingFile);
-        }
+        Files.deleteIfExists(stagingFile);
     }
 }

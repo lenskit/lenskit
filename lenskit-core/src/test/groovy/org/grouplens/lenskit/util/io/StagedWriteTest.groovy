@@ -20,14 +20,18 @@
  */
 package org.grouplens.lenskit.util.io
 
+import com.google.common.base.Charsets
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+
+import java.nio.file.Files
+
 import static org.junit.Assert.assertThat
 import static org.hamcrest.Matchers.*
 
 /**
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Tests for the staged write facility.
  */
 class StagedWriteTest {
     @Rule
@@ -39,13 +43,15 @@ class StagedWriteTest {
         assertThat file.exists(), equalTo(false)
         def stage = StagedWrite.begin(file)
         try {
-            stage.stagingFile.text = "hello, world"
+            Files.write(stage.stagingFile,
+                        ["hello, world"],
+                        Charsets.UTF_8)
             stage.commit()
         } finally {
             stage.close()
         }
         assertThat file.exists(), equalTo(true)
-        assertThat file.text, equalTo("hello, world")
+        assertThat file.text.trim(), equalTo("hello, world")
         assertThat folder.root.listFiles().toList()*.name, contains('foo.txt')
     }
 
@@ -55,7 +61,9 @@ class StagedWriteTest {
         assertThat file.exists(), equalTo(false)
         def stage = StagedWrite.begin(file)
         try {
-            stage.stagingFile.text = "hello, world"
+            Files.write(stage.stagingFile,
+                        ["hello, world"],
+                        Charsets.UTF_8)
         } finally {
             stage.close()
         }
@@ -70,13 +78,15 @@ class StagedWriteTest {
         file.text = "hello, world"
         def stage = StagedWrite.begin(file)
         try {
-            stage.stagingFile.text = "goodnight, moon"
+            Files.write(stage.stagingFile,
+                        ["goodnight, moon"],
+                        Charsets.UTF_8)
             stage.commit()
         } finally {
             stage.close()
         }
         assertThat file.exists(), equalTo(true)
-        assertThat file.text, equalTo("goodnight, moon")
+        assertThat file.text.trim(), equalTo("goodnight, moon")
         assertThat folder.root.listFiles().toList()*.name, contains('foo.txt')
     }
 }
