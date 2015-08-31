@@ -1,4 +1,3 @@
-
 /*
  * LensKit, an open source recommender systems toolkit.
  * Copyright 2010-2014 LensKit Contributors.  See CONTRIBUTORS.md.
@@ -47,7 +46,6 @@ public class Simulate implements Command {
     public void configureArguments(ArgumentParser parser) {
         parser.description("Simulates Temporal Evaluator and write item's predicted score to file.");
         ScriptEnvironment.configureArguments(parser);
-        // InputData.configureArguments(parser);
         parser.addArgument("-i", "--input-file")
               .type(File.class)
               .metavar("FILE")
@@ -94,14 +92,14 @@ public class Simulate implements Command {
 
         //TODO change it for only one config file
         for (LenskitConfiguration config : ctx.environment.loadConfigurations(ctx.getConfigFiles())) {
-            tempEval.setAlgorithm(config.toString(),config);
+            tempEval.setAlgorithm(config.toString(), config);
         }
 
         tempEval.execute();
         timer.stop();
         logger.info("evaluator executed  in {}", timer);
         logger.info("written predicted score to {}", ctx.getOutputFile());
-        if(rebuildPeriod !=null) {
+        if (rebuildPeriod != null) {
             logger.info("Rebuild period set to {}", ctx.getRebuildPeriod());
         }
     }
