@@ -34,7 +34,6 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.*;
-import java.nio.channels.FileChannel;
 import java.util.List;
 
 import org.junit.Before;
@@ -119,26 +118,40 @@ public class TemporalEvaluatorTest {
     @Test
     public void ExecuteTest() throws IOException, RecommenderBuildException {
         tempEval.execute();
-        assertTrue(predictOutputFile.exists());
-
-        LineNumberReader  lnr = new LineNumberReader(new FileReader(predictOutputFile));
-        lnr.skip(Long.MAX_VALUE);
-        long lines  = (long)lnr.getLineNumber();
-        lnr.close();
-        assertThat(lines, equalTo(35L));
-
-    }   
+        assertTrue(predictOutputFile.isFile());
+        FileReader reader = new FileReader(predictOutputFile);
+        try {
+            LineNumberReader lnr = new LineNumberReader(reader);
+            try {
+                lnr.skip(Long.MAX_VALUE);
+                long lines = (long) lnr.getLineNumber();
+                assertThat(lines, equalTo(35L));
+            } finally {
+                lnr.close();
+            }
+        } finally {
+            reader.close();
+        }
+    }
 
     @Test
     public void SetDataSourceDaoTest() throws IOException, RecommenderBuildException {
         tempEval.setDataSource(dao);
         tempEval.execute();
-        assertTrue(predictOutputFile.exists());
+        assertTrue(predictOutputFile.isFile());
 
-        LineNumberReader  lnr = new LineNumberReader(new FileReader(predictOutputFile));
-        lnr.skip(Long.MAX_VALUE);
-        long lines  = (long)lnr.getLineNumber();
-        lnr.close();
-        assertThat(lines, equalTo(35L));
+        FileReader reader = new FileReader(predictOutputFile);
+        try {
+            LineNumberReader lnr = new LineNumberReader(reader);
+            try {
+                lnr.skip(Long.MAX_VALUE);
+                long lines = (long) lnr.getLineNumber();
+                assertThat(lines, equalTo(35L));
+            } finally {
+                lnr.close();
+            }
+        } finally {
+            reader.close();
+        }
     }
 }
