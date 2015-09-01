@@ -26,7 +26,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.lenskit.data.ratings.RatingMatrix;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,13 +56,13 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     private static Logger logger = LoggerFactory.getLogger(FunkSVDModelBuilder.class);
 
     protected final int featureCount;
-    protected final PreferenceSnapshot snapshot;
+    protected final RatingMatrix snapshot;
     protected final double initialValue;
 
     protected final FunkSVDUpdateRule rule;
 
     @Inject
-    public FunkSVDModelBuilder(@Transient @Nonnull PreferenceSnapshot snapshot,
+    public FunkSVDModelBuilder(@Transient @Nonnull RatingMatrix snapshot,
                                @Transient @Nonnull FunkSVDUpdateRule rule,
                                @FeatureCount int featureCount,
                                @InitialFeatureValue double initVal) {

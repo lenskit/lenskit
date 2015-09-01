@@ -25,8 +25,8 @@ import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.lenskit.data.ratings.Rating;
-import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.lenskit.data.ratings.PackedRatingMatrix;
+import org.lenskit.data.ratings.RatingMatrix;
 import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.iterative.IterationCountStoppingCondition;
 import org.grouplens.lenskit.iterative.StoppingCondition;
@@ -69,8 +69,8 @@ public class FunkSVDRecommenderBuildTest {
     private LenskitRecommenderEngine makeEngine() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).to(dao);
-        config.bind(PreferenceSnapshot.class)
-              .to(PackedPreferenceSnapshot.class);
+        config.bind(RatingMatrix.class)
+              .to(PackedRatingMatrix.class);
         config.bind(ItemScorer.class)
               .to(FunkSVDItemScorer.class);
         config.bind(BaselineScorer.class, ItemScorer.class)

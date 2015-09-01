@@ -18,13 +18,15 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.snapshot;
+package org.lenskit.data.ratings;
 
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.pref.Preferences;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.data.ratings.PackedPreferenceData;
+import org.lenskit.data.ratings.PackedPreferenceDataBuilder;
 
 import java.util.Random;
 
@@ -33,10 +35,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-/**
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- */
-public class PackedPreferenceDataBuilderTest {
+public class PackedRatingDataBuilderTest {
     PackedPreferenceDataBuilder bld;
 
     @Before

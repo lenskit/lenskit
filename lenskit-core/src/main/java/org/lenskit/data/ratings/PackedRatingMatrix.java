@@ -18,43 +18,45 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.snapshot;
+package org.lenskit.data.ratings;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
+import org.grouplens.lenskit.data.pref.Preferences;
 import org.grouplens.lenskit.indexes.IdIndexMapping;
+import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
+import javax.annotation.PreDestroy;
 import java.util.*;
 
 /**
  * An in-memory snapshot of rating data stored in packed arrays.
- * <p>
- * Note that PackedPreferenceSnapshot is annotated with @Built but is declared as
- * ephemeral. Because of this, the snapshot will not be included in built
- * RecommenderEngines, so it is not Serializable.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-@DefaultProvider(PackedPreferenceSnapshotBuilder.class)
+@DefaultProvider(PackedRatingMatrixBuilder.class)
 @Shareable
-public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
-    public static PreferenceSnapshot pack(EventDAO dao) {
-        PackedPreferenceSnapshotBuilder p = new PackedPreferenceSnapshotBuilder(dao, new Random());
+public class PackedRatingMatrix implements RatingMatrix {
+    public static RatingMatrix pack(EventDAO dao) {
+        PackedRatingMatrixBuilder p = new PackedRatingMatrixBuilder(dao, new Random());
         return p.get();
     }
 
     private PackedPreferenceData data;
     @SuppressWarnings("deprecation")
     private Supplier<List<Collection<IndexedPreference>>> userIndexLists;
+    private transient Long2ObjectMap<SparseVector> cache;
 
-    PackedPreferenceSnapshot(PackedPreferenceData data) {
+    PackedRatingMatrix(PackedPreferenceData data) {
         super();
         this.data = data;
         userIndexLists = Suppliers.memoize(new UserPreferenceSupplier());
@@ -105,9 +107,28 @@ public class PackedPreferenceSnapshot extends AbstractPreferenceSnapshot {
     }
 
     @Override
-    public void close() {
-        // FIXME Close is never called, because there is no lifecycle support.
-        super.close();
+    public synchronized SparseVector userRatingVector(long userId) {
+        // FIXME Don't make this so locky
+        if (cache == null) {
+            cache = new Long2ObjectOpenHashMap<>();
+        }
+        SparseVector data = cache.get(userId);
+        if (data != null) {
+            return data;
+        } else {
+            Collection<IndexedPreference> prefs = this.getUserRatings(userId);
+            data = Preferences.userPreferenceVector(prefs).freeze();
+            cache.put(userId, data);
+            return data;
+        }
+    }
+
+    /**
+     * Dispose of the internal memory in the packed rating matrix.  It is not necessary to call this method, but it is
+     * present to free extra memory references early.
+     */
+    @PreDestroy
+    public void dispose() {
         data = null;
         userIndexLists = null;
     }

@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.snapshot;
+package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.grapht.annotation.DefaultImplementation;
@@ -26,33 +26,23 @@ import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.indexes.IdIndexMapping;
 import org.grouplens.lenskit.vectors.SparseVector;
 
-import javax.annotation.concurrent.ThreadSafe;
-import java.io.Closeable;
+import javax.annotation.concurrent.Immutable;
 import java.util.Collection;
 
 /**
  * Snapshot of the ratings data for building a recommender.
  *
- * <p> The recommender build process often needs to take multiple passes over the rating data. In a
- * live system, the data provided by a {@link org.grouplens.lenskit.data.dao.EventDAO} may change
- * between iterations. Therefore, we introduce <em>build contexts</em> &mdash; snapshots of the
- * rating data at a particular point in time that can be iterated as many times as necessary to
- * build the recommender.
+ * This provides a snapshot of each user's most current rating for each item.  It may also represent synthetic ratings
+ * derived from other types of events, depending on the builder that is used for it.
  *
- * <p> Implementers have a variety of options for implementing build contexts. They can be in-memory
- * snapshots, database transactions, database clones, or even disk files. Recommender build code
- * does assume, however, that multiple iterations is pretty fast. Therefore, implementations should
- * avoid re-fetching the data over a network connection for each request.
+ * The ratings obtained from a rating matrix **do not** have timestamps.
  *
- * <p> An additional feature provided by build contexts is that of mapping the item and user IDs to
- * consecutive, 0-based indices. The indices <strong>may differ</strong> from one build context to
- * another.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * The users, items, and ratings in the rating matrix are associated with 0-based indexes, so that they can be used
+ * in conjunction with vectors or arrays.
  */
-@ThreadSafe
-@DefaultImplementation(PackedPreferenceSnapshot.class)
-public interface PreferenceSnapshot extends Closeable {
+@Immutable
+@DefaultImplementation(PackedRatingMatrix.class)
+public interface RatingMatrix {
     /**
      * Get the set of user IDs in the snapshot.
      *
@@ -113,14 +103,4 @@ public interface PreferenceSnapshot extends Closeable {
      * @return The user's rating vector.
      */
     SparseVector userRatingVector(long userId);
-
-    /**
-     * Close the build context. This overrides {@link Closeable#close()} to drop the exception that
-     * can be thrown.
-     *
-     * <p> After the build context has been closed, all methods are allowed to fail. Objects
-     * returned from those methods, however, should continue to be valid.
-     */
-    @Override
-    void close();
 }

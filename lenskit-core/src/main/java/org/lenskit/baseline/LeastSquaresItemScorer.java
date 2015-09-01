@@ -28,7 +28,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.lenskit.data.ratings.RatingMatrix;
 import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.iterative.StoppingCondition;
@@ -99,7 +99,7 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
     public static class Builder implements Provider<LeastSquaresItemScorer> {
         private final double learningRate;
         private final double regularizationFactor;
-        private PreferenceSnapshot snapshot;
+        private RatingMatrix snapshot;
         private StoppingCondition stoppingCondition;
 
         /**
@@ -112,7 +112,7 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
          */
         @Inject
         public Builder(@RegularizationTerm double regFactor, @LearningRate double lrate,
-                       @Transient PreferenceSnapshot data,
+                       @Transient RatingMatrix data,
                        StoppingCondition stop) {
             regularizationFactor = regFactor;
             learningRate = lrate;

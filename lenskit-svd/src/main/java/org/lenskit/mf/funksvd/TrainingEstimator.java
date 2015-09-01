@@ -26,7 +26,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
+import org.lenskit.data.ratings.RatingMatrix;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.util.collections.LongUtils;
@@ -35,7 +35,7 @@ import java.util.Collection;
 
 /**
  * Rating estimates used while training the predictor.  An estimator can be constructed
- * using {@link FunkSVDUpdateRule#makeEstimator(PreferenceSnapshot)}.
+ * using {@link FunkSVDUpdateRule#makeEstimator(RatingMatrix)}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
@@ -52,7 +52,7 @@ public final class TrainingEstimator {
      * @param baseline The baseline predictor.
      * @param dom      The preference domain (for clamping).
      */
-    TrainingEstimator(PreferenceSnapshot snap, ItemScorer baseline, PreferenceDomain dom) {
+    TrainingEstimator(RatingMatrix snap, ItemScorer baseline, PreferenceDomain dom) {
         ratings = snap.getRatings();
         domain = dom;
         estimates = new double[ratings.size()];

@@ -21,7 +21,7 @@
 /**
  *
  */
-package org.grouplens.lenskit.data.snapshot;
+package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -35,7 +35,7 @@ import java.util.Iterator;
 /**
  * Preference collection implemented as a view on top of
  * {@link PackedPreferenceData}. This is used to provide the collection
- * implementations for {@link PackedPreferenceSnapshot}. It supports subsetting the
+ * implementations for {@link PackedRatingMatrix}. It supports subsetting the
  * packed data set to only a particular list of indices.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

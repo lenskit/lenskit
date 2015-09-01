@@ -18,11 +18,13 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.snapshot;
+package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
+import org.lenskit.data.ratings.PackedRatingMatrixBuilder;
+import org.lenskit.data.ratings.PackedRatingMatrix;
 import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.Preference;
@@ -40,9 +42,9 @@ import java.util.Random;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-public class PackedPreferenceSnapshotTest {
+public class PackedRatingMatrixTest {
 
-    private PackedPreferenceSnapshot snap;
+    private PackedRatingMatrix snap;
     private static final double EPSILON = 1.0e-6;
 
     private static Rating rating(long uid, long iid, double value, long ts) {
@@ -81,7 +83,7 @@ public class PackedPreferenceSnapshotTest {
         rs.add(rating(3, 11, 5, 2));
         rs.add(rating(4, 11, 5, 1));
         EventDAO dao = EventCollectionDAO.create(rs);
-        snap = new PackedPreferenceSnapshotBuilder(dao, new Random()).get();
+        snap = new PackedRatingMatrixBuilder(dao, new Random()).get();
     }
 
     @Test

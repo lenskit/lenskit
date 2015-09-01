@@ -30,7 +30,7 @@ import org.grouplens.lenskit.core.*
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
 import org.lenskit.data.events.Event
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot
+import org.lenskit.data.ratings.RatingMatrix
 import org.grouplens.lenskit.iterative.StoppingThreshold
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
 import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer
@@ -537,6 +537,6 @@ public class LenskitRecommenderEngineTest {
         config.bind(EventDAO).to(dao)
         LenskitRecommender rec = LenskitRecommender.build(config)
         assertThat rec.getItemScorer(), instanceOf(LeastSquaresItemScorer)
-        assertThat rec.get(PreferenceSnapshot), nullValue()
+        assertThat rec.get(RatingMatrix), nullValue()
     }
 }

@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.snapshot;
+package org.lenskit.data.ratings;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue;
@@ -29,7 +29,7 @@ import org.grouplens.lenskit.indexes.MutableIdIndexMapping;
 import java.util.Arrays;
 import java.util.Random;
 
-import static org.grouplens.lenskit.data.snapshot.PackedPreferenceData.*;
+import static org.lenskit.data.ratings.PackedPreferenceData.*;
 
 /**
  * Build a packed rating data structure.

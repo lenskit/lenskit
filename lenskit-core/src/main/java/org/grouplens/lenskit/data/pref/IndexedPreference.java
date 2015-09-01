@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.data.pref;
 
+import org.lenskit.data.ratings.PackedRatingMatrix;
+
 /**
  * A Preference that also provides 0-based indices for the user, item, and itself.
  *
@@ -29,7 +31,7 @@ package org.grouplens.lenskit.data.pref;
 public interface IndexedPreference extends Preference {
     /**
      * Get the preference index. Each indexed preference (within a given context,
-     * such as a {@link org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot})
+     * such as a {@link PackedRatingMatrix})
      * has a unique, contiguous, zero-based index. This is to make it easy to
      * store additional information related to preferences for efficient learning
      * scenarios.

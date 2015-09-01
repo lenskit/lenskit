@@ -18,15 +18,15 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.snapshot;
+package org.lenskit.data.ratings;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
-import static org.grouplens.lenskit.data.snapshot.PackedPreferenceData.*;
+import static org.lenskit.data.ratings.PackedPreferenceData.*;
 
 import org.junit.Test;
 
-public class PackedPreferenceDataTest {
+public class PackedRatingDataTest {
     @Test
     public void testChunk() {
         assertThat(chunk(0), equalTo(0));

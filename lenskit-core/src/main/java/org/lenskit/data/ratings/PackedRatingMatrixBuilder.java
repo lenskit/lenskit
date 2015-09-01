@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.snapshot;
+package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
@@ -28,7 +28,6 @@ import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SortOrder;
-import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.pref.Preferences;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,23 +37,22 @@ import javax.inject.Provider;
 import java.util.Random;
 
 /**
- * A Factory that creates PackedRatingBuildSnapshots from an opened
- * DataAccessObject.
+ * Build a packed rating matrix from the available rating events.
  */
-public class PackedPreferenceSnapshotBuilder implements Provider<PackedPreferenceSnapshot> {
-    private static final Logger logger = LoggerFactory.getLogger(PackedPreferenceSnapshotBuilder.class);
+public class PackedRatingMatrixBuilder implements Provider<PackedRatingMatrix> {
+    private static final Logger logger = LoggerFactory.getLogger(PackedRatingMatrixBuilder.class);
 
     private final EventDAO dao;
     private Random random;
 
     @Inject
-    public PackedPreferenceSnapshotBuilder(@Transient EventDAO dao, Random random) {
+    public PackedRatingMatrixBuilder(@Transient EventDAO dao, Random random) {
         this.dao = dao;
         this.random = random;
     }
 
     @Override
-    public PackedPreferenceSnapshot get() {
+    public PackedRatingMatrix get() {
         logger.debug("Packing preference snapshot");
 
         PackedPreferenceDataBuilder bld = new PackedPreferenceDataBuilder();
@@ -108,6 +106,6 @@ public class PackedPreferenceSnapshotBuilder implements Provider<PackedPreferenc
         bld.shuffle(random);
         PackedPreferenceData data = bld.build();
 
-        return new PackedPreferenceSnapshot(data);
+        return new PackedRatingMatrix(data);
     }
 }
