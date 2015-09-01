@@ -34,7 +34,6 @@ import org.grouplens.lenskit.data.event.Rating;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.*;
-import java.nio.channels.FileChannel;
 import java.util.List;
 
 import org.junit.Before;
@@ -121,13 +120,12 @@ public class TemporalEvaluatorTest {
         tempEval.execute();
         assertTrue(predictOutputFile.isFile());
 
-        FileInputStream input = new FileInputStream(predictOutputFile);
+        BufferedReader br = new BufferedReader(new FileReader(predictOutputFile));
         try {
-            FileChannel channel = input.getChannel();
-            BufferedReader br = new BufferedReader(new FileReader(predictOutputFile));
-            assertThat(br.lines().count(), equalTo(35L));
+            long count = br.lines().count();
+            assertThat(count, equalTo(35L));
         } finally {
-            input.close();
+            br.close();
         }
     }
 
@@ -137,13 +135,12 @@ public class TemporalEvaluatorTest {
         tempEval.execute();
         assertTrue(predictOutputFile.isFile());
 
-        FileInputStream input = new FileInputStream(predictOutputFile);
+        BufferedReader br = new BufferedReader(new FileReader(predictOutputFile));
         try {
-            FileChannel channel = input.getChannel();
-            BufferedReader br = new BufferedReader(new FileReader(predictOutputFile));
-            assertThat(br.lines().count(), equalTo(35L));
+            long count = br.lines().count();
+            assertThat(count, equalTo(35L));
         } finally {
-            input.close();
+            br.close();
         }
     }
 }
