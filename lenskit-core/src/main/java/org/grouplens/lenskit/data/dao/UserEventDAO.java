@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.dao;
 
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 
 import javax.annotation.Nullable;

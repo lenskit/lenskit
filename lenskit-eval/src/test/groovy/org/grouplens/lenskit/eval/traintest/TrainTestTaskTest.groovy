@@ -50,7 +50,7 @@ import org.lenskit.baseline.GlobalMeanRatingItemScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.baseline.UserMeanBaseline
 import org.lenskit.baseline.UserMeanItemScorer
-import org.lenskit.data.summary.RatingSummary
+import org.lenskit.data.ratings.RatingSummary
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.*

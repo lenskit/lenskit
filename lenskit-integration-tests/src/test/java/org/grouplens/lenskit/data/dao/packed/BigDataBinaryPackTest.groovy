@@ -25,9 +25,9 @@ import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongSet
 import org.grouplens.lenskit.cursors.Cursor
 import org.grouplens.lenskit.data.dao.*
-import org.grouplens.lenskit.data.event.Event
-import org.grouplens.lenskit.data.event.Rating
-import org.grouplens.lenskit.data.event.Ratings
+import org.lenskit.data.events.Event
+import org.lenskit.data.ratings.Rating
+import org.lenskit.data.ratings.Ratings
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.junit.After
 import org.junit.Rule

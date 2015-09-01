@@ -22,7 +22,7 @@ package org.grouplens.lenskit.eval.data.crossfold
 
 import org.grouplens.lenskit.cursors.Cursors
 import org.grouplens.lenskit.data.dao.EventDAO
-import org.grouplens.lenskit.data.event.Rating
+import org.lenskit.data.ratings.Rating
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet
 import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.junit.Before

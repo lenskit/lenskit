@@ -28,7 +28,7 @@ import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;

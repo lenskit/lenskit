@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.data.dao;
 
 import com.google.common.collect.Lists;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.junit.Test;
 
 import java.util.List;

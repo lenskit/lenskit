@@ -26,7 +26,7 @@ import com.google.common.collect.Lists;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.PackedDataSource;
 import org.grouplens.lenskit.data.source.TextDataSource;

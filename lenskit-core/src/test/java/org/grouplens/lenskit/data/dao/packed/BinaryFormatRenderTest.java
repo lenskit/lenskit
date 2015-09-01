@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.junit.BeforeClass;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;

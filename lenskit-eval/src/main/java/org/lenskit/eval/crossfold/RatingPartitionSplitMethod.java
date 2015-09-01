@@ -21,7 +21,7 @@
 package org.lenskit.eval.crossfold;
 
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

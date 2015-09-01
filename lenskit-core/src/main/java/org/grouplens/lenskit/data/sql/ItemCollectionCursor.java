@@ -23,7 +23,7 @@ package org.grouplens.lenskit.data.sql;
 import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.GroupingCursor;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 

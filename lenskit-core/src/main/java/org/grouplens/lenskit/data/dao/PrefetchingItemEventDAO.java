@@ -32,7 +32,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.util.io.Describable;

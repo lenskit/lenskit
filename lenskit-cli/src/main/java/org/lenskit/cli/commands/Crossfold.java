@@ -25,7 +25,7 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.lenskit.cli.Command;

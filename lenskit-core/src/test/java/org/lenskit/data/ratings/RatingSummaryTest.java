@@ -18,14 +18,13 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.summary;
+package org.lenskit.data.ratings;
 
 import org.junit.Test;
 import org.lenskit.util.keys.KeyedObjectMap;
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
-import static org.hamcrest.Matchers.closeTo;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 public class RatingSummaryTest {

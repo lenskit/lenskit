@@ -25,7 +25,7 @@ import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 
 import javax.inject.Inject;
 import javax.inject.Provider;

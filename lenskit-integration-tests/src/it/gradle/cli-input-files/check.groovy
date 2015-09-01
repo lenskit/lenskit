@@ -1,5 +1,5 @@
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO
-import org.grouplens.lenskit.data.event.Ratings
+import org.lenskit.data.ratings.Ratings
 
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.Matchers.contains

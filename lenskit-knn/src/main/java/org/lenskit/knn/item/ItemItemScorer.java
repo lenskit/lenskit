@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;

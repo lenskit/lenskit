@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;

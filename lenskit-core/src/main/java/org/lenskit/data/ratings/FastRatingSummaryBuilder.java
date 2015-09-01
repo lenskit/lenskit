@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.summary;
+package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
@@ -27,7 +27,6 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.event.Rating;
 import org.lenskit.util.keys.KeyedObjectMap;
 
 import javax.inject.Inject;

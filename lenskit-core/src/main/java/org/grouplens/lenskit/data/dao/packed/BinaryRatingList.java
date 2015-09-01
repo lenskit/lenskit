@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
 import org.grouplens.lenskit.cursors.AbstractCursor;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 
 import javax.annotation.Nonnull;
 import java.nio.ByteBuffer;

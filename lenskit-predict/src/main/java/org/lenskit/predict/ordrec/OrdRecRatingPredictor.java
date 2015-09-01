@@ -27,7 +27,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.iterative.IterationCount;

@@ -21,18 +21,15 @@
 package org.grouplens.lenskit.data.sql;
 
 import com.google.common.collect.ImmutableList;
-import org.grouplens.lenskit.cursors.AbstractCursor;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.GroupingCursor;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.History;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillCloseWhenClosed;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 /**
  * Cursor that processes (user,timestamp)-sorted cursor of events and groups

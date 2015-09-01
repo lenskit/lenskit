@@ -34,7 +34,7 @@ import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.ItemEventDAO;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;

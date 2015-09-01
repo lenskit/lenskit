@@ -29,7 +29,7 @@ import org.grouplens.lenskit.RecommenderBuildException
 import org.grouplens.lenskit.core.*
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
-import org.grouplens.lenskit.data.event.Event
+import org.lenskit.data.events.Event
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot
 import org.grouplens.lenskit.iterative.StoppingThreshold
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
@@ -39,9 +39,6 @@ import org.grouplens.lenskit.util.io.CompressionMode
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
-import org.lenskit.LenskitRecommender
-import org.lenskit.LenskitRecommenderEngine
-import org.lenskit.LenskitRecommenderEngineBuilder
 import org.lenskit.api.ItemRecommender
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.BaselineScorer

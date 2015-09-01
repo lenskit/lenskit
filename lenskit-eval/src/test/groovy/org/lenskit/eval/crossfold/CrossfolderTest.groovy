@@ -25,14 +25,13 @@ import net.java.quickcheck.Generator
 import org.grouplens.lenskit.cursors.Cursors
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
-import org.grouplens.lenskit.data.event.Event
-import org.grouplens.lenskit.data.event.Rating
+import org.lenskit.data.events.Event
+import org.lenskit.data.ratings.Rating
 import org.grouplens.lenskit.data.source.DataSource
 import org.grouplens.lenskit.data.source.GenericDataSource
 import org.grouplens.lenskit.data.source.TextDataSource
 import org.grouplens.lenskit.data.text.TextEventDAO
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

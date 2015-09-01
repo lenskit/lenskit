@@ -18,14 +18,13 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.event;
+package org.lenskit.data.events;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 public class LikeBatchBuilderTest {
     LikeBatchBuilder builder;

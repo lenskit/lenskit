@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.data.history;
 
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;

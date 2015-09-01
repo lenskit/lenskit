@@ -30,7 +30,7 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.UserDAO;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.util.DelimitedTextCursor;
 import org.grouplens.lenskit.util.io.LoggingStreamSlurper;
 import org.lenskit.api.ItemScorer;

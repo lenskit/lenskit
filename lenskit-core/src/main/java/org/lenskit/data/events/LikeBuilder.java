@@ -18,64 +18,53 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.event;
+package org.lenskit.data.events;
 
 import com.google.common.base.Preconditions;
 
 /**
- * Builder for {@link LikeBatch} events.
+ * Builder for {@link Like} events.
  *
  * @since 2.2
- * @see LikeBatch
- * @see LikeBatch#newBuilder()
+ * @see Like
+ * @see Like#newBuilder()
  */
-public class LikeBatchBuilder implements EventBuilder<LikeBatch> {
+public class LikeBuilder implements EventBuilder<Like> {
     private long userId;
     private long itemId;
-    private int count = 1;
+    private long timestamp = -1;
     private boolean hasUserId, hasItemId;
 
     @Override
     public void reset() {
         hasUserId = hasItemId = false;
-        count = 1;
+        timestamp = -1;
     }
 
     @Override
-    public LikeBatchBuilder setUserId(long uid) {
+    public LikeBuilder setUserId(long uid) {
         userId = uid;
         hasUserId = true;
         return this;
     }
 
     @Override
-    public LikeBatchBuilder setItemId(long iid) {
+    public LikeBuilder setItemId(long iid) {
         itemId = iid;
         hasItemId = true;
         return this;
     }
 
-    /**
-     * Set the count of this like batch.  The count is initially 1.
-     *
-     * @param n The number of likes in the batch.
-     * @return The builder (for chaining).
-     */
-    public LikeBatchBuilder setCount(int n) {
-        Preconditions.checkArgument(n >= 0, "like count is negative");
-        count = n;
+    @Override
+    public LikeBuilder setTimestamp(long ts) {
+        timestamp = ts;
         return this;
     }
 
     @Override
-    public LikeBatchBuilder setTimestamp(long ts) {
-        throw new UnsupportedOperationException("like batches do not support timestamps");
-    }
-
-    @Override
-    public LikeBatch build() {
+    public Like build() {
         Preconditions.checkArgument(hasUserId, "no user ID set");
         Preconditions.checkArgument(hasItemId, "no item ID set");
-        return new LikeBatch(userId, itemId, count);
+        return new Like(userId, itemId, timestamp);
     }
 }

@@ -24,7 +24,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistory;

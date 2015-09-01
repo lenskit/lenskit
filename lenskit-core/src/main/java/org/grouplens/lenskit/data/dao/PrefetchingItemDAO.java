@@ -26,7 +26,7 @@ import com.google.common.base.Suppliers;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
 

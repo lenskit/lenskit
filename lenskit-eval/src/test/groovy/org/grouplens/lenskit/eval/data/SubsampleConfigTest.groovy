@@ -24,8 +24,8 @@ import com.google.common.io.Files
 import it.unimi.dsi.fastutil.longs.LongSet
 import org.grouplens.lenskit.cursors.Cursors
 import org.grouplens.lenskit.data.dao.*
-import org.grouplens.lenskit.data.event.Rating
-import org.grouplens.lenskit.data.event.Ratings
+import org.lenskit.data.ratings.Rating
+import org.lenskit.data.ratings.Ratings
 import org.grouplens.lenskit.data.source.GenericDataSource
 import org.grouplens.lenskit.eval.data.subsample.SubsampleMode
 import org.grouplens.lenskit.eval.script.ConfigTestBase

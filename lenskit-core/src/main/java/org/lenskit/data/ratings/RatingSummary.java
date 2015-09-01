@@ -18,16 +18,14 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.summary;
+package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.lenskit.util.keys.KeyedObject;
 import org.lenskit.util.keys.KeyedObjectMap;
-import org.omg.CORBA.LongSeqHelper;
 
 import java.io.Serializable;
 

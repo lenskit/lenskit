@@ -27,7 +27,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;

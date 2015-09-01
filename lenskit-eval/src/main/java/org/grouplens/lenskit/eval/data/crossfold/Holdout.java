@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.lenskit.eval.crossfold.Order;
 import org.lenskit.eval.crossfold.PartitionAlgorithm;
 

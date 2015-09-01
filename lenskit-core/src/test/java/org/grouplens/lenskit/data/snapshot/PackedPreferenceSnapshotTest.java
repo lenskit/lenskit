@@ -23,7 +23,7 @@ package org.grouplens.lenskit.data.snapshot;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.pref.Preferences;

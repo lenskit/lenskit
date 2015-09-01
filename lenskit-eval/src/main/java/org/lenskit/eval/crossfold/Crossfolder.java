@@ -22,7 +22,7 @@ package org.lenskit.eval.crossfold;
 
 import com.google.common.collect.Iterables;
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.source.CSVDataSourceBuilder;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;

@@ -23,7 +23,7 @@ package org.lenskit.eval.crossfold;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.slf4j.Logger;

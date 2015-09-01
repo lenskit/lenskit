@@ -22,8 +22,8 @@ package org.grouplens.lenskit.data.dao;
 
 import com.google.common.collect.Lists;
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.ratings.Rating;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 

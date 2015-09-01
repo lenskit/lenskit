@@ -28,7 +28,7 @@ import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
 import org.slf4j.Logger;

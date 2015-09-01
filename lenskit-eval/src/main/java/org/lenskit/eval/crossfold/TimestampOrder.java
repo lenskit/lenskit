@@ -20,8 +20,8 @@
  */
 package org.lenskit.eval.crossfold;
 
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Events;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.events.Events;
 
 import java.util.Collections;
 import java.util.List;

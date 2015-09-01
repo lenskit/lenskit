@@ -18,38 +18,10 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.text;
-
-import org.lenskit.data.events.EventBuilder;
-
-import java.util.Set;
-
 /**
- * Identifiers for fields in a delimited/columnar database.
+ * Ratings data type.
  *
- * @since 2.2
+ * This package contains LensKit's core {@link Rating} event type, as well as additional
+ * classes for working with rating data (and pseudo-ratings derived from other user activity).
  */
-@SuppressWarnings("rawtypes")
-public interface Field {
-
-    /**
-     * Query whether this field is optional.
-     *
-     * @return {@code true} if the field is optional.
-     */
-    boolean isOptional();
-
-    /**
-     * Apply the field's value to the builder.
-     *
-     * @param token   The field value (or {@code null} if this is a nonexistent optional field).
-     * @param builder The builder into which to set the value.
-     */
-    void apply(String token, EventBuilder builder);
-
-    /**
-     * Get the set of event builder types that this field can apply to.
-     * @return A set of classes representing event builder types to which this field can apply.”
-     */
-    Set<Class<? extends EventBuilder>> getExpectedBuilderTypes();
-}
+package org.lenskit.data.ratings;

@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.event;
+package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
@@ -26,6 +26,7 @@ import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.lenskit.data.events.Event;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillClose;

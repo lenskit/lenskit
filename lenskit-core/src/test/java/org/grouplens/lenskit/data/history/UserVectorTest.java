@@ -21,8 +21,8 @@
 package org.grouplens.lenskit.data.history;
 
 import com.google.common.collect.Lists;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.Ratings;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
@@ -38,7 +38,7 @@ public class UserVectorTest {
     private final static double EPSILON = 1.0e-6;
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.event.Ratings#userRatingVector(java.util.Collection)}.
+     * Test method for {@link Ratings#userRatingVector(java.util.Collection)}.
      */
     @Test
     public void testUserRatingVector() {

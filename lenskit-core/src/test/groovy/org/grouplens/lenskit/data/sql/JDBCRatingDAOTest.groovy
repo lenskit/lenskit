@@ -23,14 +23,11 @@ package org.grouplens.lenskit.data.sql
 import groovy.sql.Sql
 import org.grouplens.lenskit.cursors.Cursors
 import org.grouplens.lenskit.data.dao.SortOrder
-import org.grouplens.lenskit.data.event.Rating
-import org.grouplens.lenskit.data.event.Ratings
+import org.lenskit.data.ratings.Rating
+import org.lenskit.data.ratings.Ratings
 import org.junit.After
 import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TemporaryFolder
 
 import java.sql.Connection
 import java.sql.DriverManager

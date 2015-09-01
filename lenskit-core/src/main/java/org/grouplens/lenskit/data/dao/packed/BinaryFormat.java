@@ -20,10 +20,9 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.RatingBuilder;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.RatingBuilder;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;

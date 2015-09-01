@@ -18,7 +18,9 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.event;
+package org.lenskit.data.events;
+
+import org.lenskit.data.ratings.RatingBuilder;
 
 /**
  * Interface for common behavior for event builders.

@@ -21,8 +21,8 @@
 package org.grouplens.lenskit.data.sql;
 
 import org.grouplens.lenskit.cursors.AbstractPollingCursor;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.RatingBuilder;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.RatingBuilder;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

@@ -34,7 +34,7 @@ import org.grouplens.lenskit.basic.SimpleRatingPredictor
 import org.grouplens.lenskit.basic.TopNItemRecommender
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
-import org.grouplens.lenskit.data.event.Event
+import org.lenskit.data.events.Event
 import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot
 import org.grouplens.lenskit.iterative.StoppingThreshold
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition

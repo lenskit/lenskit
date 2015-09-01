@@ -31,7 +31,7 @@ import org.grouplens.lenskit.core.Shareable;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
-import org.lenskit.data.summary.RatingSummary;
+import org.lenskit.data.ratings.RatingSummary;
 import org.lenskit.results.Results;
 import org.lenskit.util.math.Scalars;
 import org.slf4j.Logger;

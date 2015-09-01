@@ -25,15 +25,13 @@ import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.PrefetchingUserEventDAO;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
-import org.lenskit.data.summary.RatingSummary;
+import org.lenskit.data.ratings.RatingSummary;
 import org.lenskit.util.collections.LongUtils;
 
 import java.util.ArrayList;

@@ -22,7 +22,7 @@ package org.grouplens.lenskit.baseline;
 
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
 import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshotBuilder;
 import org.grouplens.lenskit.iterative.StoppingCondition;

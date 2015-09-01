@@ -20,9 +20,9 @@
  */
 package org.grouplens.lenskit.data.history;
 
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.RatingBuilder;
-import org.grouplens.lenskit.data.event.Ratings;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.RatingBuilder;
+import org.lenskit.data.ratings.Ratings;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
@@ -39,7 +39,7 @@ public class ItemVectorTest {
     private static final double EPSILON = 1.0e-6;
 
     /**
-     * Test method for {@link org.grouplens.lenskit.data.event.Ratings#itemRatingVector(java.util.Collection)}.
+     * Test method for {@link Ratings#itemRatingVector(java.util.Collection)}.
      */
     @Test
     public void testItemRatingVector() {

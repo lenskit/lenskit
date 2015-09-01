@@ -27,7 +27,7 @@ import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DataAccessException;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SortOrder;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.util.LineCursor;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.Describable;

@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.eval.data.traintest;
 
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.source.GenericDataSource;
 import org.junit.Test;
 

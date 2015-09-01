@@ -24,8 +24,8 @@
 package org.grouplens.lenskit.data.dao;
 
 
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Events;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.events.Events;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;

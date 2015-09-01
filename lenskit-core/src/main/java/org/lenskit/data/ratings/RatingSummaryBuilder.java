@@ -18,13 +18,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.data.summary;
+package org.lenskit.data.ratings;
 
 import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.ItemEventDAO;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.lenskit.util.keys.KeyedObjectMap;

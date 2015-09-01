@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.data.text;
 
 import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

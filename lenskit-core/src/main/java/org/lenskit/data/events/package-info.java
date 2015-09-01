@@ -18,22 +18,17 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.event;
-
-import org.grouplens.lenskit.core.Parameter;
-
-import javax.inject.Qualifier;
-import java.lang.annotation.*;
-
 /**
- * A type of event, such as events to count in a history summarizer.
+ * LensKit's events and related types. Events are the core way of tracking user
+ * and item data in LensKit; users have events associated with items. Ratings
+ * are events, as are purchases, clicks, and other forms of user-item
+ * interaction data.
  *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * In some cases, it makes sense for an event to not be associated with any
+ * particular item (e.g. "user logged in"). In this case, we recommend that
+ * integrators use a designated item ID. So long as this ID does not show up in
+ * any events used by the recommender implementation, it should not affect
+ * recommendation. Likewise, a designated user ID can be used for item-only
+ * events.
  */
-@Qualifier
-@Parameter(Class.class)
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.PARAMETER, ElementType.FIELD})
-@Documented
-public @interface EventType {
-}
+package org.lenskit.data.events;
