@@ -40,6 +40,7 @@ import java.util.UUID;
  *         // write to stream
  *     }
  *     stage.commit();
+ * }
  * ```
  *
  * The rename operation is atomic, so outside code will either see the old target file (or lack thereof), or the entire
@@ -135,7 +136,7 @@ public class StagedWrite implements Closeable {
                        StandardCopyOption.ATOMIC_MOVE);
         } catch (AtomicMoveNotSupportedException ex) {
             logger.error("file system does not support atomic moves", ex);
-            logger.info("for more information, see: http://lenskit.org/master/apidocs/org/lenskit/util.io/StagedWrite.html");
+            logger.info("for more information, see: http://lenskit.org/master/apidocs/org/lenskit/util/io/StagedWrite.html");
             throw ex;
         }
         committed = true;
