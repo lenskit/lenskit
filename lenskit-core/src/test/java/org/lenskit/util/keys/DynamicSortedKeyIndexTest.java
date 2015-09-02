@@ -41,7 +41,7 @@ import static org.junit.Assume.assumeThat;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @RunWith(Theories.class)
-public class DynamicLongKeyIndexTest {
+public class DynamicSortedKeyIndexTest {
     private static class KeyData {
         List<Long> allKeys;
 
@@ -106,7 +106,7 @@ public class DynamicLongKeyIndexTest {
         long low = data.getLow();       // unused low key
         long high = data.getAfter(1);   // unused high key
         long[] rawKeys = {key};
-        LongKeyIndex keys = LongKeyIndex.wrap(rawKeys, 1);
+        SortedKeyIndex keys = SortedKeyIndex.wrap(rawKeys, 1);
         assertThat(keys.size(), equalTo(1));
         assertThat(keys.size(), equalTo(1));
         assertThat(keys.keySet(), hasSize(1));
@@ -123,7 +123,7 @@ public class DynamicLongKeyIndexTest {
         long k1 = rawKeys[0];
         long k2 = rawKeys[1];
         long k3 = rawKeys[2];
-        LongKeyIndex keys = LongKeyIndex.wrap(rawKeys, 3);
+        SortedKeyIndex keys = SortedKeyIndex.wrap(rawKeys, 3);
         assertThat(keys.size(), equalTo(3));
         assertThat(keys.size(), equalTo(3));
         assertThat(keys.keyList(), contains(k1, k2, k3));

@@ -26,15 +26,15 @@ import javax.annotation.Nonnull;
 import java.util.Arrays;
 
 /**
- * Full 64-bit implementation of {@link LongKeyIndex}.
+ * Full 64-bit implementation of {@link SortedKeyIndex}.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class FullLongKeyIndex extends LongKeyIndex {
+class FullSortedKeyIndex extends SortedKeyIndex {
     private static final long serialVersionUID = 1L;
     private final long[] keys;
 
-    public FullLongKeyIndex(@Nonnull long[] ks, int lb, int ub) {
+    public FullSortedKeyIndex(@Nonnull long[] ks, int lb, int ub) {
         super(lb, ub);
         assert ks.length >= ub;
         keys = ks;
@@ -54,10 +54,10 @@ class FullLongKeyIndex extends LongKeyIndex {
     }
 
     @Override
-    public LongKeyIndex subIndex(int lb, int ub) {
+    public SortedKeyIndex subIndex(int lb, int ub) {
         Preconditions.checkArgument(lb >= lowerBound && lb <= upperBound, "lower bound out of range");
         Preconditions.checkArgument(lb <= ub, "range is negative");
         Preconditions.checkArgument(ub >= lowerBound && ub <= upperBound, "upper bound out of range");
-        return new FullLongKeyIndex(keys, lb, ub);
+        return new FullSortedKeyIndex(keys, lb, ub);
     }
 }

@@ -32,7 +32,7 @@ import org.grouplens.lenskit.transform.truncate.VectorTruncator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.lenskit.util.keys.LongKeyIndex;
+import org.lenskit.util.keys.SortedKeyIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +88,7 @@ public class NormalizingItemItemModelBuilder implements Provider<ItemItemModel> 
 
         final int nitems = itemUniverse.size();
 
-        LongKeyIndex itemDomain = LongKeyIndex.fromCollection(itemUniverse);
+        SortedKeyIndex itemDomain = SortedKeyIndex.fromCollection(itemUniverse);
         assert itemDomain.size() == nitems;
         List<ImmutableSparseVector> matrix = Lists.newArrayListWithCapacity(itemDomain.size());
 

@@ -36,7 +36,7 @@ import java.util.*;
  * @compat Private
  */
 @Immutable
-public abstract class LongKeyIndex implements Serializable {
+public abstract class SortedKeyIndex implements Serializable {
     //region Factory methods
     /**
      * Wrap a key array (with a specified size) into a key set.
@@ -48,10 +48,10 @@ public abstract class LongKeyIndex implements Serializable {
      * @param size The length of the array to actually use.
      * @return The key set.
      */
-    public static LongKeyIndex wrap(long[] keys, int size) {
+    public static SortedKeyIndex wrap(long[] keys, int size) {
         Preconditions.checkArgument(size <= keys.length, "size too large");
         assert MoreArrays.isSorted(keys, 0, size);
-        return new FullLongKeyIndex(keys, 0, size);
+        return new FullSortedKeyIndex(keys, 0, size);
     }
 
     /**
@@ -60,7 +60,7 @@ public abstract class LongKeyIndex implements Serializable {
      * @param keys            The key collection.
      * @return The key set.
      */
-    public static LongKeyIndex fromCollection(Collection<Long> keys) {
+    public static SortedKeyIndex fromCollection(Collection<Long> keys) {
         if (keys instanceof LongSortedArraySet) {
             return ((LongSortedArraySet) keys).getDomain();
         } else {
@@ -74,7 +74,7 @@ public abstract class LongKeyIndex implements Serializable {
      * @param keys The key iterator.  The iterator must return no more than {@code nmax} items.
      * @return The key domain.
      */
-    private static LongKeyIndex fromIterator(int nmax, Iterator<Long> keys) {
+    private static SortedKeyIndex fromIterator(int nmax, Iterator<Long> keys) {
         // 2 options to build the array. Invariant: exactly one is non-null.
         long[] keyArray = null;
         int[] smallKeyArray = new int[nmax];
@@ -109,13 +109,13 @@ public abstract class LongKeyIndex implements Serializable {
             assert smallKeyArray == null;
             Arrays.sort(keyArray);
             int size = MoreArrays.deduplicate(keyArray, 0, keyArray.length);
-            return new FullLongKeyIndex(keyArray, 0, size);
+            return new FullSortedKeyIndex(keyArray, 0, size);
         } else {
             assert smallKeyArray != null;
             assert pos == smallKeyArray.length;
             Arrays.sort(smallKeyArray);
             int size = MoreArrays.deduplicate(smallKeyArray, 0, smallKeyArray.length);
-            return new CompactLongKeyIndex(smallKeyArray, 0, size);
+            return new CompactSortedKeyIndex(smallKeyArray, 0, size);
         }
     }
 
@@ -124,7 +124,7 @@ public abstract class LongKeyIndex implements Serializable {
      * @param keys The keys.
      * @return The key set.
      */
-    public static LongKeyIndex create(long... keys) {
+    public static SortedKeyIndex create(long... keys) {
         // the delegation goes this way to minimize the number of array copies
         return fromCollection(LongArrayList.wrap(keys));
     }
@@ -133,12 +133,12 @@ public abstract class LongKeyIndex implements Serializable {
      * Create an empty key domain.
      * @return An empty key domain.
      */
-    public static LongKeyIndex empty() {
+    public static SortedKeyIndex empty() {
         // since empty domains are immutable, use a singleton
         return EMPTY_DOMAIN;
     }
 
-    private static final LongKeyIndex EMPTY_DOMAIN = wrap(new long[0], 0);
+    private static final SortedKeyIndex EMPTY_DOMAIN = wrap(new long[0], 0);
     //endregion
 
     private static final long serialVersionUID = 2L;
@@ -152,7 +152,7 @@ public abstract class LongKeyIndex implements Serializable {
      */
     final int upperBound;
 
-    LongKeyIndex(int lower, int upper) {
+    SortedKeyIndex(int lower, int upper) {
         lowerBound = lower;
         upperBound = upper;
     }
@@ -198,7 +198,7 @@ public abstract class LongKeyIndex implements Serializable {
      * @param lb The index of the lower bound of the subset (inclusive).
      * @param ub The index of the upper bound of the subset (exclusive);
      */
-    public abstract LongKeyIndex subIndex(int lb, int ub);
+    public abstract SortedKeyIndex subIndex(int lb, int ub);
 
     /**
      * Get the index for a key.
@@ -344,12 +344,12 @@ public abstract class LongKeyIndex implements Serializable {
     private class KeyList extends AbstractLongList {
         @Override
         public int size() {
-            return LongKeyIndex.this.size();
+            return SortedKeyIndex.this.size();
         }
 
         @Override
         public long getLong(int i) {
-            Preconditions.checkElementIndex(i, LongKeyIndex.this.size());
+            Preconditions.checkElementIndex(i, SortedKeyIndex.this.size());
             return getKey(i);
         }
     }

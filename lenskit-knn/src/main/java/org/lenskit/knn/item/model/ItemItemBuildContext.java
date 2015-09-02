@@ -29,7 +29,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.lenskit.util.keys.LongKeyIndex;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -53,7 +53,7 @@ public class ItemItemBuildContext implements Serializable {
 
     @Nonnull
     private
-    LongKeyIndex items;
+    SortedKeyIndex items;
     @Nonnull
     private
     SparseVector[] itemVectors;
@@ -68,7 +68,7 @@ public class ItemItemBuildContext implements Serializable {
      * @param vectors  Map of item IDs to item rating vectors.
      * @param userItems Map of user IDs to candidate items
      */
-    ItemItemBuildContext(@Nonnull LongKeyIndex universe,
+    ItemItemBuildContext(@Nonnull SortedKeyIndex universe,
                          @Nonnull SparseVector[] vectors,
                          @Nonnull Long2ObjectMap<LongSortedSet> userItems) {
         this.userItems = userItems;

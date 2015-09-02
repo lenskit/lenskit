@@ -36,7 +36,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.util.collections.LongUtils;
-import org.lenskit.util.keys.LongKeyIndex;
+import org.lenskit.util.keys.SortedKeyIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +81,7 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
         Long2ObjectMap<LongSortedSet> userItems = new Long2ObjectOpenHashMap<LongSortedSet>(1000);
         buildItemRatings(itemRatingData, userItems);
 
-        LongKeyIndex items = LongKeyIndex.fromCollection(itemRatingData.keySet());
+        SortedKeyIndex items = SortedKeyIndex.fromCollection(itemRatingData.keySet());
         final int n = items.size();
         assert n == itemRatingData.size();
         // finalize the item data into vectors

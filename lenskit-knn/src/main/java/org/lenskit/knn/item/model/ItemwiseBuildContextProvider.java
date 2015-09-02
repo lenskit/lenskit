@@ -36,7 +36,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.util.collections.LongUtils;
-import org.lenskit.util.keys.LongKeyIndex;
+import org.lenskit.util.keys.SortedKeyIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,7 +121,7 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
             userItemSets.put(entry.getLongKey(), LongUtils.packedSet(entry.getValue()));
         }
 
-        LongKeyIndex items = LongKeyIndex.fromCollection(itemVectors.keySet());
+        SortedKeyIndex items = SortedKeyIndex.fromCollection(itemVectors.keySet());
         SparseVector[] itemData = new SparseVector[items.size()];
         for (int i = 0; i < itemData.length; i++) {
             long itemId = items.getKey(i);

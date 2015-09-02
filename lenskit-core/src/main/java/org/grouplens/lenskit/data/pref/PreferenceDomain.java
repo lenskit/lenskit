@@ -32,7 +32,7 @@ import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.specs.data.PrefDomainSpec;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
-import org.lenskit.util.keys.LongKeyIndex;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -149,7 +149,7 @@ public final class PreferenceDomain implements Serializable {
     }
 
     public Long2DoubleSortedMap clampVector(Map<Long,Double> scores) {
-        LongKeyIndex keys = LongKeyIndex.fromCollection(scores.keySet());
+        SortedKeyIndex keys = SortedKeyIndex.fromCollection(scores.keySet());
         Long2DoubleFunction baseVals = LongUtils.asLong2DoubleFunction(scores);
         double[] values = new double[keys.size()];
         for (int i = 0; i < values.length; i++) {

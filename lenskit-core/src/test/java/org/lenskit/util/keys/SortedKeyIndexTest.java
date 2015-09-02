@@ -30,11 +30,11 @@ import static org.junit.Assert.*;
  * Test long key sets.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class LongKeyIndexTest {
+public class SortedKeyIndexTest {
     @Test
     public void testEmptyArray() {
         long[] rawKeys = {};
-        LongKeyIndex keys = LongKeyIndex.wrap(rawKeys, 0);
+        SortedKeyIndex keys = SortedKeyIndex.wrap(rawKeys, 0);
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.keySet(), hasSize(0));
@@ -44,7 +44,7 @@ public class LongKeyIndexTest {
 
     @Test
     public void testEmptyCollection() {
-        LongKeyIndex keys = LongKeyIndex.fromCollection(LongLists.EMPTY_LIST);
+        SortedKeyIndex keys = SortedKeyIndex.fromCollection(LongLists.EMPTY_LIST);
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.keySet(), hasSize(0));
@@ -53,13 +53,13 @@ public class LongKeyIndexTest {
 
     @Test
     public void testEmptyUpperBound() {
-        LongKeyIndex keys = LongKeyIndex.empty();
+        SortedKeyIndex keys = SortedKeyIndex.empty();
         assertThat(keys.findUpperBound(0), equalTo(0));
     }
 
     @Test
     public void testSingletonUpperBound() {
-        LongKeyIndex keys = LongKeyIndex.create(5);
+        SortedKeyIndex keys = SortedKeyIndex.create(5);
         assertThat(keys.findUpperBound(0), equalTo(0));
         assertThat(keys.findUpperBound(5), equalTo(1));
         assertThat(keys.findUpperBound(7), equalTo(1));
@@ -67,7 +67,7 @@ public class LongKeyIndexTest {
 
     @Test
     public void testSomeKeysUpperBound() {
-        LongKeyIndex keys = LongKeyIndex.create(5, 6, 8);
+        SortedKeyIndex keys = SortedKeyIndex.create(5, 6, 8);
         assertThat(keys.findUpperBound(0), equalTo(0));
         assertThat(keys.findUpperBound(5), equalTo(1));
         assertThat(keys.findUpperBound(6), equalTo(2));
@@ -78,13 +78,13 @@ public class LongKeyIndexTest {
 
     @Test
     public void testEmptyLowerBound() {
-        LongKeyIndex keys = LongKeyIndex.empty();
+        SortedKeyIndex keys = SortedKeyIndex.empty();
         assertThat(keys.findLowerBound(0), equalTo(0));
     }
 
     @Test
     public void testSingletonLowerBound() {
-        LongKeyIndex keys = LongKeyIndex.create(5);
+        SortedKeyIndex keys = SortedKeyIndex.create(5);
         assertThat(keys.findLowerBound(0), equalTo(0));
         assertThat(keys.findLowerBound(5), equalTo(0));
         assertThat(keys.findLowerBound(7), equalTo(1));
@@ -92,7 +92,7 @@ public class LongKeyIndexTest {
 
     @Test
     public void testSomeKeysLowerBound() {
-        LongKeyIndex keys = LongKeyIndex.create(5, 6, 8);
+        SortedKeyIndex keys = SortedKeyIndex.create(5, 6, 8);
         assertThat(keys.findLowerBound(0), equalTo(0));
         assertThat(keys.findLowerBound(5), equalTo(0));
         assertThat(keys.findLowerBound(6), equalTo(1));
@@ -103,8 +103,8 @@ public class LongKeyIndexTest {
 
     @Test
     public void testSubViewLowerBound() {
-        LongKeyIndex keys = LongKeyIndex.create(0,1,2,3,4,5,6,7);
-        LongKeyIndex subk = keys.subIndex(1, 5);
+        SortedKeyIndex keys = SortedKeyIndex.create(0, 1, 2, 3, 4, 5, 6, 7);
+        SortedKeyIndex subk = keys.subIndex(1, 5);
         assertThat(subk.getLowerBound(), equalTo(1));
         assertThat(subk.getUpperBound(), equalTo(5));
         assertThat(subk.getIndex(1), equalTo(1));

@@ -24,19 +24,18 @@ import com.google.common.base.Preconditions;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
-import java.util.BitSet;
 
 /**
- * Compact implementation of {@link LongKeyIndex}.  This implementation stores the data as ints,
+ * Compact implementation of {@link SortedKeyIndex}.  This implementation stores the data as ints,
  * saving a lot of memory.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class CompactLongKeyIndex extends LongKeyIndex {
+class CompactSortedKeyIndex extends SortedKeyIndex {
     private static final long serialVersionUID = 1L;
     private final int[] keys;
 
-    public CompactLongKeyIndex(@Nonnull int[] ks, int lb, int ub) {
+    public CompactSortedKeyIndex(@Nonnull int[] ks, int lb, int ub) {
         super(lb, ub);
         assert ks.length >= ub;
         keys = ks;
@@ -60,10 +59,10 @@ class CompactLongKeyIndex extends LongKeyIndex {
     }
 
     @Override
-    public LongKeyIndex subIndex(int lb, int ub) {
+    public SortedKeyIndex subIndex(int lb, int ub) {
         Preconditions.checkArgument(lb >= lowerBound && lb <= upperBound, "lower bound out of range");
         Preconditions.checkArgument(lb <= ub, "range is negative");
         Preconditions.checkArgument(ub >= lowerBound && ub <= upperBound, "upper bound out of range");
-        return new CompactLongKeyIndex(keys, lb, ub);
+        return new CompactSortedKeyIndex(keys, lb, ub);
     }
 }
