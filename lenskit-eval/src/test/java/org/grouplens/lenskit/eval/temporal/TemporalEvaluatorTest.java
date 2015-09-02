@@ -117,7 +117,11 @@ public class TemporalEvaluatorTest {
 
     @Test
     public void ExecuteTest() throws IOException, RecommenderBuildException {
-        tempEval.execute();
+        try {
+            tempEval.execute();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
         assertTrue(predictOutputFile.isFile());
         FileReader reader = new FileReader(predictOutputFile);
         try {
@@ -137,7 +141,11 @@ public class TemporalEvaluatorTest {
     @Test
     public void SetDataSourceDaoTest() throws IOException, RecommenderBuildException {
         tempEval.setDataSource(dao);
-        tempEval.execute();
+        try {
+            tempEval.execute();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
         assertTrue(predictOutputFile.isFile());
 
         FileReader reader = new FileReader(predictOutputFile);
