@@ -23,16 +23,13 @@ package org.lenskit.data.ratings;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.lenskit.data.ratings.PackedRatingMatrixBuilder;
-import org.lenskit.data.ratings.PackedRatingMatrix;
-import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.Preference;
 import org.grouplens.lenskit.data.pref.Preferences;
-import org.grouplens.lenskit.indexes.IdIndexMapping;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.util.keys.KeyIndex;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -115,47 +112,47 @@ public class PackedRatingMatrixTest {
 
     @Test
     public void testUserIndex() {
-        IdIndexMapping ind = snap.userIndex();
+        KeyIndex ind = snap.userIndex();
         assertEquals(6, ind.size());
-        assertTrue(ind.getIdList().contains(1));
-        assertTrue(ind.getIdList().contains(3));
-        assertTrue(ind.getIdList().contains(4));
-        assertTrue(ind.getIdList().contains(5));
-        assertTrue(ind.getIdList().contains(6));
-        assertTrue(ind.getIdList().contains(7));
+        assertTrue(ind.getKeyList().contains(1));
+        assertTrue(ind.getKeyList().contains(3));
+        assertTrue(ind.getKeyList().contains(4));
+        assertTrue(ind.getKeyList().contains(5));
+        assertTrue(ind.getKeyList().contains(6));
+        assertTrue(ind.getKeyList().contains(7));
         assertEquals(0, ind.getIndex(1));
         assertEquals(1, ind.getIndex(3));
         assertEquals(2, ind.getIndex(4));
         assertEquals(3, ind.getIndex(5));
         assertEquals(4, ind.getIndex(6));
         assertEquals(5, ind.getIndex(7));
-        assertEquals(1, ind.getId(0));
-        assertEquals(3, ind.getId(1));
-        assertEquals(4, ind.getId(2));
-        assertEquals(5, ind.getId(3));
-        assertEquals(6, ind.getId(4));
-        assertEquals(7, ind.getId(5));
+        assertEquals(1, ind.getKey(0));
+        assertEquals(3, ind.getKey(1));
+        assertEquals(4, ind.getKey(2));
+        assertEquals(5, ind.getKey(3));
+        assertEquals(6, ind.getKey(4));
+        assertEquals(7, ind.getKey(5));
     }
 
     @Test
     public void testItemIndex() {
-        IdIndexMapping ind = snap.itemIndex();
+        KeyIndex ind = snap.itemIndex();
         assertEquals(5, ind.size());
-        assertTrue(ind.getIdList().contains(7));
-        assertTrue(ind.getIdList().contains(8));
-        assertTrue(ind.getIdList().contains(9));
-        assertTrue(ind.getIdList().contains(10));
-        assertTrue(ind.getIdList().contains(11));
+        assertTrue(ind.getKeyList().contains(7));
+        assertTrue(ind.getKeyList().contains(8));
+        assertTrue(ind.getKeyList().contains(9));
+        assertTrue(ind.getKeyList().contains(10));
+        assertTrue(ind.getKeyList().contains(11));
         assertEquals(0, ind.getIndex(7));
         assertEquals(1, ind.getIndex(8));
         assertEquals(2, ind.getIndex(9));
         assertEquals(3, ind.getIndex(10));
         assertEquals(4, ind.getIndex(11));
-        assertEquals(7, ind.getId(0));
-        assertEquals(8, ind.getId(1));
-        assertEquals(9, ind.getId(2));
-        assertEquals(10, ind.getId(3));
-        assertEquals(11, ind.getId(4));
+        assertEquals(7, ind.getKey(0));
+        assertEquals(8, ind.getKey(1));
+        assertEquals(9, ind.getKey(2));
+        assertEquals(10, ind.getKey(3));
+        assertEquals(11, ind.getKey(4));
     }
 
     @Test

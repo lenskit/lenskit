@@ -22,7 +22,7 @@ package org.lenskit.mf.svd;
 
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.grouplens.lenskit.indexes.MutableIdIndexMapping;
+import org.lenskit.util.keys.HashKeyIndex;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.api.ItemScorer;
@@ -54,7 +54,7 @@ public class BiasedMFItemScorerTest {
         umat.setRow(0, new double[]{0.1, 0.3});
         umat.setRow(1, new double[]{-0.2, 0.2});
         umat.setRow(2, new double[]{0.0, 0.15});
-        MutableIdIndexMapping uidx = new MutableIdIndexMapping();
+        HashKeyIndex uidx = new HashKeyIndex();
         uidx.internId(1);
         uidx.internId(5);
         uidx.internId(3);
@@ -62,7 +62,7 @@ public class BiasedMFItemScorerTest {
         RealMatrix imat = MatrixUtils.createRealMatrix(2, 2);
         imat.setRow(0, new double[]{0.52, 0.29});
         imat.setRow(1, new double[]{0.3, -1.2});
-        MutableIdIndexMapping iidx = new MutableIdIndexMapping();
+        HashKeyIndex iidx = new HashKeyIndex();
         iidx.internId(42);
         iidx.internId(39);
 

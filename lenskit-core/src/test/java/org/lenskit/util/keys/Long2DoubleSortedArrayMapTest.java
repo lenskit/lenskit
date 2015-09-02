@@ -26,7 +26,6 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleSortedMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.indexes.MutableIdIndexMapping;
 import org.junit.Test;
 import org.lenskit.util.collections.LongUtils;
 
@@ -161,7 +160,7 @@ public class Long2DoubleSortedArrayMapTest {
 
     @Test
     public void testFromArray() {
-        MutableIdIndexMapping map = new MutableIdIndexMapping();
+        HashKeyIndex map = new HashKeyIndex();
         map.internId(42);
         map.internId(37);
         map.internId(62);

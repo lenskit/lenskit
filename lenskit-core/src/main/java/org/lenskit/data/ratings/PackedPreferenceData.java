@@ -22,7 +22,7 @@ package org.lenskit.data.ratings;
 
 import org.grouplens.lenskit.data.pref.AbstractPreference;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.indexes.IdIndexMapping;
+import org.lenskit.util.keys.KeyIndex;
 
 /**
  * Data storage for packed rating snapshots.
@@ -39,11 +39,11 @@ final class PackedPreferenceData {
     private final double[][] values;
     private final int nprefs;
 
-    private final IdIndexMapping itemIndex;
-    private final IdIndexMapping userIndex;
+    private final KeyIndex itemIndex;
+    private final KeyIndex userIndex;
 
     public PackedPreferenceData(int[][] us, int[][] is, double[][] vs, int size,
-                                IdIndexMapping uidx, IdIndexMapping iidx) {
+                                KeyIndex uidx, KeyIndex iidx) {
         users = us;
         items = is;
         values = vs;
@@ -97,7 +97,7 @@ final class PackedPreferenceData {
      *
      * @return The user index.
      */
-    public IdIndexMapping getUserIndex() {
+    public KeyIndex getUserIndex() {
         return userIndex;
     }
 
@@ -106,7 +106,7 @@ final class PackedPreferenceData {
      *
      * @return The item index.
      */
-    public IdIndexMapping getItemIndex() {
+    public KeyIndex getItemIndex() {
         return itemIndex;
     }
 
@@ -134,12 +134,12 @@ final class PackedPreferenceData {
 
         @Override
         public long getUserId() {
-            return userIndex.getId(getUserIndex());
+            return userIndex.getKey(getUserIndex());
         }
 
         @Override
         public long getItemId() {
-            return itemIndex.getId(getItemIndex());
+            return itemIndex.getKey(getItemIndex());
         }
 
         @Override

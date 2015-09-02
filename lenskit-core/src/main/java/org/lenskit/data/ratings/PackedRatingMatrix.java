@@ -31,8 +31,8 @@ import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
 import org.grouplens.lenskit.data.pref.Preferences;
-import org.grouplens.lenskit.indexes.IdIndexMapping;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.util.keys.KeyIndex;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PreDestroy;
@@ -70,22 +70,22 @@ public class PackedRatingMatrix implements RatingMatrix {
 
     @Override
     public LongCollection getUserIds() {
-        return userIndex().getIdList();
+        return userIndex().getKeyList();
     }
 
     @Override
     public LongCollection getItemIds() {
-        return itemIndex().getIdList();
+        return itemIndex().getKeyList();
     }
 
     @Override
-    public IdIndexMapping userIndex() {
+    public KeyIndex userIndex() {
         requireValid();
         return data.getUserIndex();
     }
 
     @Override
-    public IdIndexMapping itemIndex() {
+    public KeyIndex itemIndex() {
         requireValid();
         return data.getItemIndex();
     }

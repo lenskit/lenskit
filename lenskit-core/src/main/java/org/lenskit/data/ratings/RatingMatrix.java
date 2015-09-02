@@ -23,8 +23,8 @@ package org.lenskit.data.ratings;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.indexes.IdIndexMapping;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.util.keys.KeyIndex;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.Collection;
@@ -62,14 +62,14 @@ public interface RatingMatrix {
      *
      * @return The index mapping between user IDs and user indices.
      */
-    IdIndexMapping userIndex();
+    KeyIndex userIndex();
 
     /**
      * Get the item ID index.
      *
      * @return The index mapping between user IDs and user indices.
      */
-    IdIndexMapping itemIndex();
+    KeyIndex itemIndex();
 
     /**
      * Get the collection of ratings in the snapshot. The ratings are returned in an undetermined

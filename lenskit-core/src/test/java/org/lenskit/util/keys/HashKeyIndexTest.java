@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.indexes;
+package org.lenskit.util.keys;
 
 import org.junit.Test;
 
@@ -26,20 +26,23 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertThat;
 
-public class MutableIdIndexMappingTest {
+/**
+ * Test mutable key indexes.
+ */
+public class HashKeyIndexTest {
     @Test
     public void testInternId() {
-        MutableIdIndexMapping idx = new MutableIdIndexMapping();
+        HashKeyIndex idx = new HashKeyIndex();
         assertThat(idx.size(), equalTo(0));
         assertThat(idx.tryGetIndex(42), lessThan(0));
         assertThat(idx.internId(42), equalTo(0));
-        assertThat(idx.getId(0), equalTo(42L));
+        assertThat(idx.getKey(0), equalTo(42L));
         assertThat(idx.tryGetIndex(42), equalTo(0));
     }
 
     @Test
     public void testReinternId() {
-        MutableIdIndexMapping idx = new MutableIdIndexMapping();
+        HashKeyIndex idx = new HashKeyIndex();
         assertThat(idx.internId(42), equalTo(0));
         assertThat(idx.internId(39), equalTo(1));
         assertThat(idx.internId(42), equalTo(0));
@@ -47,12 +50,12 @@ public class MutableIdIndexMappingTest {
 
     @Test
     public void testImmutableCopy() {
-        MutableIdIndexMapping idx = new MutableIdIndexMapping();
+        HashKeyIndex idx = new HashKeyIndex();
         assertThat(idx.internId(42), equalTo(0));
         assertThat(idx.internId(39), equalTo(1));
-        IdIndexMapping imm = idx.immutableCopy();
-        assertThat(imm.getId(0), equalTo(42L));
-        assertThat(imm.getId(1), equalTo(39L));
+        KeyIndex imm = idx.frozenCopy();
+        assertThat(imm.getKey(0), equalTo(42L));
+        assertThat(imm.getKey(1), equalTo(39L));
         assertThat(imm.getIndex(42), equalTo(0));
     }
 }

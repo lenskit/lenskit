@@ -24,7 +24,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.MatrixUtils;
-import org.grouplens.lenskit.indexes.IdIndexMapping;
+import org.lenskit.util.keys.KeyIndex;
 
 import javax.annotation.Nullable;
 import java.io.*;
@@ -45,8 +45,8 @@ public class MFModel implements Serializable {
 
     protected RealMatrix userMatrix;
     protected RealMatrix itemMatrix;
-    protected IdIndexMapping userIndex;
-    protected IdIndexMapping itemIndex;
+    protected KeyIndex userIndex;
+    protected KeyIndex itemIndex;
 
     /**
      * Construct a matrix factorization model.  The matrices are not copied, so the caller should
@@ -58,7 +58,7 @@ public class MFModel implements Serializable {
      * @param iidx The item index mapping.
      */
     public MFModel(RealMatrix umat, RealMatrix imat,
-                   IdIndexMapping uidx, IdIndexMapping iidx) {
+                   KeyIndex uidx, KeyIndex iidx) {
         Preconditions.checkArgument(umat.getColumnDimension() == imat.getColumnDimension(),
                                     "mismatched matrix sizes");
         featureCount = umat.getColumnDimension();
@@ -118,8 +118,8 @@ public class MFModel implements Serializable {
         }
         itemMatrix = imat;
 
-        userIndex = (IdIndexMapping) input.readObject();
-        itemIndex = (IdIndexMapping) input.readObject();
+        userIndex = (KeyIndex) input.readObject();
+        itemIndex = (KeyIndex) input.readObject();
 
         if (userIndex.size() != userMatrix.getRowDimension()) {
             throw new InvalidObjectException("user matrix and index have different row counts");
@@ -155,14 +155,14 @@ public class MFModel implements Serializable {
     /**
      * The item index mapping.
      */
-    public IdIndexMapping getItemIndex() {
+    public KeyIndex getItemIndex() {
         return itemIndex;
     }
 
     /**
      * The user index mapping.
      */
-    public IdIndexMapping getUserIndex() {
+    public KeyIndex getUserIndex() {
         return userIndex;
     }
 
