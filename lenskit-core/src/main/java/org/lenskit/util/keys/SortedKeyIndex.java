@@ -36,7 +36,7 @@ import java.util.*;
  * @compat Private
  */
 @Immutable
-public abstract class SortedKeyIndex implements Serializable {
+public abstract class SortedKeyIndex implements KeyIndex, Serializable {
     //region Factory methods
     /**
      * Wrap a key array (with a specified size) into a key set.
@@ -158,21 +158,10 @@ public abstract class SortedKeyIndex implements Serializable {
     }
 
     /**
-     * Check an index for validity.
-     * @param idx The index to check.
-     * @throws IndexOutOfBoundsException if {@code idx} is not a valid index (out of bounds).
-     */
-    final void checkIndex(int idx) {
-        if (idx < lowerBound || idx >= upperBound) {
-            throw new IndexOutOfBoundsException(String.format("index %d not valid for [%d,%d)",
-                                                              idx, lowerBound, upperBound));
-        }
-    }
-
-    /**
      * Get the domain size of this set.
      * @return The domain size.
      */
+    @Override
     public int size() {
         return upperBound - lowerBound;
     }
@@ -181,6 +170,7 @@ public abstract class SortedKeyIndex implements Serializable {
      * Get the lower bound of this index.
      * @return The index's lower bound.
      */
+    @Override
     public int getLowerBound() {
         return lowerBound;
     }
@@ -189,6 +179,7 @@ public abstract class SortedKeyIndex implements Serializable {
      * Get the upper bound of this index.
      * @return The index's upper bound.
      */
+    @Override
     public int getUpperBound() {
         return upperBound;
     }
@@ -208,16 +199,27 @@ public abstract class SortedKeyIndex implements Serializable {
      *         value is the <em>insertion point</em>, as defined by
      *         {@link Arrays#binarySearch(long[], int, int, long)}.
      */
-    public abstract int getIndex(long key);
+    @Override
+    public abstract int tryGetIndex(long key);
+
+    @Override
+    public int getIndex(long key) {
+        int idx = tryGetIndex(key);
+        if (idx < 0) {
+            throw new IllegalArgumentException("key " + key + " is not in the key index");
+        }
+        return idx;
+    }
 
     /**
      * Get the upper bound, the first index whose key is greater than the specified key.
+     *
      * @param key The key to search for.
-     * @return The first index greater than the specified key, or {@link #getUpperBound()} if the key
-     *         is the last key in the domain.  The index is not necessarily active.
+     * @return The index of the first key greater than the specified key, or {@link #getUpperBound()} if the key
+     * is the last key in the domain.
      */
     public int findUpperBound(long key) {
-        int index = getIndex(key);
+        int index = tryGetIndex(key);
         if (index >= 0) {
             // the key is there, advance by 1
             return index + 1;
@@ -232,11 +234,13 @@ public abstract class SortedKeyIndex implements Serializable {
      * This method is paired with {@link #findUpperBound(long)}; the interval
      * {@code [findLowerBound(k),findUpperBound(k))} contains the index of {@code k}, if the key is in the
      * domain, and is empty if the key is not in the domain.
+     *
      * @param key The key to search for.
-     * @return The index of the first key greater than or equal to {@code key}.
+     * @return The index of the first key greater than or equal to {@code key}; will be {@link #getLowerBound()} if
+     * {@code key} is less than or equal to the lowest key.
      */
     public int findLowerBound(long key) {
-        int index = getIndex(key);
+        int index = tryGetIndex(key);
         if (index >= 0) {
             // the key is there, first index is >=
             return index;
@@ -251,8 +255,9 @@ public abstract class SortedKeyIndex implements Serializable {
      * @param key The key.
      * @return {@code true} if the key is in the domain.
      */
+    @Override
     public boolean containsKey(long key) {
-        int idx = getIndex(key);
+        int idx = tryGetIndex(key);
         return idx >= lowerBound && idx < upperBound;
     }
 
@@ -261,6 +266,7 @@ public abstract class SortedKeyIndex implements Serializable {
      * @param idx The index to query.
      * @return The key at the specified index.
      */
+    @Override
     public abstract long getKey(int idx);
 
     /**
@@ -295,8 +301,14 @@ public abstract class SortedKeyIndex implements Serializable {
      * Get the key set's list of keys (domain) as a list.
      * @return A list of all keys in the key domain.
      */
-    public LongList keyList() {
+    @Override
+    public LongList getKeyList() {
         return new KeyList();
+    }
+
+    @Override
+    public SortedKeyIndex frozenCopy() {
+        return this;
     }
 
     //region Iterators and lists
@@ -350,7 +362,7 @@ public abstract class SortedKeyIndex implements Serializable {
         @Override
         public long getLong(int i) {
             Preconditions.checkElementIndex(i, SortedKeyIndex.this.size());
-            return getKey(i);
+            return getKey(getLowerBound() + i);
         }
     }
     //endregion

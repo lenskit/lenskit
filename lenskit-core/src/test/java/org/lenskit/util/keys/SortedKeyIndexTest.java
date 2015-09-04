@@ -38,8 +38,8 @@ public class SortedKeyIndexTest {
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.keySet(), hasSize(0));
-        assertThat(keys.keyList(), hasSize(0));
-        assertThat(keys.getIndex(42), lessThan(0));
+        assertThat(keys.getKeyList(), hasSize(0));
+        assertThat(keys.tryGetIndex(42), lessThan(0));
     }
 
     @Test
@@ -48,7 +48,7 @@ public class SortedKeyIndexTest {
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.size(), equalTo(0));
         assertThat(keys.keySet(), hasSize(0));
-        assertThat(keys.keyList(), hasSize(0));
+        assertThat(keys.getKeyList(), hasSize(0));
     }
 
     @Test
@@ -107,11 +107,11 @@ public class SortedKeyIndexTest {
         SortedKeyIndex subk = keys.subIndex(1, 5);
         assertThat(subk.getLowerBound(), equalTo(1));
         assertThat(subk.getUpperBound(), equalTo(5));
-        assertThat(subk.getIndex(1), equalTo(1));
-        assertThat(subk.getIndex(4), equalTo(4));
-        assertThat(subk.getIndex(5), lessThan(0));
-        assertThat(subk.getIndex(6), lessThan(0));
-        assertThat(subk.getIndex(0), lessThan(0));
+        assertThat(subk.tryGetIndex(1), equalTo(1));
+        assertThat(subk.tryGetIndex(4), equalTo(4));
+        assertThat(subk.tryGetIndex(5), lessThan(0));
+        assertThat(subk.tryGetIndex(6), lessThan(0));
+        assertThat(subk.tryGetIndex(0), lessThan(0));
         assertThat(subk.findLowerBound(1L), equalTo(1));
         assertThat(subk.findLowerBound(0L), equalTo(1));
         assertThat(subk.findLowerBound(2L), equalTo(2));

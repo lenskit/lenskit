@@ -21,6 +21,8 @@
 package org.lenskit.util.keys;
 
 import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -41,7 +43,8 @@ class CompactSortedKeyIndex extends SortedKeyIndex {
         keys = ks;
     }
 
-    public int getIndex(long key) {
+    @Override
+    public int tryGetIndex(long key) {
         // this domain does not contain anything outside the range of integers
         if (key > Integer.MAX_VALUE || key < Integer.MIN_VALUE) {
             return -1;

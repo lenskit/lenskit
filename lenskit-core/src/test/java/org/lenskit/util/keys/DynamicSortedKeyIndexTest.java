@@ -111,10 +111,10 @@ public class DynamicSortedKeyIndexTest {
         assertThat(keys.size(), equalTo(1));
         assertThat(keys.keySet(), hasSize(1));
 
-        assertThat(keys.getIndex(key), equalTo(0));
-        assertThat(keys.getIndex(low), lessThan(0));
-        assertThat(keys.getIndex(high), lessThan(0));
-        assertThat(keys.keyList(), contains(key));
+        assertThat(keys.tryGetIndex(key), equalTo(0));
+        assertThat(keys.tryGetIndex(low), lessThan(0));
+        assertThat(keys.tryGetIndex(high), lessThan(0));
+        assertThat(keys.getKeyList(), contains(key));
     }
 
     @Theory
@@ -126,15 +126,15 @@ public class DynamicSortedKeyIndexTest {
         SortedKeyIndex keys = SortedKeyIndex.wrap(rawKeys, 3);
         assertThat(keys.size(), equalTo(3));
         assertThat(keys.size(), equalTo(3));
-        assertThat(keys.keyList(), contains(k1, k2, k3));
+        assertThat(keys.getKeyList(), contains(k1, k2, k3));
         assertThat(keys.keySet(), contains(k1, k2, k3));
 
-        assertThat(keys.getIndex(k1), equalTo(0));
-        assertThat(keys.getIndex(k2), equalTo(1));
-        assertThat(keys.getIndex(k3), equalTo(2));
-        assertThat(keys.getIndex(data.getLow()), lessThan(0));
-        assertThat(keys.getIndex(data.getAfter(0)), lessThan(0));
-        assertThat(keys.getIndex(data.getAfter(1)), lessThan(0));
-        assertThat(keys.getIndex(data.getAfter(2)), lessThan(0));
+        assertThat(keys.tryGetIndex(k1), equalTo(0));
+        assertThat(keys.tryGetIndex(k2), equalTo(1));
+        assertThat(keys.tryGetIndex(k3), equalTo(2));
+        assertThat(keys.tryGetIndex(data.getLow()), lessThan(0));
+        assertThat(keys.tryGetIndex(data.getAfter(0)), lessThan(0));
+        assertThat(keys.tryGetIndex(data.getAfter(1)), lessThan(0));
+        assertThat(keys.tryGetIndex(data.getAfter(2)), lessThan(0));
     }
 }

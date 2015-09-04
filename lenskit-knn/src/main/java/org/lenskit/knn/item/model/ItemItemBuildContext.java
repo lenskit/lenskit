@@ -96,7 +96,7 @@ public class ItemItemBuildContext implements Serializable {
      */
     @Nonnull
     public SparseVector itemVector(long item) {
-        int idx = items.getIndex(item);
+        int idx = items.tryGetIndex(item);
         Preconditions.checkArgument(idx >= 0, "unknown item");
         return itemVectors[idx];
     }

@@ -138,7 +138,7 @@ public final class HashKeyIndex implements KeyIndex, Serializable {
      *
      * @return An immutable copy of the index mapping.
      */
-    public KeyIndex frozenCopy() {
+    public FrozenHashKeyIndex frozenCopy() {
         return new FrozenHashKeyIndex(indexMap, keyList);
     }
 }

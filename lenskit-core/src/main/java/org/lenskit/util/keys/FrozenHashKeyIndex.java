@@ -23,7 +23,6 @@ package org.lenskit.util.keys;
 import it.unimi.dsi.fastutil.longs.*;
 
 import java.io.Serializable;
-import java.util.Collection;
 
 /**
  * Immutable key index backed by a hash table.
@@ -114,5 +113,10 @@ public final class FrozenHashKeyIndex implements KeyIndex, Serializable {
     @Override
     public int getUpperBound() {
         return size();
+    }
+
+    @Override
+    public FrozenHashKeyIndex frozenCopy() {
+        return this;
     }
 }

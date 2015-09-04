@@ -61,9 +61,18 @@ public interface KeyIndex {
     int getUpperBound();
 
     /**
-     * Get the list of indexed keys.
+     * Get the list of indexed keys.  This list is 0-indexed, so the key at position 0 in this list is at index
+     * {@link #getLowerBound()} in the key index.
      *
      * @return The list of keys in the index.  No key will appear twice.
      */
     LongList getKeyList();
+
+    /**
+     * Get a frozen copy of this key index.  If the key index is mutable, then this method will return an immutable
+     * copy of it.  If the key index is already immutable, it may just return itself without copying.
+     *
+     * @return An immutable key index with the same contents as this key index.
+     */
+    KeyIndex frozenCopy();
 }

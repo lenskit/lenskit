@@ -90,7 +90,7 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
     @Override
     @Nonnull
     public SparseVector getNeighbors(long item) {
-        int idx = itemDomain.getIndex(item);
+        int idx = itemDomain.tryGetIndex(item);
         if (idx < 0) {
             return ImmutableSparseVector.empty();
         } else {

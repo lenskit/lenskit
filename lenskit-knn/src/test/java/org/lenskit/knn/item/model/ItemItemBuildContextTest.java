@@ -116,12 +116,12 @@ public class ItemItemBuildContextTest {
     @SuppressWarnings("deprecation")
     private void testRatingIntegrity(SortedKeyIndex items, SparseVector[] trueRatings, ItemItemBuildContext context) {
         for (long itemId : context.getItems()) {
-            assertEquals(trueRatings[items.getIndex(itemId)], context.itemVector(itemId));
+            assertEquals(trueRatings[items.tryGetIndex(itemId)], context.itemVector(itemId));
         }
 
         for (ItemVecPair pair : context.getItemPairs()) {
-            assertEquals(trueRatings[items.getIndex(pair.itemId1)], pair.vec1);
-            assertEquals(trueRatings[items.getIndex(pair.itemId2)], pair.vec2);
+            assertEquals(trueRatings[items.tryGetIndex(pair.itemId1)], pair.vec1);
+            assertEquals(trueRatings[items.tryGetIndex(pair.itemId2)], pair.vec2);
         }
     }
 }

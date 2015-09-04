@@ -40,7 +40,8 @@ class FullSortedKeyIndex extends SortedKeyIndex {
         keys = ks;
     }
 
-    public int getIndex(long key) {
+    @Override
+    public int tryGetIndex(long key) {
         return Arrays.binarySearch(keys, lowerBound, upperBound, key);
     }
 

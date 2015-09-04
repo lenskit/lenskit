@@ -167,7 +167,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
 
     @Override
     public double get(long l) {
-        int idx = keys.getIndex(l);
+        int idx = keys.tryGetIndex(l);
         if (idx >= 0) {
             return values[idx];
         } else {
@@ -251,7 +251,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
             if (o instanceof Map.Entry) {
                 Map.Entry<?,?> e = (Map.Entry) o;
                 long key = e instanceof Entry ? ((Entry) e).getLongKey() : (Long) e.getKey();
-                int idx = keys.getIndex(key);
+                int idx = keys.tryGetIndex(key);
                 if (idx >= 0) {
                     return e.getValue().equals(values[idx]);
                 }

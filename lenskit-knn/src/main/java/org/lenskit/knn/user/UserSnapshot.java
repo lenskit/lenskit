@@ -77,13 +77,13 @@ public class UserSnapshot implements Serializable {
     }
 
     public ImmutableSparseVector getUserVector(long user) {
-        int idx = users.getIndex(user);
+        int idx = users.tryGetIndex(user);
         Preconditions.checkArgument(idx >= 0, "invalid user " + user);
         return vectors.get(idx);
     }
 
     public ImmutableSparseVector getNormalizedUserVector(long user) {
-        int idx = users.getIndex(user);
+        int idx = users.tryGetIndex(user);
         Preconditions.checkArgument(idx >= 0, "invalid user " + user);
         return normedVectors.get(idx);
     }
