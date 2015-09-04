@@ -73,7 +73,11 @@ public abstract class NodeInstantiator implements Function<DAGNode<Component,Dep
 
         @Override
         public Object instantiate(DAGNode<Component, Dependency> node) throws InjectionException {
-            return container.makeInstantiator(node).instantiate();
+            Instantiator inst;
+            synchronized (container) {
+                inst = container.makeInstantiator(node);
+            }
+            return inst.instantiate();
         }
     }
 }
