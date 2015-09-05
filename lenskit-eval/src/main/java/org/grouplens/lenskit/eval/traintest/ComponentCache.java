@@ -86,8 +86,8 @@ class ComponentCache implements NodeProcessor {
         cacheDir = dir;
         classLoader = loader;
         instantiator = NodeInstantiator.create();
-        cache = new WeakHashMap<DAGNode<Component, Dependency>, CacheEntry>();
-        if (cacheDir.mkdirs()) {
+        cache = new WeakHashMap<>();
+        if (cacheDir != null && cacheDir.mkdirs()) {
             logger.debug("created cache directory {}", cacheDir);
         }
     }
