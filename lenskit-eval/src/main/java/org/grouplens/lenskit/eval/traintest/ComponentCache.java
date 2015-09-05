@@ -87,6 +87,9 @@ class ComponentCache implements NodeProcessor {
         classLoader = loader;
         instantiator = NodeInstantiator.create();
         cache = new WeakHashMap<DAGNode<Component, Dependency>, CacheEntry>();
+        if (cacheDir.mkdirs()) {
+            logger.debug("created cache directory {}", cacheDir);
+        }
     }
 
     @SuppressWarnings("unused")
@@ -271,9 +274,6 @@ class ComponentCache implements NodeProcessor {
 
         private void writeCompressedObject(File cacheFile, Object obj) throws IOException {
             assert cacheDir != null;
-            if (cacheDir.mkdirs()) {
-                logger.debug("created cache directory {}", cacheDir);
-            }
             StagedWrite stage = StagedWrite.begin(cacheFile);
             try {
                 try (OutputStream out = stage.openOutputStream();
