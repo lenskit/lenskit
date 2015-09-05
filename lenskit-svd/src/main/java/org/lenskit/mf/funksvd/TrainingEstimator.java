@@ -25,15 +25,12 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.apache.commons.math3.linear.RealVector;
-import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.lenskit.data.ratings.RatingMatrix;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.api.ItemScorer;
+import org.lenskit.data.ratings.RatingMatrix;
 import org.lenskit.data.ratings.RatingMatrixEntry;
 import org.lenskit.util.collections.LongUtils;
 
-import java.util.Collection;
 import java.util.List;
 
 /**

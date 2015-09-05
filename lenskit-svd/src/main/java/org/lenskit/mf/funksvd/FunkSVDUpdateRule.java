@@ -21,7 +21,7 @@
 package org.lenskit.mf.funksvd;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.RatingMatrix;
 import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;

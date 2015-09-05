@@ -20,7 +20,7 @@
  */
 package org.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomain;
 
 /**
  * Encapsulation of the FunkSVD update process.  Using this class takes a two-step process:

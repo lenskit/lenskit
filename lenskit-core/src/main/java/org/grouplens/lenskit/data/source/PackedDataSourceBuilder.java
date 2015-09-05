@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.data.source;
 
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomain;
 
 import javax.annotation.Nonnull;
 import java.io.File;

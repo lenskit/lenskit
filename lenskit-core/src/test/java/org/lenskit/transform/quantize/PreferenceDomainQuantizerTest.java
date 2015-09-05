@@ -22,7 +22,7 @@ package org.lenskit.transform.quantize;
 
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomain;
 import org.junit.Before;
 import org.junit.Test;
 

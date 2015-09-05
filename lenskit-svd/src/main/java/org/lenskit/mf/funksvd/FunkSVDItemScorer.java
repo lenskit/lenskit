@@ -20,7 +20,7 @@
  */
 package org.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.mf.svd.BiasedMFItemScorer;
 import org.lenskit.mf.svd.DomainClampingKernel;
 import org.lenskit.mf.svd.DotProductKernel;

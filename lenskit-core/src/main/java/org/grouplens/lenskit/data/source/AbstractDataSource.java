@@ -24,7 +24,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomain;
 import org.grouplens.lenskit.util.MoreSuppliers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

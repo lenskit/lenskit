@@ -28,8 +28,8 @@ import org.grouplens.grapht.context.ContextPattern;
 import org.grouplens.lenskit.core.LenskitBinding;
 import org.grouplens.lenskit.core.LenskitConfigContext;
 import org.grouplens.lenskit.core.RecommenderConfigurationException;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
-import org.grouplens.lenskit.data.pref.PreferenceDomainBuilder;
+import org.lenskit.data.ratings.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomainBuilder;
 import org.grouplens.lenskit.inject.AbstractConfigContext;
 
 import javax.annotation.Nonnull;
@@ -307,7 +307,7 @@ public class BindingDSL extends AbstractConfigContext {
      *
      * @param args The arguments.
      * @return The preference domain.
-     * @see org.grouplens.lenskit.data.pref.PreferenceDomain
+     * @see PreferenceDomain
      */
     public PreferenceDomain prefDomain(Map<String,Object> args) {
         return GroovyUtils.buildObject(new PreferenceDomainBuilder(), args);

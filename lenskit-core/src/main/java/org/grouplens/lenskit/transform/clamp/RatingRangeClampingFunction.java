@@ -21,14 +21,14 @@
 package org.grouplens.lenskit.transform.clamp;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomain;
 
 import javax.inject.Inject;
 import java.io.Serializable;
 
 /**
  * Clamp values to the range of valid ratings. This clamping function uses
- * the {@link org.grouplens.lenskit.data.pref.PreferenceDomain} to clamp values to fall within the minimum
+ * the {@link PreferenceDomain} to clamp values to fall within the minimum
  * and maximum allowable ratings.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
