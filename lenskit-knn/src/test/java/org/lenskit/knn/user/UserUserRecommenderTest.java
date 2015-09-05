@@ -26,7 +26,7 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.vectors.similarity.PearsonCorrelation;
 import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
 import org.junit.Before;

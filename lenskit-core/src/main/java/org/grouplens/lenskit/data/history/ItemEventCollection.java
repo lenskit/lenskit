@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.data.history;
 
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 
 import java.util.Collection;
 

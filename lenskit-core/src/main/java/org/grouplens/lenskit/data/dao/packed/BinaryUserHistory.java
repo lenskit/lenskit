@@ -22,8 +22,8 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.history.AbstractUserHistory;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;

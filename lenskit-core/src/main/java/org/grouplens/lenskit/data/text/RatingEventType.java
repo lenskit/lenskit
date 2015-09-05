@@ -23,16 +23,16 @@ package org.grouplens.lenskit.data.text;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSet;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.data.event.EventBuilder;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.RatingBuilder;
+import org.lenskit.data.events.EventBuilder;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.RatingBuilder;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Event type for {@link org.grouplens.lenskit.data.event.Rating}s.
+ * Event type for {@link Rating}s.
  *
  * @since 2.2
  */

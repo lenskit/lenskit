@@ -23,10 +23,10 @@ package org.grouplens.lenskit.data.dao.packed;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.SerializationUtils;
-import org.grouplens.lenskit.cursors.Cursors;
+import org.lenskit.util.io.ObjectStreams;
 import org.grouplens.lenskit.data.dao.SortOrder;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -69,7 +69,7 @@ public class BinaryRatingDAOTest {
         packer.close();
 
         BinaryRatingDAO dao = BinaryRatingDAO.open(file);
-        assertThat(Cursors.makeList(dao.streamEvents()),
+        assertThat(ObjectStreams.makeList(dao.streamEvents()),
                    hasSize(0));
         assertThat(dao.getUserIds(), hasSize(0));
         assertThat(dao.getItemIds(), hasSize(0));
@@ -100,7 +100,7 @@ public class BinaryRatingDAOTest {
         }
 
         BinaryRatingDAO dao = BinaryRatingDAO.open(file);
-        assertThat(Cursors.makeList(dao.streamEvents(Rating.class)),
+        assertThat(ObjectStreams.makeList(dao.streamEvents(Rating.class)),
                    equalTo(ratings));
     }
 
@@ -120,7 +120,7 @@ public class BinaryRatingDAOTest {
         }
 
         BinaryRatingDAO dao = BinaryRatingDAO.open(file);
-        assertThat(Cursors.makeList(dao.streamEvents(Rating.class)),
+        assertThat(ObjectStreams.makeList(dao.streamEvents(Rating.class)),
                    equalTo(ratings));
         assertThat(dao.getEventsForUser(42), hasSize(2));
         assertThat(dao.getEventsForUser(42, Rating.class),
@@ -144,7 +144,7 @@ public class BinaryRatingDAOTest {
         }
 
         BinaryRatingDAO dao = BinaryRatingDAO.open(file);
-        assertThat(Cursors.makeList(dao.streamEvents(Rating.class)),
+        assertThat(ObjectStreams.makeList(dao.streamEvents(Rating.class)),
                    equalTo(all));
         assertThat(dao.getEventsForUser(42), hasSize(2));
         assertThat(dao.getEventsForUser(42, Rating.class),
@@ -190,7 +190,7 @@ public class BinaryRatingDAOTest {
     }
 
     private void verifySimpleDAO(BinaryRatingDAO dao) {
-        assertThat(Cursors.makeList(dao.streamEvents()),
+        assertThat(ObjectStreams.makeList(dao.streamEvents()),
                    hasSize(3));
         assertThat(dao.getUserIds(), containsInAnyOrder(42L, 39L));
         assertThat(dao.getItemIds(), containsInAnyOrder(105L, 120L));
@@ -209,7 +209,7 @@ public class BinaryRatingDAOTest {
         assertThat(dao.getEventsForItem(42), nullValue());
         assertThat(dao.getEventsForUser(105), nullValue());
 
-        List<UserHistory<Event>> histories = Cursors.makeList(dao.streamEventsByUser());
+        List<UserHistory<Event>> histories = ObjectStreams.makeList(dao.streamEventsByUser());
         assertThat(histories, hasSize(2));
         assertThat(histories.get(0).getUserId(), equalTo(39L));
         assertThat(histories.get(0),
@@ -218,11 +218,11 @@ public class BinaryRatingDAOTest {
         assertThat(histories.get(1),
                    equalTo(dao.getEventsForUser(42)));
 
-        List<Rating> events = Cursors.makeList(dao.streamEvents(Rating.class, SortOrder.USER));
+        List<Rating> events = ObjectStreams.makeList(dao.streamEvents(Rating.class, SortOrder.USER));
         assertThat(events, hasSize(3));
         assertThat(events.get(0).getUserId(), equalTo(39L));
 
-        events = Cursors.makeList(dao.streamEvents(Rating.class, SortOrder.ITEM));
+        events = ObjectStreams.makeList(dao.streamEvents(Rating.class, SortOrder.ITEM));
         assertThat(events, hasSize(3));
         assertThat(events.get(0).getUserId(), equalTo(42L));
         assertThat(events.get(0).getItemId(), equalTo(105L));

@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.data.source;
 
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.specs.data.DataSourceSpec;
 
 /**

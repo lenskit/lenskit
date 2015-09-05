@@ -26,11 +26,11 @@ import com.google.common.cache.CacheBuilderSpec;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.cursors.Cursors;
+import org.lenskit.util.io.ObjectStream;
+import org.lenskit.util.io.ObjectStreams;
 import org.grouplens.lenskit.data.dao.*;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.data.history.UserHistory;
@@ -221,24 +221,24 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
 
     @SuppressWarnings("unchecked")
     @Override
-    public Cursor<Event> streamEvents() {
-        return (Cursor) streamEvents(Rating.class, SortOrder.ANY);
+    public ObjectStream<Event> streamEvents() {
+        return (ObjectStream) streamEvents(Rating.class, SortOrder.ANY);
     }
 
     @Override
-    public <E extends Event> Cursor<E> streamEvents(Class<E> type) {
+    public <E extends Event> ObjectStream<E> streamEvents(Class<E> type) {
         return streamEvents(type, SortOrder.ANY);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E extends Event> Cursor<E> streamEvents(Class<E> type, SortOrder order) {
+    public <E extends Event> ObjectStream<E> streamEvents(Class<E> type, SortOrder order) {
         if (!type.isAssignableFrom(Rating.class)) {
-            return Cursors.empty();
+            return ObjectStreams.empty();
         }
 
         try {
-            return (Cursor<E>) new ResultSetRatingCursor(eventStatements.get(order).call());
+            return (ObjectStream<E>) new ResultSetRatingObjectStream(eventStatements.get(order).call());
         } catch (SQLException e) {
             throw new DatabaseAccessException(e);
         }
@@ -254,7 +254,7 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
                 public List<Rating> call() throws Exception {
                     PreparedStatement s = userEventStatement.call();
                     s.setLong(1, userId);
-                    Cursor<Rating> ratings = new ResultSetRatingCursor(s);
+                    ObjectStream<Rating> ratings = new ResultSetRatingObjectStream(s);
                     try {
                         return ImmutableList.copyOf(ratings);
                     } finally {
@@ -297,7 +297,7 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
                 public List<Rating> call() throws Exception {
                     PreparedStatement s = itemEventStatement.call();
                     s.setLong(1, itemId);
-                    Cursor<Rating> ratings = new ResultSetRatingCursor(s);
+                    ObjectStream<Rating> ratings = new ResultSetRatingObjectStream(s);
                     try {
                         return ImmutableList.copyOf(ratings);
                     } finally {
@@ -344,23 +344,23 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
     }
 
     @Override
-    public Cursor<UserHistory<Event>> streamEventsByUser() {
+    public ObjectStream<UserHistory<Event>> streamEventsByUser() {
         return streamEventsByUser(Event.class);
     }
 
     @Override
-    public <E extends Event> Cursor<UserHistory<E>> streamEventsByUser(Class<E> type) {
-        return new UserHistoryCursor<E>(streamEvents(type, SortOrder.USER));
+    public <E extends Event> ObjectStream<UserHistory<E>> streamEventsByUser(Class<E> type) {
+        return new UserHistoryObjectStream<E>(streamEvents(type, SortOrder.USER));
     }
 
     @Override
-    public Cursor<ItemEventCollection<Event>> streamEventsByItem() {
+    public ObjectStream<ItemEventCollection<Event>> streamEventsByItem() {
         return streamEventsByItem(Event.class);
     }
 
     @Override
-    public <E extends Event> Cursor<ItemEventCollection<E>> streamEventsByItem(Class<E> type) {
-        return new ItemCollectionCursor<E>(streamEvents(type, SortOrder.USER));
+    public <E extends Event> ObjectStream<ItemEventCollection<E>> streamEventsByItem(Class<E> type) {
+        return new ItemCollectionObjectStream<E>(streamEvents(type, SortOrder.USER));
     }
 
 }

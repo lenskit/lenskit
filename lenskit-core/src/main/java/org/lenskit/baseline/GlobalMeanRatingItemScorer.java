@@ -23,7 +23,7 @@ package org.lenskit.baseline;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
 import org.lenskit.basic.ConstantItemScorer;
-import org.lenskit.data.summary.RatingSummary;
+import org.lenskit.data.ratings.RatingSummary;
 
 import javax.inject.Inject;
 

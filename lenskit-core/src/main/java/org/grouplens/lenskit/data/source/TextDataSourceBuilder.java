@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.source;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomain;
 import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
 import org.grouplens.lenskit.data.text.EventFormat;
 import org.grouplens.lenskit.data.text.RatingEventType;

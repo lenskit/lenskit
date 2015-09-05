@@ -20,7 +20,7 @@
  */
 package org.lenskit.basic;
 
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.RatingPredictor;
 import org.lenskit.api.Result;

@@ -22,17 +22,16 @@ package org.lenskit.eval.crossfold
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.java.quickcheck.Generator
-import org.grouplens.lenskit.cursors.Cursors
+import org.lenskit.util.io.ObjectStreams
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
-import org.grouplens.lenskit.data.event.Event
-import org.grouplens.lenskit.data.event.Rating
+import org.lenskit.data.events.Event
+import org.lenskit.data.ratings.Rating
 import org.grouplens.lenskit.data.source.DataSource
 import org.grouplens.lenskit.data.source.GenericDataSource
 import org.grouplens.lenskit.data.source.TextDataSource
 import org.grouplens.lenskit.data.text.TextEventDAO
 import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -241,7 +240,7 @@ class CrossfolderTest {
             assertThat(test.inputFile.exists(), equalTo(true))
 
             // test the users
-            def events = Cursors.makeList ds.testData.eventDAO.streamEvents()
+            def events = ObjectStreams.makeList ds.testData.eventDAO.streamEvents()
             allEvents += events;
 
 
@@ -250,7 +249,7 @@ class CrossfolderTest {
                                              lessThanOrEqualTo((Integer) Math.ceil(perPart)))));
 
             // train data should have all the other ratings
-            def tes = Cursors.makeList ds.trainingDAO.streamEvents()
+            def tes = ObjectStreams.makeList ds.trainingDAO.streamEvents()
             assertThat(tes.size() + events.size(), equalTo(ratings.size()))
         }
         assertThat(allEvents, hasSize(ratings.size()))

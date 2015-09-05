@@ -26,16 +26,16 @@ import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.lenskit.util.collections.LongUtils;
-import org.lenskit.util.keys.LongKeyIndex;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
@@ -53,7 +53,7 @@ import java.util.List;
 @DefaultProvider(UserSnapshot.Builder.class)
 public class UserSnapshot implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final LongKeyIndex users;
+    private final SortedKeyIndex users;
     private final List<ImmutableSparseVector> vectors;
     private final List<ImmutableSparseVector> normedVectors;
     private final Long2ObjectMap<LongSortedSet> itemUserSets;
@@ -64,7 +64,7 @@ public class UserSnapshot implements Serializable {
      * @param vs The list of raw user vectors.
      * @param nvs The list of normalized user vectors.
      */
-    UserSnapshot(LongKeyIndex us, List<ImmutableSparseVector> vs, List<ImmutableSparseVector> nvs,
+    UserSnapshot(SortedKeyIndex us, List<ImmutableSparseVector> vs, List<ImmutableSparseVector> nvs,
                  Long2ObjectMap<LongSortedSet> iuSets) {
         Preconditions.checkArgument(vs.size() == us.size(),
                                     "incorrectly sized vector list");
@@ -77,13 +77,13 @@ public class UserSnapshot implements Serializable {
     }
 
     public ImmutableSparseVector getUserVector(long user) {
-        int idx = users.getIndex(user);
+        int idx = users.tryGetIndex(user);
         Preconditions.checkArgument(idx >= 0, "invalid user " + user);
         return vectors.get(idx);
     }
 
     public ImmutableSparseVector getNormalizedUserVector(long user) {
-        int idx = users.getIndex(user);
+        int idx = users.tryGetIndex(user);
         Preconditions.checkArgument(idx >= 0, "invalid user " + user);
         return normedVectors.get(idx);
     }
@@ -109,7 +109,7 @@ public class UserSnapshot implements Serializable {
         @Override
         public UserSnapshot get() {
             Long2ObjectMap<MutableSparseVector> vectors = new Long2ObjectOpenHashMap<MutableSparseVector>();
-            Cursor<? extends UserHistory<? extends Event>> users = userEventDAO.streamEventsByUser(summarizer.eventTypeWanted());
+            ObjectStream<? extends UserHistory<? extends Event>> users = userEventDAO.streamEventsByUser(summarizer.eventTypeWanted());
             try {
                 for (UserHistory<? extends Event> user: users) {
                     MutableSparseVector uvec = summarizer.summarize(user).mutableCopy();
@@ -120,7 +120,7 @@ public class UserSnapshot implements Serializable {
             }
 
             Long2ObjectMap<LongList> itemUserLists = new Long2ObjectOpenHashMap<LongList>();
-            LongKeyIndex domain = LongKeyIndex.fromCollection(vectors.keySet());
+            SortedKeyIndex domain = SortedKeyIndex.fromCollection(vectors.keySet());
             ImmutableList.Builder<ImmutableSparseVector> vecs = ImmutableList.builder();
             ImmutableList.Builder<ImmutableSparseVector> nvecs = ImmutableList.builder();
             for (LongIterator uiter = domain.keyIterator(); uiter.hasNext();) {

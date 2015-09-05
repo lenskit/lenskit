@@ -26,15 +26,16 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.apache.commons.lang3.text.StrTokenizer;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.UserDAO;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.util.DelimitedTextCursor;
 import org.grouplens.lenskit.util.io.LoggingStreamSlurper;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.basic.PrecomputedItemScorer;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.util.io.LineStream;
+import org.lenskit.util.io.ObjectStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -234,17 +235,19 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
                                                 logger, "");
         slurp.start();
 
-        Cursor<String[]> rows = new DelimitedTextCursor(new BufferedReader(new InputStreamReader(proc.getInputStream())), ",");
-        try {
-            for (String[] row: rows) {
+        StrTokenizer tok = new StrTokenizer((String) null, ",");
+        try (InputStreamReader rdr = new InputStreamReader(proc.getInputStream());
+             BufferedReader buf = new BufferedReader(rdr);
+             ObjectStream<List<String>> rows = new LineStream(buf).tokenize(tok)) {
+            for (List<String> row: rows) {
                 // FIXME Add error checking
-                long user = Long.parseLong(row[0]);
-                long item = Long.parseLong(row[1]);
-                double score = Double.parseDouble(row[2]);
+                long user = Long.parseLong(row.get(0));
+                long item = Long.parseLong(row.get(1));
+                double score = Double.parseDouble(row.get(2));
                 builder.addScore(user, item, score);
             }
-        } finally {
-            rows.close();
+        } catch (IOException e) {
+            throw new RuntimeException("cannot open output", e);
         }
 
         int ec;
@@ -285,7 +288,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
             logger.info("writing ratings to {}", name);
             File file = new File(workingDir, name);
             try (PrintWriter writer = new PrintWriter(file);
-                 Cursor<Rating> ratings = eventDAO.streamEvents(Rating.class)) {
+                 ObjectStream<Rating> ratings = eventDAO.streamEvents(Rating.class)) {
                 for (Rating r: ratings) {
                     writer.printf("%d,%d,", r.getUserId(), r.getItemId());
                     if (r.hasValue()) {

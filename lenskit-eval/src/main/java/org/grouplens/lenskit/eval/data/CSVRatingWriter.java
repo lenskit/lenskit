@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.eval.data;
 
 import com.google.common.collect.Lists;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 
 import java.io.IOException;

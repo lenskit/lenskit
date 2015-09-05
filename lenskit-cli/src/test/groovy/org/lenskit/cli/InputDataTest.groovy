@@ -22,7 +22,7 @@ package org.lenskit.cli
 
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.inf.ArgumentParserException
-import org.grouplens.lenskit.data.pref.PreferenceDomain
+import org.lenskit.data.ratings.PreferenceDomain
 import org.grouplens.lenskit.data.source.PackedDataSource
 import org.grouplens.lenskit.data.source.TextDataSource
 import org.junit.Test

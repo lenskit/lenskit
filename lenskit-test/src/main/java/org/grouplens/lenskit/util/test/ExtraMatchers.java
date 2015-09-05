@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.util.test;
 
+import com.google.common.base.Equivalence;
 import org.hamcrest.Matcher;
 
 import java.io.File;
@@ -50,5 +51,16 @@ public final class ExtraMatchers {
 
     public static Matcher<File> hasLineCount(Matcher<? extends Integer> m) {
         return new LineCountMatcher(m);
+    }
+
+    /**
+     * Test if the object is equivalent to object object.
+     * @param obj The expected object.
+     * @param equiv An equivalence relation.
+     * @param <T> The type of object to compare.
+     * @return A matcher that accepts objects equivalent to `obj`.
+     */
+    public static <T> Matcher<T> equivalentTo(T obj, Equivalence<T> equiv) {
+        return new EquivalenceMatcher<>(obj, equiv);
     }
 }

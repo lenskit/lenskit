@@ -22,7 +22,7 @@ package org.lenskit.mf.svd;
 
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomain;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.closeTo;

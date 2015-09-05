@@ -23,13 +23,6 @@ package org.grouplens.lenskit.eval.traintest;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.data.dao.UserEventDAO;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;
 import java.io.File;

@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.source;
 
 import org.grouplens.grapht.util.Providers;
 import org.grouplens.lenskit.data.dao.*;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomain;
 import org.grouplens.lenskit.data.text.*;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.specs.data.DataSourceSpec;

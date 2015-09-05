@@ -29,7 +29,7 @@ import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.config.ConfigHelpers
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
-import org.grouplens.lenskit.data.event.Ratings
+import org.lenskit.data.ratings.Ratings
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

@@ -24,19 +24,19 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.ItemEventDAO;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.Ratings;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.util.collections.LongUtils;
-import org.lenskit.util.keys.LongKeyIndex;
+import org.lenskit.util.keys.SortedKeyIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,9 +89,9 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
         logger.debug("Building item data");
         Long2ObjectMap<LongList> userItems = new Long2ObjectOpenHashMap<LongList>(1000);
         Long2ObjectMap<SparseVector> itemVectors = new Long2ObjectOpenHashMap<SparseVector>(1000);
-        Cursor<ItemEventCollection<Event>> itemCursor = itemEventDAO.streamEventsByItem();
+        ObjectStream<ItemEventCollection<Event>> itemObjectStream = itemEventDAO.streamEventsByItem();
         try {
-            for (ItemEventCollection<Event> item: itemCursor) {
+            for (ItemEventCollection<Event> item: itemObjectStream) {
                 if (logger.isTraceEnabled()) {
                     logger.trace("processing {} ratings for item {}", item.size(), item);
                 }
@@ -113,7 +113,7 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
                 itemVectors.put(item.getItemId(), vector.freeze());
             }
         } finally {
-            itemCursor.close();
+            itemObjectStream.close();
         }
 
         Long2ObjectMap<LongSortedSet> userItemSets = new Long2ObjectOpenHashMap<LongSortedSet>();
@@ -121,7 +121,7 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
             userItemSets.put(entry.getLongKey(), LongUtils.packedSet(entry.getValue()));
         }
 
-        LongKeyIndex items = LongKeyIndex.fromCollection(itemVectors.keySet());
+        SortedKeyIndex items = SortedKeyIndex.fromCollection(itemVectors.keySet());
         SparseVector[] itemData = new SparseVector[items.size()];
         for (int i = 0; i < itemData.length; i++) {
             long itemId = items.getKey(i);

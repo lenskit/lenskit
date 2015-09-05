@@ -81,7 +81,7 @@ allprojects {
                       'org.grouplens.lenskit.scored', 'org.grouplens.lenskit.indexes',
                       'org.lenskit.results')
                 group('Data Access', 'org.grouplens.lenskit.data*',
-                      'org.grouplens.lenskit.cursors')
+                      'org.grouplens.util.io')
                 group('Data Transformation',
                       'org.grouplens.lenskit.baseline*', 'org.grouplens.lenskit.transform*',
                       'org.grouplens.lenskit.vectors.*')

@@ -66,7 +66,7 @@ public class FunkSVDBuildSerializeTest extends ML100KTestSuite {
         def rec = engine.createRecommender();
         def dao = rec.get(ItemDAO)
         def model = rec.get(FunkSVDModel)
-        assertThat(model.itemIndex.idList,
+        assertThat(model.itemIndex.keyList,
                    anyOf(hasSize(dao.itemIds.size()),
                          hasSize(dao.itemIds.size() + SUBSET_DROP_SIZE)));
     }

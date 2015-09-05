@@ -21,7 +21,7 @@
 package org.lenskit.slopeone;
 
 import org.grouplens.lenskit.data.dao.*;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.lenskit.knn.item.model.ItemItemBuildContextProvider;

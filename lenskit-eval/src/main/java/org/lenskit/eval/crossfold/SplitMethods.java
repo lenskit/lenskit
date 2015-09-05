@@ -20,7 +20,7 @@
  */
 package org.lenskit.eval.crossfold;
 
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 
 public final class SplitMethods {
     private SplitMethods() {}

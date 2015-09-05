@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.eval.data
 
-import org.grouplens.lenskit.data.pref.PreferenceDomain
+import org.lenskit.data.ratings.PreferenceDomain
 import org.grouplens.lenskit.data.source.CSVDataSourceBuilder
 import org.grouplens.lenskit.data.source.TextDataSource
 import org.grouplens.lenskit.eval.script.ConfigTestBase

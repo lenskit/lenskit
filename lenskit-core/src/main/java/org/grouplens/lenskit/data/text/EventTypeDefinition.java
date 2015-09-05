@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.data.text;
 
-import org.grouplens.lenskit.data.event.EventBuilder;
+import org.lenskit.data.events.EventBuilder;
 
 import java.util.List;
 import java.util.Set;

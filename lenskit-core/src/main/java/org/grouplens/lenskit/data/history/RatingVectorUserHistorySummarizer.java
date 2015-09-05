@@ -23,9 +23,9 @@ package org.grouplens.lenskit.data.history;
 import com.google.common.base.Function;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.Ratings;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.Ratings;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.annotation.Nonnull;

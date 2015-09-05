@@ -23,7 +23,7 @@ package org.grouplens.lenskit.data.history;
 import com.google.common.base.Function;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 
 import javax.annotation.Nullable;
 import java.util.AbstractList;

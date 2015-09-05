@@ -20,8 +20,8 @@
  */
 package org.lenskit.eval.crossfold;
 
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.util.io.ObjectStreams;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ class RatingPartitionSplitMethod implements SplitMethod {
         final int count = output.getCount();
         logger.info("splitting data source {} to {} partitions by ratings",
                     input.getName(), count);
-        ArrayList<Rating> ratings = Cursors.makeList(input.getEventDAO().streamEvents(Rating.class));
+        ArrayList<Rating> ratings = ObjectStreams.makeList(input.getEventDAO().streamEvents(Rating.class));
         Collections.shuffle(ratings);
 
         final int n = ratings.size();

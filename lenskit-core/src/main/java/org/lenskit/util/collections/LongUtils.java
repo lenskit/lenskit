@@ -22,7 +22,7 @@ package org.lenskit.util.collections;
 
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
-import org.lenskit.util.keys.LongKeyIndex;
+import org.lenskit.util.keys.SortedKeyIndex;
 import org.lenskit.util.keys.LongSortedArraySet;
 
 import java.util.*;
@@ -74,7 +74,7 @@ public final class LongUtils {
      * @return An efficient sorted set containing the numbers in {@code longs}.
      */
     public static LongSortedSet packedSet(Collection<Long> longs) {
-        return LongKeyIndex.fromCollection(longs).keySet();
+        return SortedKeyIndex.fromCollection(longs).keySet();
     }
 
     /**
@@ -83,7 +83,7 @@ public final class LongUtils {
      * @return An efficient sorted set containing the numbers in {@code longs}.
      */
     public static LongSortedSet packedSet(long... longs) {
-        return LongKeyIndex.create(longs).keySet();
+        return SortedKeyIndex.create(longs).keySet();
     }
 
     /**
@@ -157,7 +157,7 @@ public final class LongUtils {
         if (data.length * 2 > i * 3) {
             data = Arrays.copyOf(data, i);
         }
-        return LongKeyIndex.wrap(data, i).keySet();
+        return SortedKeyIndex.wrap(data, i).keySet();
     }
 
     /**
@@ -234,7 +234,7 @@ public final class LongUtils {
         }
         assert i == data.length;
 
-        return LongKeyIndex.wrap(data, data.length).keySet();
+        return SortedKeyIndex.wrap(data, data.length).keySet();
     }
 
     /**

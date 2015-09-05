@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 
 import java.util.AbstractCollection;

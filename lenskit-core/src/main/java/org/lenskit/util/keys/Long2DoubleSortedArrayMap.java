@@ -22,12 +22,13 @@ package org.lenskit.util.keys;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.Swapper;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntBidirectionalIterator;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.*;
-import org.grouplens.lenskit.indexes.IdIndexMapping;
 import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.concurrent.Immutable;
@@ -44,10 +45,10 @@ import static it.unimi.dsi.fastutil.Arrays.quickSort;
 public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
     private static final long serialVersionUID = 1L;
 
-    private final LongKeyIndex keys;
+    private final SortedKeyIndex keys;
     private final double[] values;
 
-    Long2DoubleSortedArrayMap(LongKeyIndex ks, double[] vs) {
+    Long2DoubleSortedArrayMap(SortedKeyIndex ks, double[] vs) {
         Preconditions.checkArgument(vs.length >= ks.getUpperBound(),
                                     "index and value sizes mismatched");
         keys = ks;
@@ -56,7 +57,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
 
     public Long2DoubleSortedArrayMap(Map<Long,Double> data) {
         Long2DoubleFunction vf = LongUtils.asLong2DoubleFunction(data);
-        keys = LongKeyIndex.fromCollection(data.keySet());
+        keys = SortedKeyIndex.fromCollection(data.keySet());
         int size = keys.size();
         values = new double[size];
         for (int i = 0; i < size; i++) {
@@ -70,7 +71,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
      * @param vs The values (the array is used as-is, it is *not* copied).
      * @return The array map.
      */
-    public static Long2DoubleSortedArrayMap wrap(LongKeyIndex keys, double[] vs) {
+    public static Long2DoubleSortedArrayMap wrap(SortedKeyIndex keys, double[] vs) {
         return new Long2DoubleSortedArrayMap(keys, vs);
     }
 
@@ -91,7 +92,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
         ParallelSwapper swapper = new ParallelSwapper(keys, values);
         quickSort(0, keys.length, comparator, swapper);
         // FIXME Verify that the keys have no duplicates
-        LongKeyIndex index = LongKeyIndex.wrap(keys, keys.length);
+        SortedKeyIndex index = SortedKeyIndex.wrap(keys, keys.length);
 
         return wrap(index, values);
     }
@@ -104,16 +105,28 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
      * @return A sparse vector mapping the IDs in {@code map} to the values in {@code values}.
      * @throws IllegalArgumentException if {@code values} not the same size as {@code idx}.
      */
-    public static Long2DoubleSortedArrayMap fromArray(IdIndexMapping mapping, double[] values) {
-        Preconditions.checkArgument(values.length == mapping.size(),
-                                    "value array and index have different sizes: " + values.length + " != " + mapping.size());
-        final int n = values.length;
+    public static Long2DoubleSortedArrayMap fromArray(KeyIndex mapping, double[] values) {
+        return fromArray(mapping, DoubleArrayList.wrap(values));
+    }
+
+    /**
+     * Create a map from an array and index mapping.
+     *
+     * @param mapping The index mapping specifying the keys.
+     * @param values The array of values.
+     * @return A sparse vector mapping the IDs in {@code map} to the values in {@code values}.
+     * @throws IllegalArgumentException if {@code values} not the same size as {@code idx}.
+     */
+    public static Long2DoubleSortedArrayMap fromArray(KeyIndex mapping, DoubleList values) {
+        Preconditions.checkArgument(values.size() == mapping.size(),
+                                    "value array and index have different sizes: " + values.size() + " != " + mapping.size());
+        final int n = values.size();
         double[] nvs = new double[n];
-        LongKeyIndex index = LongKeyIndex.fromCollection(mapping.getIdList());
+        SortedKeyIndex index = SortedKeyIndex.fromCollection(mapping.getKeyList());
         for (int i = 0; i < n; i++) {
             long item = index.getKey(i);
             int origIndex = mapping.getIndex(item);
-            nvs[i] = values[origIndex];
+            nvs[i] = values.get(origIndex);
         }
         return wrap(index, nvs);
     }
@@ -168,7 +181,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
 
     @Override
     public double get(long l) {
-        int idx = keys.getIndex(l);
+        int idx = keys.tryGetIndex(l);
         if (idx >= 0) {
             return values[idx];
         } else {
@@ -252,7 +265,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
             if (o instanceof Map.Entry) {
                 Map.Entry<?,?> e = (Map.Entry) o;
                 long key = e instanceof Entry ? ((Entry) e).getLongKey() : (Long) e.getKey();
-                int idx = keys.getIndex(key);
+                int idx = keys.tryGetIndex(key);
                 if (idx >= 0) {
                     return e.getValue().equals(values[idx]);
                 }

@@ -22,9 +22,9 @@ package org.grouplens.lenskit.baseline;
 
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
-import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshotBuilder;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.PackedRatingMatrix;
+import org.lenskit.data.ratings.PackedRatingMatrixBuilder;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition;
 import org.junit.Before;
@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
 public class LeastSquaresItemScorerTest {
 
     private static final double EPSILON = 1.0e-2;
-    private PackedPreferenceSnapshot snapshot;
+    private PackedRatingMatrix snapshot;
     private LeastSquaresItemScorer predictor;
 
     @Before
@@ -68,7 +68,7 @@ public class LeastSquaresItemScorerTest {
         rs.add(Rating.create(3, 6, 4));
 
         final EventDAO dao = EventCollectionDAO.create(rs);
-        final Provider<PackedPreferenceSnapshot> provider = new PackedPreferenceSnapshotBuilder(dao, new Random());
+        final Provider<PackedRatingMatrix> provider = new PackedRatingMatrixBuilder(dao, new Random());
         snapshot = provider.get();
         final StoppingCondition stop = new ThresholdStoppingCondition(0.1, 10);
 

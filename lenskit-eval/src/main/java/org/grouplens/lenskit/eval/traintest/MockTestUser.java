@@ -22,8 +22,8 @@ package org.grouplens.lenskit.eval.traintest;
 
 import com.google.common.collect.Lists;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;

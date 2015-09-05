@@ -27,8 +27,6 @@ import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.iterative.LearningRate;
 import org.grouplens.lenskit.iterative.RegularizationTerm;
 import org.grouplens.lenskit.iterative.StoppingCondition;
@@ -36,6 +34,8 @@ import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
+import org.lenskit.data.ratings.RatingMatrix;
+import org.lenskit.data.ratings.RatingMatrixEntry;
 import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
@@ -99,7 +99,7 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
     public static class Builder implements Provider<LeastSquaresItemScorer> {
         private final double learningRate;
         private final double regularizationFactor;
-        private PreferenceSnapshot snapshot;
+        private RatingMatrix snapshot;
         private StoppingCondition stoppingCondition;
 
         /**
@@ -112,7 +112,7 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
          */
         @Inject
         public Builder(@RegularizationTerm double regFactor, @LearningRate double lrate,
-                       @Transient PreferenceSnapshot data,
+                       @Transient RatingMatrix data,
                        StoppingCondition stop) {
             regularizationFactor = regFactor;
             learningRate = lrate;
@@ -122,12 +122,12 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
 
         @Override
         public LeastSquaresItemScorer get() {
-            Collection<IndexedPreference> ratings = snapshot.getRatings();
+            Collection<RatingMatrixEntry> ratings = snapshot.getRatings();
             logger.debug("training predictor on {} ratings", ratings.size());
 
             double sum = 0.0;
             double n = 0;
-            for (IndexedPreference r : ratings) {
+            for (RatingMatrixEntry r : ratings) {
                 sum += r.getValue();
                 n += 1;
             }
@@ -142,7 +142,7 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
             double rmse = 0.0;
             while (trainingController.keepTraining(rmse)) {
                 double sse = 0;
-                for (IndexedPreference r : ratings) {
+                for (RatingMatrixEntry r : ratings) {
                     final int uidx = r.getUserIndex();
                     final int iidx = r.getItemIndex();
                     final double p = mean + uoff[uidx] + ioff[iidx];

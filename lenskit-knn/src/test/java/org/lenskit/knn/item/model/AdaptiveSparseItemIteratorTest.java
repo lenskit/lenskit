@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.longs.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.util.collections.LongUtils;
-import org.lenskit.util.keys.LongKeyIndex;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 import java.util.NoSuchElementException;
 
@@ -40,7 +40,7 @@ public class AdaptiveSparseItemIteratorTest {
         userItems.put(42, LongUtils.packedSet(2, 5, 9));
         userItems.put(39, LongUtils.packedSet(2, 7, 9, 13));
         userItems.put(12, universe.subSet(2, 97));
-        context = new ItemItemBuildContext(LongKeyIndex.fromCollection(universe),
+        context = new ItemItemBuildContext(SortedKeyIndex.fromCollection(universe),
                                            null, userItems);
     }
 

@@ -26,7 +26,7 @@ import org.lenskit.knn.item.model.ItemItemBuildContext.ItemVecPair;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
-import org.lenskit.util.keys.LongKeyIndex;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 import static org.junit.Assert.*;
 
@@ -37,7 +37,7 @@ public class ItemItemBuildContextTest {
      */
     @Test
     public void testAllItemsData() {
-        LongKeyIndex items = LongKeyIndex.create(1, 2, 3, 4);
+        SortedKeyIndex items = SortedKeyIndex.create(1, 2, 3, 4);
 
         long[] userIds = {101, 102, 103, 104};
         double[] ratings1 = {4.0, 3.0, 2.5, 2.0};
@@ -61,7 +61,7 @@ public class ItemItemBuildContextTest {
      */
     @Test
     public void testSomeItemsData() {
-        LongKeyIndex items = LongKeyIndex.create(1, 2, 3, 4);
+        SortedKeyIndex items = SortedKeyIndex.create(1, 2, 3, 4);
 
         long[] userIds = {101, 102, 103, 104};
         double[] ratings1 = {4.0, 3.0, 2.5, 2.0};
@@ -86,7 +86,7 @@ public class ItemItemBuildContextTest {
      */
     @Test
     public void testNoItemsData() {
-        LongKeyIndex items = LongKeyIndex.create(1, 2, 3, 4);
+        SortedKeyIndex items = SortedKeyIndex.create(1, 2, 3, 4);
 
         SparseVector[] ratingMap = {
                 MutableSparseVector.create(),
@@ -105,7 +105,7 @@ public class ItemItemBuildContextTest {
      */
     @Test
     public void testEmpty() {
-        LongKeyIndex items = LongKeyIndex.create();
+        SortedKeyIndex items = SortedKeyIndex.create();
         SparseVector[] ratingMap = new SparseVector[] {};
         ItemItemBuildContext context = new ItemItemBuildContext(items, ratingMap,
                                                                 new Long2ObjectOpenHashMap<LongSortedSet>());
@@ -114,14 +114,14 @@ public class ItemItemBuildContextTest {
     }
 
     @SuppressWarnings("deprecation")
-    private void testRatingIntegrity(LongKeyIndex items, SparseVector[] trueRatings, ItemItemBuildContext context) {
+    private void testRatingIntegrity(SortedKeyIndex items, SparseVector[] trueRatings, ItemItemBuildContext context) {
         for (long itemId : context.getItems()) {
-            assertEquals(trueRatings[items.getIndex(itemId)], context.itemVector(itemId));
+            assertEquals(trueRatings[items.tryGetIndex(itemId)], context.itemVector(itemId));
         }
 
         for (ItemVecPair pair : context.getItemPairs()) {
-            assertEquals(trueRatings[items.getIndex(pair.itemId1)], pair.vec1);
-            assertEquals(trueRatings[items.getIndex(pair.itemId2)], pair.vec2);
+            assertEquals(trueRatings[items.tryGetIndex(pair.itemId1)], pair.vec1);
+            assertEquals(trueRatings[items.tryGetIndex(pair.itemId2)], pair.vec2);
         }
     }
 }

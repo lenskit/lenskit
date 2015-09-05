@@ -24,8 +24,7 @@ import org.lenskit.basic.RescoringItemRecommender
 import org.grouplens.lenskit.config.ConfigHelpers
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
-import org.grouplens.lenskit.data.event.Rating
-import org.junit.Ignore
+import org.lenskit.data.ratings.Rating
 import org.junit.Test
 import org.lenskit.LenskitRecommender
 import org.lenskit.api.ItemRecommender

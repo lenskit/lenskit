@@ -22,8 +22,8 @@ package org.grouplens.lenskit.data.history;
 
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
 

@@ -26,9 +26,9 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.baseline.MeanDamping;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
@@ -101,7 +101,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
             if (damping > 0) {
                 double sum = 0;
 
-                Cursor<Rating> ratings = dao.streamEvents(Rating.class);
+                ObjectStream<Rating> ratings = dao.streamEvents(Rating.class);
                 int numRatings = 0;
                 for (Rating r : ratings) {
                     if (r.hasValue()) {

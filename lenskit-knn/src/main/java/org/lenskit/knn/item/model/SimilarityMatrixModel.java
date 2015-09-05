@@ -26,7 +26,7 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.lenskit.util.keys.LongKeyIndex;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.Nonnull;
 import java.io.Serializable;
@@ -49,7 +49,7 @@ import java.util.Map;
 public class SimilarityMatrixModel implements Serializable, ItemItemModel {
     private static final long serialVersionUID = 3L;
 
-    private final LongKeyIndex itemDomain;
+    private final SortedKeyIndex itemDomain;
     private final ImmutableList<ImmutableSparseVector> neighborhoods;
     private transient volatile String stringValue;
 
@@ -61,7 +61,7 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
      * @deprecated This is deprecated for public usage.  It is better to use the other constructor.
      */
     @Deprecated
-    public SimilarityMatrixModel(LongKeyIndex items, List<ImmutableSparseVector> nbrs) {
+    public SimilarityMatrixModel(SortedKeyIndex items, List<ImmutableSparseVector> nbrs) {
         itemDomain = items;
         neighborhoods = ImmutableList.copyOf(nbrs);
     }
@@ -72,7 +72,7 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
      * @param nbrs  The item neighborhoods.  The item neighborhood lists are not copied.
      */
     public SimilarityMatrixModel(Map<Long,ImmutableSparseVector> nbrs) {
-        itemDomain = LongKeyIndex.fromCollection(nbrs.keySet());
+        itemDomain = SortedKeyIndex.fromCollection(nbrs.keySet());
         int n = itemDomain.size();
         assert n == nbrs.size();
         ImmutableList.Builder<ImmutableSparseVector> neighbors = ImmutableList.builder();
@@ -90,7 +90,7 @@ public class SimilarityMatrixModel implements Serializable, ItemItemModel {
     @Override
     @Nonnull
     public SparseVector getNeighbors(long item) {
-        int idx = itemDomain.getIndex(item);
+        int idx = itemDomain.tryGetIndex(item);
         if (idx < 0) {
             return ImmutableSparseVector.empty();
         } else {

@@ -22,8 +22,8 @@ package org.lenskit.knn.item
 
 import org.grouplens.lenskit.RecommenderBuildException
 import org.grouplens.lenskit.config.ConfigHelpers
-import org.grouplens.lenskit.data.event.EventType
-import org.grouplens.lenskit.data.event.Like
+import org.lenskit.data.events.EventType
+import org.lenskit.data.events.Like
 import org.grouplens.lenskit.data.history.EventCountUserHistorySummarizer
 import org.grouplens.lenskit.data.history.UserHistorySummarizer
 import org.grouplens.lenskit.test.ML100KTestSuite

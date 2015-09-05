@@ -23,7 +23,7 @@ package org.lenskit.transform.quantize;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomain;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;

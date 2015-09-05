@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval.metrics.topn;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;

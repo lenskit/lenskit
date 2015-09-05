@@ -28,9 +28,9 @@ import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.basic.AbstractItemScorer;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.util.IdMeanAccumulator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -86,7 +86,7 @@ public class ItemMeanRatingItemScorer extends AbstractItemScorer implements Seri
             final double globalMean;
 
             logger.debug("computing item mean ratings");
-            Cursor<Rating> ratings = dao.streamEvents(Rating.class);
+            ObjectStream<Rating> ratings = dao.streamEvents(Rating.class);
             try {
                 IdMeanAccumulator accum = new IdMeanAccumulator();
                 for (Rating r: ratings) {

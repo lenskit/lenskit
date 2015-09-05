@@ -22,8 +22,8 @@ package org.grouplens.lenskit.eval.traintest;
 
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.PreferenceDomain;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.GenericDataSource;
 import org.grouplens.lenskit.eval.EvalConfig;

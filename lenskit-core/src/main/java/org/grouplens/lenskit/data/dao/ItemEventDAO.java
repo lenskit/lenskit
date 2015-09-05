@@ -22,8 +22,8 @@ package org.grouplens.lenskit.data.dao;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.util.io.ObjectStream;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 
 import javax.annotation.Nullable;
@@ -40,20 +40,20 @@ public interface ItemEventDAO {
     /**
      * Stream events grouped by item.
      *
-     * @return A cursor iterating over the events from all items.  If an item exists but does not
+     * @return A stream iterating over the events from all items.  If an item exists but does not
      *         have any events, it may or may not be included depending on the DAO implementation.
      */
-    Cursor<ItemEventCollection<Event>> streamEventsByItem();
+    ObjectStream<ItemEventCollection<Event>> streamEventsByItem();
 
     /**
      * Stream events grouped by item.
      *
      * @param type The type of item to look for.
-     * @return A cursor iterating over the events of type {@code type} from all items.  If an item
+     * @return A stream iterating over the events of type {@code type} from all items.  If an item
      *         exists but does not have any events, it may or may not be included depending on the
      *         DAO implementation.
      */
-    <E extends Event> Cursor<ItemEventCollection<E>> streamEventsByItem(Class<E> type);
+    <E extends Event> ObjectStream<ItemEventCollection<E>> streamEventsByItem(Class<E> type);
 
     /**
      * Get the events for a specific item.

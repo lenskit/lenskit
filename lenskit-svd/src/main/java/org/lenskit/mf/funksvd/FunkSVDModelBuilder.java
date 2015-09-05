@@ -25,9 +25,9 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.snapshot.PreferenceSnapshot;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
+import org.lenskit.data.ratings.RatingMatrix;
+import org.lenskit.data.ratings.RatingMatrixEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +35,6 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -56,13 +55,13 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
     private static Logger logger = LoggerFactory.getLogger(FunkSVDModelBuilder.class);
 
     protected final int featureCount;
-    protected final PreferenceSnapshot snapshot;
+    protected final RatingMatrix snapshot;
     protected final double initialValue;
 
     protected final FunkSVDUpdateRule rule;
 
     @Inject
-    public FunkSVDModelBuilder(@Transient @Nonnull PreferenceSnapshot snapshot,
+    public FunkSVDModelBuilder(@Transient @Nonnull RatingMatrix snapshot,
                                @Transient @Nonnull FunkSVDUpdateRule rule,
                                @FeatureCount int featureCount,
                                @InitialFeatureValue double initVal) {
@@ -131,7 +130,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
 
     /**
      * Train a feature using a collection of ratings.  This method iteratively calls {@link
-     * #doFeatureIteration(TrainingEstimator, Collection, RealVector, RealVector, double)}  to train
+     * #doFeatureIteration(TrainingEstimator, List, RealVector, RealVector, double)}  to train
      * the feature.  It can be overridden to customize the feature training strategy.
      *
      * <p>We use the estimator to maintain the estimate up through a particular feature value,
@@ -150,7 +149,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      * @param fib       The feature info builder. This method is only expected to add information
      *                  about its training rounds to the builder; the caller takes care of feature
      *                  number and summary data.
-     * @see #doFeatureIteration(TrainingEstimator, Collection, RealVector, RealVector, double)
+     * @see #doFeatureIteration(TrainingEstimator, List, RealVector, RealVector, double)
      * @see #summarizeFeature(RealVector, RealVector, FeatureInfo.Builder)
      */
     protected void trainFeature(int feature, TrainingEstimator estimates,
@@ -159,7 +158,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
         double rmse = Double.MAX_VALUE;
         double trail = initialValue * initialValue * (featureCount - feature - 1);
         TrainingLoopController controller = rule.getTrainingLoopController();
-        Collection<IndexedPreference> ratings = snapshot.getRatings();
+        List<RatingMatrixEntry> ratings = snapshot.getRatings();
         while (controller.keepTraining(rmse)) {
             rmse = doFeatureIteration(estimates, ratings, userFeatureVector, itemFeatureVector, trail);
             fib.addTrainingRound(rmse);
@@ -180,14 +179,14 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
      * @return The RMSE of the feature iteration.
      */
     protected double doFeatureIteration(TrainingEstimator estimates,
-                                        Collection<IndexedPreference> ratings,
+                                        List<RatingMatrixEntry> ratings,
                                         RealVector userFeatureVector, RealVector itemFeatureVector,
                                         double trail) {
         // We'll create a fresh updater for each feature iteration
         // Not much overhead, and prevents needing another parameter
         FunkSVDUpdater updater = rule.createUpdater();
 
-        for (IndexedPreference r : ratings) {
+        for (RatingMatrixEntry r : ratings) {
             final int uidx = r.getUserIndex();
             final int iidx = r.getItemIndex();
 

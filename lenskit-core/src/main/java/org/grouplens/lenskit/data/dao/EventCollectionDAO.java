@@ -24,9 +24,9 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.util.io.ObjectStream;
+import org.lenskit.util.io.ObjectStreams;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.util.TypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,40 +80,40 @@ public class EventCollectionDAO implements EventDAO {
     }
 
     /**
-     * Create a new data source from a cursor of events.
+     * Create a new data source from a stream of events.
      *
-     * @param eventCursor   The event cursor to be used.
-     * @return              A EventCollectionDao generated from events read from the cursor.
+     * @param stream The event stream to be used.
+     * @return An EventCollectionDao generated from events read from the stream.
      */
-    public static EventDAO fromCursor(@WillClose Cursor<Event> eventCursor){
-        EventCollectionDAO ecDAO = new EventCollectionDAO(Cursors.makeList(eventCursor));
+    public static EventDAO fromStream(@WillClose ObjectStream<Event> stream) {
+        EventCollectionDAO ecDAO = new EventCollectionDAO(ObjectStreams.makeList(stream));
         return ecDAO;
     }
 
 
     /**
-     * Create a new data source from EventDAO.
+     * Create a new data source from an EventDAO.
      *
-     * @param eventDAO      The EventDAO to be used.
-     * @return              A EventCollectionDao generated from events read from the cursor.
+     * @param eventDAO The EventDAO to be used.
+     * @return A EventCollectionDao generated from events read from the DAO's stream.
      */
-    public static EventDAO loadAndWrap(EventDAO eventDAO){
-        return  fromCursor(eventDAO.streamEvents());
+    public static EventDAO loadAndWrap(EventDAO eventDAO) {
+        return fromStream(eventDAO.streamEvents());
     }
 
     @Override
-    public Cursor<Event> streamEvents() {
-        return Cursors.wrap(events);
+    public ObjectStream<Event> streamEvents() {
+        return ObjectStreams.wrap(events);
     }
 
     @Override
-    public <E extends Event> Cursor<E> streamEvents(Class<E> type) {
+    public <E extends Event> ObjectStream<E> streamEvents(Class<E> type) {
         return streamEvents(type, SortOrder.ANY);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E extends Event> Cursor<E> streamEvents(Class<E> type, SortOrder order) {
+    public <E extends Event> ObjectStream<E> streamEvents(Class<E> type, SortOrder order) {
         // We need to filter if there are any event types that are not subtypes of `type`.
         boolean needFilter = Iterables.any(types, Predicates.not(TypeUtils.subtypePredicate(type)));
 
@@ -122,21 +122,21 @@ public class EventCollectionDAO implements EventDAO {
         if (!needFilter) {
             // no need to filter - just wrap up our events and cast.
             if (comp == null) {
-                return (Cursor<E>) Cursors.wrap(events);
+                return (ObjectStream<E>) ObjectStreams.wrap(events);
             } else {
                 @SuppressWarnings("rawtypes")
                 List evts = Lists.newArrayList(events);
                 Collections.sort(evts, comp);
-                return Cursors.wrap(evts);
+                return ObjectStreams.wrap(evts);
             }
         } else {
             // Now we must filter our events.
             if (comp == null) {
-                return Cursors.filter(streamEvents(), type);
+                return ObjectStreams.filter(streamEvents(), type);
             } else {
                 List<E> filtered = Lists.newArrayList(Iterables.filter(events, type));
                 Collections.sort(filtered, comp);
-                return Cursors.wrap(filtered);
+                return ObjectStreams.wrap(filtered);
             }
         }
     }

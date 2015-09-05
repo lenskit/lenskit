@@ -21,8 +21,6 @@
 package org.grouplens.lenskit.eval.metrics.topn;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 
 /**

@@ -24,9 +24,9 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.scored.ScoredIdListBuilder;
@@ -36,7 +36,7 @@ import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.util.collections.LongUtils;
-import org.lenskit.util.keys.LongKeyIndex;
+import org.lenskit.util.keys.SortedKeyIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +81,7 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
         Long2ObjectMap<LongSortedSet> userItems = new Long2ObjectOpenHashMap<LongSortedSet>(1000);
         buildItemRatings(itemRatingData, userItems);
 
-        LongKeyIndex items = LongKeyIndex.fromCollection(itemRatingData.keySet());
+        SortedKeyIndex items = SortedKeyIndex.fromCollection(itemRatingData.keySet());
         final int n = items.size();
         assert n == itemRatingData.size();
         // finalize the item data into vectors
@@ -111,7 +111,7 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
     private void buildItemRatings(Long2ObjectMap<ScoredIdListBuilder> itemRatings,
                                   Long2ObjectMap<LongSortedSet> userItems) {
         // initialize the transposed array to collect item vector data
-        Cursor<UserHistory<Event>> users = userEventDAO.streamEventsByUser();
+        ObjectStream<UserHistory<Event>> users = userEventDAO.streamEventsByUser();
         try {
             for (UserHistory<Event> user : users) {
                 long uid = user.getUserId();

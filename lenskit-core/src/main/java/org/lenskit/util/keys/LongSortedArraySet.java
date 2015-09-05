@@ -41,13 +41,13 @@ import java.util.NoSuchElementException;
 public class LongSortedArraySet extends AbstractLongSortedSet implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private final LongKeyIndex keys;
+    private final SortedKeyIndex keys;
 
     /**
      * Construct a new long sorted array set from a key domain.
      * @param ks The key set storage.
      */
-    public LongSortedArraySet(@Nonnull LongKeyIndex ks) {
+    public LongSortedArraySet(@Nonnull SortedKeyIndex ks) {
         keys = ks;
     }
 
@@ -57,7 +57,7 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
      * @param items The set's contents.
      */
     public LongSortedArraySet(@Nonnull Collection<Long> items) {
-        this(LongKeyIndex.fromCollection(items));
+        this(SortedKeyIndex.fromCollection(items));
     }
 
     /**
@@ -66,7 +66,7 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
      *              not reused.
      */
     public LongSortedArraySet(long[] items) {
-        this(LongKeyIndex.create(items));
+        this(SortedKeyIndex.create(items));
     }
 
     /**
@@ -74,7 +74,7 @@ public class LongSortedArraySet extends AbstractLongSortedSet implements Seriali
      * sorted array set.  This should only be used in data structure code.
      * @return The key set backing this set.
      */
-    public LongKeyIndex getDomain() {
+    public SortedKeyIndex getDomain() {
         return keys;
     }
 

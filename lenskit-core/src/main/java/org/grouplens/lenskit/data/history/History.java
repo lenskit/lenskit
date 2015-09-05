@@ -22,8 +22,8 @@ package org.grouplens.lenskit.data.history;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Events;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.events.Events;
 
 import javax.annotation.Nonnull;
 import java.util.List;

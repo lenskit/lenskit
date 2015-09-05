@@ -26,9 +26,9 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.util.io.ObjectStream;
+import org.lenskit.util.io.ObjectStreams;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.util.io.Describable;
@@ -78,13 +78,13 @@ public final class PrefetchingUserEventDAO implements UserEventDAO, Describable 
     }
 
     @Override
-    public Cursor<UserHistory<Event>> streamEventsByUser() {
-        return Cursors.wrap(cache.get().values());
+    public ObjectStream<UserHistory<Event>> streamEventsByUser() {
+        return ObjectStreams.wrap(cache.get().values());
     }
 
     @Override
-    public <E extends Event> Cursor<UserHistory<E>> streamEventsByUser(final Class<E> type) {
-        return Cursors.transform(streamEventsByUser(), new Function<UserHistory<Event>, UserHistory<E>>() {
+    public <E extends Event> ObjectStream<UserHistory<E>> streamEventsByUser(final Class<E> type) {
+        return ObjectStreams.transform(streamEventsByUser(), new Function<UserHistory<Event>, UserHistory<E>>() {
             @Nullable
             @Override
             public UserHistory<E> apply(@Nullable UserHistory<Event> input) {
@@ -119,7 +119,7 @@ public final class PrefetchingUserEventDAO implements UserEventDAO, Describable 
         public Long2ObjectMap<UserHistory<Event>> get() {
             Long2ObjectMap<List<Event>> table =
                     new Long2ObjectOpenHashMap<List<Event>>();
-            Cursor<Event> events = eventDAO.streamEvents();
+            ObjectStream<Event> events = eventDAO.streamEvents();
             try {
                 for (Event evt: events) {
                     final long iid = evt.getUserId();

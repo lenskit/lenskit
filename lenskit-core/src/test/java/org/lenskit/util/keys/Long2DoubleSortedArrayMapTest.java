@@ -26,7 +26,6 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleSortedMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectBidirectionalIterator;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.indexes.MutableIdIndexMapping;
 import org.junit.Test;
 import org.lenskit.util.collections.LongUtils;
 
@@ -42,7 +41,7 @@ import static org.junit.Assert.*;
 public class Long2DoubleSortedArrayMapTest {
     @Test
     public void testEmptyMap() {
-        Long2DoubleSortedMap map = new Long2DoubleSortedArrayMap(LongKeyIndex.empty(), new double[0]);
+        Long2DoubleSortedMap map = new Long2DoubleSortedArrayMap(SortedKeyIndex.empty(), new double[0]);
         assertThat(map.size(), equalTo(0));
         assertThat(map.isEmpty(), equalTo(true));
         assertThat(map.keySet(), hasSize(0));
@@ -67,7 +66,7 @@ public class Long2DoubleSortedArrayMapTest {
 
     @Test
     public void testSingletonMap() {
-        Long2DoubleSortedMap map = new Long2DoubleSortedArrayMap(LongKeyIndex.create(42),
+        Long2DoubleSortedMap map = new Long2DoubleSortedArrayMap(SortedKeyIndex.create(42),
                                                                  new double[]{3.5});
         assertThat(map.get(42L), equalTo(3.5));
         assertThat(map.size(), equalTo(1));
@@ -95,7 +94,7 @@ public class Long2DoubleSortedArrayMapTest {
     public void testCreateWithLists() {
         for (Set<Long> keys: someSets(longs(), integers(0, 500))) {
             LongSortedSet sorted = LongUtils.packedSet(keys);
-            LongKeyIndex dom = LongKeyIndex.fromCollection(keys);
+            SortedKeyIndex dom = SortedKeyIndex.fromCollection(keys);
             double[] values = new double[dom.size()];
             for (int i = 0; i < dom.size(); i++) {
                 values[i] = doubles().next();
@@ -120,7 +119,7 @@ public class Long2DoubleSortedArrayMapTest {
     @Test
     public void testSublist() {
         double[] values = { 1.5, 2.4, -3.2, 4.3, -5.7 };
-        Long2DoubleSortedMap map = new Long2DoubleSortedArrayMap(LongKeyIndex.create(1, 2, 3, 4, 5),
+        Long2DoubleSortedMap map = new Long2DoubleSortedArrayMap(SortedKeyIndex.create(1, 2, 3, 4, 5),
                                                                  values);
         assertThat(map.size(), equalTo(5));
 
@@ -136,7 +135,7 @@ public class Long2DoubleSortedArrayMapTest {
     @Test
     public void testIterStartFrom() {
         double[] values = { 1.5, 2.4, -3.2, 4.3, -5.7 };
-        Long2DoubleSortedMap map = new Long2DoubleSortedArrayMap(LongKeyIndex.create(1, 2, 3, 4, 5),
+        Long2DoubleSortedMap map = new Long2DoubleSortedArrayMap(SortedKeyIndex.create(1, 2, 3, 4, 5),
                                                                  values);
 
         AbstractLong2DoubleMap.BasicEntry key = new AbstractLong2DoubleMap.BasicEntry(2, 2.0);
@@ -149,7 +148,7 @@ public class Long2DoubleSortedArrayMapTest {
     @Test
     public void testFastIterStartFrom() {
         double[] values = { 1.5, 2.4, -3.2, 4.3, -5.7 };
-        Long2DoubleSortedArrayMap map = new Long2DoubleSortedArrayMap(LongKeyIndex.create(1, 2, 3, 4, 5),
+        Long2DoubleSortedArrayMap map = new Long2DoubleSortedArrayMap(SortedKeyIndex.create(1, 2, 3, 4, 5),
                                                                       values);
 
         AbstractLong2DoubleMap.BasicEntry key = new AbstractLong2DoubleMap.BasicEntry(2, 2.0);
@@ -161,7 +160,7 @@ public class Long2DoubleSortedArrayMapTest {
 
     @Test
     public void testFromArray() {
-        MutableIdIndexMapping map = new MutableIdIndexMapping();
+        HashKeyIndex map = new HashKeyIndex();
         map.internId(42);
         map.internId(37);
         map.internId(62);
