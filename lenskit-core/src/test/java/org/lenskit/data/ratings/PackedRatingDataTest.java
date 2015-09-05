@@ -22,7 +22,7 @@ package org.lenskit.data.ratings;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
-import static org.lenskit.data.ratings.PackedPreferenceData.*;
+import static org.lenskit.data.ratings.PackedRatingData.*;
 
 import org.junit.Test;
 

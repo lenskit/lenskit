@@ -37,7 +37,7 @@ import java.io.Serializable;
  *
  * @compat Public
  */
-public final class Rating implements Event, Serializable {
+public final class Rating implements Event, Preference, Serializable {
     private static final long serialVersionUID = 2L;
 
     private final long user;

@@ -22,6 +22,7 @@ package org.grouplens.lenskit.data.pref;
 
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Test;
+import org.lenskit.data.ratings.Preference;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -36,6 +36,7 @@ import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
+import org.lenskit.data.ratings.RatingMatrixEntry;
 import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
@@ -122,12 +123,12 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
 
         @Override
         public LeastSquaresItemScorer get() {
-            Collection<IndexedPreference> ratings = snapshot.getRatings();
+            Collection<RatingMatrixEntry> ratings = snapshot.getRatings();
             logger.debug("training predictor on {} ratings", ratings.size());
 
             double sum = 0.0;
             double n = 0;
-            for (IndexedPreference r : ratings) {
+            for (RatingMatrixEntry r : ratings) {
                 sum += r.getValue();
                 n += 1;
             }
@@ -142,7 +143,7 @@ public class LeastSquaresItemScorer extends AbstractItemScorer implements Serial
             double rmse = 0.0;
             while (trainingController.keepTraining(rmse)) {
                 double sse = 0;
-                for (IndexedPreference r : ratings) {
+                for (RatingMatrixEntry r : ratings) {
                     final int uidx = r.getUserIndex();
                     final int iidx = r.getItemIndex();
                     final double p = mean + uoff[uidx] + ioff[iidx];

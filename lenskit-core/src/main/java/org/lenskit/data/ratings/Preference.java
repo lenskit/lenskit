@@ -18,21 +18,12 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.data.pref;
+package org.lenskit.data.ratings;
 
 /**
- * A real-valued preference a user has for an item. Preferences can be articulated by the user in
- * the form of ratings, or they may be predicted or otherwise computed. The distinction will
- * generally be apparent from context.
+ * A real-valued preference a user has for an item.  This interface exists to abstract over different
+ * representations of preference, such as {@linkplain Rating ratings} and {@linkplain RatingMatrixEntry matrix entries}.
  *
- * <p> Instances of this class are immutable. All exceptions to this rule must be clearly
- * documented, and only arise in limited contexts such as fast iteration.
- *
- * <p>Preferences are equal iff they have the same user ID, item ID, and value.  The hash code
- * of a preference is computed by passing those three values, in order, to
- * {@link org.apache.commons.lang3.builder.HashCodeBuilder} with default parameters.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public interface Preference {

@@ -20,14 +20,14 @@
  */
 package org.lenskit.data.ratings;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.util.keys.KeyIndex;
 
 import javax.annotation.concurrent.Immutable;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Snapshot of the ratings data for building a recommender.
@@ -38,7 +38,8 @@ import java.util.Collection;
  * The ratings obtained from a rating matrix **do not** have timestamps.
  *
  * The users, items, and ratings in the rating matrix are associated with 0-based indexes, so that they can be used
- * in conjunction with vectors or arrays.
+ * in conjunction with vectors or arrays.  The rating matrix can be thought of as a sparse matrix in coordinate list
+ * (COO) format, and the index of the rating is its position in the coordinate list.
  */
 @Immutable
 @DefaultImplementation(PackedRatingMatrix.class)
@@ -82,7 +83,7 @@ public interface RatingMatrix {
      *
      * @return All ratings in the system.
      */
-    Collection<IndexedPreference> getRatings();
+    List<RatingMatrixEntry> getRatings();
 
     /**
      * Get the ratings for a particular user. It is guaranteed that no duplicate ratings appear -
@@ -94,13 +95,13 @@ public interface RatingMatrix {
      * @param userId The user's ID.
      * @return The user's ratings, or an empty collection if the user is unknown.
      */
-    Collection<IndexedPreference> getUserRatings(long userId);
+    Collection<RatingMatrixEntry> getUserRatings(long userId);
 
     /**
-     * Get the current preferences of a particular user in SparseVector form.
+     * Get the current preferences of a particular user as a vector.
      *
      * @param userId The user's ID.
      * @return The user's rating vector.
      */
-    SparseVector userRatingVector(long userId);
+    Long2DoubleMap getUserRatingVector(long userId);
 }

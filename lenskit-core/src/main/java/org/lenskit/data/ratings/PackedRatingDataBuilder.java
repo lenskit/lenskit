@@ -23,13 +23,12 @@ package org.lenskit.data.ratings;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.IntHeapPriorityQueue;
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.data.pref.Preference;
 import org.lenskit.util.keys.HashKeyIndex;
 
 import java.util.Arrays;
 import java.util.Random;
 
-import static org.lenskit.data.ratings.PackedPreferenceData.*;
+import static org.lenskit.data.ratings.PackedRatingData.*;
 
 /**
  * Build a packed rating data structure.
@@ -37,7 +36,7 @@ import static org.lenskit.data.ratings.PackedPreferenceData.*;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.11
  */
-class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
+class PackedRatingDataBuilder implements Builder<PackedRatingData> {
     static final int INITIAL_CHUNK_COUNT = 512;
 
     private int[][] users;
@@ -50,7 +49,7 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
     
     private IntHeapPriorityQueue freeList;
 
-    public PackedPreferenceDataBuilder() {
+    public PackedRatingDataBuilder() {
         itemIndex = new HashKeyIndex();
         userIndex = new HashKeyIndex();
         freeList = new IntHeapPriorityQueue();
@@ -96,7 +95,7 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
      *
      * @param ci   The chunk index.
      * @param ei   The element index.
-     * @param pref The preference data to set.
+     * @param pref The rating data to set.
      */
     private void set(int ci, int ei, Preference pref) {
         users[ci][ei] = userIndex.internId(pref.getUserId());
@@ -118,10 +117,10 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
     }
 
     /**
-     * Add a preference to the pack.
+     * Add a rating to the pack.
      *
-     * @param pref The preference to add
-     * @return The index of the newly-added preference.
+     * @param pref The entry to add
+     * @return The index of the newly-added getEntry.
      */
     public int add(Preference pref) {
         assert users != null;
@@ -167,8 +166,8 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
         freeList.enqueue(idx);
     }
 
-    private PackedPreferenceData internalBuild() {
-        return new PackedPreferenceData(users, items, values, nprefs,
+    private PackedRatingData internalBuild() {
+        return new PackedRatingData(users, items, values, nprefs,
                                         userIndex.frozenCopy(),
                                         itemIndex.frozenCopy());
     }
@@ -183,10 +182,10 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
         }
 
         // create an internal PRD so we can use preferences
-        PackedPreferenceData tmpPack = internalBuild();
+        PackedRatingData tmpPack = internalBuild();
         // create an internal flyweight
         // after this point, this method does no allocation
-        PackedPreferenceData.IndirectPreference pref = tmpPack.preference(-1);
+        PackedRatingData.IndirectEntry pref = tmpPack.getEntry(-1);
 
         /*
          * we have to do this backwards so we don't copy free slots from the
@@ -205,7 +204,7 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
          * isn't at the end of the array.
          */
         for (int i: fidxes) {
-            final int lasti = n - 1;    // the index of the last preference
+            final int lasti = n - 1;    // the index of the last getEntry
             assert i <= lasti;          // only way for this to fail is duplicate fidxes
             if (i < lasti) {
                 // if it is not the last element, move the last to it
@@ -310,7 +309,7 @@ class PackedPreferenceDataBuilder implements Builder<PackedPreferenceData> {
      * @return The packed rating data structure.
      */
     @Override
-    public PackedPreferenceData build() {
+    public PackedRatingData build() {
         repack();
         trim();
         return internalBuild();

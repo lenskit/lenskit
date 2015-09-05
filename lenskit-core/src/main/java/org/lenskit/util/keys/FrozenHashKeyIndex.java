@@ -58,6 +58,7 @@ public final class FrozenHashKeyIndex implements KeyIndex, Serializable {
      */
     FrozenHashKeyIndex(Long2IntMap indexes, LongList keys) {
         indexMap = new Long2IntOpenHashMap(indexes);
+        indexMap.defaultReturnValue(-1);
         keyList = new LongArrayList(keys);
     }
 

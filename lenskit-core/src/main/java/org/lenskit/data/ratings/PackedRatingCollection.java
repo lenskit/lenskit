@@ -23,18 +23,18 @@
  */
 package org.lenskit.data.ratings;
 
-import it.unimi.dsi.fastutil.ints.IntIterator;
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntListIterator;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.data.pref.IndexedPreference;
 
 import javax.annotation.Nonnull;
-import java.util.AbstractCollection;
-import java.util.Iterator;
+import java.util.AbstractList;
+import java.util.ListIterator;
 
 /**
  * Preference collection implemented as a view on top of
- * {@link PackedPreferenceData}. This is used to provide the collection
+ * {@link PackedRatingData}. This is used to provide the collection
  * implementations for {@link PackedRatingMatrix}. It supports subsetting the
  * packed data set to only a particular list of indices.
  *
@@ -42,8 +42,8 @@ import java.util.Iterator;
  */
 @SuppressWarnings({"javadoc"})
         // JavaDoc warnings incorrectly flag PackedPreferenceData
-class PackedPreferenceCollection extends AbstractCollection<IndexedPreference> {
-    private final PackedPreferenceData data;
+class PackedRatingCollection extends AbstractList<RatingMatrixEntry> {
+    private final PackedRatingData data;
     private final IntList indices;
 
     /**
@@ -51,7 +51,7 @@ class PackedPreferenceCollection extends AbstractCollection<IndexedPreference> {
      *
      * @param data A packed rating data set.
      */
-    PackedPreferenceCollection(PackedPreferenceData data) {
+    PackedRatingCollection(PackedRatingData data) {
         this(data, CollectionUtils.interval(0, data.size()));
     }
 
@@ -62,15 +62,21 @@ class PackedPreferenceCollection extends AbstractCollection<IndexedPreference> {
      * @param indices A list of indices in the packed data arrays to include in
      *                the collection.
      */
-    PackedPreferenceCollection(PackedPreferenceData data, IntList indices) {
+    PackedRatingCollection(PackedRatingData data, IntList indices) {
         this.data = data;
         this.indices = indices;
     }
 
     @Nonnull
     @Override
-    public Iterator<IndexedPreference> iterator() {
+    public ListIterator<RatingMatrixEntry> iterator() {
         return new IteratorImpl();
+    }
+
+    @Override
+    public RatingMatrixEntry get(int index) {
+        Preconditions.checkElementIndex(index, indices.size());
+        return data.getEntry(index);
     }
 
     @Override
@@ -78,8 +84,8 @@ class PackedPreferenceCollection extends AbstractCollection<IndexedPreference> {
         return indices.size();
     }
 
-    private final class IteratorImpl implements Iterator<IndexedPreference> {
-        private final IntIterator iter;
+    private final class IteratorImpl implements ListIterator<RatingMatrixEntry> {
+        private final IntListIterator iter;
 
         IteratorImpl() {
             iter = indices.iterator();
@@ -91,13 +97,44 @@ class PackedPreferenceCollection extends AbstractCollection<IndexedPreference> {
         }
 
         @Override
-        public IndexedPreference next() {
+        public RatingMatrixEntry next() {
             final int index = iter.nextInt();
-            return data.preference(index);
+            return data.getEntry(index);
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return iter.hasPrevious();
+        }
+
+        @Override
+        public RatingMatrixEntry previous() {
+            final int index = iter.previousInt();
+            return data.getEntry(index);
+        }
+
+        @Override
+        public int nextIndex() {
+            return iter.nextIndex();
+        }
+
+        @Override
+        public int previousIndex() {
+            return iter.previousIndex();
         }
 
         @Override
         public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void set(RatingMatrixEntry ratingMatrixEntry) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void add(RatingMatrixEntry ratingMatrixEntry) {
             throw new UnsupportedOperationException();
         }
     }

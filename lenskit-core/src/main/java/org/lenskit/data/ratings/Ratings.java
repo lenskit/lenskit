@@ -20,8 +20,11 @@
  */
 package org.lenskit.data.ratings;
 
+import com.google.common.base.Equivalence;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.collections.LongKeyDomain;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.cursors.Cursors;
@@ -66,7 +69,6 @@ public final class Ratings {
      */
     public static MutableSparseVector userRatingVector(@Nonnull Collection<? extends Rating> ratings) {
         return extractVector(ratings, IdExtractor.ITEM);
-
     }
 
     private static MutableSparseVector extractVector(Collection<? extends Rating> ratings, IdExtractor dimension) {
@@ -98,7 +100,7 @@ public final class Ratings {
             }
 
             if (r.hasValue()) {
-                // save the preference
+                // save the getEntry
                 msv.set(id, r.getValue());
             } else {
                 msv.unset(id);
@@ -117,6 +119,37 @@ public final class Ratings {
      */
     public static MutableSparseVector userRatingVector(@WillClose Cursor<? extends Rating> ratings) {
         return userRatingVector(Cursors.makeList(ratings));
+    }
+
+    /**
+     * An equivalence relation over preferences.
+     * @return An equivalence relation over preferences where two preferences are equivalent if they have
+     * the same user, item, and value.
+     */
+    public static Equivalence<Preference> preferenceEquivalence() {
+        return PrefEquiv.INSTANCE;
+    }
+
+    private static class PrefEquiv extends Equivalence<Preference> {
+        private static final PrefEquiv INSTANCE = new PrefEquiv();
+
+        @Override
+        protected boolean doEquivalent(@Nonnull Preference a, @Nonnull Preference b) {
+            EqualsBuilder eqb = new EqualsBuilder();
+            return eqb.append(a.getUserId(), b.getUserId())
+                      .append(a.getItemId(), b.getItemId())
+                      .append(a.getValue(), b.getValue())
+                      .isEquals();
+        }
+
+        @Override
+        protected int doHash(@Nonnull Preference p) {
+            HashCodeBuilder hcb = new HashCodeBuilder();
+            return hcb.append(p.getUserId())
+                      .append(p.getItemId())
+                      .append(p.getValue())
+                      .toHashCode();
+        }
     }
 
     private enum IdExtractor {

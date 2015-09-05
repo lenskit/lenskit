@@ -20,47 +20,46 @@
  */
 package org.lenskit.data.ratings;
 
-import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.pref.Preference;
-import org.grouplens.lenskit.data.pref.Preferences;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Test;
-import org.lenskit.data.ratings.PackedPreferenceData;
-import org.lenskit.data.ratings.PackedPreferenceDataBuilder;
 
 import java.util.Random;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.grouplens.lenskit.util.test.ExtraMatchers.equivalentTo;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 public class PackedRatingDataBuilderTest {
-    PackedPreferenceDataBuilder bld;
+    PackedRatingDataBuilder bld;
+
+    private static Matcher<Preference> samePreferenceAs(Preference p) {
+        return equivalentTo(p, Ratings.preferenceEquivalence());
+    }
 
     @Before
     public void createBuilder() {
-        bld = new PackedPreferenceDataBuilder();
+        bld = new PackedRatingDataBuilder();
     }
 
     @Test
     public void testInitialState() {
         assertThat(bld.size(), equalTo(0));
-        PackedPreferenceData data = bld.build();
+        PackedRatingData data = bld.build();
         assertThat(data, notNullValue());
         assertThat(data.size(), equalTo(0));
     }
 
     @Test
     public void testAddPreference() {
-        Preference pref = Preferences.make(10, 39, 3.5);
+        Preference pref = Rating.create(10, 39, 3.5);
         int idx = bld.add(pref);
         assertThat(idx, equalTo(0));
         assertThat(bld.size(), equalTo(1));
-        PackedPreferenceData data = bld.build();
+        PackedRatingData data = bld.build();
         assertThat(data.size(), equalTo(1));
-        IndexedPreference p2 = data.preference(0);
-        assertThat(p2, equalTo(pref));
+        RatingMatrixEntry p2 = data.getEntry(0);
+        assertThat(p2, samePreferenceAs(pref));
         assertThat(p2.getIndex(), equalTo(0));
         assertThat(p2.getUserIndex(), equalTo(0));
         assertThat(p2.getItemIndex(), equalTo(0));
@@ -78,20 +77,20 @@ public class PackedRatingDataBuilderTest {
         }
         Preference[] prefs = new Preference[10000];
         for (int i = 0; i < 10000; i++) {
-            prefs[i] = Preferences.make(
+            prefs[i] = Rating.create(
                     users[rnd.nextInt(500)],
                     items[rnd.nextInt(1000)],
                     rnd.nextGaussian());
             bld.add(prefs[i]);
         }
         assertThat(bld.size(), equalTo(10000));
-        PackedPreferenceData data = bld.build();
+        PackedRatingData data = bld.build();
         assertThat(data.size(), equalTo(10000));
-        PackedPreferenceData.IndirectPreference ip = data.preference(-1);
+        PackedRatingData.IndirectEntry ip = data.getEntry(-1);
         for (int i = 0; i < 10000; i++) {
             ip.setIndex(i);
             assertTrue(ip.isValid());
-            assertThat(ip, equalTo(prefs[i]));
+            assertThat(ip, samePreferenceAs(prefs[i]));
             assertThat(ip.getUserIndex(),
                        equalTo(data.getUserIndex().getIndex(prefs[i].getUserId())));
             assertThat(ip.getItemIndex(),
@@ -101,62 +100,62 @@ public class PackedRatingDataBuilderTest {
 
     @Test
     public void testRemove() {
-        bld.add(Preferences.make(1, 3, 20));
-        bld.add(Preferences.make(4, 2, -3));
-        bld.add(Preferences.make(2, 3, Math.PI));
+        bld.add(Rating.create(1, 3, 20));
+        bld.add(Rating.create(4, 2, -3));
+        bld.add(Rating.create(2, 3, Math.PI));
         assertThat(bld.size(), equalTo(3));
         bld.release(1);
         assertThat(bld.size(), equalTo(2));
-        PackedPreferenceData data = bld.build();
+        PackedRatingData data = bld.build();
         assertThat(data.size(), equalTo(2));
-        assertThat(data.preference(0),
-                   equalTo(Preferences.make(1, 3, 20)));
-        assertThat(data.preference(1),
-                   equalTo(Preferences.make(2, 3, Math.PI)));
+        assertThat(data.getEntry(0),
+                   samePreferenceAs(Rating.create(1, 3, 20)));
+        assertThat(data.getEntry(1),
+                   samePreferenceAs(Rating.create(2, 3, Math.PI)));
     }
 
     @Test
     public void testRemoveLast() {
-        bld.add(Preferences.make(1, 3, 20));
-        bld.add(Preferences.make(4, 2, -3));
-        bld.add(Preferences.make(2, 3, Math.PI));
+        bld.add(Rating.create(1, 3, 20));
+        bld.add(Rating.create(4, 2, -3));
+        bld.add(Rating.create(2, 3, Math.PI));
         assertThat(bld.size(), equalTo(3));
         bld.release(2);
         assertThat(bld.size(), equalTo(2));
-        PackedPreferenceData data = bld.build();
+        PackedRatingData data = bld.build();
         assertThat(data.size(), equalTo(2));
-        assertThat(data.preference(0),
-                   equalTo(Preferences.make(1, 3, 20)));
-        assertThat(data.preference(1),
-                   equalTo(Preferences.make(4, 2, -3)));
+        assertThat(data.getEntry(0),
+                   samePreferenceAs(Rating.create(1, 3, 20)));
+        assertThat(data.getEntry(1),
+                   samePreferenceAs(Rating.create(4, 2, -3)));
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
     public void testRemoveBad() {
-        bld.add(Preferences.make(1, 3, 20));
-        bld.add(Preferences.make(4, 2, -3));
-        bld.add(Preferences.make(2, 3, Math.PI));
+        bld.add(Rating.create(1, 3, 20));
+        bld.add(Rating.create(4, 2, -3));
+        bld.add(Rating.create(2, 3, Math.PI));
         bld.release(7);
     }
 
     @Test
     public void testReuse() {
-        bld.add(Preferences.make(1, 3, 20));
-        bld.add(Preferences.make(4, 2, -3));
-        bld.add(Preferences.make(2, 3, Math.PI));
+        bld.add(Rating.create(1, 3, 20));
+        bld.add(Rating.create(4, 2, -3));
+        bld.add(Rating.create(2, 3, Math.PI));
         assertThat(bld.size(), equalTo(3));
         bld.release(1);
         assertThat(bld.size(), equalTo(2));
-        int idx = bld.add(Preferences.make(7, 2, Math.E));
+        int idx = bld.add(Rating.create(7, 2, Math.E));
         assertThat(bld.size(), equalTo(3));
         assertThat(idx, equalTo(1));
-        PackedPreferenceData data = bld.build();
+        PackedRatingData data = bld.build();
         assertThat(data.size(), equalTo(3));
-        assertThat(data.preference(0),
-                   equalTo(Preferences.make(1, 3, 20)));
-        assertThat(data.preference(1),
-                   equalTo(Preferences.make(7, 2, Math.E)));
-        assertThat(data.preference(2),
-                   equalTo(Preferences.make(2, 3, Math.PI)));
+        assertThat(data.getEntry(0),
+                   samePreferenceAs(Rating.create(1, 3, 20)));
+        assertThat(data.getEntry(1),
+                   samePreferenceAs(Rating.create(7, 2, Math.E)));
+        assertThat(data.getEntry(2),
+                   samePreferenceAs(Rating.create(2, 3, Math.PI)));
     }
 }

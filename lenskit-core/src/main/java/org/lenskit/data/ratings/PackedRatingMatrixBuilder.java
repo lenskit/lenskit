@@ -28,7 +28,6 @@ import org.grouplens.lenskit.core.Transient;
 import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SortOrder;
-import org.grouplens.lenskit.data.pref.Preferences;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +54,7 @@ public class PackedRatingMatrixBuilder implements Provider<PackedRatingMatrix> {
     public PackedRatingMatrix get() {
         logger.debug("Packing preference snapshot");
 
-        PackedPreferenceDataBuilder bld = new PackedPreferenceDataBuilder();
+        PackedRatingDataBuilder bld = new PackedRatingDataBuilder();
 
         // Track the indices where everything appears for finding previous
         // rating info for a user-item pair
@@ -83,13 +82,13 @@ public class PackedRatingMatrixBuilder implements Provider<PackedRatingMatrix> {
                 if (index < 0) {    // we've never seen (user,item) before
                     // if this is not an unrate (a no-op), add the pref
                     if (r.hasValue()) {
-                        int idx = bld.add(Preferences.make(user, item, r.getValue()));
+                        int idx = bld.add(r);
                         imap.put(item, idx);
                     }
                 } else {            // we have seen this rating before
                     if (r.hasValue()) {
                         // just overwrite the previous value
-                        bld.set(index, Preferences.make(user, item, r.getValue()));
+                        bld.set(index, Rating.create(user, item, r.getValue()));
                     } else {
                         // free the entry, no rating here
                         bld.release(index);
@@ -104,7 +103,7 @@ public class PackedRatingMatrixBuilder implements Provider<PackedRatingMatrix> {
         }
 
         bld.shuffle(random);
-        PackedPreferenceData data = bld.build();
+        PackedRatingData data = bld.build();
 
         return new PackedRatingMatrix(data);
     }

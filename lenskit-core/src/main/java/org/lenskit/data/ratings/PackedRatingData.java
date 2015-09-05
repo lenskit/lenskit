@@ -20,8 +20,8 @@
  */
 package org.lenskit.data.ratings;
 
-import org.grouplens.lenskit.data.pref.AbstractPreference;
-import org.grouplens.lenskit.data.pref.IndexedPreference;
+import com.google.common.base.MoreObjects;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.lenskit.util.keys.KeyIndex;
 
 /**
@@ -29,7 +29,7 @@ import org.lenskit.util.keys.KeyIndex;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-final class PackedPreferenceData {
+final class PackedRatingData {
     static final int CHUNK_SHIFT = 12;
     static final int CHUNK_SIZE = 1 << CHUNK_SHIFT;
     static final int CHUNK_MASK = CHUNK_SIZE - 1;
@@ -42,8 +42,8 @@ final class PackedPreferenceData {
     private final KeyIndex itemIndex;
     private final KeyIndex userIndex;
 
-    public PackedPreferenceData(int[][] us, int[][] is, double[][] vs, int size,
-                                KeyIndex uidx, KeyIndex iidx) {
+    public PackedRatingData(int[][] us, int[][] is, double[][] vs, int size,
+                            KeyIndex uidx, KeyIndex iidx) {
         users = us;
         items = is;
         values = vs;
@@ -88,8 +88,8 @@ final class PackedPreferenceData {
      * @return A preference pointing at the index. This does no checking to make sure that
      *         the preference is valid.
      */
-    public IndirectPreference preference(int index) {
-        return new IndirectPreference(index);
+    public IndirectEntry getEntry(int index) {
+        return new IndirectEntry(index);
     }
 
     /**
@@ -110,15 +110,15 @@ final class PackedPreferenceData {
         return itemIndex;
     }
 
-    final class IndirectPreference extends AbstractPreference implements IndexedPreference {
+    final class IndirectEntry extends RatingMatrixEntry {
         private int index;
 
-        IndirectPreference(int idx) {
+        IndirectEntry(int idx) {
             index = idx;
         }
 
         /**
-         * Query whether this preference is valid. Valid preferences point to
+         * Query whether this getEntry is valid. Valid preferences point to
          *
          * @return {@code true} if this index is valid.
          */

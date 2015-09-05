@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.data.pref;
 
+import org.lenskit.data.ratings.Preference;
+
 /**
  * Helper class providing equality over preferences.
  *

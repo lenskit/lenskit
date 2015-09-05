@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.data.pref;
 
 import org.apache.commons.lang3.builder.Builder;
+import org.lenskit.data.ratings.Preference;
 
 /**
  * Build a preference.

@@ -21,6 +21,7 @@
 package org.lenskit.mf.funksvd;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import org.apache.commons.math3.linear.RealVector;
@@ -29,9 +30,11 @@ import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.lenskit.data.ratings.RatingMatrix;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.api.ItemScorer;
+import org.lenskit.data.ratings.RatingMatrixEntry;
 import org.lenskit.util.collections.LongUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Rating estimates used while training the predictor.  An estimator can be constructed
@@ -41,16 +44,16 @@ import java.util.Collection;
  * @since 1.1
  */
 public final class TrainingEstimator {
-    private final Collection<IndexedPreference> ratings;
+    private final List<RatingMatrixEntry> ratings;
     private final double[] estimates;
     private final PreferenceDomain domain;
 
     /**
      * Initialize the training estimator.
      *
-     * @param snap     The preference snapshot.
+     * @param snap     The getEntry snapshot.
      * @param baseline The baseline predictor.
-     * @param dom      The preference domain (for clamping).
+     * @param dom      The getEntry domain (for clamping).
      */
     TrainingEstimator(RatingMatrix snap, ItemScorer baseline, PreferenceDomain dom) {
         ratings = snap.getRatings();
@@ -61,21 +64,21 @@ public final class TrainingEstimator {
         LongIterator userIter = userIds.iterator();
         while (userIter.hasNext()) {
             long uid = userIter.nextLong();
-            SparseVector rvector = snap.userRatingVector(uid);
+            Long2DoubleMap rvector = snap.getUserRatingVector(uid);
             Long2DoubleFunction blpreds = LongUtils.asLong2DoubleFunction(baseline.score(uid, rvector.keySet()));
 
-            for (IndexedPreference r : snap.getUserRatings(uid)) {
+            for (RatingMatrixEntry r : snap.getUserRatings(uid)) {
                 estimates[r.getIndex()] = blpreds.get(r.getItemId());
             }
         }
     }
 
     /**
-     * Get the estimate for a preference.
-     * @param pref The preference.
+     * Get the estimate for a getEntry.
+     * @param pref The getEntry.
      * @return The estimate.
      */
-    public double get(IndexedPreference pref) {
+    public double get(RatingMatrixEntry pref) {
         return estimates[pref.getIndex()];
     }
 
@@ -85,7 +88,7 @@ public final class TrainingEstimator {
      * @param ifvs The item feature values.
      */
     public void update(RealVector ufvs, RealVector ifvs) {
-        for (IndexedPreference r : ratings) {
+        for (RatingMatrixEntry r : ratings) {
             int idx = r.getIndex();
             double est = estimates[idx];
             est += ufvs.getEntry(r.getUserIndex()) * ifvs.getEntry(r.getItemIndex());

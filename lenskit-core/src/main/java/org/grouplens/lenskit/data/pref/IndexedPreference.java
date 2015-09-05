@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.data.pref;
 
 import org.lenskit.data.ratings.PackedRatingMatrix;
+import org.lenskit.data.ratings.Preference;
 
 /**
  * A Preference that also provides 0-based indices for the user, item, and itself.

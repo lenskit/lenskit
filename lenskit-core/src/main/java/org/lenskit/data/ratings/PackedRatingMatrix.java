@@ -23,16 +23,12 @@ package org.lenskit.data.ratings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongCollection;
+import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.pref.IndexedPreference;
-import org.grouplens.lenskit.data.pref.Preferences;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.util.keys.KeyIndex;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PreDestroy;
@@ -40,8 +36,6 @@ import java.util.*;
 
 /**
  * An in-memory snapshot of rating data stored in packed arrays.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultProvider(PackedRatingMatrixBuilder.class)
 @Shareable
@@ -51,12 +45,12 @@ public class PackedRatingMatrix implements RatingMatrix {
         return p.get();
     }
 
-    private PackedPreferenceData data;
+    private PackedRatingData data;
     @SuppressWarnings("deprecation")
-    private Supplier<List<Collection<IndexedPreference>>> userIndexLists;
-    private transient Long2ObjectMap<SparseVector> cache;
+    private Supplier<List<Collection<RatingMatrixEntry>>> userIndexLists;
+    private transient Long2ObjectMap<Long2DoubleMap> cache;
 
-    PackedRatingMatrix(PackedPreferenceData data) {
+    PackedRatingMatrix(PackedRatingData data) {
         super();
         this.data = data;
         userIndexLists = Suppliers.memoize(new UserPreferenceSupplier());
@@ -91,14 +85,14 @@ public class PackedRatingMatrix implements RatingMatrix {
     }
 
     @Override
-    public Collection<IndexedPreference> getRatings() {
-        return new PackedPreferenceCollection(data);
+    public List<RatingMatrixEntry> getRatings() {
+        return new PackedRatingCollection(data);
     }
 
     @Override
-    public Collection<IndexedPreference> getUserRatings(long userId) {
+    public Collection<RatingMatrixEntry> getUserRatings(long userId) {
         int uidx = userIndex().tryGetIndex(userId);
-        List<Collection<IndexedPreference>> userLists = userIndexLists.get();
+        List<Collection<RatingMatrixEntry>> userLists = userIndexLists.get();
         if (uidx < 0 || uidx >= userLists.size()) {
             return Collections.emptyList();
         } else {
@@ -107,17 +101,21 @@ public class PackedRatingMatrix implements RatingMatrix {
     }
 
     @Override
-    public synchronized SparseVector userRatingVector(long userId) {
+    public synchronized Long2DoubleMap getUserRatingVector(long userId) {
         // FIXME Don't make this so locky
         if (cache == null) {
             cache = new Long2ObjectOpenHashMap<>();
         }
-        SparseVector data = cache.get(userId);
+        Long2DoubleMap data = cache.get(userId);
         if (data != null) {
             return data;
         } else {
-            Collection<IndexedPreference> prefs = this.getUserRatings(userId);
-            data = Preferences.userPreferenceVector(prefs).freeze();
+            Collection<RatingMatrixEntry> prefs = this.getUserRatings(userId);
+            Long2DoubleMap map = new Long2DoubleOpenHashMap();
+            for (RatingMatrixEntry e: prefs) {
+                map.put(e.getItemId(), e.getValue());
+            }
+            data = new Long2DoubleSortedArrayMap(map);
             cache.put(userId, data);
             return data;
         }
@@ -137,24 +135,23 @@ public class PackedRatingMatrix implements RatingMatrix {
      * Supplier to create user index lists.  Used to re-use memoization logic.
      */
     @SuppressWarnings("deprecation")
-    private class UserPreferenceSupplier implements Supplier<List<Collection<IndexedPreference>>> {
+    private class UserPreferenceSupplier implements Supplier<List<Collection<RatingMatrixEntry>>> {
         @Override @Nonnull
-        public List<Collection<IndexedPreference>> get() {
+        public List<Collection<RatingMatrixEntry>> get() {
             int nusers = data.getUserIndex().size();
-            ArrayList<IntArrayList> userLists = new ArrayList<IntArrayList>(nusers);
+            ArrayList<IntArrayList> userLists = new ArrayList<>(nusers);
             for (int i = 0; i < nusers; i++) {
                 userLists.add(new IntArrayList());
             }
-            for (IndexedPreference pref : getRatings()) {
+            for (RatingMatrixEntry pref : getRatings()) {
                 final int uidx = pref.getUserIndex();
                 final int idx = pref.getIndex();
                 userLists.get(uidx).add(idx);
             }
-            ArrayList<Collection<IndexedPreference>> users =
-                    new ArrayList<Collection<IndexedPreference>>(nusers);
+            ArrayList<Collection<RatingMatrixEntry>> users = new ArrayList<>(nusers);
             for (IntArrayList list: userLists) {
                 list.trim();
-                users.add(new PackedPreferenceCollection(data, list));
+                users.add(new PackedRatingCollection(data, list));
             }
             return users;
         }
