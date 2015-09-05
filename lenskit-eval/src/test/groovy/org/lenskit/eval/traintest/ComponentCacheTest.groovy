@@ -29,11 +29,11 @@ import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.config.ConfigHelpers
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
-import org.grouplens.lenskit.data.event.Rating
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.lenskit.data.ratings.Rating
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.existingFile
 import static org.hamcrest.Matchers.*

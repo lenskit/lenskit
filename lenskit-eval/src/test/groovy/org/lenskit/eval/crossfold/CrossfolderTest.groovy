@@ -22,24 +22,23 @@ package org.lenskit.eval.crossfold
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.java.quickcheck.Generator
-import org.lenskit.util.io.ObjectStreams
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
-import org.lenskit.data.events.Event
-import org.lenskit.data.ratings.Rating
 import org.grouplens.lenskit.data.source.DataSource
 import org.grouplens.lenskit.data.source.GenericDataSource
 import org.grouplens.lenskit.data.source.TextDataSource
 import org.grouplens.lenskit.data.text.TextEventDAO
-import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.lenskit.data.events.Event
+import org.lenskit.data.ratings.Rating
 import org.lenskit.eval.traintest.DataSet
 import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.eval.OutputFormat
 import org.lenskit.specs.eval.TTDataSetSpec
+import org.lenskit.util.io.ObjectStreams
 
 import java.nio.file.Files
 
@@ -250,7 +249,7 @@ class CrossfolderTest {
                                              lessThanOrEqualTo((Integer) Math.ceil(perPart)))));
 
             // train data should have all the other ratings
-            def tes = Cursors.makeList ds.trainingDAO.streamEvents()
+            def tes = ObjectStreams.makeList ds.trainingData.eventDAO.streamEvents()
             assertThat(tes.size() + events.size(), equalTo(ratings.size()))
         }
         assertThat(allEvents, hasSize(ratings.size()))

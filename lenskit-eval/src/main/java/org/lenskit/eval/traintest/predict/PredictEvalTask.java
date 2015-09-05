@@ -1,8 +1,8 @@
 package org.lenskit.eval.traintest.predict;
 
-import org.grouplens.lenskit.data.event.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.lenskit.api.Recommender;
+import org.lenskit.data.events.Event;
 import org.lenskit.eval.traintest.EvalTask;
 import org.lenskit.eval.traintest.Measurement;
 

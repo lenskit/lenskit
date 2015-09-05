@@ -1,7 +1,8 @@
 package org.lenskit.eval.traintest;
 
-import org.grouplens.lenskit.data.event.Event;
+
 import org.grouplens.lenskit.data.history.UserHistory;
+import org.lenskit.data.events.Event;
 
 import javax.annotation.Nonnull;
 import java.util.Map;

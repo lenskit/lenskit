@@ -22,12 +22,12 @@ package org.lenskit.eval.traintest;
 
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.GenericDataSource;
 import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.util.table.Table;
+import org.lenskit.data.ratings.PreferenceDomain;
+import org.lenskit.data.ratings.Rating;
 import org.lenskit.eval.crossfold.Crossfolder;
 import org.lenskit.eval.crossfold.FractionPartition;
 import org.lenskit.eval.crossfold.RandomOrder;
