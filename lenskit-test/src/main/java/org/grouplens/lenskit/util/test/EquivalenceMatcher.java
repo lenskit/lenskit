@@ -21,46 +21,30 @@
 package org.grouplens.lenskit.util.test;
 
 import com.google.common.base.Equivalence;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
-import java.io.File;
+class EquivalenceMatcher<T> extends BaseMatcher<T> {
+    private final T expected;
+    private final Equivalence<T> equivalence;
 
-import static org.hamcrest.Matchers.equalTo;
-
-/**
- * Entry point for extra matchers used by LensKit tests.
- */
-public final class ExtraMatchers {
-    private ExtraMatchers() {}
-
-    /**
-     * Match {@link Double#NaN}.
-     * @return A matcher that accepts {@link Double#NaN}.
-     */
-    public static Matcher<Double> notANumber() {
-        return new NotANumberMatcher();
+    public EquivalenceMatcher(T obj, Equivalence<T> equiv) {
+        expected = obj;
+        equivalence = equiv;
     }
 
-    public static Matcher<File> existingFile() {
-        return new FileExistsMatcher();
+    @Override
+    @SuppressWarnings("unchecked")
+    public boolean matches(Object obj) {
+        return equivalence.equivalent(expected, (T) obj);
     }
 
-    public static Matcher<File> lineCount(int n) {
-        return hasLineCount(equalTo(n));
-    }
-
-    public static Matcher<File> hasLineCount(Matcher<? extends Integer> m) {
-        return new LineCountMatcher(m);
-    }
-
-    /**
-     * Test if the object is equivalent to object object.
-     * @param obj The expected object.
-     * @param equiv An equivalence relation.
-     * @param <T> The type of object to compare.
-     * @return A matcher that accepts objects equivalent to `obj`.
-     */
-    public static <T> Matcher<T> equivalentTo(T obj, Equivalence<T> equiv) {
-        return new EquivalenceMatcher<>(obj, equiv);
+    @Override
+    public void describeTo(Description description) {
+        description.appendText("Object equivalent to")
+                   .appendValue(expected)
+                   .appendText("according to")
+                   .appendValue(equivalence);
     }
 }
