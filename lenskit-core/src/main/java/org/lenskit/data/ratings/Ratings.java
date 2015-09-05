@@ -26,8 +26,8 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.lenskit.collections.LongKeyDomain;
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.cursors.Cursors;
+import org.lenskit.util.io.ObjectStream;
+import org.lenskit.util.io.ObjectStreams;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.lenskit.data.events.Event;
 
@@ -111,14 +111,14 @@ public final class Ratings {
     }
 
     /**
-     * Extract a user rating vector from a rating cursor.
+     * Extract a user rating vector from a rating stream.
      *
-     * @param ratings The rating cursor.
+     * @param ratings The rating stream.
      * @return The user rating vector.
      * @see #userRatingVector(Collection)
      */
-    public static MutableSparseVector userRatingVector(@WillClose Cursor<? extends Rating> ratings) {
-        return userRatingVector(Cursors.makeList(ratings));
+    public static MutableSparseVector userRatingVector(@WillClose ObjectStream<? extends Rating> ratings) {
+        return userRatingVector(ObjectStreams.makeList(ratings));
     }
 
     /**

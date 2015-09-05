@@ -18,47 +18,48 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cursors;
+package org.lenskit.util.io;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterators;
 
 import javax.annotation.Nonnull;
 import java.util.Iterator;
 
 /**
- * Implementation of {@link Cursor} that simply wraps an iterator.
+ * Implementation of {@link ObjectStream} that simply wraps an iterator.
  *
- * @param <T> The cursor's element type.
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @param <T> The stream's element type.
  */
-class IteratorCursor<T> extends AbstractCursor<T> {
+class IteratorObjectStream<T> extends AbstractObjectStream<T> {
     private Iterator<? extends T> iterator;
 
     /**
-     * Construct a new iterator cursor.
+     * Construct a new iterator stream.
      * @param iter The iterator.
-     * @param size The length, or -1 if the length is not known.  This length must be an upper
-     *             bound on the cursor's element count.
      */
-    public IteratorCursor(@Nonnull Iterator<? extends T> iter, int size) {
-        super(size);
-        Preconditions.checkNotNull(iter, "iterator for cursor");
+    public IteratorObjectStream(@Nonnull Iterator<? extends T> iter) {
+        Preconditions.checkNotNull(iter, "stream iterator");
         iterator = iter;
     }
 
     @Override
-    public boolean hasNext() {
-        return iterator != null && iterator.hasNext();
+    public T readObject() {
+        if (iterator.hasNext()) {
+            T obj = iterator.next();
+            if (obj == null) {
+                throw new NullPointerException("object stream iterator cannot contain null");
+            }
+            return obj;
+        } else {
+            return null;
+        }
     }
 
-    @Nonnull
+    @SuppressWarnings("unchecked")
     @Override
-    public T next() {
-        if (iterator == null) {
-            throw new IllegalStateException("cursor closed");
-        }
-
-        return iterator.next();
+    public Iterator<T> iterator() {
+        return Iterators.unmodifiableIterator((Iterator<T>) iterator);
     }
 
     @Override

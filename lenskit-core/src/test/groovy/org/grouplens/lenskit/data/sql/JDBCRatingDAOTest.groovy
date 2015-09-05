@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.data.sql
 
 import groovy.sql.Sql
-import org.grouplens.lenskit.cursors.Cursors
+import org.lenskit.util.io.ObjectStreams
 import org.grouplens.lenskit.data.dao.SortOrder
 import org.lenskit.data.ratings.Rating
 import org.lenskit.data.ratings.Ratings
@@ -82,7 +82,7 @@ class JDBCRatingDAOTest {
 
     @Test
     public void testGetAllRatings() {
-        def ratings = Cursors.makeList(dao.streamEvents(Rating, SortOrder.TIMESTAMP))
+        def ratings = ObjectStreams.makeList(dao.streamEvents(Rating, SortOrder.TIMESTAMP))
         assertThat ratings, contains(Ratings.make(3, 1, 2.5, 40),
                                      Ratings.make(1, 1, 4.5, 50),
                                      Ratings.make(1, 2, 3.5, 51))

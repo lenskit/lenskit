@@ -22,11 +22,10 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
-import org.grouplens.lenskit.cursors.AbstractCursor;
-import org.grouplens.lenskit.cursors.Cursor;
 import org.lenskit.data.ratings.Rating;
+import org.lenskit.util.io.AbstractObjectStream;
+import org.lenskit.util.io.ObjectStream;
 
-import javax.annotation.Nonnull;
 import java.nio.ByteBuffer;
 import java.util.AbstractList;
 
@@ -70,22 +69,20 @@ class BinaryRatingList extends AbstractList<Rating> {
         return positions.size();
     }
 
-    public Cursor<Rating> cursor() {
-        return new CursorImpl();
+    public ObjectStream<Rating> objectStream() {
+        return new ObjectStreamImpl();
     }
 
-    private class CursorImpl extends AbstractCursor<Rating> {
+    private class ObjectStreamImpl extends AbstractObjectStream<Rating> {
         private IntIterator posIter = positions.iterator();
 
         @Override
-        public boolean hasNext() {
-            return posIter.hasNext();
-        }
-
-        @Nonnull
-        @Override
-        public Rating next() {
-            return getRating(posIter.nextInt());
+        public Rating readObject() {
+            if (posIter.hasNext()) {
+                return getRating(posIter.nextInt());
+            } else {
+                return null;
+            }
         }
     }
 }

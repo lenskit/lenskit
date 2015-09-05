@@ -18,67 +18,71 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util;
+package org.lenskit.util.io;
 
+import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.io.Files;
-import org.grouplens.lenskit.cursors.AbstractPollingCursor;
+import org.apache.commons.lang3.text.StrTokenizer;
 import org.grouplens.lenskit.util.io.CompressionMode;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.WillCloseWhenClosed;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.List;
 
 /**
- * Cursor that reads lines from a file.
+ * Stream that reads lines from a file.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.10
  */
-public class LineCursor extends AbstractPollingCursor<String> {
+public class LineStream extends AbstractObjectStream<String> {
     private BufferedReader input;
     private int lineNumber = 0;
 
     /**
-     * Construct a cursor reading lines from a buffered reader.
+     * Construct a stream reading lines from a buffered reader.
      *
      * @param in    The input reader.
      */
-    public LineCursor(@WillCloseWhenClosed @Nonnull BufferedReader in) {
+    public LineStream(@WillCloseWhenClosed @Nonnull BufferedReader in) {
         input = in;
     }
 
     /**
-     * Open a delimited text cursor as a file.
+     * Open a delimited text stream as a file.
      *
      * @param file The file to open.
-     * @return The cursor.
+     * @return The stream.
      * @throws FileNotFoundException if there is an error opening the file.
      */
-    public static LineCursor openFile(File file) throws FileNotFoundException {
+    public static LineStream openFile(File file) throws FileNotFoundException {
         // REVIEW do we want to use the default charset?
-        return new LineCursor(Files.newReader(file, Charset.defaultCharset()));
+        return new LineStream(Files.newReader(file, Charset.defaultCharset()));
     }
 
     /**
-     * Open a delimited text cursor as a file.
+     * Open a delimited text stream as a file.
      *
      * @param file The file to open.
-     * @return The cursor.
+     * @return The stream.
      * @throws FileNotFoundException if there is an error opening the file.
      */
-    public static LineCursor openFile(File file, CompressionMode comp) throws IOException {
+    public static LineStream openFile(File file, CompressionMode comp) throws IOException {
         FileInputStream fin = new FileInputStream(file);
         InputStream rawin = comp.getEffectiveCompressionMode(file.getName()).wrapInput(fin);
         // REVIEW do we want to use the default charset?
         Reader reader = new InputStreamReader(rawin, Charset.defaultCharset());
         BufferedReader buffer = new BufferedReader(reader);
-        return new LineCursor(buffer);
+        return new LineStream(buffer);
     }
 
     @Override
-    public String poll() {
+    @Nullable
+    public String readObject() {
         try {
             String line = input.readLine();
             lineNumber++;
@@ -89,7 +93,7 @@ public class LineCursor extends AbstractPollingCursor<String> {
     }
 
     /**
-     * Return the number of the line returned by the last call to {@link #next()}.
+     * Return the number of the line returned by the last call to {@link #readObject()}.
      *
      * @return The number of the last line retrieved.
      */
@@ -103,6 +107,28 @@ public class LineCursor extends AbstractPollingCursor<String> {
             input.close();
         } catch (IOException ex) {
             throw Throwables.propagate(ex);
+        }
+    }
+
+    public ObjectStream<List<String>> tokenize(StrTokenizer tok) {
+        return ObjectStreams.transform(this, new TokenizerFunction(tok));
+    }
+
+    private static class TokenizerFunction implements Function<String,List<String>> {
+        StrTokenizer tokenizer;
+
+        public TokenizerFunction(StrTokenizer tok) {
+            tokenizer = tok;
+        }
+
+        @Nullable
+        @Override
+        public List<String> apply(@Nullable String input) {
+            if (input == null) {
+                return null;
+            }
+            tokenizer.reset(input);
+            return tokenizer.getTokenList();
         }
     }
 }

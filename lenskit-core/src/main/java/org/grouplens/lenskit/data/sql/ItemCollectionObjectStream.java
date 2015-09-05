@@ -21,8 +21,8 @@
 package org.grouplens.lenskit.data.sql;
 
 import com.google.common.collect.ImmutableList;
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.cursors.GroupingCursor;
+import org.lenskit.util.io.ObjectStream;
+import org.lenskit.util.io.GroupingObjectStream;
 import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
@@ -32,16 +32,16 @@ import javax.annotation.WillCloseWhenClosed;
 import java.util.List;
 
 /**
- * Cursor that processes (user,timestamp)-sorted cursor of events and groups
+ * Stream that processes (user,timestamp)-sorted stream of events and groups
  * them into user histories.
  *
  * @param <E> The event type.
  */
-class ItemCollectionCursor<E extends Event> extends GroupingCursor<ItemEventCollection<E>,E> {
+class ItemCollectionObjectStream<E extends Event> extends GroupingObjectStream<ItemEventCollection<E>,E> {
     private ImmutableList.Builder<E> builder;
     private long itemId;
 
-    public ItemCollectionCursor(@WillCloseWhenClosed Cursor<? extends E> cur) {
+    public ItemCollectionObjectStream(@WillCloseWhenClosed ObjectStream<? extends E> cur) {
         super(cur);
     }
 
@@ -51,7 +51,7 @@ class ItemCollectionCursor<E extends Event> extends GroupingCursor<ItemEventColl
     }
 
     @Override
-    protected boolean handleItem(E event) {
+    protected boolean handleItem(@Nonnull E event) {
         if (builder == null) {
             itemId = event.getItemId();
             builder = ImmutableList.builder();

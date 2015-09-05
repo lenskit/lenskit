@@ -22,7 +22,7 @@ package org.lenskit.eval.crossfold;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.source.DataSource;
@@ -50,10 +50,10 @@ abstract class UserBasedSplitMethod implements SplitMethod {
                     input.getName(), count);
         Long2IntMap splits = splitUsers(input.getUserDAO().getUserIds(), count, output.getRandom());
         splits.defaultReturnValue(-1); // unpartitioned users should only be trained
-        Cursor<UserHistory<Rating>> historyCursor = input.getUserEventDAO().streamEventsByUser(Rating.class);
+        ObjectStream<UserHistory<Rating>> historyObjectStream = input.getUserEventDAO().streamEventsByUser(Rating.class);
 
         try {
-            for (UserHistory<Rating> history : historyCursor) {
+            for (UserHistory<Rating> history : historyObjectStream) {
                 int foldNum = splits.get(history.getUserId());
                 List<Rating> ratings = new ArrayList<Rating>(history);
                 final int n = ratings.size();
@@ -77,7 +77,7 @@ abstract class UserBasedSplitMethod implements SplitMethod {
 
             }
         } finally {
-            historyCursor.close();
+            historyObjectStream.close();
         }
     }
 

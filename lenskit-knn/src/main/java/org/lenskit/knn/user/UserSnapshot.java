@@ -26,7 +26,7 @@ import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
@@ -109,7 +109,7 @@ public class UserSnapshot implements Serializable {
         @Override
         public UserSnapshot get() {
             Long2ObjectMap<MutableSparseVector> vectors = new Long2ObjectOpenHashMap<MutableSparseVector>();
-            Cursor<? extends UserHistory<? extends Event>> users = userEventDAO.streamEventsByUser(summarizer.eventTypeWanted());
+            ObjectStream<? extends UserHistory<? extends Event>> users = userEventDAO.streamEventsByUser(summarizer.eventTypeWanted());
             try {
                 for (UserHistory<? extends Event> user: users) {
                     MutableSparseVector uvec = summarizer.summarize(user).mutableCopy();

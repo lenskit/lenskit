@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SortOrder;
 import org.slf4j.Logger;
@@ -63,7 +63,7 @@ public class PackedRatingMatrixBuilder implements Provider<PackedRatingMatrix> {
 
         // Since we iterate in timestamp order, we can just overwrite
         // old data for a user-item pair with new data.
-        Cursor<Rating> ratings = dao.streamEvents(Rating.class, SortOrder.TIMESTAMP);
+        ObjectStream<Rating> ratings = dao.streamEvents(Rating.class, SortOrder.TIMESTAMP);
         try {
             for (Rating r : ratings) {
                 final long user = r.getUserId();

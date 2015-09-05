@@ -28,13 +28,11 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.StrTokenizer;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.cursors.Cursor;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.source.TextDataSource;
@@ -44,12 +42,15 @@ import org.grouplens.lenskit.eval.data.traintest.GenericTTDataSet;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
 import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.util.DelimitedTextCursor;
 import org.grouplens.lenskit.util.io.LoggingStreamSlurper;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.util.io.LineStream;
+import org.lenskit.util.io.ObjectStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -223,7 +224,7 @@ class ExternalEvalJob extends TrainTestJob {
         Object[] row = new Object[writeRatings ? 3 : 2];
         TableWriter table = CSVWriter.open(file, null);
         try {
-            Cursor<Rating> ratings = dao.streamEvents(Rating.class);
+            ObjectStream<Rating> ratings = dao.streamEvents(Rating.class);
             try {
                 for (Rating r: ratings) {
                     if (r.hasValue()) {
@@ -246,22 +247,24 @@ class ExternalEvalJob extends TrainTestJob {
 
     private Long2ObjectMap<SparseVector> readPredictions(File predFile) throws FileNotFoundException, RecommenderBuildException {
         Long2ObjectMap<Long2DoubleMap> data = new Long2ObjectOpenHashMap<Long2DoubleMap>();
-        Cursor<String[]> cursor = new DelimitedTextCursor(predFile, algorithm.getOutputDelimiter());
+        StrTokenizer tok = new StrTokenizer((String) null, algorithm.getOutputDelimiter());
+        ObjectStream<List<String>> lines = LineStream.openFile(predFile)
+                                                           .tokenize(tok);
         try {
             int n = 0;
-            for (String[] row: cursor) {
+            for (List<String> row: lines) {
                 n++;
-                if (row.length == 0 || row.length == 1 && row[0].equals("")) {
+                if (row.size() == 0 || row.size() == 1 && row.get(0).equals("")) {
                     continue;
                 }
-                if (row.length < 3) {
+                if (row.size() < 3) {
                     logger.error("predictions line {}: invalid row {}", n,
                                  StringUtils.join(row, ","));
                     throw new RecommenderBuildException("invalid prediction row");
                 }
-                long uid = Long.parseLong(row[0]);
-                long iid = Long.parseLong(row[1]);
-                double pred = Double.parseDouble(row[2]);
+                long uid = Long.parseLong(row.get(0));
+                long iid = Long.parseLong(row.get(1));
+                double pred = Double.parseDouble(row.get(2));
                 Long2DoubleMap user = data.get(uid);
                 if (user == null) {
                     user = new Long2DoubleOpenHashMap();
@@ -270,7 +273,7 @@ class ExternalEvalJob extends TrainTestJob {
                 user.put(iid, pred);
             }
         } finally {
-            cursor.close();
+            lines.close();
         }
         Long2ObjectMap<SparseVector> vectors = new Long2ObjectOpenHashMap<SparseVector>(data.size());
         for (Long2ObjectMap.Entry<Long2DoubleMap> entry: data.long2ObjectEntrySet()) {

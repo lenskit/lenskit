@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
@@ -111,7 +111,7 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
     private void buildItemRatings(Long2ObjectMap<ScoredIdListBuilder> itemRatings,
                                   Long2ObjectMap<LongSortedSet> userItems) {
         // initialize the transposed array to collect item vector data
-        Cursor<UserHistory<Event>> users = userEventDAO.streamEventsByUser();
+        ObjectStream<UserHistory<Event>> users = userEventDAO.streamEventsByUser();
         try {
             for (UserHistory<Event> user : users) {
                 long uid = user.getUserId();

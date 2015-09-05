@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval.data.pack;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
 import org.lenskit.data.ratings.Rating;
@@ -143,7 +143,7 @@ public class PackTask extends AbstractTask<List<Object>> {
             try (StagedWrite stage = StagedWrite.begin(outFile)) {
                 try (BinaryRatingPacker packer = BinaryRatingPacker.open(stage.getStagingFile().toFile(),
                                                                          binaryFlags);
-                     Cursor<Rating> ratings = data.getEventDAO().streamEvents(Rating.class)) {
+                     ObjectStream<Rating> ratings = data.getEventDAO().streamEvents(Rating.class)) {
                     packer.writeRatings(ratings);
                 }
                 stage.commit();

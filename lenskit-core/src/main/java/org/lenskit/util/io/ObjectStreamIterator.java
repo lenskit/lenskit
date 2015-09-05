@@ -18,51 +18,60 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cursors;
+package org.lenskit.util.io;
 
 import javax.annotation.Nonnull;
-import javax.annotation.WillCloseWhenClosed;
-
-import com.google.common.base.Function;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 /**
- * Implementation of transformed cursors.
+ * Simple implementation of an Iterator that wraps a object stream's data. This is
+ * suitable for use implementing {@link ObjectStream#iterator()}.
  *
- * @param <S> The element type of the wrapped cursor.
- * @param <T> The element type of the cursor.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @see Cursors#transform(Cursor, Function)
+ * @param <T> The type of value in the iterator.
  */
-class TransformedCursor<S, T> extends AbstractCursor<T> {
-    private final Cursor<S> cursor;
-    private final Function<? super S, ? extends T> function;
+public class ObjectStreamIterator<T> implements Iterator<T> {
+    private ObjectStream<T> stream;
+    private boolean hasNextCalled;
+    private T next;
 
     /**
-     * Construct a transformed cursor.
+     * Construct a new iterator from a stream.
      *
-     * @param cur The underlying cursor.
-     * @param fun The transformation function.
+     * @param stream The stream to wrap.
      */
-    public TransformedCursor(@WillCloseWhenClosed Cursor<S> cur, Function<? super S, ? extends T> fun) {
-        super(cur.getRowCount());
-        cursor = cur;
-        function = fun;
-    }
-
-    @Override
-    public void close() {
-        cursor.close();
+    public ObjectStreamIterator(ObjectStream<T> stream) {
+        this.stream = stream;
     }
 
     @Override
     public boolean hasNext() {
-        return cursor.hasNext();
+        if (!hasNextCalled) {
+            next = stream.readObject();
+            hasNextCalled = true;
+        }
+
+        return next != null;
     }
 
     @Nonnull
     @Override
     public T next() {
-        return function.apply(cursor.next());
+        if (!hasNextCalled) {
+            next = stream.readObject();
+        }
+        if (next == null) {
+            throw new NoSuchElementException();
+        }
+
+        final T n = next;
+        next = null;
+        hasNextCalled = false;
+        return n;
+    }
+
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException();
     }
 }

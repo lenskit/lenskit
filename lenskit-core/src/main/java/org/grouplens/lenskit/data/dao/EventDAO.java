@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.data.dao;
 
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.lenskit.data.events.Event;
 
 /**
@@ -33,24 +33,24 @@ public interface EventDAO {
     /**
      * Stream all events.
      *
-     * @return A cursor over all events.
+     * @return A stream over all events.
      */
-    Cursor<Event> streamEvents();
+    ObjectStream<Event> streamEvents();
 
     /**
      * Stream all events of a given type.
      *
      * @param type The event type.
-     * @return A cursor over all events.
+     * @return A stream over all events.
      */
-    <E extends Event> Cursor<E> streamEvents(Class<E> type);
+    <E extends Event> ObjectStream<E> streamEvents(Class<E> type);
 
     /**
      * Stream all events of a given type in a specified order.
      *
      * @param type The event type.
      * @param order The order.
-     * @return A cursor over all events.
+     * @return A stream over all events.
      */
-    <E extends Event> Cursor<E> streamEvents(Class<E> type, SortOrder order);
+    <E extends Event> ObjectStream<E> streamEvents(Class<E> type, SortOrder order);
 }

@@ -20,26 +20,27 @@
  */
 package org.grouplens.lenskit.data.sql;
 
-import org.grouplens.lenskit.cursors.AbstractPollingCursor;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.RatingBuilder;
+import org.lenskit.util.io.AbstractObjectStream;
 
+import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Cursor to extract ratings from a result set.
+ * Stream to extract ratings from a result set.
  *
  * @since 2.0
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class ResultSetRatingCursor extends AbstractPollingCursor<Rating> {
+class ResultSetRatingObjectStream extends AbstractObjectStream<Rating> {
     private ResultSet resultSet;
     private boolean hasTimestampColumn;
     private RatingBuilder builder;
 
-    public ResultSetRatingCursor(PreparedStatement stmt) throws SQLException {
+    public ResultSetRatingObjectStream(PreparedStatement stmt) throws SQLException {
         builder = new RatingBuilder();
         resultSet = stmt.executeQuery();
         try {
@@ -55,7 +56,8 @@ class ResultSetRatingCursor extends AbstractPollingCursor<Rating> {
     }
 
     @Override
-    public Rating poll() {
+    @Nullable
+    public Rating readObject() {
         try {
             if (!resultSet.next()) {
                 return null;

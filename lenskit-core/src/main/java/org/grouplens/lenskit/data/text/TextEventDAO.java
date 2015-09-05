@@ -21,19 +21,18 @@
 package org.grouplens.lenskit.data.text;
 
 import com.google.common.collect.Lists;
-import org.grouplens.lenskit.cursors.AbstractCursor;
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.DataAccessException;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.SortOrder;
-import org.lenskit.data.events.Event;
-import org.grouplens.lenskit.util.LineCursor;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
+import org.lenskit.data.events.Event;
+import org.lenskit.util.io.AbstractObjectStream;
+import org.lenskit.util.io.LineStream;
+import org.lenskit.util.io.ObjectStream;
+import org.lenskit.util.io.ObjectStreams;
 
-import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Inject;
 import java.io.File;
@@ -106,35 +105,35 @@ public class TextEventDAO implements EventDAO, Describable {
     }
 
     @Override
-    public Cursor<Event> streamEvents() {
+    public ObjectStream<Event> streamEvents() {
         try {
-            LineCursor lines = LineCursor.openFile(inputFile, compression);
-            Cursors.consume(eventFormat.getHeaderLines(), lines);
-            return new EventCursor(lines);
+            LineStream lines = LineStream.openFile(inputFile, compression);
+            ObjectStreams.consume(eventFormat.getHeaderLines(), lines);
+            return new EventObjectStream(lines);
         } catch (IOException e) {
             throw new DataAccessException("cannot open " + inputFile, e);
         }
     }
 
     @Override
-    public <E extends Event> Cursor<E> streamEvents(Class<E> type) {
-        return Cursors.filter(streamEvents(), type);
+    public <E extends Event> ObjectStream<E> streamEvents(Class<E> type) {
+        return ObjectStreams.filter(streamEvents(), type);
     }
 
     @Override
-    public <E extends Event> Cursor<E> streamEvents(Class<E> type, SortOrder order) {
+    public <E extends Event> ObjectStream<E> streamEvents(Class<E> type, SortOrder order) {
         Comparator<Event> evt = order.getEventComparator();
         if (evt == null) {
             return streamEvents(type);
         }
 
-        Cursor<E> cursor = streamEvents(type);
+        ObjectStream<E> objectStream = streamEvents(type);
         try {
-            List<E> events = Lists.newArrayList(cursor);
+            List<E> events = Lists.newArrayList(objectStream);
             Collections.sort(events, evt);
-            return Cursors.wrap(events);
+            return ObjectStreams.wrap(events);
         } finally {
-            cursor.close();
+            objectStream.close();
         }
     }
 
@@ -145,27 +144,30 @@ public class TextEventDAO implements EventDAO, Describable {
              .putField("mtime", inputFile.lastModified());
     }
 
-    private final class EventCursor extends AbstractCursor<Event> {
-        private final LineCursor lines;
+    /**
+     * Object stream for events.  This is implement directly, instead of using `transform`, so that
+     * we can include line numbers in error messages.
+     */
+    private final class EventObjectStream extends AbstractObjectStream<Event> {
+        private final LineStream lines;
         private Object context;
 
-        EventCursor(LineCursor lc) {
+        EventObjectStream(LineStream lc) {
             lines = lc;
             context = eventFormat.newContext();
         }
 
         @Override
-        public boolean hasNext() {
-            return lines.hasNext();
-        }
-
-        @Nonnull
-        @Override
-        public Event next() {
-            try {
-                return eventFormat.parse(lines.next(), context);
-            } catch (InvalidRowException e) {
-                throw new DataAccessException("malformed input on line " + lines.getLineNumber(), e);
+        public Event readObject() {
+            String line = lines.readObject();
+            if (line == null) {
+                return null;
+            } else {
+                try {
+                    return eventFormat.parse(line, context);
+                } catch (InvalidRowException e) {
+                    throw new DataAccessException("malformed input on line " + lines.getLineNumber(), e);
+                }
             }
         }
 

@@ -18,52 +18,35 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cursors;
+package org.lenskit.util.io;
 
 import java.util.Iterator;
 
 /**
- * Simple implementation of an Iterator that wraps a Cursor's data. This is
- * suitable for use with {@link Cursor#iterator()}.
+ * Base class to make {@link ObjectStream}s easier to implement.
  *
- * @param <T> The type of value in the iterator.
+ * @param <T> The type of value returned by this stream.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @compat Public
  */
-public class CursorIterator<T> implements Iterator<T> {
-
-    private Cursor<T> cursor;
+public abstract class AbstractObjectStream<T> implements ObjectStream<T> {
+    /**
+     * No-op implementation of the {@link ObjectStream#close()} method.
+     */
+    @Override
+    public void close() {
+        // no-op
+    }
 
     /**
-     * Construct a new iterator from a cursor.
+     * Get the iterator.  This method just returns {@code this}, so for-each
+     * loops can be used over streams.
      *
-     * @param cur The cursor to wrap.
+     * @return The stream as an iterator.
+     * @see java.lang.Iterable#iterator()
      */
-    public CursorIterator(Cursor<T> cur) {
-        cursor = cur;
-    }
-
-    /* (non-Javadoc)
-      * @see java.util.Iterator#hasNext()
-      */
     @Override
-    public boolean hasNext() {
-        return cursor.hasNext();
+    public Iterator<T> iterator() {
+        return new ObjectStreamIterator<>(this);
     }
-
-    /* (non-Javadoc)
-      * @see java.util.Iterator#next()
-      */
-    @Override
-    public T next() {
-        return cursor.next();
-    }
-
-    /* (non-Javadoc)
-      * @see java.util.Iterator#remove()
-      */
-    @Override
-    public void remove() {
-        throw new UnsupportedOperationException();
-    }
-
 }

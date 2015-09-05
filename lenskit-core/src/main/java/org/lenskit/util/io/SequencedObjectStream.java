@@ -18,57 +18,43 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cursors;
+package org.lenskit.util.io;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterators;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 /**
- * Implementation of concatenated cursors.
+ * Implementation of concatenated streams.
  *
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class SequencedCursor<T> extends AbstractCursor<T> {
-    private final Iterator<? extends Cursor<? extends T>> cursorIter;
+class SequencedObjectStream<T> extends AbstractObjectStream<T> {
+    private final Iterator<? extends ObjectStream<? extends T>> streamIter;
     @Nullable
-    private Cursor<? extends T> current;
+    private ObjectStream<? extends T> current;
 
-    public SequencedCursor(Iterable<? extends Cursor<? extends T>> cursors) {
-        cursorIter = cursors.iterator();
-        current = cursorIter.hasNext() ? cursorIter.next() : null;
+    public SequencedObjectStream(Iterable<? extends ObjectStream<? extends T>> streams) {
+        streamIter = streams.iterator();
+        current = Iterators.getNext(streamIter, null);
     }
 
     @Override
-    public boolean hasNext() {
-        // advance
-        while (current != null && !current.hasNext()) {
-            current.close();
-            if (cursorIter.hasNext()) {
-                current = cursorIter.next();
-                Preconditions.checkNotNull(current, "concatenated cursor");
+    public T readObject() {
+        T obj = null;
+        while (current != null) {
+            obj = current.readObject();
+            if (obj == null) {
+                current = Iterators.getNext(streamIter, null);
             } else {
-                current = null;
+                break;
             }
         }
-        assert current == null || current.hasNext();
-        return current != null;
-    }
 
-    @Nonnull
-    @Override
-    public T next() {
-        if (hasNext()) {
-            assert current != null && current.hasNext();
-            return current.next();
-        } else {
-            throw new NoSuchElementException();
-        }
+        return obj;
     }
 
     @Override
@@ -82,13 +68,15 @@ class SequencedCursor<T> extends AbstractCursor<T> {
             }
             current = null;
         }
-        while (cursorIter.hasNext()) {
-            Cursor<? extends T> cur = cursorIter.next();
+        while (streamIter.hasNext()) {
+            ObjectStream<? extends T> cur = streamIter.next();
             try {
                 cur.close();
             } catch (Throwable th) { // NOSONAR We are managing errors
-                if (error != null) {
+                if (error == null) {
                     error = th;
+                } else {
+                    error.addSuppressed(th);
                 }
             }
         }

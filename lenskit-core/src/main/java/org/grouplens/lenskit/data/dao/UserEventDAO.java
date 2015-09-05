@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.data.dao;
 
 import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.UserHistory;
 
@@ -38,20 +38,20 @@ public interface UserEventDAO {
     /**
      * Stream events grouped by user.
      *
-     * @return A cursor of user histories.  If a user exists, but does not have any history, they
+     * @return A stream of user histories.  If a user exists, but does not have any history, they
      * may or may not be included depending on the DAO implementation.
      */
-    Cursor<UserHistory<Event>> streamEventsByUser();
+    ObjectStream<UserHistory<Event>> streamEventsByUser();
 
     /**
      * Stream events grouped by user.
      *
      * @param type The type of item to look for.
-     * @return A cursor of user histories, filtered to contain events of type {@code type}.  If a
+     * @return A stream of user histories, filtered to contain events of type {@code type}.  If a
      *         user exists, but does not have any history, they may or may not be included depending
      *         on the DAO implementation.
      */
-    <E extends Event> Cursor<UserHistory<E>> streamEventsByUser(Class<E> type);
+    <E extends Event> ObjectStream<UserHistory<E>> streamEventsByUser(Class<E> type);
 
     /**
      * Get the events for a specific user.

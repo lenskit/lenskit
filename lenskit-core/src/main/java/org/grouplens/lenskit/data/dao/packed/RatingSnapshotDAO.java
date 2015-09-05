@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.*;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.ratings.Rating;
@@ -62,18 +62,18 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
     }
 
     @Override
-    public Cursor<Event> streamEvents() {
+    public ObjectStream<Event> streamEvents() {
         return delegate.streamEvents();
     }
 
     @Override
-    public <E extends Event> Cursor<E> streamEvents(Class<E> type) {
+    public <E extends Event> ObjectStream<E> streamEvents(Class<E> type) {
         return delegate.streamEvents(type);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E extends Event> Cursor<E> streamEvents(Class<E> type, SortOrder order) {
+    public <E extends Event> ObjectStream<E> streamEvents(Class<E> type, SortOrder order) {
         return delegate.streamEvents(type, order);
     }
 
@@ -83,13 +83,13 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
     }
 
     @Override
-    public Cursor<ItemEventCollection<Event>> streamEventsByItem() {
+    public ObjectStream<ItemEventCollection<Event>> streamEventsByItem() {
         return delegate.streamEventsByItem();
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E extends Event> Cursor<ItemEventCollection<E>> streamEventsByItem(Class<E> type) {
+    public <E extends Event> ObjectStream<ItemEventCollection<E>> streamEventsByItem(Class<E> type) {
         return delegate.streamEventsByItem(type);
     }
 
@@ -117,13 +117,13 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
     }
 
     @Override
-    public Cursor<UserHistory<Event>> streamEventsByUser() {
+    public ObjectStream<UserHistory<Event>> streamEventsByUser() {
         return delegate.streamEventsByUser();
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E extends Event> Cursor<UserHistory<E>> streamEventsByUser(Class<E> type) {
+    public <E extends Event> ObjectStream<UserHistory<E>> streamEventsByUser(Class<E> type) {
         return delegate.streamEventsByUser(type);
     }
 
@@ -171,7 +171,7 @@ public class RatingSnapshotDAO implements EventDAO, UserEventDAO, ItemEventDAO, 
 
             try {
                 try (BinaryRatingPacker packer = BinaryRatingPacker.open(file, flags);
-                     Cursor<Rating> ratings = dao.streamEvents(Rating.class, order)) {
+                     ObjectStream<Rating> ratings = dao.streamEvents(Rating.class, order)) {
                     packer.writeRatings(ratings);
                 }
                 BinaryRatingDAO result = BinaryRatingDAO.open(file);

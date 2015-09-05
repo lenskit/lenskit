@@ -18,37 +18,40 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cursors;
+package org.lenskit.util.io;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class GroupingCursorTest {
-    public static class FirstLetterCursor extends GroupingCursor<List<String>, String> {
+public class GroupingObjectStreamTest {
+    public static class FirstLetterObjectStream extends GroupingObjectStream<List<String>, String> {
         private boolean inGroup;
         private char firstChar;
         private List<String> strings;
 
-        public FirstLetterCursor(Cursor<String> base) {
+        public FirstLetterObjectStream(ObjectStream<String> base) {
             super(base);
         }
 
-        public FirstLetterCursor(Iterable<String> vals) {
-            this(Cursors.wrap(vals.iterator()));
+        public FirstLetterObjectStream(Iterable<String> vals) {
+            this(ObjectStreams.wrap(vals.iterator()));
         }
 
         @Override
-        protected boolean handleItem(String item) {
+        protected boolean handleItem(@Nonnull String item) {
             if (!inGroup) {
                 assert strings == null;
                 strings = Lists.newArrayList(item);
@@ -64,6 +67,7 @@ public class GroupingCursorTest {
 
         }
 
+        @Nonnull
         @Override
         protected List<String> finishGroup() {
             List<String> ret = strings;
@@ -96,33 +100,33 @@ public class GroupingCursorTest {
     }
 
     @Test
-    public void testEmptyCursor() {
-        FirstLetterCursor cur = new FirstLetterCursor(new ArrayList<String>());
-        Assert.assertThat(cur.hasNext(), Matchers.equalTo(false));
+    public void testEmptyStream() {
+        FirstLetterObjectStream cur = new FirstLetterObjectStream(new ArrayList<String>());
+        assertThat(cur.readObject(), nullValue());
     }
 
     @Test
     public void testSingleton() {
-        FirstLetterCursor cur = new FirstLetterCursor(Arrays.asList("foo"));
-        Assert.assertThat(cur.hasNext(), Matchers.equalTo(true));
-        Assert.assertThat(cur.next(), Matchers.equalTo(Arrays.asList("foo")));
-        Assert.assertThat(cur.hasNext(), Matchers.equalTo(false));
+        FirstLetterObjectStream cur = new FirstLetterObjectStream(Arrays.asList("foo"));
+        assertThat(cur.readObject(),
+                   equalTo(Arrays.asList("foo")));
+        assertThat(cur.readObject(), nullValue());
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void testSameLetter() {
         List<String> items = Lists.newArrayList("foo", "frob", "fizzle");
-        FirstLetterCursor cur = new FirstLetterCursor(items);
-        Assert.assertThat(cur, Matchers.<List<String>>contains(ImmutableList.copyOf(items)));
+        FirstLetterObjectStream cur = new FirstLetterObjectStream(items);
+        assertThat(cur, Matchers.<List<String>>contains(ImmutableList.copyOf(items)));
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void testSeveralGroups() {
-        FirstLetterCursor cur = new FirstLetterCursor(Arrays.asList("foo", "frob", "bar", "wombat", "woozle"));
-        Assert.assertThat(cur, Matchers.contains(Arrays.asList("foo", "frob"),
-                                                 Arrays.asList("bar"),
-                                                 Arrays.asList("wombat", "woozle")));
+        FirstLetterObjectStream cur = new FirstLetterObjectStream(Arrays.asList("foo", "frob", "bar", "wombat", "woozle"));
+        assertThat(cur, contains(Arrays.asList("foo", "frob"),
+                                 Arrays.asList("bar"),
+                                 Arrays.asList("wombat", "woozle")));
     }
 }

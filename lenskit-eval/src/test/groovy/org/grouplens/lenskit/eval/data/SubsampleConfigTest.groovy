@@ -22,7 +22,7 @@ package org.grouplens.lenskit.eval.data
 
 import com.google.common.io.Files
 import it.unimi.dsi.fastutil.longs.LongSet
-import org.grouplens.lenskit.cursors.Cursors
+import org.lenskit.util.io.ObjectStreams
 import org.grouplens.lenskit.data.dao.*
 import org.lenskit.data.ratings.Rating
 import org.lenskit.data.ratings.Ratings
@@ -79,7 +79,7 @@ class SubsampleConfigTest extends ConfigTestBase {
         }
 
         EventDAO dao = obj.getEventDAO();
-        List<Rating> ratings = Cursors.makeList(dao.streamEvents(Rating.class));
+        List<Rating> ratings = ObjectStreams.makeList(dao.streamEvents(Rating.class));
 
         assertThat(ratings.size(), equalTo(2))
     }

@@ -18,13 +18,43 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.lenskit.util.io;
+
+import javax.annotation.WillCloseWhenClosed;
+
+import com.google.common.base.Predicate;
+
 /**
- * Cursors for iterative data access.
- *
- * <p>
- * Cursors (see {@link org.grouplens.lenskit.cursors.Cursor}) are basically
- * closeable iterators, used for accessing data sources. They also expose the
- * number of rows they will return, although it is not guaranteed that a cursor
- * can compute its length.
+ * A wrapper stream that filters its underlying stream.
+ * @param <T> The stream's element type.
  */
-package org.grouplens.lenskit.cursors;
+class FilteredObjectStream<T> extends AbstractObjectStream<T> {
+    private final ObjectStream<T> delegate;
+    private final Predicate<? super T> filter;
+
+    /**
+     * Construct a new filtered stream.
+     * @param cur The underlying stream.
+     * @param filt The filter.
+     */
+    public FilteredObjectStream(@WillCloseWhenClosed ObjectStream<T> cur, Predicate<? super T> filt) {
+        super();
+        delegate = cur;
+        filter = filt;
+    }
+
+    @Override
+    public void close() {
+        delegate.close();
+    }
+
+    @Override
+    public T readObject() {
+        T obj = delegate.readObject();
+        while (obj != null && !filter.apply(obj)) {
+            obj = delegate.readObject();
+        }
+
+        return obj;
+    }
+}

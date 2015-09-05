@@ -23,7 +23,7 @@ package org.grouplens.lenskit.eval.data.subsample;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongLists;
-import org.grouplens.lenskit.cursors.Cursors;
+import org.lenskit.util.io.ObjectStreams;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.ItemEventDAO;
 import org.grouplens.lenskit.data.dao.UserDAO;
@@ -47,7 +47,7 @@ public enum SubsampleMode {
     RATING {
         @Override
         public void doSample(DataSource source, RatingWriter output, double fraction, Random rng) throws IOException {
-            List<Rating> ratings = Cursors.makeList(source.getEventDAO().streamEvents(Rating.class));
+            List<Rating> ratings = ObjectStreams.makeList(source.getEventDAO().streamEvents(Rating.class));
             final int n = ratings.size();
             final int m = (int)(fraction * n);
             for (int i = 0; i < m; i++) {

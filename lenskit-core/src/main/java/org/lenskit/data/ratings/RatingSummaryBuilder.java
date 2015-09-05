@@ -21,7 +21,7 @@
 package org.lenskit.data.ratings;
 
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.ItemEventDAO;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
@@ -57,7 +57,7 @@ public class RatingSummaryBuilder implements Provider<RatingSummary> {
         int totalCount = 0;
         List<RatingSummary.ItemSummary> summaries = new ArrayList<>();
 
-        try (Cursor<ItemEventCollection<Rating>> ratings = itemEventDAO.streamEventsByItem(Rating.class)) {
+        try (ObjectStream<ItemEventCollection<Rating>> ratings = itemEventDAO.streamEventsByItem(Rating.class)) {
             for (ItemEventCollection<Rating> item: ratings) {
                 MutableSparseVector vec = Ratings.itemRatingVector(item);
                 int n = vec.size();

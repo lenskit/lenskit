@@ -23,7 +23,7 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.SerializationUtils;
-import org.grouplens.lenskit.cursors.Cursors;
+import org.lenskit.util.io.ObjectStreams;
 import org.grouplens.lenskit.data.dao.SortOrder;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.ratings.Rating;
@@ -89,7 +89,7 @@ public class LimitedBinaryRatingDAOTest {
     @Test
     public void testLimitBelowMin() throws IOException {
         BinaryRatingDAO brDao = dao.createWindowedView(500L);
-        assertThat(Cursors.makeList(brDao.streamEvents()),
+        assertThat(ObjectStreams.makeList(brDao.streamEvents()),
                 hasSize(0));
         assertThat(brDao.getUserIds(), hasSize(0));
         assertThat(brDao.getItemIds(), hasSize(0));
@@ -104,9 +104,9 @@ public class LimitedBinaryRatingDAOTest {
     public void testLimitAboveMax() throws IOException {
 
         dao = dao.createWindowedView(2000L);
-        assertThat(Cursors.makeList(dao.streamEvents()),
+        assertThat(ObjectStreams.makeList(dao.streamEvents()),
                 hasSize(12));
-        assertThat(Cursors.makeList(dao.streamEvents(Rating.class)),
+        assertThat(ObjectStreams.makeList(dao.streamEvents(Rating.class)),
                 equalTo(ratings));
     }
 
@@ -119,7 +119,7 @@ public class LimitedBinaryRatingDAOTest {
     @Test
     public void testLimitItems() throws IOException {
         BinaryRatingDAO brDao  = dao.createWindowedView(1650L);
-        assertThat(Cursors.makeList(brDao.streamEvents()),
+        assertThat(ObjectStreams.makeList(brDao.streamEvents()),
                 hasSize(6));
         assertThat(brDao.getItemIds(), containsInAnyOrder(102L, 105L, 111L));
         assertFalse(brDao.getItemIds().contains(120));/*check if it is correct syntax*/
@@ -144,7 +144,7 @@ public class LimitedBinaryRatingDAOTest {
     @Test
     public void testLimitUsers() throws IOException {
         BinaryRatingDAO brDao = dao.createWindowedView(1400L);
-        assertThat(Cursors.makeList(brDao.streamEvents()),
+        assertThat(ObjectStreams.makeList(brDao.streamEvents()),
                 hasSize(5));
         assertThat(brDao.getUserIds(),  containsInAnyOrder(12L, 13L, 39L, 40L));
         assertFalse(brDao.getUserIds().contains(42));/*check if it is correct syntax*/
@@ -164,7 +164,7 @@ public class LimitedBinaryRatingDAOTest {
     public void testDecreasedTimestamp() throws IOException {
         BinaryRatingDAO highLimitDao = dao.createWindowedView(1700L);
         BinaryRatingDAO lowLimitDao = highLimitDao.createWindowedView(1200L);
-        assertThat(Cursors.makeList(lowLimitDao.streamEvents()),
+        assertThat(ObjectStreams.makeList(lowLimitDao.streamEvents()),
                 hasSize(4));
         assertThat(lowLimitDao.getEventsForUser(12), hasSize(1));
         assertThat(lowLimitDao.getUserIds(), containsInAnyOrder(12L,13L,39L,40L));
@@ -183,7 +183,7 @@ public class LimitedBinaryRatingDAOTest {
         BinaryRatingDAO lowLimitDao = dao.createWindowedView(1650L);
         BinaryRatingDAO highLimitDao = lowLimitDao.createWindowedView(1700L);
 
-        assertThat(Cursors.makeList(highLimitDao.streamEvents()),
+        assertThat(ObjectStreams.makeList(highLimitDao.streamEvents()),
                 hasSize(6));
         assertThat(highLimitDao.getEventsForItem(120), nullValue());
         assertThat(highLimitDao.getEventsForUser(42), nullValue());
@@ -211,7 +211,7 @@ public class LimitedBinaryRatingDAOTest {
 
     //verifies Limited BinaryRatingDao with timestamp limit 1650L
     private void verifyDAO(BinaryRatingDAO brDao) {
-        assertThat(Cursors.makeList(brDao.streamEvents()),
+        assertThat(ObjectStreams.makeList(brDao.streamEvents()),
                    hasSize(6));
 
         //test getters for user
@@ -235,7 +235,7 @@ public class LimitedBinaryRatingDAOTest {
         assertThat(brDao.getEventsForItem(120), nullValue());
 
         //test streamEventsByUser
-        List<UserHistory<Event>> histories = Cursors.makeList(brDao.streamEventsByUser());
+        List<UserHistory<Event>> histories = ObjectStreams.makeList(brDao.streamEventsByUser());
         assertThat(histories, hasSize(6));
         assertThat(histories.get(0).getUserId(), equalTo(12L));
         assertThat(histories.get(0),
@@ -245,11 +245,11 @@ public class LimitedBinaryRatingDAOTest {
                    equalTo(brDao.getEventsForUser(13)));
 
         //test streamEvents
-        List<Rating> events = Cursors.makeList(brDao.streamEvents(Rating.class, SortOrder.USER));
+        List<Rating> events = ObjectStreams.makeList(brDao.streamEvents(Rating.class, SortOrder.USER));
         assertThat(events, hasSize(6));
         assertThat(events.get(0).getUserId(), equalTo(12L));
 
-        events = Cursors.makeList(brDao.streamEvents(Rating.class, SortOrder.ITEM));
+        events = ObjectStreams.makeList(brDao.streamEvents(Rating.class, SortOrder.ITEM));
         assertThat(events, hasSize(6));
         assertThat(events.get(0).getUserId(), equalTo(13L));
         assertThat(events.get(0).getItemId(), equalTo(102L));

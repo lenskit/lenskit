@@ -23,7 +23,7 @@ package org.grouplens.lenskit.baseline;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.core.Shareable;
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.lenskit.data.ratings.Rating;
 
@@ -86,7 +86,7 @@ public class GlobalMeanRatingItemScorer extends ConstantItemScorer {
         double total = 0;
         long count = 0;
 
-        Cursor<Rating> ratings = dao.streamEvents(Rating.class);
+        ObjectStream<Rating> ratings = dao.streamEvents(Rating.class);
         try {
             for (Rating r : ratings) {
                 if (r.hasValue()) {

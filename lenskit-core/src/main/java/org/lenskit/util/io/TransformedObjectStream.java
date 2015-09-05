@@ -18,58 +18,52 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cursors;
+package org.lenskit.util.io;
 
-import java.util.Iterator;
+import com.google.common.base.Function;
+
+import javax.annotation.WillCloseWhenClosed;
 
 /**
- * Base class to make {@link Cursor}s easier to implement.
+ * Implementation of transformed streams.
  *
- * @param <T> The type of value returned by this cursor.
+ * @param <S> The element type of the wrapped stream.
+ * @param <T> The element type of the stream.
+ *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @compat Public
+ * @see ObjectStreams#transform(ObjectStream, Function)
  */
-public abstract class AbstractCursor<T> implements Cursor<T> {
-    private final int rowCount;
+class TransformedObjectStream<S, T> extends AbstractObjectStream<T> {
+    private final ObjectStream<S> delegate;
+    private final Function<? super S, ? extends T> function;
 
     /**
-     * Construct a cursor of unknown size.
-     */
-    public AbstractCursor() {
-        this(-1);
-    }
-
-    /**
-     * Construct a cursor.
+     * Construct a transformed stream.
      *
-     * @param nrows The number of rows, or -1 for unknown size.
+     * @param cur The underlying stream.
+     * @param fun The transformation function.
      */
-    public AbstractCursor(int nrows) {
-        rowCount = Math.max(nrows, -1); // Just a convenience to make all neg. #s map to -1
+    public TransformedObjectStream(@WillCloseWhenClosed ObjectStream<S> cur, Function<? super S, ? extends T> fun) {
+        delegate = cur;
+        function = fun;
     }
 
     @Override
-    public int getRowCount() {
-        return rowCount;
+    public T readObject() {
+        S obj = delegate.readObject();
+        if (obj != null) {
+            T res = function.apply(obj);
+            if (res == null) {
+                throw new NullPointerException("stream transformer mapped " + obj + " to null");
+            }
+            return res;
+        } else {
+            return null;
+        }
     }
 
-    /**
-     * No-op implementation of the {@link Cursor#close()} method.
-     */
     @Override
     public void close() {
-        // no-op
-    }
-
-    /**
-     * Get the iterator.  This method just returns {@code this}, so for-each
-     * loops can be used over cursors.
-     *
-     * @return The cursor as an iterator.
-     * @see java.lang.Iterable#iterator()
-     */
-    @Override
-    public Iterator<T> iterator() {
-        return new CursorIterator<T>(this);
+        delegate.close();
     }
 }

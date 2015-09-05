@@ -18,46 +18,35 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cursors;
+package org.lenskit.util.io;
 
-import javax.annotation.WillCloseWhenClosed;
-
-import com.google.common.base.Predicate;
+import javax.annotation.CheckForNull;
+import java.io.Closeable;
 
 /**
- * A wrapper cursor that filters its underlying cursor.
- * @param <T> The cursor's element type.
+ * A stream of objects read from somewhere.
+ *
+ * This interface extends {@link Iterable} for convenience; the {@link #iterator()}
+ * method does <b>not</b> return a fresh iterator but rather a wrapper of this stream.
+ * It is only present to allow for-each loops over streams.  After it is exhausted,
+ * any iterator returned will be null.
+ *
+ * @param <T> The type of data returned by the stream
  */
-class FilteredCursor<T> extends AbstractPollingCursor<T> {
-    private final Cursor<T> cursor;
-    private final Predicate<? super T> filter;
+public interface ObjectStream<T> extends Iterable<T>, Closeable {
+    /**
+     * Read the next object from this stream.
+     * @return The next object, or `null` if at the end of the stream.
+     */
+    @CheckForNull
+    T readObject();
 
     /**
-     * Construct a new filtered cursor.
-     * @param cur The underlying cursor.
-     * @param filt The filter.
+     * Close the stream.  This invalidates the stream; no more elements may be
+     * fetched after a call to {@code close()} (although implementations are
+     * not required to enforce this).  It is not an error to close a stream
+     * multiple times.
      */
-    public FilteredCursor(@WillCloseWhenClosed Cursor<T> cur, Predicate<? super T> filt) {
-        super();
-        cursor = cur;
-        filter = filt;
-    }
-
     @Override
-    public void close() {
-        cursor.close();
-    }
-
-    @Override
-    protected T poll() {
-        while (cursor.hasNext()) {
-            final T next = cursor.next();
-            if (filter.apply(next)) {
-                return next;
-            }
-        }
-
-        // Reached the end of the base cursor, so return null
-        return null;
-    }
+    void close();
 }

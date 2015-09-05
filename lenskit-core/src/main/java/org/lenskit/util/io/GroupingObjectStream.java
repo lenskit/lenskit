@@ -18,46 +18,39 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.cursors;
+package org.lenskit.util.io;
 
 import javax.annotation.Nonnull;
-import java.util.NoSuchElementException;
+import javax.annotation.Nullable;
 
 /**
- * Base class for cursors that group the output of another cursor.
+ * Base class for streams that group the output of another stream.
  *
  * @since 2.1
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @param <E> The type of item in the wrapped cursor.
- * @param <C> The type of aggregate to be returned by this cursor.
+ * @param <E> The type of item in the wrapped stream.
+ * @param <C> The type of aggregate to be returned by this stream.
  */
-public abstract class GroupingCursor<C, E> extends AbstractCursor<C> {
-    private final Cursor<? extends E> baseCursor;
+public abstract class GroupingObjectStream<C, E> extends AbstractObjectStream<C> {
+    private final ObjectStream<? extends E> baseStream;
     private E nextItem;
 
-    protected GroupingCursor(Cursor<? extends E> base) {
-        baseCursor = base;
-        if (base.hasNext()) {
-            nextItem = base.next();
-        }
+    protected GroupingObjectStream(ObjectStream<? extends E> base) {
+        baseStream = base;
+        // prime the stream;
+        nextItem = baseStream.readObject();
     }
 
+    @Nullable
     @Override
-    public boolean hasNext() {
-        return nextItem != null;
-    }
-
-    @Nonnull
-    @Override
-    public C next() {
+    public C readObject() {
         if (nextItem == null) {
-            throw new NoSuchElementException("cursor exhausted");
+            return null;
         }
         C group = null;
         while (group == null && nextItem != null) {
             if (handleItem(nextItem)) {
                 // item accepted, advance
-                nextItem = baseCursor.hasNext() ? baseCursor.next() : null;
+                nextItem = baseStream.readObject();
             } else {
                 group = finishGroup();
             }
@@ -74,7 +67,7 @@ public abstract class GroupingCursor<C, E> extends AbstractCursor<C> {
         try {
             clearGroup();
         } finally {
-            baseCursor.close();
+            baseStream.close();
         }
     }
 
@@ -84,17 +77,17 @@ public abstract class GroupingCursor<C, E> extends AbstractCursor<C> {
     protected abstract void clearGroup();
 
     /**
-     * Handle an item from the base cursor.  Each item of the base cursor is passed to this method.
+     * Handle an item from the base stream.  Each item of the base stream is passed to this method.
      * The method builds up the underlying aggregate.
      *
      * @param item The item to handle.
      * @return {@code true} if the item has been accepted and added to the group; {@code false} if
      *         it cannot be added to the current group.  If it cannot be added to the current group,
-     *         the cursor will call {@link #finishGroup()} to finish the group, and then call this
+     *         the stream will call {@link #finishGroup()} to finish the group, and then call this
      *         method again with {@code item} (at which point it is required to return {@code
      *         true}).
      */
-    protected abstract boolean handleItem(E item);
+    protected abstract boolean handleItem(@Nonnull E item);
 
     /**
      * Finish the current group and return it.  After this method has been called, {@code #handleItem(E)}

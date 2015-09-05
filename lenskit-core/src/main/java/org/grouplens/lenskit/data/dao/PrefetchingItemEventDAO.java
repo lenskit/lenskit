@@ -30,8 +30,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.cursors.Cursors;
+import org.lenskit.util.io.ObjectStream;
+import org.lenskit.util.io.ObjectStreams;
 import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
@@ -83,15 +83,15 @@ public final class PrefetchingItemEventDAO implements ItemEventDAO, Describable 
     }
 
     @Override
-    public Cursor<ItemEventCollection<Event>> streamEventsByItem() {
+    public ObjectStream<ItemEventCollection<Event>> streamEventsByItem() {
         Long2ObjectMap<List<Event>> map = cache.get();
-        return Cursors.wrap(Iterators.transform(map.entrySet().iterator(),
-                                                ItemEventTransform.INSTANCE));
+        return ObjectStreams.wrap(Iterators.transform(map.entrySet().iterator(),
+                                                      ItemEventTransform.INSTANCE));
     }
 
     @Override
-    public <E extends Event> Cursor<ItemEventCollection<E>> streamEventsByItem(final Class<E> type) {
-        return Cursors.transform(streamEventsByItem(), new Function<ItemEventCollection<Event>, ItemEventCollection<E>>() {
+    public <E extends Event> ObjectStream<ItemEventCollection<E>> streamEventsByItem(final Class<E> type) {
+        return ObjectStreams.transform(streamEventsByItem(), new Function<ItemEventCollection<Event>, ItemEventCollection<E>>() {
             @Nullable
             @Override
             public ItemEventCollection<E> apply(@Nullable ItemEventCollection<Event> input) {
@@ -144,7 +144,7 @@ public final class PrefetchingItemEventDAO implements ItemEventDAO, Describable 
         public Long2ObjectMap<List<Event>> get() {
             Long2ObjectMap<ImmutableList.Builder<Event>> table =
                     new Long2ObjectOpenHashMap<ImmutableList.Builder<Event>>();
-            Cursor<Event> events = eventDAO.streamEvents();
+            ObjectStream<Event> events = eventDAO.streamEvents();
             try {
                 for (Event evt: events) {
                     final long iid = evt.getItemId();

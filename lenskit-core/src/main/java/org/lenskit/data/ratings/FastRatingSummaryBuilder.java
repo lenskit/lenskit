@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.lenskit.util.keys.KeyedObjectMap;
 
@@ -54,7 +54,7 @@ public class FastRatingSummaryBuilder implements Provider<RatingSummary> {
         double totalSum = 0;
         int totalCount = 0;
 
-        try (Cursor<Rating> ratings = eventDAO.streamEvents(Rating.class)) {
+        try (ObjectStream<Rating> ratings = eventDAO.streamEvents(Rating.class)) {
             for (Rating r: ratings) {
                 if (r.hasValue()) {
                     long item = r.getItemId();

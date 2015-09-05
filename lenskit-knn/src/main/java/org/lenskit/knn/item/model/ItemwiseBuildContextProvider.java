@@ -24,7 +24,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.lenskit.core.Transient;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.ItemEventDAO;
 import org.lenskit.data.events.Event;
@@ -89,9 +89,9 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
         logger.debug("Building item data");
         Long2ObjectMap<LongList> userItems = new Long2ObjectOpenHashMap<LongList>(1000);
         Long2ObjectMap<SparseVector> itemVectors = new Long2ObjectOpenHashMap<SparseVector>(1000);
-        Cursor<ItemEventCollection<Event>> itemCursor = itemEventDAO.streamEventsByItem();
+        ObjectStream<ItemEventCollection<Event>> itemObjectStream = itemEventDAO.streamEventsByItem();
         try {
-            for (ItemEventCollection<Event> item: itemCursor) {
+            for (ItemEventCollection<Event> item: itemObjectStream) {
                 if (logger.isTraceEnabled()) {
                     logger.trace("processing {} ratings for item {}", item.size(), item);
                 }
@@ -113,7 +113,7 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
                 itemVectors.put(item.getItemId(), vector.freeze());
             }
         } finally {
-            itemCursor.close();
+            itemObjectStream.close();
         }
 
         Long2ObjectMap<LongSortedSet> userItemSets = new Long2ObjectOpenHashMap<LongSortedSet>();
