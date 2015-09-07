@@ -24,9 +24,24 @@ public interface EvalTask {
     Set<String> getUserColumns();
 
     /**
-     * Set up a measurement of a single recommender.
-     * @param rec The recommender to measure.
-     * @return The measurement that will measure it.
+     * Do initial setup for this eval task.  This should create any per-task output files, etc.
+     *
+     * @param outputLayout The output layout for experiment results.
      */
-    Measurement startMeasurement(Recommender rec);
+    void start(ExperimentOutputLayout outputLayout);
+
+    /**
+     * Finalize this eval task.  This should finish writing and close any per-task output files, etc.
+     */
+    void finish();
+
+    /**
+     * Set up a measurement of a single recommender.
+     *
+     * @param algorithm The algorithm being evaluated.
+     * @param dataSet The data set being evaluated.
+     * @param rec The recommender to measure.
+     * @return A condition evaluator that will measure the recommender's performance on the algorithm and data set.
+     */
+    ConditionEvaluator createConditionEvaluator(AlgorithmInstance algorithm, DataSet dataSet, Recommender rec);
 }

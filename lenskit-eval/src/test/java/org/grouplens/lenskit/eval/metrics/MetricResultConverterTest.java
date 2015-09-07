@@ -29,7 +29,7 @@ import static org.junit.Assert.assertThat;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class ResultConverterTest {
+public class MetricResultConverterTest {
     @Test
     public void testEmptyType() {
         ResultConverter<String> foo = ResultConverter.create(String.class);

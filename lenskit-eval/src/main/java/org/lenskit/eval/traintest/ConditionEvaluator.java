@@ -8,9 +8,9 @@ import javax.annotation.Nonnull;
 import java.util.Map;
 
 /**
- * Measures the performance of a single algorithm over a single data set on a particular eval task.
+ * Measures the performance of a single experimental condition.
  */
-public interface Measurement {
+public interface ConditionEvaluator {
     /**
      * Measure the performance for a single user.
      * @param testUser The user to test.

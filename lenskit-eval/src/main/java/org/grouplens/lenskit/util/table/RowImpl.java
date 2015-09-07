@@ -27,10 +27,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Implementation of a single table row.
@@ -85,6 +82,21 @@ class RowImpl implements Row {
         // FIXME Don't create a new set every time this is done.
         return Maps.asMap(Sets.newHashSet(layout.getColumns()),
                           VALUE_FUNCTION);
+    }
+
+    @Override
+    public List<Object> asRow() {
+        return new AbstractList<Object>() {
+            @Override
+            public Object get(int index) {
+                return value(index);
+            }
+
+            @Override
+            public int size() {
+                return length();
+            }
+        };
     }
 
     private final Function<String,Object> VALUE_FUNCTION = new Function<String,Object>() {

@@ -18,54 +18,30 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.table;
+package org.lenskit.eval.traintest.metrics;
 
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
+import java.lang.annotation.*;
 
 /**
- * One row of a data table.
+ * Specify the information for a column method in a metric response type.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 2.1
  */
-public interface Row extends Iterable<Object> {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.FIELD})
+public @interface MetricColumn {
     /**
-     * Get the value at a particular column.
-     *
-     * @param key The column name.
-     * @return The value at that column.
-     * @throws IllegalArgumentException if <var>key</var> does not define a column.
+     * The name of this column.
+     * @return The column name to use.
      */
-    @Nullable
-    Object value(String key);
+    String value();
 
     /**
-     * Get the value at a particular column.
-     *
-     * @param idx The column index.
-     * @return The value at that column.
-     * @throws IndexOutOfBoundsException if <var>idx</var> is not a valid column index.
+     * The order of this column.  A negative order indicates no preference.  All unordered columns
+     * come after all ordered columns.
+     * @return The column order.
      */
-    @Nullable
-    Object value(int idx);
-
-    /**
-     * Get the length of this row.
-     *
-     * @return The length of the row.
-     */
-    int length();
-
-    /**
-     * Get a view of this row as a map.
-     *
-     * @return A map representing this row.
-     */
-    Map<String,Object> asMap();
-
-    /**
-     * Get a view of this row as a list.
-     */
-    List<Object> asRow();
+    int order() default -1;
 }

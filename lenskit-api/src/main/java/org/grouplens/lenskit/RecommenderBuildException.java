@@ -25,7 +25,7 @@ package org.grouplens.lenskit;
  *
  * @since 1.0
  */
-public class RecommenderBuildException extends Exception {
+public class RecommenderBuildException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
     /**

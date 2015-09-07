@@ -27,11 +27,7 @@ import org.grouplens.lenskit.data.source.GenericDataSource;
 import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.util.table.Table;
 import org.lenskit.data.ratings.PreferenceDomain;
-import org.lenskit.data.ratings.Rating;
-import org.lenskit.eval.crossfold.Crossfolder;
-import org.lenskit.eval.crossfold.FractionPartition;
-import org.lenskit.eval.crossfold.RandomOrder;
-import org.lenskit.eval.crossfold.SplitMethods;
+import org.lenskit.eval.crossfold.*;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -123,8 +119,8 @@ public class SimpleEvaluator {
         Crossfolder cross = new Crossfolder(name)
                 .setSource(source)
                 .setPartitionCount(partitions)
-                .setMethod(SplitMethods.partitionUsers(new RandomOrder<Rating>(),
-                                                       new FractionPartition<Rating>(holdout)))
+                .setMethod(CrossfoldMethods.partitionUsers(SortOrder.RANDOM,
+                                                           HistoryPartitions.holdoutFraction(holdout)))
                 .setOutputDir(workDir.resolve(name + ".split"));
         addDataSet(cross);
         return this;

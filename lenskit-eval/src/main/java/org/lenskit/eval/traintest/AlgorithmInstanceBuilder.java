@@ -57,6 +57,7 @@ public class AlgorithmInstanceBuilder implements Builder<AlgorithmInstance> {
      */
     public AlgorithmInstanceBuilder(String name) {
         this.name = name;
+        attributes.put("Algorithm", name);
         config = new LenskitConfiguration();
     }
 
@@ -74,6 +75,7 @@ public class AlgorithmInstanceBuilder implements Builder<AlgorithmInstance> {
      */
     public AlgorithmInstanceBuilder setName(String n) {
         name = n;
+        attributes.put("Algorithm", name);
         return this;
     }
 

@@ -153,6 +153,7 @@ public class DataSet {
      *
      * @return A data source containing the query data.
      */
+    @Nullable
     public DataSource getQueryData() {
         return queryData;
     }

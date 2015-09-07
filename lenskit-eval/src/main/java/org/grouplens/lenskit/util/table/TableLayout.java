@@ -81,4 +81,12 @@ public class TableLayout {
     public int getColumnCount() {
         return names.size();
     }
+
+    /**
+     * Create a new row builder for this layout.
+     * @return A new builder for rows using this layout.
+     */
+    public RowBuilder newRowBuilder() {
+        return new RowBuilder(this);
+    }
 }

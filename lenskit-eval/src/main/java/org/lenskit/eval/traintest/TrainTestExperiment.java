@@ -1,7 +1,13 @@
 package org.lenskit.eval.traintest;
 
+import groovy.lang.Closure;
+import org.grouplens.lenskit.config.ConfigHelpers;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.util.table.Table;
+import org.grouplens.lenskit.util.table.writer.TableWriter;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +31,7 @@ import java.util.List;
 public class TrainTestExperiment {
     private Path outputFile;
     private Path userOutputFile;
+    private Path cacheDir;
 
     private List<AlgorithmInstance> algorithms = new ArrayList<>();
     private List<DataSet> dataSets = new ArrayList<>();
@@ -87,6 +94,18 @@ public class TrainTestExperiment {
     }
 
     /**
+     * Add an algorithm configured by a Groovy closure.  Mostly useful for testing.
+     * @param name The algorithm name.
+     * @param block The algorithm configuration block.
+     */
+    public void addAlgorithm(String name, Closure block) {
+        AlgorithmInstanceBuilder aib = new AlgorithmInstanceBuilder(name);
+        LenskitConfiguration config = aib.getConfig();
+        ConfigHelpers.configure(config, block);
+        addAlgorithm(aib.build());
+    }
+
+    /**
      * Get the list of data sets to use.
      * @return The list of data sets to use.
      */
@@ -111,6 +130,22 @@ public class TrainTestExperiment {
     }
 
     /**
+     * Get the cache directory for model components.
+     * @return The directory where model components will be cached.
+     */
+    public Path getCacheDirectory() {
+        return cacheDir;
+    }
+
+    /**
+     * Set the cache directory for model components.
+     * @param dir The directory where model components will be cached.
+     */
+    public void setCacheDirectory(Path dir) {
+        cacheDir = dir;
+    }
+
+    /**
      * Get the eval tasks to be used in this experiment.
      * @return The evaluation tasks to run.
      */
@@ -132,5 +167,23 @@ public class TrainTestExperiment {
      */
     public Table run() {
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Get the global output table.
+     * @return The global output table.
+     */
+    @Nonnull
+    TableWriter getGlobalOutput() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Get the per-user output table.
+     * @return The per-user output table.
+     */
+    @Nullable
+    TableWriter getUserOutput() {
+        return null;
     }
 }
