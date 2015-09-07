@@ -20,9 +20,14 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
+import org.lenskit.eval.crossfold.SortOrder;
+
 /**
- * @deprecated Use {@link org.lenskit.eval.crossfold.TimestampOrder}.
  */
 @Deprecated
-public class TimestampOrder extends org.lenskit.eval.crossfold.TimestampOrder {
+public class TimestampOrder implements OldOrder {
+    @Override
+    public SortOrder getOrder() {
+        return SortOrder.TIMESTAMP;
+    }
 }

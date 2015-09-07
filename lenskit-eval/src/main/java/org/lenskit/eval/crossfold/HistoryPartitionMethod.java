@@ -20,33 +20,19 @@
  */
 package org.lenskit.eval.crossfold;
 
+import org.lenskit.data.events.Event;
+
 import java.util.List;
 
-import static java.lang.Math.max;
-import static java.lang.Math.round;
-
 /**
- * Partition a list by fraction.
- *
- * @param <E>
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Partitioning algorithm for an ordered sequence of events into train and test events.
  */
-public class FractionPartition<E> implements PartitionAlgorithm<E> {
-
-    private double fraction;
-
+public interface HistoryPartitionMethod {
     /**
-     * The fraction to hold out (put in the second partition).
+     * Compute a partition of of the data.
      *
-     * @param f The fraction of users to hold out.
+     * @param data The data to partition.
+     * @return The index of the start of the second partition, containing the test data.
      */
-    public FractionPartition(double f) {
-        fraction = f;
-    }
-
-    @Override
-    public int partition(List<E> data) {
-        int n = (int) round(data.size() * fraction);
-        return max(0, data.size() - n);
-    }
+    int partition(List<? extends Event> data);
 }

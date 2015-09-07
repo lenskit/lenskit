@@ -26,9 +26,8 @@ import java.io.IOException;
 
 /**
  * The method to be used for crossfolding.
- *
  */
-public interface SplitMethod {
+public interface CrossfoldMethod {
     /**
      * Crossfold an input into some outputs.
      *

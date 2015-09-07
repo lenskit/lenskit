@@ -21,23 +21,30 @@
 package org.lenskit.eval.crossfold;
 
 import org.lenskit.data.events.Event;
-import org.lenskit.data.events.Events;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
+
+import static java.lang.Math.min;
 
 /**
- * Order an event sequence by timestamp.
- *
- * @param <E>
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Partition the event list by retaining a fixed number of elements.
  */
-public class TimestampOrder<E extends Event> implements Order<E> {
+public class RetainNHistoryPartitionMethod implements HistoryPartitionMethod {
+
+    final private int count;
+
+    /**
+     * Create a count partitioner.
+     *
+     * @param n The number of items to put in the train partition.
+     */
+    public RetainNHistoryPartitionMethod(int n) {
+        count = n;
+    }
 
     @Override
-    public void apply(List<E> list, Random rng) {
-        Collections.sort(list, Events.TIMESTAMP_COMPARATOR);
+    public int partition(List<? extends Event> data) {
+        return min(count, data.size());
     }
 
 }

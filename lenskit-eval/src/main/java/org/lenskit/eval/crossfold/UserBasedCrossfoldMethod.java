@@ -22,6 +22,7 @@ package org.lenskit.eval.crossfold;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.lenskit.data.events.Event;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.history.UserHistory;
@@ -34,12 +35,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-abstract class UserBasedSplitMethod implements SplitMethod {
+abstract class UserBasedCrossfoldMethod implements CrossfoldMethod {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    protected final Order<Rating> order;
-    protected final PartitionAlgorithm<Rating> partition;
+    protected final SortOrder order;
+    protected final HistoryPartitionMethod partition;
 
-    UserBasedSplitMethod(Order<Rating> ord, PartitionAlgorithm<Rating> pa) {
+    UserBasedCrossfoldMethod(SortOrder ord, HistoryPartitionMethod pa) {
         order = ord;
         partition = pa;
     }
@@ -55,7 +56,7 @@ abstract class UserBasedSplitMethod implements SplitMethod {
         try {
             for (UserHistory<Rating> history : historyObjectStream) {
                 int foldNum = splits.get(history.getUserId());
-                List<Rating> ratings = new ArrayList<Rating>(history);
+                List<Rating> ratings = new ArrayList<>(history);
                 final int n = ratings.size();
 
                 for (int f = 0; f < count; f++) {

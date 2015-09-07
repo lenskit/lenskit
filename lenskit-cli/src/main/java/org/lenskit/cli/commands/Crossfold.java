@@ -25,7 +25,6 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.lenskit.cli.Command;
@@ -109,33 +108,30 @@ public class Crossfold implements Command {
         }
 
         if (method.equals("partition-ratings")) {
-            cf.setMethod(SplitMethods.partitionRatings());
+            cf.setMethod(CrossfoldMethods.partitionRatings());
         } else {
             String order = options.get("order");
-            Order<Rating> ord = new RandomOrder<>();
-            if (order != null && order.equals("timestamp")) {
-                ord = new TimestampOrder<>();
-            }
+            SortOrder ord = order != null ? SortOrder.fromString(order) : SortOrder.TIMESTAMP;
 
-            PartitionAlgorithm<Rating> part = new HoldoutNPartition<>(10);
+            HistoryPartitionMethod part = HistoryPartitions.holdout(10);
             Integer n;
             Double v;
             if ((n = options.get("holdout_count")) != null) {
-                part = new HoldoutNPartition<>(n);
+                part = HistoryPartitions.holdout(n);
             }
             if ((n = options.get("retain_count")) != null) {
-                part = new RetainNPartition<>(n);
+                part = HistoryPartitions.retain(n);
             }
             if ((v = options.get("holdout_fraction")) != null) {
-                part = new FractionPartition<>(v);
+                part = HistoryPartitions.holdoutFraction(v);
             }
 
             n = options.get("sample_size");
 
             if (method.equals("partition-users")) {
-                cf.setMethod(SplitMethods.partitionUsers(ord, part));
+                cf.setMethod(CrossfoldMethods.partitionUsers(ord, part));
             } else if (method.equals("sample-users")) {
-                cf.setMethod(SplitMethods.sampleUsers(ord, part, n));
+                cf.setMethod(CrossfoldMethods.sampleUsers(ord, part, n));
             }
         }
 

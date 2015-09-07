@@ -21,8 +21,8 @@
 package org.grouplens.lenskit.eval.data.crossfold;
 
 import org.lenskit.data.ratings.Rating;
-import org.lenskit.eval.crossfold.Order;
-import org.lenskit.eval.crossfold.PartitionAlgorithm;
+import org.lenskit.eval.crossfold.SortOrder;
+import org.lenskit.eval.crossfold.HistoryPartitionMethod;
 
 import java.util.List;
 import java.util.Random;
@@ -31,19 +31,19 @@ import java.util.Random;
  * A train-test holdout method.
  */
 public class Holdout {
-    private final Order<Rating> order;
-    private final PartitionAlgorithm<Rating> partitionMethod;
+    private final SortOrder order;
+    private final HistoryPartitionMethod partitionMethod;
 
-    public Holdout(Order<Rating> ord, PartitionAlgorithm<Rating> part) {
+    public Holdout(SortOrder ord, HistoryPartitionMethod part) {
         order = ord;
         partitionMethod = part;
     }
 
-    public Order<Rating> getOrder() {
+    public SortOrder getOrder() {
         return order;
     }
 
-    public PartitionAlgorithm<Rating> getPartitionMethod() {
+    public HistoryPartitionMethod getPartitionMethod() {
         return partitionMethod;
     }
 

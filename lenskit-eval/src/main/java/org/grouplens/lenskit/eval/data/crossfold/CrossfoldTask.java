@@ -20,7 +20,6 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
-import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.AbstractTask;
 import org.grouplens.lenskit.eval.TaskExecutionException;
@@ -46,8 +45,8 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
 
     private Crossfolder crossfolder;
 
-    private Order<Rating> order = new RandomOrder();
-    private PartitionAlgorithm<Rating> partition = new HoldoutNPartition<Rating>(10);
+    private SortOrder order = SortOrder.RANDOM;
+    private HistoryPartitionMethod partition = new HoldoutNHistoryPartitionMethod(10);
     private CrossfoldMethod method = CrossfoldMethod.PARTITION_USERS;
     private int sampleSize = 1000;
 
@@ -144,8 +143,8 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      * @see #setHoldoutFraction(double)
      * @see #setHoldout(int)
      */
-    public CrossfoldTask setOrder(Order<Rating> o) {
-        order = o;
+    public CrossfoldTask setOrder(OldOrder o) {
+        order = o.getOrder();
         return this;
     }
 
@@ -157,7 +156,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      * @return The CrossfoldCommand object  (for chaining)
      */
     public CrossfoldTask setHoldout(int n) {
-        partition = new HoldoutNPartition<Rating>(n);
+        partition = new HoldoutNHistoryPartitionMethod(n);
         return this;
     }
 
@@ -170,7 +169,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      * @return The CrossfoldCommand object  (for chaining)
      */
     public CrossfoldTask setRetain(int n) {
-        partition = new RetainNPartition<Rating>(n);
+        partition = new RetainNHistoryPartitionMethod(n);
         return this;
     }
 
@@ -183,7 +182,7 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
      * @return The CrossfoldCommand object  (for chaining)
      */
     public CrossfoldTask setHoldoutFraction(double f){
-        partition = new FractionPartition<Rating>(f);
+        partition = new FractionHistoryPartitionMethod(f);
         return this;
     }
     
@@ -351,13 +350,13 @@ public class CrossfoldTask extends AbstractTask<List<TTDataSet>> {
         }
         switch (method) {
         case PARTITION_RATINGS:
-            crossfolder.setMethod(SplitMethods.partitionRatings());
+            crossfolder.setMethod(CrossfoldMethods.partitionRatings());
             break;
         case PARTITION_USERS:
-            crossfolder.setMethod(SplitMethods.partitionUsers(order, partition));
+            crossfolder.setMethod(CrossfoldMethods.partitionUsers(order, partition));
             break;
         case SAMPLE_USERS:
-            crossfolder.setMethod(SplitMethods.sampleUsers(order, partition, sampleSize));
+            crossfolder.setMethod(CrossfoldMethods.sampleUsers(order, partition, sampleSize));
         }
         crossfolder.execute();
         List<TTDataSet> results = new ArrayList<>();

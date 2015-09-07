@@ -77,7 +77,7 @@ class CrossfolderTest {
     public void testFreshCFState() {
         assertThat(cf.name, equalTo("test"))
         assertThat(cf.partitionCount, equalTo(5))
-        assertThat(cf.method, instanceOf(UserPartitionSplitMethod))
+        assertThat(cf.method, instanceOf(UserPartitionCrossfoldMethod))
         assertThat(cf.skipIfUpToDate, equalTo(false))
         assertThat(cf.writeTimestamps, equalTo(true))
         assertThat(cf.outputFormat, equalTo(OutputFormat.CSV))
@@ -180,9 +180,7 @@ class CrossfolderTest {
 
     @Test
     public void testUserSample() {
-        cf.method = SplitMethods.sampleUsers(new RandomOrder<Rating>(),
-                                                 new HoldoutNPartition<Rating>(5),
-                                                 5);
+        cf.method = CrossfoldMethods.sampleUsers(SortOrder.RANDOM, HistoryPartitions.holdout(5), 5);
         cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))
@@ -226,7 +224,7 @@ class CrossfolderTest {
 
     @Test
     public void testPartitionRatings() {
-        cf.method = SplitMethods.partitionRatings()
+        cf.method = CrossfoldMethods.partitionRatings()
         cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))
@@ -272,7 +270,7 @@ class CrossfolderTest {
 
     @Test
     public void testUserTimestampOrder() {
-        cf.method = SplitMethods.partitionUsers(new TimestampOrder<Rating>(), new HoldoutNPartition<Rating>(5))
+        cf.method = CrossfoldMethods.partitionUsers(SortOrder.TIMESTAMP, HistoryPartitions.holdout(5));
         cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))
@@ -305,7 +303,7 @@ class CrossfolderTest {
 
     @Test
     public void testRetainNPartition() {
-        cf.method = SplitMethods.partitionUsers(new TimestampOrder<Rating>(), new RetainNPartition<Rating>(5));
+        cf.method = CrossfoldMethods.partitionUsers(SortOrder.TIMESTAMP, HistoryPartitions.retain(5));
         cf.execute()
         def dss = cf.dataSets
         assertThat(dss, hasSize(5))

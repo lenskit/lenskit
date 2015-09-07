@@ -20,32 +20,30 @@
  */
 package org.lenskit.eval.crossfold;
 
+import org.lenskit.data.events.Event;
+
 import java.util.List;
 
-import static java.lang.Math.min;
+import static java.lang.Math.max;
 
 /**
- * Partition the event list by retaining a fixed number of elements.
- *
- * @param <E>
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Partition the last part of list by holding out a fixed number of elements.
  */
-public class RetainNPartition<E> implements PartitionAlgorithm<E> {
-
-    final private int count;
+public class HoldoutNHistoryPartitionMethod implements HistoryPartitionMethod {
+    private final int count;
 
     /**
      * Create a count partitioner.
      *
-     * @param n The number of items to put in the train partition.
+     * @param n The number of items to put in the second partition.
      */
-    public RetainNPartition(int n) {
+    public HoldoutNHistoryPartitionMethod(int n) {
         count = n;
     }
 
     @Override
-    public int partition(List<E> data) {
-        return min(count, data.size());
+    public int partition(List<? extends Event> data) {
+        return max(0, data.size() - count);
     }
 
 }

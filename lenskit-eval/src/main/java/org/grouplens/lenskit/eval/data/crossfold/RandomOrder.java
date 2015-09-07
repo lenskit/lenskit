@@ -20,9 +20,14 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold;
 
+import org.lenskit.eval.crossfold.SortOrder;
+
 /**
- * @deprecated Use {@link org.lenskit.eval.crossfold.RandomOrder}.
  */
 @Deprecated
-public class RandomOrder extends org.lenskit.eval.crossfold.RandomOrder {
+public class RandomOrder implements OldOrder {
+    @Override
+    public SortOrder getOrder() {
+        return SortOrder.RANDOM;
+    }
 }

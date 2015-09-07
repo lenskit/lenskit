@@ -20,20 +20,46 @@
  */
 package org.lenskit.eval.crossfold;
 
+import org.lenskit.data.events.Event;
+import org.lenskit.data.events.Events;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
 /**
- * Ordering that randomizes the list.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Sort order for partitioning events per user or item.
  */
-public class RandomOrder<E> implements Order<E> {
+public enum SortOrder {
+    RANDOM {
+        @Override
+        public void apply(List<? extends Event> list, Random rng) {
+            Collections.shuffle(list, rng);
+        }
+    },
+    TIMESTAMP {
+        @Override
+        public void apply(List<? extends Event> list, Random rng) {
+            Collections.sort(list, Events.TIMESTAMP_COMPARATOR);
+        }
+    };
 
-    @Override
-    public void apply(List<E> list, Random rng) {
-        Collections.shuffle(list, rng);
+    /**
+     * Apply the ordering.
+     *
+     * @param list The list to order.
+     * @param rng  The random number generator to use, if necessary.
+     */
+    public abstract void apply(List<? extends Event> list, Random rng);
+
+    public static SortOrder fromString(String str) {
+        switch (str.toLowerCase()) {
+        case "random":
+            return RANDOM;
+        case "timestamp":
+            return TIMESTAMP;
+        default:
+            throw new IllegalArgumentException("invalid sort order " + str);
+        }
     }
-
 }

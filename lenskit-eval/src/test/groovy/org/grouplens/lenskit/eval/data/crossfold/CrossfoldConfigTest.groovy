@@ -66,7 +66,7 @@ class CrossfoldConfigTest extends ConfigTestBase {
                 source file
                 partitions 10
                 holdoutFraction 0.5
-                order org.lenskit.eval.crossfold.RandomOrder
+                order RandomOrder
                 train "$folder.root.absolutePath/ratings.train/%d.csv"
                 test "$folder.root.absolutePath/ratings.test/%d.csv"
             }

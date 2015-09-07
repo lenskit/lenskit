@@ -20,21 +20,32 @@
  */
 package org.lenskit.eval.crossfold;
 
+import org.lenskit.data.events.Event;
+
 import java.util.List;
 
+import static java.lang.Math.max;
+import static java.lang.Math.round;
+
 /**
- * Partitioning algorithmInfo for an ordered sequence of stuff. Partition
- * algorithms are typically used to hold out some items by putting
- * them into the second partition.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Partition a list by fraction.
  */
-public interface PartitionAlgorithm<E> {
+public class FractionHistoryPartitionMethod implements HistoryPartitionMethod {
+
+    private double fraction;
+
     /**
-     * Compute a partition of some data.
+     * The fraction to hold out (put in the second partition).
      *
-     * @param data The data to partition.
-     * @return The index of the start of the second partition.
+     * @param f The fraction of users to hold out.
      */
-    int partition(List<E> data);
+    public FractionHistoryPartitionMethod(double f) {
+        fraction = f;
+    }
+
+    @Override
+    public int partition(List<? extends Event> data) {
+        int n = (int) round(data.size() * fraction);
+        return max(0, data.size() - n);
+    }
 }

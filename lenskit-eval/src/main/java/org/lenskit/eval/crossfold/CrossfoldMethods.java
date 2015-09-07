@@ -20,10 +20,8 @@
  */
 package org.lenskit.eval.crossfold;
 
-import org.lenskit.data.ratings.Rating;
-
-public final class SplitMethods {
-    private SplitMethods() {}
+public final class CrossfoldMethods {
+    private CrossfoldMethods() {}
 
     /**
      * Create a crossfold method that splits users into disjoint partitions.
@@ -31,8 +29,8 @@ public final class SplitMethods {
      * @param part the partition algorithm for user ratings.
      * @return The crossfold method.
      */
-    public static SplitMethod partitionUsers(Order<Rating> order, PartitionAlgorithm<Rating> part) {
-        return new UserPartitionSplitMethod(order, part);
+    public static CrossfoldMethod partitionUsers(SortOrder order, HistoryPartitionMethod part) {
+        return new UserPartitionCrossfoldMethod(order, part);
     }
 
     /**
@@ -42,15 +40,15 @@ public final class SplitMethods {
      * @param size The number of users per sample.
      * @return The crossfold method.
      */
-    public static SplitMethod sampleUsers(Order<Rating> order, PartitionAlgorithm<Rating> part, int size) {
-        return new UserSampleSplitMethod(order, part, size);
+    public static CrossfoldMethod sampleUsers(SortOrder order, HistoryPartitionMethod part, int size) {
+        return new UserSampleCrossfoldMethod(order, part, size);
     }
 
     /**
      * Create a crossfold method that partitions ratings into disjoint partitions.
      * @return The crossfold method.
      */
-    public static SplitMethod partitionRatings() {
-        return new RatingPartitionSplitMethod();
+    public static CrossfoldMethod partitionRatings() {
+        return new RatingPartitionCrossfoldMethod();
     }
 }

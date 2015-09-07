@@ -28,10 +28,10 @@ import org.lenskit.data.ratings.Rating;
 
 import java.util.Random;
 
-class UserSampleSplitMethod extends UserBasedSplitMethod {
+class UserSampleCrossfoldMethod extends UserBasedCrossfoldMethod {
     final int sampleSize;
 
-    UserSampleSplitMethod(Order<Rating> ord, PartitionAlgorithm<Rating> part, int size) {
+    UserSampleCrossfoldMethod(SortOrder ord, HistoryPartitionMethod part, int size) {
         super(ord, part);
         sampleSize = size;
     }
@@ -41,7 +41,7 @@ class UserSampleSplitMethod extends UserBasedSplitMethod {
         if (np * sampleSize > users.size()) {
             logger.warn("cannot make {} disjoint samples of {} from {} users, partitioning",
                         np, sampleSize, users.size());
-            UserPartitionSplitMethod upcm = new UserPartitionSplitMethod(order, partition);
+            UserPartitionCrossfoldMethod upcm = new UserPartitionCrossfoldMethod(order, partition);
             return upcm.splitUsers(users, np, rng);
         } else {
             Long2IntMap userMap = new Long2IntOpenHashMap(users.size());

@@ -20,32 +20,29 @@
  */
 package org.lenskit.eval.crossfold;
 
-import java.util.List;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrays;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import org.lenskit.data.ratings.Rating;
 
-import static java.lang.Math.max;
+import java.util.Random;
 
-/**
- * Partition the last part of list by holding out a fixed number of elements.
- *
- * @param <E>
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- */
-public class HoldoutNPartition<E> implements PartitionAlgorithm<E> {
-
-    final private int count;
-
-    /**
-     * Create a count partitioner.
-     *
-     * @param n The number of items to put in the second partition.
-     */
-    public HoldoutNPartition(int n) {
-        count = n;
+class UserPartitionCrossfoldMethod extends UserBasedCrossfoldMethod {
+    public UserPartitionCrossfoldMethod(SortOrder ord, HistoryPartitionMethod pa) {
+        super(ord, pa);
     }
 
     @Override
-    public int partition(List<E> data) {
-        return max(0, data.size() - count);
+    protected Long2IntMap splitUsers(LongSet users, int np, Random rng) {
+        Long2IntMap userMap = new Long2IntOpenHashMap(users.size());
+        logger.info("Splitting {} users into {} partitions", users.size(), np);
+        long[] userArray = users.toLongArray();
+        LongArrays.shuffle(userArray, rng);
+        for (int i = 0; i < userArray.length; i++) {
+            final long user = userArray[i];
+            userMap.put(user, i % np);
+        }
+        return userMap;
     }
-
 }
