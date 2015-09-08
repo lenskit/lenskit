@@ -29,7 +29,7 @@ import org.grouplens.lenskit.data.dao.UserListUserDAO;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.TTDataSetSpec;
+import org.lenskit.specs.eval.DataSetSpec;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -76,7 +76,7 @@ public class GenericTTDataSet implements TTDataSet {
         }
     }
 
-    public static TTDataSet fromSpec(TTDataSetSpec spec) {
+    public static TTDataSet fromSpec(DataSetSpec spec) {
         GenericTTDataBuilder bld = new GenericTTDataBuilder();
         // TODO support query sets
         bld.setName(spec.getName())
@@ -153,8 +153,8 @@ public class GenericTTDataSet implements TTDataSet {
     }
 
     @Override
-    public TTDataSetSpec toSpec() {
-        TTDataSetSpec spec = new TTDataSetSpec();
+    public DataSetSpec toSpec() {
+        DataSetSpec spec = new DataSetSpec();
         spec.setName(name);
         spec.setTrainSource(trainData.toSpec());
         spec.setTestSource(testData.toSpec());

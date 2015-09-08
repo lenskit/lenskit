@@ -29,7 +29,7 @@ import org.grouplens.lenskit.data.dao.UserListUserDAO;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.eval.data.traintest.QueryData;
 import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.TTDataSetSpec;
+import org.lenskit.specs.eval.DataSetSpec;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -87,7 +87,7 @@ public class DataSet {
      * @param spec The specification.
      * @return The train-test data set.
      */
-    public static DataSet fromSpec(TTDataSetSpec spec) {
+    public static DataSet fromSpec(DataSetSpec spec) {
         DataSetBuilder bld = new DataSetBuilder();
         // TODO support query sets
         bld.setName(spec.getName())
@@ -170,8 +170,8 @@ public class DataSet {
               .to(new UserListUserDAO(getTestData().getUserDAO().getUserIds()));
     }
 
-    public TTDataSetSpec toSpec() {
-        TTDataSetSpec spec = new TTDataSetSpec();
+    public DataSetSpec toSpec() {
+        DataSetSpec spec = new DataSetSpec();
         spec.setName(name);
         spec.setTrainSource(trainData.toSpec());
         spec.setTestSource(testData.toSpec());

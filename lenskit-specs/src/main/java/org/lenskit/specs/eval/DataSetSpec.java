@@ -29,41 +29,82 @@ import java.util.Map;
 /**
  * Spec for a train-test data set.
  */
-public class TTDataSetSpec extends AbstractSpec {
+public class DataSetSpec extends AbstractSpec {
     private String name;
     private DataSourceSpec trainSource;
     private DataSourceSpec testSource;
     private Map<String,Object> attributes = new HashMap<>();
 
+    /**
+     * Get the data source name.
+     * @return The data source name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Set the data source name.
+     * @param name The data source name.
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Get the training data source.
+     * @return The training data source.
+     */
     public DataSourceSpec getTrainSource() {
         return trainSource;
     }
 
-    public void setTrainSource(DataSourceSpec trainSource) {
-        this.trainSource = trainSource;
+    /**
+     * Set the training data source.
+     * @param src The trainig data source.
+     */
+    public void setTrainSource(DataSourceSpec src) {
+        this.trainSource = src;
     }
 
+    /**
+     * Get the test data source.
+     * @return The test data source.
+     */
     public DataSourceSpec getTestSource() {
         return testSource;
     }
 
-    public void setTestSource(DataSourceSpec testSource) {
-        this.testSource = testSource;
+    /**
+     * Set the test data source.
+     * @param src The test data source.
+     */
+    public void setTestSource(DataSourceSpec src) {
+        this.testSource = src;
     }
 
+    /**
+     * Get the attribute map of this data source.
+     * @return The data source's attributes.
+     */
     public Map<String, Object> getAttributes() {
         return attributes;
     }
 
+    /**
+     * Set the attribute map of this data source.
+     * @param attributes The data source's attribute map.
+     */
     public void setAttributes(Map<String, Object> attributes) {
         this.attributes = attributes;
+    }
+
+    /**
+     * Set an attribute for this data source.
+     * @param name The attribute name.
+     * @param value The attribute value
+     */
+    public void setAttribute(String name, Object value) {
+        attributes.put(name, value);
     }
 }

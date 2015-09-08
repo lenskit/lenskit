@@ -22,6 +22,7 @@ import org.lenskit.data.events.Event;
 import org.lenskit.eval.traintest.*;
 import org.lenskit.eval.traintest.metrics.Metric;
 import org.lenskit.eval.traintest.metrics.MetricResult;
+import org.lenskit.specs.eval.PredictEvalTaskSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +50,18 @@ public class PredictEvalTask implements EvalTask {
     private Path outputFile;
     private TableWriter outputTable;
     private List<PredictMetric<?>> predictMetrics = Lists.newArrayList(DEFAULT_METRICS);
+
+    /**
+     * Create a predict eval task from a specification.
+     * @param ets The task specification.
+     * @return The task.
+     */
+    public static EvalTask fromSpec(PredictEvalTaskSpec ets) {
+        PredictEvalTask task = new PredictEvalTask();
+        task.setOutputFile(ets.getOutputFile());
+
+        return task;
+    }
 
     /**
      * Get the output file for writing predictions.

@@ -13,6 +13,7 @@ import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.graph.MergePool;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.config.ConfigHelpers;
+import org.grouplens.lenskit.config.ConfigurationLoader;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.table.Table;
@@ -23,6 +24,8 @@ import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.MultiplexedTableWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
+import org.lenskit.specs.SpecUtils;
+import org.lenskit.specs.eval.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,6 +138,22 @@ public class TrainTestExperiment {
         AlgorithmInstanceBuilder aib = new AlgorithmInstanceBuilder(name);
         LenskitConfiguration config = aib.getConfig();
         ConfigHelpers.configure(config, block);
+        addAlgorithm(aib.build());
+    }
+
+    /**
+     * Add an algorithm by loading a config file.
+     * @param name The algorithm name.
+     * @param file The config file to load.
+     */
+    public void addAlgorithm(String name, Path file) {
+        ConfigurationLoader loader = new ConfigurationLoader(classLoader);
+        AlgorithmInstanceBuilder aib = new AlgorithmInstanceBuilder(name);
+        try {
+            aib.setConfig(loader.load(file.toFile()));
+        } catch (IOException e) {
+            throw new RuntimeException("cannot load configuration from " + file);
+        }
         addAlgorithm(aib.build());
     }
 
@@ -457,5 +476,26 @@ public class TrainTestExperiment {
                 service.shutdown();
             }
         }
+    }
+
+    public static TrainTestExperiment fromSpec(TrainTestExperimentSpec spec) {
+        TrainTestExperiment exp = new TrainTestExperiment();
+        exp.setOutputFile(spec.getOutputFile());
+        exp.setUserOutputFile(spec.getUserOutputFile());
+        for (DataSetSpec ds: spec.getDataSets()) {
+            exp.addDataSet(DataSet.fromSpec(ds));
+        }
+        for (AlgorithmSpec as: spec.getAlgorithms()) {
+            exp.addAlgorithm(as.getName(), as.getConfigFile());
+        }
+        for (EvalTaskSpec ets: spec.getTasks()) {
+            if (ets instanceof PredictEvalTaskSpec) {
+                exp.addTask(PredictEvalTask.fromSpec((PredictEvalTaskSpec) ets));
+            } else {
+                throw new IllegalArgumentException("unusable eval task spec " + ets);
+            }
+        }
+
+        return exp;
     }
 }

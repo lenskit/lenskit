@@ -26,6 +26,11 @@
  * to allow one process (such as the Gradle plugin) to set up objects that will be used by another process (e.g. a
  * LensKit evaluator).
  *
+ * **Note**: Specifications are not expected to be compatible across LensKit versions.  The specification API will
+ * maintain some API compatibility (exact amount TBD), but the serialized objects may change.
+ *
+ * FIXME Specify the compatibility guarantees for specifications
+ *
  * @see org.lenskit.specs.data
  */
 package org.lenskit.specs;

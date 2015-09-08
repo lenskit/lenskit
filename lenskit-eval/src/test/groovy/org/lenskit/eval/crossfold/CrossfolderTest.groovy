@@ -37,7 +37,7 @@ import org.lenskit.data.ratings.Rating
 import org.lenskit.eval.traintest.DataSet
 import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.eval.OutputFormat
-import org.lenskit.specs.eval.TTDataSetSpec
+import org.lenskit.specs.eval.DataSetSpec
 import org.lenskit.util.io.ObjectStreams
 
 import java.nio.file.Files
@@ -124,7 +124,7 @@ class CrossfolderTest {
             assertThat(Files.exists(test), equalTo(true))
             def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
             assertThat(Files.exists(specFile), equalTo(true))
-            def spec = SpecUtils.load(TTDataSetSpec, specFile)
+            def spec = SpecUtils.load(DataSetSpec, specFile)
             def obj = DataSet.fromSpec(spec)
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
@@ -168,7 +168,7 @@ class CrossfolderTest {
             assertThat(Files.exists(test), equalTo(true))
             def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
             assertThat(Files.exists(specFile), equalTo(true))
-            def spec = SpecUtils.load(TTDataSetSpec, specFile)
+            def spec = SpecUtils.load(DataSetSpec, specFile)
             def obj = DataSet.fromSpec(spec)
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
@@ -212,7 +212,7 @@ class CrossfolderTest {
             assertThat(Files.exists(test), equalTo(true))
             def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
             assertThat(Files.exists(specFile), equalTo(true))
-            def spec = SpecUtils.load(TTDataSetSpec, specFile)
+            def spec = SpecUtils.load(DataSetSpec, specFile)
             def obj = DataSet.fromSpec(spec)
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))
@@ -258,7 +258,7 @@ class CrossfolderTest {
             assertThat(Files.exists(test), equalTo(true))
             def specFile = tmp.root.toPath().resolve(String.format("part%02d.json", i))
             assertThat(Files.exists(specFile), equalTo(true))
-            def spec = SpecUtils.load(TTDataSetSpec, specFile)
+            def spec = SpecUtils.load(DataSetSpec, specFile)
             def obj = DataSet.fromSpec(spec)
             assertThat(obj.trainingData, instanceOf(TextDataSource))
             assertThat(obj.testData, instanceOf(TextDataSource))

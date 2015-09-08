@@ -34,7 +34,7 @@ import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.eval.CrossfoldSpec;
 import org.lenskit.specs.eval.OutputFormat;
 import org.lenskit.specs.eval.PartitionMethodSpec;
-import org.lenskit.specs.eval.TTDataSetSpec;
+import org.lenskit.specs.eval.DataSetSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -389,7 +389,7 @@ public class Crossfolder {
         for (int i = 0; i < partitionCount; i++) {
             Path file = specFiles.get(i);
             DataSet ds = dataSets.get(i);
-            TTDataSetSpec spec = ds.toSpec();
+            DataSetSpec spec = ds.toSpec();
             specs.add(spec);
             SpecUtils.write(spec, file);
         }

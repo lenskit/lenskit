@@ -143,6 +143,16 @@ public class AlgorithmInstanceBuilder implements Builder<AlgorithmInstance> {
     }
 
     /**
+     * Set the LensKit configuration to use.
+     * @param cfg The configuration to use. This will override any non-inherited configuration.
+     * @return The builder (for chaining).
+     */
+    public AlgorithmInstanceBuilder setConfig(LenskitConfiguration cfg) {
+        config = cfg;
+        return this;
+    }
+
+    /**
      * Get the list of configurations that comprise this instance.
      * @return The list of configurations comprising this instance.
      */
