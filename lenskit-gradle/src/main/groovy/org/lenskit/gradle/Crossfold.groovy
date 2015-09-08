@@ -29,6 +29,7 @@ import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.data.DataSourceSpec
 import org.lenskit.specs.data.TextDataSourceSpec
 import org.lenskit.specs.eval.CrossfoldSpec
+import org.lenskit.specs.eval.PartitionMethodSpec
 
 import java.nio.file.Path
 
@@ -59,10 +60,18 @@ class Crossfold extends LenskitTask implements DataSources {
         }
     }
 
+    /**
+     * Set the input source.
+     * @param src
+     */
     void input(DataSourceSpec src) {
         spec.source = src
     }
 
+    /**
+     * Set the input source.
+     * @param bld The input source.
+     */
     void input(DataBuilder bld) {
         dependsOn bld
         spec.deferredSource = bld.deferredDataSourceSpec
@@ -120,5 +129,52 @@ class Crossfold extends LenskitTask implements DataSources {
 
     Path getSpecFile() {
         return project.file(getOutputDir()).toPath().resolve("crossfold.json")
+    }
+
+    /**
+     * Utility method to create a holdout-N user partition method.
+     * @param n The number of ratings to hold out for each user.
+     * @return The partition method.
+     */
+    public static PartitionMethodSpec holdout(int n) {
+        def spec = new PartitionMethodSpec.Holdout()
+        spec.count = n
+        spec
+    }
+
+    public static PartitionMethodSpec holdout(Closure block) {
+        SpecDelegate.configure(PartitionMethodSpec.Holdout, block)
+    }
+
+    /**
+     * Utility method to create a retain-N user partition method.
+     * @param n The number of ratings to hold out for each user.
+     * @param order The sort order. Defaults to `random`.
+     * @return The partition method.
+     */
+    public static PartitionMethodSpec retain(int n) {
+        def spec = new PartitionMethodSpec.Retain()
+        spec.count = n
+        spec
+    }
+
+    public static PartitionMethodSpec retain(Closure block) {
+        SpecDelegate.configure(PartitionMethodSpec.Retain, block)
+    }
+
+    /**
+     * Utility method to create a holdout-fraction user partition method.
+     * @param f The fraction of ratings to hold out per user.
+     * @param order The sort order. Defaults to `random`.
+     * @return The partition method.
+     */
+    public static PartitionMethodSpec holdoutFraction(double f) {
+        def spec = new PartitionMethodSpec.HoldoutFraction()
+        spec.fraction = f
+        spec
+    }
+
+    public static PartitionMethodSpec holdoutFraction(Closure block) {
+        SpecDelegate.configure(PartitionMethodSpec.HoldoutFraction, block)
     }
 }

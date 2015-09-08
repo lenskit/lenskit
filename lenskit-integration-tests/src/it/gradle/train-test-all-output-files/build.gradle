@@ -1,0 +1,51 @@
+buildscript {
+    repositories {
+        maven {
+            url project.testRepoURI
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.grouplens.lenskit:lenskit-gradle:$project.lenskitVersion"
+    }
+}
+
+import org.lenskit.gradle.*
+
+apply plugin: 'java'
+apply plugin: 'lenskit'
+apply from: 'common.gradle'
+
+task crossfold(type: Crossfold) {
+    input textFile {
+        file ratingsFile
+        delimiter "\t"
+    }
+    outputFormat "PACK"
+    partitionCount 5
+    userPartitionMethod holdout(5)
+    includeTimestamps false
+}
+
+task trainTest(type: TrainTest) {
+    maxMemory '256m'
+    dataset crossfold
+    cacheDirectory 'cache'
+    outputFile 'results.csv'
+    userOutputFile 'users.csv'
+    predict {
+        outputFile 'predictions.csv'
+    }
+    /* recommend {
+        listSize 10
+        outputFile 'recommendations.csv.gz'
+    } */
+}
+
+task check(overwrite: true, type: JavaExec) {
+    dependsOn trainTest
+    classpath configurations.lenskit
+
+    main 'groovy.ui.GroovyMain'
+    args 'verify.groovy'
+}

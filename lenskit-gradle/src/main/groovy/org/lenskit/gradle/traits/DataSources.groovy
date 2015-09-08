@@ -21,7 +21,6 @@
 package org.lenskit.gradle.traits
 
 import org.gradle.api.Project
-import org.gradle.util.ConfigureUtil
 import org.lenskit.gradle.SpecDelegate
 import org.lenskit.specs.data.DataSourceSpec
 import org.lenskit.specs.data.TextDataSourceSpec
@@ -40,9 +39,6 @@ trait DataSources {
      * @see SpecDelegate
      */
     DataSourceSpec textFile(Closure block) {
-        def spec = new TextDataSourceSpec()
-        def dlg = new SpecDelegate(spec)
-        ConfigureUtil.configure(block, dlg)
-        spec
+        SpecDelegate.configure(TextDataSourceSpec, block)
     }
 }

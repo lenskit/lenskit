@@ -20,6 +20,7 @@
  */
 package org.lenskit.gradle
 
+import org.gradle.util.ConfigureUtil
 import org.lenskit.specs.AbstractSpec
 
 import java.nio.file.Path
@@ -95,5 +96,30 @@ class SpecDelegate {
             }
         }
         return ex
+    }
+
+    /**
+     * Configure a spec using a block.
+     * @param spec The spec.
+     * @param block The block.
+     * @return The configured specification.
+     */
+    public static <T extends AbstractSpec> T configure(T spec, Closure block) {
+        def dlg = new SpecDelegate(spec)
+        ConfigureUtil.configure(block, dlg)
+        spec
+    }
+
+    /**
+     * Instantiate and configure a spec using a block.
+     * @param specType The specification type.
+     * @param block The configuration block.
+     * @return The spec.
+     */
+    public static <T extends AbstractSpec> T configure(Class<? extends T> specType, Closure block) {
+        def spec = specType.newInstance()
+        def dlg = new SpecDelegate(spec)
+        ConfigureUtil.configure(block, dlg)
+        spec
     }
 }
