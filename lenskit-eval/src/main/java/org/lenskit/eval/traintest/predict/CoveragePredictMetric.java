@@ -21,8 +21,9 @@
 package org.lenskit.eval.traintest.predict;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.history.UserHistory;
-import org.lenskit.api.Result;
+import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.lenskit.api.ResultMap;
 import org.lenskit.data.events.Event;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -36,18 +37,17 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static java.lang.Math.sqrt;
-
 /**
- * Evaluate a recommender's prediction accuracy with RMSE.
+ * Simple evaluator that records user, rating and prediction counts and computes
+ * recommender coverage over the queried items.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class RMSEPredictMetric extends PredictMetric<RMSEPredictMetric.Context> {
-    private static final Logger logger = LoggerFactory.getLogger(RMSEPredictMetric.class);
+public class CoveragePredictMetric extends PredictMetric<CoveragePredictMetric.Context> {
+    private static final Logger logger = LoggerFactory.getLogger(CoveragePredictMetric.class);
 
-    public RMSEPredictMetric() {
-        super(UserResult.class, AggregateResult.class);
+    public CoveragePredictMetric() {
+        super(Coverage.class, AggregateCoverage.class);
     }
 
     @Nullable
@@ -59,74 +59,61 @@ public class RMSEPredictMetric extends PredictMetric<RMSEPredictMetric.Context> 
     @Nonnull
     @Override
     public MetricResult measureUser(UserHistory<Event> user, Long2DoubleMap ratings, ResultMap predictions, Context context) {
-        double sse = 0;
-        int n = 0;
-        for (Result e : predictions) {
-            if (!e.hasScore()) {
-                continue;
-            }
-
-            double err = e.getScore() - ratings.get(e.getId());
-            sse += err * err;
-            n++;
-        }
-        if (n > 0) {
-            double rmse = sqrt(sse / n);
-            context.addUser(n, sse, rmse);
-            return new UserResult(rmse);
-        } else {
-            return MetricResult.empty();
-        }
+        int n = ratings.size();
+        int good = predictions.size();
+        assert LongUtils.setDifference(LongUtils.asLongSet(predictions.keySet()),
+                                       ratings.keySet())
+                        .isEmpty();
+        context.addUser(n, good);
+        return new Coverage(n, good);
     }
 
     @Nonnull
     @Override
     public MetricResult getAggregateMeasurements(Context context) {
-        return context.finish();
+        return new AggregateCoverage(context.nusers, context.npreds, context.ngood);
     }
 
-    static class UserResult extends TypedMetricResult {
-        @MetricColumn("RMSE")
-        public final double rmse;
+    public static class Coverage extends TypedMetricResult {
+        @MetricColumn(value="NAttempted", order=1)
+        public final int nattempted;
+        @MetricColumn(value="NGood", order=2)
+        public final int ngood;
 
-        public UserResult(double err) {
-            rmse = err;
+        private Coverage(int na, int ng) {
+            nattempted = na;
+            ngood = ng;
+        }
+
+        @ResultColumn(value="Coverage", order=3)
+        public Double getCoverage() {
+            if (nattempted > 0) {
+                return ((double) ngood) / nattempted;
+            } else {
+                return null;
+            }
         }
     }
 
-    static class AggregateResult extends TypedMetricResult {
-        @MetricColumn("RMSE.ByUser")
-        public final double userRMSE;
-        @MetricColumn("RMSE.ByRating")
-        public final double globalRMSE;
+    public static class AggregateCoverage extends Coverage {
+        @MetricColumn(value="NUsers", order=0)
+        public final int nusers;
 
-        public AggregateResult(double uerr, double gerr) {
-            userRMSE = uerr;
-            globalRMSE = gerr;
+        private AggregateCoverage(int nu, int na, int ng) {
+            super(na, ng);
+            nusers = nu;
         }
     }
 
     public class Context {
-        private double totalSSE = 0;
-        private double totalRMSE = 0;
-        private int nratings = 0;
+        private int npreds = 0;
+        private int ngood = 0;
         private int nusers = 0;
 
-        private void addUser(int n, double sse, double rmse) {
-            totalSSE += sse;
-            totalRMSE += rmse;
-            nratings += n;
+        private void addUser(int np, int ng) {
+            npreds += np;
+            ngood += ng;
             nusers += 1;
-        }
-
-        public AggregateResult finish() {
-            if (nratings > 0) {
-                double v = sqrt(totalSSE / nratings);
-                logger.info("RMSE: {}", v);
-                return new AggregateResult(totalRMSE / nusers, v);
-            } else {
-                return null;
-            }
         }
     }
 }

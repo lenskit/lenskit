@@ -39,14 +39,12 @@ import javax.annotation.Nullable;
 import static java.lang.Math.sqrt;
 
 /**
- * Evaluate a recommender's prediction accuracy with RMSE.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Evaluate a recommender's prediction accuracy with MAE (Mean Absolute Error).
  */
-public class RMSEPredictMetric extends PredictMetric<RMSEPredictMetric.Context> {
-    private static final Logger logger = LoggerFactory.getLogger(RMSEPredictMetric.class);
+public class MAEPredictMetric extends PredictMetric<MAEPredictMetric.Context> {
+    private static final Logger logger = LoggerFactory.getLogger(MAEPredictMetric.class);
 
-    public RMSEPredictMetric() {
+    public MAEPredictMetric() {
         super(UserResult.class, AggregateResult.class);
     }
 
@@ -59,7 +57,7 @@ public class RMSEPredictMetric extends PredictMetric<RMSEPredictMetric.Context> 
     @Nonnull
     @Override
     public MetricResult measureUser(UserHistory<Event> user, Long2DoubleMap ratings, ResultMap predictions, Context context) {
-        double sse = 0;
+        double totalError = 0;
         int n = 0;
         for (Result e : predictions) {
             if (!e.hasScore()) {
@@ -67,13 +65,13 @@ public class RMSEPredictMetric extends PredictMetric<RMSEPredictMetric.Context> 
             }
 
             double err = e.getScore() - ratings.get(e.getId());
-            sse += err * err;
+            totalError += Math.abs(err);
             n++;
         }
         if (n > 0) {
-            double rmse = sqrt(sse / n);
-            context.addUser(n, sse, rmse);
-            return new UserResult(rmse);
+            double mae = totalError / n;
+            context.addUser(n, totalError, mae);
+            return new UserResult(mae);
         } else {
             return MetricResult.empty();
         }
@@ -86,44 +84,44 @@ public class RMSEPredictMetric extends PredictMetric<RMSEPredictMetric.Context> 
     }
 
     static class UserResult extends TypedMetricResult {
-        @MetricColumn("RMSE")
-        public final double rmse;
+        @MetricColumn("MAE")
+        public final double mae;
 
         public UserResult(double err) {
-            rmse = err;
+            mae = err;
         }
     }
 
     static class AggregateResult extends TypedMetricResult {
-        @MetricColumn("RMSE.ByUser")
-        public final double userRMSE;
-        @MetricColumn("RMSE.ByRating")
-        public final double globalRMSE;
+        @MetricColumn("MAE.ByUser")
+        public final double userMAE;
+        @MetricColumn("MAE.ByRating")
+        public final double globalMAE;
 
         public AggregateResult(double uerr, double gerr) {
-            userRMSE = uerr;
-            globalRMSE = gerr;
+            userMAE = uerr;
+            globalMAE = gerr;
         }
     }
 
     public class Context {
-        private double totalSSE = 0;
-        private double totalRMSE = 0;
+        private double totalError = 0;
+        private double totalMAE = 0;
         private int nratings = 0;
         private int nusers = 0;
 
-        private void addUser(int n, double sse, double rmse) {
-            totalSSE += sse;
-            totalRMSE += rmse;
+        private void addUser(int n, double err, double mae) {
+            totalError += err;
+            totalMAE += mae;
             nratings += n;
             nusers += 1;
         }
 
         public AggregateResult finish() {
             if (nratings > 0) {
-                double v = sqrt(totalSSE / nratings);
+                double v = totalError / nratings;
                 logger.info("RMSE: {}", v);
-                return new AggregateResult(totalRMSE / nusers, v);
+                return new AggregateResult(totalMAE / nusers, v);
             } else {
                 return null;
             }

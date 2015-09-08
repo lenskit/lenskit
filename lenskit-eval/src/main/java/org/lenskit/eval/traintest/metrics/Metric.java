@@ -21,9 +21,9 @@
 package org.lenskit.eval.traintest.metrics;
 
 import com.google.common.collect.ImmutableList;
-import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.eval.Attributed;
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.lenskit.api.Recommender;
+import org.lenskit.eval.traintest.AlgorithmInstance;
+import org.lenskit.eval.traintest.DataSet;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,7 +41,7 @@ import java.util.List;
  * experimental condition (algorithm / data set pair), the evaluator will do the following:
  *
  * <ol>
- * <li>Create a context for the experiment using {@link #createContext(Attributed, TTDataSet, Recommender)}.</li>
+ * <li>Create a context for the experiment using {@link #createContext(AlgorithmInstance, DataSet, Recommender)}.</li>
  * <li>Measure each user or result with the appropriate method.
  * <li>Output the result of each user or result measurement to appropriate output file (if active).</li>
  * <li>Obtain the aggregate results from this metric with {@link #getAggregateMeasurements(Object)} and add them
@@ -101,7 +101,7 @@ public abstract class Metric<X> {
      * the metric does need to accumulate any results, this method can return {@code null}.
      */
     @Nullable
-    public X createContext(Attributed algorithm, TTDataSet dataSet, Recommender recommender) {
+    public X createContext(AlgorithmInstance algorithm, DataSet dataSet, Recommender recommender) {
         return null;
     }
 

@@ -27,7 +27,11 @@ import org.grouplens.lenskit.data.source.GenericDataSource;
 import org.grouplens.lenskit.eval.metrics.Metric;
 import org.grouplens.lenskit.util.table.Table;
 import org.lenskit.data.ratings.PreferenceDomain;
-import org.lenskit.eval.crossfold.*;
+import org.lenskit.eval.crossfold.CrossfoldMethods;
+import org.lenskit.eval.crossfold.Crossfolder;
+import org.lenskit.eval.crossfold.HistoryPartitions;
+import org.lenskit.eval.crossfold.SortOrder;
+import org.lenskit.eval.traintest.predict.PredictEvalTask;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -48,6 +52,7 @@ public class SimpleEvaluator {
      */
     public SimpleEvaluator() {
         experiment = new TrainTestExperiment();
+        experiment.addTask(new PredictEvalTask());
         crossfolders = new ArrayList<>();
     }
 

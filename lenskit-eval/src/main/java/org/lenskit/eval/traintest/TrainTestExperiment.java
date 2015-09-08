@@ -2,6 +2,7 @@ package org.lenskit.eval.traintest;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Sets;
@@ -21,6 +22,7 @@ import org.grouplens.lenskit.util.table.TableLayoutBuilder;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.MultiplexedTableWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
+import org.lenskit.eval.traintest.predict.PredictEvalTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +39,7 @@ import java.util.concurrent.*;
 /**
  * Sets up and runs train-test evaluations.  This class can be used directly, but it will usually be controlled from
  * the `train-test` command line tool in turn driven by a Gradle script.  For a simpler way to programatically run an
- * evaluation, see {@link org.grouplens.lenskit.eval.traintest.SimpleEvaluator}, which provides a simplified interface
+ * evaluation, see {@link org.lenskit.eval.traintest.SimpleEvaluator}, which provides a simplified interface
  * to train-test evaluations with cross-validation.
  *
  * A train-test experiment experiment consists of three things:
@@ -262,6 +264,27 @@ public class TrainTestExperiment {
     }
 
     /**
+     * Convenience method to get the prediction task for the experiment.  If there is not yet a prediction task, then
+     * one is added.
+     * @return The experiment's prediction task.
+     */
+    PredictEvalTask getPredictionTask() {
+        List<PredictEvalTask> taskList = FluentIterable.from(tasks)
+                                                   .filter(PredictEvalTask.class)
+                                                   .toList();
+        if (taskList.isEmpty()) {
+            PredictEvalTask task = new PredictEvalTask();
+            addTask(task);
+            return task;
+        } else {
+            if (taskList.size() > 1) {
+                logger.warn("multiple prediction tasks configured");
+            }
+            return taskList.get(0);
+        }
+    }
+
+    /**
      * Get the global output table.
      * @return The global output table.
      */
@@ -292,6 +315,9 @@ public class TrainTestExperiment {
                 resultCloser = Closer.create();
                 ExperimentOutputLayout layout = makeExperimentOutputLayout();
                 openOutputs(layout);
+                for (EvalTask task: tasks) {
+                    task.start(layout);
+                }
 
                 ListMultimap<UUID,Runnable> jobs = makeJobList();
                 runJobList(jobs);
@@ -301,6 +327,10 @@ public class TrainTestExperiment {
             } catch (Throwable th) { //NOSONAR using closer
                 throw resultCloser.rethrow(th);
             } finally {
+                // FIXME Handle exceptions in task shutdown cleanly
+                for (EvalTask task: tasks) {
+                    task.finish();
+                }
                 resultBuilder = null;
                 resultCloser.close();
             }
@@ -338,7 +368,9 @@ public class TrainTestExperiment {
         TableLayoutBuilder tlb = TableLayoutBuilder.copy(eol.getConditionLayout());
         tlb.addColumn("BuildTime")
            .addColumn("TestTime");
-        // FIXME Support global metrics
+        for (EvalTask task: tasks) {
+            tlb.addColumns(task.getGlobalColumns());
+        }
         return tlb.build();
     }
 

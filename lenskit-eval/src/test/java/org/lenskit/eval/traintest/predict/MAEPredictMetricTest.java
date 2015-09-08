@@ -16,19 +16,19 @@ import org.lenskit.results.Results;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-public class RMSEPredictMetricTest {
-    RMSEPredictMetric metric;
+public class MAEPredictMetricTest {
+    MAEPredictMetric metric;
 
     @Before
     public void createMetric() {
-        metric = new RMSEPredictMetric();
+        metric = new MAEPredictMetric();
     }
 
     @Test
     public void testColumnLabels(){
         assertThat(metric.getAggregateColumnLabels(),
-                   containsInAnyOrder("RMSE.ByUser", "RMSE.ByRating"));
-        assertThat(metric.getColumnLabels(), contains("RMSE"));
+                   containsInAnyOrder("MAE.ByUser", "MAE.ByRating"));
+        assertThat(metric.getColumnLabels(), contains("MAE"));
     }
 
     @Test
@@ -36,12 +36,12 @@ public class RMSEPredictMetricTest {
         UserHistory<Event> user = History.forUser(42);
         Long2DoubleMap ratings = Long2DoubleMaps.singleton(37, 3.5);
         ResultMap predictions = Results.newResultMap(Results.create(37, 4.0));
-        RMSEPredictMetric.Context ctx = metric.createContext(null, null, null);
+        MAEPredictMetric.Context ctx = metric.createContext(null, null, null);
 
         MetricResult result = metric.measureUser(user, ratings, predictions, ctx);
         assertThat(result, notNullValue());
-        assertThat(result, instanceOf(RMSEPredictMetric.UserResult.class));
-        assertThat(result.getValues().get("RMSE"),
+        assertThat(result, instanceOf(MAEPredictMetric.UserResult.class));
+        assertThat(result.getValues().get("MAE"),
                    allOf(instanceOf(Double.class),
                          (Matcher) closeTo(0.5, 1.0e-6)));
     }
@@ -54,13 +54,13 @@ public class RMSEPredictMetricTest {
         ratings.put(12, 2.0);
         ResultMap predictions = Results.newResultMap(Results.create(37, 4.0),
                                                      Results.create(12, 3.5));
-        RMSEPredictMetric.Context ctx = metric.createContext(null, null, null);
+        MAEPredictMetric.Context ctx = metric.createContext(null, null, null);
 
         MetricResult result = metric.measureUser(user, ratings, predictions, ctx);
         assertThat(result, notNullValue());
-        assertThat(result, instanceOf(RMSEPredictMetric.UserResult.class));
-        assertThat(result.getValues().get("RMSE"),
+        assertThat(result, instanceOf(MAEPredictMetric.UserResult.class));
+        assertThat(result.getValues().get("MAE"),
                    allOf(instanceOf(Double.class),
-                         (Matcher) closeTo(Math.sqrt((0.25 + 2.25) / 2), 1.0e-6)));
+                         (Matcher) closeTo(1.0, 1.0e-6)));
     }
 }

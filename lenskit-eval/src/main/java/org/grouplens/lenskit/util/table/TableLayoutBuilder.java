@@ -23,6 +23,7 @@ package org.grouplens.lenskit.util.table;
 import org.apache.commons.lang3.builder.Builder;
 import org.apache.commons.lang3.exception.CloneFailedException;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 
 /**
@@ -65,6 +66,27 @@ public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
         }
         columns.add(name);
         return this;
+    }
+
+    /**
+     * Add columns to the layout.
+     * @param columns The columns to add.
+     * @return The layout builder (for chaining).
+     */
+    public TableLayoutBuilder addColumns(Iterable<String> columns) {
+        for (String c: columns) {
+            addColumn(c);
+        }
+        return this;
+    }
+
+    /**
+     * Add columns to the layout.
+     * @param columns The columns to add.
+     * @return The layout builder (for chaining).
+     */
+    public TableLayoutBuilder addColumns(String... columns) {
+        return addColumns(Arrays.asList(columns));
     }
 
     /**

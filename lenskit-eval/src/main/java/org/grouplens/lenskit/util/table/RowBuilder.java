@@ -1,8 +1,8 @@
 package org.grouplens.lenskit.util.table;
 
-import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -11,11 +11,11 @@ import java.util.Map;
  */
 public class RowBuilder {
     private final TableLayout layout;
-    private List<Object> values;
+    private Object[] values;
 
     public RowBuilder(TableLayout tl) {
         layout = tl;
-        values = new ArrayList<>(layout.getColumnCount());
+        values = new Object[layout.getColumnCount()];
     }
 
     /**
@@ -26,10 +26,7 @@ public class RowBuilder {
      */
     public RowBuilder add(String name, Object value) {
         int idx = layout.columnIndex(name);
-        while (values.size() <= idx) {
-            values.add(null);
-        }
-        values.set(idx, value);
+        values[idx] = value;
         return this;
     }
 
@@ -50,7 +47,7 @@ public class RowBuilder {
      * @return The row builder (for chaining).
      */
     public RowBuilder clear() {
-        values.clear();
+        Arrays.fill(values, null);
         return this;
     }
 
@@ -59,7 +56,7 @@ public class RowBuilder {
      * @return The row.
      */
     public Row build() {
-        return new RowImpl(layout, values.toArray());
+        return new RowImpl(layout, values);
     }
 
     /**
@@ -67,6 +64,6 @@ public class RowBuilder {
      * @return The list of fields.
      */
     public List<Object> buildList() {
-        return new ArrayList<>(values);
+        return new ObjectArrayList<>(values);
     }
 }
