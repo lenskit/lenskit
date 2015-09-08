@@ -32,7 +32,7 @@ import org.lenskit.specs.eval.TrainTestExperimentSpec
 class TrainTest extends LenskitTask {
     private def spec = new TrainTestExperimentSpec()
     private def specDelegate = new SpecDelegate(spec)
-    private def File specFile
+    def File specFile
     private Deque<Closure<?>> deferredInput = new ArrayDeque<>()
 
     public TrainTest() {

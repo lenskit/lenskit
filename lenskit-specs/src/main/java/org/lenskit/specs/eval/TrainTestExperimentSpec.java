@@ -31,6 +31,8 @@ import java.util.*;
 public class TrainTestExperimentSpec extends AbstractSpec {
     private Path outputFile;
     private Path userOutputFile;
+    private Path cacheDirectory;
+    private boolean shareModelComponents;
     private List<DataSetSpec> dataSets = new ArrayList<>();
     private List<AlgorithmSpec> algorithms = new ArrayList<>();
     private List<EvalTaskSpec> tasks = new ArrayList<>();
@@ -65,6 +67,38 @@ public class TrainTestExperimentSpec extends AbstractSpec {
      */
     public void setUserOutputFile(Path file) {
         userOutputFile = file;
+    }
+
+    /**
+     * Get the cache directory.
+     * @return The directory to use for caching objects.
+     */
+    public Path getCacheDirectory() {
+        return cacheDirectory;
+    }
+
+    /**
+     * Set the cache directory.
+     * @param dir The direcetory to use for caching objects.
+     */
+    public void setCacheDirectory(Path dir) {
+        cacheDirectory = dir;
+    }
+
+    /**
+     * Query whether model components will be shared.
+     * @return `true` if model components will be shared (the default).
+     */
+    public boolean getShareModelComponents() {
+        return shareModelComponents;
+    }
+
+    /**
+     * Set whether model components will be shared.  The default is to share them.
+     * @param share `true` to share model components, `false` to disable sharing.
+     */
+    public void setShareModelComponents(boolean share) {
+        shareModelComponents = share;
     }
 
     /**

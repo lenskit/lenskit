@@ -44,7 +44,6 @@ import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.MultiplexedTableWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
-import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.eval.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +79,7 @@ public class TrainTestExperiment {
     private Path outputFile;
     private Path userOutputFile;
     private Path cacheDir;
-    private boolean sharesModelComponents = true;
+    private boolean shareModelComponents = true;
     private int threadCount;
     private ClassLoader classLoader = ClassLoaders.inferDefault(TrainTestExperiment.class);
 
@@ -205,10 +204,10 @@ public class TrainTestExperiment {
      * Query whether this experiment will cache and share components.
      *
      * @return {@code true} if model components will be shared.
-     * @see #setSharesModelComponents(boolean)
+     * @see #setShareModelComponents(boolean)
      */
-    public boolean getSharesModelComponents() {
-        return sharesModelComponents;
+    public boolean getShareModelComponents() {
+        return shareModelComponents;
     }
 
     /**
@@ -220,8 +219,8 @@ public class TrainTestExperiment {
      *
      * @param shares `true` to enable caching of shared model components.
      */
-    public void setSharesModelComponents(boolean shares) {
-        sharesModelComponents = shares;
+    public void setShareModelComponents(boolean shares) {
+        shareModelComponents = shares;
     }
 
     /**
@@ -419,7 +418,7 @@ public class TrainTestExperiment {
      */
     private ListMultimap<UUID,Runnable> makeJobList() {
         ComponentCache cache = null;
-        if (sharesModelComponents) {
+        if (shareModelComponents) {
             cache = new ComponentCache(cacheDir, classLoader);
         }
         ListMultimap<UUID, Runnable> jobs = MultimapBuilder.linkedHashKeys()
@@ -502,6 +501,8 @@ public class TrainTestExperiment {
         TrainTestExperiment exp = new TrainTestExperiment();
         exp.setOutputFile(spec.getOutputFile());
         exp.setUserOutputFile(spec.getUserOutputFile());
+        exp.setCacheDirectory(spec.getCacheDirectory());
+        exp.setShareModelComponents(spec.getShareModelComponents());
         for (DataSetSpec ds: spec.getDataSets()) {
             exp.addDataSet(DataSet.fromSpec(ds));
         }

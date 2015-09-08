@@ -29,7 +29,7 @@ task crossfold(type: Crossfold) {
 
 task trainTest(type: TrainTest) {
     maxMemory '256m'
-    dataset crossfold
+    dataSet crossfold
     cacheDirectory 'cache'
     outputFile 'results.csv'
     userOutputFile 'users.csv'
