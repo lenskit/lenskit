@@ -20,70 +20,78 @@
  */
 package org.lenskit.eval.traintest.metrics;
 
+import com.google.common.collect.ImmutableList;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.lenskit.api.Result;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * Base interface for metrics, which are used by evaluations to measure results.
+ * Interface for common aspects of metrics, which are used to measure individual or per-user results.  Each metric
+ * can measure results or users, and contribute aggregate values to the global aggregate measurement table.
  *
- * <p>
+ * This class should not be extended directly; rather, one of its subclasses should be extended.  This hierarchy uses
+ * abstract classes instead of interfaces for two reasons: first, to provide useful default behavior, and second,
+ * because implementing multiple types of metrics in a single class is likely to be erroneous.
+ *
  * Metrics use <em>contexts</em> to track and accumulate data for experimental conditions.  For each
  * experimental condition (algorithm / data set pair), the evaluator will do the following:
  *
  * <ol>
  * <li>Create a context for the experiment using {@link #createContext(Attributed, TTDataSet, Recommender)}.</li>
- * <li>Measure each result with {@link #measureResult(long, Result, Object)}.</li>
- * <li>Output the result of each user measurement to the per-result output table (if active).</li>
- * <li>Obtain the aggregate results from this metric with {@link #getAggregateMeasurements(Object)}.</li>
+ * <li>Measure each user or result with the appropriate method.
+ * <li>Output the result of each user or result measurement to appropriate output file (if active).</li>
+ * <li>Obtain the aggregate results from this metric with {@link #getAggregateMeasurements(Object)} and add them
+ * to the global output file.</li>
  * </ol>
  *
- * <p>
- * The context will general consist of accumulators for the aggregate results reported by a metric
+ * The context will generally consist of accumulators for the aggregate results reported by a metric
  * over the entire experimental condition, such as the average of all user measurements.  It may
  * also contain additional relevant information, such as anything needed from the algorithm and
  * data set for the measurements, or additional output tables for recording extra data.
  *
- * <p>
- * Metrics themselves are generally stateless, with all state contained in the context.  In this
+ *  * Metrics themselves are generally stateless, with all state contained in the context.  In this
  * case, there is a single instance of the metric, or an instance per parameterization.
  *
- * <p>
  * Metrics may be used from multiple threads.  LensKit may use multiple threads with
  * the same context.
  *
- * <p>
- * {@link AbstractMetric} provides a base implementation of this interface that allows user and
- * aggregate measurements to be defined in plan Java objects, so metrics do not need to handle
- * creating table rows themselves.
- *
  * @param <X> The type of context used by this metric.
  */
-public interface Metric<X> {
+public abstract class Metric<X> {
+    private final List<String> columnLabels;
+    private final List<String> aggregateColumnLabels;
+
+    protected Metric(List<String> labels, List<String> aggLabels) {
+        columnLabels = ImmutableList.copyOf(labels);
+        aggregateColumnLabels = ImmutableList.copyOf(aggLabels);
+    }
+
     /**
-     * Get labels for the aggregate columns output by this evaluator.
+     * Get labels for the aggregate columns output by this metric.
      *
-     * @return The labels for this evaluator's output, used as column headers when
+     * @return The labels for this metric's aggregate output, used as column headers when
      *         outputting the results table.
      */
-    List<String> getAggregateColumnLabels();
+    public List<String> getAggregateColumnLabels() {
+        return aggregateColumnLabels;
+    }
 
     /**
-     * Get labels for the per-result columns output by this metric.
+     * Get the labels for the per-user or per-result columns output by this metric.
      *
-     * @return The labels for this metric's per-result output, used as column headers
-     *         when outputting the results table.
-     * @see #measureResult(long, Result, Object)
+     * @return The labels for this metric's output, used as column headers in the appropriate table.
      */
-    List<String> getResultColumnLabels();
+    public List<String> getColumnLabels() {
+        return columnLabels;
+    }
 
     /**
-     * Create the context for an experimental condition (algorithm/data set pair).
+     * Create the context for an experimental condition (algorithm/data set pair).  The default implementation
+     * returns `null`.
      *
      * @param algorithm The algorithm.
      * @param dataSet   The data set.
@@ -93,21 +101,18 @@ public interface Metric<X> {
      * the metric does need to accumulate any results, this method can return {@code null}.
      */
     @Nullable
-    X createContext(Attributed algorithm, TTDataSet dataSet, Recommender recommender);
+    public X createContext(Attributed algorithm, TTDataSet dataSet, Recommender recommender) {
+        return null;
+    }
 
     /**
-     * Measure a single result.  The result may come from either prediction or recommendation.
-     * @param userId The user ID.
-     * @param result The result to measure.
-     * @return A list of fields to add to the result's output.
-     */
-    List<Object> measureResult(long userId, Result result, X context);
-
-    /**
-     * Get the aggregate results from an accumulator.
+     * Get the aggregate results from an accumulator.  The default implementation returns {@link MetricResult#empty()}.
+     *
      * @param context The context for an experimental condition.
      * @return The aggregate results from the accumulator.
      */
     @Nonnull
-    List<Object> getAggregateMeasurements(X context);
+    public MetricResult getAggregateMeasurements(X context) {
+        return MetricResult.empty();
+    }
 }

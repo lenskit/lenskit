@@ -39,7 +39,7 @@ apply from: "$rootDir/gradle/test-utils.gradle"
 dependencies {
     compile group: 'it.unimi.dsi', name:'fastutil', version: '7.0.7'
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.3'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
 }
 
 meta {
