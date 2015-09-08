@@ -309,7 +309,7 @@ public class TrainTestExperiment {
      * Run the experiment.
      * @return The global aggregate results from the experiment.
      */
-    public Table run() {
+    public Table execute() {
         try {
             try {
                 resultCloser = Closer.create();

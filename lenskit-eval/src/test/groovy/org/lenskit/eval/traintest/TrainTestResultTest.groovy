@@ -78,7 +78,7 @@ class TrainTestResultTest extends ConfigTestBase {
         aib.config.bind(ItemScorer).to(UserMeanItemScorer)
         aib.config.bind(BaselineScorer, ItemScorer).to(ItemMeanRatingItemScorer)
         exp.addAlgorithm(aib.build())
-        def result = exp.run()
+        def result = exp.execute()
         assertThat(result, instanceOf(TableImpl))
     }
 }

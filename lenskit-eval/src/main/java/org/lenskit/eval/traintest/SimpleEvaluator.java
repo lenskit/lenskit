@@ -287,7 +287,7 @@ public class SimpleEvaluator {
         for (Crossfolder cf: crossfolders) {
             cf.execute();
         }
-        return experiment.run();
+        return experiment.execute();
     }
 }
 

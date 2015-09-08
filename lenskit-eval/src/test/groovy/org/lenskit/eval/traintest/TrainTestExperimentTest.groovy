@@ -82,7 +82,7 @@ class TrainTestExperimentTest {
             bind ItemScorer to ItemMeanRatingItemScorer
         }
         experiment.addDataSets(sets)
-        def result = experiment.run()
+        def result = experiment.execute()
         assertThat(result, notNullValue())
     }
 
@@ -108,7 +108,7 @@ class TrainTestExperimentTest {
             bind ItemRecommender to null
         }
         experiment.addDataSets(sets)
-        def result = experiment.run()
+        def result = experiment.execute()
         assertThat(result, notNullValue())
     }
 }
