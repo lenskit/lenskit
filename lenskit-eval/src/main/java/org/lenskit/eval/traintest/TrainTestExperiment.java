@@ -351,15 +351,18 @@ public class TrainTestExperiment {
         try {
             try {
                 resultCloser = Closer.create();
+                logger.debug("setting up output");
                 ExperimentOutputLayout layout = makeExperimentOutputLayout();
                 openOutputs(layout);
                 for (EvalTask task: tasks) {
                     task.start(layout);
                 }
 
+                logger.debug("gathering jobs");
                 ListMultimap<UUID,Runnable> jobs = makeJobList();
                 runJobList(jobs);
 
+                logger.info("train-test evaluation complete");
                 // done before closing, but that is ok
                 return resultBuilder.build();
             } catch (Throwable th) { //NOSONAR using closer
@@ -399,7 +402,10 @@ public class TrainTestExperiment {
             globalOutput = resultBuilder;
         }
 
-        // FIXME Set up per-user output
+        if (userOutputFile != null) {
+            TableLayout ul = makeUserResultLayout(eol);
+            userOutput = resultCloser.register(CSVWriter.open(userOutputFile.toFile(), ul, CompressionMode.AUTO));
+        }
     }
 
     private TableLayout makeGlobalResultLayout(ExperimentOutputLayout eol) {
@@ -411,6 +417,17 @@ public class TrainTestExperiment {
         }
         return tlb.build();
     }
+
+    private TableLayout makeUserResultLayout(ExperimentOutputLayout eol) {
+        TableLayoutBuilder tlb = TableLayoutBuilder.copy(eol.getConditionLayout());
+        tlb.addColumn("User")
+           .addColumn("TestTime");
+        for (EvalTask task: tasks) {
+            tlb.addColumns(task.getUserColumns());
+        }
+        return tlb.build();
+    }
+
 
     /**
      * Create the list of jobs to run in this experiment.

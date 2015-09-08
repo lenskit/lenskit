@@ -72,8 +72,10 @@ public class CSVWriter extends AbstractTableWriter {
 
     @Override
     public void close() throws IOException {
-        writer.close();
-        writer = null;
+        if (writer != null) {
+            writer.close();
+            writer = null;
+        }
     }
 
     @Override

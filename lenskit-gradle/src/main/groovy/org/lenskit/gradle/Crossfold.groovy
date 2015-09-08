@@ -29,6 +29,7 @@ import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.data.DataSourceSpec
 import org.lenskit.specs.data.TextDataSourceSpec
 import org.lenskit.specs.eval.CrossfoldSpec
+import org.lenskit.specs.eval.DataSetSpec
 import org.lenskit.specs.eval.PartitionMethodSpec
 
 import java.nio.file.Path
@@ -129,6 +130,10 @@ class Crossfold extends LenskitTask implements DataSources {
 
     Path getSpecFile() {
         return project.file(getOutputDir()).toPath().resolve("crossfold.json")
+    }
+
+    List<DataSetSpec> getDataSets() {
+        return SpecUtils.loadList(DataSetSpec, project.file(getOutputDir()).toPath().resolve("all-partitions.json"))
     }
 
     /**

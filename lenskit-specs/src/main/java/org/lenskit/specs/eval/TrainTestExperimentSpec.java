@@ -20,6 +20,7 @@
  */
 package org.lenskit.specs.eval;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.lenskit.specs.AbstractSpec;
 
 import java.nio.file.Path;
@@ -32,7 +33,7 @@ public class TrainTestExperimentSpec extends AbstractSpec {
     private Path outputFile;
     private Path userOutputFile;
     private Path cacheDirectory;
-    private boolean shareModelComponents;
+    private boolean shareModelComponents = true;
     private List<DataSetSpec> dataSets = new ArrayList<>();
     private List<AlgorithmSpec> algorithms = new ArrayList<>();
     private List<EvalTaskSpec> tasks = new ArrayList<>();
@@ -105,6 +106,7 @@ public class TrainTestExperimentSpec extends AbstractSpec {
      * Get all output files for this experiment.
      * @return A set of all known output files.
      */
+    @JsonIgnore
     public Set<Path> getOutputFiles() {
         Set<Path> files = new HashSet<>();
         if (outputFile != null) {

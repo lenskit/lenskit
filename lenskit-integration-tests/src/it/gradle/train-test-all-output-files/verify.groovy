@@ -30,26 +30,26 @@ import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.Matchers.allOf
 import static org.hamcrest.Matchers.equalTo
 
-File resultsFile = new File(basedir, "results.csv")
-File userFile = new File(basedir, "users.csv")
-File predictFile = new File(basedir, "predictions.csv")
-File recommendFile = new File(basedir, "recommendations.csv.gz")
+File resultsFile = new File("results.csv")
+File userFile = new File("users.csv")
+File predictFile = new File("predictions.csv")
+File recommendFile = new File("recommendations.csv.gz")
 
-assertThat("output file existence",
+assertThat("output file exists",
            resultsFile, allOf(existingFile(),
                               hasLineCount(equalTo(11))));
-assertThat("output file existence",
+assertThat("output file exists",
            userFile, existingFile());
-assertThat("output file existence",
+assertThat("output file exists",
            predictFile, existingFile());
-assertThat("output file existence",
-           recommendFile, existingFile());
+//assertThat("output file exists",
+  //         recommendFile, existingFile());
 
-assertThat(new File(basedir, 'train.pack/part01.train.pack'),
+assertThat(new File('build/crossfold.out/part01.train.pack'),
            existingFile())
 
 // Verify that we have 5 distinct item-item models
-File cacheDir = new File(basedir, "cache")
+File cacheDir = new File("cache")
 def objects = new HashMap<String,Integer>()
 cacheDir.eachFile { file ->
     if (!file.name.matches(/^\./)) {

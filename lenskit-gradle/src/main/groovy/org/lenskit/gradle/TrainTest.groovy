@@ -23,7 +23,9 @@ package org.lenskit.gradle
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
 import org.lenskit.specs.SpecUtils
+import org.lenskit.specs.eval.AlgorithmSpec
 import org.lenskit.specs.eval.DataSetSpec
+import org.lenskit.specs.eval.PredictEvalTaskSpec
 import org.lenskit.specs.eval.TrainTestExperimentSpec
 
 /**
@@ -56,11 +58,25 @@ class TrainTest extends LenskitTask {
     def dataSet(Crossfold cf) {
         inputs.files cf
         deferredInput << { spec ->
-            def sets = SpecUtils.load(List, cf.specFile)
-            sets.each {
-                spec.addDataSet(it)
-            }
+            cf.dataSets.each { spec.addDataSet(it) }
         }
+    }
+
+    def algorithm(String name, file) {
+        def aspec = new AlgorithmSpec()
+        aspec.name = name
+        aspec.configFile = project.file(file).toPath()
+        spec.addAlgorithm(aspec)
+    }
+
+    /**
+     * Configure a prediction task.
+     * @param block The block.
+     * @see PredictEvalTaskSpec
+     */
+    def predict(Closure block) {
+        def task = SpecDelegate.configure(PredictEvalTaskSpec, block)
+        spec.addTask(task)
     }
 
     def methodMissing(String name, def args) {
@@ -99,7 +115,7 @@ class TrainTest extends LenskitTask {
         def file = getSpecFile()
         project.mkdir file.parentFile
         logger.info 'preparing spec file {}', file
-        SpecUtils.write(spec, file)
+        SpecUtils.write(spec, file.toPath())
     }
 
     @Override
