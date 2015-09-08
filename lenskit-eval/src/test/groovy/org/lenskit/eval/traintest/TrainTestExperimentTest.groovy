@@ -21,10 +21,7 @@
 package org.lenskit.eval.traintest
 
 import org.grouplens.lenskit.data.source.CSVDataSourceBuilder
-import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
-import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -69,28 +66,7 @@ class TrainTestExperimentTest {
         file = folder.newFile("global-test.csv")
         file.append('1,4,3.0\n')
         file.append('3,3,4.5\n')
-    }
-
-    @Ignore("metrics changed")
-    @Test
-    void testAddMetric() {
-        eval {
-            metric new CoveragePredictMetric()
-            metric new RMSEPredictMetric()
-        }
-        def metrics = command.getMetricFactories()
-        assertThat(metrics.size(), equalTo(2))
-    }
-
-    @Ignore("metrics changed")
-    @Test
-    void testAddMetricsByClass() {
-        eval {
-            metric CoveragePredictMetric
-            metric RMSEPredictMetric
-        }
-        def metrics = command.getMetricFactories()
-        assertThat(metrics.size(), equalTo(2))
+        experiment = new TrainTestExperiment()
     }
 
     @Test

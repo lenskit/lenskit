@@ -71,6 +71,7 @@ class TrainTestResultTest extends ConfigTestBase {
         cf.source = new TextDataSourceBuilder().setFile(sourceFile)
                                                .setDelimiter(",")
                                                .build()
+        cf.execute()
         def exp = new TrainTestExperiment()
         exp.addDataSets(cf.dataSets)
         def aib = new AlgorithmInstanceBuilder("ItemUserMean")
