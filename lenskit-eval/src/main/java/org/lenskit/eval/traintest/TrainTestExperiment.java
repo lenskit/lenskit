@@ -98,7 +98,7 @@ public class TrainTestExperiment {
      * @param name The algorithm name.
      * @param block The algorithm configuration block.
      */
-    public void addAlgorithm(String name, Closure block) {
+    public void addAlgorithm(String name, Closure<?> block) {
         AlgorithmInstanceBuilder aib = new AlgorithmInstanceBuilder(name);
         LenskitConfiguration config = aib.getConfig();
         ConfigHelpers.configure(config, block);
