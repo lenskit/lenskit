@@ -29,7 +29,9 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.graph.MergePool;
 import org.grouplens.lenskit.RecommenderBuildException;
+import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.inject.GraphtUtils;
@@ -61,20 +63,20 @@ class ExperimentJob implements Runnable {
     private final AlgorithmInstance algorithm;
     private final DataSet dataSet;
 
-    private DAGNode<Component, Dependency> recommenderGraph;
     @Nullable
     private final ComponentCache cache;
+    private final MergePool<Component, Dependency> mergePool;
 
     ExperimentJob(TrainTestExperiment exp,
                   @Nonnull AlgorithmInstance algo,
                   @Nonnull DataSet ds,
-                  @Nonnull DAGNode<Component, Dependency> graph,
-                  @Nullable ComponentCache cache) {
+                  @Nullable ComponentCache cache,
+                  @Nullable MergePool<Component,Dependency> pool) {
         experiment = exp;
         algorithm = algo;
         dataSet = ds;
-        recommenderGraph = graph;
         this.cache = cache;
+        mergePool = pool;
     }
 
     @Override
@@ -166,19 +168,28 @@ class ExperimentJob implements Runnable {
 
     private LenskitRecommender buildRecommender() throws RecommenderBuildException {
         logger.debug("Starting recommender build");
+        LenskitConfiguration dataConfig = new LenskitConfiguration();
+        dataSet.configure(dataConfig);
+        DAGNode<Component, Dependency> cfgGraph = algorithm.buildRecommenderGraph(dataConfig);
+        if (mergePool != null) {
+            logger.debug("deduplicating configuration graph");
+            synchronized (mergePool) {
+                cfgGraph = mergePool.merge(cfgGraph);
+            }
+        }
         DAGNode<Component, Dependency> graph;
         if (cache == null) {
             logger.debug("Building directly without a cache");
-            RecommenderInstantiator ri = RecommenderInstantiator.create(recommenderGraph);
+            RecommenderInstantiator ri = RecommenderInstantiator.create(cfgGraph);
             graph = ri.instantiate();
         } else {
             logger.debug("Instantiating graph with a cache");
             try {
-                Set<DAGNode<Component, Dependency>> nodes = GraphtUtils.getShareableNodes(recommenderGraph);
+                Set<DAGNode<Component, Dependency>> nodes = GraphtUtils.getShareableNodes(cfgGraph);
                 logger.debug("resolving {} nodes", nodes.size());
-                graph = NodeProcessors.processNodes(recommenderGraph, nodes, cache);
+                graph = NodeProcessors.processNodes(cfgGraph, nodes, cache);
                 logger.debug("graph went from {} to {} nodes",
-                             recommenderGraph.getReachableNodes().size(),
+                             cfgGraph.getReachableNodes().size(),
                              graph.getReachableNodes().size());
             } catch (InjectionException e) {
                 logger.error("Error encountered while pre-processing algorithm components for sharing", e);

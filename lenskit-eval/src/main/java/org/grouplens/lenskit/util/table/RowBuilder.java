@@ -67,6 +67,6 @@ public class RowBuilder {
      * @return The list of fields.
      */
     public List<Object> buildList() {
-        return ImmutableList.copyOf(values);
+        return new ArrayList<>(values);
     }
 }
