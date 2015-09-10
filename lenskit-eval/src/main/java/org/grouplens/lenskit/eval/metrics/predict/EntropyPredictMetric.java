@@ -22,7 +22,7 @@ package org.grouplens.lenskit.eval.metrics.predict;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.Recommender;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomain;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.AbstractMetric;

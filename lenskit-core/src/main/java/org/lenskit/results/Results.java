@@ -25,14 +25,17 @@ import com.google.common.base.Function;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Longs;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.api.ResultMap;
 import org.lenskit.util.keys.KeyExtractor;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Utility functions for working with results.
@@ -66,6 +69,26 @@ public final class Results {
     }
 
     /**
+     * Create a rescored result.
+     * @param r The result to score.
+     * @param s The new score.
+     * @return A {@link RescoredResult} that wraps {@code r} with a new score of {@code s}.
+     */
+    public static RescoredResult rescore(Result r, double s) {
+        return rescore(r, create(r.getId(), s));
+    }
+
+    /**
+     * Create a rescored result with details.
+     * @param orig The original result.
+     * @param score The new result, or {@code null} for no score  (the resulting result will have no score).
+     * @return A rescored result with the ID but the new score.
+     */
+    public static RescoredResult rescore(@Nonnull Result orig, @Nullable Result score) {
+        return new RescoredResult(orig, score);
+    }
+
+    /**
      * Create a new result list.
      * @param results The results to include in the list.
      * @return The result list.
@@ -93,7 +116,7 @@ public final class Results {
      * @return The result list.
      */
     @Nonnull
-    public static ResultMap newResultMap(@Nonnull List<? extends Result> results) {
+    public static ResultMap newResultMap(@Nonnull Iterable<? extends Result> results) {
         return new BasicResultMap(results);
     }
 
@@ -117,6 +140,28 @@ public final class Results {
      */
     public static Function<Result,BasicResult> basicCopyFunction() {
         return BasicCopyFunction.INSTANCE;
+    }
+
+    /**
+     * Convert a map entry to a basic result.
+     * @param entry The map entry.
+     * @return The basic result.
+     */
+    public static BasicResult fromEntry(Map.Entry<Long,Double> entry) {
+        if (entry instanceof Long2DoubleMap.Entry) {
+            Long2DoubleMap.Entry e = (Long2DoubleMap.Entry) entry;
+            return create(e.getLongKey(), e.getDoubleValue());
+        } else {
+            return create(entry.getKey(), entry.getValue());
+        }
+    }
+
+    /**
+     * Function to convert map entries to basic results.
+     * @return A function that converts map entries to basic results.
+     */
+    public static Function<Map.Entry<Long,Double>,Result> fromEntryFunction() {
+        return FromEntryFunction.INSTANCE;
     }
 
     /**
@@ -157,6 +202,15 @@ public final class Results {
             @Override
             public BasicResult apply(Result result) {
                 return basicCopy(result);
+            }
+        }
+    }
+    private enum FromEntryFunction implements Function<Map.Entry<Long,Double>,Result> {
+        INSTANCE {
+            @Nullable
+            @Override
+            public Result apply(Map.Entry<Long, Double> input) {
+                return input != null ? fromEntry(input) : null;
             }
         }
     }

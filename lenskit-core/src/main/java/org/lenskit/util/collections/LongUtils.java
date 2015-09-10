@@ -21,7 +21,9 @@
 package org.lenskit.util.collections;
 
 import it.unimi.dsi.fastutil.longs.*;
-import org.lenskit.util.keys.LongKeyIndex;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
+import org.lenskit.util.keys.SortedKeyIndex;
+import org.lenskit.util.keys.LongSortedArraySet;
 
 import java.util.*;
 
@@ -36,12 +38,43 @@ public final class LongUtils {
     private LongUtils() {}
 
     /**
+     * Create a frozen long-to-double map.  This effectively creates a copy of a map, but if the provided map is an
+     * instance of {@link org.lenskit.util.keys.Long2DoubleSortedArrayMap}, which is immutable, it is returned as-is
+     * for efficiency.
+     *
+     * @param map The source map.
+     * @return An immutable map with the same data as {@code map}.
+     */
+    public static Long2DoubleSortedMap frozenMap(Map<Long,Double> map) {
+        if (map instanceof Long2DoubleSortedArrayMap) {
+            return (Long2DoubleSortedMap) map;
+        } else {
+            return new Long2DoubleSortedArrayMap(map);
+        }
+    }
+
+    /**
+     * Create a frozen long set.  If the underlying collection is already an immutable sorted set (specifically, a
+     * {@link LongSortedArraySet}, it is used as-is. Otherwise, it is copied into a sorted array set.
+     *
+     * @param longs The collection.
+     * @return The sorted array set.
+     */
+    public static LongSortedSet frozenSet(Collection<Long> longs) {
+        if (longs instanceof LongSortedArraySet) {
+            return (LongSortedSet) longs;
+        } else {
+            return packedSet(longs);
+        }
+    }
+
+    /**
      * Pack longs into a sorted set.
      * @param longs A collection of longs.
      * @return An efficient sorted set containing the numbers in {@code longs}.
      */
     public static LongSortedSet packedSet(Collection<Long> longs) {
-        return LongKeyIndex.fromCollection(longs).keySet();
+        return SortedKeyIndex.fromCollection(longs).keySet();
     }
 
     /**
@@ -50,7 +83,7 @@ public final class LongUtils {
      * @return An efficient sorted set containing the numbers in {@code longs}.
      */
     public static LongSortedSet packedSet(long... longs) {
-        return LongKeyIndex.create(longs).keySet();
+        return SortedKeyIndex.create(longs).keySet();
     }
 
     /**
@@ -124,7 +157,7 @@ public final class LongUtils {
         if (data.length * 2 > i * 3) {
             data = Arrays.copyOf(data, i);
         }
-        return LongKeyIndex.wrap(data, i).keySet();
+        return SortedKeyIndex.wrap(data, i).keySet();
     }
 
     /**
@@ -201,7 +234,7 @@ public final class LongUtils {
         }
         assert i == data.length;
 
-        return LongKeyIndex.wrap(data, data.length).keySet();
+        return SortedKeyIndex.wrap(data, data.length).keySet();
     }
 
     /**

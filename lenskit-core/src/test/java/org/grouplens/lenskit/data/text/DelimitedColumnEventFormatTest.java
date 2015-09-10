@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.data.text;
 
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.junit.Before;
 import org.junit.Test;
 

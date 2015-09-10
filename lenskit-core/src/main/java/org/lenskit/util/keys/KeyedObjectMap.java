@@ -28,20 +28,18 @@ import org.lenskit.util.BinarySearch;
 
 import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
- * A mapping that indexes keyed objects by their keys.  This structure works on objects that have an associated key,
- * such as recommendation results or ratings (keyed by user or item ID).  The key is extracted from an object by means
- * of a {@link KeyExtractor}.  This allows the objects to be stored directly, without separate storage for keys.  This
- * map stores objects in a list sorted by key, and looks them up with binary search.  Therefore, the key extractor
- * should generally be fast (e.g. just calling a getter), in order for this class to be performant.
+ * A map that allows objects with long keys to be looked up by key.
+ * This structure works on objects that have an associated key, such as recommendation results or ratings (keyed by user
+ * or item ID).  The key is extracted from an object by means of a {@link KeyExtractor}.  This allows the objects to be
+ * stored directly, without separate storage for keys.  This map stores objects in a list sorted by key, and looks them
+ * up with binary search.  Therefore, the key extractor should generally be fast (e.g. just calling a getter), in order
+ * for this class to be performant.
  */
 @Immutable
-public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implements Serializable {
+public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implements Serializable, Iterable<T> {
     private static final long serialVersionUID = 1L;
 
     private final KeyExtractor<? super T> extractor;
@@ -50,15 +48,55 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
     private transient EntrySet entrySet;
 
     /**
+     * Create a new builder for a keyed object map.
+     * @param ex The key extractor.
+     * @param <T> The keyed object type.
+     * @return A builder for a keyed object map.
+     */
+    public static <T> KeyedObjectMapBuilder<T> newBuilder(KeyExtractor<? super T> ex) {
+        return new KeyedObjectMapBuilder<>(ex);
+    }
+
+    /**
+     * Create a new builder for a keyed object map over a self-keying type.
+     * @param <T> The keyed object type.
+     * @return A builder for a keyed object map.
+     */
+    public static <T extends KeyedObject> KeyedObjectMapBuilder<T> newBuilder() {
+        return new KeyedObjectMapBuilder<>(Keys.selfExtractor());
+    }
+
+    /**
+     * Create a new keyed object map.
+     * @param objs A collection of objects to put in the map.
+     * @param <T> The keyed object type.
+     * @return A keyed object map of the objects in {@code objs}.
+     */
+    public static <T extends KeyedObject> KeyedObjectMap<T> create(Collection<? extends T> objs) {
+        return new KeyedObjectMap<>(objs, Keys.selfExtractor());
+    }
+
+    /**
+     * Create a new keyed object map.
+     * @param objs A collection of objects to put in the map.
+     * @param ex The key extractor.
+     * @param <T> The keyed object type.
+     * @return A keyed object map of the objects in {@code objs}.
+     */
+    public static <T> KeyedObjectMap<T> create(Iterable<? extends T> objs, KeyExtractor<? super T> ex) {
+        return new KeyedObjectMap<>(objs, ex);
+    }
+
+    /**
      * Create a new keyed object map from a collection of data.
      * @param objs The input data.
      */
-    public KeyedObjectMap(Collection<? extends T> objs, KeyExtractor<? super T> ex) {
+    public KeyedObjectMap(Iterable<? extends T> objs, KeyExtractor<? super T> ex) {
         this(objs, ex, false);
     }
 
     @SuppressWarnings("unchecked")
-    private KeyedObjectMap(Collection<? extends T> objs, KeyExtractor<? super T> ex, boolean sorted) {
+    private KeyedObjectMap(Iterable<? extends T> objs, KeyExtractor<? super T> ex, boolean sorted) {
         if (sorted) {
             if (objs instanceof ImmutableList) {
                 data = (ImmutableList<T>) objs;
@@ -66,7 +104,7 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
                 data = ImmutableList.copyOf(objs);
             }
         } else {
-            data = Keys.keyOrdering(ex).immutableSortedCopy((Collection<T>) objs);
+            data = Keys.keyOrdering(ex).immutableSortedCopy((Iterable<T>) objs);
         }
         extractor = ex;
     }
@@ -92,7 +130,7 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
         return new AbstractObjectCollection<T>() {
             @Override
             public ObjectIterator<T> iterator() {
-                return ObjectIterators.asObjectIterator(data.iterator());
+                return new ValueIterator(data.listIterator());
             }
 
             @Override
@@ -100,6 +138,11 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
                 return data.size();
             }
         };
+    }
+
+    @Override
+    public ObjectBidirectionalIterator<T> iterator() {
+        return new ValueIterator(data.listIterator());
     }
 
     @Override
@@ -342,6 +385,34 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
         @Override
         protected int test(int pos) {
             return Longs.compare(target, extractor.getKey(data.get(pos)));
+        }
+    }
+
+    private class ValueIterator extends AbstractObjectBidirectionalIterator<T> {
+        private final ListIterator<T> delegate;
+
+        public ValueIterator(ListIterator<T> iter) {
+            delegate = iter;
+        }
+
+        @Override
+        public T previous() {
+            return delegate.previous();
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return delegate.hasPrevious();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return delegate.hasNext();
+        }
+
+        @Override
+        public T next() {
+            return delegate.next();
         }
     }
 }

@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.source;
 
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
-import org.grouplens.lenskit.data.pref.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.specs.data.DataSourceSpec;
 
 import javax.annotation.Nullable;

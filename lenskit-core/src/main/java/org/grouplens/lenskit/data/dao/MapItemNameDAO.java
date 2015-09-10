@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.util.LineCursor;
+import org.lenskit.util.io.LineStream;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
@@ -75,11 +75,11 @@ public class MapItemNameDAO implements ItemNameDAO, ItemDAO, Serializable {
      * @throws java.io.IOException if there is an error reading the list of items.
      */
     public static MapItemNameDAO fromCSVFile(File file) throws IOException {
-        LineCursor cursor = LineCursor.openFile(file, CompressionMode.AUTO);
+        LineStream stream = LineStream.openFile(file, CompressionMode.AUTO);
         try {
             ImmutableMap.Builder<Long, String> names = ImmutableMap.builder();
             StrTokenizer tok = StrTokenizer.getCSVInstance();
-            for (String line : cursor) {
+            for (String line : stream) {
                 tok.reset(line);
                 long item = Long.parseLong(tok.next());
                 String title = tok.nextToken();
@@ -90,14 +90,14 @@ public class MapItemNameDAO implements ItemNameDAO, ItemDAO, Serializable {
             return new MapItemNameDAO(names.build());
         } catch (NoSuchElementException ex) {
             throw new IOException(String.format("%s:%s: not enough columns",
-                                                file, cursor.getLineNumber()),
+                                                file, stream.getLineNumber()),
                                   ex);
         } catch (NumberFormatException ex) {
             throw new IOException(String.format("%s:%s: id not an integer",
-                                                file, cursor.getLineNumber()),
+                                                file, stream.getLineNumber()),
                                   ex);
         } finally {
-            cursor.close();
+            stream.close();
         }
     }
 }

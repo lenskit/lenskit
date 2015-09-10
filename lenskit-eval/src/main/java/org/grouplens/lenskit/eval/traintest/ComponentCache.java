@@ -36,6 +36,7 @@ import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.NodeInstantiator;
 import org.grouplens.lenskit.inject.NodeProcessor;
 import org.grouplens.lenskit.util.io.*;
+import org.lenskit.util.io.StagedWrite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +86,10 @@ class ComponentCache implements NodeProcessor {
         cacheDir = dir;
         classLoader = loader;
         instantiator = NodeInstantiator.create();
-        cache = new WeakHashMap<DAGNode<Component, Dependency>, CacheEntry>();
+        cache = new WeakHashMap<>();
+        if (cacheDir != null && cacheDir.mkdirs()) {
+            logger.debug("created cache directory {}", cacheDir);
+        }
     }
 
     @SuppressWarnings("unused")
@@ -270,9 +274,6 @@ class ComponentCache implements NodeProcessor {
 
         private void writeCompressedObject(File cacheFile, Object obj) throws IOException {
             assert cacheDir != null;
-            if (cacheDir.mkdirs()) {
-                logger.debug("created cache directory {}", cacheDir);
-            }
             StagedWrite stage = StagedWrite.begin(cacheFile);
             try {
                 try (OutputStream out = stage.openOutputStream();

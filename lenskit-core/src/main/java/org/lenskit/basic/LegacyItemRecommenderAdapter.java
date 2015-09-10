@@ -69,11 +69,6 @@ public class LegacyItemRecommenderAdapter implements ItemRecommender {
     }
 
     @Override
-    public List<Long> recommend(long user, @Nullable Set<Long> candidates) {
-        return idList(delegate.recommend(user, candidates));
-    }
-
-    @Override
     public List<Long> recommend(long user, int n, @Nullable Set<Long> candidates, @Nullable Set<Long> exclude) {
         return idList(delegate.recommend(user, n, candidates, exclude));
     }

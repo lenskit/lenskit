@@ -20,14 +20,14 @@
  */
 
 
-import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.api.ItemScorer
+import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.core.Transient
 import org.grouplens.lenskit.data.dao.EventDAO
 import org.grouplens.lenskit.data.dao.UserDAO
 import org.grouplens.lenskit.eval.data.traintest.QueryData
 import org.grouplens.lenskit.eval.metrics.predict.*
-import org.grouplens.lenskit.external.ExternalProcessItemScorerBuilder
+import org.lenskit.external.ExternalProcessItemScorerBuilder
 
 import javax.inject.Inject
 import javax.inject.Provider

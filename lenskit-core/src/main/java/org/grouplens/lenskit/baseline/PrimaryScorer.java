@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.baseline;
 
+import org.grouplens.grapht.annotation.AliasFor;
 import org.grouplens.grapht.annotation.AllowUnqualifiedMatch;
 
 import javax.inject.Qualifier;
@@ -33,8 +34,9 @@ import java.lang.annotation.*;
  */
 @Documented
 @Qualifier
-@AllowUnqualifiedMatch
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
+@AliasFor(org.lenskit.basic.PrimaryScorer.class)
+@Deprecated
 public @interface PrimaryScorer {
 }

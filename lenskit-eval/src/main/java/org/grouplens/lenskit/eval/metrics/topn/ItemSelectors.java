@@ -31,10 +31,10 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.core.LenskitRecommender;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.ItemEventDAO;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.eval.traintest.TestUser;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
@@ -480,7 +480,7 @@ public final class  ItemSelectors {
             LenskitRecommender rec = (LenskitRecommender) input;
             ItemEventDAO idao = rec.get(ItemEventDAO.class);
             ScoredItemAccumulator accum = new TopNScoredItemAccumulator(count);
-            Cursor<ItemEventCollection<Event>> items = idao.streamEventsByItem();
+            ObjectStream<ItemEventCollection<Event>> items = idao.streamEventsByItem();
             try {
                 for (ItemEventCollection<Event> item: items) {
                     accum.put(item.getItemId(), item.size());

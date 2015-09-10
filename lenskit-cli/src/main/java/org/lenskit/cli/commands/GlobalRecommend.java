@@ -27,11 +27,10 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitRecommender;
-import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.data.dao.ItemNameDAO;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.grouplens.lenskit.symbols.Symbol;
+import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.cli.util.RecommenderLoader;
@@ -74,8 +73,8 @@ public class GlobalRecommend implements Command {
         List<Long> items = opts.get("items");
         final int n = opts.getInt("num_recs");
 
-        LenskitRecommender rec = engine.createRecommender();
-        GlobalItemRecommender irec = rec.getGlobalItemRecommender();
+        org.lenskit.LenskitRecommender rec = engine.createRecommender();
+        GlobalItemRecommender irec = rec.get(GlobalItemRecommender.class);
         ItemNameDAO indao = rec.get(ItemNameDAO.class);
         if (irec == null) {
             logger.error("recommender has no global recommender");

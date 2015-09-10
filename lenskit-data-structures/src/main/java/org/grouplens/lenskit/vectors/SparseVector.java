@@ -117,6 +117,10 @@ public abstract class SparseVector implements Iterable<VectorEntry>, Serializabl
             values[i] = keyValueMap.get(keys.getKey(i));
         }
     }
+
+    public Long2DoubleMap asMap() {
+        return new SparseVectorMapAdapter(this);
+    }
     //endregion
 
     //region Queries

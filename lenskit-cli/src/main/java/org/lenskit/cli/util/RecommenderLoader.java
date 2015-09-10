@@ -26,11 +26,11 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineBuilder;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineLoader;
 import org.grouplens.lenskit.data.dao.ItemNameDAO;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.lenskit.LenskitRecommenderEngine;
+import org.lenskit.LenskitRecommenderEngineBuilder;
+import org.lenskit.LenskitRecommenderEngineLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

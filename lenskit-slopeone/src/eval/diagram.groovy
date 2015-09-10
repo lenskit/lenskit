@@ -24,8 +24,8 @@ import org.grouplens.lenskit.baseline.BaselineScorer
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.baseline.UserMeanBaseline
 import org.grouplens.lenskit.baseline.UserMeanItemScorer
-import org.grouplens.lenskit.slopeone.DeviationDamping
-import org.grouplens.lenskit.slopeone.SlopeOneItemScorer
+import org.lenskit.slopeone.DeviationDamping
+import org.lenskit.slopeone.SlopeOneItemScorer
 
 dumpGraph {
     output "${config.analysisDir}/slope-one.dot"

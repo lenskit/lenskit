@@ -24,11 +24,11 @@ import com.google.auto.service.AutoService;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.grouplens.lenskit.cursors.Cursor;
+import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
 import org.slf4j.Logger;
@@ -73,7 +73,7 @@ public class PackRatings implements Command {
         }
         logger.info("packing to {} with flags {}", ctx.getOutputFile(), flags);
         try (BinaryRatingPacker packer = BinaryRatingPacker.open(ctx.getOutputFile(), flags);
-        Cursor<Rating> ratings = dao.streamEvents(Rating.class)) {
+        ObjectStream<Rating> ratings = dao.streamEvents(Rating.class)) {
             packer.writeRatings(ratings);
             logger.info("packed {} ratings", packer.getRatingCount());
         }

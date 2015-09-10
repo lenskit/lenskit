@@ -24,7 +24,7 @@ import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer
 import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
-import org.grouplens.lenskit.data.event.Ratings
+import org.lenskit.data.ratings.Ratings
 import org.grouplens.lenskit.data.source.GenericDataSource
 import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.junit.Test

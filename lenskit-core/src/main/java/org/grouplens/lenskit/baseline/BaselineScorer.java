@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.baseline;
 
+import org.grouplens.grapht.annotation.AliasFor;
 import org.grouplens.grapht.annotation.DefaultNull;
 
 import javax.inject.Qualifier;
@@ -38,5 +39,7 @@ import java.lang.annotation.*;
 @DefaultNull
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
+@AliasFor(org.lenskit.baseline.BaselineScorer.class)
+@Deprecated
 public @interface BaselineScorer {
 }

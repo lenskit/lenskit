@@ -71,7 +71,7 @@ public class LenskitRecommender implements Recommender {
      */
     public <T> T get(Class<T> cls) {
         try {
-            return injector.getInstance(cls);
+            return injector.tryGetInstance(cls);
         } catch (InjectionException e) {
             throw new RuntimeException("error instantiating component", e);
         }

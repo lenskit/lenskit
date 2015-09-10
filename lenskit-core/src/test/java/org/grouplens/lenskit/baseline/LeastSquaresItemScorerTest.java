@@ -22,14 +22,16 @@ package org.grouplens.lenskit.baseline;
 
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshot;
-import org.grouplens.lenskit.data.snapshot.PackedPreferenceSnapshotBuilder;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.PackedRatingMatrix;
+import org.lenskit.data.ratings.PackedRatingMatrixBuilder;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.api.ResultMap;
+import org.lenskit.baseline.LeastSquaresItemScorer;
+import org.lenskit.util.collections.LongUtils;
 
 import javax.inject.Provider;
 import java.util.ArrayList;
@@ -41,12 +43,12 @@ import static org.junit.Assert.*;
 public class LeastSquaresItemScorerTest {
 
     private static final double EPSILON = 1.0e-2;
-    private PackedPreferenceSnapshot snapshot;
+    private PackedRatingMatrix snapshot;
     private LeastSquaresItemScorer predictor;
 
     @Before
     public void createPredictor() {
-        List<Rating> rs = new ArrayList<Rating>();
+        List<Rating> rs = new ArrayList<>();
         rs.add(Rating.create(2, 1, 3));
         rs.add(Rating.create(3, 1, 4));
         rs.add(Rating.create(4, 1, 3));
@@ -66,7 +68,7 @@ public class LeastSquaresItemScorerTest {
         rs.add(Rating.create(3, 6, 4));
 
         final EventDAO dao = EventCollectionDAO.create(rs);
-        final Provider<PackedPreferenceSnapshot> provider = new PackedPreferenceSnapshotBuilder(dao, new Random());
+        final Provider<PackedRatingMatrix> provider = new PackedRatingMatrixBuilder(dao, new Random());
         snapshot = provider.get();
         final StoppingCondition stop = new ThresholdStoppingCondition(0.1, 10);
 
@@ -79,37 +81,28 @@ public class LeastSquaresItemScorerTest {
 
     @Test
     public void testKnownUserItem() {
-        final long user = 1;
-        MutableSparseVector output = MutableSparseVector.create(1, 2, 3);
+        ResultMap scores = predictor.scoreWithDetails(1, LongUtils.packedSet(1, 2, 3));
 
-        predictor.score(user, output);
-
-        assertEquals(3.18, output.get(1), EPSILON);
-        assertEquals(3.04, output.get(2), EPSILON);
-        assertEquals(3.07, output.get(3), EPSILON);
+        assertEquals(3.18, scores.getScore(1), EPSILON);
+        assertEquals(3.04, scores.getScore(2), EPSILON);
+        assertEquals(3.07, scores.getScore(3), EPSILON);
     }
 
     @Test
     public void testUnknownItem() {
-        final long user = 2;
-        MutableSparseVector output = MutableSparseVector.create(14, 15, 16);
+        ResultMap scores = predictor.scoreWithDetails(2, LongUtils.packedSet(14, 15, 16));
 
-        predictor.score(user, output);
-
-        assertEquals(3.07, output.get(14), EPSILON);
-        assertEquals(3.07, output.get(15), EPSILON);
-        assertEquals(3.07, output.get(16), EPSILON);
+        assertEquals(3.07, scores.getScore(14), EPSILON);
+        assertEquals(3.07, scores.getScore(15), EPSILON);
+        assertEquals(3.07, scores.getScore(16), EPSILON);
     }
 
     @Test
     public void testUnknownUser() {
-        final long user = 11;
-        MutableSparseVector output = MutableSparseVector.create(4, 5, 6);
+        ResultMap scores = predictor.scoreWithDetails(11, LongUtils.packedSet(4,5,6));
 
-        predictor.score(user, output);
-
-        assertEquals(3.05, output.get(4), EPSILON);
-        assertEquals(3.20, output.get(5), EPSILON);
-        assertEquals(3.13, output.get(6), EPSILON);
+        assertEquals(3.05, scores.getScore(4), EPSILON);
+        assertEquals(3.20, scores.getScore(5), EPSILON);
+        assertEquals(3.13, scores.getScore(6), EPSILON);
     }
 }

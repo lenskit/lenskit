@@ -61,4 +61,9 @@ class RatingPredictorCompatWrapper implements org.grouplens.lenskit.RatingPredic
         Map<Long, Double> results = delegate.predict(user, scores.keyDomain());
         scores.set(ImmutableSparseVector.create(results));
     }
+
+    @Override
+    public String toString() {
+        return "CompatWrapper{" + delegate + "}";
+    }
 }

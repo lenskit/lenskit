@@ -32,13 +32,13 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.collections.CollectionUtils;
-import org.grouplens.lenskit.cursors.Cursor;
-import org.grouplens.lenskit.cursors.Cursors;
+import org.lenskit.util.io.ObjectStream;
+import org.lenskit.util.io.ObjectStreams;
 import org.grouplens.lenskit.data.dao.*;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Events;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.RatingBuilder;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.events.Events;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.RatingBuilder;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.data.history.UserHistory;
@@ -193,42 +193,42 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     }
 
     @Override
-    public Cursor<Event> streamEvents() {
+    public ObjectStream<Event> streamEvents() {
         return streamEvents(Event.class);
     }
 
     @Override
-    public <E extends Event> Cursor<E> streamEvents(Class<E> type) {
+    public <E extends Event> ObjectStream<E> streamEvents(Class<E> type) {
         return streamEvents(type, SortOrder.ANY);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E extends Event> Cursor<E> streamEvents(Class<E> type, SortOrder order) {
+    public <E extends Event> ObjectStream<E> streamEvents(Class<E> type, SortOrder order) {
         if (!type.isAssignableFrom(Rating.class)) {
-            return Cursors.empty();
+            return ObjectStreams.empty();
         }
 
-        final Cursor<Rating> cursor;
+        final ObjectStream<Rating> stream;
 
         switch (order) {
         case ANY:
         case TIMESTAMP:
-            cursor = getRatingList().cursor();
+            stream = getRatingList().objectStream();
             break;
         case USER:
-            cursor = Cursors.concat(Iterables.transform(userTable.entries(),
-                                                        new EntryToCursorTransformer()));
+            stream = ObjectStreams.concat(Iterables.transform(userTable.entries(),
+                                                              new EntryToStreamTransformer()));
             break;
         case ITEM:
-            cursor = Cursors.concat(Iterables.transform(itemTable.entries(),
-                                                        new EntryToCursorTransformer()));
+            stream = ObjectStreams.concat(Iterables.transform(itemTable.entries(),
+                                                              new EntryToStreamTransformer()));
             break;
         default:
             throw new IllegalArgumentException("unexpected sort order");
         }
 
-        return (Cursor<E>) cursor;
+        return (ObjectStream<E>) stream;
     }
 
     @Override
@@ -237,19 +237,19 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     }
 
     @Override
-    public Cursor<ItemEventCollection<Event>> streamEventsByItem() {
+    public ObjectStream<ItemEventCollection<Event>> streamEventsByItem() {
         return streamEventsByItem(Event.class);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E extends Event> Cursor<ItemEventCollection<E>> streamEventsByItem(Class<E> type) {
+    public <E extends Event> ObjectStream<ItemEventCollection<E>> streamEventsByItem(Class<E> type) {
         if (type.isAssignableFrom(Rating.class)) {
             // cast is safe, Rating extends E
-            return (Cursor) Cursors.wrap(Collections2.transform(itemTable.entries(),
-                                                                new ItemEntryTransformer()));
+            return (ObjectStream) ObjectStreams.wrap(Collections2.transform(itemTable.entries(),
+                                                                            new ItemEntryTransformer()));
         } else {
-            return Cursors.empty();
+            return ObjectStreams.empty();
         }
     }
 
@@ -297,19 +297,19 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     }
 
     @Override
-    public Cursor<UserHistory<Event>> streamEventsByUser() {
+    public ObjectStream<UserHistory<Event>> streamEventsByUser() {
         return streamEventsByUser(Event.class);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <E extends Event> Cursor<UserHistory<E>> streamEventsByUser(Class<E> type) {
+    public <E extends Event> ObjectStream<UserHistory<E>> streamEventsByUser(Class<E> type) {
         if (type.isAssignableFrom(Rating.class)) {
             // cast is safe, E super Rating
-            return (Cursor) Cursors.wrap(Collections2.transform(userTable.entries(),
-                                                                new UserEntryTransformer()));
+            return (ObjectStream) ObjectStreams.wrap(Collections2.transform(userTable.entries(),
+                                                                            new UserEntryTransformer()));
         } else {
-            return Cursors.empty();
+            return ObjectStreams.empty();
         }
     }
 
@@ -347,12 +347,12 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         writer.putField("header", header.render());
     }
 
-    private class EntryToCursorTransformer implements Function<Pair<Long, IntList>, Cursor<Rating>> {
+    private class EntryToStreamTransformer implements Function<Pair<Long, IntList>, ObjectStream<Rating>> {
         @Nonnull
         @Override
-        public Cursor<Rating> apply(Pair<Long, IntList> input) {
+        public ObjectStream<Rating> apply(Pair<Long, IntList> input) {
             Preconditions.checkNotNull(input, "input entry");
-            return Cursors.wrap(getRatingList(input.getRight()));
+            return ObjectStreams.wrap(getRatingList(input.getRight()));
         }
     }
 

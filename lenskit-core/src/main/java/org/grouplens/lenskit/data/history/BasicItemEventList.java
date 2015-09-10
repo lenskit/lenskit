@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.data.history;
 
 import com.google.common.collect.ImmutableList;
-import org.grouplens.lenskit.data.event.Event;
+import org.lenskit.data.events.Event;
 
 import java.util.Collection;
 import java.util.Iterator;

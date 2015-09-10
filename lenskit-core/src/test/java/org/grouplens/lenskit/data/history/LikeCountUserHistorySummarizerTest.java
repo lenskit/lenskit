@@ -20,9 +20,9 @@
  */
 package org.grouplens.lenskit.data.history;
 
-import org.grouplens.lenskit.data.event.Like;
-import org.grouplens.lenskit.data.event.LikeBatch;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.events.Like;
+import org.lenskit.data.events.LikeBatch;
+import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;

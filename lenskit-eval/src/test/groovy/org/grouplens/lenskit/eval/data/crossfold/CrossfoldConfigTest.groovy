@@ -20,9 +20,9 @@
  */
 package org.grouplens.lenskit.eval.data.crossfold
 
-import org.grouplens.lenskit.cursors.Cursors
+import org.lenskit.util.io.ObjectStreams
 import org.grouplens.lenskit.data.dao.EventDAO
-import org.grouplens.lenskit.data.event.Rating
+import org.lenskit.data.ratings.Rating
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet
 import org.grouplens.lenskit.eval.script.ConfigTestBase
 import org.junit.Before
@@ -98,7 +98,7 @@ class CrossfoldConfigTest extends ConfigTestBase {
         assertThat(tt[3].testDAO, instanceOf(EventDAO))
         for (TTDataSet data: tt) {
             EventDAO dao = data.getTestDAO();
-            List<Rating> ratings = Cursors.makeList(dao.streamEvents(Rating.class));
+            List<Rating> ratings = ObjectStreams.makeList(dao.streamEvents(Rating.class));
 
             assertThat(ratings.size(), equalTo(2))
         }

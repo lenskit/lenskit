@@ -76,18 +76,6 @@ public interface ItemRecommender {
     List<Long> recommend(long user, int n);
 
     /**
-     * Recommend all possible items for a user from a set of candidates using
-     * the default exclude set.
-     *
-     * @param user       The user ID.
-     * @param candidates The candidate set (can be null to represent the
-     *                   universe).
-     * @return The recommended items.
-     * @see #recommend(long, int, Set, Set)
-     */
-    List<Long> recommend(long user, @Nullable Set<Long> candidates);
-
-    /**
      * Produce a set of recommendations for the user. This is the most general
      * recommendation method, allowing the recommendations to be constrained by
      * both a candidate set and an exclude set. The exclude set is applied to

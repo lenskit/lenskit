@@ -23,11 +23,11 @@ package org.grouplens.lenskit.data.dao.packed
 import com.google.common.collect.Iterables
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap
 import it.unimi.dsi.fastutil.longs.LongSet
-import org.grouplens.lenskit.cursors.Cursor
+import org.lenskit.util.io.ObjectStream
 import org.grouplens.lenskit.data.dao.*
-import org.grouplens.lenskit.data.event.Event
-import org.grouplens.lenskit.data.event.Rating
-import org.grouplens.lenskit.data.event.Ratings
+import org.lenskit.data.events.Event
+import org.lenskit.data.ratings.Rating
+import org.lenskit.data.ratings.Ratings
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.junit.After
 import org.junit.Rule
@@ -71,7 +71,7 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
         def file = tempDir.newFile()
         BinaryRatingPacker packer = BinaryRatingPacker.open(file)
         try {
-            Cursor<Rating> ratings = ratingDAO.streamEvents(Rating)
+            ObjectStream<Rating> ratings = ratingDAO.streamEvents(Rating)
             try {
                 packer.writeRatings(ratings)
             } finally {
@@ -94,7 +94,7 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
         def file = tempDir.newFile()
         BinaryRatingPacker packer = BinaryRatingPacker.open(file, BinaryFormatFlag.TIMESTAMPS)
         try {
-            Cursor<Rating> ratings = ratingDAO.streamEvents(Rating, SortOrder.TIMESTAMP)
+            ObjectStream<Rating> ratings = ratingDAO.streamEvents(Rating, SortOrder.TIMESTAMP)
             try {
                 packer.writeRatings(ratings)
             } finally {
@@ -117,7 +117,7 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
         def file = tempDir.newFile()
         BinaryRatingPacker packer = BinaryRatingPacker.open(file, BinaryFormatFlag.TIMESTAMPS)
         try {
-            Cursor<Rating> ratings = ratingDAO.streamEvents(Rating)
+            ObjectStream<Rating> ratings = ratingDAO.streamEvents(Rating)
             try {
                 packer.writeRatings(ratings)
             } finally {
@@ -187,7 +187,7 @@ class BigDataBinaryPackTest extends ML100KTestSuite {
         def file = tempDir.newFile()
         BinaryRatingPacker packer = BinaryRatingPacker.open(file)
         try {
-            Cursor<Rating> ratings = ratingDAO.streamEvents(Rating)
+            ObjectStream<Rating> ratings = ratingDAO.streamEvents(Rating)
             try {
                 for (Rating r: ratings) {
                     packer.writeRating(Ratings.make(userMap[r.userId],

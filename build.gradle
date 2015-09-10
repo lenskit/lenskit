@@ -154,6 +154,10 @@ subprojects {
         enableAssertions = true
         reports.junitXml.enabled = true
         reports.html.enabled = true
+
+        testLogging {
+            exceptionFormat "full"
+        }
     }
     reportTests.reportOn test
 

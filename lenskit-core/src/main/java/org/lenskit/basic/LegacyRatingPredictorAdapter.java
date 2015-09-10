@@ -28,7 +28,9 @@ import org.lenskit.api.ResultMap;
 import org.lenskit.results.Results;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
+import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

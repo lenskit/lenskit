@@ -21,6 +21,10 @@
 package org.lenskit.util.keys;
 
 import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.Swapper;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleList;
+import it.unimi.dsi.fastutil.ints.AbstractIntComparator;
 import it.unimi.dsi.fastutil.ints.IntBidirectionalIterator;
 import it.unimi.dsi.fastutil.ints.IntIterators;
 import it.unimi.dsi.fastutil.longs.*;
@@ -32,6 +36,8 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import static it.unimi.dsi.fastutil.Arrays.quickSort;
+
 /**
  * An immutable long-to-double map backed by a sorted key array.
  */
@@ -39,10 +45,10 @@ import java.util.NoSuchElementException;
 public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
     private static final long serialVersionUID = 1L;
 
-    private final LongKeyIndex keys;
+    private final SortedKeyIndex keys;
     private final double[] values;
 
-    Long2DoubleSortedArrayMap(LongKeyIndex ks, double[] vs) {
+    Long2DoubleSortedArrayMap(SortedKeyIndex ks, double[] vs) {
         Preconditions.checkArgument(vs.length >= ks.getUpperBound(),
                                     "index and value sizes mismatched");
         keys = ks;
@@ -51,7 +57,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
 
     public Long2DoubleSortedArrayMap(Map<Long,Double> data) {
         Long2DoubleFunction vf = LongUtils.asLong2DoubleFunction(data);
-        keys = LongKeyIndex.fromCollection(data.keySet());
+        keys = SortedKeyIndex.fromCollection(data.keySet());
         int size = keys.size();
         values = new double[size];
         for (int i = 0; i < size; i++) {
@@ -65,8 +71,64 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
      * @param vs The values (the array is used as-is, it is *not* copied).
      * @return The array map.
      */
-    public static Long2DoubleSortedArrayMap wrap(LongKeyIndex keys, double[] vs) {
+    public static Long2DoubleSortedArrayMap wrap(SortedKeyIndex keys, double[] vs) {
         return new Long2DoubleSortedArrayMap(keys, vs);
+    }
+
+    /**
+     * Create a new {@code MutableSparseVector} from unsorted key and value
+     * arrays. The provided arrays will be modified and should not be used
+     * by the client after this operation has completed. The key domain of
+     * the new {@code MutableSparseVector} will be the same as {@code keys}.
+     *
+     * @param keys Array of entry keys. This should be duplicate-free.
+     * @param values The values of the vector, in key order.
+     * @return A sparse vector backed by the provided arrays.
+     * @throws IllegalArgumentException if there is a problem with the provided
+     *                                  arrays (length mismatch, etc.).
+     */
+    public static Long2DoubleSortedArrayMap wrapUnsorted(long[] keys, double[] values) {
+        IdComparator comparator = new IdComparator(keys);
+        ParallelSwapper swapper = new ParallelSwapper(keys, values);
+        quickSort(0, keys.length, comparator, swapper);
+        // FIXME Verify that the keys have no duplicates
+        SortedKeyIndex index = SortedKeyIndex.wrap(keys, keys.length);
+
+        return wrap(index, values);
+    }
+
+    /**
+     * Create a map from an array and index mapping.
+     *
+     * @param mapping The index mapping specifying the keys.
+     * @param values The array of values.
+     * @return A sparse vector mapping the IDs in {@code map} to the values in {@code values}.
+     * @throws IllegalArgumentException if {@code values} not the same size as {@code idx}.
+     */
+    public static Long2DoubleSortedArrayMap fromArray(KeyIndex mapping, double[] values) {
+        return fromArray(mapping, DoubleArrayList.wrap(values));
+    }
+
+    /**
+     * Create a map from an array and index mapping.
+     *
+     * @param mapping The index mapping specifying the keys.
+     * @param values The array of values.
+     * @return A sparse vector mapping the IDs in {@code map} to the values in {@code values}.
+     * @throws IllegalArgumentException if {@code values} not the same size as {@code idx}.
+     */
+    public static Long2DoubleSortedArrayMap fromArray(KeyIndex mapping, DoubleList values) {
+        Preconditions.checkArgument(values.size() == mapping.size(),
+                                    "value array and index have different sizes: " + values.size() + " != " + mapping.size());
+        final int n = values.size();
+        double[] nvs = new double[n];
+        SortedKeyIndex index = SortedKeyIndex.fromCollection(mapping.getKeyList());
+        for (int i = 0; i < n; i++) {
+            long item = index.getKey(i);
+            int origIndex = mapping.getIndex(item);
+            nvs[i] = values.get(origIndex);
+        }
+        return wrap(index, nvs);
     }
 
     @Override
@@ -119,7 +181,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
 
     @Override
     public double get(long l) {
-        int idx = keys.getIndex(l);
+        int idx = keys.tryGetIndex(l);
         if (idx >= 0) {
             return values[idx];
         } else {
@@ -203,7 +265,7 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
             if (o instanceof Map.Entry) {
                 Map.Entry<?,?> e = (Map.Entry) o;
                 long key = e instanceof Entry ? ((Entry) e).getLongKey() : (Long) e.getKey();
-                int idx = keys.getIndex(key);
+                int idx = keys.tryGetIndex(key);
                 if (idx >= 0) {
                     return e.getValue().equals(values[idx]);
                 }
@@ -314,6 +376,43 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
         @Override
         public Double setValue(Double value) {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    private static class IdComparator extends AbstractIntComparator {
+        private long[] keys;
+
+        @SuppressWarnings("PMD.ArrayIsStoredDirectly")
+        public IdComparator(long[] keys) {
+            this.keys = keys;
+        }
+
+        @Override
+        public int compare(int i, int i2) {
+            return LongComparators.NATURAL_COMPARATOR.compare(keys[i], keys[i2]);
+        }
+    }
+
+    private static class ParallelSwapper implements Swapper {
+
+        private long[] keys;
+        private double[] values;
+
+        @SuppressWarnings("PMD.ArrayIsStoredDirectly")
+        public ParallelSwapper(long[] keys, double[] values) {
+            this.keys = keys;
+            this.values = values;
+        }
+
+        @Override
+        public void swap(int i, int i2) {
+            long lTemp = keys[i];
+            keys[i] = keys[i2];
+            keys[i2] = lTemp;
+
+            double dTemp = values[i];
+            values[i] = values[i2];
+            values[i2] = dTemp;
         }
     }
 }

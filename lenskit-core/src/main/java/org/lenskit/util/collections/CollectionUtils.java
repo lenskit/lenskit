@@ -43,8 +43,9 @@ public final class CollectionUtils {
 
     /**
      * Wrap a {@link Collection} in an {@link ObjectCollection}.
+     *
      * @param objects The collection of objects.
-     * @param <E> The type of objects.
+     * @param <E>     The type of objects.
      * @return The collection as an {@link ObjectCollection}.
      */
     public static <E> ObjectCollection<E> objectCollection(Collection<E> objects) {
@@ -69,8 +70,9 @@ public final class CollectionUtils {
 
     /**
      * Create an {@link IntList} that contains all numbers in a specified interval.
+     *
      * @param from The first number (inclusive)
-     * @param to the last number (exclusive).
+     * @param to   the last number (exclusive).
      * @return A list containing the integers in the interval {@code [from,to)}.
      */
     public static IntList interval(int from, int to) {

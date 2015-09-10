@@ -24,7 +24,7 @@ import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSets;
 import org.junit.Test;
-import org.lenskit.util.keys.LongKeyIndex;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -42,7 +42,7 @@ public class LongUtilsTest {
 
     @Test
     public void testUnionSizeEmptyLSAS() {
-        LongKeyIndex kd = LongKeyIndex.empty();
+        SortedKeyIndex kd = SortedKeyIndex.empty();
         assertThat(unionSize(kd.keySet(), kd.keySet()),
                    equalTo(0));
     }
@@ -55,7 +55,7 @@ public class LongUtilsTest {
 
     @Test
     public void testUnionSizeCompatLSAS() {
-        LongKeyIndex lkd = LongKeyIndex.create(5, 3, 27);
+        SortedKeyIndex lkd = SortedKeyIndex.create(5, 3, 27);
         assertThat(unionSize(lkd.keySet(), lkd.keySet()), equalTo(3));
     }
 
@@ -95,7 +95,7 @@ public class LongUtilsTest {
 
     @Test
     public void testSetUnionEmptyLSAS() {
-        LongKeyIndex kd = LongKeyIndex.empty();
+        SortedKeyIndex kd = SortedKeyIndex.empty();
         assertThat(setUnion(kd.keySet(), kd.keySet()),
                    hasSize(0));
     }
@@ -108,7 +108,7 @@ public class LongUtilsTest {
 
     @Test
     public void testSetUnionCompatLSAS() {
-        LongKeyIndex lkd = LongKeyIndex.create(5, 3, 27);
+        SortedKeyIndex lkd = SortedKeyIndex.create(5, 3, 27);
         assertThat(setUnion(lkd.keySet(), lkd.keySet()),
                    contains(3L, 5L, 27L));
     }

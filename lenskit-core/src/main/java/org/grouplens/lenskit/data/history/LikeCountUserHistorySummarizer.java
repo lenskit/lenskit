@@ -21,12 +21,11 @@
 package org.grouplens.lenskit.data.history;
 
 import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Like;
-import org.grouplens.lenskit.data.event.LikeBatch;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.events.Like;
+import org.lenskit.data.events.LikeBatch;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;

@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.eval.data;
 
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.data.ratings.Rating;
 
 import java.io.Closeable;
 import java.io.IOException;

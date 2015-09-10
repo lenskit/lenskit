@@ -21,11 +21,11 @@
 package org.grouplens.lenskit.data.dao;
 
 import com.google.common.collect.Lists;
-import org.grouplens.lenskit.cursors.Cursors;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
 import org.hamcrest.Matcher;
 import org.junit.Test;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.util.io.ObjectStreams;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,17 +34,17 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 public class EventCollectionDAOTest {
-    // in this file, we don't bother to close cursors, as they're list-backed.
+    // in this file, we don't bother to close streams, as they're list-backed.
 
     @Test
     public void testEmptyStream() {
         List<Event> events = Collections.emptyList();
         EventDAO dao = EventCollectionDAO.create(events);
-        assertThat(dao.streamEvents().hasNext(), equalTo(false));
-        assertThat(dao.streamEvents(Rating.class).hasNext(),
-                   equalTo(false));
-        assertThat(dao.streamEvents(Rating.class, SortOrder.ITEM).hasNext(),
-                   equalTo(false));
+        assertThat(dao.streamEvents().readObject(), nullValue());
+        assertThat(dao.streamEvents(Rating.class).readObject(),
+                   nullValue());
+        assertThat(dao.streamEvents(Rating.class, SortOrder.ITEM).readObject(),
+                   nullValue());
     }
 
     @Test
@@ -56,11 +56,11 @@ public class EventCollectionDAOTest {
                 Rating.create(2, 4, 3)
         );
         EventDAO dao = EventCollectionDAO.create(ratings);
-        assertThat(Cursors.makeList(dao.streamEvents()),
+        assertThat(ObjectStreams.makeList(dao.streamEvents()),
                    (Matcher) hasSize(3));
-        assertThat(Cursors.makeList(dao.streamEvents(Rating.class)),
+        assertThat(ObjectStreams.makeList(dao.streamEvents(Rating.class)),
                    (Matcher) hasSize(3));
-        assertThat(Cursors.makeList(dao.streamEvents(Rating.class, SortOrder.ITEM)),
+        assertThat(ObjectStreams.makeList(dao.streamEvents(Rating.class, SortOrder.ITEM)),
                    hasSize(3));
     }
 
@@ -72,9 +72,9 @@ public class EventCollectionDAOTest {
                 Rating.create(2, 4, 3)
         );
         EventDAO dao = EventCollectionDAO.create(ratings);
-        assertThat(Cursors.makeList(dao.streamEvents(Purchase.class)),
+        assertThat(ObjectStreams.makeList(dao.streamEvents(Purchase.class)),
                    emptyIterable());
-        assertThat(Cursors.makeList(dao.streamEvents(Purchase.class, SortOrder.ITEM)),
+        assertThat(ObjectStreams.makeList(dao.streamEvents(Purchase.class, SortOrder.ITEM)),
                    emptyIterable());
     }
 
@@ -87,13 +87,13 @@ public class EventCollectionDAOTest {
                 Rating.create(2, 4, 3)
         );
         EventDAO dao = EventCollectionDAO.create(ratings);
-        assertThat(Cursors.makeList(dao.streamEvents(Purchase.class)),
+        assertThat(ObjectStreams.makeList(dao.streamEvents(Purchase.class)),
                    hasSize(1));
-        assertThat(Cursors.makeList(dao.streamEvents(Rating.class)),
+        assertThat(ObjectStreams.makeList(dao.streamEvents(Rating.class)),
                    hasSize(3));
-        assertThat(Cursors.makeList(dao.streamEvents(Purchase.class, SortOrder.ITEM)),
+        assertThat(ObjectStreams.makeList(dao.streamEvents(Purchase.class, SortOrder.ITEM)),
                    hasSize(1));
-        assertThat(Cursors.makeList(dao.streamEvents(Rating.class, SortOrder.ITEM)),
+        assertThat(ObjectStreams.makeList(dao.streamEvents(Rating.class, SortOrder.ITEM)),
                    hasSize(3));
     }
 

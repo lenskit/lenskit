@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.baseline;
 
+import org.grouplens.grapht.annotation.AliasFor;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 
 import javax.inject.Qualifier;
@@ -36,5 +37,7 @@ import java.lang.annotation.*;
 @DefaultImplementation(GlobalMeanRatingItemScorer.class)
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
+@AliasFor(org.lenskit.baseline.UserMeanBaseline.class)
+@Deprecated
 public @interface UserMeanBaseline {
 }

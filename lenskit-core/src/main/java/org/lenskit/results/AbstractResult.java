@@ -23,6 +23,7 @@ package org.lenskit.results;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.lenskit.api.Result;
+import org.lenskit.util.keys.KeyedObject;
 
 import javax.annotation.Nonnull;
 
@@ -30,7 +31,7 @@ import javax.annotation.Nonnull;
  * Base class for basic result types.  It provides storage for the ID and score, as well as helper methods for hashing
  * and equality checking.  This type does not directly enforce immutability, but subclasses should be immutable.
  */
-public abstract class AbstractResult implements Result {
+public abstract class AbstractResult implements Result, KeyedObject {
     protected long id;
     protected double score;
 
@@ -48,6 +49,11 @@ public abstract class AbstractResult implements Result {
      * Create a new, uninitialized result.
      */
     protected AbstractResult() {}
+
+    @Override
+    public long getKey() {
+        return getId();
+    }
 
     @Override
     public long getId() {
@@ -85,7 +91,7 @@ public abstract class AbstractResult implements Result {
      * @return A hash code builder that has the ID and score already appended.
      */
     protected HashCodeBuilder startHashCode() {
-        return new HashCodeBuilder().append(id).append(score);
+        return startHashCode(this);
     }
 
     /**
@@ -96,7 +102,29 @@ public abstract class AbstractResult implements Result {
      * @return An equality builder, that has the ID and score of this result and `r` already appended to it.
      */
     protected EqualsBuilder startEquality(Result r) {
-        return new EqualsBuilder().append(id, r.getId())
-                                  .append(score, r.getScore());
+        return startEquality(this, r);
+    }
+
+    /**
+     * Create an equality builder, populated with the ID and score.  Subclasses can use this as a starting point for
+     * checking equality.
+     *
+     * @param r The other result.
+     * @return An equality builder, that has the ID and score of this result and `r` already appended to it.
+     */
+    public static EqualsBuilder startEquality(Result r1, Result r2) {
+        return new EqualsBuilder().append(r1.getId(), r2.getId())
+                                  .append(r1.getScore(), r2.getScore());
+    }
+
+    /**
+     * Create an equality builder, populated with the ID and score.  Subclasses can use this as a starting point for
+     * checking equality.
+     *
+     * @param r The other result.
+     * @return An equality builder, that has the ID and score of this result and `r` already appended to it.
+     */
+    public static HashCodeBuilder startHashCode(Result r) {
+        return new HashCodeBuilder().append(r.getId()).append(r.getScore());
     }
 }

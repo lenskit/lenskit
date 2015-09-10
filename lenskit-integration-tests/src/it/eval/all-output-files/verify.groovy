@@ -20,7 +20,7 @@
  */
 
 
-import org.grouplens.lenskit.knn.item.model.SimilarityMatrixModel
+import org.lenskit.knn.item.model.SimilarityMatrixModel
 
 import java.util.zip.GZIPInputStream
 
