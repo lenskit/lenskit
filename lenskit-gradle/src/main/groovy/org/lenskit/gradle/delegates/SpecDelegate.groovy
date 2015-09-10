@@ -27,7 +27,8 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
- * Configurable wrapper for a specification.
+ * Configurable wrapper for a specification.  It automatically creates methods to set properties, like configurable
+ * Gradle objects usually have, so you can say {@code prop value} instead of {@code prop = value}.
  */
 class SpecDelegate {
     final def AbstractSpec spec

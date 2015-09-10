@@ -75,7 +75,7 @@ class TrainTest extends LenskitTask {
      * @param block The block.
      * @see PredictEvalTaskSpec
      */
-    def predict(Closure block) {
+    void predict(@DelegatesTo(SpecDelegate) Closure block) {
         def task = SpecDelegate.configure(PredictEvalTaskSpec, block)
         spec.addTask(task)
     }
