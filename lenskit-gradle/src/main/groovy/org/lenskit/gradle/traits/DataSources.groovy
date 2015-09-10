@@ -21,7 +21,7 @@
 package org.lenskit.gradle.traits
 
 import org.gradle.api.Project
-import org.lenskit.gradle.SpecDelegate
+import org.lenskit.gradle.delegates.SpecDelegate
 import org.lenskit.specs.data.DataSourceSpec
 import org.lenskit.specs.data.TextDataSourceSpec
 

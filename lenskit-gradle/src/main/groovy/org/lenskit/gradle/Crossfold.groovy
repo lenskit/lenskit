@@ -23,6 +23,7 @@ package org.lenskit.gradle
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
+import org.lenskit.gradle.delegates.SpecDelegate
 import org.lenskit.gradle.traits.DataBuilder
 import org.lenskit.gradle.traits.DataSources
 import org.lenskit.specs.SpecUtils

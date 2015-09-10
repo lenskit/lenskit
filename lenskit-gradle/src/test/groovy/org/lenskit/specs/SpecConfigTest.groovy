@@ -22,7 +22,7 @@ package org.lenskit.specs
 
 import org.gradle.util.ConfigureUtil
 import org.junit.Test
-import org.lenskit.gradle.SpecDelegate
+import org.lenskit.gradle.delegates.SpecDelegate
 import org.lenskit.specs.data.TextDataSourceSpec
 
 import java.nio.file.Paths

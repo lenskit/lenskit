@@ -22,6 +22,7 @@ package org.lenskit.gradle
 
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
+import org.lenskit.gradle.delegates.SpecDelegate
 import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.eval.AlgorithmSpec
 import org.lenskit.specs.eval.DataSetSpec

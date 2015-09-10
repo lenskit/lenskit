@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.gradle
+package org.lenskit.gradle.delegates
 
 import org.gradle.util.ConfigureUtil
 import org.lenskit.specs.AbstractSpec
