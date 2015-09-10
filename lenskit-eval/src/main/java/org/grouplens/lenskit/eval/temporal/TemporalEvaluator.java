@@ -21,22 +21,25 @@
 package org.grouplens.lenskit.eval.temporal;
 
 import com.google.common.base.Preconditions;
-import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.ModelDisposition;
-import org.grouplens.lenskit.cursors.Cursors;
 import org.grouplens.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO;
-import org.grouplens.lenskit.data.event.Rating;
 import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.table.TableLayout;
 import org.grouplens.lenskit.util.table.TableLayoutBuilder;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
+import org.lenskit.LenskitRecommenderEngine;
+import org.lenskit.api.Recommender;
+import org.lenskit.api.Result;
+import org.lenskit.util.io.ObjectStreams;
+import org.lenskit.data.ratings.Rating;
 
+
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -173,7 +176,7 @@ public class TemporalEvaluator {
         TableLayout tl = tlb.build();
         tableWriter = CSVWriter.open(predictOutputFile, tl, CompressionMode.AUTO);
 
-        List<Rating> ratings = Cursors.makeList(dataSource.streamEvents(Rating.class, SortOrder.TIMESTAMP));
+        List<Rating> ratings = ObjectStreams.makeList(dataSource.streamEvents(Rating.class, SortOrder.TIMESTAMP));
         BinaryRatingDAO limitedDao = dataSource.createWindowedView(0);
         LenskitRecommenderEngine lre;
         Recommender recommender;
@@ -192,11 +195,15 @@ public class TemporalEvaluator {
                                               .addConfiguration(config, ModelDisposition.EXCLUDED)
                                               .build();
                 recommender = lre.createRecommender(config);
-                //gets prediction
-                double prediction = recommender.getRatingPredictor().predict(r.getUserId(), r.getItemId());
+                //gets prediction score
+                Result predictionResult = recommender.getRatingPredictor().predict(r.getUserId(), r.getItemId());
+                double predict = Double.NaN;
+                if (predictionResult != null) {
+                    predict = predictionResult.getScore();
+                }
                 //calculates time averaged RMSE
-                if (!Double.isNaN(prediction)) {
-                    double err = prediction - r.getValue();
+                if (!Double.isNaN(predict)) {
+                    double err = predict - r.getValue();
                     sse += err * err;
                     n++;
                 }
@@ -205,7 +212,7 @@ public class TemporalEvaluator {
                     rmse = sqrt(sse / n);
                 }
                 //writes the Prediction Score and TARMSE on file
-                tableWriter.writeRow(r.getUserId(), r.getItemId(), r.getValue(), r.getTimestamp(), prediction, rmse);
+                tableWriter.writeRow(r.getUserId(), r.getItemId(), r.getValue(), r.getTimestamp(), predict, rmse);
             }
         } finally {
             tableWriter.close();

@@ -21,16 +21,16 @@
 package org.grouplens.lenskit.eval.temporal;
 
 import com.google.common.collect.ImmutableList;
-import org.grouplens.lenskit.ItemScorer;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer;
-import org.grouplens.lenskit.baseline.UserMeanBaseline;
-import org.grouplens.lenskit.baseline.UserMeanItemScorer;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
-import org.grouplens.lenskit.data.event.Rating;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.baseline.ItemMeanRatingItemScorer;
+import org.lenskit.baseline.UserMeanBaseline;
+import org.lenskit.baseline.UserMeanItemScorer;
+import org.lenskit.data.ratings.Rating;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.*;
@@ -39,6 +39,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -60,8 +61,8 @@ public class TemporalEvaluatorTest {
         List<Rating> ratings;
         ImmutableList.Builder<Rating> bld = ImmutableList.builder();
 
-        bld.add(Rating.create(13, 102, 3.5, 0001L))
-           .add(Rating.create(13, 105, 3.5, 0002L))
+        bld.add(Rating.create(13, 102, 3.5, 1L))
+           .add(Rating.create(13, 105, 3.5, 2L))
            .add(Rating.create(13, 102, 2.5, 1050L))
            .add(Rating.create(13, 111, 4.5, 1050L))
            .add(Rating.create(13, 111, 4.5, 1200L))
@@ -98,11 +99,8 @@ public class TemporalEvaluatorTest {
         ratings = bld.build();
 
         File file = folder.newFile("ratings.bin");
-        BinaryRatingPacker packer = BinaryRatingPacker.open(file, BinaryFormatFlag.TIMESTAMPS);
-        try {
+        try (BinaryRatingPacker packer = BinaryRatingPacker.open(file, BinaryFormatFlag.TIMESTAMPS)) {
             packer.writeRatings(ratings);
-        } finally {
-            packer.close();
         }
         dao = BinaryRatingDAO.open(file);
 
@@ -119,18 +117,12 @@ public class TemporalEvaluatorTest {
     public void ExecuteTest() throws IOException, RecommenderBuildException {
         tempEval.execute();
         assertTrue(predictOutputFile.isFile());
-        FileReader reader = new FileReader(predictOutputFile);
-        try {
-            LineNumberReader lnr = new LineNumberReader(reader);
-            try {
+        try (FileReader reader = new FileReader(predictOutputFile)) {
+            try (LineNumberReader lnr = new LineNumberReader(reader)) {
                 lnr.skip(Long.MAX_VALUE);
                 long lines = (long) lnr.getLineNumber();
                 assertThat(lines, equalTo(35L));
-            } finally {
-                lnr.close();
             }
-        } finally {
-            reader.close();
         }
     }
 
@@ -140,18 +132,12 @@ public class TemporalEvaluatorTest {
         tempEval.execute();
         assertTrue(predictOutputFile.isFile());
 
-        FileReader reader = new FileReader(predictOutputFile);
-        try {
-            LineNumberReader lnr = new LineNumberReader(reader);
-            try {
+        try (FileReader reader = new FileReader(predictOutputFile)) {
+            try (LineNumberReader lnr = new LineNumberReader(reader)) {
                 lnr.skip(Long.MAX_VALUE);
                 long lines = (long) lnr.getLineNumber();
                 assertThat(lines, equalTo(35L));
-            } finally {
-                lnr.close();
             }
-        } finally {
-            reader.close();
         }
     }
 }
