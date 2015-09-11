@@ -38,8 +38,6 @@ import org.lenskit.api.Result;
 import org.lenskit.util.io.ObjectStreams;
 import org.lenskit.data.ratings.Rating;
 
-
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
