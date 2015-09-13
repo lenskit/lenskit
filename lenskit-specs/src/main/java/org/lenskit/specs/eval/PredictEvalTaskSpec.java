@@ -20,8 +20,15 @@
  */
 package org.lenskit.specs.eval;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import org.lenskit.specs.DynamicSpec;
+
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -29,6 +36,7 @@ import java.util.Set;
  */
 public class PredictEvalTaskSpec extends EvalTaskSpec {
     private Path outputFile;
+    private List<DynamicSpec> metrics = new ArrayList<>();
 
     /**
      * Get the prediction output file.
@@ -46,6 +54,7 @@ public class PredictEvalTaskSpec extends EvalTaskSpec {
         this.outputFile = outputFile;
     }
 
+    @JsonIgnore
     @Override
     public Set<Path> getOutputFiles() {
         Set<Path> files = new HashSet<>();
@@ -53,5 +62,37 @@ public class PredictEvalTaskSpec extends EvalTaskSpec {
             files.add(outputFile);
         }
         return files;
+    }
+
+    /**
+     * Get the user prediction metrics.
+     * @return The metrics
+     */
+    public List<DynamicSpec> getMetrics() {
+        return metrics;
+    }
+
+    /**
+     * Set the user prediction metrics.
+     * @param ms The metrics.
+     */
+    public void setMetrics(List<DynamicSpec> ms) {
+        metrics = ms;
+    }
+
+    /**
+     * Add a user prediction metric.
+     * @param metric The metric configuration.
+     */
+    public void addMetric(JsonNode metric) {
+        metrics.add(new DynamicSpec(metric));
+    }
+
+    /**
+     * Add a metric by name.  The metric will have no additional configuration.
+     * @param metric The metric name.
+     */
+    public void addMetric(String metric) {
+        addMetric(new TextNode(metric));
     }
 }

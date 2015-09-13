@@ -42,6 +42,8 @@ import org.lenskit.data.events.Event;
 import org.lenskit.eval.traintest.*;
 import org.lenskit.eval.traintest.metrics.Metric;
 import org.lenskit.eval.traintest.metrics.MetricResult;
+import org.lenskit.specs.DynamicSpec;
+import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.eval.PredictEvalTaskSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,9 +78,20 @@ public class PredictEvalTask implements EvalTask {
      * @param ets The task specification.
      * @return The task.
      */
-    public static EvalTask fromSpec(PredictEvalTaskSpec ets) {
+    public static PredictEvalTask fromSpec(PredictEvalTaskSpec ets) {
         PredictEvalTask task = new PredictEvalTask();
         task.setOutputFile(ets.getOutputFile());
+        if (!ets.getMetrics().isEmpty()) {
+            task.getPredictMetrics().clear();
+            for (DynamicSpec ms: ets.getMetrics()) {
+                PredictMetric<?> metric = SpecUtils.buildObject(PredictMetric.class, ms);
+                if (metric != null) {
+                    task.addMetric(metric);
+                } else {
+                    throw new RuntimeException("cannot build metric for " + ms.getJSON());
+                }
+            }
+        }
 
         return task;
     }
