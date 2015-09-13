@@ -31,6 +31,7 @@ import java.nio.file.Paths
  * Gradle objects usually have, so you can say {@code prop value} instead of {@code prop = value}.
  */
 class SpecDelegate {
+    // FIXME Support ObjectNode specifications
     final def AbstractSpec spec
 
     SpecDelegate(AbstractSpec sp) {
