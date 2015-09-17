@@ -48,4 +48,14 @@ public abstract class MetricResult {
     public static MetricResult fromMap(Map<String,?> values) {
         return new MapMetricResult(values);
     }
+
+    /**
+     * Create a singleton map result.
+     * @param name The column name.
+     * @param value The column value.
+     * @return The map result.
+     */
+    public static MetricResult singleton(String name, Object value) {
+        return fromMap(Collections.singletonMap(name, value));
+    }
 }

@@ -39,7 +39,7 @@ import java.util.ServiceLoader;
 public final class SpecUtils {
     private SpecUtils() {}
 
-    static ObjectMapper createMapper() {
+    public static ObjectMapper createMapper() {
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule mod = new SimpleModule("LenskitSpecs");
         mod.addSerializer(Path.class, new PathSerializer());

@@ -31,6 +31,23 @@ public class ExponentialDiscount implements Discount {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ExponentialDiscount that = (ExponentialDiscount) o;
+
+        return Double.compare(that.alpha, alpha) == 0;
+
+    }
+
+    @Override
+    public int hashCode() {
+        long temp = Double.doubleToLongBits(alpha);
+        return (int) (temp ^ (temp >>> 32));
+    }
+
+    @Override
     public String toString() {
         return "ExponentialDiscount(" + alpha + ")";
     }

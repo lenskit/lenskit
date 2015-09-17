@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auto.service.AutoService;
 import org.grouplens.grapht.util.ClassLoaders;
+import org.lenskit.eval.traintest.metrics.Discount;
+import org.lenskit.eval.traintest.metrics.Discounts;
 import org.lenskit.eval.traintest.metrics.MetricLoaderHelper;
 import org.lenskit.specs.AbstractSpec;
 import org.lenskit.specs.DynamicSpec;
@@ -61,6 +63,23 @@ public class DefaultPredictMetricSpecHandler implements SpecHandler {
             return type.cast(metric);
         }
 
+        switch (typeName.toLowerCase()) {
+        case "ndcg":
+            return type.cast(createNDCG(node.isObject() ? (ObjectNode) node : null));
+        }
+
         return null;
+    }
+
+    static NDCGPredictMetric createNDCG(ObjectNode spec) {
+        Discount discount = Discounts.log2();
+        String name = "Predict.nDCG";
+        if (spec.get("columnName") != null) {
+            name = spec.get("columnName").asText();
+        }
+        if (spec.get("discount") != null) {
+            discount = Discounts.parse(spec.get("discount").asText());
+        }
+        return new NDCGPredictMetric(discount, name);
     }
 }

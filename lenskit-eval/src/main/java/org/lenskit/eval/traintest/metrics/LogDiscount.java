@@ -16,7 +16,7 @@ public class LogDiscount implements Discount {
     public LogDiscount(double base) {
         Preconditions.checkArgument(base > 1, "base must be greater than 1");
         logBase = base;
-        logScaleTerm = 1 / Math.log(base);
+        logScaleTerm = Math.log(base);
     }
 
     /**
@@ -29,11 +29,28 @@ public class LogDiscount implements Discount {
 
     @Override
     public double discount(int rank) {
-        if (rank <= logBase) {
+        if (rank < logBase) {
             return 1;
         } else {
-            return Math.log(rank) * logScaleTerm;
+            return logScaleTerm / Math.log(rank);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        LogDiscount that = (LogDiscount) o;
+
+        return Double.compare(that.logBase, logBase) == 0;
+
+    }
+
+    @Override
+    public int hashCode() {
+        long temp = Double.doubleToLongBits(logBase);
+        return (int) (temp ^ (temp >>> 32));
     }
 
     @Override

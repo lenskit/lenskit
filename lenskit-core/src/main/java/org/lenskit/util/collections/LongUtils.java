@@ -20,6 +20,7 @@
  */
 package org.lenskit.util.collections;
 
+import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.SortedKeyIndex;
@@ -84,6 +85,22 @@ public final class LongUtils {
      */
     public static LongSortedSet packedSet(long... longs) {
         return SortedKeyIndex.create(longs).keySet();
+    }
+
+    /**
+     * Create a comparator that compares long keys by associated double values.
+     * @param vals The value map.
+     * @return A comparator that will compare keys by looking them up in a map.
+     */
+    public static LongComparator keyValueComparator(final Long2DoubleFunction vals) {
+        return new AbstractLongComparator() {
+            @Override
+            public int compare(long k1, long k2) {
+                double v1 = vals.containsKey(k1) ? vals.get(k1) : Double.NaN;
+                double v2 = vals.containsKey(k2) ? vals.get(k2) : Double.NaN;
+                return Doubles.compare(v1, v2);
+            }
+        };
     }
 
     /**
