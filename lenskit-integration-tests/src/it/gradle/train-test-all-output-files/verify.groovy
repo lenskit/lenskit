@@ -19,7 +19,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-
+@Grab('com.xlson.groovycsv:groovycsv:1.0')
+import static com.xlson.groovycsv.CsvParser.parseCsv
 import org.lenskit.knn.item.model.SimilarityMatrixModel
 
 import java.util.zip.GZIPInputStream
@@ -44,6 +45,14 @@ assertThat("output file exists",
            predictFile, existingFile());
 //assertThat("output file exists",
   //         recommendFile, existingFile());
+resultsFile.withReader { rdr ->
+    def results = parseCsv(rdr)
+    for (row in results) {
+        assertThat(row.hasProperty('PredAccRank'), equalTo(true))
+        assertThat(row.hasProperty('RMSE.ByUser'), equalTo(true))
+        assertThat(row.hasProperty('RMSE.ByRating'), equalTo(true))
+    }
+}
 
 assertThat(new File('build/crossfold.out/part01.train.pack'),
            existingFile())

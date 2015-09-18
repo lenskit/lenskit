@@ -42,6 +42,11 @@ task trainTest(type: TrainTest) {
     algorithm 'ItemItem', 'item-item.groovy'
     predict {
         outputFile 'predictions.csv'
+        metric 'coverage'
+        metric 'rmse'
+        metric('ndcg') {
+            columnName 'PredRankAcc'
+        }
     }
     /* recommend {
         listSize 10
