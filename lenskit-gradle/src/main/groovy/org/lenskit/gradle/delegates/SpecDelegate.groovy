@@ -48,13 +48,7 @@ class SpecDelegate {
         spec.metaClass.setProperty(spec, property, newValue)
     }
 
-    @Override
-    Object invokeMethod(String name, Object args) {
-        def mm = metaClass.getMetaMethod(name, args as Object[])
-        if (mm != null) {
-            return mm.invoke(name, args as Objects[])
-        }
-
+    Object methodMissing(String name, Object args) {
         try {
             return spec.metaClass.invokeMethod(spec, name, args)
         } catch (MissingMethodException ignored) {

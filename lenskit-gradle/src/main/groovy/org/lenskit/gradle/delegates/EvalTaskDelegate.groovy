@@ -2,13 +2,14 @@ package org.lenskit.gradle.delegates
 
 import com.fasterxml.jackson.databind.JsonNode
 import groovy.json.JsonBuilder
+import groovy.json.JsonOutput
 import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.eval.PredictEvalTaskSpec
 
 /**
  * Delegate for configuring evaluation tasks.
  */
-public class EvalTaskDelegate extends SpecDelegate {
+class EvalTaskDelegate extends SpecDelegate {
     private final PredictEvalTaskSpec taskSpec;
 
     public EvalTaskDelegate(PredictEvalTaskSpec sp) {
@@ -21,14 +22,14 @@ public class EvalTaskDelegate extends SpecDelegate {
     }
 
     void metric(String name, Closure block) {
-        def jsb = new JsonBuilder([type: name])
+        def jsb = new JsonBuilder()
         jsb.call(block)
-        def node = SpecUtils.parse(JsonNode, jsb.toString())
+        def content = [type: name] + jsb.content
+        def node = SpecUtils.parse(JsonNode, JsonOutput.toJson(content))
         taskSpec.addMetric(node)
     }
 
-    @Override
-    Object invokeMethod(String name, Object args) {
-        return super.invokeMethod(name, args)
+    Object methodMissing(String name, Object args) {
+        return super.methodMissing(name, args)
     }
 }

@@ -6,10 +6,12 @@ import org.junit.Before
 import org.junit.Test
 import org.lenskit.specs.eval.PredictEvalTaskSpec
 
+import java.nio.file.Paths
+
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
-class EvalTaskDelegateTest extends GroovyTestCase {
+class EvalTaskDelegateTest {
     PredictEvalTaskSpec spec
     EvalTaskDelegate delegate
 
@@ -17,6 +19,16 @@ class EvalTaskDelegateTest extends GroovyTestCase {
     void setupSpec() {
         spec = new PredictEvalTaskSpec()
         delegate = new EvalTaskDelegate(spec)
+    }
+
+    @Test
+    void testBasicProp() {
+        def block = {
+            outputFile 'predictions.csv'
+        }
+        ConfigureUtil.configure(block, delegate)
+        assertThat spec.outputFile, equalTo(Paths.get('predictions.csv'))
+        assertThat spec.outputFiles, contains(Paths.get('predictions.csv'))
     }
 
     @Test
