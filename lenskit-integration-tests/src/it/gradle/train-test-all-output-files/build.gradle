@@ -19,6 +19,7 @@ apply from: 'common.gradle'
 dependencies {
     runtime 'org.hamcrest:hamcrest-library:1.3'
     runtime "org.grouplens.lenskit:lenskit-test:$project.lenskitVersion"
+    testRuntime 'com.xlson.groovycsv:groovycsv:1.0'
 }
 
 task crossfold(type: Crossfold) {
@@ -56,7 +57,7 @@ task trainTest(type: TrainTest) {
 
 task check(overwrite: true, type: JavaExec) {
     dependsOn trainTest
-    classpath configurations.runtime
+    classpath configurations.testRuntime
 
     main 'groovy.ui.GroovyMain'
     args 'verify.groovy'

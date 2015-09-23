@@ -22,6 +22,7 @@ package org.lenskit.gradle
 
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
+import org.lenskit.gradle.delegates.EvalTaskDelegate
 import org.lenskit.gradle.delegates.SpecDelegate
 import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.eval.AlgorithmSpec
@@ -76,7 +77,7 @@ class TrainTest extends LenskitTask {
      * @see PredictEvalTaskSpec
      */
     void predict(@DelegatesTo(SpecDelegate) Closure block) {
-        def task = SpecDelegate.configure(PredictEvalTaskSpec, block)
+        def task = SpecDelegate.configure(PredictEvalTaskSpec, EvalTaskDelegate, block)
         spec.addTask(task)
     }
 

@@ -123,4 +123,17 @@ class SpecDelegate {
         ConfigureUtil.configure(block, dlg)
         spec
     }
+
+    /**
+     * Instantiate and configure a spec using a block.
+     * @param specType The specification type.
+     * @param block The configuration block.
+     * @return The spec.
+     */
+    public static <T extends AbstractSpec> T configure(Class<? extends T> specType, Class<? extends SpecDelegate> dlgType, Closure block) {
+        def spec = specType.newInstance()
+        def dlg = dlgType.newInstance(spec)
+        ConfigureUtil.configure(block, dlg)
+        spec
+    }
 }
