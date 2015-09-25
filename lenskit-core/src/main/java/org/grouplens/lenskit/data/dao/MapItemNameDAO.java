@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.dao;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
@@ -28,6 +29,7 @@ import org.grouplens.lenskit.core.Shareable;
 import org.lenskit.util.io.LineStream;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.io.ObjectStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,14 +71,27 @@ public class MapItemNameDAO implements ItemNameDAO, ItemDAO, Serializable {
     }
 
     /**
-     * Read an item list DAO from a file.
+     * Read an item list DAO from a file with no header rows.
      * @param file A file of item IDs, one per line.
      * @return The item list DAO.
      * @throws java.io.IOException if there is an error reading the list of items.
      */
     public static MapItemNameDAO fromCSVFile(File file) throws IOException {
+        return fromCSVFile(file, 0);
+    }
+
+    /**
+     * Read an item list DAO from a file.
+     * @param file A file of item IDs, one per line.
+     * @param skipLines The number of initial header to skip
+     * @return The item list DAO.
+     * @throws java.io.IOException if there is an error reading the list of items.
+     */
+    public static MapItemNameDAO fromCSVFile(File file, int skipLines) throws IOException {
+        Preconditions.checkArgument(skipLines >= 0, "cannot skip negative lines");
         LineStream stream = LineStream.openFile(file, CompressionMode.AUTO);
         try {
+            ObjectStreams.consume(skipLines, stream);
             ImmutableMap.Builder<Long, String> names = ImmutableMap.builder();
             StrTokenizer tok = StrTokenizer.getCSVInstance();
             for (String line : stream) {
