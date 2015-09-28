@@ -20,14 +20,13 @@
  */
 package org.lenskit.eval.traintest.recommend;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
+import org.lenskit.api.Recommender;
 import org.lenskit.api.ResultList;
-import org.lenskit.data.events.Event;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
+import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.eval.traintest.metrics.TypedMetricResult;
 
@@ -38,17 +37,17 @@ import javax.annotation.Nullable;
  * Metric that measures how long a TopN list actually is.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class LengthTopNMetric extends TopNMetric<MeanAccumulator> {
+public class TopNLengthMetric extends TopNMetric<MeanAccumulator> {
     /**
      * Construct a new length metric.
      */
-    public LengthTopNMetric() {
+    public TopNLengthMetric() {
         super(LengthResult.class, LengthResult.class);
     }
 
     @Nonnull
     @Override
-    public MetricResult measureUser(UserHistory<Event> user, Long2DoubleMap ratings, ResultList recommendations, MeanAccumulator context) {
+    public MetricResult measureUser(TestUser user, ResultList recommendations, MeanAccumulator context) {
         int n = recommendations.size();
         context.add(n);
         return new LengthResult(n);
@@ -56,7 +55,7 @@ public class LengthTopNMetric extends TopNMetric<MeanAccumulator> {
 
     @Nullable
     @Override
-    public MeanAccumulator createContext(AlgorithmInstance algorithm, DataSet dataSet, org.lenskit.api.Recommender recommender) {
+    public MeanAccumulator createContext(AlgorithmInstance algorithm, DataSet dataSet, Recommender recommender) {
         return new MeanAccumulator();
     }
 

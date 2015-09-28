@@ -21,12 +21,11 @@
 package org.lenskit.eval.traintest.predict;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
-import org.lenskit.data.events.Event;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
+import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.MetricColumn;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.eval.traintest.metrics.TypedMetricResult;
@@ -58,7 +57,8 @@ public class RMSEPredictMetric extends PredictMetric<RMSEPredictMetric.Context> 
 
     @Nonnull
     @Override
-    public MetricResult measureUser(UserHistory<Event> user, Long2DoubleMap ratings, ResultMap predictions, Context context) {
+    public MetricResult measureUser(TestUser user, ResultMap predictions, Context context) {
+        Long2DoubleMap ratings = user.getTestRatings();
         double sse = 0;
         int n = 0;
         for (Result e : predictions) {

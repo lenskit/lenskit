@@ -23,21 +23,17 @@ package org.lenskit.eval.traintest.recommend;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.table.TableLayout;
 import org.grouplens.lenskit.util.table.TableLayoutBuilder;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.api.ItemRecommender;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
-import org.lenskit.data.events.Event;
 import org.lenskit.eval.traintest.*;
 import org.lenskit.eval.traintest.metrics.Metric;
 import org.lenskit.eval.traintest.metrics.MetricResult;
@@ -61,7 +57,7 @@ import java.util.Map;
 public class RecommendEvalTask implements EvalTask {
     private static final Logger logger = LoggerFactory.getLogger(RecommendEvalTask.class);
     private static final TopNMetric<?>[] DEFAULT_METRICS = {
-            new LengthTopNMetric()
+            new TopNLengthMetric()
     };
 
     private ExperimentOutputLayout experimentOutputLayout;
@@ -232,8 +228,8 @@ public class RecommendEvalTask implements EvalTask {
         }
 
         @Nonnull
-        public MetricResult measureUser(UserHistory<Event> user, Long2DoubleMap ratings, ResultList recommendations) {
-            return metric.measureUser(user, ratings, recommendations, context);
+        public MetricResult measureUser(TestUser user, ResultList recommendations) {
+            return metric.measureUser(user, recommendations, context);
         }
 
         @Nonnull
@@ -264,17 +260,14 @@ public class RecommendEvalTask implements EvalTask {
 
         @Nonnull
         @Override
-        public Map<String, Object> measureUser(UserHistory<Event> testUser) {
-            SparseVector vector = summarizer.summarize(testUser);
-            Long2DoubleMap ratings = vector.asMap();
-
+        public Map<String, Object> measureUser(TestUser testUser) {
             // FIXME Support item selectors
             ResultList results = recommender.recommendWithDetails(testUser.getUserId(), listSize, null, null);
 
             // Measure the user results
             Map<String,Object> row = new HashMap<>();
             for (MetricContext<?> mc: predictMetricContexts) {
-                row.putAll(mc.measureUser(testUser, ratings, results).getValues());
+                row.putAll(mc.measureUser(testUser, results).getValues());
             }
 
             // Write all attempted predictions

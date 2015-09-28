@@ -25,6 +25,7 @@ import org.grouplens.lenskit.data.history.UserHistory;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.data.events.Event;
+import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.Metric;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.eval.traintest.metrics.TypedMetricResult;
@@ -61,13 +62,11 @@ public abstract class PredictMetric<X> extends Metric<X> {
     /**
      * Measure a single result.  The result may come from either prediction or recommendation.
      * @param user The user's test data.
-     * @param ratings The user's ratings.
      * @param predictions The predictions.
      * @return A list of fields to add to the result's output.
      */
     @Nonnull
-    public abstract MetricResult measureUser(UserHistory<Event> user,
-                                             Long2DoubleMap ratings,
+    public abstract MetricResult measureUser(TestUser user,
                                              ResultMap predictions,
                                              X context);
 }

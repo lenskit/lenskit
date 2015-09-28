@@ -52,6 +52,11 @@ task trainTest(type: TrainTest) {
     recommend {
         listSize 10
         outputFile 'recommendations.csv.gz'
+        metric 'length'
+        metric 'entropy'
+        metric('ndcg') {
+            columnName 'nDCG'
+        }
     }
 }
 

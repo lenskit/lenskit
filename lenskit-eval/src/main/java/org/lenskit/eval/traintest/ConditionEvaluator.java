@@ -37,7 +37,7 @@ public interface ConditionEvaluator {
      * @return The per-user performance measurements.
      */
     @Nonnull
-    Map<String,Object> measureUser(UserHistory<Event> testUser);
+    Map<String,Object> measureUser(TestUser testUser);
 
     /**
      * Finish measuring the performance for the algorithm and data set.

@@ -20,11 +20,8 @@
  */
 package org.lenskit.eval.traintest.recommend;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.lenskit.api.ResultList;
-import org.lenskit.api.ResultMap;
-import org.lenskit.data.events.Event;
+import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.Metric;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.eval.traintest.metrics.TypedMetricResult;
@@ -61,13 +58,11 @@ public abstract class TopNMetric<X> extends Metric<X> {
     /**
      * Measure a single result.  The result may come from either prediction or recommendation.
      * @param user The user's test data.
-     * @param ratings The user's ratings.
      * @param recommendations The user's recommendations.
      * @return A list of fields to add to the result's output.
      */
     @Nonnull
-    public abstract MetricResult measureUser(UserHistory<Event> user,
-                                             Long2DoubleMap ratings,
+    public abstract MetricResult measureUser(TestUser user,
                                              ResultList recommendations,
                                              X context);
 }

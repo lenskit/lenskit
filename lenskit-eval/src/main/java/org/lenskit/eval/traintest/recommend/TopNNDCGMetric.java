@@ -18,22 +18,22 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.eval.traintest.predict;
+package org.lenskit.eval.traintest.recommend;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparators;
+import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
-import org.lenskit.api.ResultMap;
+import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.Discount;
 import org.lenskit.eval.traintest.metrics.Discounts;
 import org.lenskit.eval.traintest.metrics.MetricResult;
+import org.lenskit.eval.traintest.metrics.TypedMetricResult;
 import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,48 +42,34 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Evaluate a recommender's predictions with normalized discounted cumulative gain.
- *
- * <p>This is a prediction evaluator that uses base-2 nDCG to evaluate recommender
- * accuracy. The items are ordered by predicted preference and the nDCG is
- * computed using the user's real rating as the gain for each item. Doing this
- * only over the queried items, rather than in the general recommend condition,
- * avoids penalizing recommenders for recommending items that would be better
- * if the user had known about them and provided ratings (e.g., for doing their
- * job).
- *
- * <p>nDCG is computed per-user and then averaged over all users.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Measure the nDCG of the top-N recommendations, using ratings as scores.
  */
-public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
-    private static final Logger logger = LoggerFactory.getLogger(NDCGPredictMetric.class);
-    private final String columnName;
+public class TopNNDCGMetric extends TopNMetric<MeanAccumulator> {
+    private static final Logger logger = LoggerFactory.getLogger(TopNNDCGMetric.class);
     private final Discount discount;
 
     /**
-     * Create a new log_2 nDCG metric with column name "Predict.nDCG".
+     * Create an nDCG metric with log-2 discounting.
      */
-    public NDCGPredictMetric() {
-        this(Discounts.log2(), "Predict.nDCG");
+    public TopNNDCGMetric() {
+        this(Discounts.log2(), "TopN.nDCG");
     }
 
     /**
-     * Create a new nDCG metric with column name "Predict.nDCG".
-     * @param disc The discount.
+     * Create an nDCG metric with a default name.
+     * @param disc The discount to apply.
      */
-    public NDCGPredictMetric(Discount disc) {
-        this(disc, "Predict.nDCG");
+    public TopNNDCGMetric(Discount disc) {
+        this(disc, "TopN.nDCG");
     }
 
     /**
-     * Create a new nDCG metric.
-     * @param disc The discount.
-     * @param name The column name.
+     * Construct a new nDCG Top-N metric.
+     * @param disc The discount to apply.
+     * @param name The column name to use.
      */
-    public NDCGPredictMetric(Discount disc, String name) {
-        super(Lists.newArrayList(name, name+".Raw"), Lists.newArrayList(name));
-        columnName = name;
+    public TopNNDCGMetric(Discount disc, String name) {
+        super(NDCGResult.class, NDCGResult.class);
         discount = disc;
     }
 
@@ -96,31 +82,29 @@ public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
     @Nonnull
     @Override
     public MetricResult getAggregateMeasurements(MeanAccumulator context) {
-        return MetricResult.singleton(columnName, context.getMean());
+        // TODO Implement this method
+        return super.getAggregateMeasurements(context);
     }
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, ResultMap predictions, MeanAccumulator context) {
-        if (predictions == null || predictions.isEmpty()) {
+    public MetricResult measureUser(TestUser user, ResultList recommendations, MeanAccumulator context) {
+        if (recommendations == null) {
             return MetricResult.empty();
         }
+
         Long2DoubleMap ratings = user.getTestRatings();
         long[] ideal = ratings.keySet().toLongArray();
         LongArrays.quickSort(ideal, LongComparators.oppositeComparator(LongUtils.keyValueComparator(ratings)));
-        long[] actual = LongUtils.asLongSet(predictions.keySet()).toLongArray();
-        LongArrays.quickSort(actual, LongComparators.oppositeComparator(
-                LongUtils.keyValueComparator(
-                        LongUtils.asLong2DoubleFunction(predictions.scoreMap()))));
         double idealGain = computeDCG(ideal, ratings);
+
+        long[] actual = LongUtils.asLongCollection(recommendations.idList()).toLongArray();
         double gain = computeDCG(actual, ratings);
-        logger.debug("user {} has gain of {} (ideal {})", user.getUserId(), gain, idealGain);
+
         double score = gain / idealGain;
+
         context.add(score);
-        ImmutableMap.Builder<String,Double> results = ImmutableMap.builder();
-        return MetricResult.fromMap(results.put(columnName, score)
-                                           .put(columnName + ".Raw", gain)
-                                           .build());
+        return new NDCGResult(score);
     }
 
     /**
@@ -137,5 +121,14 @@ public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
         }
 
         return gain;
+    }
+
+    public static class NDCGResult extends TypedMetricResult {
+        @ResultColumn("TopN.nDCG")
+        public final double nDCG;
+
+        public NDCGResult(double v) {
+            nDCG = v;
+        }
     }
 }

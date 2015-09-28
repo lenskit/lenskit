@@ -20,14 +20,12 @@
  */
 package org.lenskit.eval.traintest.predict;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.collections.LongUtils;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.lenskit.api.ResultMap;
-import org.lenskit.data.events.Event;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
+import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.MetricColumn;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.eval.traintest.metrics.TypedMetricResult;
@@ -58,11 +56,11 @@ public class CoveragePredictMetric extends PredictMetric<CoveragePredictMetric.C
 
     @Nonnull
     @Override
-    public MetricResult measureUser(UserHistory<Event> user, Long2DoubleMap ratings, ResultMap predictions, Context context) {
-        int n = ratings.size();
+    public MetricResult measureUser(TestUser user, ResultMap predictions, Context context) {
+        int n = user.getTestRatings().size();
         int good = predictions.size();
         assert LongUtils.setDifference(LongUtils.asLongSet(predictions.keySet()),
-                                       ratings.keySet())
+                                       user.getTestRatings().keySet())
                         .isEmpty();
         context.addUser(n, good);
         return new Coverage(n, good);

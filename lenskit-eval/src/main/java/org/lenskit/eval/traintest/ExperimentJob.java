@@ -33,6 +33,7 @@ import org.grouplens.grapht.graph.MergePool;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.NodeProcessors;
@@ -107,6 +108,7 @@ class ExperimentJob implements Runnable {
         }
 
         LongSet testUsers = dataSet.getTestData().getUserDAO().getUserIds();
+        UserEventDAO trainEvents = dataSet.getTrainingData().getUserEventDAO();
         UserEventDAO userEvents = dataSet.getTestData().getUserEventDAO();
         final NumberFormat pctFormat = NumberFormat.getPercentInstance();
         pctFormat.setMaximumFractionDigits(2);
@@ -123,12 +125,17 @@ class ExperimentJob implements Runnable {
                 userRow.add("User", uid);
             }
 
+            UserHistory<Event> trainData = trainEvents.getEventsForUser(uid);
+            if (trainData == null) {
+                trainData = History.forUser(uid);
+            }
             UserHistory<Event> userData = userEvents.getEventsForUser(uid);
+            TestUser user = new TestUser(trainData, userData);
 
             Stopwatch userTimer = Stopwatch.createStarted();
 
             for (ConditionEvaluator eval : accumulators) {
-                Map<String, Object> ures = eval.measureUser(userData);
+                Map<String, Object> ures = eval.measureUser(user);
                 if (userRow != null) {
                     userRow.addAll(ures);
                 }

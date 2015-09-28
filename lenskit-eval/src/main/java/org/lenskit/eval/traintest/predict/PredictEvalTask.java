@@ -25,20 +25,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.table.TableLayout;
 import org.grouplens.lenskit.util.table.TableLayoutBuilder;
 import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.RatingPredictor;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
-import org.lenskit.data.events.Event;
 import org.lenskit.eval.traintest.*;
 import org.lenskit.eval.traintest.metrics.Metric;
 import org.lenskit.eval.traintest.metrics.MetricResult;
@@ -218,8 +214,8 @@ public class PredictEvalTask implements EvalTask {
         }
 
         @Nonnull
-        public MetricResult measureUser(UserHistory<Event> user, Long2DoubleMap ratings, ResultMap predictions) {
-            return metric.measureUser(user, ratings, predictions, context);
+        public MetricResult measureUser(TestUser user, ResultMap predictions) {
+            return metric.measureUser(user, predictions, context);
         }
 
         @Nonnull
@@ -250,23 +246,22 @@ public class PredictEvalTask implements EvalTask {
 
         @Nonnull
         @Override
-        public Map<String, Object> measureUser(UserHistory<Event> testUser) {
-            SparseVector vector = summarizer.summarize(testUser);
-            Long2DoubleMap ratings = vector.asMap();
-            ResultMap results = predictor.predictWithDetails(testUser.getUserId(), vector.keySet());
+        public Map<String, Object> measureUser(TestUser testUser) {
+            Long2DoubleMap ratings = testUser.getTestRatings();
+            ResultMap results = predictor.predictWithDetails(testUser.getUserId(), ratings.keySet());
 
             // Measure the user results
             Map<String,Object> row = new HashMap<>();
             for (MetricContext<?> mc: predictMetricContexts) {
-                row.putAll(mc.measureUser(testUser, ratings, results).getValues());
+                row.putAll(mc.measureUser(testUser, results).getValues());
             }
 
             // Write all attempted predictions
-            for (VectorEntry e: vector) {
-                Result pred = results.get(e.getKey());
+            for (Long2DoubleMap.Entry e: ratings.long2DoubleEntrySet()) {
+                Result pred = results.get(e.getLongKey());
                 try {
                     if (writer != null) {
-                        writer.writeRow(testUser.getUserId(), e.getKey(), e.getValue(),
+                        writer.writeRow(testUser.getUserId(), e.getLongKey(), e.getDoubleValue(),
                                         pred != null ? pred.getScore() : null);
                     }
                 } catch (IOException ex) {
