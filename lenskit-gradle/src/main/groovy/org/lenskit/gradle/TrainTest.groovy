@@ -28,6 +28,7 @@ import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.eval.AlgorithmSpec
 import org.lenskit.specs.eval.DataSetSpec
 import org.lenskit.specs.eval.PredictEvalTaskSpec
+import org.lenskit.specs.eval.RecommendEvalTaskSpec
 import org.lenskit.specs.eval.TrainTestExperimentSpec
 
 /**
@@ -76,8 +77,18 @@ class TrainTest extends LenskitTask {
      * @param block The block.
      * @see PredictEvalTaskSpec
      */
-    void predict(@DelegatesTo(SpecDelegate) Closure block) {
+    void predict(@DelegatesTo(EvalTaskDelegate) Closure block) {
         def task = SpecDelegate.configure(PredictEvalTaskSpec, EvalTaskDelegate, block)
+        spec.addTask(task)
+    }
+
+    /**
+     * Configure a prediction task.
+     * @param block The block.
+     * @see PredictEvalTaskSpec
+     */
+    void recommend(@DelegatesTo(EvalTaskDelegate) Closure block) {
+        def task = SpecDelegate.configure(RecommendEvalTaskSpec, EvalTaskDelegate, block)
         spec.addTask(task)
     }
 

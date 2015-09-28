@@ -43,8 +43,8 @@ assertThat("output file exists",
            userFile, existingFile());
 assertThat("output file exists",
            predictFile, existingFile());
-//assertThat("output file exists",
-  //         recommendFile, existingFile());
+assertThat("output file exists",
+           recommendFile, existingFile());
 resultsFile.withReader { rdr ->
     def results = parseCsv(rdr)
     for (row in results) {

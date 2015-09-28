@@ -44,6 +44,7 @@ import org.grouplens.lenskit.util.table.writer.CSVWriter;
 import org.grouplens.lenskit.util.table.writer.MultiplexedTableWriter;
 import org.grouplens.lenskit.util.table.writer.TableWriter;
 import org.lenskit.eval.traintest.predict.PredictEvalTask;
+import org.lenskit.eval.traintest.recommend.RecommendEvalTask;
 import org.lenskit.specs.eval.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -529,6 +530,8 @@ public class TrainTestExperiment {
         for (EvalTaskSpec ets: spec.getTasks()) {
             if (ets instanceof PredictEvalTaskSpec) {
                 exp.addTask(PredictEvalTask.fromSpec((PredictEvalTaskSpec) ets));
+            } else if (ets instanceof RecommendEvalTaskSpec) {
+                exp.addTask(RecommendEvalTask.fromSpec((RecommendEvalTaskSpec) ets));
             } else {
                 throw new IllegalArgumentException("unusable eval task spec " + ets);
             }

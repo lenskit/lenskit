@@ -21,65 +21,63 @@
 package org.lenskit.specs.eval;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import org.lenskit.specs.AbstractSpec;
 import org.lenskit.specs.DynamicSpec;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Base type for eval task specifications.
+ * Top-N evaluation specification.
  */
-@JsonSubTypes({@JsonSubTypes.Type(value=PredictEvalTaskSpec.class, name="predict"),
-        @JsonSubTypes.Type(value=RecommendEvalTaskSpec.class, name="recommend")})
-@JsonTypeInfo(use= JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.PROPERTY,
-        property = "type")
-public abstract class EvalTaskSpec extends AbstractSpec {
-    private List<DynamicSpec> metrics = new ArrayList<>();
+public class RecommendEvalTaskSpec extends EvalTaskSpec {
+    private Path outputFile;
+    private int listSize;
 
     /**
-     * Get the output files for this task.
-     * @return The task's output files.
+     * Get the recommendation output file.
+     * @return The recommendation output file.
      */
+    public Path getOutputFile() {
+        return outputFile;
+    }
+
+    /**
+     * Set the recommendation output file.
+     * @param outputFile The recommendation output file.
+     */
+    public void setOutputFile(Path outputFile) {
+        this.outputFile = outputFile;
+    }
+
     @JsonIgnore
-    public abstract Set<Path> getOutputFiles();
-
-    /**
-     * Get the user Top-N metrics.
-     * @return The metrics
-     */
-    public List<DynamicSpec> getMetrics() {
-        return metrics;
+    @Override
+    public Set<Path> getOutputFiles() {
+        Set<Path> files = new HashSet<>();
+        if (outputFile != null) {
+            files.add(outputFile);
+        }
+        return files;
     }
 
     /**
-     * Set the user Top-N metrics.
-     * @param ms The metrics.
+     * Get the number of items to recommend per user.
+     * @return The number of items to recommend per user.
      */
-    public void setMetrics(List<DynamicSpec> ms) {
-        metrics = ms;
+    public int getListSize() {
+        return listSize;
     }
 
     /**
-     * Add a user Top-N metric.
-     * @param metric The metric configuration.
+     * Set the number of items to recommend per user.
+     * @param n The number of items to recommend per user.
      */
-    public void addMetric(JsonNode metric) {
-        metrics.add(new DynamicSpec(metric));
+    public void setListSize(int n) {
+        listSize = n;
     }
 
-    /**
-     * Add a metric by name.  The metric will have no additional configuration.
-     * @param metric The metric name.
-     */
-    public void addMetric(String metric) {
-        addMetric(new TextNode(metric));
-    }
 }

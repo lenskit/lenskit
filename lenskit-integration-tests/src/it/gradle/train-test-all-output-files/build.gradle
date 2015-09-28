@@ -49,10 +49,10 @@ task trainTest(type: TrainTest) {
             columnName 'PredRankAcc'
         }
     }
-    /* recommend {
+    recommend {
         listSize 10
         outputFile 'recommendations.csv.gz'
-    } */
+    }
 }
 
 task check(overwrite: true, type: JavaExec) {

@@ -24,15 +24,16 @@ import com.fasterxml.jackson.databind.JsonNode
 import groovy.json.JsonBuilder
 import groovy.json.JsonOutput
 import org.lenskit.specs.SpecUtils
+import org.lenskit.specs.eval.EvalTaskSpec
 import org.lenskit.specs.eval.PredictEvalTaskSpec
 
 /**
  * Delegate for configuring evaluation tasks.
  */
 class EvalTaskDelegate extends SpecDelegate {
-    private final PredictEvalTaskSpec taskSpec;
+    private final EvalTaskSpec taskSpec;
 
-    public EvalTaskDelegate(PredictEvalTaskSpec sp) {
+    public EvalTaskDelegate(EvalTaskSpec sp) {
         super(sp)
         taskSpec = sp
     }
