@@ -28,6 +28,8 @@ import static org.grouplens.lenskit.util.test.ExtraMatchers.existingFile
 import static org.grouplens.lenskit.util.test.ExtraMatchers.hasLineCount
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.Matchers.allOf
+import static org.hamcrest.Matchers.isEmptyOrNullString
+import static org.hamcrest.Matchers.isEmptyString
 import static org.hamcrest.Matchers.not
 import static org.hamcrest.Matchers.equalTo
 
@@ -48,6 +50,7 @@ assertThat("output file exists",
 resultsFile.withReader { rdr ->
     def results = parseCsv(rdr)
     for (row in results) {
+        assertThat(row.Partition, not(isEmptyOrNullString()))
         assertThat(row.PredRankAcc, not(equalTo(true)))
         assertThat(row.getProperty('RMSE.ByUser'), not(equalTo(true)))
         assertThat(row.getProperty('RMSE.ByRating'), not(equalTo(true)))

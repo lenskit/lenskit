@@ -92,6 +92,7 @@ public class TrainTestExperiment {
     private TableWriter userOutput;
     private TableBuilder resultBuilder;
     private Closer resultCloser;
+    private ExperimentOutputLayout outputLayout;
 
     /**
      * Set the primary output file.
@@ -369,6 +370,7 @@ public class TrainTestExperiment {
             } catch (Throwable th) { //NOSONAR using closer
                 throw resultCloser.rethrow(th);
             } finally {
+                outputLayout = null;
                 // FIXME Handle exceptions in task shutdown cleanly
                 for (EvalTask task: tasks) {
                     task.finish();
@@ -379,6 +381,13 @@ public class TrainTestExperiment {
         } catch (IOException ex) {
             throw new EvaluationException("I/O error in evaluation", ex);
         }
+    }
+
+    public ExperimentOutputLayout getOutputLayout() {
+        if (outputLayout == null) {
+            throw new IllegalStateException("experiment not started");
+        }
+        return outputLayout;
     }
 
     private ExperimentOutputLayout makeExperimentOutputLayout() {
@@ -407,6 +416,7 @@ public class TrainTestExperiment {
             TableLayout ul = makeUserResultLayout(eol);
             userOutput = resultCloser.register(CSVWriter.open(userOutputFile.toFile(), ul, CompressionMode.AUTO));
         }
+        outputLayout = eol;
     }
 
     private TableLayout makeGlobalResultLayout(ExperimentOutputLayout eol) {

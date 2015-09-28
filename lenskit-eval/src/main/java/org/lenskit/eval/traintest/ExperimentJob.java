@@ -81,8 +81,11 @@ class ExperimentJob implements Runnable {
 
     @Override
     public void run() {
-        TableWriter globalOutput = experiment.getGlobalOutput();
-        TableWriter userOutput = experiment.getUserOutput();
+        ExperimentOutputLayout layout = experiment.getOutputLayout();
+        TableWriter globalOutput = layout.prefixTable(experiment.getGlobalOutput(),
+                                                      dataSet, algorithm);
+        TableWriter userOutput = layout.prefixTable(experiment.getUserOutput(),
+                                                    dataSet, algorithm);
         RowBuilder outputRow = globalOutput.getLayout().newRowBuilder();
 
         logger.info("Building {} on {}", algorithm, dataSet);
