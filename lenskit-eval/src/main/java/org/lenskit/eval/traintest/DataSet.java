@@ -23,6 +23,8 @@ package org.lenskit.eval.traintest;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.data.dao.UserListUserDAO;
@@ -156,6 +158,12 @@ public class DataSet {
     @Nullable
     public DataSource getQueryData() {
         return queryData;
+    }
+
+    public LongSet getAllItems() {
+        LongSet items = new LongOpenHashSet(trainData.getItemDAO().getItemIds());
+        items.addAll(testData.getItemDAO().getItemIds());
+        return items;
     }
 
     /**

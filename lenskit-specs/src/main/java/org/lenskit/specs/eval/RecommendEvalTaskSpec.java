@@ -21,14 +21,9 @@
 package org.lenskit.specs.eval;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.TextNode;
-import org.lenskit.specs.DynamicSpec;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -37,6 +32,7 @@ import java.util.Set;
 public class RecommendEvalTaskSpec extends EvalTaskSpec {
     private Path outputFile;
     private int listSize;
+    private String candidateItems;
 
     /**
      * Get the recommendation output file.
@@ -80,4 +76,19 @@ public class RecommendEvalTaskSpec extends EvalTaskSpec {
         listSize = n;
     }
 
+    /**
+     * Get the candidate item selector.
+     * @return The selector expression for candidate items.
+     */
+    public String getCandidateItems() {
+        return candidateItems;
+    }
+
+    /**
+     * Set the candidate item selector.
+     * @param candidates The selector expression for candidate items.  Can be `null` to use the default.
+     */
+    public void setCandidateItems(String candidates) {
+        candidateItems = candidates;
+    }
 }

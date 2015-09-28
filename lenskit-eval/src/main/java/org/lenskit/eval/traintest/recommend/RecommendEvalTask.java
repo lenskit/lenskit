@@ -23,6 +23,8 @@ package org.lenskit.eval.traintest.recommend;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.util.io.CompressionMode;
@@ -65,6 +67,7 @@ public class RecommendEvalTask implements EvalTask {
     private TableWriter outputTable;
     private List<TopNMetric<?>> topNMetrics = Lists.newArrayList(DEFAULT_METRICS);
     private int listSize = 10;
+    private ItemSelector candidateSelector = ItemSelector.nullSelector();
 
     /**
      * Create a top-N eval task from a specification.
@@ -85,6 +88,13 @@ public class RecommendEvalTask implements EvalTask {
                     throw new RuntimeException("cannot build metric for " + ms.getJSON());
                 }
             }
+        }
+
+        String sel = ets.getCandidateItems();
+        if (sel == null) {
+            task.candidateSelector = ItemSelector.nullSelector();
+        } else {
+            task.candidateSelector = ItemSelector.compileSelector(sel);
         }
 
         return task;
@@ -204,6 +214,7 @@ public class RecommendEvalTask implements EvalTask {
     public ConditionEvaluator createConditionEvaluator(AlgorithmInstance algorithm, DataSet dataSet, Recommender rec) {
         Preconditions.checkState(experimentOutputLayout != null, "experiment not started");
         TableWriter tlb = experimentOutputLayout.prefixTable(outputTable, dataSet, algorithm);
+        LongSet items = dataSet.getAllItems();
         ItemRecommender irec = rec.getItemRecommender();
         if (irec == null) {
             logger.warn("algorithm {} has no item recommender", algorithm);
@@ -215,7 +226,7 @@ public class RecommendEvalTask implements EvalTask {
             contexts.add(MetricContext.create(metric, algorithm, dataSet, rec));
         }
 
-        return new TopNConditionEvaluator(tlb, irec, contexts);
+        return new TopNConditionEvaluator(tlb, irec, contexts, items);
     }
 
     static class MetricContext<X> {
@@ -251,18 +262,21 @@ public class RecommendEvalTask implements EvalTask {
         private final ItemRecommender recommender;
         private final UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
         private final List<MetricContext<?>> predictMetricContexts;
+        private final LongSet allItems;
 
-        public TopNConditionEvaluator(TableWriter tw, ItemRecommender rec, List<MetricContext<?>> mcs) {
+        public TopNConditionEvaluator(TableWriter tw, ItemRecommender rec, List<MetricContext<?>> mcs, LongSet items) {
             writer = tw;
             recommender = rec;
             predictMetricContexts = mcs;
+            allItems = items;
         }
 
         @Nonnull
         @Override
         public Map<String, Object> measureUser(TestUser testUser) {
             // FIXME Support item selectors
-            ResultList results = recommender.recommendWithDetails(testUser.getUserId(), listSize, null, null);
+            LongSet candidates = candidateSelector.selectItems(allItems, testUser);
+            ResultList results = recommender.recommendWithDetails(testUser.getUserId(), listSize, candidates, null);
 
             // Measure the user results
             Map<String,Object> row = new HashMap<>();

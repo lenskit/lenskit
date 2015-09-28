@@ -22,6 +22,7 @@ package org.lenskit.eval.traintest;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.ratings.Rating;
@@ -77,6 +78,10 @@ public class TestUser {
         return trainHistory;
     }
 
+    public LongSet getTrainItems() {
+        return trainHistory.itemSet();
+    }
+
     /**
      * Return this user's test history.
      *
@@ -84,6 +89,10 @@ public class TestUser {
      */
     public UserHistory<Event> getTestHistory() {
         return testHistory;
+    }
+
+    public LongSet getTestItems() {
+        return testHistory.itemSet();
     }
 
     /**
