@@ -77,7 +77,15 @@ public class ConfigurationLoader {
         return directory;
     }
 
-    private LenskitConfigScript loadScript(GroovyCodeSource source) throws RecommenderConfigurationException {
+    /**
+     * Load a LensKit configuration script.  This method is for internal use that needs to override how configuration
+     * scripts are loaded.
+     *
+     * @param source The source
+     * @return the configuration script.
+     * @throws RecommenderConfigurationException
+     */
+    public LenskitConfigScript loadScript(GroovyCodeSource source) throws RecommenderConfigurationException {
         logger.info("loading script from {}", source.getName());
         LenskitConfigScript script;
         try {

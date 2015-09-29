@@ -63,6 +63,7 @@ public class AlgorithmInstanceBuilder implements Builder<AlgorithmInstance> {
 
     private AlgorithmInstanceBuilder(AlgorithmInstanceBuilder parent) {
         this.parent = parent;
+        name = parent.getName();
         config = new LenskitConfiguration();
         attributes = new LinkedHashMap<>();
     }
@@ -174,9 +175,7 @@ public class AlgorithmInstanceBuilder implements Builder<AlgorithmInstance> {
      * @return The duplicate instance builder.
      */
     public AlgorithmInstanceBuilder extend() {
-        AlgorithmInstanceBuilder aib = new AlgorithmInstanceBuilder(name);
-        aib.attributes = new LinkedHashMap<>(attributes);
-        aib.config = new LenskitConfiguration(config);
+        AlgorithmInstanceBuilder aib = new AlgorithmInstanceBuilder(this);
         return aib;
     }
 

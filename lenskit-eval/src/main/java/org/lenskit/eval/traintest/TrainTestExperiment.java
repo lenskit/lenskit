@@ -34,6 +34,7 @@ import org.grouplens.grapht.graph.MergePool;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.config.ConfigHelpers;
 import org.grouplens.lenskit.config.ConfigurationLoader;
+import org.grouplens.lenskit.config.LenskitConfigScript;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.table.Table;
@@ -163,19 +164,35 @@ public class TrainTestExperiment {
     }
 
     /**
-     * Add an algorithm by loading a config file.
+     * Add one or more algorithms by loading a config file.
      * @param name The algorithm name.
      * @param file The config file to load.
      */
     public void addAlgorithm(String name, Path file) {
         ConfigurationLoader loader = new ConfigurationLoader(classLoader);
         AlgorithmInstanceBuilder aib = new AlgorithmInstanceBuilder(name);
+        MultiAlgorithmDSL dsl = new MultiAlgorithmDSL(loader, aib);
         try {
-            aib.setConfig(loader.load(file.toFile()));
+            LenskitConfigScript script = loader.loadScript(file.toFile());
+            script.setDelegate(dsl);
+            script.configure();
         } catch (IOException e) {
             throw new RuntimeException("cannot load configuration from " + file);
         }
-        addAlgorithm(aib.build());
+        List<AlgorithmInstance> multi = dsl.getInstances();
+        if (multi.isEmpty()) {
+            addAlgorithm(aib.build());
+        } else {
+            addAlgorithms(multi);
+        }
+    }
+
+    /**
+     * Add one or more algorithms from a configuration file.
+     * @param file The configuration file.
+     */
+    public void addAlgorithms(Path file) {
+        addAlgorithm(null, file);
     }
 
     /**

@@ -36,8 +36,7 @@ import org.lenskit.eval.crossfold.SortOrder
 
 import java.nio.file.Paths
 
-import static org.hamcrest.Matchers.equalTo
-import static org.hamcrest.Matchers.notNullValue
+import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
 /**
@@ -110,5 +109,30 @@ class TrainTestExperimentTest {
         experiment.addDataSets(sets)
         def result = experiment.execute()
         assertThat(result, notNullValue())
+    }
+
+    @Test
+    public void testMultipleAlgorithms() {
+        def cfg = folder.newFile("algos.groovy")
+        cfg.text = '''import org.lenskit.baseline.*
+import org.lenskit.api.ItemScorer
+
+algorithm('A1') {
+    attributes['foo'] = 'bar'
+    bind ItemScorer to GlobalMeanRatingItemScorer
+}
+algorithm('A2') {
+    attributes['foo'] = 'bat'
+    bind ItemScorer to UserMeanItemScorer
+}
+'''
+        experiment.addAlgorithms(cfg.toPath())
+        assertThat(experiment.algorithms, hasSize(2))
+        assertThat(experiment.algorithms*.name,
+                   contains('A1', 'A2'))
+        assertThat(experiment.algorithms[0].attributes,
+                   hasEntry('foo', 'bar'))
+        assertThat(experiment.algorithms[1].attributes,
+                   hasEntry('foo', 'bat'))
     }
 }

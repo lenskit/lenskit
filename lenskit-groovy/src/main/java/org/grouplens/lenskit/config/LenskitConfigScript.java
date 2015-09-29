@@ -60,7 +60,7 @@ public abstract class LenskitConfigScript extends Script {
      * Get the delegate.
      * @return The DSL delegate.
      */
-    LenskitConfigDSL getDelegate() {
+    public LenskitConfigDSL getDelegate() {
         if (delegate == null) {
             throw new IllegalStateException("no delegate set");
         }
@@ -71,7 +71,7 @@ public abstract class LenskitConfigScript extends Script {
      * Set the delegate.
      * @param dsl The delegate.
      */
-    void setDelegate(LenskitConfigDSL dsl) {
+    public void setDelegate(LenskitConfigDSL dsl) {
         delegate = dsl;
     }
 
