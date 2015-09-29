@@ -31,41 +31,18 @@ import org.lenskit.knn.user.NeighborFinder
 import org.lenskit.knn.user.SnapshotNeighborFinder
 import org.lenskit.knn.user.UserUserItemScorer
 
-def dataDir = config['lenskit.movielens.100k']
-
-trainTest {
-    dataset crossfold("ML100K") {
-        source csvfile("$dataDir/u.data") {
-            delimiter "\t"
-        }
-        partitions 5
-        holdout 5
-        train 'train.%d.csv'
-        test 'test.%d.csv'
+def common = {
+    bind ItemScorer to UserUserItemScorer
+    set NeighborhoodSize to 30
+    within (UserVectorNormalizer) {
+        bind VectorNormalizer to MeanCenteringVectorNormalizer
     }
+}
 
-    def common = {
-        bind ItemScorer to UserUserItemScorer
-        set NeighborhoodSize to 30
-        within (UserVectorNormalizer) {
-            bind VectorNormalizer to MeanCenteringVectorNormalizer
-        }
-    }
-
-    algorithm("Standard") {
-        include common
-    }
-    algorithm("Snapshotting") {
-        include common
-        bind NeighborFinder to SnapshotNeighborFinder
-    }
-
-    metric CoveragePredictMetric
-    metric RMSEPredictMetric
-    metric MAEPredictMetric
-    metric NDCGPredictMetric
-    metric HLUtilityPredictMetric
-
-    output 'results.csv'
-    predictOutput 'predictions.csv'
+algorithm("Standard") {
+    include common
+}
+algorithm("Snapshotting") {
+    include common
+    bind NeighborFinder to SnapshotNeighborFinder
 }

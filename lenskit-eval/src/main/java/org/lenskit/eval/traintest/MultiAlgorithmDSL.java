@@ -72,7 +72,7 @@ public class MultiAlgorithmDSL extends LenskitConfigDSL {
         if (name != null) {
             kid.setName(name);
         }
-        MultiAlgorithmDSL dsl = new MultiAlgorithmDSL(getConfigLoader(), builder);
+        MultiAlgorithmDSL dsl = new MultiAlgorithmDSL(getConfigLoader(), kid);
         Closure<?> copy = (Closure<?>) block.clone();
         copy.setDelegate(dsl);
         copy.setResolveStrategy(Closure.DELEGATE_FIRST);

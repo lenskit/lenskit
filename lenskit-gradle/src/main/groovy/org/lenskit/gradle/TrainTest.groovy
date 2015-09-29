@@ -65,11 +65,24 @@ class TrainTest extends LenskitTask {
         }
     }
 
-    def algorithm(String name, file) {
+    /**
+     * Load one or more algorithms from a file.
+     * @param name The algorithm name.
+     * @param file The file.
+     */
+    void algorithm(String name, file) {
         def aspec = new AlgorithmSpec()
         aspec.name = name
         aspec.configFile = project.file(file).toPath()
         spec.addAlgorithm(aspec)
+    }
+
+    /**
+     * Load one or more algorithms from a file.
+     * @param file The algorithm file
+     */
+    void algorithm(file) {
+        algorithm(null, file)
     }
 
     /**
