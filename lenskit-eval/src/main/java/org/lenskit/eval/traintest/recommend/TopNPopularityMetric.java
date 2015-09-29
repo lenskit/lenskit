@@ -48,6 +48,7 @@ public class TopNPopularityMetric extends TopNMetric<TopNPopularityMetric.Contex
         super(PopResult.class, PopResult.class);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Set<Class<?>> getRequiredRoots() {
         return (Set) Collections.singleton(RatingSummary.class);
