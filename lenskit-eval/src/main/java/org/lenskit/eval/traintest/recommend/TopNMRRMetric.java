@@ -55,6 +55,10 @@ public class TopNMRRMetric extends TopNMetric<TopNMRRMetric.Context> {
     private final ItemSelector goodItems;
     private final String suffix;
 
+    /**
+     * Construct an MRR metric from a spec.
+     * @param spec The metric specl
+     */
     @JsonCreator
     public TopNMRRMetric(PRMetricSpec spec) {
         this(ItemSelector.compileSelector(StringUtils.defaultString(spec.getGoodItems(), "user.testItems")),

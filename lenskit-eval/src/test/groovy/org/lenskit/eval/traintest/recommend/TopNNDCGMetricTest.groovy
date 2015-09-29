@@ -39,7 +39,7 @@ class TopNNDCGMetricTest {
             discount 'exp(5)'
         }
         def node = SpecUtils.parse(DynamicSpec, jsb.toString())
-        def metric = SpecUtils.buildObject(TopNNDCGMetric, node)
+        def metric = SpecUtils.buildObject(TopNMetric, node)
         assertThat(metric, instanceOf(TopNNDCGMetric))
         def ndcg = metric as TopNNDCGMetric
         assertThat(ndcg.discount, equalTo(Discounts.exp(5)));

@@ -58,8 +58,10 @@ task trainTest(type: TrainTest) {
         metric('ndcg') {
             columnName 'nDCG'
         }
-        metric('mrr')
+        metric 'popularity'
+        metric 'mrr'
         metric 'map'
+        metric 'pr'
     }
 }
 

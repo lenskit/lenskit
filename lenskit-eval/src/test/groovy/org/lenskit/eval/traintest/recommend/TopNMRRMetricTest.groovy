@@ -155,7 +155,7 @@ class TopNMRRMetricTest {
             goodItems 'allItems'
         }
         def node = SpecUtils.parse(DynamicSpec, jsb.toString())
-        def metric = SpecUtils.buildObject(TopNMRRMetric, node)
+        def metric = SpecUtils.buildObject(TopNMetric, node)
         assertThat(metric, instanceOf(TopNMRRMetric))
         def mrr = metric as TopNMRRMetric
         assertThat(metric.suffix, equalTo("Good"))

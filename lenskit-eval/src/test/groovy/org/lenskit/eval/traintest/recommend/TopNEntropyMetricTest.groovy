@@ -36,7 +36,7 @@ class TopNEntropyMetricTest {
             type 'entropy'
         }
         def node = SpecUtils.parse(DynamicSpec, jsb.toString())
-        def metric = SpecUtils.buildObject(TopNEntropyMetric, node)
+        def metric = SpecUtils.buildObject(TopNMetric, node)
         assertThat(metric, instanceOf(TopNEntropyMetric))
     }
 }

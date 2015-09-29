@@ -44,7 +44,13 @@ import javax.annotation.Nullable;
  * The algorithm computed here is equivalent to <a href="https://github.com/benhamner/Metrics/blob/master/Python/ml_metrics/average_precision.py">Ben Hammer's Python implementation</a>,
  * as referenced by Kaggle.
  *
- * This metric is registered under the name `map`.
+ * This metric is registered under the name `map`.  It has two configuration parameters:
+ *
+ * `suffix`
+ * :   a suffix to append to the column name
+ *
+ * `goodItems`
+ * :   an item selector expression. The default is the user's test items.
  */
 public class TopNMAPMetric extends TopNMetric<TopNMAPMetric.Context> {
     private static final Logger logger = LoggerFactory.getLogger(TopNMAPMetric.class);

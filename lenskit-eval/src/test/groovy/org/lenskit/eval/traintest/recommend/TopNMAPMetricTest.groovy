@@ -22,21 +22,26 @@ package org.lenskit.eval.traintest.recommend
 
 import groovy.json.JsonBuilder
 import org.junit.Test
+import org.lenskit.eval.traintest.metrics.Discounts
 import org.lenskit.specs.DynamicSpec
 import org.lenskit.specs.SpecUtils
 
+import static org.hamcrest.Matchers.equalTo
 import static org.hamcrest.Matchers.instanceOf
 import static org.junit.Assert.assertThat
 
-class TopNLengthMetricTest {
+class TopNMAPMetricTest {
     @Test
     public void testConfigure() {
         def jsb = new JsonBuilder()
         jsb {
-            type 'length'
+            type 'map'
+            suffix 'foo'
         }
         def node = SpecUtils.parse(DynamicSpec, jsb.toString())
         def metric = SpecUtils.buildObject(TopNMetric, node)
-        assertThat(metric, instanceOf(TopNLengthMetric))
+        assertThat(metric, instanceOf(TopNMAPMetric))
+        def ndcg = metric as TopNMAPMetric
+        assertThat(ndcg.suffix, equalTo('foo'));
     }
 }
