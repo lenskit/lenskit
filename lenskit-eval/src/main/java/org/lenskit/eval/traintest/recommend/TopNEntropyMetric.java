@@ -37,7 +37,8 @@ import javax.annotation.Nullable;
 /**
  * Metric that measures the entropy of the top N recommendations across all users.
  *
- * This tell us essentially how large of a range of the items your recommender is covering.
+ * This tell us essentially how large of a range of the items your recommender is covering.  It does not return
+ * any per-user results.
  *
  * Small values indicate that the algorithm tends to prefer a small number of items which it recomments
  * to all users. Large values mean that the algorithm recommends many different items (to many different
@@ -46,6 +47,8 @@ import javax.annotation.Nullable;
  * The smallest value happens when the topN list is the same for all users (which would give an entropy
  * of roughly log_2(N)). The largest value happens when each item is recommended the same number of times
  * (for an entropy of roughly log_2(number of items)).
+ *
+ * This metric is registered with the type name `entropy`.
  */
 public class TopNEntropyMetric extends TopNMetric<TopNEntropyMetric.Context> {
     /**

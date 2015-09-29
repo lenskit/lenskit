@@ -20,12 +20,15 @@
  */
 package org.lenskit.eval.traintest.predict;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparators;
+import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.lenskit.api.ResultMap;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -34,6 +37,7 @@ import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.Discount;
 import org.lenskit.eval.traintest.metrics.Discounts;
 import org.lenskit.eval.traintest.metrics.MetricResult;
+import org.lenskit.specs.AbstractSpec;
 import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +62,7 @@ import javax.annotation.Nullable;
  */
 public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
     private static final Logger logger = LoggerFactory.getLogger(NDCGPredictMetric.class);
+    public static final String DEFAULT_COLUMN = "Predict.nDCG";
     private final String columnName;
     private final Discount discount;
 
@@ -65,7 +70,7 @@ public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
      * Create a new log_2 nDCG metric with column name "Predict.nDCG".
      */
     public NDCGPredictMetric() {
-        this(Discounts.log2(), "Predict.nDCG");
+        this(Discounts.log2(), DEFAULT_COLUMN);
     }
 
     /**
@@ -73,7 +78,17 @@ public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
      * @param disc The discount.
      */
     public NDCGPredictMetric(Discount disc) {
-        this(disc, "Predict.nDCG");
+        this(disc, DEFAULT_COLUMN);
+    }
+
+    /**
+     * Construct a predict metric from a spec.
+     * @param spec The metric spec.
+     */
+    @JsonCreator
+    public NDCGPredictMetric(Spec spec) {
+        this(spec.getParsedDiscount(),
+             StringUtils.defaultString(spec.getColumnName(), DEFAULT_COLUMN));
     }
 
     /**
@@ -137,5 +152,38 @@ public class NDCGPredictMetric extends PredictMetric<MeanAccumulator> {
         }
 
         return gain;
+    }
+
+    /**
+     * Specification for configuring nDCG metrics.
+     */
+    @JsonIgnoreProperties("type")
+    public static class Spec extends AbstractSpec {
+        private String name;
+        private String discount;
+
+        public String getColumnName() {
+            return name;
+        }
+
+        public void setColumnName(String name) {
+            this.name = name;
+        }
+
+        public String getDiscount() {
+            return discount;
+        }
+
+        public void setDiscount(String discount) {
+            this.discount = discount;
+        }
+
+        public Discount getParsedDiscount() {
+            if (discount == null) {
+                return Discounts.log2();
+            } else {
+                return Discounts.parse(discount);
+            }
+        }
     }
 }

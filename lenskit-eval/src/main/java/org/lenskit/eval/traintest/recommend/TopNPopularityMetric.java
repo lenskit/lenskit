@@ -38,6 +38,8 @@ import javax.annotation.Nullable;
 
 /**
  * Metric that measures how popular the items in the TopN list are.
+ *
+ * This metric is registered with the type name `popularity`.
  */
 public class TopNPopularityMetric extends TopNMetric<TopNPopularityMetric.Context> {
     public TopNPopularityMetric() {

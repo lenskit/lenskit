@@ -21,6 +21,7 @@
 package org.lenskit.eval.traintest.metrics;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -32,6 +33,23 @@ public abstract class MetricResult {
      * @return The values for the result.
      */
     public abstract Map<String,Object> getValues();
+
+    /**
+     * Add a suffix to this metric result's column names.
+     * @param sfx The suffix to add, or `null` for no change.
+     * @return The converted metric.
+     */
+    public MetricResult withSuffix(String sfx) {
+        if (sfx == null) {
+            return this;
+        }
+
+        Map<String,Object> newData = new HashMap<>();
+        for (Map.Entry<String,Object> e: getValues().entrySet()) {
+            newData.put(e.getKey() + "." + sfx, e.getValue());
+        }
+        return fromMap(newData);
+    }
 
     /**
      * Create an empty metric result.

@@ -20,11 +20,13 @@
  */
 package org.lenskit.eval.traintest.recommend;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparators;
-import org.grouplens.lenskit.eval.metrics.ResultColumn;
+import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -33,26 +35,31 @@ import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.Discount;
 import org.lenskit.eval.traintest.metrics.Discounts;
 import org.lenskit.eval.traintest.metrics.MetricResult;
-import org.lenskit.eval.traintest.metrics.TypedMetricResult;
+import org.lenskit.specs.AbstractSpec;
 import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 
 /**
  * Measure the nDCG of the top-N recommendations, using ratings as scores.
+ *
+ * This metric is registered with the type name `ndcg`.
  */
 public class TopNNDCGMetric extends TopNMetric<MeanAccumulator> {
     private static final Logger logger = LoggerFactory.getLogger(TopNNDCGMetric.class);
+    public static final String DEFAULT_COLUMN = "TopN.nDCG";
+    private final String columnName;
     private final Discount discount;
 
     /**
      * Create an nDCG metric with log-2 discounting.
      */
     public TopNNDCGMetric() {
-        this(Discounts.log2(), "TopN.nDCG");
+        this(Discounts.log2(), null);
     }
 
     /**
@@ -60,7 +67,16 @@ public class TopNNDCGMetric extends TopNMetric<MeanAccumulator> {
      * @param disc The discount to apply.
      */
     public TopNNDCGMetric(Discount disc) {
-        this(disc, "TopN.nDCG");
+        this(disc, null);
+    }
+
+    /**
+     * Construct a top-N nDCG metric from a spec.
+     * @param spec The spec.
+     */
+    @JsonCreator
+    public TopNNDCGMetric(Spec spec) {
+        this(spec.getParsedDiscount(), spec.getColumnName());
     }
 
     /**
@@ -69,7 +85,9 @@ public class TopNNDCGMetric extends TopNMetric<MeanAccumulator> {
      * @param name The column name to use.
      */
     public TopNNDCGMetric(Discount disc, String name) {
-        super(NDCGResult.class, NDCGResult.class);
+        super(Collections.singletonList(StringUtils.defaultString(name, DEFAULT_COLUMN)),
+              Collections.singletonList(StringUtils.defaultString(name, DEFAULT_COLUMN)));
+        columnName = StringUtils.defaultString(name, DEFAULT_COLUMN);
         discount = disc;
     }
 
@@ -82,8 +100,7 @@ public class TopNNDCGMetric extends TopNMetric<MeanAccumulator> {
     @Nonnull
     @Override
     public MetricResult getAggregateMeasurements(MeanAccumulator context) {
-        // TODO Implement this method
-        return super.getAggregateMeasurements(context);
+        return MetricResult.singleton(columnName, context.getMean());
     }
 
     @Nonnull
@@ -104,7 +121,7 @@ public class TopNNDCGMetric extends TopNMetric<MeanAccumulator> {
         double score = gain / idealGain;
 
         context.add(score);
-        return new NDCGResult(score);
+        return MetricResult.singleton(columnName, score);
     }
 
     /**
@@ -123,12 +140,36 @@ public class TopNNDCGMetric extends TopNMetric<MeanAccumulator> {
         return gain;
     }
 
-    public static class NDCGResult extends TypedMetricResult {
-        @ResultColumn("TopN.nDCG")
-        public final double nDCG;
+    /**
+     * Specification for configuring nDCG metrics.
+     */
+    @JsonIgnoreProperties("type")
+    public static class Spec extends AbstractSpec {
+        private String name;
+        private String discount;
 
-        public NDCGResult(double v) {
-            nDCG = v;
+        public String getColumnName() {
+            return name;
+        }
+
+        public void setColumnName(String name) {
+            this.name = name;
+        }
+
+        public String getDiscount() {
+            return discount;
+        }
+
+        public void setDiscount(String discount) {
+            this.discount = discount;
+        }
+
+        public Discount getParsedDiscount() {
+            if (discount == null) {
+                return Discounts.log2();
+            } else {
+                return Discounts.parse(discount);
+            }
         }
     }
 }

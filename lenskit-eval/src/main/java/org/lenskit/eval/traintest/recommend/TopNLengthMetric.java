@@ -35,7 +35,8 @@ import javax.annotation.Nullable;
 
 /**
  * Metric that measures how long a TopN list actually is.
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ *
+ * This metric is registered with the type name `length`.
  */
 public class TopNLengthMetric extends TopNMetric<MeanAccumulator> {
     /**

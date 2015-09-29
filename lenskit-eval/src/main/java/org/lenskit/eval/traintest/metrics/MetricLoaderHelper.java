@@ -20,10 +20,18 @@
  */
 package org.lenskit.eval.traintest.metrics;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.ClassUtils;
+import org.lenskit.specs.SpecUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -32,6 +40,7 @@ import java.util.Properties;
  * Helper for loading metrics from the classpath.
  */
 public class MetricLoaderHelper {
+    private static final Logger logger = LoggerFactory.getLogger(MetricLoaderHelper.class);
     private final ClassLoader loader;
     private final Properties propFiles;
 
@@ -54,19 +63,38 @@ public class MetricLoaderHelper {
     }
 
     /**
+     * Look up the class implementing a metric by name.
+     * @param name The metric name.
+     * @return The metric class.
+     */
+    public Class<?> findClass(String name) {
+        if (propFiles.containsKey(name.toLowerCase())) {
+            String className = (String) propFiles.get(name.toLowerCase());
+            logger.debug("resolving metric {} to class {}", name, className);
+            try {
+                return ClassUtils.getClass(loader, className);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("class " + className + " not found", e);
+            }
+        } else {
+            try {
+                logger.debug("trying to look up metric {} as class", name);
+                return ClassUtils.getClass(loader, name);
+            } catch (ClassNotFoundException e) {
+                logger.debug("no metric {} found");
+                return null;
+            }
+        }
+    }
+
+    /**
      * Try to instantiate a metric.
      * @param name The metric name (case-insensitive; will be looked up in lowercase).
      * @return The metric, or {@code null} if no such metric can be found.
      */
     public Object tryInstantiate(String name) {
-        if (propFiles.containsKey(name.toLowerCase())) {
-            String className = (String) propFiles.get(name.toLowerCase());
-            Class<?> metric = null;
-            try {
-                metric = ClassUtils.getClass(loader, className);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException("class " + className + " not found", e);
-            }
+        Class<?> metric = findClass(name);
+        if (metric != null) {
             try {
                 return metric.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
@@ -74,6 +102,45 @@ public class MetricLoaderHelper {
             }
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Get the metric type name from a node.  If the node is a string, the string is returned; otherwise, the object's
+     * `type` property is returned.
+     * @param node The node.
+     * @return The type name.
+     */
+    public String getMetricTypeName(JsonNode node) {
+        if (node.isTextual()) {
+            return node.asText();
+        } else if (node.isObject()) {
+            ObjectNode obj = (ObjectNode) node;
+            return obj.get("type").asText();
+        } else {
+            return null;
+        }
+    }
+
+    @Nullable
+    public <T> T createMetric(Class<T> type, JsonNode node) {
+        String typeName = getMetricTypeName(node);
+        if (typeName == null) {
+            return null;
+        }
+
+        Class<?> metric = findClass(typeName);
+        for (Constructor<?> ctor: metric.getConstructors()) {
+            if (ctor.getAnnotation(JsonCreator.class) != null) {
+                return type.cast(SpecUtils.createMapper().convertValue(node, metric));
+            }
+        }
+
+        // ok, just instantiate
+        try {
+            return type.cast(metric.newInstance());
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException("Cannot instantiate " + metric, e);
         }
     }
 }

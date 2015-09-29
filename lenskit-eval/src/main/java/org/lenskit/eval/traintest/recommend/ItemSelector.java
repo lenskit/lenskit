@@ -52,6 +52,23 @@ public abstract class ItemSelector {
     }
 
     /**
+     * Get an item selector that returns a fixed set of items.
+     * @param items The items to return.
+     */
+    public static ItemSelector fixed(final LongSet items) {
+        return new ItemSelector() {
+            @Override
+            public LongSet selectItems(LongSet universe, TestUser user) {
+                return items;
+            }
+        };
+    }
+
+    public static ItemSelector fixed(long... items) {
+        return fixed(LongUtils.packedSet(items));
+    }
+
+    /**
      * Compile an item selector from a Groovy expression.  Two useful objects are available to this expression:
      *
      * allItems

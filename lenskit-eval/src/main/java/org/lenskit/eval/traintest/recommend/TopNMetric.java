@@ -56,6 +56,19 @@ public abstract class TopNMetric<X> extends Metric<X> {
     }
 
     /**
+     * Construct a new result metric.
+     * @param resType The result type for measuring results, or `null` for no measurement.
+     * @param aggType The result type for aggregate measurements, or `null` for no measurement.
+     * @param suffix Suffix to apply to names.
+     */
+    protected TopNMetric(Class<? extends TypedMetricResult> resType,
+                         Class<? extends TypedMetricResult> aggType,
+                         String suffix) {
+        super(TypedMetricResult.getColumns(resType, suffix),
+              TypedMetricResult.getColumns(aggType, suffix));
+    }
+
+    /**
      * Measure a single result.  The result may come from either prediction or recommendation.
      * @param user The user's test data.
      * @param recommendations The user's recommendations.
