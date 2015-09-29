@@ -27,7 +27,9 @@ import org.lenskit.eval.traintest.DataSet;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Interface for common aspects of metrics, which are used to measure individual or per-user results.  Each metric
@@ -87,6 +89,14 @@ public abstract class Metric<X> {
      */
     public List<String> getColumnLabels() {
         return columnLabels;
+    }
+
+    /**
+     * Get the classes on which this metric depends.  These will be added to the roots of each algorithm configuration.
+     * @return The required roots for this metric.
+     */
+    public Set<Class<?>> getRequiredRoots() {
+        return Collections.emptySet();
     }
 
     /**

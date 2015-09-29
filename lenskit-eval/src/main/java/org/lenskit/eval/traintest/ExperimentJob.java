@@ -63,6 +63,7 @@ class ExperimentJob implements Runnable {
     private final TrainTestExperiment experiment;
     private final AlgorithmInstance algorithm;
     private final DataSet dataSet;
+    private final LenskitConfiguration sharedConfig;
 
     @Nullable
     private final ComponentCache cache;
@@ -71,11 +72,13 @@ class ExperimentJob implements Runnable {
     ExperimentJob(TrainTestExperiment exp,
                   @Nonnull AlgorithmInstance algo,
                   @Nonnull DataSet ds,
+                  LenskitConfiguration shared,
                   @Nullable ComponentCache cache,
-                  @Nullable MergePool<Component,Dependency> pool) {
+                  @Nullable MergePool<Component, Dependency> pool) {
         experiment = exp;
         algorithm = algo;
         dataSet = ds;
+        sharedConfig = shared;
         this.cache = cache;
         mergePool = pool;
     }
@@ -178,7 +181,7 @@ class ExperimentJob implements Runnable {
 
     private LenskitRecommender buildRecommender() throws RecommenderBuildException {
         logger.debug("Starting recommender build");
-        LenskitConfiguration dataConfig = new LenskitConfiguration();
+        LenskitConfiguration dataConfig = new LenskitConfiguration(sharedConfig);
         dataSet.configure(dataConfig);
         DAGNode<Component, Dependency> cfgGraph = algorithm.buildRecommenderGraph(dataConfig);
         if (mergePool != null) {

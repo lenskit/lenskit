@@ -47,6 +47,12 @@ public interface EvalTask {
     List<String> getUserColumns();
 
     /**
+     * Get the root types required by this evaluation.
+     * @return The root types required by this evaluation.
+     */
+    Set<Class<?>> getRequiredRoots();
+
+    /**
      * Do initial setup for this eval task.  This should create any per-task output files, etc.
      *
      * @param outputLayout The output layout for experiment results.

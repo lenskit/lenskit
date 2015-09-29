@@ -20,9 +20,9 @@
  */
 package org.lenskit.eval.traintest.recommend;
 
-import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
+import org.lenskit.LenskitRecommender;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
@@ -35,6 +35,8 @@ import org.lenskit.eval.traintest.metrics.TypedMetricResult;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Metric that measures how popular the items in the TopN list are.
@@ -44,6 +46,11 @@ import javax.annotation.Nullable;
 public class TopNPopularityMetric extends TopNMetric<TopNPopularityMetric.Context> {
     public TopNPopularityMetric() {
         super(PopResult.class, PopResult.class);
+    }
+
+    @Override
+    public Set<Class<?>> getRequiredRoots() {
+        return (Set) Collections.singleton(RatingSummary.class);
     }
 
     @Nullable

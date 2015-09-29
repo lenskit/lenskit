@@ -452,6 +452,16 @@ public class TrainTestExperiment {
         ListMultimap<UUID, Runnable> jobs = MultimapBuilder.linkedHashKeys()
                                                            .linkedListValues()
                                                            .build();
+
+        // set up the roots
+        LenskitConfiguration config = new LenskitConfiguration();
+        for (EvalTask task: tasks) {
+            for (Class<?> cls: task.getRequiredRoots()) {
+                config.addRoot(cls);
+            }
+        }
+
+        // make tasks
         for (DataSet ds: getDataSets()) {
             // TODO support global isolation
             UUID group = ds.getIsolationGroup();
@@ -460,7 +470,7 @@ public class TrainTestExperiment {
                 pool = MergePool.create();
             }
             for (AlgorithmInstance ai: getAlgorithms()) {
-                ExperimentJob job = new ExperimentJob(this, ai, ds, cache, pool);
+                ExperimentJob job = new ExperimentJob(this, ai, ds, config, cache, pool);
                 jobs.put(group, job);
             }
         }

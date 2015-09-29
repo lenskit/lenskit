@@ -20,7 +20,9 @@
  */
 package org.lenskit.eval.traintest.predict;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
@@ -45,12 +47,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * An eval task that attempts to predict the user's test ratings.  It is generally a bad idea, as well as pointless,
@@ -140,6 +140,18 @@ public class PredictEvalTask implements EvalTask {
      */
     public void addMetric(PredictMetric<?> metric) {
         predictMetrics.add(metric);
+    }
+
+    @Override
+    public Set<Class<?>> getRequiredRoots() {
+        return FluentIterable.from(getAllMetrics())
+                             .transformAndConcat(new Function<Metric<?>, Iterable<Class<?>>>() {
+                                 @Nullable
+                                 @Override
+                                 public Iterable<Class<?>> apply(Metric<?> input) {
+                                     return input.getRequiredRoots();
+                                 }
+                             }).toSet();
     }
 
     @Override
