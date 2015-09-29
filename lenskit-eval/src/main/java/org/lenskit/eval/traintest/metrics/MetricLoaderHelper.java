@@ -22,6 +22,7 @@ package org.lenskit.eval.traintest.metrics;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.ClassUtils;
 import org.lenskit.specs.SpecUtils;
@@ -127,6 +128,9 @@ public class MetricLoaderHelper {
         String typeName = getMetricTypeName(node);
         if (typeName == null) {
             return null;
+        }
+        if (!node.isObject()) {
+            node = JsonNodeFactory.instance.objectNode().set("type", node);
         }
 
         Class<?> metric = findClass(typeName);

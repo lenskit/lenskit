@@ -23,6 +23,7 @@ package org.lenskit.eval.traintest.recommend;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.lenskit.api.Result;
@@ -30,6 +31,7 @@ import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
+import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.eval.traintest.metrics.TypedMetricResult;
 import org.lenskit.specs.AbstractSpec;
 import org.slf4j.Logger;
@@ -41,7 +43,13 @@ import javax.annotation.Nullable;
 /**
  * Compute the mean reciprocal rank.
  * 
- * This metric is registered with the type name `mrr`.
+ * This metric is registered with the type name `mrr`.  It has two configuration parameters:
+ *
+ * `suffix`
+ * :   a suffix to append to the column name
+ *
+ * `goodItems`
+ * :   an item selector expression. The default is the user's test items.
  */
 public class TopNMRRMetric extends TopNMetric<TopNMRRMetric.Context> {
     private static final Logger logger = LoggerFactory.getLogger(TopNMRRMetric.class);
@@ -51,7 +59,7 @@ public class TopNMRRMetric extends TopNMetric<TopNMRRMetric.Context> {
 
     @JsonCreator
     public TopNMRRMetric(Spec spec) {
-        this(ItemSelector.compileSelector(spec.getGoodItems()),
+        this(ItemSelector.compileSelector(StringUtils.defaultString(spec.getGoodItems(), "user.testItems")),
              spec.getSuffix());
     }
 
@@ -75,13 +83,13 @@ public class TopNMRRMetric extends TopNMetric<TopNMRRMetric.Context> {
 
     @Nonnull
     @Override
-    public AggregateResult getAggregateMeasurements(Context context) {
-        return new AggregateResult(context);
+    public MetricResult getAggregateMeasurements(Context context) {
+        return new AggregateResult(context).withSuffix(suffix);
     }
 
     @Nonnull
     @Override
-    public UserResult measureUser(TestUser user, ResultList recommendations, Context context) {
+    public MetricResult measureUser(TestUser user, ResultList recommendations, Context context) {
         LongSet good = goodItems.selectItems(context.universe, user);
         if (good.isEmpty()) {
             logger.warn("no good items for user {}", user.getUserId());
@@ -99,7 +107,7 @@ public class TopNMRRMetric extends TopNMetric<TopNMRRMetric.Context> {
 
         UserResult result = new UserResult(rank);
         context.addUser(result);
-        return result;
+        return result.withSuffix(suffix);
     }
 
     public static class UserResult extends TypedMetricResult {
