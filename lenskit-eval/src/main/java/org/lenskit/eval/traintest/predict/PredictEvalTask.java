@@ -64,10 +64,32 @@ public class PredictEvalTask implements EvalTask {
             new RMSEPredictMetric()
     };
 
-    private ExperimentOutputLayout experimentOutputLayout;
-    private Path outputFile;
-    private TableWriter outputTable;
+    private final PredictEvalTaskSpec spec;
     private List<PredictMetric<?>> predictMetrics = Lists.newArrayList(DEFAULT_METRICS);
+
+    private ExperimentOutputLayout experimentOutputLayout;
+    private TableWriter outputTable;
+
+    public PredictEvalTask() {
+        this(new PredictEvalTaskSpec());
+    }
+
+    PredictEvalTask(PredictEvalTaskSpec spec) {
+        // We just use the spec for storing things.
+        this.spec = SpecUtils.copySpec(spec);
+        if (!spec.getMetrics().isEmpty()) {
+            // FIXME keep this in sync with the metrics
+            predictMetrics.clear();
+            for (DynamicSpec ms: spec.getMetrics()) {
+                PredictMetric<?> metric = SpecUtils.buildObject(PredictMetric.class, ms);
+                if (metric != null) {
+                    addMetric(metric);
+                } else {
+                    throw new RuntimeException("cannot build metric for " + ms.getJSON());
+                }
+            }
+        }
+    }
 
     /**
      * Create a predict eval task from a specification.
@@ -75,21 +97,7 @@ public class PredictEvalTask implements EvalTask {
      * @return The task.
      */
     public static PredictEvalTask fromSpec(PredictEvalTaskSpec ets) {
-        PredictEvalTask task = new PredictEvalTask();
-        task.setOutputFile(ets.getOutputFile());
-        if (!ets.getMetrics().isEmpty()) {
-            task.getPredictMetrics().clear();
-            for (DynamicSpec ms: ets.getMetrics()) {
-                PredictMetric<?> metric = SpecUtils.buildObject(PredictMetric.class, ms);
-                if (metric != null) {
-                    task.addMetric(metric);
-                } else {
-                    throw new RuntimeException("cannot build metric for " + ms.getJSON());
-                }
-            }
-        }
-
-        return task;
+        return new PredictEvalTask(ets);
     }
 
     /**
@@ -97,7 +105,7 @@ public class PredictEvalTask implements EvalTask {
      * @return The output file, or {@code null} if no file is configured.
      */
     public Path getOutputFile() {
-        return outputFile;
+        return spec.getOutputFile();
     }
 
     /**
@@ -105,7 +113,7 @@ public class PredictEvalTask implements EvalTask {
      * @param file The output file for writing predictions. Will get a CSV file.
      */
     public void setOutputFile(Path file) {
-        outputFile = file;
+        spec.setOutputFile(file);
     }
 
     /**
@@ -155,7 +163,8 @@ public class PredictEvalTask implements EvalTask {
     @Override
     public void start(ExperimentOutputLayout outputLayout) {
         experimentOutputLayout = outputLayout;
-        if (outputFile == null) {
+        Path outFile = getOutputFile();
+        if (outFile == null) {
             return;
         }
 
@@ -166,8 +175,8 @@ public class PredictEvalTask implements EvalTask {
                                 .addColumn("Prediction")
                                 .build();
         try {
-            logger.info("writing predictions to {}", outputFile);
-            outputTable = CSVWriter.open(outputFile.toFile(), layout, CompressionMode.AUTO);
+            logger.info("writing predictions to {}", outFile);
+            outputTable = CSVWriter.open(outFile.toFile(), layout, CompressionMode.AUTO);
         } catch (IOException e) {
             throw new EvaluationException("error opening prediction output file", e);
         }

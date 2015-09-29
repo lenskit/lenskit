@@ -23,7 +23,6 @@ package org.lenskit.eval.traintest.recommend;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
@@ -62,12 +61,32 @@ public class RecommendEvalTask implements EvalTask {
             new TopNLengthMetric()
     };
 
-    private ExperimentOutputLayout experimentOutputLayout;
-    private Path outputFile;
-    private TableWriter outputTable;
+    private final RecommendEvalTaskSpec spec;
     private List<TopNMetric<?>> topNMetrics = Lists.newArrayList(DEFAULT_METRICS);
-    private int listSize = 10;
-    private ItemSelector candidateSelector = ItemSelector.nullSelector();
+    private volatile ItemSelector candidateSelector;
+
+    private ExperimentOutputLayout experimentOutputLayout;
+    private TableWriter outputTable;
+
+    public RecommendEvalTask() {
+        this(new RecommendEvalTaskSpec());
+    }
+
+    RecommendEvalTask(RecommendEvalTaskSpec ets) {
+        spec = ets;
+        if (!ets.getMetrics().isEmpty()) {
+            // FIXME keep this in sync with the metrics
+            getTopNMetrics().clear();
+            for (DynamicSpec ms: ets.getMetrics()) {
+                TopNMetric<?> metric = SpecUtils.buildObject(TopNMetric.class, ms);
+                if (metric != null) {
+                    addMetric(metric);
+                } else {
+                    throw new RuntimeException("cannot build metric for " + ms.getJSON());
+                }
+            }
+        }
+    }
 
     /**
      * Create a top-N eval task from a specification.
@@ -75,29 +94,7 @@ public class RecommendEvalTask implements EvalTask {
      * @return The task.
      */
     public static RecommendEvalTask fromSpec(RecommendEvalTaskSpec ets) {
-        RecommendEvalTask task = new RecommendEvalTask();
-        task.setOutputFile(ets.getOutputFile());
-        task.setListSize(ets.getListSize());
-        if (!ets.getMetrics().isEmpty()) {
-            task.getTopNMetrics().clear();
-            for (DynamicSpec ms: ets.getMetrics()) {
-                TopNMetric<?> metric = SpecUtils.buildObject(TopNMetric.class, ms);
-                if (metric != null) {
-                    task.addMetric(metric);
-                } else {
-                    throw new RuntimeException("cannot build metric for " + ms.getJSON());
-                }
-            }
-        }
-
-        String sel = ets.getCandidateItems();
-        if (sel == null) {
-            task.candidateSelector = ItemSelector.nullSelector();
-        } else {
-            task.candidateSelector = ItemSelector.compileSelector(sel);
-        }
-
-        return task;
+        return new RecommendEvalTask(ets);
     }
 
     /**
@@ -105,7 +102,7 @@ public class RecommendEvalTask implements EvalTask {
      * @return The output file, or {@code null} if no file is configured.
      */
     public Path getOutputFile() {
-        return outputFile;
+        return spec.getOutputFile();
     }
 
     /**
@@ -113,7 +110,7 @@ public class RecommendEvalTask implements EvalTask {
      * @param file The output file for writing predictions. Will get a CSV file.
      */
     public void setOutputFile(Path file) {
-        outputFile = file;
+        spec.setOutputFile(file);
     }
 
     /**
@@ -121,7 +118,7 @@ public class RecommendEvalTask implements EvalTask {
      * @return The number of items to recommend per user.
      */
     public int getListSize() {
-        return listSize;
+        return spec.getListSize();
     }
 
     /**
@@ -129,7 +126,27 @@ public class RecommendEvalTask implements EvalTask {
      * @param n The number of items to recommend per user.
      */
     public void setListSize(int n) {
-        listSize = n;
+        spec.setListSize(n);
+    }
+
+    /**
+     * Get the active candidate selector.
+     * @return The candidate selector to use.
+     */
+    public ItemSelector getCandidateSelector() {
+        if (candidateSelector == null) {
+            String sel = spec.getCandidateItems();
+            candidateSelector = ItemSelector.compileSelector(sel);
+        }
+        return candidateSelector;
+    }
+
+    /**
+     * Set the candidate selector.
+     * @param sel The candidate selector.
+     */
+    public void setCandidateSelector(ItemSelector sel) {
+        candidateSelector = sel;
     }
 
     /**
@@ -179,7 +196,8 @@ public class RecommendEvalTask implements EvalTask {
     @Override
     public void start(ExperimentOutputLayout outputLayout) {
         experimentOutputLayout = outputLayout;
-        if (outputFile == null) {
+        Path outFile = getOutputFile();
+        if (outFile == null) {
             return;
         }
 
@@ -190,8 +208,8 @@ public class RecommendEvalTask implements EvalTask {
                                 .addColumn("Score")
                                 .build();
         try {
-            logger.info("writing recommendations to {}", outputFile);
-            outputTable = CSVWriter.open(outputFile.toFile(), layout, CompressionMode.AUTO);
+            logger.info("writing recommendations to {}", outFile);
+            outputTable = CSVWriter.open(outFile.toFile(), layout, CompressionMode.AUTO);
         } catch (IOException e) {
             throw new EvaluationException("error opening prediction output file", e);
         }
@@ -275,8 +293,8 @@ public class RecommendEvalTask implements EvalTask {
         @Override
         public Map<String, Object> measureUser(TestUser testUser) {
             // FIXME Support item selectors
-            LongSet candidates = candidateSelector.selectItems(allItems, testUser);
-            ResultList results = recommender.recommendWithDetails(testUser.getUserId(), listSize, candidates, null);
+            LongSet candidates = getCandidateSelector().selectItems(allItems, testUser);
+            ResultList results = recommender.recommendWithDetails(testUser.getUserId(), getListSize(), candidates, null);
 
             // Measure the user results
             Map<String,Object> row = new HashMap<>();

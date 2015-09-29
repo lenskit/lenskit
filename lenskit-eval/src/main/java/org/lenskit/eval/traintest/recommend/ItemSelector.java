@@ -63,9 +63,12 @@ public abstract class ItemSelector {
      * The expression is compiled as a script with a base class of {@link ItemSelectScript};
      * see that for more details.
      *
-     * @param expr A Groovy expression.
+     * @param expr A Groovy expression.  Can be `null`, in which case {@link #nullSelector()} is returned.
      */
     public static ItemSelector compileSelector(String expr) {
+        if (expr == null) {
+            return nullSelector();
+        }
         CompilerConfiguration config = new CompilerConfiguration();
         config.setScriptBaseClass(ItemSelectScript.class.getName());
         GroovyShell shell = new GroovyShell(config);
