@@ -26,13 +26,13 @@ import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.Matchers.allOf
 import static org.hamcrest.Matchers.equalTo
 
-File resultsFile = new File(basedir, "results.csv")
-File userFile = new File(basedir, "users.csv")
-File predictFile = new File(basedir, "predictions.csv")
+File resultsFile = new File("results.csv")
+File userFile = new File("users.csv")
+File predictFile = new File("predictions.csv")
 
 assertThat("output file existence",
            resultsFile, allOf(existingFile(),
-                              hasLineCount(equalTo(16))));
+                              hasLineCount(equalTo(11))));
 assertThat("user output file existence",
            userFile, existingFile());
 assertThat("predict output file existence",

@@ -20,12 +20,11 @@
  */
 
 
-import org.lenskit.api.ItemScorer
-import org.grouplens.lenskit.eval.metrics.predict.*
 import org.grouplens.lenskit.knn.item.model.*
 import org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer
+import org.lenskit.api.ItemScorer
 import org.lenskit.knn.NeighborhoodSize
 import org.lenskit.knn.user.NeighborFinder
 import org.lenskit.knn.user.SnapshotNeighborFinder

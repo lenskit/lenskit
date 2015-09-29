@@ -32,8 +32,6 @@ import org.lenskit.external.ExternalProcessItemScorerBuilder
 import javax.inject.Inject
 import javax.inject.Provider
 
-def dataDir = config['lenskit.movielens.100k']
-
 /**
  * Shim class to run item-mean.py to build an ItemScorer.
  */
@@ -64,35 +62,13 @@ class ExternalItemMeanScorerBuilder implements Provider<ItemScorer> {
     }
 }
 
-trainTest {
-    dataset crossfold("ML100K") {
-        source csvfile("$dataDir/u.data") {
-            delimiter "\t"
-        }
-        partitions 5
-        holdout 5
-        train 'train.%d.csv'
-        test 'test.%d.csv'
-    }
-
-    externalAlgorithm("FullExternal") {
-        command "python", "item-mean.py", "{TRAIN_DATA}", "{TEST_DATA}", "{OUTPUT}"
-        workDir config.scriptDir
-    }
-    algorithm("Baseline") {
-        bind ItemScorer to ItemMeanRatingItemScorer
-    }
-    algorithm("External") {
-        bind ItemScorer toProvider ExternalItemMeanScorerBuilder
-    }
-
-    metric CoveragePredictMetric
-    metric RMSEPredictMetric
-    metric MAEPredictMetric
-    metric NDCGPredictMetric
-    metric HLUtilityPredictMetric
-
-    output 'results.csv'
-    userOutput 'users.csv'
-    predictOutput 'predictions.csv'
+/* externalAlgorithm("FullExternal") {
+    command "python", "item-mean.py", "{TRAIN_DATA}", "{TEST_DATA}", "{OUTPUT}"
+    workDir config.scriptDir
+} */ // FIXME support external algorithms more cleanly
+algorithm("Baseline") {
+    bind ItemScorer to ItemMeanRatingItemScorer
+}
+algorithm("External") {
+    bind ItemScorer toProvider ExternalItemMeanScorerBuilder
 }

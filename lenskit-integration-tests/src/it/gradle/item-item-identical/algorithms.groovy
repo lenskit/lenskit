@@ -20,7 +20,6 @@
  */
 
 
-import org.grouplens.lenskit.eval.metrics.predict.*
 import org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer
 import org.grouplens.lenskit.transform.truncate.VectorTruncator
@@ -33,52 +32,28 @@ import org.lenskit.knn.item.ItemItemScorer
 import org.lenskit.knn.item.ModelSize
 import org.lenskit.knn.item.model.*
 
-def dataDir = config['lenskit.movielens.100k']
-
-trainTest {
-    dataset crossfold("ML100K") {
-        source csvfile("$dataDir/u.data") {
-            delimiter "\t"
-        }
-        partitions 5
-        holdout 5
-        train 'train.%d.csv'
-        test 'test.%d.csv'
+def common = {
+    bind ItemScorer to ItemItemScorer
+    set NeighborhoodSize to 20
+    set ModelSize to 500
+    bind ItemItemBuildContext toProvider ItemwiseBuildContextProvider
+    within (ItemItemBuildContext) {
+        bind VectorNormalizer to MeanCenteringVectorNormalizer
     }
-
-    def common = {
-        bind ItemScorer to ItemItemScorer
-        set NeighborhoodSize to 20
-        set ModelSize to 500
-        bind ItemItemBuildContext toProvider ItemwiseBuildContextProvider
-        within (ItemItemBuildContext) {
-            bind VectorNormalizer to MeanCenteringVectorNormalizer
-        }
-        bind (BaselineScorer, ItemScorer) to ItemMeanRatingItemScorer
-        at (RatingPredictor) {
-            // turn off baselines - make sure everything produces the same recs
-            bind (BaselineScorer, ItemScorer) to null
-        }
+    bind (BaselineScorer, ItemScorer) to ItemMeanRatingItemScorer
+    at (RatingPredictor) {
+        // turn off baselines - make sure everything produces the same recs
+        bind (BaselineScorer, ItemScorer) to null
     }
+}
 
-    algorithm("Standard") {
-        include common
+algorithm("Standard") {
+    include common
+}
+algorithm("Normalizing") {
+    include common
+    bind ItemItemModel toProvider NormalizingItemItemModelBuilder
+    at (ItemItemModel) {
+        bind VectorTruncator toProvider StandardVectorTruncatorProvider
     }
-    algorithm("Normalizing") {
-        include common
-        bind ItemItemModel toProvider NormalizingItemItemModelBuilder
-        at (ItemItemModel) {
-            bind VectorTruncator toProvider StandardVectorTruncatorProvider
-        }
-    }
-
-    metric CoveragePredictMetric
-    metric RMSEPredictMetric
-    metric MAEPredictMetric
-    metric NDCGPredictMetric
-    metric HLUtilityPredictMetric
-
-    output 'results.csv'
-    predictOutput 'predictions.csv'
-    writePredictionChannel ItemItemScorer.NEIGHBORHOOD_SIZE_SYMBOL, "NbrCount"
 }

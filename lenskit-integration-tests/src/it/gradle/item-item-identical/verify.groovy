@@ -21,8 +21,8 @@
 
 import static org.junit.Assert.assertTrue
 
-File resultsFile = new File(basedir, "results.csv")
-File predictFile = new File(basedir, "predictions.csv")
+File resultsFile = new File("results.csv")
+File predictFile = new File("predictions.csv")
 
 assertTrue("output file exists", resultsFile.exists())
 assertTrue("prediction file exists", predictFile.exists())
