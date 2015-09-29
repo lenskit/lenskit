@@ -69,6 +69,12 @@ file('src/it/gradle').eachDir { testDir ->
         buildFile = "$workDir/build.gradle"
         tasks = ['check']
 
+        if (file("$testDir/verify.py").exists()) {
+            dependsOn "checkPythonInstall"
+            onlyIf {
+                checkPythonInstall.isValid
+            }
+        }
         onlyIf {
             !file("$testDir/ignore").exists()
         }
