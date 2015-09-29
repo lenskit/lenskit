@@ -192,4 +192,23 @@ public final class SpecUtils {
             throw new RuntimeException("Error occurred in fromSpec on " + type, e);
         }
     }
+
+    /**
+     * Make a copy of a spec. Rather than implementing the complicated {@link Cloneable} infrastructure, we just
+     * round-trip the spec through JSON and copy all specs easily.
+     *
+     * @param spec The spec to copy.
+     * @param <T> The spec type.
+     * @return The copied spec.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends AbstractSpec> T copySpec(T spec) {
+        if (spec == null) {
+            return null;
+        }
+
+        ObjectMapper mapper = createMapper();
+        JsonNode node = mapper.convertValue(spec, JsonNode.class);
+        return (T) mapper.convertValue(node, spec.getClass());
+    }
 }
