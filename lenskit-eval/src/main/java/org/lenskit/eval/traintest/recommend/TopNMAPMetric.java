@@ -39,38 +39,39 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Compute the mean reciprocal rank.
- * 
- * This metric is registered with the type name `mrr`.  It has two configuration parameters:
+ * Compute the mean average precision.
  *
- * `suffix`
- * :   a suffix to append to the column name
+ * The algorithm computed here is equivalent to <a href="https://github.com/benhamner/Metrics/blob/master/Python/ml_metrics/average_precision.py">Ben Hammer's Python implementation</a>,
+ * as referenced by Kaggle.
  *
- * `goodItems`
- * :   an item selector expression. The default is the user's test items.
+ * This metric is registered under the name `map`.
  */
-public class TopNMRRMetric extends TopNMetric<TopNMRRMetric.Context> {
-    private static final Logger logger = LoggerFactory.getLogger(TopNMRRMetric.class);
+public class TopNMAPMetric extends TopNMetric<TopNMAPMetric.Context> {
+    private static final Logger logger = LoggerFactory.getLogger(TopNMAPMetric.class);
 
-    private final ItemSelector goodItems;
     private final String suffix;
+    private final ItemSelector goodItems;
 
+    /**
+     * Create a metric from a spec.
+     * @param spec The specification.
+     */
     @JsonCreator
-    public TopNMRRMetric(PRMetricSpec spec) {
+    public TopNMAPMetric(PRMetricSpec spec) {
         this(ItemSelector.compileSelector(StringUtils.defaultString(spec.getGoodItems(), "user.testItems")),
              spec.getSuffix());
     }
 
     /**
-     * Construct a new recall and precision top n metric
-     * @param goodItems The list of items to consider "true positives", all other items will be treated
+     * Construct a new mean average precision top n metric
+     * @param sfx the suffix label for this evaluation, or {@code null} for no suffix.
+     * @param good The list of items to consider "true positives", all other items will be treated
      *                  as "false positives".
-     * @param sfx A suffix to append to the metric.
      */
-    public TopNMRRMetric(ItemSelector goodItems, String sfx) {
+    public TopNMAPMetric(ItemSelector good, String sfx) {
         super(AggregateResult.class, UserResult.class, sfx);
-        this.goodItems = goodItems;
         suffix = sfx;
+        goodItems = good;
     }
 
     @Nullable
@@ -87,57 +88,63 @@ public class TopNMRRMetric extends TopNMetric<TopNMRRMetric.Context> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, ResultList recommendations, Context context) {
+    public MetricResult measureUser(TestUser user, ResultList recs, Context context) {
         LongSet good = goodItems.selectItems(context.universe, user);
         if (good.isEmpty()) {
             logger.warn("no good items for user {}", user.getUserId());
+            return new UserResult(0, false);
         }
 
-        Integer rank = null;
-        int i = 0;
-        for(Result res: recommendations) {
-            i++;
+        if (recs == null || recs.isEmpty()) {
+            return MetricResult.empty();
+        }
+
+        int n = 0;
+        double ngood = 0;
+        double sum = 0;
+        for(Result res : recs) {
+            n += 1;
             if(good.contains(res.getId())) {
-                rank = i;
-                break;
+                // it is good
+                ngood += 1;
+                // add to MAP sum
+                sum += ngood / n;
             }
         }
 
-        UserResult result = new UserResult(rank);
+        UserResult result = new UserResult(sum / good.size(), ngood > 0);
         context.addUser(result);
         return result.withSuffix(suffix);
     }
 
     public static class UserResult extends TypedMetricResult {
-        @ResultColumn("Rank")
-        public final Integer rank;
+        @ResultColumn("AvgPrec")
+        public final double avgPrecision;
+        private final boolean isGood;
 
-        public UserResult(Integer r) {
-            rank = r;
-        }
-
-        @ResultColumn("RecipRank")
-        public double getRecipRank() {
-            return rank == null ? 0 : 1.0 / rank;
+        public UserResult(double aveP, boolean good) {
+            avgPrecision = aveP;
+            isGood = good;
         }
     }
 
     public static class AggregateResult extends TypedMetricResult {
         /**
-         * The MRR over all users.  Users for whom no good items are included, and have a reciprocal
+         * The MAP over all users.  Users for whom no good items are included, and have a reciprocal
          * rank of 0.
          */
-        @ResultColumn("MRR")
-        public final double mrr;
+        @ResultColumn("MAP")
+        public final double map;
+
         /**
-         * The MRR over those users for whom a good item could be recommended.
+         * The MAP over those users for whom a good item could be recommended.
          */
-        @ResultColumn("MRR.OfGood")
-        public final double goodMRR;
+        @ResultColumn("MAP.OfGood")
+        public final double goodMAP;
 
         public AggregateResult(Context accum) {
-            this.mrr = accum.allMean.getMean();
-            this.goodMRR = accum.goodMean.getMean();
+            this.map = accum.allMean.getMean();
+            this.goodMAP = accum.goodMean.getMean();
         }
     }
 
@@ -151,9 +158,9 @@ public class TopNMRRMetric extends TopNMetric<TopNMRRMetric.Context> {
         }
 
         void addUser(UserResult ur) {
-            allMean.add(ur.getRecipRank());
-            if (ur.rank != null) {
-                goodMean.add(ur.getRecipRank());
+            allMean.add(ur.avgPrecision);
+            if (ur.isGood) {
+                goodMean.add(ur.avgPrecision);
             }
         }
     }

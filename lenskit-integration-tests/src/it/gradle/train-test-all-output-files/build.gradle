@@ -59,6 +59,7 @@ task trainTest(type: TrainTest) {
             columnName 'nDCG'
         }
         metric('mrr')
+        metric 'map'
     }
 }
 
