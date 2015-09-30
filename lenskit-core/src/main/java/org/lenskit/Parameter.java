@@ -18,27 +18,26 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
+package org.lenskit;
+
+import java.lang.annotation.*;
 
 /**
- * Control when a recommender engine is validated.  Validation makes sure that all placeholders
- * have been resolved.
+ * Annotation for component parameters. A parameter is a simple value, usually a primitive,
+ * string (discouraged), or enum. Parameters have a shortcut configuration syntax
+ * ({@link LenskitConfigContext#set(Class)}).
  *
- * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 1.0
  */
-public enum EngineValidationMode {
+@Target(ElementType.ANNOTATION_TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Parameter {
     /**
-     * Validate the recommender engine when it is loaded.
+     * The parameter's type (e.g. {@code Double.class}).
+     *
+     * @return The type of the parameter.
      */
-    IMMEDIATE,
-    /**
-     * Defer validation until a recommender is created.
-     */
-    DEFERRED,
-    /**
-     * Do not validate the recommender engine.  In this case, instantiation may fail arbitrarily
-     * if the graph is not valid.
-     */
-    NONE
+    Class<?> value();
 }

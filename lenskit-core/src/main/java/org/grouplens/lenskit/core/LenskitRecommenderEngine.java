@@ -34,6 +34,8 @@ import org.grouplens.lenskit.RecommenderEngine;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.RecommenderConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

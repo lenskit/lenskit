@@ -24,7 +24,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.AbstractLongComparator;
 import it.unimi.dsi.fastutil.longs.LongArrays;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.util.math.Scalars;

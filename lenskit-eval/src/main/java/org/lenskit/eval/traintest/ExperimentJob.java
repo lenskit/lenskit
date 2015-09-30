@@ -31,7 +31,7 @@ import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.graph.MergePool;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.lenskit.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.UserHistory;

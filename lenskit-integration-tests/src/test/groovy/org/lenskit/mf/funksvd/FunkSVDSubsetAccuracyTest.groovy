@@ -20,7 +20,7 @@
  */
 package org.lenskit.mf.funksvd
 
-import org.grouplens.lenskit.core.LenskitConfiguration
+import org.lenskit.LenskitConfiguration
 import org.grouplens.lenskit.data.dao.ItemDAO
 import org.grouplens.lenskit.test.ML100KTestSuite
 

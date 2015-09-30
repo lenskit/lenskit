@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.test;
 
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.lenskit.LenskitConfiguration;
 import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.core.LenskitRecommenderEngine;
 import org.grouplens.lenskit.core.LenskitRecommenderEngineBuilder;

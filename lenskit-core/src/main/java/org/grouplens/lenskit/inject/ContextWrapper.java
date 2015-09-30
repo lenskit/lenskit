@@ -22,8 +22,8 @@ package org.grouplens.lenskit.inject;
 
 import org.grouplens.grapht.Context;
 import org.grouplens.grapht.context.ContextPattern;
-import org.grouplens.lenskit.core.LenskitBinding;
-import org.grouplens.lenskit.core.LenskitConfigContext;
+import org.lenskit.LenskitBinding;
+import org.lenskit.LenskitConfigContext;
 
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;

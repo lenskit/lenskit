@@ -22,6 +22,7 @@ package org.grouplens.lenskit.core;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.LenskitInfo;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;

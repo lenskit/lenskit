@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.vectors.similarity;
 
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.Shareable;
 import org.grouplens.lenskit.vectors.SparseVector;
 
 import javax.inject.Inject;

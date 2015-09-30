@@ -22,7 +22,7 @@
  * Configuration loading support.
  * <p>
  * This package provides support for loading {@linkplain
- * org.grouplens.lenskit.core.LenskitConfiguration LensKit configurations} from configuration files
+ * org.lenskit.LenskitConfiguration LensKit configurations} from configuration files
  * written using a Groovy-based DSL.  For example, the following:
  * </p>
  * <pre>{@code

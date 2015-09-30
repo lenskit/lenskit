@@ -21,7 +21,7 @@
 package org.lenskit.mf.funksvd;
 
 import org.grouplens.lenskit.config.ConfigHelpers;
-import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.lenskit.LenskitConfiguration;
 import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.test.CrossfoldTestSuite;
 import org.lenskit.util.table.Table

@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.data.event;
 
 import org.grouplens.grapht.annotation.DefaultBoolean;
-import org.grouplens.lenskit.core.Parameter;
+import org.lenskit.Parameter;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.*;

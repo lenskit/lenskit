@@ -38,6 +38,11 @@ import org.grouplens.lenskit.util.io.CompressionMode
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
+import org.lenskit.EngineValidationMode
+import org.lenskit.LenskitConfiguration
+import org.lenskit.ModelDisposition
+import org.lenskit.RecommenderConfigurationException
+import org.lenskit.Shareable
 import org.lenskit.baseline.BaselineScorer
 import org.lenskit.baseline.LeastSquaresItemScorer
 import org.lenskit.basic.ConstantItemScorer

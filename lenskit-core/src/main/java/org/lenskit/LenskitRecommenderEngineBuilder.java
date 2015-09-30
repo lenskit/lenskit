@@ -21,8 +21,6 @@
 package org.lenskit;
 
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.ModelDisposition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

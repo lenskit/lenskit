@@ -22,8 +22,8 @@ package org.grouplens.lenskit.baseline
 
 import org.grouplens.lenskit.RecommenderBuildException
 import org.grouplens.lenskit.config.ConfigHelpers
-import org.grouplens.lenskit.core.LenskitConfiguration
-import org.grouplens.lenskit.core.ModelDisposition
+import org.lenskit.LenskitConfiguration
+import org.lenskit.ModelDisposition
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.junit.Test
 import org.lenskit.LenskitRecommender

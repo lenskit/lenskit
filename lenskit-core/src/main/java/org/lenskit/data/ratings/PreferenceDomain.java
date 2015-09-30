@@ -26,7 +26,7 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleSortedMap;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.grapht.annotation.DefaultNull;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.specs.data.PrefDomainSpec;

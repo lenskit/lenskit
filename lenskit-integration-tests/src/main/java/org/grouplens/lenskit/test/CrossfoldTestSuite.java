@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.test;
 
-import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.lenskit.LenskitConfiguration;
 import org.grouplens.lenskit.data.source.GenericDataSource;
 import org.junit.Rule;
 import org.junit.Test;

@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.history;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.Shareable;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.events.EventType;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;

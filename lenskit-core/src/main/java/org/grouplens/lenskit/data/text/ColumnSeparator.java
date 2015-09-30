@@ -21,10 +21,9 @@
 package org.grouplens.lenskit.data.text;
 
 import org.grouplens.grapht.annotation.DefaultString;
-import org.grouplens.lenskit.core.Parameter;
+import org.lenskit.Parameter;
 
 import javax.inject.Qualifier;
-import java.io.File;
 import java.lang.annotation.*;
 
 /**

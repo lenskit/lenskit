@@ -25,8 +25,8 @@ package org.grouplens.lenskit.baseline;
 
 import org.grouplens.grapht.annotation.DefaultDouble;
 import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.core.Parameter;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.Parameter;
+import org.lenskit.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 

@@ -23,7 +23,7 @@ package org.grouplens.lenskit.test;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongLists;
-import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.lenskit.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.ItemListItemDAO;

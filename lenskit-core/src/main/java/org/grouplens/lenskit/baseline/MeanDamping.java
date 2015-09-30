@@ -22,7 +22,7 @@ package org.grouplens.lenskit.baseline;
 
 import org.grouplens.grapht.annotation.AliasFor;
 import org.grouplens.grapht.annotation.DefaultDouble;
-import org.grouplens.lenskit.core.Parameter;
+import org.lenskit.Parameter;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.*;

@@ -21,7 +21,7 @@
 package org.lenskit.basic
 
 import org.grouplens.lenskit.config.ConfigHelpers
-import org.grouplens.lenskit.core.LenskitConfiguration
+import org.lenskit.LenskitConfiguration
 import org.grouplens.lenskit.test.CrossfoldTestSuite
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer

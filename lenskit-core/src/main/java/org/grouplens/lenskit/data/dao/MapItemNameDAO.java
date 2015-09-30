@@ -25,7 +25,7 @@ import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import org.apache.commons.lang3.text.StrTokenizer;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.Shareable;
 import org.lenskit.util.io.LineStream;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.util.collections.LongUtils;

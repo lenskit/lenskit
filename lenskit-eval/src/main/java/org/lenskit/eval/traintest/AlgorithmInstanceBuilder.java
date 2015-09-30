@@ -22,7 +22,7 @@ package org.lenskit.eval.traintest;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
-import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.lenskit.LenskitConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

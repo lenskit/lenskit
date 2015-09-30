@@ -25,8 +25,8 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.grouplens.lenskit.config.ConfigurationLoader;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.RecommenderConfigurationException;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.RecommenderConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

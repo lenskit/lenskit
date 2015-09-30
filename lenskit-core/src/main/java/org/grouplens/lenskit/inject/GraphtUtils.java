@@ -32,9 +32,9 @@ import org.grouplens.grapht.graph.DAGEdge;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.*;
 import org.grouplens.grapht.reflect.internal.*;
-import org.grouplens.lenskit.core.RecommenderConfigurationException;
-import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.core.Transient;
+import org.lenskit.RecommenderConfigurationException;
+import org.lenskit.Shareable;
+import org.lenskit.Transient;
 import org.slf4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -61,7 +61,7 @@ public final class GraphtUtils {
      * Check a graph for placeholder satisfactions.
      *
      * @param graph The graph to check.
-     * @throws org.grouplens.lenskit.core.RecommenderConfigurationException if the graph has a placeholder satisfaction.
+     * @throws RecommenderConfigurationException if the graph has a placeholder satisfaction.
      */
     public static void checkForPlaceholders(DAGNode<Component, Dependency> graph, Logger logger) throws RecommenderConfigurationException {
         Set<DAGNode<Component, Dependency>> placeholders = getPlaceholderNodes(graph);

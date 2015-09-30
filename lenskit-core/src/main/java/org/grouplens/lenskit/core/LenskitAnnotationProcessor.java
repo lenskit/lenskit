@@ -21,6 +21,8 @@
 package org.grouplens.lenskit.core;
 
 import org.grouplens.grapht.annotation.AliasFor;
+import org.lenskit.Parameter;
+import org.lenskit.Shareable;
 
 import javax.annotation.processing.*;
 import javax.inject.Qualifier;

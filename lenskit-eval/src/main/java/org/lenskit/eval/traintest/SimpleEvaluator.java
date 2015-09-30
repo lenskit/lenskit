@@ -20,7 +20,7 @@
  */
 package org.lenskit.eval.traintest;
 
-import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.lenskit.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.GenericDataSource;

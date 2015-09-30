@@ -26,8 +26,8 @@ import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import org.codehaus.groovy.runtime.InvokerHelper;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.RecommenderConfigurationException;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.RecommenderConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -30,6 +30,7 @@ import org.grouplens.lenskit.data.text.TextEventDAO;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
 import org.grouplens.lenskit.inject.StaticInjector;
 import org.junit.Test;
+import org.lenskit.LenskitConfiguration;
 
 import java.io.File;
 

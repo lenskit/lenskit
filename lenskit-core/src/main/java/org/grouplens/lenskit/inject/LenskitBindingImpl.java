@@ -24,7 +24,8 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.reflect.Satisfaction;
-import org.grouplens.lenskit.core.LenskitBinding;
+import org.lenskit.LenskitBinding;
+import org.lenskit.LenskitConfigContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -62,7 +63,7 @@ class LenskitBindingImpl<T> implements LenskitBinding<T> {
      * Wrap a binding in a LensKit binding, with a coercion function to allow type conversions.
      * This will allow instances of other types to be bound, if the coercion function provides
      * a transformation.  Ordinarily, the generic types prevent this feature from being used, but
-     * a raw type (returned from {@link org.grouplens.lenskit.core.LenskitConfigContext#set(Class)}
+     * a raw type (returned from {@link LenskitConfigContext#set(Class)}
      * or commonly arising in Groovy) will allow arbitrary objects, and the coercion function will
      * convert them.  It should return an absent optional if the type
      * is unconvertable, and an optional wrapping the converted value if it is present.  If the

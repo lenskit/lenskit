@@ -35,7 +35,7 @@ import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.config.ConfigHelpers;
 import org.grouplens.lenskit.config.ConfigurationLoader;
 import org.grouplens.lenskit.config.LenskitConfigScript;
-import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.lenskit.LenskitConfiguration;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.util.table.Table;
 import org.lenskit.util.table.TableBuilder;

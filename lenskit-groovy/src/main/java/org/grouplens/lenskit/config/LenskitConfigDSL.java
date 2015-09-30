@@ -20,8 +20,8 @@
  */
 package org.grouplens.lenskit.config;
 
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.RecommenderConfigurationException;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.RecommenderConfigurationException;
 
 import java.io.File;
 import java.io.IOException;

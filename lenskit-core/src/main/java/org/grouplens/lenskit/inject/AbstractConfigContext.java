@@ -27,9 +27,9 @@ import org.grouplens.grapht.AbstractContext;
 import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.Context;
 import org.grouplens.grapht.reflect.Qualifiers;
-import org.grouplens.lenskit.core.LenskitBinding;
-import org.grouplens.lenskit.core.LenskitConfigContext;
-import org.grouplens.lenskit.core.Parameter;
+import org.lenskit.LenskitBinding;
+import org.lenskit.LenskitConfigContext;
+import org.lenskit.Parameter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

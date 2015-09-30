@@ -32,6 +32,9 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.inject.GraphtUtils;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
 import org.grouplens.lenskit.inject.RecommenderInstantiator;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.ModelDisposition;
+import org.lenskit.RecommenderConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

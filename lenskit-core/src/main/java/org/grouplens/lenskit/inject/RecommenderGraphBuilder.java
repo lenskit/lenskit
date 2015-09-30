@@ -28,7 +28,7 @@ import org.grouplens.grapht.context.ContextMatcher;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.Desires;
 import org.grouplens.grapht.solver.*;
-import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.lenskit.LenskitConfiguration;
 
 import javax.annotation.Nullable;
 import java.util.List;

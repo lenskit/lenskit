@@ -18,30 +18,24 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
-
-import org.grouplens.lenskit.RecommenderBuildException;
+package org.lenskit;
 
 /**
- * Error thrown when an error occurs resolving the recommender configuration graph.
+ * The way components should be handled when building a LensKit recommender.
  *
- * @since 1.0
+ * @since 2.1
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class RecommenderConfigurationException extends RecommenderBuildException {
-    private static final long serialVersionUID = 1L;
-
-    public RecommenderConfigurationException() {
-    }
-
-    public RecommenderConfigurationException(String message) {
-        super(message);
-    }
-
-    public RecommenderConfigurationException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public RecommenderConfigurationException(Throwable cause) {
-        super(cause);
-    }
+public enum ModelDisposition {
+    /**
+     * Include components in the model.  When applied to a configuration, components set up by
+     * that configuration will be included in the model (recommender engine).
+     */
+    INCLUDED,
+    /**
+     * Exclude components in the model.  When applied to configuration, components set up by that
+     * configuration will be removed from the model.  The resulting model will not work unless
+     * the required components are re-supplied.
+     */
+    EXCLUDED
 }

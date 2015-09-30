@@ -21,8 +21,8 @@
 package org.grouplens.lenskit.baseline;
 
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.core.Transient;
+import org.lenskit.Shareable;
+import org.lenskit.Transient;
 import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.lenskit.data.ratings.Rating;

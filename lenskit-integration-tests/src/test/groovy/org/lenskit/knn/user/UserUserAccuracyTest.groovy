@@ -21,7 +21,7 @@
 package org.lenskit.knn.user
 
 import org.grouplens.lenskit.config.ConfigHelpers
-import org.grouplens.lenskit.core.LenskitConfiguration
+import org.lenskit.LenskitConfiguration
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.BaselineScorer
 import org.lenskit.baseline.UserMeanItemScorer

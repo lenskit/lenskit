@@ -18,24 +18,27 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
+package org.lenskit;
 
 /**
- * The way components should be handled when building a LensKit recommender.
+ * Control when a recommender engine is validated.  Validation makes sure that all placeholders
+ * have been resolved.
  *
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public enum ModelDisposition {
+public enum EngineValidationMode {
     /**
-     * Include components in the model.  When applied to a configuration, components set up by
-     * that configuration will be included in the model (recommender engine).
+     * Validate the recommender engine when it is loaded.
      */
-    INCLUDED,
+    IMMEDIATE,
     /**
-     * Exclude components in the model.  When applied to configuration, components set up by that
-     * configuration will be removed from the model.  The resulting model will not work unless
-     * the required components are re-supplied.
+     * Defer validation until a recommender is created.
      */
-    EXCLUDED
+    DEFERRED,
+    /**
+     * Do not validate the recommender engine.  In this case, instantiation may fail arbitrarily
+     * if the graph is not valid.
+     */
+    NONE
 }

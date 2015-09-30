@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.history;
 
 import com.google.common.base.Function;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.Shareable;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.Ratings;

@@ -18,26 +18,30 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
+package org.lenskit;
 
-import java.lang.annotation.*;
+import org.grouplens.lenskit.RecommenderBuildException;
 
 /**
- * Annotation for component parameters. A parameter is a simple value, usually a primitive,
- * string (discouraged), or enum. Parameters have a shortcut configuration syntax
- * ({@link LenskitConfigContext#set(Class)}).
+ * Error thrown when an error occurs resolving the recommender configuration graph.
  *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.0
  */
-@Target(ElementType.ANNOTATION_TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Parameter {
-    /**
-     * The parameter's type (e.g. {@code Double.class}).
-     *
-     * @return The type of the parameter.
-     */
-    Class<?> value();
+public class RecommenderConfigurationException extends RecommenderBuildException {
+    private static final long serialVersionUID = 1L;
+
+    public RecommenderConfigurationException() {
+    }
+
+    public RecommenderConfigurationException(String message) {
+        super(message);
+    }
+
+    public RecommenderConfigurationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public RecommenderConfigurationException(Throwable cause) {
+        super(cause);
+    }
 }

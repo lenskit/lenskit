@@ -34,6 +34,9 @@ import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.CustomClassLoaderObjectInputStream;
 import org.grouplens.lenskit.util.io.LKFileUtils;
+import org.lenskit.EngineValidationMode;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.RecommenderConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -24,7 +24,7 @@ import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.MutuallyExclusiveGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.lenskit.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;

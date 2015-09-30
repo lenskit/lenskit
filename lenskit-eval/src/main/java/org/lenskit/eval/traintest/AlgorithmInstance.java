@@ -30,6 +30,8 @@ import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.*;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.RecommenderConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

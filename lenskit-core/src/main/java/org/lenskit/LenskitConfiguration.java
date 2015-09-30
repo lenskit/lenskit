@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
+package org.lenskit;
 
 import com.google.common.collect.ImmutableSet;
 import org.grouplens.grapht.BindingFunctionBuilder;
@@ -28,6 +28,7 @@ import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.context.ContextPattern;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.lenskit.*;
+import org.grouplens.lenskit.core.LenskitRecommender;
 import org.grouplens.lenskit.inject.AbstractConfigContext;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
 
@@ -43,7 +44,6 @@ import java.util.Set;
  * to skip the engine and just build a recommender.
  *
  * @since 1.2
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
 public class LenskitConfiguration extends AbstractConfigContext {
@@ -61,6 +61,9 @@ public class LenskitConfiguration extends AbstractConfigContext {
     private final BindingFunctionBuilder bindings;
     private final Set<Class<?>> roots;
 
+    /**
+     * Create a new LensKit configuration.
+     */
     public LenskitConfiguration() {
         bindings = new BindingFunctionBuilder(true);
         roots = new HashSet<Class<?>>();

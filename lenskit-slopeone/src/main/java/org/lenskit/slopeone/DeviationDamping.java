@@ -21,7 +21,7 @@
 package org.lenskit.slopeone;
 
 import org.grouplens.grapht.annotation.DefaultDouble;
-import org.grouplens.lenskit.core.Parameter;
+import org.lenskit.Parameter;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.*;

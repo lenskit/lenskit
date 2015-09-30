@@ -24,7 +24,7 @@ import org.grouplens.grapht.CachePolicy
 import org.grouplens.grapht.Component
 import org.grouplens.grapht.graph.DAGNode
 import org.grouplens.grapht.reflect.Satisfactions
-import org.grouplens.lenskit.core.Shareable
+import org.lenskit.Shareable
 import org.junit.Test
 
 import javax.inject.Provider

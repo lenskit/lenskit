@@ -21,7 +21,7 @@
 package org.lenskit.knn.item
 
 import org.grouplens.lenskit.config.ConfigHelpers
-import org.grouplens.lenskit.core.LenskitConfiguration
+import org.lenskit.LenskitConfiguration
 import org.grouplens.lenskit.test.CrossfoldTestSuite
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer

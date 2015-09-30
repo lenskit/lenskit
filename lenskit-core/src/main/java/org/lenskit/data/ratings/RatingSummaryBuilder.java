@@ -20,7 +20,7 @@
  */
 package org.lenskit.data.ratings;
 
-import org.grouplens.lenskit.core.Transient;
+import org.lenskit.Transient;
 import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.ItemEventDAO;
 import org.grouplens.lenskit.data.history.ItemEventCollection;

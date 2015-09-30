@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.config
 
 import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.core.LenskitConfiguration
+import org.lenskit.LenskitConfiguration
 import org.grouplens.lenskit.core.LenskitRecommenderEngine
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO

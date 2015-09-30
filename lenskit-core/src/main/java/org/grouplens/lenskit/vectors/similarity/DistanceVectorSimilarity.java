@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.vectors.similarity;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.util.collections.LongUtils;

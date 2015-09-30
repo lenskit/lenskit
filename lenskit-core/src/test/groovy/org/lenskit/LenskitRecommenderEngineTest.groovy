@@ -26,7 +26,6 @@ import org.grouplens.grapht.graph.DAGNode
 import org.grouplens.grapht.reflect.Satisfaction
 import org.grouplens.grapht.reflect.internal.InstanceSatisfaction
 import org.grouplens.lenskit.RecommenderBuildException
-import org.grouplens.lenskit.core.*
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
 import org.lenskit.data.events.Event

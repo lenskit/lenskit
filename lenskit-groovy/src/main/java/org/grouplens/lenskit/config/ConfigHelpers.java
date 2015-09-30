@@ -24,8 +24,8 @@ import com.google.common.base.Preconditions;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import groovy.lang.GroovyRuntimeException;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.RecommenderConfigurationException;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.RecommenderConfigurationException;
 
 import javax.annotation.Nonnull;
 import java.io.File;

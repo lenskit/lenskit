@@ -21,9 +21,6 @@
 package org.lenskit;
 
 import com.google.common.base.Preconditions;
-import org.grouplens.lenskit.core.EngineValidationMode;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.RecommenderConfigurationException;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

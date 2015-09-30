@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.data.source;
 
 import com.google.common.base.Supplier;
-import org.grouplens.lenskit.core.LenskitConfiguration;
+import org.lenskit.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO;
 import org.lenskit.data.ratings.PreferenceDomain;

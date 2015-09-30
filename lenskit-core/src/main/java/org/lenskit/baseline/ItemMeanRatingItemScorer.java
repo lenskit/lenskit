@@ -26,7 +26,7 @@ package org.lenskit.baseline;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.Shareable;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;

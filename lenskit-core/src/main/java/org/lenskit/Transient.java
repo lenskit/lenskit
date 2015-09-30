@@ -18,33 +18,29 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.core;
+package org.lenskit;
 
-import java.lang.annotation.*;
+import org.grouplens.grapht.annotation.Attribute;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Mark a component implementation as shareable. Shareable components can be shared
- * between recommender sessions. Things like item-item models should be shareable.
+ * Mark a component dependency as transient. This is only done on provider/builder
+ * components, and means that the specified dependency is only needed while the
+ * output component is being built, but the final component does not depend on
+ * the transient dependency.
  * <p>
- * Shareable components must meet the following requirements:
- * <ul>
- * <li>Be thread-safe</li>
- * <li>Be serializable (or externalizable)</li>
- * </ul>
- * <p>
- * Shareable components will be reused as much as possible. If a shareable component
- * has no non-transient non-shareable dependencies, then it will be created once per
- * recommender <i>engine</i> rather than per-recommender.
- * <p>
- * The Shareable annotation should be on the component implementation, not interface.  Alternatively,
- * it can be on the {@link javax.inject.Provider#get()} method of a provider to indicate that the
- * objects returned by the provider are shareable.
+ * Example: a provider that reads the ratings from the DAO to compute their average
+ * and build a component around that average has a transient dependency on the DAO.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
  */
-@Documented
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Attribute
+@Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Shareable {
+public @interface Transient {
 }
