@@ -56,6 +56,13 @@ public class TopNMRRMetric extends TopNMetric<TopNMRRMetric.Context> {
     private final String suffix;
 
     /**
+     * Construct a new MRR metric using the user's test items as good.
+     */
+    public TopNMRRMetric() {
+        this(ItemSelector.userTestItems(), null);
+    }
+
+    /**
      * Construct an MRR metric from a spec.
      * @param spec The metric specl
      */

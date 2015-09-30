@@ -57,6 +57,13 @@ public class TopNPrecisionRecallMetric extends TopNMetric<TopNPrecisionRecallMet
     private final ItemSelector goodItems;
 
     /**
+     * Construct a new precision-recall metric using the user's test items as good.
+     */
+    public TopNPrecisionRecallMetric() {
+        this(ItemSelector.userTestItems(), null);
+    }
+
+    /**
      * Construct a precision-reacll metric from a spec.
      * @param spec The precision-recall metric.
      */

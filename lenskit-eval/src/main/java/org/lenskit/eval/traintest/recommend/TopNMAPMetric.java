@@ -59,6 +59,13 @@ public class TopNMAPMetric extends TopNMetric<TopNMAPMetric.Context> {
     private final ItemSelector goodItems;
 
     /**
+     * Construct a new MAP metric with the user's test items as good.
+     */
+    public TopNMAPMetric() {
+        this(ItemSelector.userTestItems(), null);
+    }
+
+    /**
      * Create a metric from a spec.
      * @param spec The specification.
      */

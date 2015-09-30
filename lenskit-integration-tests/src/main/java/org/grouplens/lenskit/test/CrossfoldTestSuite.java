@@ -57,9 +57,14 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
 
         evalCommand.addDataSet(new GenericDataSource("ml-100k", ratingDAO, PreferenceDomain.fromString("[1,5]/1")),
                                5, 0.2);
+        addExtraConfig(evalCommand);
 
         Table result = evalCommand.execute();
         assertThat(result, notNullValue());
         checkResults(result);
+    }
+
+    public void addExtraConfig(SimpleEvaluator eval) {
+        /* do nothing */
     }
 }

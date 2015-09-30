@@ -29,10 +29,6 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.util.io.CompressionMode;
-import org.lenskit.util.table.TableLayout;
-import org.lenskit.util.table.TableLayoutBuilder;
-import org.lenskit.util.table.writer.CSVWriter;
-import org.lenskit.util.table.writer.TableWriter;
 import org.lenskit.api.ItemRecommender;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.Result;
@@ -43,6 +39,10 @@ import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.specs.DynamicSpec;
 import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.eval.RecommendEvalTaskSpec;
+import org.lenskit.util.table.TableLayout;
+import org.lenskit.util.table.TableLayoutBuilder;
+import org.lenskit.util.table.writer.CSVWriter;
+import org.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +58,8 @@ import java.util.*;
 public class RecommendEvalTask implements EvalTask {
     private static final Logger logger = LoggerFactory.getLogger(RecommendEvalTask.class);
     private static final TopNMetric<?>[] DEFAULT_METRICS = {
-            new TopNLengthMetric()
+            new TopNLengthMetric(),
+            new TopNNDCGMetric()
     };
 
     private final RecommendEvalTaskSpec spec;

@@ -93,6 +93,11 @@ public abstract class ItemSelector {
         return new GroovyItemSelector((ItemSelectScript) script);
     }
 
+    public static ItemSelector userTestItems() {
+        // FIXME Cache this selector
+        return compileSelector("user.testItems");
+    }
+
     public abstract static class ItemSelectScript extends Script {
         private final Random random = new Random();
         private LongSet allItems;
