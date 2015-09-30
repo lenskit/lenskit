@@ -29,7 +29,6 @@ import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.data.dao.UserListUserDAO;
 import org.grouplens.lenskit.data.source.DataSource;
-import org.grouplens.lenskit.eval.data.traintest.QueryData;
 import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.eval.DataSetSpec;
 

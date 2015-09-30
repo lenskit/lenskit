@@ -22,7 +22,6 @@ package org.grouplens.lenskit.test;
 
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.source.GenericDataSource;
-import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -48,7 +47,7 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
     protected abstract void checkResults(Table table);
 
     @Test
-    public void testAlgorithmAccuracy() throws TaskExecutionException, IOException {
+    public void testAlgorithmAccuracy() throws IOException {
         SimpleEvaluator evalCommand = new SimpleEvaluator();
         evalCommand.setWorkDir(workDir.newFolder("data").toPath());
         AlgorithmInstanceBuilder algo = new AlgorithmInstanceBuilder();

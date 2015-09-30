@@ -21,8 +21,6 @@
 package org.lenskit.eval.traintest
 
 import org.grouplens.lenskit.data.source.TextDataSourceBuilder
-import org.grouplens.lenskit.eval.script.ConfigTestBase
-import org.lenskit.util.table.TableImpl
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -32,6 +30,7 @@ import org.lenskit.baseline.BaselineScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.baseline.UserMeanItemScorer
 import org.lenskit.eval.crossfold.Crossfolder
+import org.lenskit.util.table.TableImpl
 
 import static org.hamcrest.Matchers.instanceOf
 import static org.junit.Assert.assertThat
@@ -42,7 +41,7 @@ import static org.junit.Assert.assertThat
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  *
  */
-class TrainTestResultTest extends ConfigTestBase {
+class TrainTestResultTest {
     @Rule
     public TemporaryFolder workDir = new TemporaryFolder()
 

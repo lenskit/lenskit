@@ -18,30 +18,23 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.script
+package org.lenskit.eval.traintest;
 
-import org.grouplens.lenskit.eval.AbstractTask
-import org.grouplens.lenskit.eval.TaskExecutionException
+import org.grouplens.grapht.annotation.AllowUnqualifiedMatch;
+
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
- * A mock task for use in testing.
+ * Qualifier to access query data available.  When applied to {@link org.grouplens.lenskit.data.dao.UserDAO},
+ * the list of test users will be injected.  That is the only currently-supported use.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class MockTask extends AbstractTask {
-    Closure action
-    Object wombat
-
-    def setWombat(arg) {
-        wombat = arg
-    }
-
-    void setAction(Closure cl) {
-        action = cl
-    }
-
-    @Override
-    Object perform() throws TaskExecutionException {
-        action.call(wombat)
-    }
+@Documented
+@Qualifier
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.PARAMETER, ElementType.METHOD})
+@AllowUnqualifiedMatch
+public @interface QueryData {
 }

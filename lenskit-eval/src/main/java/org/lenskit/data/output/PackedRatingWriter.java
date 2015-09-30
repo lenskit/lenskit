@@ -18,24 +18,30 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data;
+package org.lenskit.data.output;
 
+import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
 import org.lenskit.data.ratings.Rating;
 
-import java.io.Closeable;
 import java.io.IOException;
 
 /**
- * Interface for writing ratings.
- *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 2.1
  */
-public interface RatingWriter extends Closeable {
-    /**
-     * Write a rating to the writer.
-     * @param r The rating to write.
-     * @throws IOException if there is an error writing the rating.
-     */
-    void writeRating(Rating r) throws IOException;
+class PackedRatingWriter implements RatingWriter {
+    private final BinaryRatingPacker packer;
+
+    public PackedRatingWriter(BinaryRatingPacker pack) {
+        packer = pack;
+    }
+
+    @Override
+    public void writeRating(Rating r) throws IOException {
+        packer.writeRating(r);
+    }
+
+    @Override
+    public void close() throws IOException {
+        packer.close();
+    }
 }

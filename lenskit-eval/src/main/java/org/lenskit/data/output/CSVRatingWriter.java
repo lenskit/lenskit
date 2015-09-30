@@ -18,30 +18,60 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.data;
+package org.lenskit.data.output;
 
-import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
+import com.google.common.collect.Lists;
 import org.lenskit.data.ratings.Rating;
+import org.lenskit.util.table.writer.CSVWriter;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-class PackedRatingWriter implements RatingWriter {
-    private final BinaryRatingPacker packer;
+class CSVRatingWriter implements RatingWriter {
+    private final CSVWriter tableWriter;
+    private boolean includeTimestamps = true;
 
-    public PackedRatingWriter(BinaryRatingPacker pack) {
-        packer = pack;
+    public CSVRatingWriter(CSVWriter tw) {
+        tableWriter = tw;
+    }
+
+    /**
+     * Query whether this writer includes timestamps.
+     * @return {@code true} if timestamps are written.
+     */
+    boolean isIncludeTimestamps() {
+        return includeTimestamps;
+    }
+
+    /**
+     * Set whether this writer writes timestamps.
+     * @param val Whether or not to write timestamps.
+     */
+    void setIncludeTimestamps(boolean val) {
+        includeTimestamps = val;
     }
 
     @Override
     public void writeRating(Rating r) throws IOException {
-        packer.writeRating(r);
+        List<Object> row = Lists.newArrayListWithCapacity(4);
+        row.add(r.getUserId());
+        row.add(r.getItemId());
+        if (r.hasValue()) {
+            row.add(r.getValue());
+        } else {
+            row.add(null);
+        }
+        if (includeTimestamps) {
+            row.add(r.getTimestamp());
+        }
+        tableWriter.writeRow(row);
     }
 
     @Override
     public void close() throws IOException {
-        packer.close();
+        tableWriter.close();
     }
 }
