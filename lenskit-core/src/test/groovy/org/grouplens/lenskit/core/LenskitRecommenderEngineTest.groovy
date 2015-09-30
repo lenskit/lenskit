@@ -28,14 +28,8 @@ import org.grouplens.grapht.solver.DesireChain
 import org.grouplens.lenskit.ItemRecommender
 import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.RecommenderBuildException
-import org.grouplens.lenskit.baseline.*
-import org.grouplens.lenskit.basic.PrecomputedItemScorer
-import org.grouplens.lenskit.basic.SimpleRatingPredictor
-import org.grouplens.lenskit.basic.TopNItemRecommender
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
-import org.lenskit.data.events.Event
-import org.lenskit.data.ratings.RatingMatrix
 import org.grouplens.lenskit.iterative.StoppingThreshold
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
 import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer
@@ -44,7 +38,15 @@ import org.grouplens.lenskit.util.io.CompressionMode
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
+import org.lenskit.baseline.BaselineScorer
 import org.lenskit.baseline.LeastSquaresItemScorer
+import org.lenskit.basic.ConstantItemScorer
+import org.lenskit.basic.FallbackItemScorer
+import org.lenskit.basic.PrecomputedItemScorer
+import org.lenskit.basic.PrimaryScorer
+import org.lenskit.basic.SimpleRatingPredictor
+import org.lenskit.data.events.Event
+import org.lenskit.data.ratings.RatingMatrix
 
 import javax.inject.Inject
 import javax.inject.Provider

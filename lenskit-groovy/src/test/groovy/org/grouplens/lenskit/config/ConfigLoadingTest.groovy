@@ -21,13 +21,8 @@
 package org.grouplens.lenskit.config
 
 import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.ConstantItemScorer
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
-import org.grouplens.lenskit.basic.SimpleRatingPredictor
-import org.grouplens.lenskit.basic.TopNItemRecommender
 import org.grouplens.lenskit.core.LenskitConfiguration
 import org.grouplens.lenskit.core.LenskitRecommenderEngine
-import org.grouplens.lenskit.core.RatingPredictorCompatWrapper
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
 import org.grouplens.lenskit.vectors.similarity.PearsonCorrelation
@@ -35,6 +30,10 @@ import org.grouplens.lenskit.vectors.similarity.SignificanceWeightedVectorSimila
 import org.grouplens.lenskit.vectors.similarity.VectorSimilarity
 import org.junit.Ignore
 import org.junit.Test
+import org.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.basic.ConstantItemScorer
+import org.lenskit.basic.SimpleRatingPredictor
+import org.lenskit.basic.TopNItemRecommender
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat

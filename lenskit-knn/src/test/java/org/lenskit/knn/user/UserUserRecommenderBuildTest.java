@@ -21,10 +21,10 @@
 package org.lenskit.knn.user;
 
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.basic.TopNItemRecommender;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;
+import org.lenskit.basic.TopNItemRecommender;
 import org.lenskit.data.ratings.Rating;
 import org.junit.Before;
 import org.junit.Ignore;

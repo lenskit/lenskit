@@ -24,8 +24,6 @@ import org.grouplens.grapht.CachePolicy
 import org.grouplens.grapht.Component
 import org.grouplens.grapht.graph.DAGNode
 import org.grouplens.grapht.reflect.Satisfactions
-import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
 import org.grouplens.lenskit.config.ConfigHelpers
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
@@ -33,6 +31,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.lenskit.api.ItemScorer
+import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.data.ratings.Rating
 
 import static org.grouplens.lenskit.util.test.ExtraMatchers.existingFile

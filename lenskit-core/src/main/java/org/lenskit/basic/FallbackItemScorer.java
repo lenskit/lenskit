@@ -24,8 +24,6 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import it.unimi.dsi.fastutil.longs.LongList;
-import org.grouplens.lenskit.baseline.ScoreSource;
-import org.grouplens.lenskit.symbols.TypedSymbol;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
@@ -49,8 +47,6 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class FallbackItemScorer extends AbstractItemScorer {
-    public static final TypedSymbol<ScoreSource> SCORE_SOURCE_SYMBOL =
-            TypedSymbol.of(ScoreSource.class, "org.grouplens.lenskit.baseline.ScoreSource");
     private final ItemScorer primaryScorer;
     private final ItemScorer baselineScorer;
 
