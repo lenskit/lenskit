@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.config;
+package org.lenskit.config;
 
 import com.google.common.base.Preconditions;
 import groovy.lang.*;
@@ -67,7 +67,8 @@ public class ConfigurationLoader {
         CompilerConfiguration config = new CompilerConfiguration();
         config.setScriptBaseClass(LenskitConfigScript.class.getName());
         ImportCustomizer imports = new ImportCustomizer();
-        imports.addStarImports("org.grouplens.lenskit");
+        imports.addStarImports("org.lenskit.api");
+        imports.addStarImports("org.lenskit.basic");
         config.addCompilationCustomizers(imports);
         shell = new GroovyShell(loader, binding, config);
         directory = ClassDirectory.forClassLoader(loader);

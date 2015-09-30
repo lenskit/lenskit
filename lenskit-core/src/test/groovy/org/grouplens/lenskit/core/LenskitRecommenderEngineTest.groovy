@@ -25,8 +25,6 @@ import org.grouplens.grapht.graph.DAGNode
 import org.grouplens.grapht.reflect.Satisfaction
 import org.grouplens.grapht.reflect.internal.InstanceSatisfaction
 import org.grouplens.grapht.solver.DesireChain
-import org.grouplens.lenskit.ItemRecommender
-import org.grouplens.lenskit.ItemScorer
 import org.grouplens.lenskit.RecommenderBuildException
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
@@ -42,6 +40,9 @@ import org.lenskit.EngineValidationMode
 import org.lenskit.LenskitConfiguration
 import org.lenskit.ModelDisposition
 import org.lenskit.RecommenderConfigurationException
+import org.lenskit.api.ItemRecommender
+import org.lenskit.api.ItemScorer
+import org.lenskit.basic.TopNItemRecommender
 import org.lenskit.inject.Shareable
 import org.lenskit.baseline.BaselineScorer
 import org.lenskit.baseline.LeastSquaresItemScorer

@@ -22,8 +22,8 @@ package org.lenskit.eval.traintest;
 
 import com.google.common.collect.ImmutableList;
 import groovy.lang.Closure;
-import org.grouplens.lenskit.config.ConfigurationLoader;
-import org.grouplens.lenskit.config.LenskitConfigDSL;
+import org.lenskit.config.ConfigurationLoader;
+import org.lenskit.config.LenskitConfigDSL;
 
 import java.util.ArrayList;
 import java.util.List;

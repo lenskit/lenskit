@@ -18,11 +18,9 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.config
+package org.lenskit.config
 
-import org.grouplens.lenskit.ItemScorer
-import org.lenskit.LenskitConfiguration
-import org.grouplens.lenskit.core.LenskitRecommenderEngine
+import org.grouplens.lenskit.GlobalItemRecommender
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
 import org.grouplens.lenskit.vectors.similarity.PearsonCorrelation
@@ -30,6 +28,9 @@ import org.grouplens.lenskit.vectors.similarity.SignificanceWeightedVectorSimila
 import org.grouplens.lenskit.vectors.similarity.VectorSimilarity
 import org.junit.Ignore
 import org.junit.Test
+import org.lenskit.LenskitConfiguration
+import org.lenskit.LenskitRecommenderEngine
+import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.basic.ConstantItemScorer
 import org.lenskit.basic.SimpleRatingPredictor
@@ -52,9 +53,9 @@ class ConfigLoadingTest {
         def rec = engine.createRecommender()
         assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
         assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
-        assertThat(rec.getGlobalItemRecommender(), nullValue());
+        assertThat(rec.get(GlobalItemRecommender), nullValue());
         def bl = rec.itemScorer as ConstantItemScorer
-        assertThat(bl.value, equalTo(Math.PI))
+        assertThat(bl.fixedScore, equalTo(Math.PI))
     }
 
     @Test
@@ -69,9 +70,9 @@ class ConfigLoadingTest {
         def rec = engine.createRecommender()
         assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
         assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
-        assertThat(rec.getGlobalItemRecommender(), nullValue());
+        assertThat(rec.get(GlobalItemRecommender), nullValue());
         def bl = rec.itemScorer as ConstantItemScorer
-        assertThat(bl.value, equalTo(Math.PI))
+        assertThat(bl.fixedScore, equalTo(Math.PI))
     }
 
     @Test
@@ -85,7 +86,7 @@ class ConfigLoadingTest {
         def rec = engine.createRecommender()
         assertThat(rec.getItemScorer(), nullValue());
         assertThat(rec.getItemRecommender(), nullValue())
-        assertThat(rec.getGlobalItemRecommender(), nullValue());
+        assertThat(rec.get(GlobalItemRecommender), nullValue());
         assertThat(rec.get(VectorSimilarity),
                    instanceOf(PearsonCorrelation))
     }
@@ -104,7 +105,7 @@ class ConfigLoadingTest {
         def rec = engine.createRecommender()
         assertThat(rec.getItemScorer(), nullValue());
         assertThat(rec.getItemRecommender(), nullValue())
-        assertThat(rec.getGlobalItemRecommender(), nullValue());
+        assertThat(rec.get(GlobalItemRecommender), nullValue());
         def sim = rec.get(VectorSimilarity)
         assertThat(sim,
                    instanceOf(SignificanceWeightedVectorSimilarity))
@@ -114,7 +115,7 @@ class ConfigLoadingTest {
     @Test
     void testLoadBasicText() {
         LenskitConfiguration config = ConfigHelpers.load(
-                """import org.grouplens.lenskit.baseline.*
+                """import org.lenskit.baseline.*
 bind ItemScorer to ConstantItemScorer
 set ConstantItemScorer.Value to Math.PI""");
         config.bind(EventDAO).to(dao)
@@ -122,8 +123,8 @@ set ConstantItemScorer.Value to Math.PI""");
         def rec = engine.createRecommender()
         assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
         assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
-        assertThat(rec.getGlobalItemRecommender(), nullValue());
-        assertThat(rec.itemScorer.value, equalTo(Math.PI))
+        assertThat(rec.get(GlobalItemRecommender), nullValue());
+        assertThat(rec.itemScorer.fixedScore, equalTo(Math.PI))
     }
 
     @Test
@@ -134,8 +135,8 @@ set ConstantItemScorer.Value to Math.PI""");
         def rec = engine.createRecommender()
         assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
         assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
-        assertThat(rec.getGlobalItemRecommender(), nullValue());
-        assertThat(rec.itemScorer.value, equalTo(Math.PI))
+        assertThat(rec.get(GlobalItemRecommender), nullValue());
+        assertThat(rec.itemScorer.fixedScore, equalTo(Math.PI))
     }
 
     @Test
@@ -143,7 +144,7 @@ set ConstantItemScorer.Value to Math.PI""");
         LenskitConfiguration config = new LenskitConfiguration()
         ConfigurationLoader loader = new ConfigurationLoader();
         LenskitConfigScript script = loader.loadScript(
-                """import org.grouplens.lenskit.baseline.*
+                """
 bind ItemScorer to ConstantItemScorer
 set ConstantItemScorer.Value to Math.PI""");
         config.bind(EventDAO).to(dao)
@@ -152,8 +153,8 @@ set ConstantItemScorer.Value to Math.PI""");
         def rec = engine.createRecommender()
         assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
         assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
-        assertThat(rec.getGlobalItemRecommender(), nullValue());
-        assertThat(rec.itemScorer.value, equalTo(Math.PI))
+        assertThat(rec.get(GlobalItemRecommender), nullValue());
+        assertThat(rec.itemScorer.fixedScore, equalTo(Math.PI))
     }
 
     @Test

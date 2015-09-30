@@ -21,14 +21,25 @@
 package org.lenskit;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import org.grouplens.grapht.Component;
+import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.ResolutionException;
+import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.solver.DependencySolver;
+import org.grouplens.grapht.util.ClassLoaderContext;
+import org.grouplens.grapht.util.ClassLoaders;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.grouplens.lenskit.util.io.CustomClassLoaderObjectInputStream;
+import org.grouplens.lenskit.util.io.LKFileUtils;
+import org.lenskit.inject.GraphtUtils;
+import org.lenskit.inject.RecommenderGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.WillClose;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.util.List;
 
 /**
  * Load a pre-built recommender engine from a file.
@@ -38,15 +49,17 @@ import java.io.InputStream;
  */
 public class LenskitRecommenderEngineLoader {
     private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngineLoader.class);
-    private org.grouplens.lenskit.core.LenskitRecommenderEngineLoader delegate =
-            new org.grouplens.lenskit.core.LenskitRecommenderEngineLoader();
+    private ClassLoader classLoader;
+    private List<LenskitConfiguration> configurations = Lists.newArrayList();
+    private EngineValidationMode validationMode = EngineValidationMode.IMMEDIATE;
+    private CompressionMode compressionMode = CompressionMode.AUTO;
 
     /**
      * Get the configured class loader.
      * @return The class loader that will be used when loading the engine.
      */
     public ClassLoader getClassLoader() {
-        return delegate.getClassLoader();
+        return classLoader;
     }
 
     /**
@@ -55,7 +68,7 @@ public class LenskitRecommenderEngineLoader {
      * @return The loader (for chaining).
      */
     public LenskitRecommenderEngineLoader setClassLoader(ClassLoader classLoader) {
-        delegate.setClassLoader(classLoader);
+        this.classLoader = classLoader;
         return this;
     }
 
@@ -70,7 +83,7 @@ public class LenskitRecommenderEngineLoader {
      * @return The loader (for chaining).
      */
     public LenskitRecommenderEngineLoader addConfiguration(LenskitConfiguration config) {
-        delegate.addConfiguration(config);
+        configurations.add(config);
         return this;
     }
 
@@ -82,7 +95,7 @@ public class LenskitRecommenderEngineLoader {
      */
     public LenskitRecommenderEngineLoader setValidationMode(EngineValidationMode mode) {
         Preconditions.checkNotNull(mode, "validation mode");
-        delegate.setValidationMode(mode);
+        validationMode = mode;
         return this;
     }
 
@@ -90,8 +103,9 @@ public class LenskitRecommenderEngineLoader {
      * Set the compression mode to use.  The default is {@link CompressionMode#AUTO}.
      * @param comp The compression mode.
      */
-    public void setCompressionMode(CompressionMode comp) {
-        delegate.setCompressionMode(comp);
+    public LenskitRecommenderEngineLoader setCompressionMode(CompressionMode comp) {
+        compressionMode = comp;
+        return this;
     }
 
     /**
@@ -111,7 +125,13 @@ public class LenskitRecommenderEngineLoader {
      *                     the configurations applied to it.
      */
     public LenskitRecommenderEngine load(@WillClose InputStream stream) throws IOException, RecommenderConfigurationException {
-        return new LenskitRecommenderEngine(delegate.load(stream));
+        InputStream decomp;
+        if (compressionMode == CompressionMode.AUTO) {
+            decomp = LKFileUtils.transparentlyDecompress(stream);
+        } else {
+            decomp = compressionMode.wrapInput(stream);
+        }
+        return loadInternal(decomp);
     }
 
     /**
@@ -125,6 +145,91 @@ public class LenskitRecommenderEngineLoader {
      *                     the configurations applied to it.
      */
     public LenskitRecommenderEngine load(File file) throws IOException, RecommenderConfigurationException {
-        return new LenskitRecommenderEngine(delegate.load(file));
+        logger.info("Loading recommender engine from {}", file);
+        try (FileInputStream input = new FileInputStream(file)) {
+            CompressionMode effComp = compressionMode.getEffectiveCompressionMode(file.getName());
+            logger.info("using {} compression", effComp);
+            return loadInternal(effComp.wrapInput(input));
+        }
+    }
+
+    /**
+     * Read a graph from an object input stream. Broken out to localize the necessary warning
+     * suppression.
+     *
+     * @param in The input stream.
+     * @return the loaded graph.
+     * @throws IOException If there is an I/O error.
+     * @throws ClassNotFoundException If there is a class resolution error.
+     * @see ObjectInput#readObject()
+     */
+    @SuppressWarnings("unchecked")
+    private DAGNode<Component, Dependency> readGraph(ObjectInput in) throws IOException, ClassNotFoundException {
+        return (DAGNode) in.readObject();
+    }
+
+    /**
+     * Load a recommender engine from an input stream.  It transparently decompresses the stream
+     * and handles the classloader nastiness.
+     *
+     * @param stream The input stream.
+     * @return The recommender engine.
+     * @throws IOException If there is an I/O error reading the engine.
+     * @throws RecommenderConfigurationException If there is a configuration error (including an
+     * invalid class reference in the object stream).
+     */
+    private LenskitRecommenderEngine loadInternal(InputStream stream) throws IOException, RecommenderConfigurationException {
+        logger.debug("using classloader {}", classLoader);
+        DAGNode<Component, Dependency> graph;
+
+        // And load the stream once we've wrapped it appropriately.
+        ObjectInputStream in = new CustomClassLoaderObjectInputStream(
+                LKFileUtils.transparentlyDecompress(stream), classLoader);
+        try {
+            ClassLoaderContext ctx = null;
+            if (classLoader != null) {
+                // Grapht will automatically use the context class loader, set it up
+                ctx = ClassLoaders.pushContext(classLoader);
+            }
+            try {
+                graph = readGraph(in);
+            } finally {
+                if (ctx != null) {
+                    ctx.pop();
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            throw new RecommenderConfigurationException(e);
+        } finally {
+            in.close();
+        }
+
+        if (!configurations.isEmpty()) {
+            logger.info("rewriting with {} configurations", configurations.size());
+            RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
+            for (LenskitConfiguration config : configurations) {
+                rgb.addBindings(config.getBindings());
+            }
+            DependencySolver solver = rgb.buildDependencySolver();
+            try {
+                graph = solver.rewrite(graph);
+            } catch (ResolutionException e) {
+                throw new RecommenderConfigurationException("resolution error occured while rewriting recommender", e);
+            }
+        }
+
+        boolean instantiable = true;
+        switch (validationMode) {
+        case IMMEDIATE:
+            GraphtUtils.checkForPlaceholders(graph, logger);
+            break;
+        case DEFERRED:
+            instantiable = GraphtUtils.getPlaceholderNodes(graph).isEmpty();
+            break;
+        case NONE:
+            break; /* do nothing, mark it as instantiable. */
+        }
+
+        return new LenskitRecommenderEngine(graph, instantiable);
     }
 }

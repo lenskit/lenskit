@@ -18,26 +18,10 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-/**
- * Configuration loading support.
- * <p>
- * This package provides support for loading {@linkplain
- * org.lenskit.LenskitConfiguration LensKit configurations} from configuration files
- * written using a Groovy-based DSL.  For example, the following:
- * </p>
- * <pre>{@code
- * // configure the item scorer
- * bind ItemScorer to ItemItemScorer
- * // set up a baseline scorer
- * bind (BaselineScorer, ItemScorer) to ItemMeanRatingPredictor
- * // use the baseline for normalizing user ratings
- * bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer
- * // the default neighborhood size is 20, so the next line isn't technically needed
- * set NeighborhoodSize to 20
- * }</pre>
- * <p>
- * See {@link ConfigHelpers} for entry points to quickly load configurations, and
- * {@link ConfigurationLoader} for more control over the configuration load process.
- * </p>
- */
-package org.grouplens.lenskit.config;
+package org.lenskit.config
+
+import org.lenskit.api.*
+import org.lenskit.basic.ConstantItemScorer
+
+bind ItemScorer to ConstantItemScorer
+set ConstantItemScorer.Value to Math.PI
