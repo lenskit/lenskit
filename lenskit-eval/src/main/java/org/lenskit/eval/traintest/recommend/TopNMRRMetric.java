@@ -72,7 +72,7 @@ public class TopNMRRMetric extends TopNMetric<TopNMRRMetric.Context> {
      * @param sfx A suffix to append to the metric.
      */
     public TopNMRRMetric(ItemSelector goodItems, String sfx) {
-        super(AggregateResult.class, UserResult.class, sfx);
+        super(UserResult.class, AggregateResult.class, sfx);
         this.goodItems = goodItems;
         suffix = sfx;
     }

@@ -21,18 +21,15 @@
 package org.grouplens.lenskit.test;
 
 import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.lenskit.data.ratings.PreferenceDomain;
 import org.grouplens.lenskit.data.source.GenericDataSource;
 import org.grouplens.lenskit.eval.TaskExecutionException;
-import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric;
-import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric;
-import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric;
-import org.lenskit.util.table.Table;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.eval.traintest.AlgorithmInstanceBuilder;
 import org.lenskit.eval.traintest.SimpleEvaluator;
+import org.lenskit.util.table.Table;
 
 import java.io.IOException;
 
@@ -60,10 +57,6 @@ public abstract class CrossfoldTestSuite extends ML100KTestSuite {
 
         evalCommand.addDataSet(new GenericDataSource("ml-100k", ratingDAO, PreferenceDomain.fromString("[1,5]/1")),
                                5, 0.2);
-
-        evalCommand.addMetric(new CoveragePredictMetric())
-                   .addMetric(new RMSEPredictMetric())
-                   .addMetric(new MAEPredictMetric());
 
         Table result = evalCommand.execute();
         assertThat(result, notNullValue());

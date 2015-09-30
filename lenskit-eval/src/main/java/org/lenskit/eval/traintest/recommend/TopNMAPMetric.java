@@ -75,7 +75,7 @@ public class TopNMAPMetric extends TopNMetric<TopNMAPMetric.Context> {
      *                  as "false positives".
      */
     public TopNMAPMetric(ItemSelector good, String sfx) {
-        super(AggregateResult.class, UserResult.class, sfx);
+        super(UserResult.class, AggregateResult.class, sfx);
         suffix = sfx;
         goodItems = good;
     }
