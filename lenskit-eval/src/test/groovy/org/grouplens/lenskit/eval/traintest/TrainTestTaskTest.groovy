@@ -39,7 +39,7 @@ import org.grouplens.lenskit.eval.script.DefaultConfigDelegate
 import org.grouplens.lenskit.eval.script.EvalScript
 import org.grouplens.lenskit.eval.script.EvalScriptEngine
 import org.grouplens.lenskit.symbols.Symbol
-import org.grouplens.lenskit.util.table.TableBuilder
+import org.lenskit.util.table.TableBuilder
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

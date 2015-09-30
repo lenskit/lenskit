@@ -24,7 +24,7 @@ import org.grouplens.lenskit.config.ConfigHelpers;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.test.CrossfoldTestSuite;
-import org.grouplens.lenskit.util.table.Table
+import org.lenskit.util.table.Table
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.BaselineScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer

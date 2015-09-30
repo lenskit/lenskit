@@ -29,7 +29,7 @@ import org.lenskit.knn.NeighborhoodSize
 import org.grouplens.lenskit.test.CrossfoldTestSuite
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
-import org.grouplens.lenskit.util.table.Table
+import org.lenskit.util.table.Table
 
 import static org.hamcrest.Matchers.closeTo
 import static org.junit.Assert.assertThat

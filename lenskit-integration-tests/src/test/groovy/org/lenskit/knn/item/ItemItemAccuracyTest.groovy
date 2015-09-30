@@ -25,7 +25,7 @@ import org.grouplens.lenskit.core.LenskitConfiguration
 import org.grouplens.lenskit.test.CrossfoldTestSuite
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
-import org.grouplens.lenskit.util.table.Table
+import org.lenskit.util.table.Table
 import org.grouplens.lenskit.vectors.similarity.SimilarityDamping
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.BaselineScorer

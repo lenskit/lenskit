@@ -23,7 +23,7 @@ package org.lenskit.predict.ordrec;
 import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.test.CrossfoldTestSuite;
-import org.grouplens.lenskit.util.table.Table;
+import org.lenskit.util.table.Table;
 import org.junit.Ignore;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.RatingPredictor;

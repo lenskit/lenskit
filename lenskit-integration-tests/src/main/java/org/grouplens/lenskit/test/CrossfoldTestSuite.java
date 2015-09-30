@@ -27,7 +27,7 @@ import org.grouplens.lenskit.eval.TaskExecutionException;
 import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric;
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric;
-import org.grouplens.lenskit.util.table.Table;
+import org.lenskit.util.table.Table;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

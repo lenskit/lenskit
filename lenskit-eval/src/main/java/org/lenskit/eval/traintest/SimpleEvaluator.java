@@ -25,7 +25,7 @@ import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.GenericDataSource;
 import org.grouplens.lenskit.eval.metrics.Metric;
-import org.grouplens.lenskit.util.table.Table;
+import org.lenskit.util.table.Table;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.eval.crossfold.CrossfoldMethods;
 import org.lenskit.eval.crossfold.Crossfolder;

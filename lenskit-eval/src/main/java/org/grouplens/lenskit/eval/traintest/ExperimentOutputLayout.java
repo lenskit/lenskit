@@ -22,10 +22,10 @@ package org.grouplens.lenskit.eval.traintest;
 
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
-import org.grouplens.lenskit.util.table.TableLayout;
-import org.grouplens.lenskit.util.table.TableLayoutBuilder;
-import org.grouplens.lenskit.util.table.writer.TableWriter;
-import org.grouplens.lenskit.util.table.writer.TableWriters;
+import org.lenskit.util.table.TableLayout;
+import org.lenskit.util.table.TableLayoutBuilder;
+import org.lenskit.util.table.writer.TableWriter;
+import org.lenskit.util.table.writer.TableWriters;
 
 import java.util.HashMap;
 import java.util.List;

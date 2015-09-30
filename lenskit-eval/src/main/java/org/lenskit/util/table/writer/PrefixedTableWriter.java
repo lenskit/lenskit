@@ -18,11 +18,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.table.writer;
+package org.lenskit.util.table.writer;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import org.grouplens.lenskit.util.table.TableLayout;
-import org.grouplens.lenskit.util.table.TableLayoutBuilder;
+import org.lenskit.util.table.TableLayout;
+import org.lenskit.util.table.TableLayoutBuilder;
 
 import java.io.IOException;
 import java.util.List;

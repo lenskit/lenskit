@@ -22,7 +22,7 @@ package org.lenskit.eval.traintest
 
 import org.grouplens.lenskit.data.source.TextDataSourceBuilder
 import org.grouplens.lenskit.eval.script.ConfigTestBase
-import org.grouplens.lenskit.util.table.TableImpl
+import org.lenskit.util.table.TableImpl
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

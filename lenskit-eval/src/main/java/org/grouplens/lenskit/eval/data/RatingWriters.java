@@ -22,7 +22,7 @@ package org.grouplens.lenskit.eval.data;
 
 import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
-import org.grouplens.lenskit.util.table.writer.CSVWriter;
+import org.lenskit.util.table.writer.CSVWriter;
 
 import java.io.File;
 import java.io.IOException;

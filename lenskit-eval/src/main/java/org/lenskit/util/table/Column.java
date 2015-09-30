@@ -18,7 +18,31 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.lenskit.util.table;
+
+import java.util.List;
+
 /**
- * Utilities for writing two-dimensional tables of data.
+ * A view of a column of a table.
+ *
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-package org.grouplens.lenskit.util.table.writer;
+public interface Column extends List<Object> {
+    /**
+     * Get the sum of this column.  Null entries result in a sum of NaN.
+     *
+     * @return The column's sum.
+     * @throws IllegalArgumentException if there are any non-null, non-numeric entries in the
+     *                                  table.
+     */
+    double sum();
+
+    /**
+     * Get the average of this column. Null entries and empty tables result in NaN.
+     *
+     * @return The column's average.
+     * @throws IllegalArgumentException if there are any non-null, non-numeric entries in the
+     *                                  table.
+     */
+    double average();
+}

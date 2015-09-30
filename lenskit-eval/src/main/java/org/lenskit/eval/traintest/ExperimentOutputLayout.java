@@ -20,10 +20,10 @@
  */
 package org.lenskit.eval.traintest;
 
-import org.grouplens.lenskit.util.table.TableLayout;
-import org.grouplens.lenskit.util.table.TableLayoutBuilder;
-import org.grouplens.lenskit.util.table.writer.TableWriter;
-import org.grouplens.lenskit.util.table.writer.TableWriters;
+import org.lenskit.util.table.TableLayout;
+import org.lenskit.util.table.TableLayoutBuilder;
+import org.lenskit.util.table.writer.TableWriter;
+import org.lenskit.util.table.writer.TableWriters;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

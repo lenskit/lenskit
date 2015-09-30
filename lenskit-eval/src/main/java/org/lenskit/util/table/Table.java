@@ -18,45 +18,39 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.table.writer;
+package org.lenskit.util.table;
 
-import java.io.IOException;
-import java.util.Arrays;
+import java.util.List;
 
 /**
- * Abstract helper class for implementing table writers.
+ * This is the interface for the in memory table which stores a list of rows. Users should be able
+ * to call the filter method to find the rows that satisfy the conditions specified by users. And
+ * table expose the functions of columns to enable users calling the functions on column.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- * @since 1.1
  */
-public abstract class AbstractTableWriter implements TableWriter {
-    /**
-     * {@inheritDoc}
-     * This implementation delegates to {@link #writeRow(java.util.List)}.
-     */
-    @Override
-    public void writeRow(Object... row) throws IOException {
-        writeRow(Arrays.asList(row));
-    }
+public interface Table extends List<Row> {
+    Table filter(String header, Object data);
 
     /**
-     * Check the width of a row to see if it is too wide.  This formats the exception
-     * with a helpful error message.
-     *
-     * @param width The row width.
-     * @throws IllegalArgumentException if the row is too wide.
+     * Get a column by index.
+     * @param idx The column index (starting from 0).
+     * @return The column.
+     * @throws IllegalArgumentException if <var>idx</var> is out of bounds.
      */
-    protected void checkRowWidth(int width) {
-        if (width != getLayout().getColumnCount()) {
-            String msg = String.format("incorrect row size (got %d of %d expected columns)",
-                                       width, getLayout().getColumnCount());
-            throw new IllegalArgumentException(msg);
-        }
-    }
+    Column column(int idx);
 
     /**
-     * No-op close implementaiton.
+     * Get a column by name.
+     * @param col The column name.
+     * @return The column.
+     * @throws IllegalArgumentException if <var>col</var> is not a valid column.
      */
-    @Override
-    public void close() throws IOException {}
+    Column column(String col);
+
+    /**
+     * Get the layout of this table.
+     * @return The table layout.
+     */
+    TableLayout getLayout();
 }

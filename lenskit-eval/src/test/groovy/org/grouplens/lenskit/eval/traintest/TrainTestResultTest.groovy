@@ -23,8 +23,7 @@ package org.grouplens.lenskit.eval.traintest
 import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
 import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
 import org.grouplens.lenskit.eval.script.ConfigTestBase
-import org.grouplens.lenskit.util.table.TableImpl
-import org.junit.After
+import org.lenskit.util.table.TableImpl
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

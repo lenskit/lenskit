@@ -29,10 +29,10 @@ import org.grouplens.lenskit.eval.metrics.topn.ItemSelector;
 import org.grouplens.lenskit.eval.metrics.topn.ItemSelectors;
 import org.grouplens.lenskit.eval.metrics.topn.TopNMetricBuilder;
 import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.util.table.TableLayout;
-import org.grouplens.lenskit.util.table.TableLayoutBuilder;
-import org.grouplens.lenskit.util.table.writer.CSVWriter;
-import org.grouplens.lenskit.util.table.writer.TableWriter;
+import org.lenskit.util.table.TableLayout;
+import org.lenskit.util.table.TableLayoutBuilder;
+import org.lenskit.util.table.writer.CSVWriter;
+import org.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

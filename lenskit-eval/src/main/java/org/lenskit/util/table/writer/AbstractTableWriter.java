@@ -18,54 +18,45 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.table;
+package org.lenskit.util.table.writer;
 
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.Arrays;
 
 /**
- * One row of a data table.
+ * Abstract helper class for implementing table writers.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 1.1
  */
-public interface Row extends Iterable<Object> {
+public abstract class AbstractTableWriter implements TableWriter {
     /**
-     * Get the value at a particular column.
-     *
-     * @param key The column name.
-     * @return The value at that column.
-     * @throws IllegalArgumentException if <var>key</var> does not define a column.
+     * {@inheritDoc}
+     * This implementation delegates to {@link #writeRow(java.util.List)}.
      */
-    @Nullable
-    Object value(String key);
+    @Override
+    public void writeRow(Object... row) throws IOException {
+        writeRow(Arrays.asList(row));
+    }
 
     /**
-     * Get the value at a particular column.
+     * Check the width of a row to see if it is too wide.  This formats the exception
+     * with a helpful error message.
      *
-     * @param idx The column index.
-     * @return The value at that column.
-     * @throws IndexOutOfBoundsException if <var>idx</var> is not a valid column index.
+     * @param width The row width.
+     * @throws IllegalArgumentException if the row is too wide.
      */
-    @Nullable
-    Object value(int idx);
+    protected void checkRowWidth(int width) {
+        if (width != getLayout().getColumnCount()) {
+            String msg = String.format("incorrect row size (got %d of %d expected columns)",
+                                       width, getLayout().getColumnCount());
+            throw new IllegalArgumentException(msg);
+        }
+    }
 
     /**
-     * Get the length of this row.
-     *
-     * @return The length of the row.
+     * No-op close implementaiton.
      */
-    int length();
-
-    /**
-     * Get a view of this row as a map.
-     *
-     * @return A map representing this row.
-     */
-    Map<String,Object> asMap();
-
-    /**
-     * Get a view of this row as a list.
-     */
-    List<Object> asRow();
+    @Override
+    public void close() throws IOException {}
 }

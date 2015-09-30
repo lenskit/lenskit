@@ -27,9 +27,9 @@ import org.grouplens.lenskit.Recommender;
 import org.grouplens.lenskit.eval.Attributed;
 import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
 import org.grouplens.lenskit.eval.metrics.Metric;
-import org.grouplens.lenskit.util.table.TableLayoutBuilder;
-import org.grouplens.lenskit.util.table.writer.CSVWriter;
-import org.grouplens.lenskit.util.table.writer.TableWriter;
+import org.lenskit.util.table.TableLayoutBuilder;
+import org.lenskit.util.table.writer.CSVWriter;
+import org.lenskit.util.table.writer.TableWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

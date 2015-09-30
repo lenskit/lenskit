@@ -18,9 +18,9 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.table.writer;
+package org.lenskit.util.table.writer;
 
-import org.grouplens.lenskit.util.table.TableLayout;
+import org.lenskit.util.table.TableLayout;
 
 import java.io.IOException;
 import java.util.ArrayList;

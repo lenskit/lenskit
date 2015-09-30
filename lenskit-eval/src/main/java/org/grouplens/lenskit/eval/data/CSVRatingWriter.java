@@ -22,7 +22,7 @@ package org.grouplens.lenskit.eval.data;
 
 import com.google.common.collect.Lists;
 import org.lenskit.data.ratings.Rating;
-import org.grouplens.lenskit.util.table.writer.CSVWriter;
+import org.lenskit.util.table.writer.CSVWriter;
 
 import java.io.IOException;
 import java.util.List;

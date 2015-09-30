@@ -18,39 +18,54 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.util.table;
+package org.lenskit.util.table;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 
 /**
- * This is the interface for the in memory table which stores a list of rows. Users should be able
- * to call the filter method to find the rows that satisfy the conditions specified by users. And
- * table expose the functions of columns to enable users calling the functions on column.
+ * One row of a data table.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public interface Table extends List<Row> {
-    Table filter(String header, Object data);
+public interface Row extends Iterable<Object> {
+    /**
+     * Get the value at a particular column.
+     *
+     * @param key The column name.
+     * @return The value at that column.
+     * @throws IllegalArgumentException if <var>key</var> does not define a column.
+     */
+    @Nullable
+    Object value(String key);
 
     /**
-     * Get a column by index.
-     * @param idx The column index (starting from 0).
-     * @return The column.
-     * @throws IllegalArgumentException if <var>idx</var> is out of bounds.
+     * Get the value at a particular column.
+     *
+     * @param idx The column index.
+     * @return The value at that column.
+     * @throws IndexOutOfBoundsException if <var>idx</var> is not a valid column index.
      */
-    Column column(int idx);
+    @Nullable
+    Object value(int idx);
 
     /**
-     * Get a column by name.
-     * @param col The column name.
-     * @return The column.
-     * @throws IllegalArgumentException if <var>col</var> is not a valid column.
+     * Get the length of this row.
+     *
+     * @return The length of the row.
      */
-    Column column(String col);
+    int length();
 
     /**
-     * Get the layout of this table.
-     * @return The table layout.
+     * Get a view of this row as a map.
+     *
+     * @return A map representing this row.
      */
-    TableLayout getLayout();
+    Map<String,Object> asMap();
+
+    /**
+     * Get a view of this row as a list.
+     */
+    List<Object> asRow();
 }
