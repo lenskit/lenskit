@@ -36,7 +36,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
 
 /**
- * A test suite that does cross-validation of an algorithmInfo.
+ * A test suite that does cross-validation of an algorithm.
  */
 public abstract class CrossfoldTestSuite extends ML100KTestSuite {
     @Rule
