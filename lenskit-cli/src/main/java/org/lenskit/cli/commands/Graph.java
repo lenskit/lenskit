@@ -35,7 +35,7 @@ import org.lenskit.LenskitConfiguration;
 import org.lenskit.RecommenderConfigurationException;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.graph.GraphDumper;
-import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
+import org.lenskit.inject.RecommenderGraphBuilder;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.ScriptEnvironment;
 import org.slf4j.Logger;

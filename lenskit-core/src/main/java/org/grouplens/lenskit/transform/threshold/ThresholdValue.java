@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.transform.threshold;
 
 import org.grouplens.grapht.annotation.DefaultDouble;
-import org.lenskit.Parameter;
+import org.lenskit.inject.Parameter;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

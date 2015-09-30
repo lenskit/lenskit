@@ -42,6 +42,7 @@ import org.lenskit.api.ItemRecommender
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.BaselineScorer
 import org.lenskit.basic.*
+import org.lenskit.inject.Shareable
 
 import javax.inject.Inject
 import javax.inject.Provider

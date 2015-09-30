@@ -22,8 +22,8 @@ package org.grouplens.lenskit.data.dao.packed;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.lenskit.Shareable;
-import org.lenskit.Transient;
+import org.lenskit.inject.Shareable;
+import org.lenskit.inject.Transient;
 import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.*;
 import org.lenskit.data.events.Event;

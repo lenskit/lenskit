@@ -42,7 +42,7 @@ import org.lenskit.EngineValidationMode
 import org.lenskit.LenskitConfiguration
 import org.lenskit.ModelDisposition
 import org.lenskit.RecommenderConfigurationException
-import org.lenskit.Shareable
+import org.lenskit.inject.Shareable
 import org.lenskit.baseline.BaselineScorer
 import org.lenskit.baseline.LeastSquaresItemScorer
 import org.lenskit.basic.ConstantItemScorer

@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.inject;
+package org.lenskit.inject;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -59,7 +59,7 @@ public abstract class NodeInstantiator implements Function<DAGNode<Component,Dep
     }
 
     /**
-     * Default implementation of the {@link org.grouplens.lenskit.inject.NodeInstantiator} interface.
+     * Default implementation of the {@link org.lenskit.inject.NodeInstantiator} interface.
      *
      * @since 2.1
      * @author <a href="http://www.grouplens.org">GroupLens Research</a>

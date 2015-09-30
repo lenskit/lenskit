@@ -22,7 +22,7 @@ package org.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.lenskit.Transient;
+import org.lenskit.inject.Transient;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.lenskit.knn.item.model.ItemItemBuildContext;
 import org.grouplens.lenskit.vectors.SparseVector;

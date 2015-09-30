@@ -20,7 +20,7 @@
  */
 package org.lenskit.mf.funksvd;
 
-import org.lenskit.Shareable;
+import org.lenskit.inject.Shareable;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.RatingMatrix;
 import org.grouplens.lenskit.iterative.LearningRate;

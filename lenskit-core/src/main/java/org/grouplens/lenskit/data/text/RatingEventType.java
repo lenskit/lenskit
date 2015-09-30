@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.text;
 
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSet;
-import org.lenskit.Shareable;
+import org.lenskit.inject.Shareable;
 import org.lenskit.data.events.EventBuilder;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.RatingBuilder;

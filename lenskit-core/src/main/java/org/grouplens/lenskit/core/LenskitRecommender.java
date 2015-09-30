@@ -25,7 +25,7 @@ import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.lenskit.*;
-import org.grouplens.lenskit.inject.StaticInjector;
+import org.lenskit.inject.StaticInjector;
 import org.lenskit.LenskitConfiguration;
 
 import java.lang.annotation.Annotation;

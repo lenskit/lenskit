@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
-import org.lenskit.Shareable;
+import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 

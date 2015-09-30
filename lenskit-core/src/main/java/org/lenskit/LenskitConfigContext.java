@@ -23,6 +23,7 @@ package org.lenskit;
 import org.grouplens.grapht.Binding;
 import org.grouplens.grapht.Context;
 import org.grouplens.grapht.context.ContextPattern;
+import org.lenskit.inject.Parameter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

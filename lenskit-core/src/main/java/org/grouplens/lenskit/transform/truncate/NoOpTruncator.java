@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.transform.truncate;
 
-import org.lenskit.Shareable;
+import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 
 import java.io.Serializable;

@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.dao;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.lenskit.Shareable;
+import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.util.io.LKFileUtils;
 import org.lenskit.util.collections.LongUtils;
 

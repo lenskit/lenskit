@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 import org.grouplens.grapht.annotation.DefaultInteger;
-import org.lenskit.Parameter;
+import org.lenskit.inject.Parameter;
 
 /**
  * Number of neighbors to consider when building a prediction.  Used by both

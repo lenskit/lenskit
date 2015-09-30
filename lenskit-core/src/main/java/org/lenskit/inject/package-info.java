@@ -22,4 +22,4 @@
  * Support classes for working with dependency injection.  These are internal utility classes,
  * code using LensKit should not need to use them for any reason.
  */
-package org.grouplens.lenskit.inject;
+package org.lenskit.inject;

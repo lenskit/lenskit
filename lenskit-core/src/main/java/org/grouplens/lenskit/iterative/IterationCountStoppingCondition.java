@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.iterative;
 
-import org.lenskit.Shareable;
+import org.lenskit.inject.Shareable;
 
 import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;

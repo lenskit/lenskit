@@ -21,7 +21,7 @@
 package org.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.lenskit.Shareable;
+import org.lenskit.inject.Shareable;
 import org.lenskit.util.math.Vectors;
 
 import java.io.Serializable;

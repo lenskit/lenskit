@@ -30,7 +30,7 @@ import org.lenskit.LenskitConfigContext;
 import org.lenskit.RecommenderConfigurationException;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.PreferenceDomainBuilder;
-import org.grouplens.lenskit.inject.AbstractConfigContext;
+import org.lenskit.inject.AbstractConfigContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

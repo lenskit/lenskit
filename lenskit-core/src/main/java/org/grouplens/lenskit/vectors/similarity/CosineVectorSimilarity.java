@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.vectors.similarity;
 
 import com.google.common.base.Preconditions;
-import org.lenskit.Shareable;
+import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.util.math.Scalars;
 

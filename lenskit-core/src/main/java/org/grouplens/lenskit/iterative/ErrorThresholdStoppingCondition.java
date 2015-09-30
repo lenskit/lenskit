@@ -21,7 +21,7 @@
 package org.grouplens.lenskit.iterative;
 
 import com.google.common.base.Preconditions;
-import org.lenskit.Shareable;
+import org.lenskit.inject.Shareable;
 
 import javax.annotation.concurrent.Immutable;
 import javax.inject.Inject;

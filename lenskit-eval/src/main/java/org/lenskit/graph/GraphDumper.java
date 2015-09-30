@@ -34,9 +34,9 @@ import org.grouplens.grapht.reflect.Desire;
 import org.grouplens.grapht.reflect.Satisfaction;
 import org.grouplens.grapht.reflect.SatisfactionVisitor;
 import org.grouplens.lenskit.RecommenderBuildException;
-import org.lenskit.Parameter;
-import org.grouplens.lenskit.inject.GraphtUtils;
-import org.grouplens.lenskit.inject.RecommenderInstantiator;
+import org.lenskit.inject.Parameter;
+import org.lenskit.inject.GraphtUtils;
+import org.lenskit.inject.RecommenderInstantiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

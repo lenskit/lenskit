@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.transform.clamp;
 
-import org.lenskit.Shareable;
+import org.lenskit.inject.Shareable;
 
 import java.io.Serializable;
 

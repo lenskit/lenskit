@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.inject;
+package org.lenskit.inject;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -29,7 +29,6 @@ import org.grouplens.grapht.Context;
 import org.grouplens.grapht.reflect.Qualifiers;
 import org.lenskit.LenskitBinding;
 import org.lenskit.LenskitConfigContext;
-import org.lenskit.Parameter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

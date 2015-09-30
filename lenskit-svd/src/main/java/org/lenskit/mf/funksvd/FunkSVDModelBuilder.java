@@ -24,7 +24,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
-import org.lenskit.Transient;
+import org.lenskit.inject.Transient;
 import org.grouplens.lenskit.iterative.TrainingLoopController;
 import org.lenskit.data.ratings.RatingMatrix;
 import org.lenskit.data.ratings.RatingMatrixEntry;

@@ -20,8 +20,8 @@
  */
 package org.lenskit.baseline;
 
-import org.lenskit.Shareable;
-import org.lenskit.Transient;
+import org.lenskit.inject.Shareable;
+import org.lenskit.inject.Transient;
 import org.lenskit.basic.ConstantItemScorer;
 import org.lenskit.data.ratings.RatingSummary;
 

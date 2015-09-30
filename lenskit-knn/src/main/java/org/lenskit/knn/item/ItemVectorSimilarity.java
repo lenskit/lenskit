@@ -20,7 +20,7 @@
  */
 package org.lenskit.knn.item;
 
-import org.lenskit.Shareable;
+import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.similarity.VectorSimilarity;
 

@@ -29,8 +29,8 @@ import org.grouplens.grapht.context.ContextPattern;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.lenskit.*;
 import org.grouplens.lenskit.core.LenskitRecommender;
-import org.grouplens.lenskit.inject.AbstractConfigContext;
-import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
+import org.lenskit.inject.AbstractConfigContext;
+import org.lenskit.inject.RecommenderGraphBuilder;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;

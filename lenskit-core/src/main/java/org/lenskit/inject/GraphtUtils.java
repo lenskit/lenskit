@@ -18,7 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.inject;
+package org.lenskit.inject;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -33,8 +33,6 @@ import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.reflect.*;
 import org.grouplens.grapht.reflect.internal.*;
 import org.lenskit.RecommenderConfigurationException;
-import org.lenskit.Shareable;
-import org.lenskit.Transient;
 import org.slf4j.Logger;
 
 import javax.annotation.Nonnull;

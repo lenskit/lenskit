@@ -21,7 +21,7 @@
 package org.lenskit.mf.svd;
 
 import org.apache.commons.math3.linear.RealVector;
-import org.lenskit.Shareable;
+import org.lenskit.inject.Shareable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;

@@ -23,7 +23,7 @@ package org.lenskit.knn.item.model;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import it.unimi.dsi.fastutil.longs.*;
-import org.lenskit.Transient;
+import org.lenskit.inject.Transient;
 import org.lenskit.baseline.ItemMeanRatingItemScorer;
 import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.ItemDAO;

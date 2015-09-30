@@ -97,7 +97,7 @@ allprojects {
                       'org.grouplens.lenskit.util*',
                       'org.lenskit.util*',
                       'org.grouplens.lenskit.test*',
-                      'org.grouplens.lenskit.inject',
+                      'org.lenskit.inject',
                       'org.grouplens.lenskit.iterative')
 
                 links 'http://docs.oracle.com/javase/7/docs/api/'

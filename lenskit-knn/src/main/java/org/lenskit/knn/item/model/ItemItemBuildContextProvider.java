@@ -23,7 +23,7 @@ package org.lenskit.knn.item.model;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.lenskit.Transient;
+import org.lenskit.inject.Transient;
 import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
 import org.lenskit.data.events.Event;

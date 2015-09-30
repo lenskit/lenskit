@@ -27,8 +27,8 @@ import org.grouplens.lenskit.data.text.EventFile;
 import org.grouplens.lenskit.data.text.EventFormat;
 import org.grouplens.lenskit.data.text.Formats;
 import org.grouplens.lenskit.data.text.TextEventDAO;
-import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
-import org.grouplens.lenskit.inject.StaticInjector;
+import org.lenskit.inject.RecommenderGraphBuilder;
+import org.lenskit.inject.StaticInjector;
 import org.junit.Test;
 import org.lenskit.LenskitConfiguration;
 

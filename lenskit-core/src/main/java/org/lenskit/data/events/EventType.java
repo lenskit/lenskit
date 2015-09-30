@@ -20,7 +20,7 @@
  */
 package org.lenskit.data.events;
 
-import org.lenskit.Parameter;
+import org.lenskit.inject.Parameter;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.*;

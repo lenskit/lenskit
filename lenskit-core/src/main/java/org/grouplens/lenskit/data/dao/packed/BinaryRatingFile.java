@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.data.dao.packed;
 
-import org.lenskit.Parameter;
+import org.lenskit.inject.Parameter;
 
 import javax.inject.Qualifier;
 import java.io.File;
