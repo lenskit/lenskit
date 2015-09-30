@@ -62,9 +62,6 @@ Each command is documented in its own man page, *lenskit-command*(1).
 :   Output a GraphViz diagram of a recommender configuration (either from configuration files or a
     trained model).
 
-[eval](man:lenskit-eval(1))
-:   Run a LensKit evaluation script.
-
 [pack-ratings](man:lenskit-pack-ratings(1))
 :   Pack rating data into a binary file for more efficient access.
 
@@ -94,16 +91,16 @@ logback.configurationFile
    [**lenskit-recommend**(1)](man:lenskit-recommend(1)),
    [**lenskit-global-recommend**(1)](man:lenskit-global-recommend(1)),
    [**lenskit-graph**(1)](man:lenskit-graph(1)),
-   [**lenskit-eval**(1)](man:lenskit-eval(1)),
    [**lenskit-pack-ratings**(1)](man:lenskit-pack-ratings(1))
 -  The [LensKit home page](http://lenskit.org)
--  The [LensKit manual](http://github.com/grouplens/lenskit/wiki/Manual)
+-  The [LensKit manual](http://lenskit.org/documentation)
 
 ## Project Information
 
 This command is a part of LensKit, an open source recommender systems toolkit
-developed by [GroupLens Research](http://grouplens.org).
-Copyright 2010-2014 Regents of the University of Minnesota and contributors.
+developed by [GroupLens Research](http://grouplens.org).\\
+Copyright 2010-2015 LensKit contributors\\
+Copyright 2010-2014 Regents of the University of Minnesota
 
 Work on LensKit has been funded by the National Science Foundation under
 grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
