@@ -43,12 +43,7 @@ public abstract class ItemSelector {
      * @return An item selector that always returns {@code null}.
      */
     public static ItemSelector nullSelector() {
-        return new ItemSelector() {
-            @Override
-            public LongSet selectItems(LongSet universe, TestUser user) {
-                return null;
-            }
-        };
+        return new NullItemSelector();
     }
 
     /**
@@ -56,12 +51,7 @@ public abstract class ItemSelector {
      * @param items The items to return.
      */
     public static ItemSelector fixed(final LongSet items) {
-        return new ItemSelector() {
-            @Override
-            public LongSet selectItems(LongSet universe, TestUser user) {
-                return items;
-            }
-        };
+        return new FixedItemSelector(items);
     }
 
     public static ItemSelector fixed(long... items) {
@@ -90,7 +80,7 @@ public abstract class ItemSelector {
         config.setScriptBaseClass(ItemSelectScript.class.getName());
         GroovyShell shell = new GroovyShell(config);
         Script script = shell.parse(expr);
-        return new GroovyItemSelector((ItemSelectScript) script);
+        return new GroovyItemSelector((ItemSelectScript) script, expr);
     }
 
     public static ItemSelector userTestItems() {
@@ -121,11 +111,24 @@ public abstract class ItemSelector {
         }
     }
 
-    static class GroovyItemSelector extends ItemSelector {
+    /**
+     * Item selector based on a Groovy script.
+     */
+    public static class GroovyItemSelector extends ItemSelector {
         private final ItemSelectScript script;
+        private final String source;
 
-        public GroovyItemSelector(ItemSelectScript scr) {
+        GroovyItemSelector(ItemSelectScript scr, String src) {
             script = scr;
+            source = src;
+        }
+
+        /**
+         * Get the Groovy source of this item selector.
+         * @return The item selector's source.
+         */
+        public String getSource() {
+            return source;
         }
 
         @SuppressWarnings("unchecked")
@@ -134,6 +137,41 @@ public abstract class ItemSelector {
             script.setup(universe, user);
             Set<Long> set = (Set<Long>) script.run();
             return LongUtils.asLongSet(set);
+        }
+
+        @Override
+        public String toString() {
+            return "GroovyItemSelector{" + source + "}";
+        }
+    }
+
+    private static class NullItemSelector extends ItemSelector {
+        @Override
+        public LongSet selectItems(LongSet universe, TestUser user) {
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return "ItemSelector{null}";
+        }
+    }
+
+    private static class FixedItemSelector extends ItemSelector {
+        private final LongSet items;
+
+        public FixedItemSelector(LongSet items) {
+            this.items = items;
+        }
+
+        @Override
+        public LongSet selectItems(LongSet universe, TestUser user) {
+            return items;
+        }
+
+        @Override
+        public String toString() {
+            return "ItemSelector{" + items + "}";
         }
     }
 }
