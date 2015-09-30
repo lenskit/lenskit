@@ -18,24 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.graph;
-
 /**
- * An HTML label for a node.
+ * Support code for visualizing recommender graphs.
  */
-class HTMLLabel {
-    private final String label;
-
-    public HTMLLabel(String content) {
-        label = content;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    @Override
-    public String toString() {
-        return "<" + label + ">";
-    }
-}
+package org.lenskit.graph;

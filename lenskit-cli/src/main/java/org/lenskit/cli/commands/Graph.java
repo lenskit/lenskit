@@ -31,7 +31,7 @@ import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.core.*;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.lenskit.data.ratings.PreferenceDomain;
-import org.grouplens.lenskit.eval.graph.GraphDumper;
+import org.lenskit.graph.GraphDumper;
 import org.grouplens.lenskit.inject.RecommenderGraphBuilder;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.ScriptEnvironment;

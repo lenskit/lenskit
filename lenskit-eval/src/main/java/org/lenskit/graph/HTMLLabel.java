@@ -18,41 +18,24 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.graph;
-
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+package org.lenskit.graph;
 
 /**
- * A graph edge.
+ * An HTML label for a node.
  */
-class GVEdge {
-    private final String source;
-    private final String target;
-    private final Map<String,Object> attributes;
+class HTMLLabel {
+    private final String label;
 
-    /**
-     * Construct a new graph edge.
-     * @param src The source node ID.
-     * @param tgt The source node ID.
-     * @param attrs The edge attributes.
-     */
-    public GVEdge(String src, String tgt, Map<String, Object> attrs) {
-        source = src;
-        target = tgt;
-        attributes = Collections.unmodifiableMap(new LinkedHashMap<String, Object>(attrs));
+    public HTMLLabel(String content) {
+        label = content;
     }
 
-    public String getSource() {
-        return source;
+    public String getLabel() {
+        return label;
     }
 
-    public String getTarget() {
-        return target;
-    }
-
-    public Map<String, Object> getAttributes() {
-        return attributes;
+    @Override
+    public String toString() {
+        return "<" + label + ">";
     }
 }

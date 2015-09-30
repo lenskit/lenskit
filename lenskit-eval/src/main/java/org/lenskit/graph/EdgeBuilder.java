@@ -18,36 +18,46 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.graph;
+package org.lenskit.graph;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
- * Build a subgraph for grouping attributes.
+ * Build a graph node.
  */
-class SubgraphBuilder implements Builder<GVSubgraph> {
-    private final List<GVNode> nodes;
-    private final List<GVEdge> edges;
+class EdgeBuilder implements Builder<GVEdge> {
+    private String srcId, tgtId;
     private final Map<String,Object> attributes;
-    private String name;
 
-    /**
-     * Construct a subgraph builder.
-     */
-    public SubgraphBuilder() {
-        nodes = new ArrayList<GVNode>();
-        edges = new ArrayList<GVEdge>();
+    private EdgeBuilder(String src, String tgt) {
+        Preconditions.checkNotNull(src, "source ID must not be null");
+        Preconditions.checkNotNull(tgt, "target ID must not be null");
+        srcId = src;
+        tgtId = tgt;
         attributes = new LinkedHashMap<String, Object>();
     }
 
-    public SubgraphBuilder setName(String name) {
-        this.name = name;
-        return this;
+    private EdgeBuilder(String src, String tgt, Map<String,Object> attrs) {
+        srcId = src;
+        tgtId = tgt;
+        attributes = new LinkedHashMap<String, Object>(attrs);
+    }
+
+    /**
+     * Construct a node builder for a specified ID.
+     * @param src The source node ID.
+     * @param tgt The target node ID.
+     */
+    public static EdgeBuilder create(String src, String tgt) {
+        return new EdgeBuilder(src, tgt);
+    }
+
+    public static EdgeBuilder of(GVEdge edge) {
+        return new EdgeBuilder(edge.getSource(), edge.getTarget(), edge.getAttributes());
     }
 
     /**
@@ -56,33 +66,25 @@ class SubgraphBuilder implements Builder<GVSubgraph> {
      * @param value The attribute value.
      * @return The builder (for chaining).
      */
-    public SubgraphBuilder set(String name, Object value) {
+    public EdgeBuilder set(String name, Object value) {
         attributes.put(name, value);
         return this;
     }
 
-    /**
-     * Add a node to this subgraph.
-     * @param node The node to add.
-     * @return The subgraph builder (for chaining).
-     */
-    public SubgraphBuilder addNode(GVNode node) {
-        nodes.add(node);
+    public EdgeBuilder setSource(String src) {
+        Preconditions.checkNotNull(src, "source ID must not be null");
+        srcId = src;
         return this;
     }
 
-    /**
-     * Add an edge to this subgraph.
-     * @param edge The edge to add.
-     * @return The subgraph builder (for chaining).
-     */
-    public SubgraphBuilder addEdge(GVEdge edge) {
-        edges.add(edge);
+    public EdgeBuilder setTarget(String tgt) {
+        Preconditions.checkNotNull(tgt, "target ID must not be null");
+        tgtId = tgt;
         return this;
     }
 
     @Override
-    public GVSubgraph build() {
-        return new GVSubgraph(name, attributes, nodes, edges);
+    public GVEdge build() {
+        return new GVEdge(srcId, tgtId, attributes);
     }
 }
