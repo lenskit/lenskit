@@ -71,6 +71,7 @@ public class Main {
                         rt.availableProcessors(), rt.maxMemory() >> 20);
             Command cmd = options.get("command");
             cmd.execute(options);
+            logger.info("If you use LensKit in published research, please see http://lenskit.org/research/");
         } catch (ArgumentParserException e) {
             parser.handleError(e);
         } catch (Exception e) {

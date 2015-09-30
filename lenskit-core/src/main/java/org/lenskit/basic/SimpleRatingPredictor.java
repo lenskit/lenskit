@@ -74,6 +74,9 @@ public class SimpleRatingPredictor implements RatingPredictor {
     @Override
     public RescoredResult predict(long user, long item) {
         Result r = scorer.score(user, item);
+        if(r == null) {
+            return null;
+        }
         double val = r.getScore();
         if (preferenceDomain != null) {
             val = preferenceDomain.clampValue(val);
