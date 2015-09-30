@@ -23,13 +23,13 @@ package org.lenskit.eval.traintest.recommend;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.StringUtils;
-import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
+import org.lenskit.eval.traintest.metrics.MetricColumn;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.eval.traintest.metrics.TypedMetricResult;
 import org.slf4j.Logger;
@@ -124,7 +124,7 @@ public class TopNMAPMetric extends TopNMetric<TopNMAPMetric.Context> {
     }
 
     public static class UserResult extends TypedMetricResult {
-        @ResultColumn("AvgPrec")
+        @MetricColumn("AvgPrec")
         public final double avgPrecision;
         private final boolean isGood;
 
@@ -139,13 +139,13 @@ public class TopNMAPMetric extends TopNMetric<TopNMAPMetric.Context> {
          * The MAP over all users.  Users for whom no good items are included, and have a reciprocal
          * rank of 0.
          */
-        @ResultColumn("MAP")
+        @MetricColumn("MAP")
         public final double map;
 
         /**
          * The MAP over those users for whom a good item could be recommended.
          */
-        @ResultColumn("MAP.OfGood")
+        @MetricColumn("MAP.OfGood")
         public final double goodMAP;
 
         public AggregateResult(Context accum) {

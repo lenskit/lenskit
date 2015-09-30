@@ -22,12 +22,12 @@ package org.lenskit.eval.traintest.recommend;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
+import org.lenskit.eval.traintest.metrics.MetricColumn;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.eval.traintest.metrics.TypedMetricResult;
 
@@ -78,7 +78,7 @@ public class TopNEntropyMetric extends TopNMetric<TopNEntropyMetric.Context> {
     }
 
     public static class EntropyResult extends TypedMetricResult {
-        @ResultColumn("TopN.Entropy")
+        @MetricColumn("TopN.Entropy")
         public final double entropy;
         public EntropyResult(double e) {
             entropy = e;

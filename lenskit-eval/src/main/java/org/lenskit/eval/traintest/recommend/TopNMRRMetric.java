@@ -23,13 +23,13 @@ package org.lenskit.eval.traintest.recommend;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.StringUtils;
-import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
+import org.lenskit.eval.traintest.metrics.MetricColumn;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.eval.traintest.metrics.TypedMetricResult;
 import org.slf4j.Logger;
@@ -113,14 +113,14 @@ public class TopNMRRMetric extends TopNMetric<TopNMRRMetric.Context> {
     }
 
     public static class UserResult extends TypedMetricResult {
-        @ResultColumn("Rank")
+        @MetricColumn("Rank")
         public final Integer rank;
 
         public UserResult(Integer r) {
             rank = r;
         }
 
-        @ResultColumn("RecipRank")
+        @MetricColumn("RecipRank")
         public double getRecipRank() {
             return rank == null ? 0 : 1.0 / rank;
         }
@@ -131,12 +131,12 @@ public class TopNMRRMetric extends TopNMetric<TopNMRRMetric.Context> {
          * The MRR over all users.  Users for whom no good items are included, and have a reciprocal
          * rank of 0.
          */
-        @ResultColumn("MRR")
+        @MetricColumn("MRR")
         public final double mrr;
         /**
          * The MRR over those users for whom a good item could be recommended.
          */
-        @ResultColumn("MRR.OfGood")
+        @MetricColumn("MRR.OfGood")
         public final double goodMRR;
 
         public AggregateResult(Context accum) {

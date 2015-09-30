@@ -24,7 +24,7 @@ import org.grouplens.lenskit.core.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.GenericDataSource;
-import org.grouplens.lenskit.eval.metrics.Metric;
+import org.lenskit.eval.traintest.predict.PredictMetric;
 import org.lenskit.util.table.Table;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.eval.crossfold.CrossfoldMethods;
@@ -233,19 +233,8 @@ public class SimpleEvaluator {
      * @param metric The metric to be added.
      * @return The evaluator (for chaining).
      */
-    public SimpleEvaluator addMetric(Metric<?> metric) {
-        // TODO add metrics
-        return this;
-    }
-
-    /**
-     * Add a metric to the experiment.
-     *
-     * @param metric The metric to be added.
-     * @return The evaluator (for chaining).
-     */
-    public <T> SimpleEvaluator addMetric(Class<? extends Metric<T>> metric) {
-        // TODO add metrics
+    public SimpleEvaluator addMetric(PredictMetric<?> metric) {
+        experiment.getPredictionTask().addMetric(metric);
         return this;
     }
 

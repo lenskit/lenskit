@@ -25,7 +25,6 @@ import org.grouplens.lenskit.baseline.GlobalMeanRatingItemScorer
 import org.grouplens.lenskit.data.dao.EventCollectionDAO
 import org.grouplens.lenskit.data.dao.EventDAO
 import org.grouplens.lenskit.eval.script.ConfigTestBase
-import org.grouplens.lenskit.eval.traintest.ExternalAlgorithm
 import org.grouplens.lenskit.iterative.MinimumIterations
 import org.grouplens.lenskit.iterative.StoppingThreshold
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
@@ -122,21 +121,5 @@ class AlgorithmInstanceConfigTest extends ConfigTestBase {
         def athresh = rec.get(AbsoluteThreshold)
         assertThat(athresh.value,
                    closeTo(0.5d, 1.0e-5d))
-    }
-
-    @Test
-    void testExternalAlgorithm() {
-        def obj = eval {
-            externalAlgorithm("Cheater") {
-                command (["cat", "{TEST_DATA}"])
-
-                attributes["wombat"] = "global"
-            }
-        }
-        assertThat(obj, instanceOf(ExternalAlgorithm))
-        def algo = obj as ExternalAlgorithm
-        assertThat(algo.name, equalTo("Cheater"))
-        assertThat(algo.attributes["wombat"] as String, equalTo("global"))
-        assertThat(algo.command, equalTo(["cat", "{TEST_DATA}"].toList()))
     }
 }

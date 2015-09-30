@@ -20,13 +20,13 @@
  */
 package org.lenskit.eval.traintest.recommend;
 
-import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
 import org.lenskit.api.Recommender;
 import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
+import org.lenskit.eval.traintest.metrics.MetricColumn;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.eval.traintest.metrics.TypedMetricResult;
 
@@ -67,7 +67,7 @@ public class TopNLengthMetric extends TopNMetric<MeanAccumulator> {
     }
 
     public static class LengthResult extends TypedMetricResult {
-        @ResultColumn("TopN.ActualLength")
+        @MetricColumn("TopN.ActualLength")
         public final double length;
 
         public LengthResult(double len) {

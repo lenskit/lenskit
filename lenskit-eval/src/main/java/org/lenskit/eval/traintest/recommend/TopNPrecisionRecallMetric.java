@@ -23,12 +23,12 @@ package org.lenskit.eval.traintest.recommend;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.StringUtils;
-import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
 import org.lenskit.eval.traintest.TestUser;
+import org.lenskit.eval.traintest.metrics.MetricColumn;
 import org.lenskit.eval.traintest.metrics.MetricResult;
 import org.lenskit.eval.traintest.metrics.TypedMetricResult;
 import org.lenskit.util.math.Scalars;
@@ -114,9 +114,9 @@ public class TopNPrecisionRecallMetric extends TopNMetric<TopNPrecisionRecallMet
     }
 
     public static class PresRecResult extends TypedMetricResult {
-        @ResultColumn("Precision")
+        @MetricColumn("Precision")
         public final double precision;
-        @ResultColumn("Recall")
+        @MetricColumn("Recall")
         public final double recall;
 
         public PresRecResult(double prec, double rec) {
@@ -124,7 +124,7 @@ public class TopNPrecisionRecallMetric extends TopNMetric<TopNPrecisionRecallMet
             recall = rec;
         }
 
-        @ResultColumn("F1")
+        @MetricColumn("F1")
         public double getF1() {
             double denom = precision + recall;
             if (Scalars.isZero(denom)) {

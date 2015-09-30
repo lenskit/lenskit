@@ -21,7 +21,6 @@
 package org.lenskit.eval.traintest.predict;
 
 import org.grouplens.lenskit.collections.LongUtils;
-import org.grouplens.lenskit.eval.metrics.ResultColumn;
 import org.lenskit.api.ResultMap;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
@@ -83,7 +82,7 @@ public class CoveragePredictMetric extends PredictMetric<CoveragePredictMetric.C
             ngood = ng;
         }
 
-        @ResultColumn(value="Coverage", order=3)
+        @MetricColumn(value="Coverage", order=3)
         public Double getCoverage() {
             if (nattempted > 0) {
                 return ((double) ngood) / nattempted;
