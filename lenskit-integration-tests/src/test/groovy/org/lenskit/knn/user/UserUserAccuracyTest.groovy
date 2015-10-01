@@ -20,15 +20,15 @@
  */
 package org.lenskit.knn.user
 
-import org.grouplens.lenskit.config.ConfigHelpers
+import org.grouplens.lenskit.test.CrossfoldTestSuite
+import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
+import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
 import org.lenskit.LenskitConfiguration
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.BaselineScorer
 import org.lenskit.baseline.UserMeanItemScorer
+import org.lenskit.config.ConfigHelpers
 import org.lenskit.knn.NeighborhoodSize
-import org.grouplens.lenskit.test.CrossfoldTestSuite
-import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
-import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
 import org.lenskit.util.table.Table
 
 import static org.hamcrest.Matchers.closeTo

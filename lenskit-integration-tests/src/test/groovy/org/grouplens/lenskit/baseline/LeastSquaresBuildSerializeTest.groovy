@@ -21,7 +21,6 @@
 package org.grouplens.lenskit.baseline
 
 import org.grouplens.lenskit.RecommenderBuildException
-import org.grouplens.lenskit.config.ConfigHelpers
 import org.lenskit.LenskitConfiguration
 import org.lenskit.ModelDisposition
 import org.grouplens.lenskit.test.ML100KTestSuite
@@ -30,6 +29,7 @@ import org.lenskit.LenskitRecommender
 import org.lenskit.LenskitRecommenderEngine
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.LeastSquaresItemScorer
+import org.lenskit.config.ConfigHelpers
 
 import static org.hamcrest.Matchers.instanceOf
 import static org.hamcrest.Matchers.notNullValue

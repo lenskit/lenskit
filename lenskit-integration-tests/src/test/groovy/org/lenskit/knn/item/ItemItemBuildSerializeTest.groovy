@@ -21,7 +21,6 @@
 package org.lenskit.knn.item
 
 import org.grouplens.lenskit.RecommenderBuildException
-import org.grouplens.lenskit.config.ConfigHelpers
 import org.lenskit.ModelDisposition
 import org.grouplens.lenskit.data.dao.ItemDAO
 import org.grouplens.lenskit.test.ML100KTestSuite
@@ -36,6 +35,7 @@ import org.lenskit.baseline.BaselineScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.baseline.UserMeanBaseline
 import org.lenskit.baseline.UserMeanItemScorer
+import org.lenskit.config.ConfigHelpers
 import org.lenskit.knn.item.model.ItemItemModel
 import org.lenskit.knn.item.model.NormalizingItemItemModelBuilder
 import org.lenskit.knn.item.model.StandardVectorTruncatorProvider

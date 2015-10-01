@@ -20,19 +20,19 @@
  */
 package org.lenskit.knn.item
 
-import org.grouplens.lenskit.config.ConfigHelpers
-import org.lenskit.LenskitConfiguration
 import org.grouplens.lenskit.test.CrossfoldTestSuite
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer
-import org.lenskit.util.table.Table
 import org.grouplens.lenskit.vectors.similarity.SimilarityDamping
+import org.lenskit.LenskitConfiguration
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.BaselineScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.baseline.UserMeanBaseline
 import org.lenskit.baseline.UserMeanItemScorer
+import org.lenskit.config.ConfigHelpers
 import org.lenskit.knn.NeighborhoodSize
+import org.lenskit.util.table.Table
 
 import static org.hamcrest.Matchers.closeTo
 import static org.junit.Assert.assertThat

@@ -21,7 +21,7 @@
 package org.lenskit.knn.item
 
 import org.grouplens.lenskit.RecommenderBuildException
-import org.grouplens.lenskit.config.ConfigHelpers
+import org.lenskit.config.ConfigHelpers
 import org.lenskit.data.events.EventType
 import org.lenskit.data.events.Like
 import org.grouplens.lenskit.data.history.EventCountUserHistorySummarizer

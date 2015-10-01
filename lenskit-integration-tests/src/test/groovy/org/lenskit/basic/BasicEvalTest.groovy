@@ -20,7 +20,6 @@
  */
 package org.lenskit.basic
 
-import org.grouplens.lenskit.config.ConfigHelpers
 import org.lenskit.LenskitConfiguration
 import org.grouplens.lenskit.test.CrossfoldTestSuite
 import org.lenskit.api.ItemScorer
@@ -28,6 +27,7 @@ import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.baseline.MeanDamping
 import org.lenskit.baseline.UserMeanBaseline
 import org.lenskit.baseline.UserMeanItemScorer
+import org.lenskit.config.ConfigHelpers
 import org.lenskit.eval.traintest.SimpleEvaluator
 import org.lenskit.eval.traintest.recommend.*
 import org.lenskit.util.table.Table
