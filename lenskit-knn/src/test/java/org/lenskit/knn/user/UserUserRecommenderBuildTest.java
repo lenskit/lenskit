@@ -20,7 +20,7 @@
  */
 package org.lenskit.knn.user;
 
-import org.grouplens.lenskit.RecommenderBuildException;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;

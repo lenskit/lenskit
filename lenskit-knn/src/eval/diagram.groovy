@@ -21,7 +21,6 @@
 
 
 import org.grouplens.lenskit.GlobalItemScorer
-import org.grouplens.lenskit.ItemScorer
 
 import org.lenskit.knn.NeighborhoodSize
 import org.lenskit.knn.item.ItemItemGlobalScorer

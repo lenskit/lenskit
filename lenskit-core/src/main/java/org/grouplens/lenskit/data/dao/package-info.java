@@ -26,7 +26,7 @@
  * users, items, ratings, etc.
  *
  * <p>Many DAO operations are expected to be fast, usually with appropriate caching.  It is typical
- * for DAOs to be instantiated once per {@link org.grouplens.lenskit.Recommender} (and therefore
+ * for DAOs to be instantiated once per {@link org.lenskit.api.Recommender} (and therefore
  * once per request in a web environment), and to cache aggressively in instance variables.  More
  * sophisticated implementations using shared caches or services such as Memcache are certainly
  * feasible.

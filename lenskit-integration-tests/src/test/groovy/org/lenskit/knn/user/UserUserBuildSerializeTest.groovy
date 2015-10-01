@@ -20,7 +20,7 @@
  */
 package org.lenskit.knn.user
 
-import org.grouplens.lenskit.RecommenderBuildException
+import org.lenskit.api.RecommenderBuildException
 import org.lenskit.ModelDisposition
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer

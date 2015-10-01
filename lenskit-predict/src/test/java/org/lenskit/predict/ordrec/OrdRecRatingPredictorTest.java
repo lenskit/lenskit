@@ -20,7 +20,7 @@
  */
 package org.lenskit.predict.ordrec;
 
-import org.grouplens.lenskit.RecommenderBuildException;
+import org.lenskit.api.RecommenderBuildException;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.dao.EventDAO;

@@ -27,7 +27,7 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.lenskit.RecommenderBuildException;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.*;
 import org.lenskit.inject.RecommenderGraphBuilder;
 import org.slf4j.Logger;

@@ -23,6 +23,7 @@ package org.lenskit.slopeone;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
 import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.lenskit.api.ItemScorer;
 import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.history.History;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
@@ -42,7 +43,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * An {@link org.grouplens.lenskit.ItemScorer} that implements a weighted Slope One algorithm.
+ * An {@link ItemScorer} that implements a weighted Slope One algorithm.
  */
 public class WeightedSlopeOneItemScorer extends SlopeOneItemScorer {
     @Inject

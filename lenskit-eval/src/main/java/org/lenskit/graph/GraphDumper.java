@@ -33,7 +33,7 @@ import org.grouplens.grapht.reflect.AbstractSatisfactionVisitor;
 import org.grouplens.grapht.reflect.Desire;
 import org.grouplens.grapht.reflect.Satisfaction;
 import org.grouplens.grapht.reflect.SatisfactionVisitor;
-import org.grouplens.lenskit.RecommenderBuildException;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.inject.Parameter;
 import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.RecommenderInstantiator;

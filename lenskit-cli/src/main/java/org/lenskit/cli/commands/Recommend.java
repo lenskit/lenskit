@@ -24,7 +24,7 @@ import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.grouplens.lenskit.RecommenderBuildException;
+import org.lenskit.api.RecommenderBuildException;
 import org.grouplens.lenskit.data.dao.ItemNameDAO;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;

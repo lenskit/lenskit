@@ -26,7 +26,7 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.grouplens.lenskit.GlobalItemRecommender;
-import org.grouplens.lenskit.RecommenderBuildException;
+import org.lenskit.api.RecommenderBuildException;
 import org.grouplens.lenskit.data.dao.ItemNameDAO;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.lenskit.LenskitRecommender;

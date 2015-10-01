@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.test;
 
-import org.grouplens.lenskit.RecommenderBuildException;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.PrefetchingItemDAO;

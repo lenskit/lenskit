@@ -20,7 +20,7 @@
  */
 package org.lenskit.slopeone;
 
-import org.grouplens.lenskit.RecommenderBuildException;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.*;
 import org.lenskit.data.ratings.Rating;

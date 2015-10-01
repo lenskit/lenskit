@@ -20,7 +20,7 @@
  */
 package org.lenskit;
 
-import org.grouplens.lenskit.RecommenderBuildException;
+import org.lenskit.api.RecommenderBuildException;
 
 /**
  * Error thrown when an error occurs resolving the recommender configuration graph.

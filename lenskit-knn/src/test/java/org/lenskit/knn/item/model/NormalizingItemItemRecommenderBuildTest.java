@@ -22,7 +22,7 @@ package org.lenskit.knn.item.model;
 
 import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.GlobalItemScorer;
-import org.grouplens.lenskit.RecommenderBuildException;
+import org.lenskit.api.RecommenderBuildException;
 import org.grouplens.lenskit.basic.TopNGlobalItemRecommender;
 import org.lenskit.LenskitConfiguration;
 import org.grouplens.lenskit.data.dao.EventCollectionDAO;

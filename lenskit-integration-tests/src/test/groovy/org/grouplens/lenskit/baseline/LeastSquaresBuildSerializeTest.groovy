@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.baseline
 
-import org.grouplens.lenskit.RecommenderBuildException
+import org.lenskit.api.RecommenderBuildException
 import org.lenskit.LenskitConfiguration
 import org.lenskit.ModelDisposition
 import org.grouplens.lenskit.test.ML100KTestSuite
