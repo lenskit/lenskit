@@ -23,7 +23,7 @@ package org.lenskit.knn.user;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.lenskit.data.events.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
+import org.lenskit.data.history.UserHistory;
 
 /**
  * Finds candidate neighbors for a user.

@@ -22,10 +22,10 @@ package org.lenskit.predict.ordrec;
 
 import org.lenskit.api.RecommenderBuildException;
 import org.grouplens.lenskit.collections.LongUtils;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.dao.PrefetchingUserEventDAO;
-import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.lenskit.data.dao.EventCollectionDAO;
+import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.PrefetchingUserEventDAO;
+import org.lenskit.data.dao.UserEventDAO;
 import org.lenskit.data.ratings.Rating;
 import org.junit.Before;
 import org.junit.Test;

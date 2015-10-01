@@ -22,7 +22,7 @@ package org.lenskit.knn.item
 
 import org.lenskit.api.RecommenderBuildException
 import org.lenskit.ModelDisposition
-import org.grouplens.lenskit.data.dao.ItemDAO
+import org.lenskit.data.dao.ItemDAO
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer

@@ -22,8 +22,8 @@ package org.lenskit.mf.funksvd;
 
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.EventCollectionDAO;
+import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.PackedRatingMatrix;
 import org.lenskit.data.ratings.RatingMatrix;

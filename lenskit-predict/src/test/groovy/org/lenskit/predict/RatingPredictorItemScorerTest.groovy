@@ -21,8 +21,8 @@
 package org.lenskit.predict
 
 import org.lenskit.basic.RescoringItemRecommender
-import org.grouplens.lenskit.data.dao.EventCollectionDAO
-import org.grouplens.lenskit.data.dao.EventDAO
+import org.lenskit.data.dao.EventCollectionDAO
+import org.lenskit.data.dao.EventDAO
 import org.lenskit.config.ConfigHelpers
 import org.lenskit.data.ratings.Rating
 import org.junit.Test

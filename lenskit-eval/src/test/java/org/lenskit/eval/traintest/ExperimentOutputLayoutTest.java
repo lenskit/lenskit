@@ -21,7 +21,7 @@
 package org.lenskit.eval.traintest;
 
 import com.google.common.collect.ImmutableSet;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.lenskit.data.dao.EventCollectionDAO;
 import org.grouplens.lenskit.data.source.GenericDataSource;
 import org.lenskit.util.table.*;
 import org.lenskit.util.table.writer.TableWriter;

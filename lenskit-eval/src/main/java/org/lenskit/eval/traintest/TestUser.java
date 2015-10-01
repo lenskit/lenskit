@@ -23,7 +23,7 @@ package org.lenskit.eval.traintest;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.data.history.UserHistory;
+import org.lenskit.data.history.UserHistory;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.Ratings;

@@ -22,8 +22,8 @@ package org.grouplens.lenskit.test;
 
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
-import org.grouplens.lenskit.data.dao.ItemDAO;
-import org.grouplens.lenskit.data.dao.PrefetchingItemDAO;
+import org.lenskit.data.dao.ItemDAO;
+import org.lenskit.data.dao.PrefetchingItemDAO;
 import org.junit.Test;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;

@@ -21,8 +21,8 @@
 package org.grouplens.lenskit.data.text;
 
 import it.unimi.dsi.fastutil.longs.LongLists;
-import org.grouplens.lenskit.data.dao.UserDAO;
-import org.grouplens.lenskit.data.dao.UserListUserDAO;
+import org.lenskit.data.dao.UserDAO;
+import org.lenskit.data.dao.UserListUserDAO;
 import org.lenskit.util.collections.LongUtils;
 
 import java.io.File;

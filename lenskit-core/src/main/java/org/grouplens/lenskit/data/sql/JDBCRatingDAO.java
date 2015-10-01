@@ -28,12 +28,12 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
-import org.grouplens.lenskit.data.dao.*;
+import org.lenskit.data.dao.*;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.ratings.Rating;
-import org.grouplens.lenskit.data.history.History;
-import org.grouplens.lenskit.data.history.ItemEventCollection;
-import org.grouplens.lenskit.data.history.UserHistory;
+import org.lenskit.data.history.History;
+import org.lenskit.data.history.ItemEventCollection;
+import org.lenskit.data.history.UserHistory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

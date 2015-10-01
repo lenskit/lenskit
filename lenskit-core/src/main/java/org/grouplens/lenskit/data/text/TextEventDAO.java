@@ -21,9 +21,9 @@
 package org.grouplens.lenskit.data.text;
 
 import com.google.common.collect.Lists;
-import org.grouplens.lenskit.data.dao.DataAccessException;
-import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.dao.SortOrder;
+import org.lenskit.data.dao.DataAccessException;
+import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;

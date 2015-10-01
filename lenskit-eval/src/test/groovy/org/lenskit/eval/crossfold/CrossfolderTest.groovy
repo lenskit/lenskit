@@ -22,8 +22,8 @@ package org.lenskit.eval.crossfold
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet
 import net.java.quickcheck.Generator
-import org.grouplens.lenskit.data.dao.EventCollectionDAO
-import org.grouplens.lenskit.data.dao.EventDAO
+import org.lenskit.data.dao.EventCollectionDAO
+import org.lenskit.data.dao.EventDAO
 import org.grouplens.lenskit.data.source.DataSource
 import org.grouplens.lenskit.data.source.GenericDataSource
 import org.grouplens.lenskit.data.source.TextDataSource

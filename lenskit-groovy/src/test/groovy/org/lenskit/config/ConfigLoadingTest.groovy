@@ -21,8 +21,8 @@
 package org.lenskit.config
 
 import org.grouplens.lenskit.GlobalItemRecommender
-import org.grouplens.lenskit.data.dao.EventCollectionDAO
-import org.grouplens.lenskit.data.dao.EventDAO
+import org.lenskit.data.dao.EventCollectionDAO
+import org.lenskit.data.dao.EventDAO
 import org.grouplens.lenskit.vectors.similarity.PearsonCorrelation
 import org.grouplens.lenskit.vectors.similarity.SignificanceWeightedVectorSimilarity
 import org.grouplens.lenskit.vectors.similarity.VectorSimilarity

@@ -22,6 +22,7 @@ package org.grouplens.lenskit.data.history;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+import org.lenskit.data.history.UserHistory;
 import org.lenskit.inject.Shareable;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.events.EventType;

@@ -26,7 +26,7 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
-import org.grouplens.lenskit.data.dao.ItemNameDAO;
+import org.lenskit.data.dao.ItemNameDAO;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.LenskitRecommenderEngineBuilder;

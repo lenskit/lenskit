@@ -26,7 +26,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.longs.*;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.lenskit.inject.Shareable;
-import org.grouplens.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.EventDAO;
 import org.lenskit.util.keys.KeyIndex;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 

@@ -22,8 +22,8 @@ package org.lenskit.knn.user;
 
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.EventCollectionDAO;
+import org.lenskit.data.dao.EventDAO;
 import org.lenskit.basic.TopNItemRecommender;
 import org.lenskit.data.ratings.Rating;
 import org.junit.Before;

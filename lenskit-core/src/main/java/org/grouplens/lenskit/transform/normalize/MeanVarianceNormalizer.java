@@ -27,7 +27,7 @@ import org.lenskit.inject.Shareable;
 import org.lenskit.inject.Transient;
 import org.lenskit.baseline.MeanDamping;
 import org.lenskit.util.io.ObjectStream;
-import org.grouplens.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;

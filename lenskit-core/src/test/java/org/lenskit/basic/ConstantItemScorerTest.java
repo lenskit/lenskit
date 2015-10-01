@@ -22,7 +22,7 @@ package org.lenskit.basic;
 
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
+import org.lenskit.data.dao.EventCollectionDAO;
 import org.junit.Test;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;

@@ -22,10 +22,9 @@ package org.lenskit.eval.crossfold;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.lenskit.data.events.Event;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.data.ratings.Rating;
-import org.grouplens.lenskit.data.history.UserHistory;
+import org.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

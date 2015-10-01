@@ -28,7 +28,7 @@ import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.graph.DAGNode;
 import org.lenskit.api.RecommenderBuildException;
-import org.grouplens.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.EventDAO;
 import org.lenskit.*;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.graph.GraphDumper;

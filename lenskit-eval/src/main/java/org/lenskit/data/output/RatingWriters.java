@@ -20,8 +20,8 @@
  */
 package org.lenskit.data.output;
 
-import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
-import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
+import org.lenskit.data.packed.BinaryFormatFlag;
+import org.lenskit.data.packed.BinaryRatingPacker;
 import org.lenskit.util.table.writer.CSVWriter;
 
 import java.io.File;

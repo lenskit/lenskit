@@ -20,8 +20,8 @@
  */
 package org.grouplens.lenskit.data.text;
 
-import org.grouplens.lenskit.data.dao.DataAccessException;
-import org.grouplens.lenskit.data.dao.MapItemNameDAO;
+import org.lenskit.data.dao.DataAccessException;
+import org.lenskit.data.dao.MapItemNameDAO;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -29,7 +29,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Provider for {@link org.grouplens.lenskit.data.dao.ItemListItemDAO} that reads a list of item IDs from a file, one per line.
+ * Provider for {@link org.lenskit.data.dao.ItemListItemDAO} that reads a list of item IDs from a file, one per line.
  *
  * @since 2.1
  */

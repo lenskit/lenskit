@@ -20,7 +20,7 @@
  */
 package org.lenskit.data.output;
 
-import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
+import org.lenskit.data.packed.BinaryRatingPacker;
 import org.lenskit.data.ratings.Rating;
 
 import java.io.IOException;

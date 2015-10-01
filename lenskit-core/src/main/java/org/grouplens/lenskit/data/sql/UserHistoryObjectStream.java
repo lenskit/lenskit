@@ -24,8 +24,8 @@ import com.google.common.collect.ImmutableList;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.GroupingObjectStream;
 import org.lenskit.data.events.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
-import org.grouplens.lenskit.data.history.History;
+import org.lenskit.data.history.UserHistory;
+import org.lenskit.data.history.History;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillCloseWhenClosed;

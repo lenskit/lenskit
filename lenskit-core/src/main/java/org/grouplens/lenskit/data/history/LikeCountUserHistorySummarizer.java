@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.data.history;
 
+import org.lenskit.data.history.UserHistory;
 import org.lenskit.inject.Shareable;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.events.Like;

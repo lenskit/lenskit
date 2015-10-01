@@ -21,7 +21,7 @@
 package org.lenskit.mf.funksvd
 
 import org.lenskit.api.RecommenderBuildException
-import org.grouplens.lenskit.data.dao.ItemDAO
+import org.lenskit.data.dao.ItemDAO
 import org.grouplens.lenskit.iterative.IterationCount
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.junit.Test

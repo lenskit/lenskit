@@ -26,8 +26,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.io.ObjectStream;
-import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.dao.SortOrder;
+import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

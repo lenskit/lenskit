@@ -26,7 +26,7 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.data.events.Event;
-import org.grouplens.lenskit.data.history.UserHistory;
+import org.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.Threshold;
@@ -41,7 +41,7 @@ import java.util.Iterator;
 
 /**
  * A neighborhood finder that has a snapshot of the rating data for efficiency.  This is built by
- * backing a {@link LiveNeighborFinder} with a {@link org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO}.
+ * backing a {@link LiveNeighborFinder} with a {@link org.lenskit.data.packed.BinaryRatingDAO}.
  *
  * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

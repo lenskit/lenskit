@@ -22,7 +22,7 @@ package org.grouplens.lenskit.data.sql;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.grouplens.lenskit.data.dao.SortOrder;
+import org.lenskit.data.dao.SortOrder;
 
 /**
  * Interface for producing sql strings rating DAO queries.
@@ -36,7 +36,7 @@ import org.grouplens.lenskit.data.dao.SortOrder;
 @Immutable
 public interface SQLStatementFactory {
     /**
-     * Prepare a statement to satisfy {@link org.grouplens.lenskit.data.dao.UserDAO#getUserIds()}.
+     * Prepare a statement to satisfy {@link org.lenskit.data.dao.UserDAO#getUserIds()}.
      * Querying the statement should return one column per row containing the
      * numeric user ID.
      *
@@ -45,7 +45,7 @@ public interface SQLStatementFactory {
     String prepareUsers();
 
     /**
-     * Prepare a statement to satisfy {@link org.grouplens.lenskit.data.dao.ItemDAO#getItemIds()}.
+     * Prepare a statement to satisfy {@link org.lenskit.data.dao.ItemDAO#getItemIds()}.
      * Querying the statement should return one column per row containing the
      * numeric item ID.
      *
@@ -55,7 +55,7 @@ public interface SQLStatementFactory {
 
     /**
      * Prepare a statement to satisfy
-     * {@link org.grouplens.lenskit.data.dao.EventDAO#streamEvents(Class, SortOrder)}. Each row should contain
+     * {@link org.lenskit.data.dao.EventDAO#streamEvents(Class, SortOrder)}. Each row should contain
      * three or four columns: the user ID, the item ID, the rating,
      * and (optionally) the timestamp. The timestamp column is allowed to
      * contain NULL values or to be omitted entirely. User, item, and rating
@@ -67,7 +67,7 @@ public interface SQLStatementFactory {
 
     /**
      * Prepare a statement to satisfy
-     * {@link org.grouplens.lenskit.data.dao.UserEventDAO#getEventsForUser(long)}. The returned rows should be
+     * {@link org.lenskit.data.dao.UserEventDAO#getEventsForUser(long)}. The returned rows should be
      * as in {@link #prepareEvents(SortOrder)}, and the prepared
      * statement should take a single parameter for the user ID.
      *
@@ -77,7 +77,7 @@ public interface SQLStatementFactory {
     String prepareUserEvents();
 
     /**
-     * Prepare a statement to satisfy {@link org.grouplens.lenskit.data.dao.ItemEventDAO#getEventsForItem(long)}.
+     * Prepare a statement to satisfy {@link org.lenskit.data.dao.ItemEventDAO#getEventsForItem(long)}.
      * The returned rows should be as in {@link #prepareEvents(SortOrder)}, and the prepared
      * statement should take a single parameter for the item ID.
      *
@@ -87,7 +87,7 @@ public interface SQLStatementFactory {
     String prepareItemEvents();
 
     /**
-     * Prepare a statement to satisfy {@link org.grouplens.lenskit.data.dao.ItemEventDAO#getUsersForItem(long)}.
+     * Prepare a statement to satisfy {@link org.lenskit.data.dao.ItemEventDAO#getUsersForItem(long)}.
      * The returned rows should each contain a user ID as their only column, and the statement
      * should take a single parameter for the item ID.
      *

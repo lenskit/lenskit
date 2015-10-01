@@ -23,8 +23,8 @@
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.inject.Transient
-import org.grouplens.lenskit.data.dao.EventDAO
-import org.grouplens.lenskit.data.dao.UserDAO
+import org.lenskit.data.dao.EventDAO
+import org.lenskit.data.dao.UserDAO
 import org.lenskit.eval.traintest.QueryData
 import org.grouplens.lenskit.eval.metrics.predict.*
 import org.lenskit.external.ExternalProcessItemScorerBuilder

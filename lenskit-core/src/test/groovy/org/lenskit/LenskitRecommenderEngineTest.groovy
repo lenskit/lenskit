@@ -26,8 +26,8 @@ import org.grouplens.grapht.graph.DAGNode
 import org.grouplens.grapht.reflect.Satisfaction
 import org.grouplens.grapht.reflect.internal.InstanceSatisfaction
 import org.lenskit.api.RecommenderBuildException
-import org.grouplens.lenskit.data.dao.EventCollectionDAO
-import org.grouplens.lenskit.data.dao.EventDAO
+import org.lenskit.data.dao.EventCollectionDAO
+import org.lenskit.data.dao.EventDAO
 import org.lenskit.data.events.Event
 import org.lenskit.data.ratings.RatingMatrix
 import org.grouplens.lenskit.iterative.StoppingThreshold

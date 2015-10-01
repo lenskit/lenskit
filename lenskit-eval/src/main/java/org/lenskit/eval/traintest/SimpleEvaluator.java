@@ -21,7 +21,7 @@
 package org.lenskit.eval.traintest;
 
 import org.lenskit.LenskitConfiguration;
-import org.grouplens.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.EventDAO;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.GenericDataSource;
 import org.lenskit.eval.traintest.predict.PredictMetric;

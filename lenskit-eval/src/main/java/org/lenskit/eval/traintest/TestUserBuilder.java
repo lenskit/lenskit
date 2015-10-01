@@ -20,7 +20,7 @@
  */
 package org.lenskit.eval.traintest;
 
-import org.grouplens.lenskit.data.history.History;
+import org.lenskit.data.history.History;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.ratings.Rating;
 

@@ -20,11 +20,7 @@
  */
 package org.lenskit.eval.traintest.predict;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.data.history.UserHistory;
-import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
-import org.lenskit.data.events.Event;
 import org.lenskit.eval.traintest.TestUser;
 import org.lenskit.eval.traintest.metrics.Metric;
 import org.lenskit.eval.traintest.metrics.MetricResult;
