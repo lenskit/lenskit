@@ -40,7 +40,6 @@ apply from: "$rootDir/gradle/test-utils.gradle"
 dependencies {
     compile project(':lenskit-core')
     compile project(':lenskit-groovy')
-    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
     compile group: 'joda-time', name: 'joda-time', version: '2.3'
     compile group: 'org.apache.ant', name: 'ant', version: '1.8.4'
     compile group: 'org.hamcrest', name: 'hamcrest-library', version: '1.3'
