@@ -48,13 +48,13 @@ import java.io.*;
  * multiple recommenders from the same model.
  *
  * If you just want to quick create a recommender for evaluation or testing,
- * consider using {@link org.grouplens.lenskit.core.LenskitRecommender#build(LenskitConfiguration)}.  For more
+ * consider using {@link LenskitRecommender#build(LenskitConfiguration)}.  For more
  * control, use {@link LenskitRecommenderEngineBuilder}; to load a pre-built recommender
  * engine, use {@link LenskitRecommenderEngineLoader}.
  *
  * @compat Public
  * @see LenskitConfiguration
- * @see org.grouplens.lenskit.core.LenskitRecommender
+ * @see LenskitRecommender
  * @see LenskitRecommenderEngineBuilder
  * @see LenskitRecommenderEngineLoader
  */
@@ -72,7 +72,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     }
 
     /**
-     * Create a new LenskitRecommenderEngine by reading a previously serialized engine from the
+     * Create a new recommender engine by reading a previously serialized engine from the
      * given file. The new engine will be identical to the old except it will use the new
      * DAOFactory. It is assumed that the file was created by using {@link #write(OutputStream)}.
      * Classes will be loaded using a default class loader.
@@ -88,7 +88,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     }
 
     /**
-     * Create a new LenskitRecommenderEngine by reading a previously serialized engine from the
+     * Create a new recommender engine by reading a previously serialized engine from the
      * given file. The new engine will be identical to the old except it will use the new
      * DAOFactory. It is assumed that the file was created by using {@link #write(OutputStream)}.
      *
@@ -106,7 +106,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     }
 
     /**
-     * Create a new LenskitRecommenderEngine by reading a previously serialized engine from the
+     * Create a new recommender engine by reading a previously serialized engine from the
      * given input stream. The new engine will be identical to the old. It is assumed that the file
      * was created by using {@link #write(OutputStream)}.  Classes will be loaded using a default
      * class loader.
@@ -122,7 +122,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     }
 
     /**
-     * Write the state of this LenskitRecommenderEngine to the given file so
+     * Write the state of this recommender engine to the given file so
      * that it can be recreated later using another DAOFactory. This uses
      * default object serialization so if the factory has a PicoContainer or
      * session bindings containing non-serializable types, this will fail.
@@ -136,7 +136,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     }
 
     /**
-     * Write the state of this LenskitRecommenderEngine to the given file so
+     * Write the state of this recommender engine to the given file so
      * that it can be recreated later using another DAOFactory. This uses
      * default object serialization so if the factory has a PicoContainer or
      * session bindings containing non-serializable types, this will fail.
@@ -154,7 +154,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     }
 
     /**
-     * Write the state of this LenskitRecommenderEngine to the given stream so
+     * Write the state of this recommender engine to the given stream so
      * that it can be recreated later using another DAOFactory. This uses
      * default object serialization so if the factory has session bindings
      * containing non-serializable types, this will fail.

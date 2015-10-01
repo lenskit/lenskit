@@ -22,12 +22,12 @@ package org.grouplens.lenskit.test;
 
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
-import org.grouplens.lenskit.core.LenskitRecommender;
-import org.grouplens.lenskit.core.LenskitRecommenderEngine;
-import org.grouplens.lenskit.core.LenskitRecommenderEngineBuilder;
 import org.grouplens.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.data.dao.PrefetchingItemDAO;
 import org.junit.Test;
+import org.lenskit.LenskitRecommender;
+import org.lenskit.LenskitRecommenderEngine;
+import org.lenskit.LenskitRecommenderEngineBuilder;
 
 import javax.inject.Inject;
 

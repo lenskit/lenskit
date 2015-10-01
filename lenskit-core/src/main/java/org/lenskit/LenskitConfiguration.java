@@ -28,7 +28,7 @@ import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.context.ContextPattern;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.lenskit.*;
-import org.grouplens.lenskit.core.LenskitRecommender;
+import org.lenskit.LenskitRecommender;
 import org.lenskit.inject.AbstractConfigContext;
 import org.lenskit.inject.RecommenderGraphBuilder;
 
