@@ -21,7 +21,7 @@
 package org.lenskit.basic;
 
 import org.grouplens.grapht.annotation.AllowUnqualifiedMatch;
-import org.grouplens.lenskit.baseline.FallbackItemScorer;
+import org.lenskit.basic.FallbackItemScorer;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.*;

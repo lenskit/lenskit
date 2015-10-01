@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Build a {@link org.grouplens.lenskit.basic.PrecomputedItemScorer} using an external process.
+ * Build a {@link PrecomputedItemScorer} using an external process.
  * This class implements {@link javax.inject.Provider}, but is not itself instantiable with
  * dependency injection.
  *

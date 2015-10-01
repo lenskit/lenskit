@@ -18,17 +18,20 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.basic;
+package org.lenskit.basic;
 
+import com.google.common.collect.Iterables;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.ItemScorer;
-import org.grouplens.lenskit.vectors.ImmutableSparseVector;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.api.ResultMap;
+import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * A simple cached item scorer that remembers the result for the last user id it scored.
@@ -36,9 +39,9 @@ import javax.inject.Inject;
  *  @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 
-public class SimpleCachingItemScorer extends AbstractItemScorer{
+public class SimpleCachingItemScorer extends AbstractItemScorer {
     private long cachedId = -1;
-    private ImmutableSparseVector cachedScores = null;
+    private ResultMap cachedScores = null;
     private final ItemScorer scorer;
 
     @Inject
@@ -46,34 +49,29 @@ public class SimpleCachingItemScorer extends AbstractItemScorer{
         scorer = sc;
     }
 
-    /**
-     * For each input, check with the cached user id. If the requested items
-     * is a subset of the cached items, use the cache; otherwise score the
-     * new items and update the cached scores.
-     */
+    @Nonnull
     @Override
-    public void score(long user, @Nonnull MutableSparseVector scores){
-        LongSortedSet reqItems = scores.keyDomain();
+    public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
         if(cachedId == user && cachedScores != null) {
-            LongSortedSet cachedItems = cachedScores.keyDomain();
-            if(!cachedItems.containsAll(reqItems)) {
-                LongSortedSet diffItems = LongUtils.setDifference(reqItems, cachedItems);
-                SparseVector newCache = scorer.score(user, diffItems);
-                cachedScores = cachedScores.combineWith(newCache);
+            Set<Long> cachedItems = cachedScores.keySet();
+            if(!cachedItems.containsAll(items)) {
+                LongSet reqItems = LongUtils.packedSet(items);
+                LongSortedSet diffItems = LongUtils.setDifference(reqItems, LongUtils.asLongSet(cachedItems));
+                ResultMap newCache = scorer.scoreWithDetails(user, diffItems);
+                cachedScores = Results.newResultMap(Iterables.concat(cachedScores, newCache));
             }
-            scores.set(cachedScores);
         } else {
-            scorer.score(user, scores);
-            cachedScores = scores.immutable();
+            cachedScores = scorer.scoreWithDetails(user, items);
             cachedId = user;
         }
+        return cachedScores;
     }
 
     public long getId() {
         return cachedId;
     }
 
-    public SparseVector getCache() {
+    public ResultMap getCache() {
         return cachedScores;
     }
 

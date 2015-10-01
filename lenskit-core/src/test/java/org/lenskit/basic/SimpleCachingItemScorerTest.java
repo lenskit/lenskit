@@ -18,14 +18,18 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.basic;
+package org.lenskit.basic;
 
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.ItemScorer;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.api.Result;
+import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
+
+import java.util.Set;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -51,14 +55,17 @@ public class SimpleCachingItemScorerTest {
 
     @Test
     public void testScore() {
-        assertThat(cachedScorer.score(1, 3), equalTo(3.5));
+        assertThat(cachedScorer.score(1, 3),
+                   equalTo((Result) Results.create(3, 3.5)));
     }
 
     @Test
     public void testCacheUser() {
-        assertThat(cachedScorer.score(1, 3), equalTo(3.5));
+        assertThat(cachedScorer.score(1, 3),
+                   equalTo((Result) Results.create(3, 3.5)));
         assertThat(cachedScorer.getId(), equalTo(1L));
-        assertThat(cachedScorer.score(2, 6), equalTo(3.0));
+        assertThat(cachedScorer.score(2, 6),
+                   equalTo((Result) Results.create(6, 3.0)));
         assertThat(cachedScorer.getId(), equalTo(2L));
     }
 
@@ -67,8 +74,8 @@ public class SimpleCachingItemScorerTest {
         Long user = 3L;
         LongSortedSet items = LongUtils.packedSet(1, 2);
         cachedScorer.score(user, items);
-        assertThat(cachedScorer.getCache().keyDomain(), equalTo(items));
+        assertThat(cachedScorer.getCache().keySet(), equalTo((Set) items));
         cachedScorer.score(user, 4);
-        assertThat(cachedScorer.getCache().keyDomain(), equalTo(LongUtils.packedSet(1, 2, 4)));
+        assertThat(cachedScorer.getCache().keySet(), equalTo((Set) LongUtils.packedSet(1, 2, 4)));
     }
 }
