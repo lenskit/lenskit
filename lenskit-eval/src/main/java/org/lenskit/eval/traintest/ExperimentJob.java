@@ -94,84 +94,87 @@ class ExperimentJob implements Runnable {
 
         logger.info("Building {} on {}", algorithm, dataSet);
         Stopwatch buildTimer = Stopwatch.createStarted();
-        LenskitRecommender rec = buildRecommender();
-        buildTimer.stop();
-        logger.info("Built {} in {}", algorithm.getName(), buildTimer);
+        try (LenskitRecommender rec = buildRecommender()) {
+            buildTimer.stop();
+            logger.info("Built {} in {}", algorithm.getName(), buildTimer);
 
-        logger.info("Measuring {} on {}", algorithm.getName(), dataSet.getName());
+            logger.info("Measuring {} on {}", algorithm.getName(), dataSet.getName());
 
-        RowBuilder userRow = userOutput != null ? userOutput.getLayout().newRowBuilder() : null;
+            RowBuilder userRow = userOutput != null ? userOutput.getLayout().newRowBuilder() : null;
 
-        Stopwatch testTimer = Stopwatch.createStarted();
+            Stopwatch testTimer = Stopwatch.createStarted();
 
-        List<ConditionEvaluator> accumulators = Lists.newArrayList();
+            List<ConditionEvaluator> accumulators = Lists.newArrayList();
 
-        for (EvalTask eval: experiment.getTasks()) {
-            accumulators.add(eval.createConditionEvaluator(algorithm, dataSet, rec));
-        }
-
-        LongSet testUsers = dataSet.getTestData().getUserDAO().getUserIds();
-        UserEventDAO trainEvents = dataSet.getTrainingData().getUserEventDAO();
-        UserEventDAO userEvents = dataSet.getTestData().getUserEventDAO();
-        final NumberFormat pctFormat = NumberFormat.getPercentInstance();
-        pctFormat.setMaximumFractionDigits(2);
-        pctFormat.setMinimumFractionDigits(2);
-        final int nusers = testUsers.size();
-        logger.info("Testing {} on {} ({} users)", algorithm, dataSet, nusers);
-        int ndone = 0;
-        for (LongIterator iter = testUsers.iterator(); iter.hasNext();) {
-            if (Thread.interrupted()) {
-                throw new RuntimeException("eval job interrupted");
-            }
-            long uid = iter.nextLong();
-            if (userRow != null) {
-                userRow.add("User", uid);
+            for (EvalTask eval : experiment.getTasks()) {
+                accumulators.add(eval.createConditionEvaluator(algorithm, dataSet, rec));
             }
 
-            UserHistory<Event> trainData = trainEvents.getEventsForUser(uid);
-            if (trainData == null) {
-                trainData = History.forUser(uid);
-            }
-            UserHistory<Event> userData = userEvents.getEventsForUser(uid);
-            TestUser user = new TestUser(trainData, userData);
-
-            Stopwatch userTimer = Stopwatch.createStarted();
-
-            for (ConditionEvaluator eval : accumulators) {
-                Map<String, Object> ures = eval.measureUser(user);
+            LongSet testUsers = dataSet.getTestData().getUserDAO().getUserIds();
+            UserEventDAO trainEvents = dataSet.getTrainingData().getUserEventDAO();
+            UserEventDAO userEvents = dataSet.getTestData().getUserEventDAO();
+            final NumberFormat pctFormat = NumberFormat.getPercentInstance();
+            pctFormat.setMaximumFractionDigits(2);
+            pctFormat.setMinimumFractionDigits(2);
+            final int nusers = testUsers.size();
+            logger.info("Testing {} on {} ({} users)", algorithm, dataSet, nusers);
+            int ndone = 0;
+            for (LongIterator iter = testUsers.iterator(); iter.hasNext(); ) {
+                if (Thread.interrupted()) {
+                    throw new RuntimeException("eval job interrupted");
+                }
+                long uid = iter.nextLong();
                 if (userRow != null) {
-                    userRow.addAll(ures);
+                    userRow.add("User", uid);
                 }
-            }
-            userTimer.stop();
-            if (userRow != null) {
-                userRow.add("TestTime", userTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
-                assert userOutput != null;
-                try {
-                    userOutput.writeRow(userRow.buildList());
-                } catch (IOException e) {
-                    throw new EvaluationException("error writing user row", e);
+
+                UserHistory<Event> trainData = trainEvents.getEventsForUser(uid);
+                if (trainData == null) {
+                    trainData = History.forUser(uid);
                 }
-                userRow.clear();
+                UserHistory<Event> userData = userEvents.getEventsForUser(uid);
+                TestUser user = new TestUser(trainData, userData);
+
+                Stopwatch userTimer = Stopwatch.createStarted();
+
+                for (ConditionEvaluator eval : accumulators) {
+                    Map<String, Object> ures = eval.measureUser(user);
+                    if (userRow != null) {
+                        userRow.addAll(ures);
+                    }
+                }
+                userTimer.stop();
+                if (userRow != null) {
+                    userRow.add("TestTime", userTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
+                    assert userOutput != null;
+                    try {
+                        userOutput.writeRow(userRow.buildList());
+                    } catch (IOException e) {
+                        throw new EvaluationException("error writing user row", e);
+                    }
+                    userRow.clear();
+                }
+
+                ndone += 1;
+                if (ndone % 100 == 0) {
+                    double time = testTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001;
+                    double tpu = time / ndone;
+                    double tleft = (nusers - ndone) * tpu;
+                    logger.info("tested {} of {} users ({}), ETA {}",
+                                ndone, nusers, pctFormat.format(((double) ndone) / nusers),
+                                DurationFormatUtils.formatDurationHMS((long) tleft));
+                }
             }
 
-            ndone += 1;
-            if (ndone % 100 == 0) {
-                double time = testTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001;
-                double tpu = time / ndone;
-                double tleft = (nusers - ndone) * tpu;
-                logger.info("tested {} of {} users ({}), ETA {}",
-                            ndone, nusers, pctFormat.format(((double) ndone) / nusers),
-                            DurationFormatUtils.formatDurationHMS((long) tleft));
+            testTimer.stop();
+            logger.info("Tested {} in {}", algorithm.getName(), testTimer);
+            outputRow.add("BuildTime", buildTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
+            outputRow.add("TestTime", testTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
+            for (ConditionEvaluator eval: accumulators) {
+                outputRow.addAll(eval.finish());
             }
         }
-        testTimer.stop();
-        logger.info("Tested {} in {}", algorithm.getName(), testTimer);
-        outputRow.add("BuildTime", buildTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
-        outputRow.add("TestTime", testTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
-        for (ConditionEvaluator eval: accumulators) {
-            outputRow.addAll(eval.finish());
-        }
+
         try {
             globalOutput.writeRow(outputRow.buildList());
         } catch (IOException e) {

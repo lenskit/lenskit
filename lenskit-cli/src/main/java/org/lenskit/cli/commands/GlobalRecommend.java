@@ -29,7 +29,7 @@ import org.grouplens.lenskit.GlobalItemRecommender;
 import org.grouplens.lenskit.RecommenderBuildException;
 import org.grouplens.lenskit.data.dao.ItemNameDAO;
 import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.symbols.Symbol;
+import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
@@ -73,41 +73,29 @@ public class GlobalRecommend implements Command {
         List<Long> items = opts.get("items");
         final int n = opts.getInt("num_recs");
 
-        org.lenskit.LenskitRecommender rec = engine.createRecommender();
-        GlobalItemRecommender irec = rec.get(GlobalItemRecommender.class);
-        ItemNameDAO indao = rec.get(ItemNameDAO.class);
-        if (irec == null) {
-            logger.error("recommender has no global recommender");
-            throw new UnsupportedOperationException("no global recommender");
-        }
-
-        logger.info("using {} reference items", items.size());
-        Symbol pchan = getPrintChannel(opts);
-        Stopwatch timer = Stopwatch.createStarted();
-
-        List<ScoredId> recs = irec.globalRecommend(LongUtils.packedSet(items), n);
-        for (ScoredId item: recs) {
-            System.out.format("%d", item.getId());
-            if (indao != null) {
-                System.out.format(" (%s)", indao.getItemName(item.getId()));
+        try (LenskitRecommender rec = engine.createRecommender()) {
+            GlobalItemRecommender irec = rec.get(GlobalItemRecommender.class);
+            ItemNameDAO indao = rec.get(ItemNameDAO.class);
+            if (irec == null) {
+                logger.error("recommender has no global recommender");
+                throw new UnsupportedOperationException("no global recommender");
             }
-            System.out.format(": %.3f", item.getScore());
-            if (pchan != null && item.hasUnboxedChannel(pchan)) {
-                System.out.format(" (%f)", item.getUnboxedChannelValue(pchan));
+
+            logger.info("using {} reference items", items.size());
+            Stopwatch timer = Stopwatch.createStarted();
+
+            List<ScoredId> recs = irec.globalRecommend(LongUtils.packedSet(items), n);
+            for (ScoredId item : recs) {
+                System.out.format("%d", item.getId());
+                if (indao != null) {
+                    System.out.format(" (%s)", indao.getItemName(item.getId()));
+                }
+                System.out.format(": %.3f", item.getScore());
+                System.out.println();
             }
-            System.out.println();
-        }
 
-        timer.stop();
-        logger.info("recommended in {}", timer);
-    }
-
-    Symbol getPrintChannel(Namespace options) {
-        String name = options.get("print_channel");
-        if (name == null) {
-            return null;
-        } else {
-            return Symbol.of(name);
+            timer.stop();
+            logger.info("recommended in {}", timer);
         }
     }
 
@@ -129,9 +117,6 @@ public class GlobalRecommend implements Command {
               .type(File.class)
               .metavar("FILE")
               .help("load model from FILE");
-        parser.addArgument("--print-channel")
-              .metavar("CHAN")
-              .help("also print value from CHAN");
         parser.addArgument("items")
               .type(Long.class)
               .nargs("*")

@@ -69,30 +69,31 @@ public class Recommend implements Command {
         List<Long> users = ctx.options.get("users");
         final int n = ctx.options.getInt("num_recs");
 
-        LenskitRecommender rec = engine.createRecommender();
-        ItemRecommender irec = rec.getItemRecommender();
-        ItemNameDAO indao = rec.get(ItemNameDAO.class);
-        if (irec == null) {
-            logger.error("recommender has no item recommender");
-            throw new UnsupportedOperationException("no item recommender");
-        }
-
-        logger.info("recommending for {} users", users.size());
-        Stopwatch timer = Stopwatch.createStarted();
-        for (long user: users) {
-            ResultList recs = irec.recommendWithDetails(user, n, null, null);
-            System.out.format("recommendations for user %d:%n", user);
-            for (Result item: recs) {
-                System.out.format("  %d", item.getId());
-                if (indao != null) {
-                    System.out.format(" (%s)", indao.getItemName(item.getId()));
-                }
-                System.out.format(": %.3f", item.getScore());
-                System.out.println();
+        try (LenskitRecommender rec = engine.createRecommender()) {
+            ItemRecommender irec = rec.getItemRecommender();
+            ItemNameDAO indao = rec.get(ItemNameDAO.class);
+            if (irec == null) {
+                logger.error("recommender has no item recommender");
+                throw new UnsupportedOperationException("no item recommender");
             }
+
+            logger.info("recommending for {} users", users.size());
+            Stopwatch timer = Stopwatch.createStarted();
+            for (long user : users) {
+                ResultList recs = irec.recommendWithDetails(user, n, null, null);
+                System.out.format("recommendations for user %d:%n", user);
+                for (Result item : recs) {
+                    System.out.format("  %d", item.getId());
+                    if (indao != null) {
+                        System.out.format(" (%s)", indao.getItemName(item.getId()));
+                    }
+                    System.out.format(": %.3f", item.getScore());
+                    System.out.println();
+                }
+            }
+            timer.stop();
+            logger.info("recommended for {} users in {}", users.size(), timer);
         }
-        timer.stop();
-        logger.info("recommended for {} users in {}", users.size(), timer);
     }
 
     public void configureArguments(ArgumentParser parser) {

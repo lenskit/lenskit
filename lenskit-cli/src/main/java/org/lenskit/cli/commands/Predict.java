@@ -69,28 +69,29 @@ public class Predict implements Command {
         long user = ctx.options.getLong("user");
         List<Long> items = ctx.options.get("items");
 
-        LenskitRecommender rec = engine.createRecommender();
-        RatingPredictor pred = rec.getRatingPredictor();
-        ItemNameDAO names = rec.get(ItemNameDAO.class);
-        if (pred == null) {
-            logger.error("recommender has no rating predictor");
-            throw new UnsupportedOperationException("no rating predictor");
-        }
-
-        logger.info("predicting {} items", items.size());
-        Stopwatch timer = Stopwatch.createStarted();
-        Map<Long, Double> preds = pred.predict(user, items);
-        System.out.format("predictions for user %d:%n", user);
-        for (Map.Entry<Long,Double> e: preds.entrySet()) {
-            System.out.format("  %d", e.getKey());
-            if (names != null) {
-                System.out.format(" (%s)", names.getItemName(e.getKey()));
+        try (LenskitRecommender rec = engine.createRecommender()) {
+            RatingPredictor pred = rec.getRatingPredictor();
+            ItemNameDAO names = rec.get(ItemNameDAO.class);
+            if (pred == null) {
+                logger.error("recommender has no rating predictor");
+                throw new UnsupportedOperationException("no rating predictor");
             }
-            System.out.format(": %.3f", e.getValue());
-            System.out.println();
+
+            logger.info("predicting {} items", items.size());
+            Stopwatch timer = Stopwatch.createStarted();
+            Map<Long, Double> preds = pred.predict(user, items);
+            System.out.format("predictions for user %d:%n", user);
+            for (Map.Entry<Long, Double> e : preds.entrySet()) {
+                System.out.format("  %d", e.getKey());
+                if (names != null) {
+                    System.out.format(" (%s)", names.getItemName(e.getKey()));
+                }
+                System.out.format(": %.3f", e.getValue());
+                System.out.println();
+            }
+            timer.stop();
+            logger.info("predicted for {} items in {}", items.size(), timer);
         }
-        timer.stop();
-        logger.info("predicted for {} items in {}", items.size(), timer);
     }
 
     public void configureArguments(ArgumentParser parser) {
