@@ -28,7 +28,7 @@ import org.lenskit.util.io.ObjectStream;
 import org.grouplens.lenskit.data.dao.*;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.ratings.Rating;
-import org.grouplens.lenskit.data.event.UseTimestamps;
+import org.lenskit.data.events.UseTimestamps;
 import org.grouplens.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.data.history.UserHistory;
 import org.slf4j.Logger;

@@ -18,7 +18,27 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.lenskit.data.events;
+
+import org.grouplens.grapht.annotation.DefaultBoolean;
+import org.lenskit.inject.Parameter;
+
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
+
 /**
- * Snapshotting summarized user data.
+ * Parameter controlling whether a component is supposed to use timestamps.  Set this to {@code false}
+ * to ignore timestamps.  This only takes effect for certain components that can make optional use of
+ * timestamps.
+ *
+ * @since 2.1
+ * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-package org.grouplens.lenskit.data.snapshot;
+@Documented
+@Qualifier
+@Parameter(Boolean.class)
+@DefaultBoolean(true)
+@Target({ElementType.PARAMETER, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface UseTimestamps {
+}
