@@ -142,7 +142,7 @@ public class LiveNeighborFinder implements NeighborFinder {
         if (ratings == null){
             return null;
         }
-        return Ratings.userRatingVector(ratings);
+        return MutableSparseVector.create(Ratings.userRatingVector(ratings));
     }
 
     private class NeighborIterator extends AbstractIterator<Neighbor> {

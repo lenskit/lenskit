@@ -21,19 +21,24 @@
 package org.lenskit.data.ratings;
 
 import com.google.common.base.Equivalence;
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.grouplens.lenskit.collections.LongKeyDomain;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.events.Events;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.lenskit.data.events.Event;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.Nonnull;
 import javax.annotation.WillClose;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 
 /**
  * Utilities for working with ratings.
@@ -52,7 +57,7 @@ public final class Ratings {
      * @param ratings Some ratings (they should all be for the same item)
      * @return A sparse vector mapping user IDs to ratings.
      */
-    public static MutableSparseVector itemRatingVector(@Nonnull Collection<? extends Rating> ratings) {
+    public static Long2DoubleMap itemRatingVector(@Nonnull Collection<? extends Rating> ratings) {
         return extractVector(ratings, IdExtractor.USER);
     }
 
@@ -67,47 +72,36 @@ public final class Ratings {
      * @param ratings A collection of ratings (should all be by the same user)
      * @return A sparse vector mapping item IDs to ratings
      */
-    public static MutableSparseVector userRatingVector(@Nonnull Collection<? extends Rating> ratings) {
+    public static Long2DoubleMap userRatingVector(@Nonnull Collection<? extends Rating> ratings) {
         return extractVector(ratings, IdExtractor.ITEM);
     }
 
-    private static MutableSparseVector extractVector(Collection<? extends Rating> ratings, IdExtractor dimension) {
+    private static Long2DoubleMap extractVector(Collection<? extends Rating> ratings, IdExtractor dimension) {
         // collect the list of unique IDs
         // use a list since we'll be sorting anyway
+        Rating[] rs = ratings.toArray(new Rating[ratings.size()]);
+        Arrays.sort(rs, dimension.getComparator());
+
         LongList ids = new LongArrayList(ratings.size());
-        for (Rating r: ratings) {
-            ids.add(dimension.getId(r));
-        }
+        DoubleArrayList values = new DoubleArrayList(ratings.size());
 
-        LongKeyDomain keys = LongKeyDomain.fromCollection(ids, false);
-        MutableSparseVector msv = MutableSparseVector.create(keys.domain());
-        long[] timestamps = null;
-        // check for fast-path, where each item has one rating
-        if (keys.domainSize() < ratings.size()) {
-            timestamps = new long[keys.domainSize()];
-        }
-
-        for (Rating r: ratings) {
-            long id = dimension.getId(r);
-            if (timestamps != null) {
-                int idx = keys.getIndex(id);
-                if (keys.indexIsActive(idx) && timestamps[idx] >= r.getTimestamp()) {
-                    continue;  // we have seen a newer event - skip this.
-                } else {
-                    timestamps[idx] = r.getTimestamp();
-                    keys.setActive(idx, true);
-                }
+        for (int i = 0; i < rs.length; i++) {
+            assert ids.size() == values.size();
+            long id = dimension.getId(rs[i]);
+            // advance to the last one
+            while (i < rs.length - 1 && dimension.getId(rs[i+1]) == id) {
+                i++;
             }
-
+            Rating r = rs[i];
             if (r.hasValue()) {
-                // save the getEntry
-                msv.set(id, r.getValue());
-            } else {
-                msv.unset(id);
+                ids.add(id);
+                values.add(r.getValue());
             }
         }
 
-        return msv;
+        SortedKeyIndex idx = SortedKeyIndex.fromCollection(ids);
+        assert idx.getKeyList().equals(ids);
+        return Long2DoubleSortedArrayMap.wrap(idx, values.elements());
     }
 
     /**
@@ -117,7 +111,7 @@ public final class Ratings {
      * @return The user rating vector.
      * @see #userRatingVector(Collection)
      */
-    public static MutableSparseVector userRatingVector(@WillClose ObjectStream<? extends Rating> ratings) {
+    public static Long2DoubleMap userRatingVector(@WillClose ObjectStream<? extends Rating> ratings) {
         return userRatingVector(ObjectStreams.makeList(ratings));
     }
 
@@ -158,14 +152,25 @@ public final class Ratings {
             long getId(Event evt) {
                 return evt.getItemId();
             }
+
+            @Override
+            Comparator<Event> getComparator() {
+                return Events.ITEM_TIME_COMPARATOR;
+            }
         },
         USER {
             @Override
             long getId(Event evt) {
                 return evt.getUserId();
             }
+
+            @Override
+            Comparator<Event> getComparator() {
+                return Events.USER_TIME_COMPARATOR;
+            }
         };
         abstract long getId(Event evt);
+        abstract Comparator<Event> getComparator();
     }
 
     /**

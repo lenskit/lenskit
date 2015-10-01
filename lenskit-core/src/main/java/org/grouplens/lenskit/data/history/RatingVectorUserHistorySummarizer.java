@@ -22,12 +22,13 @@ package org.grouplens.lenskit.data.history;
 
 import com.google.common.base.Function;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.lenskit.data.history.UserHistory;
-import org.lenskit.inject.Shareable;
+import org.grouplens.lenskit.vectors.ImmutableSparseVector;
+import org.grouplens.lenskit.vectors.SparseVector;
 import org.lenskit.data.events.Event;
+import org.lenskit.data.history.UserHistory;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.Ratings;
-import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.inject.Shareable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
@@ -90,7 +91,7 @@ public final class RatingVectorUserHistorySummarizer implements UserHistorySumma
             if (history == null) {
                 throw new NullPointerException("history is null");
             }
-            return Ratings.userRatingVector(history.filter(Rating.class)).immutable();
+            return ImmutableSparseVector.create(Ratings.userRatingVector(history.filter(Rating.class)));
         }
     }
 }

@@ -99,7 +99,7 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
                 List<Rating> ratings = FluentIterable.from(item)
                                                      .filter(Rating.class)
                                                      .toList();
-                MutableSparseVector vector = Ratings.itemRatingVector(ratings);
+                MutableSparseVector vector = MutableSparseVector.create(Ratings.itemRatingVector(ratings));
                 normalizer.normalize(item.getItemId(), vector, vector);
                 for (VectorEntry e: vector) {
                     long user = e.getKey();

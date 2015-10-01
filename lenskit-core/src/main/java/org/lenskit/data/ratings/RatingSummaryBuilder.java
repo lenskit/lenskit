@@ -20,12 +20,13 @@
  */
 package org.lenskit.data.ratings;
 
-import org.lenskit.inject.Transient;
-import org.lenskit.util.io.ObjectStream;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.lenskit.data.dao.ItemEventDAO;
 import org.lenskit.data.history.ItemEventCollection;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.lenskit.inject.Transient;
+import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.keys.KeyedObjectMap;
+import org.lenskit.util.math.Vectors;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -59,10 +60,10 @@ public class RatingSummaryBuilder implements Provider<RatingSummary> {
 
         try (ObjectStream<ItemEventCollection<Rating>> ratings = itemEventDAO.streamEventsByItem(Rating.class)) {
             for (ItemEventCollection<Rating> item: ratings) {
-                MutableSparseVector vec = Ratings.itemRatingVector(item);
+                Long2DoubleMap vec = Ratings.itemRatingVector(item);
                 int n = vec.size();
-                double sum = vec.sum();
-                double mean = vec.mean();
+                double sum = Vectors.sum(vec);
+                double mean = Vectors.mean(vec);
                 totalSum += sum;
                 totalCount += n;
                 summaries.add(new RatingSummary.ItemSummary(item.getItemId(), mean, n));

@@ -33,7 +33,6 @@ import java.util.*;
  * and vice versa.
  *
  * @since 3.0
- * @compat Private
  */
 @Immutable
 public abstract class SortedKeyIndex implements KeyIndex, Serializable {
@@ -78,6 +77,7 @@ public abstract class SortedKeyIndex implements KeyIndex, Serializable {
         // 2 options to build the array. Invariant: exactly one is non-null.
         long[] keyArray = null;
         int[] smallKeyArray = new int[nmax];
+        boolean sorted = true;
 
         int pos = 0;
         LongIterator iter = LongIterators.asLongIterator(keys);
@@ -86,6 +86,9 @@ public abstract class SortedKeyIndex implements KeyIndex, Serializable {
             if (smallKeyArray != null && k >= Integer.MIN_VALUE && k <= Integer.MAX_VALUE) {
                 // still building a small key array
                 smallKeyArray[pos] = (int) k;
+                if (pos > 0 && k < smallKeyArray[pos-1]) {
+                    sorted = false;
+                }
             } else {
                 if (keyArray == null) {
                     assert smallKeyArray != null;
@@ -97,6 +100,9 @@ public abstract class SortedKeyIndex implements KeyIndex, Serializable {
                     smallKeyArray = null;
                 }
                 keyArray[pos] = k;
+                if (pos > 0 && k < keyArray[pos-1]) {
+                    sorted = false;
+                }
             }
             pos++;
         }
@@ -107,13 +113,17 @@ public abstract class SortedKeyIndex implements KeyIndex, Serializable {
         if (keyArray != null) {
             assert pos == keyArray.length;
             assert smallKeyArray == null;
-            Arrays.sort(keyArray);
+            if (!sorted) {
+                Arrays.sort(keyArray);
+            }
             int size = MoreArrays.deduplicate(keyArray, 0, keyArray.length);
             return new FullSortedKeyIndex(keyArray, 0, size);
         } else {
             assert smallKeyArray != null;
             assert pos == smallKeyArray.length;
-            Arrays.sort(smallKeyArray);
+            if (!sorted) {
+                Arrays.sort(smallKeyArray);
+            }
             int size = MoreArrays.deduplicate(smallKeyArray, 0, smallKeyArray.length);
             return new CompactSortedKeyIndex(smallKeyArray, 0, size);
         }

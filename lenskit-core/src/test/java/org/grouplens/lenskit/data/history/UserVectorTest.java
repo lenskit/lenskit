@@ -21,11 +21,13 @@
 package org.grouplens.lenskit.data.history;
 
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import org.junit.Test;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.Ratings;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.junit.Test;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
+import org.lenskit.util.keys.SortedKeyIndex;
+import org.lenskit.util.math.Vectors;
 
 import java.util.Collection;
 
@@ -47,14 +49,31 @@ public class UserVectorTest {
                 Rating.create(5, 3, 1.5),
                 Rating.create(5, 8, 2)
         );
-        SparseVector v = Ratings.userRatingVector(ratings);
+        Long2DoubleMap v = Ratings.userRatingVector(ratings);
         assertEquals(3, v.size());
-        assertEquals(7, v.sum(), EPSILON);
+        assertEquals(7, Vectors.sum(v), EPSILON);
 
         long[] keys = {3, 7, 8};
         double[] values = {1.5, 3.5, 2};
-        SparseVector sv = MutableSparseVector.wrap(keys, values);
+        Long2DoubleSortedArrayMap sv = Long2DoubleSortedArrayMap.wrap(SortedKeyIndex.create(keys), values);
         assertEquals(sv, v);
     }
 
+    @Test
+    public void testUserRatingVectorDedup() {
+        Collection<Rating> ratings = Lists.newArrayList(
+                Rating.create(5, 7, 3.5, 7),
+                Rating.create(5, 3, 1.5, 3),
+                Rating.create(5, 8, 2, 5),
+                Rating.create(5, 3, 4, 2)
+        );
+        Long2DoubleMap v = Ratings.userRatingVector(ratings);
+        assertEquals(3, v.size());
+        assertEquals(7, Vectors.sum(v), EPSILON);
+
+        long[] keys = {3, 7, 8};
+        double[] values = {1.5, 3.5, 2};
+        Long2DoubleSortedArrayMap sv = Long2DoubleSortedArrayMap.wrap(SortedKeyIndex.create(keys), values);
+        assertEquals(sv, v);
+    }
 }
