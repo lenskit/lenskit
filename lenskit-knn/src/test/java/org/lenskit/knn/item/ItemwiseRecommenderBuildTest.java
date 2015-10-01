@@ -75,40 +75,40 @@ public class ItemwiseRecommenderBuildTest {
 
     @SuppressWarnings("deprecation")
     @Test
-    @Ignore("will not work until moved")
     public void testItemItemRecommenderEngineCreate() {
-        LenskitRecommender rec = engine.createRecommender();
+        try (LenskitRecommender rec = engine.createRecommender()) {
 
-        assertThat(rec.getItemScorer(),
-                   instanceOf(ItemItemScorer.class));
-        assertThat(rec.getRatingPredictor(),
-                   instanceOf(SimpleRatingPredictor.class));
-        assertThat(rec.getItemRecommender(),
-                   instanceOf(TopNItemRecommender.class));
-        assertThat(rec.get(GlobalItemRecommender.class),
-                   instanceOf(TopNGlobalItemRecommender.class));
-        assertThat(rec.get(GlobalItemScorer.class),
-                   instanceOf(ItemItemGlobalScorer.class));
+            assertThat(rec.getItemScorer(),
+                       instanceOf(ItemItemScorer.class));
+            assertThat(rec.getRatingPredictor(),
+                       instanceOf(SimpleRatingPredictor.class));
+            assertThat(rec.getItemRecommender(),
+                       instanceOf(TopNItemRecommender.class));
+            assertThat(rec.get(GlobalItemRecommender.class),
+                       instanceOf(TopNGlobalItemRecommender.class));
+            assertThat(rec.get(GlobalItemScorer.class),
+                       instanceOf(ItemItemGlobalScorer.class));
+        }
     }
 
     @Test
     public void testContextRemoved() {
-        LenskitRecommender rec = engine.createRecommender();
-        assertThat(rec.get(ItemItemBuildContext.class),
-                   nullValue());
+        try (LenskitRecommender rec = engine.createRecommender()) {
+            assertThat(rec.get(ItemItemBuildContext.class),
+                       nullValue());
+        }
     }
 
     @Test
     public void testConfigSeparation() {
-        LenskitRecommender rec1 = null;
-        LenskitRecommender rec2 = null;
-        rec1 = engine.createRecommender();
-        rec2 = engine.createRecommender();
+        try (LenskitRecommender rec1 = engine.createRecommender();
+             LenskitRecommender rec2 = engine.createRecommender()) {
 
-        assertThat(rec1.getItemScorer(),
-                   not(sameInstance(rec2.getItemScorer())));
-        assertThat(rec1.get(ItemItemModel.class),
-                   allOf(not(nullValue()),
-                         sameInstance(rec2.get(ItemItemModel.class))));
+            assertThat(rec1.getItemScorer(),
+                       not(sameInstance(rec2.getItemScorer())));
+            assertThat(rec1.get(ItemItemModel.class),
+                       allOf(not(nullValue()),
+                             sameInstance(rec2.get(ItemItemModel.class))));
+        }
     }
 }

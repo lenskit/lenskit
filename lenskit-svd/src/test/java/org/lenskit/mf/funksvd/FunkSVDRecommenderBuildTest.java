@@ -89,35 +89,35 @@ public class FunkSVDRecommenderBuildTest {
 
     @SuppressWarnings("deprecation")
     @Test
-    @Ignore("will not work until moved")
     public void testFunkSVDRecommenderEngineCreate() throws RecommenderBuildException {
         LenskitRecommenderEngine engine = makeEngine();
-        Recommender rec = engine.createRecommender();
+        try (Recommender rec = engine.createRecommender()) {
 
-        assertThat(rec.getItemScorer(),
-                   instanceOf(FunkSVDItemScorer.class));
-        assertThat(rec.getItemRecommender(),
-                   instanceOf(TopNItemRecommender.class));
-        RatingPredictor pred = rec.getRatingPredictor();
-        assertThat(pred, notNullValue());
-        assertThat(pred, instanceOf(SimpleRatingPredictor.class));
-        assertThat(((SimpleRatingPredictor) pred).getItemScorer(),
-                   sameInstance(rec.getItemScorer()));
+            assertThat(rec.getItemScorer(),
+                       instanceOf(FunkSVDItemScorer.class));
+            assertThat(rec.getItemRecommender(),
+                       instanceOf(TopNItemRecommender.class));
+            RatingPredictor pred = rec.getRatingPredictor();
+            assertThat(pred, notNullValue());
+            assertThat(pred, instanceOf(SimpleRatingPredictor.class));
+            assertThat(((SimpleRatingPredictor) pred).getItemScorer(),
+                       sameInstance(rec.getItemScorer()));
+        }
     }
 
     @Test
     public void testFeatureInfo() throws RecommenderBuildException {
         LenskitRecommenderEngine engine = makeEngine();
-        LenskitRecommender rec = engine.createRecommender();
-
-        FunkSVDModel model = rec.get(FunkSVDModel.class);
-        assertThat(model, notNullValue());
-        assertThat(model.getFeatureInfo().size(),
-                   equalTo(20));
-        for (FeatureInfo feat: model.getFeatureInfo()) {
-            assertThat(feat.getIterCount(), equalTo(10));
-            assertThat(feat.getLastDeltaRMSE(),
-                       greaterThan(0.0));
+        try (LenskitRecommender rec = engine.createRecommender()) {
+            FunkSVDModel model = rec.get(FunkSVDModel.class);
+            assertThat(model, notNullValue());
+            assertThat(model.getFeatureInfo().size(),
+                       equalTo(20));
+            for (FeatureInfo feat : model.getFeatureInfo()) {
+                assertThat(feat.getIterCount(), equalTo(10));
+                assertThat(feat.getLastDeltaRMSE(),
+                           greaterThan(0.0));
+            }
         }
     }
 

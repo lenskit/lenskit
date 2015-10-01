@@ -158,7 +158,6 @@ set ConstantItemScorer.Value to Math.PI""");
     }
 
     @Test
-    @Ignore("will not work until moved")
     void testPreferenceDomain() {
         LenskitConfiguration config = ConfigHelpers.load {
             bind ItemScorer to ItemMeanRatingItemScorer
