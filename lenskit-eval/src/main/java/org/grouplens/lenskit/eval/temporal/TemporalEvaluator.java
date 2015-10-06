@@ -180,7 +180,8 @@ public class TemporalEvaluator {
         Recommender recommender;
         double sse = 0;
         int n = 0;
-
+        lre = null;
+        long buildTime = 0L;
         try {
             for (Rating r : ratings) {
                 if (r.getTimestamp() > 0 && limitedDao.getLimitTimestamp() < r.getTimestamp()) {
@@ -188,10 +189,13 @@ public class TemporalEvaluator {
                 }
                 LenskitConfiguration config = new LenskitConfiguration();
                 config.addComponent(limitedDao);
-                lre = LenskitRecommenderEngine.newBuilder()
-                                              .addConfiguration(algorithm.getConfig())
-                                              .addConfiguration(config, ModelDisposition.EXCLUDED)
-                                              .build();
+                if (r.getTimestamp() - buildTime >= rebuildPeriod ) {
+                    buildTime = r.getTimestamp();
+                    lre = LenskitRecommenderEngine.newBuilder()
+                                                  .addConfiguration(algorithm.getConfig())
+                                                  .addConfiguration(config, ModelDisposition.EXCLUDED)
+                                                  .build();
+                }
                 recommender = lre.createRecommender(config);
                 //gets prediction score
                 Result predictionResult = recommender.getRatingPredictor().predict(r.getUserId(), r.getItemId());
