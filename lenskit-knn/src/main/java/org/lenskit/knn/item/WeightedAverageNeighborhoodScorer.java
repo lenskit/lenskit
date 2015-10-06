@@ -21,7 +21,7 @@
 package org.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.lenskit.util.math.Vectors;
 

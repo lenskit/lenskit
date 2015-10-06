@@ -22,9 +22,9 @@ package org.lenskit.baseline;
 
 
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.dao.PrefetchingUserEventDAO;
+import org.lenskit.data.dao.EventCollectionDAO;
+import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.PrefetchingUserEventDAO;
 import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
 import org.junit.Before;

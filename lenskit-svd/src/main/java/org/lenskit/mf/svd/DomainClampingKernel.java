@@ -22,7 +22,7 @@ package org.lenskit.mf.svd;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.math3.linear.RealVector;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.inject.Shareable;
 import org.lenskit.data.ratings.PreferenceDomain;
 
 import javax.annotation.Nonnull;

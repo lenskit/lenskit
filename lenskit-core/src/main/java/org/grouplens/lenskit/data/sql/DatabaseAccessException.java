@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.data.sql;
 
-import org.grouplens.lenskit.data.dao.DataAccessException;
+import org.lenskit.data.dao.DataAccessException;
 
 /**
  * A database error occurred in the database-backed DAO.

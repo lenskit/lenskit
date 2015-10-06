@@ -157,6 +157,15 @@ public final class Vectors {
         return new DftAdaptingL2DFunction(f, dft);
     }
 
+    /**
+     * Compute the arithmetic mean of a vector's values.
+     * @param vec The vector.
+     * @return The arithmetic mean.
+     */
+    public static double mean(Long2DoubleMap vec) {
+        return sum(vec) / vec.size();
+    }
+
     private static class DftAdaptingL2DFunction implements Long2DoubleFunction {
         private final Long2DoubleFunction delegate;
         private final double dft;

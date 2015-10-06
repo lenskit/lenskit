@@ -20,8 +20,8 @@
  */
 package org.grouplens.lenskit.data.text;
 
-import org.grouplens.lenskit.data.dao.DataAccessException;
-import org.grouplens.lenskit.data.dao.UserListUserDAO;
+import org.lenskit.data.dao.DataAccessException;
+import org.lenskit.data.dao.UserListUserDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +31,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Provider for {@link org.grouplens.lenskit.data.dao.UserListUserDAO} that reads a list of user IDs from a file, one per line.
+ * Provider for {@link org.lenskit.data.dao.UserListUserDAO} that reads a list of user IDs from a file, one per line.
  *
  * @since 2.1
  */

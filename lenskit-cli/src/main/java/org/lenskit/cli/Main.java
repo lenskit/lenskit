@@ -23,7 +23,7 @@ package org.lenskit.cli;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.*;
 import org.apache.commons.lang3.SystemUtils;
-import org.grouplens.lenskit.core.LenskitInfo;
+import org.lenskit.LenskitInfo;
 import org.lenskit.cli.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +71,7 @@ public class Main {
                         rt.availableProcessors(), rt.maxMemory() >> 20);
             Command cmd = options.get("command");
             cmd.execute(options);
+            logger.info("If you use LensKit in published research, please see http://lenskit.org/research/");
         } catch (ArgumentParserException e) {
             parser.handleError(e);
         } catch (Exception e) {

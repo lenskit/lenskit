@@ -21,21 +21,16 @@
 package org.lenskit.specs;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.lang3.reflect.MethodUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.ServiceLoader;
 
 /**
@@ -44,7 +39,7 @@ import java.util.ServiceLoader;
 public final class SpecUtils {
     private SpecUtils() {}
 
-    static ObjectMapper createMapper() {
+    public static ObjectMapper createMapper() {
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule mod = new SimpleModule("LenskitSpecs");
         mod.addSerializer(Path.class, new PathSerializer());
@@ -63,6 +58,21 @@ public final class SpecUtils {
      */
     public static <T> T load(Class<T> type, Path file) throws IOException {
         ObjectReader reader = createMapper().reader(type);
+        return reader.readValue(file.toFile());
+    }
+
+    /**
+     * Read a list of specifications from a file.
+     * @param type The specification type.
+     * @param file The file to read from.
+     * @param <T> The specification type.
+     * @return A deserialized specification.
+     * @throws IOException if there is an error reading the file.
+     */
+    public static <T> List<T> loadList(Class<T> type, Path file) throws IOException {
+        ObjectMapper mapper = createMapper();
+        JavaType listType = mapper.getTypeFactory().constructCollectionType(List.class, type);
+        ObjectReader reader = createMapper().reader(listType);
         return reader.readValue(file.toFile());
     }
 
@@ -181,5 +191,24 @@ public final class SpecUtils {
         } catch (InvocationTargetException e) {
             throw new RuntimeException("Error occurred in fromSpec on " + type, e);
         }
+    }
+
+    /**
+     * Make a copy of a spec. Rather than implementing the complicated {@link Cloneable} infrastructure, we just
+     * round-trip the spec through JSON and copy all specs easily.
+     *
+     * @param spec The spec to copy.
+     * @param <T> The spec type.
+     * @return The copied spec.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends AbstractSpec> T copySpec(T spec) {
+        if (spec == null) {
+            return null;
+        }
+
+        ObjectMapper mapper = createMapper();
+        JsonNode node = mapper.convertValue(spec, JsonNode.class);
+        return (T) mapper.convertValue(node, spec.getClass());
     }
 }

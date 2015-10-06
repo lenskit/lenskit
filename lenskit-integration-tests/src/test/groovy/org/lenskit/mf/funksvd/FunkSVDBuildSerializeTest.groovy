@@ -20,21 +20,17 @@
  */
 package org.lenskit.mf.funksvd
 
-import org.grouplens.lenskit.RecommenderBuildException
-import org.grouplens.lenskit.config.ConfigHelpers
-import org.grouplens.lenskit.core.ModelDisposition
-import org.grouplens.lenskit.data.dao.ItemDAO
+import org.lenskit.api.RecommenderBuildException
+import org.lenskit.data.dao.ItemDAO
 import org.grouplens.lenskit.iterative.IterationCount
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.junit.Test
 import org.lenskit.LenskitRecommender
 import org.lenskit.LenskitRecommenderEngine
+import org.lenskit.ModelDisposition
 import org.lenskit.api.ItemScorer
-import org.lenskit.baseline.BaselineScorer
-import org.lenskit.baseline.ItemMeanRatingItemScorer
-import org.lenskit.baseline.MeanDamping
-import org.lenskit.baseline.UserMeanBaseline
-import org.lenskit.baseline.UserMeanItemScorer
+import org.lenskit.baseline.*
+import org.lenskit.config.ConfigHelpers
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat

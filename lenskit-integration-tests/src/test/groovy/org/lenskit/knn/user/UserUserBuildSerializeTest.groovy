@@ -20,9 +20,8 @@
  */
 package org.lenskit.knn.user
 
-import org.grouplens.lenskit.RecommenderBuildException
-import org.grouplens.lenskit.config.ConfigHelpers
-import org.grouplens.lenskit.core.ModelDisposition
+import org.lenskit.api.RecommenderBuildException
+import org.lenskit.ModelDisposition
 import org.grouplens.lenskit.test.ML100KTestSuite
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer
@@ -41,6 +40,7 @@ import org.lenskit.baseline.ItemMeanRatingItemScorer
 import org.lenskit.baseline.UserMeanBaseline
 import org.lenskit.baseline.UserMeanItemScorer
 import org.lenskit.basic.TopNItemRecommender
+import org.lenskit.config.ConfigHelpers
 
 import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat

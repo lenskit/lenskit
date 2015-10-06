@@ -21,18 +21,20 @@
 package org.lenskit.eval.crossfold;
 
 import com.google.common.collect.Iterables;
-import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
-import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.packed.BinaryFormatFlag;
 import org.grouplens.lenskit.data.source.CSVDataSourceBuilder;
 import org.grouplens.lenskit.data.source.DataSource;
 import org.grouplens.lenskit.data.source.PackedDataSourceBuilder;
-import org.grouplens.lenskit.eval.data.RatingWriter;
-import org.grouplens.lenskit.eval.data.RatingWriters;
-import org.grouplens.lenskit.eval.data.traintest.GenericTTDataBuilder;
-import org.grouplens.lenskit.eval.data.traintest.TTDataSet;
+import org.lenskit.data.output.RatingWriter;
+import org.lenskit.data.output.RatingWriters;
 import org.grouplens.lenskit.util.io.UpToDateChecker;
+import org.lenskit.eval.traintest.DataSet;
+import org.lenskit.eval.traintest.DataSetBuilder;
 import org.lenskit.specs.SpecUtils;
-import org.lenskit.specs.eval.*;
+import org.lenskit.specs.eval.CrossfoldSpec;
+import org.lenskit.specs.eval.OutputFormat;
+import org.lenskit.specs.eval.PartitionMethodSpec;
+import org.lenskit.specs.eval.DataSetSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +60,7 @@ public class Crossfolder {
     private Path outputDir;
     private OutputFormat outputFormat = OutputFormat.CSV;
     private boolean skipIfUpToDate = false;
-    private SplitMethod method = SplitMethods.partitionUsers(new RandomOrder<Rating>(), new HoldoutNPartition<Rating>(10));
+    private CrossfoldMethod method = CrossfoldMethods.partitionUsers(SortOrder.RANDOM, HistoryPartitions.holdout(10));
     private boolean isolate = false;
     private boolean writeTimestamps = true;
 
@@ -84,44 +86,31 @@ public class Crossfolder {
           .setOutputFormat(spec.getOutputFormat())
           .setOutputDir(spec.getOutputDir());
 
-        Order<Rating> order = null;
-        PartitionAlgorithm<Rating> part = null;
+        SortOrder order = null;
+        HistoryPartitionMethod part = null;
         PartitionMethodSpec pm = spec.getUserPartitionMethod();
         if (pm != null) {
-            switch (pm.getOrder()) {
-            case "random":
-                order = new RandomOrder<>();
-                break;
-            case "timestamp":
-                order = new TimestampOrder<>();
-                break;
-            default:
-                throw new IllegalArgumentException("invalid partition order " + pm.getOrder());
-            }
+            order = SortOrder.fromString(pm.getOrder());
             if (pm instanceof PartitionMethodSpec.Holdout) {
-                part = new HoldoutNPartition<>(((PartitionMethodSpec.Holdout) pm).getCount());
+                part = HistoryPartitions.holdout(((PartitionMethodSpec.Holdout) pm).getCount());
             } else if (pm instanceof PartitionMethodSpec.HoldoutFraction) {
-                part = new FractionPartition<>(((PartitionMethodSpec.HoldoutFraction) pm).getFraction());
+                part = HistoryPartitions.holdoutFraction(((PartitionMethodSpec.HoldoutFraction) pm).getFraction());
             } else if (pm instanceof PartitionMethodSpec.Retain) {
-                part = new RetainNPartition<>(((PartitionMethodSpec.Retain) pm).getCount());
+                part = HistoryPartitions.retain(((PartitionMethodSpec.Retain) pm).getCount());
             } else {
                 throw new IllegalArgumentException("invalid partition method " + pm);
             }
         }
 
-        CrossfoldMethod method = spec.getMethod();
-        if (method == null) {
-
-        }
         switch (spec.getMethod()) {
         case PARTITION_RATINGS:
-            cf.setMethod(SplitMethods.partitionRatings());
+            cf.setMethod(CrossfoldMethods.partitionRatings());
             break;
         case PARTITION_USERS:
-            cf.setMethod(SplitMethods.partitionUsers(order, part));
+            cf.setMethod(CrossfoldMethods.partitionUsers(order, part));
             break;
         case SAMPLE_USERS:
-            cf.setMethod(SplitMethods.sampleUsers(order, part, spec.getSampleSize()));
+            cf.setMethod(CrossfoldMethods.sampleUsers(order, part, spec.getSampleSize()));
             break;
         }
 
@@ -224,7 +213,7 @@ public class Crossfolder {
      * @param meth The method to use.
      * @return The crossfolder (for chaining).
      */
-    public Crossfolder setMethod(SplitMethod meth) {
+    public Crossfolder setMethod(CrossfoldMethod meth) {
         method = meth;
         return this;
     }
@@ -233,7 +222,7 @@ public class Crossfolder {
      * Get the method to be used for crossfolding.
      * @return The configured crossfold method.
      */
-    public SplitMethod getMethod() {
+    public CrossfoldMethod getMethod() {
         return method;
     }
 
@@ -393,14 +382,14 @@ public class Crossfolder {
         }
 
         List<Path> specFiles = getSpecFiles();
-        List<TTDataSet> dataSets = getDataSets();
+        List<DataSet> dataSets = getDataSets();
         Path fullSpecFile = getOutputDir().resolve("all-partitions.json");
         List<Object> specs = new ArrayList<>(partitionCount);
         assert dataSets.size() == partitionCount;
         for (int i = 0; i < partitionCount; i++) {
             Path file = specFiles.get(i);
-            TTDataSet ds = dataSets.get(i);
-            TTDataSetSpec spec = ds.toSpec();
+            DataSet ds = dataSets.get(i);
+            DataSetSpec spec = ds.toSpec();
             specs.add(spec);
             SpecUtils.write(spec, file);
         }
@@ -411,23 +400,23 @@ public class Crossfolder {
     /**
      * Get the train-test splits as data sets.
      * 
-     * @return The partition files stored as a list of TTDataSet
+     * @return The data sets produced by this crossfolder.
      */
-    public List<TTDataSet> getDataSets() {
-        List<TTDataSet> dataSets = new ArrayList<TTDataSet>(partitionCount);
+    public List<DataSet> getDataSets() {
+        List<DataSet> dataSets = new ArrayList<>(partitionCount);
         List<Path> trainFiles = getTrainingFiles();
         List<Path> testFiles = getTestFiles();
         for (int i = 0; i < partitionCount; i++) {
-            GenericTTDataBuilder ttBuilder = new GenericTTDataBuilder(getName() + "." + i);
+            DataSetBuilder dsb = new DataSetBuilder(getName() + "." + i);
             if (isolate) {
-                ttBuilder.setIsolationGroup(UUID.randomUUID());
+                dsb.setIsolationGroup(UUID.randomUUID());
             }
 
-            dataSets.add(ttBuilder.setTest(makeDataSource(testFiles.get(i)))
-                                  .setTrain(makeDataSource(trainFiles.get(i)))
-                                  .setAttribute("DataSet", getName())
-                                  .setAttribute("Partition", i)
-                                  .build());
+            dataSets.add(dsb.setTest(makeDataSource(testFiles.get(i)))
+                            .setTrain(makeDataSource(trainFiles.get(i)))
+                            .setAttribute("DataSet", getName())
+                            .setAttribute("Partition", i)
+                            .build());
         }
         return dataSets;
     }

@@ -22,7 +22,7 @@ package org.lenskit.knn.item.model;
 
 import com.google.common.base.Stopwatch;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.core.Transient;
+import org.lenskit.inject.Transient;
 import org.lenskit.knn.item.ItemSimilarity;
 import org.lenskit.knn.item.ItemSimilarityThreshold;
 import org.lenskit.knn.item.ModelSize;

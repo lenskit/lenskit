@@ -23,7 +23,7 @@ package org.lenskit.transform.quantize;
 import com.google.common.base.Preconditions;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealVector;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.inject.Shareable;
 
 import java.io.Serializable;
 

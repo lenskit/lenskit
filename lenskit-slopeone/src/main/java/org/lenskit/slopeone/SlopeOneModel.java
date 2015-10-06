@@ -22,7 +22,7 @@ package org.lenskit.slopeone;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;

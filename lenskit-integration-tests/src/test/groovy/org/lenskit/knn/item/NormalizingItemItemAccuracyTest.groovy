@@ -20,9 +20,9 @@
  */
 package org.lenskit.knn.item
 
-import org.grouplens.lenskit.config.ConfigHelpers
-import org.grouplens.lenskit.core.LenskitConfiguration
+import org.lenskit.LenskitConfiguration
 import org.grouplens.lenskit.transform.truncate.VectorTruncator
+import org.lenskit.config.ConfigHelpers
 import org.lenskit.knn.item.model.ItemItemModel
 import org.lenskit.knn.item.model.NormalizingItemItemModelBuilder
 import org.lenskit.knn.item.model.StandardVectorTruncatorProvider

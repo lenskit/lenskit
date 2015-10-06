@@ -22,7 +22,7 @@ package org.lenskit.eval.crossfold;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Closer;
-import org.grouplens.lenskit.eval.data.RatingWriter;
+import org.lenskit.data.output.RatingWriter;
 
 import java.io.Closeable;
 import java.io.IOException;

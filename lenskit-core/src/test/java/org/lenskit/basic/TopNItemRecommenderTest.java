@@ -22,7 +22,7 @@ package org.lenskit.basic;
 
 import it.unimi.dsi.fastutil.longs.LongLists;
 import it.unimi.dsi.fastutil.longs.LongSets;
-import org.grouplens.lenskit.data.dao.*;
+import org.lenskit.data.dao.*;
 import org.junit.Test;
 import org.lenskit.api.ItemRecommender;
 import org.lenskit.api.ItemScorer;

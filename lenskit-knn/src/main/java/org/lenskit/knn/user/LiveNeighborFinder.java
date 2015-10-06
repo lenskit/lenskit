@@ -26,13 +26,13 @@ import it.unimi.dsi.fastutil.longs.LongCollection;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.data.dao.ItemEventDAO;
-import org.grouplens.lenskit.data.dao.UserEventDAO;
+import org.lenskit.data.dao.ItemEventDAO;
+import org.lenskit.data.dao.UserEventDAO;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.Ratings;
 import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
-import org.grouplens.lenskit.data.history.UserHistory;
+import org.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
@@ -142,7 +142,7 @@ public class LiveNeighborFinder implements NeighborFinder {
         if (ratings == null){
             return null;
         }
-        return Ratings.userRatingVector(ratings);
+        return MutableSparseVector.create(Ratings.userRatingVector(ratings));
     }
 
     private class NeighborIterator extends AbstractIterator<Neighbor> {

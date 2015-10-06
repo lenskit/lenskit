@@ -20,10 +20,10 @@
  */
 package org.lenskit.slopeone;
 
-import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.dao.EventDAO;
+import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.data.dao.EventCollectionDAO;
+import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.data.ratings.PreferenceDomainBuilder;

@@ -22,8 +22,8 @@ package org.lenskit.data.ratings;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.core.Shareable;
-import org.grouplens.lenskit.data.dao.EventDAO;
+import org.lenskit.inject.Shareable;
+import org.lenskit.data.dao.EventDAO;
 import org.lenskit.util.keys.KeyedObject;
 import org.lenskit.util.keys.KeyedObjectMap;
 

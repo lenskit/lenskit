@@ -1,0 +1,344 @@
+/*
+ * LensKit, an open source recommender systems toolkit.
+ * Copyright 2010-2014 LensKit Contributors.  See CONTRIBUTORS.md.
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
+package org.lenskit.eval.traintest.recommend;
+
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.lenskit.data.history.RatingVectorUserHistorySummarizer;
+import org.grouplens.lenskit.data.history.UserHistorySummarizer;
+import org.grouplens.lenskit.util.io.CompressionMode;
+import org.lenskit.api.ItemRecommender;
+import org.lenskit.api.Recommender;
+import org.lenskit.api.Result;
+import org.lenskit.api.ResultList;
+import org.lenskit.eval.traintest.*;
+import org.lenskit.eval.traintest.metrics.Metric;
+import org.lenskit.eval.traintest.metrics.MetricResult;
+import org.lenskit.specs.DynamicSpec;
+import org.lenskit.specs.SpecUtils;
+import org.lenskit.specs.eval.RecommendEvalTaskSpec;
+import org.lenskit.util.table.TableLayout;
+import org.lenskit.util.table.TableLayoutBuilder;
+import org.lenskit.util.table.writer.CSVWriter;
+import org.lenskit.util.table.writer.TableWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.*;
+
+/**
+ * An eval task that attempts to recommend items for a test user.
+ */
+public class RecommendEvalTask implements EvalTask {
+    private static final Logger logger = LoggerFactory.getLogger(RecommendEvalTask.class);
+    private static final TopNMetric<?>[] DEFAULT_METRICS = {
+            new TopNLengthMetric(),
+            new TopNNDCGMetric()
+    };
+
+    private final RecommendEvalTaskSpec spec;
+    private List<TopNMetric<?>> topNMetrics = Lists.newArrayList(DEFAULT_METRICS);
+    private volatile ItemSelector candidateSelector;
+
+    private ExperimentOutputLayout experimentOutputLayout;
+    private TableWriter outputTable;
+
+    public RecommendEvalTask() {
+        this(new RecommendEvalTaskSpec());
+    }
+
+    RecommendEvalTask(RecommendEvalTaskSpec ets) {
+        spec = ets;
+        if (!ets.getMetrics().isEmpty()) {
+            // FIXME keep this in sync with the metrics
+            getTopNMetrics().clear();
+            for (DynamicSpec ms: ets.getMetrics()) {
+                TopNMetric<?> metric = SpecUtils.buildObject(TopNMetric.class, ms);
+                if (metric != null) {
+                    addMetric(metric);
+                } else {
+                    throw new RuntimeException("cannot build metric for " + ms.getJSON());
+                }
+            }
+        }
+    }
+
+    /**
+     * Create a top-N eval task from a specification.
+     * @param ets The task specification.
+     * @return The task.
+     */
+    public static RecommendEvalTask fromSpec(RecommendEvalTaskSpec ets) {
+        return new RecommendEvalTask(ets);
+    }
+
+    /**
+     * Get the output file for writing predictions.
+     * @return The output file, or {@code null} if no file is configured.
+     */
+    public Path getOutputFile() {
+        return spec.getOutputFile();
+    }
+
+    /**
+     * Set the output file for predictions.
+     * @param file The output file for writing predictions. Will get a CSV file.
+     */
+    public void setOutputFile(Path file) {
+        spec.setOutputFile(file);
+    }
+
+    /**
+     * Get the list size to use.
+     * @return The number of items to recommend per user.
+     */
+    public int getListSize() {
+        return spec.getListSize();
+    }
+
+    /**
+     * Set the list size to use.
+     * @param n The number of items to recommend per user.
+     */
+    public void setListSize(int n) {
+        spec.setListSize(n);
+    }
+
+    /**
+     * Get the active candidate selector.
+     * @return The candidate selector to use.
+     */
+    public ItemSelector getCandidateSelector() {
+        if (candidateSelector == null) {
+            String sel = spec.getCandidateItems();
+            candidateSelector = ItemSelector.compileSelector(sel);
+        }
+        return candidateSelector;
+    }
+
+    /**
+     * Set the candidate selector.
+     * @param sel The candidate selector.
+     */
+    public void setCandidateSelector(ItemSelector sel) {
+        candidateSelector = sel;
+    }
+
+    /**
+     * Get the list of prediction metrics.
+     * @return The list of prediction metrics.  This list is live, not copied, so it can be modified or cleared.
+     */
+    public List<TopNMetric<?>> getTopNMetrics() {
+        return topNMetrics;
+    }
+
+    /**
+     * Get the list of all metrics.
+     * @return A list containing all metrics used by this task.
+     */
+    public List<Metric<?>> getAllMetrics() {
+        ImmutableList.Builder<Metric<?>> metrics = ImmutableList.builder();
+        metrics.addAll(topNMetrics);
+        return metrics.build();
+    }
+
+    /**
+     * Add a prediction metric.
+     * @param metric The metric to add.
+     */
+    public void addMetric(TopNMetric<?> metric) {
+        topNMetrics.add(metric);
+    }
+
+    @Override
+    public Set<Class<?>> getRequiredRoots() {
+        return FluentIterable.from(getAllMetrics())
+                             .transformAndConcat(new Function<Metric<?>, Iterable<Class<?>>>() {
+                                 @Nullable
+                                 @Override
+                                 public Iterable<Class<?>> apply(Metric<?> input) {
+                                     return input.getRequiredRoots();
+                                 }
+                             }).toSet();
+    }
+
+    @Override
+    public List<String> getGlobalColumns() {
+        ImmutableList.Builder<String> columns = ImmutableList.builder();
+        for (Metric<?> m: getAllMetrics()) {
+            columns.addAll(m.getAggregateColumnLabels());
+        }
+        return columns.build();
+    }
+
+    @Override
+    public List<String> getUserColumns() {
+        ImmutableList.Builder<String> columns = ImmutableList.builder();
+        for (TopNMetric<?> pm: getTopNMetrics()) {
+            columns.addAll(pm.getColumnLabels());
+        }
+        return columns.build();
+    }
+
+    @Override
+    public void start(ExperimentOutputLayout outputLayout) {
+        experimentOutputLayout = outputLayout;
+        Path outFile = getOutputFile();
+        if (outFile == null) {
+            return;
+        }
+
+        TableLayoutBuilder tlb = TableLayoutBuilder.copy(outputLayout.getConditionLayout());
+        TableLayout layout = tlb.addColumn("User")
+                                .addColumn("Rank")
+                                .addColumn("Item")
+                                .addColumn("Score")
+                                .build();
+        try {
+            logger.info("writing recommendations to {}", outFile);
+            outputTable = CSVWriter.open(outFile.toFile(), layout, CompressionMode.AUTO);
+        } catch (IOException e) {
+            throw new EvaluationException("error opening prediction output file", e);
+        }
+    }
+
+    @Override
+    public void finish() {
+        experimentOutputLayout = null;
+        if (outputTable != null) {
+            try {
+                outputTable.close();
+                outputTable = null;
+            } catch (IOException e) {
+                throw new EvaluationException("error closing prediction output file", e);
+            }
+        }
+    }
+
+    @Override
+    public ConditionEvaluator createConditionEvaluator(AlgorithmInstance algorithm, DataSet dataSet, Recommender rec) {
+        Preconditions.checkState(experimentOutputLayout != null, "experiment not started");
+        TableWriter tlb = experimentOutputLayout.prefixTable(outputTable, dataSet, algorithm);
+        LongSet items = dataSet.getAllItems();
+        ItemRecommender irec = rec.getItemRecommender();
+        if (irec == null) {
+            logger.warn("algorithm {} has no item recommender", algorithm);
+            return null;
+        }
+
+        List<MetricContext<?>> contexts = new ArrayList<>(topNMetrics.size());
+        for (TopNMetric<?> metric: topNMetrics) {
+            contexts.add(MetricContext.create(metric, algorithm, dataSet, rec));
+        }
+
+        return new TopNConditionEvaluator(tlb, irec, contexts, items);
+    }
+
+    static class MetricContext<X> {
+        final TopNMetric<X> metric;
+        final X context;
+
+        public MetricContext(TopNMetric<X> m, X ctx) {
+            metric = m;
+            context = ctx;
+        }
+
+        @Nonnull
+        public MetricResult measureUser(TestUser user, ResultList recommendations) {
+            return metric.measureUser(user, recommendations, context);
+        }
+
+        @Nonnull
+        public MetricResult getAggregateMeasurements() {
+            return metric.getAggregateMeasurements(context);
+        }
+
+        /**
+         * Create a new metric context. Indirected through this method to help the type checker.
+         */
+        public static <X> MetricContext<X> create(TopNMetric<X> metric, AlgorithmInstance algorithm, DataSet dataSet, Recommender rec) {
+            X ctx = metric.createContext(algorithm, dataSet, rec);
+            return new MetricContext<>(metric, ctx);
+        }
+    }
+
+    class TopNConditionEvaluator implements ConditionEvaluator {
+        private final TableWriter writer;
+        private final ItemRecommender recommender;
+        private final UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
+        private final List<MetricContext<?>> predictMetricContexts;
+        private final LongSet allItems;
+
+        public TopNConditionEvaluator(TableWriter tw, ItemRecommender rec, List<MetricContext<?>> mcs, LongSet items) {
+            writer = tw;
+            recommender = rec;
+            predictMetricContexts = mcs;
+            allItems = items;
+        }
+
+        @Nonnull
+        @Override
+        public Map<String, Object> measureUser(TestUser testUser) {
+            // FIXME Support item selectors
+            LongSet candidates = getCandidateSelector().selectItems(allItems, testUser);
+            ResultList results = recommender.recommendWithDetails(testUser.getUserId(), getListSize(), candidates, null);
+
+            // Measure the user results
+            Map<String,Object> row = new HashMap<>();
+            for (MetricContext<?> mc: predictMetricContexts) {
+                row.putAll(mc.measureUser(testUser, results).getValues());
+            }
+
+            // Write all attempted predictions
+            int rank = 0;
+            for (Result rec: results) {
+                try {
+                    rank += 1;
+                    if (writer != null) {
+                        writer.writeRow(testUser.getUserId(), rank, rec.getId(), rec.getScore());
+                    }
+                } catch (IOException ex) {
+                    throw new EvaluationException("error writing prediction row", ex);
+                }
+            }
+
+            return row;
+        }
+
+        @Nonnull
+        @Override
+        public Map<String, Object> finish() {
+            Map<String,Object> results = new HashMap<>();
+            for (MetricContext<?> mc: predictMetricContexts) {
+                results.putAll(mc.getAggregateMeasurements().getValues());
+            }
+            return results;
+        }
+    }
+}

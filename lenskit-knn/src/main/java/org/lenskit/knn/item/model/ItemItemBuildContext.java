@@ -26,9 +26,10 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSortedSet;
 import it.unimi.dsi.fastutil.longs.LongSortedSets;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.inject.Transient;
 import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.Nonnull;
@@ -41,7 +42,7 @@ import java.util.Iterator;
  * up the model in the accumulator.
  *
  * <p>This is shareable to make it more usable in the evaluator.  Typical built models
- * will not include it, and any dependencies on it should be {@link org.grouplens.lenskit.core.Transient}.</p>
+ * will not include it, and any dependencies on it should be {@link Transient}.</p>
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @see ItemItemModelBuilder

@@ -25,10 +25,13 @@ import org.grouplens.grapht.Dependency
 import org.grouplens.grapht.graph.DAGNode
 import org.grouplens.grapht.reflect.Satisfaction
 import org.grouplens.grapht.reflect.internal.InstanceSatisfaction
-import org.grouplens.lenskit.RecommenderBuildException
-import org.grouplens.lenskit.core.*
-import org.grouplens.lenskit.data.dao.EventCollectionDAO
-import org.grouplens.lenskit.data.dao.EventDAO
+import org.lenskit.api.RecommenderBuildException
+import org.lenskit.baseline.GlobalMeanRatingItemScorer
+import org.lenskit.baseline.LeastSquaresItemScorer
+import org.lenskit.baseline.UserMeanBaseline
+import org.lenskit.baseline.UserMeanItemScorer
+import org.lenskit.data.dao.EventCollectionDAO
+import org.lenskit.data.dao.EventDAO
 import org.lenskit.data.events.Event
 import org.lenskit.data.ratings.RatingMatrix
 import org.grouplens.lenskit.iterative.StoppingThreshold
@@ -43,6 +46,7 @@ import org.lenskit.api.ItemRecommender
 import org.lenskit.api.ItemScorer
 import org.lenskit.baseline.BaselineScorer
 import org.lenskit.basic.*
+import org.lenskit.inject.Shareable
 
 import javax.inject.Inject
 import javax.inject.Provider
@@ -157,7 +161,6 @@ public class LenskitRecommenderEngineTest {
     }
 
     @Test
-    @Ignore("will not work until more moving done")
     public void testSeparatePredictor() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration()
         config.bind(EventDAO.class).to(dao)
@@ -415,7 +418,6 @@ public class LenskitRecommenderEngineTest {
      */
     @SuppressWarnings("unchecked")
     @Test
-    @Ignore("will not work until more code added")
     public void testAnchoredRoot() throws RecommenderBuildException {
         LenskitConfiguration config = new LenskitConfiguration()
         config.bind(EventDAO.class).to(dao)
@@ -433,9 +435,9 @@ public class LenskitRecommenderEngineTest {
         def rp = (SimpleRatingPredictor) rec.getRatingPredictor()
         assertThat(rp, notNullValue())
         assert rp != null
-        assertThat(rp.getScorer(), instanceOf(ConstantItemScorer.class))
+        assertThat(rp.itemScorer, instanceOf(ConstantItemScorer.class))
         assertThat(((FallbackItemScorer) rec.getItemScorer()).getPrimaryScorer(),
-                   sameInstance(rp.getScorer()))
+                   sameInstance(rp.itemScorer))
     }
 
     /**
@@ -530,7 +532,6 @@ public class LenskitRecommenderEngineTest {
     //endregion
 
     @Test
-    @Ignore("will not work until more moving done")
     public void testRemoveShareableSnapshot() {
         def config = new LenskitConfiguration();
         config.bind(ItemScorer).to(LeastSquaresItemScorer)

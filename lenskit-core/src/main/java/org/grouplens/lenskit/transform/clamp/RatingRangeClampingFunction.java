@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.transform.clamp;
 
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.inject.Shareable;
 import org.lenskit.data.ratings.PreferenceDomain;
 
 import javax.inject.Inject;

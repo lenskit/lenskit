@@ -17,3 +17,8 @@ javadoc {
         sourceSets.main.java.files.size() > 0
     }
 }
+
+groovydoc {
+    link 'https://docs.gradle.org/current/groovydoc/', 'org.gradle'
+    source rootProject.childProjects['lenskit-specs'].sourceSets.main.allJava
+}

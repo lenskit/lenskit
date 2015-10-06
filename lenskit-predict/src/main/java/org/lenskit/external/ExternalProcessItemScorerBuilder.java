@@ -27,9 +27,9 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.text.StrTokenizer;
-import org.grouplens.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.data.dao.ItemDAO;
-import org.grouplens.lenskit.data.dao.UserDAO;
+import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.ItemDAO;
+import org.lenskit.data.dao.UserDAO;
 import org.grouplens.lenskit.util.io.LoggingStreamSlurper;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.basic.PrecomputedItemScorer;
@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Build a {@link org.grouplens.lenskit.basic.PrecomputedItemScorer} using an external process.
+ * Build a {@link PrecomputedItemScorer} using an external process.
  * This class implements {@link javax.inject.Provider}, but is not itself instantiable with
  * dependency injection.
  *

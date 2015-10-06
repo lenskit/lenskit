@@ -20,10 +20,10 @@
  */
 package org.lenskit.mf.funksvd;
 
-import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.dao.EventDAO;
+import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.data.dao.EventCollectionDAO;
+import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.PackedRatingMatrix;
 import org.lenskit.data.ratings.RatingMatrix;
@@ -89,35 +89,35 @@ public class FunkSVDRecommenderBuildTest {
 
     @SuppressWarnings("deprecation")
     @Test
-    @Ignore("will not work until moved")
     public void testFunkSVDRecommenderEngineCreate() throws RecommenderBuildException {
         LenskitRecommenderEngine engine = makeEngine();
-        Recommender rec = engine.createRecommender();
+        try (Recommender rec = engine.createRecommender()) {
 
-        assertThat(rec.getItemScorer(),
-                   instanceOf(FunkSVDItemScorer.class));
-        assertThat(rec.getItemRecommender(),
-                   instanceOf(TopNItemRecommender.class));
-        RatingPredictor pred = rec.getRatingPredictor();
-        assertThat(pred, notNullValue());
-        assertThat(pred, instanceOf(SimpleRatingPredictor.class));
-        assertThat(((SimpleRatingPredictor) pred).getItemScorer(),
-                   sameInstance(rec.getItemScorer()));
+            assertThat(rec.getItemScorer(),
+                       instanceOf(FunkSVDItemScorer.class));
+            assertThat(rec.getItemRecommender(),
+                       instanceOf(TopNItemRecommender.class));
+            RatingPredictor pred = rec.getRatingPredictor();
+            assertThat(pred, notNullValue());
+            assertThat(pred, instanceOf(SimpleRatingPredictor.class));
+            assertThat(((SimpleRatingPredictor) pred).getItemScorer(),
+                       sameInstance(rec.getItemScorer()));
+        }
     }
 
     @Test
     public void testFeatureInfo() throws RecommenderBuildException {
         LenskitRecommenderEngine engine = makeEngine();
-        LenskitRecommender rec = engine.createRecommender();
-
-        FunkSVDModel model = rec.get(FunkSVDModel.class);
-        assertThat(model, notNullValue());
-        assertThat(model.getFeatureInfo().size(),
-                   equalTo(20));
-        for (FeatureInfo feat: model.getFeatureInfo()) {
-            assertThat(feat.getIterCount(), equalTo(10));
-            assertThat(feat.getLastDeltaRMSE(),
-                       greaterThan(0.0));
+        try (LenskitRecommender rec = engine.createRecommender()) {
+            FunkSVDModel model = rec.get(FunkSVDModel.class);
+            assertThat(model, notNullValue());
+            assertThat(model.getFeatureInfo().size(),
+                       equalTo(20));
+            for (FeatureInfo feat : model.getFeatureInfo()) {
+                assertThat(feat.getIterCount(), equalTo(10));
+                assertThat(feat.getLastDeltaRMSE(),
+                           greaterThan(0.0));
+            }
         }
     }
 

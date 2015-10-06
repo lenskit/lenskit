@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 import javax.inject.Qualifier;
 
 import org.grouplens.grapht.annotation.DefaultInteger;
-import org.grouplens.lenskit.core.Parameter;
+import org.lenskit.inject.Parameter;
 
 /**
  * The weight threshold for significance weighting.  If the vectors in question

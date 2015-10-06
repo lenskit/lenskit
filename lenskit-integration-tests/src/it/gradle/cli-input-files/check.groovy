@@ -1,4 +1,4 @@
-import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO
+import org.lenskit.data.packed.BinaryRatingDAO
 import org.lenskit.data.ratings.Ratings
 
 import static org.hamcrest.MatcherAssert.assertThat

@@ -25,7 +25,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.data.dao.ItemDAO;
+import org.lenskit.data.dao.ItemDAO;
 import org.grouplens.lenskit.vectors.*;
 
 import java.util.Map;

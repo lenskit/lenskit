@@ -20,11 +20,22 @@
  */
 package org.lenskit;
 
-import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.ModelDisposition;
+import com.google.common.collect.Lists;
+import org.apache.commons.lang3.tuple.Pair;
+import org.grouplens.grapht.Component;
+import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.ResolutionException;
+import org.grouplens.grapht.graph.DAGNode;
+import org.grouplens.grapht.solver.DependencySolver;
+import org.grouplens.grapht.util.ClassLoaders;
+import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.inject.GraphtUtils;
+import org.lenskit.inject.RecommenderGraphBuilder;
+import org.lenskit.inject.RecommenderInstantiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * Builds LensKit recommender engines from configurations.
@@ -43,8 +54,8 @@ import org.slf4j.LoggerFactory;
  */
 public class LenskitRecommenderEngineBuilder {
     private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngineBuilder.class);
-    private org.grouplens.lenskit.core.LenskitRecommenderEngineBuilder delegate =
-            new org.grouplens.lenskit.core.LenskitRecommenderEngineBuilder();
+    private ClassLoader classLoader = ClassLoaders.inferDefault(getClass());
+    private List<Pair<LenskitConfiguration,ModelDisposition>> configurations = Lists.newArrayList();
 
     /**
      * Get the class loader this builder will use.  By default, it uses the thread's current context
@@ -53,16 +64,16 @@ public class LenskitRecommenderEngineBuilder {
      * @return The class loader to be used.
      */
     public ClassLoader getClassLoader() {
-        return delegate.getClassLoader();
+        return classLoader;
     }
 
     /**
      * Set the class loader to use.
-     * @param classLoader The class loader to use when building the recommender.
+     * @param loader The class loader to use when building the recommender.
      * @return The builder (for chaining).
      */
-    public LenskitRecommenderEngineBuilder setClassLoader(ClassLoader classLoader) {
-        delegate.setClassLoader(classLoader);
+    public LenskitRecommenderEngineBuilder setClassLoader(ClassLoader loader) {
+        classLoader = loader;
         return this;
     }
 
@@ -83,7 +94,7 @@ public class LenskitRecommenderEngineBuilder {
      * @return The builder (for chaining).
      */
     public LenskitRecommenderEngineBuilder addConfiguration(LenskitConfiguration config, ModelDisposition disp) {
-        delegate.addConfiguration(config, disp);
+        configurations.add(Pair.of(config, disp));
         return this;
     }
 
@@ -95,6 +106,49 @@ public class LenskitRecommenderEngineBuilder {
      * @throws RecommenderBuildException
      */
     public LenskitRecommenderEngine build() throws RecommenderBuildException {
-        return new LenskitRecommenderEngine(delegate.build());
+        // Build the initial graph
+        logger.debug("building graph from {} configurations", configurations.size());
+        RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
+        rgb.setClassLoader(classLoader);
+        for (Pair<LenskitConfiguration,ModelDisposition> cfg: configurations) {
+            rgb.addConfiguration(cfg.getLeft());
+        }
+        RecommenderInstantiator inst;
+        try {
+            inst = RecommenderInstantiator.create(rgb.buildGraph());
+        } catch (ResolutionException e) {
+            throw new RecommenderBuildException("Cannot resolve recommender graph", e);
+        }
+        DAGNode<Component, Dependency> graph = inst.instantiate();
+
+        graph = rewriteGraph(graph);
+
+        boolean instantiable = GraphtUtils.getPlaceholderNodes(graph).isEmpty();
+        return new LenskitRecommenderEngine(graph, instantiable);
+    }
+
+    private DAGNode<Component, Dependency> rewriteGraph(DAGNode<Component, Dependency> graph) throws RecommenderConfigurationException {
+        RecommenderGraphBuilder rewriteBuilder = new RecommenderGraphBuilder();
+        boolean rewrite = false;
+        for (Pair<LenskitConfiguration,ModelDisposition> cfg: configurations) {
+            switch (cfg.getRight()) {
+            case EXCLUDED:
+                rewriteBuilder.addBindings(cfg.getLeft().getBindings());
+                rewriteBuilder.addRoots(cfg.getLeft().getRoots());
+                rewrite = true;
+                break;
+            }
+        }
+
+        if (rewrite) {
+            logger.debug("rewriting graph");
+            DependencySolver rewriter = rewriteBuilder.buildDependencyUnsolver();
+            try {
+                graph = rewriter.rewrite(graph);
+            } catch (ResolutionException e) {
+                throw new RecommenderConfigurationException("Resolution error while rewriting graph", e);
+            }
+        }
+        return graph;
     }
 }

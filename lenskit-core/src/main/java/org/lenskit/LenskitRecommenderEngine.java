@@ -20,24 +20,27 @@
  */
 package org.lenskit;
 
+import com.google.common.base.Preconditions;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
+import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.RecommenderConfigurationException;
+import org.grouplens.grapht.reflect.Qualifiers;
+import org.grouplens.grapht.reflect.Satisfaction;
+import org.grouplens.grapht.reflect.internal.InstanceSatisfaction;
+import org.grouplens.grapht.solver.DependencySolver;
+import org.lenskit.api.RecommenderBuildException;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.lenskit.api.RecommenderEngine;
+import org.lenskit.inject.GraphtUtils;
+import org.lenskit.inject.RecommenderGraphBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.WillClose;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 /**
  * LensKit implementation of a recommender engine.  It uses containers set up by
@@ -45,27 +48,31 @@ import java.io.OutputStream;
  * multiple recommenders from the same model.
  *
  * If you just want to quick create a recommender for evaluation or testing,
- * consider using {@link org.grouplens.lenskit.core.LenskitRecommender#build(LenskitConfiguration)}.  For more
+ * consider using {@link LenskitRecommender#build(LenskitConfiguration)}.  For more
  * control, use {@link LenskitRecommenderEngineBuilder}; to load a pre-built recommender
  * engine, use {@link LenskitRecommenderEngineLoader}.
  *
  * @compat Public
  * @see LenskitConfiguration
- * @see org.grouplens.lenskit.core.LenskitRecommender
+ * @see LenskitRecommender
  * @see LenskitRecommenderEngineBuilder
  * @see LenskitRecommenderEngineLoader
  */
 public final class LenskitRecommenderEngine implements RecommenderEngine {
     private static final Logger logger = LoggerFactory.getLogger(LenskitRecommenderEngine.class);
 
-    private final org.grouplens.lenskit.core.LenskitRecommenderEngine delegate;
+    private final DAGNode<Component, Dependency> graph;
+    private final boolean instantiable;
 
-    LenskitRecommenderEngine(org.grouplens.lenskit.core.LenskitRecommenderEngine eng) {
-        delegate = eng;
+    LenskitRecommenderEngine(@Nonnull DAGNode<Component,Dependency> graph,
+                             boolean instantiable) {
+        Preconditions.checkNotNull(graph, "configuration graph");
+        this.graph = graph;
+        this.instantiable = instantiable;
     }
 
     /**
-     * Create a new LenskitRecommenderEngine by reading a previously serialized engine from the
+     * Create a new recommender engine by reading a previously serialized engine from the
      * given file. The new engine will be identical to the old except it will use the new
      * DAOFactory. It is assumed that the file was created by using {@link #write(OutputStream)}.
      * Classes will be loaded using a default class loader.
@@ -81,7 +88,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     }
 
     /**
-     * Create a new LenskitRecommenderEngine by reading a previously serialized engine from the
+     * Create a new recommender engine by reading a previously serialized engine from the
      * given file. The new engine will be identical to the old except it will use the new
      * DAOFactory. It is assumed that the file was created by using {@link #write(OutputStream)}.
      *
@@ -99,7 +106,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     }
 
     /**
-     * Create a new LenskitRecommenderEngine by reading a previously serialized engine from the
+     * Create a new recommender engine by reading a previously serialized engine from the
      * given input stream. The new engine will be identical to the old. It is assumed that the file
      * was created by using {@link #write(OutputStream)}.  Classes will be loaded using a default
      * class loader.
@@ -115,7 +122,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     }
 
     /**
-     * Write the state of this LenskitRecommenderEngine to the given file so
+     * Write the state of this recommender engine to the given file so
      * that it can be recreated later using another DAOFactory. This uses
      * default object serialization so if the factory has a PicoContainer or
      * session bindings containing non-serializable types, this will fail.
@@ -129,7 +136,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
     }
 
     /**
-     * Write the state of this LenskitRecommenderEngine to the given file so
+     * Write the state of this recommender engine to the given file so
      * that it can be recreated later using another DAOFactory. This uses
      * default object serialization so if the factory has a PicoContainer or
      * session bindings containing non-serializable types, this will fail.
@@ -140,11 +147,14 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @see #write(OutputStream)
      */
     public void write(@Nonnull File file, CompressionMode compressed) throws IOException {
-        delegate.write(file, compressed);
+        try (OutputStream out = new FileOutputStream(file);
+             OutputStream zout = compressed.getEffectiveCompressionMode(file.getName()).wrapOutput(out)) {
+            write(zout);
+        }
     }
 
     /**
-     * Write the state of this LenskitRecommenderEngine to the given stream so
+     * Write the state of this recommender engine to the given stream so
      * that it can be recreated later using another DAOFactory. This uses
      * default object serialization so if the factory has session bindings
      * containing non-serializable types, this will fail.
@@ -154,12 +164,15 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @see #load(InputStream)
      */
     public void write(@Nonnull @WillClose OutputStream stream) throws IOException {
-        delegate.write(stream);
+        try (ObjectOutputStream out = new ObjectOutputStream(stream)) {
+            out.writeObject(graph);
+        }
     }
 
     @Override
     public LenskitRecommender createRecommender() {
-        return new LenskitRecommender(delegate.getGraph());
+        Preconditions.checkState(instantiable, "recommender engine does not have instantiable graph");
+        return new LenskitRecommender(graph);
     }
 
     /**
@@ -171,7 +184,24 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @throws RecommenderConfigurationException if there is an error configuring the recommender.
      */
     public LenskitRecommender createRecommender(LenskitConfiguration config) throws RecommenderConfigurationException {
-        return new LenskitRecommender(delegate.createRecommenderGraph(config));
+        final DAGNode<Component, Dependency> toBuild = createRecommenderGraph(config);
+
+        return new LenskitRecommender(toBuild);
+    }
+
+    public DAGNode<Component, Dependency> createRecommenderGraph(LenskitConfiguration config) throws RecommenderConfigurationException {
+        Preconditions.checkNotNull(config, "extra configuration");
+        final DAGNode<Component, Dependency> toBuild;
+        RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
+        rgb.addBindings(config.getBindings());
+        DependencySolver solver = rgb.buildDependencySolver();
+        try {
+            toBuild = solver.rewrite(graph);
+        } catch (ResolutionException ex) {
+            throw new RecommenderConfigurationException("error reconfiguring recommender", ex);
+        }
+        GraphtUtils.checkForPlaceholders(toBuild, logger);
+        return toBuild;
     }
 
     /**
@@ -180,7 +210,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      * @return {@code true} if the recommender is instantiable.
      */
     public boolean isInstantiable() {
-        return delegate.isInstantiable();
+        return instantiable;
     }
 
     /**
@@ -190,7 +220,7 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      */
     @Nonnull
     public DAGNode<Component, Dependency> getGraph() {
-        return delegate.getGraph();
+        return graph;
     }
 
     /**
@@ -203,7 +233,16 @@ public final class LenskitRecommenderEngine implements RecommenderEngine {
      */
     @Nullable
     public <T> T getComponent(Class<T> type) {
-        return delegate.getComponent(type);
+        DAGNode<Component, Dependency> node = GraphtUtils.findSatisfyingNode(graph, Qualifiers.matchDefault(), type);
+        if (node == null) {
+            return null;
+        }
+        Satisfaction sat = node.getLabel().getSatisfaction();
+        if (sat instanceof InstanceSatisfaction) {
+            return type.cast(((InstanceSatisfaction) sat).getInstance());
+        } else {
+            return null;
+        }
     }
 
     /**

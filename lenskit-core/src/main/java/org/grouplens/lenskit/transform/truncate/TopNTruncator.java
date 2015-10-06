@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.transform.truncate;
 
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.MutableSparseVector;

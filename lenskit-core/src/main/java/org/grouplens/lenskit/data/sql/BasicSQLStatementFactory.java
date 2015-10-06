@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.data.sql;
 
-import org.grouplens.lenskit.data.dao.SortOrder;
+import org.lenskit.data.dao.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

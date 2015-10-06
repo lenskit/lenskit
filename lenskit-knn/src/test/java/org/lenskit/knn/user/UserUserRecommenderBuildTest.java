@@ -20,21 +20,16 @@
  */
 package org.lenskit.knn.user;
 
-import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.basic.TopNItemRecommender;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.dao.EventDAO;
-import org.lenskit.data.ratings.Rating;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommenderEngine;
-import org.lenskit.api.ItemScorer;
-import org.lenskit.api.RatingPredictor;
-import org.lenskit.api.Recommender;
-import org.lenskit.api.RecommenderEngine;
+import org.lenskit.api.*;
 import org.lenskit.basic.SimpleRatingPredictor;
+import org.lenskit.basic.TopNItemRecommender;
+import org.lenskit.data.dao.EventCollectionDAO;
+import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.ratings.Rating;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,22 +62,21 @@ public class UserUserRecommenderBuildTest {
 
     @SuppressWarnings("deprecation")
     @Test
-    @Ignore("will not work until moved")
     public void testUserUserRecommenderEngineCreate() {
-        Recommender rec = engine.createRecommender();
+        try (Recommender rec = engine.createRecommender()) {
 
-        assertThat(rec.getItemScorer(),
-                   instanceOf(UserUserItemScorer.class));
-        assertThat(rec.getItemRecommender(),
-                   instanceOf(TopNItemRecommender.class));
-        RatingPredictor pred = rec.getRatingPredictor();
-        assertThat(pred, notNullValue());
-        assertThat(pred, instanceOf(SimpleRatingPredictor.class));
-        assertThat(((SimpleRatingPredictor) pred).getItemScorer(),
-                   sameInstance(rec.getItemScorer()));
+            assertThat(rec.getItemScorer(),
+                       instanceOf(UserUserItemScorer.class));
+            assertThat(rec.getItemRecommender(),
+                       instanceOf(TopNItemRecommender.class));
+            RatingPredictor pred = rec.getRatingPredictor();
+            assertThat(pred, notNullValue());
+            assertThat(pred, instanceOf(SimpleRatingPredictor.class));
+            assertThat(((SimpleRatingPredictor) pred).getItemScorer(),
+                       sameInstance(rec.getItemScorer()));
+        }
     }
 
-    @Ignore("will not work until moved")
     @Test
     public void testSnapshot() throws RecommenderBuildException {
         List<Rating> rs = new ArrayList<Rating>();
@@ -99,15 +93,16 @@ public class UserUserRecommenderBuildTest {
         config.bind(NeighborFinder.class).to(SnapshotNeighborFinder.class);
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
-        Recommender rec = engine.createRecommender();
-        assertThat(rec.getItemScorer(),
-                   instanceOf(UserUserItemScorer.class));
-        assertThat(rec.getItemRecommender(),
-                   instanceOf(TopNItemRecommender.class));
-        RatingPredictor pred = rec.getRatingPredictor();
-        assertThat(pred, instanceOf(SimpleRatingPredictor.class));
-
-        Recommender rec2 = engine.createRecommender();
-        assertThat(rec2.getItemScorer(), not(sameInstance(rec.getItemScorer())));
+        try (Recommender rec = engine.createRecommender()) {
+            assertThat(rec.getItemScorer(),
+                       instanceOf(UserUserItemScorer.class));
+            assertThat(rec.getItemRecommender(),
+                       instanceOf(TopNItemRecommender.class));
+            RatingPredictor pred = rec.getRatingPredictor();
+            assertThat(pred, instanceOf(SimpleRatingPredictor.class));
+            try (Recommender rec2 = engine.createRecommender()) {
+                assertThat(rec2.getItemScorer(), not(sameInstance(rec.getItemScorer())));
+            }
+        }
     }
 }

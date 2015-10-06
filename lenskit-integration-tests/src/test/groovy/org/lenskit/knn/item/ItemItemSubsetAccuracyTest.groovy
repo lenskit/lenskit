@@ -20,8 +20,8 @@
  */
 package org.lenskit.knn.item
 
-import org.grouplens.lenskit.core.LenskitConfiguration
-import org.grouplens.lenskit.data.dao.ItemDAO
+import org.lenskit.LenskitConfiguration
+import org.lenskit.data.dao.ItemDAO
 import org.grouplens.lenskit.test.ML100KTestSuite
 
 class ItemItemSubsetAccuracyTest extends ItemItemAccuracyTest {

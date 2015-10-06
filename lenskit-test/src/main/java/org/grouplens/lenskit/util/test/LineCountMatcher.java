@@ -38,28 +38,21 @@ public class LineCountMatcher extends BaseMatcher<File> {
 
     @Override
     public boolean matches(Object o) {
-        if (o instanceof File) {
-            try {
-                Reader reader = new FileReader((File) o);
-
-                try {
-                    BufferedReader lines = new BufferedReader(reader);
-                    String line;
-                    int n = 0;
-                    while ((line = lines.readLine()) != null) {
-                        n++;
-                    }
-                    return lineCount.matches(n);
-                } finally {
-                    reader.close();
-                }
-            } catch (FileNotFoundException ex) {
-                return false;
-            } catch (IOException ex) {
-                throw new RuntimeException("error reading file " + o, ex);
-            }
-        } else {
+        if (!(o instanceof File)) {
             return false;
+        }
+
+        try (Reader reader = new FileReader((File) o);
+             BufferedReader lines = new BufferedReader(reader)) {
+            int n = 0;
+            while (lines.readLine() != null) {
+                n++;
+            }
+            return lineCount.matches(n);
+        } catch (FileNotFoundException ex) {
+            return false;
+        } catch (IOException ex) {
+            throw new RuntimeException("error reading file " + o, ex);
         }
     }
 

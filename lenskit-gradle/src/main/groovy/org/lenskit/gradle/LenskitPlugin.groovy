@@ -22,7 +22,6 @@ package org.lenskit.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.grouplens.lenskit.gradle.LenskitEval
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

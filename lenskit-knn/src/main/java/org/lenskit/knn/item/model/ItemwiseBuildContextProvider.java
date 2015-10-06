@@ -23,14 +23,15 @@ package org.lenskit.knn.item.model;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.core.Transient;
+import org.lenskit.inject.Transient;
+import org.lenskit.baseline.ItemMeanRatingItemScorer;
 import org.lenskit.util.io.ObjectStream;
-import org.grouplens.lenskit.data.dao.ItemDAO;
-import org.grouplens.lenskit.data.dao.ItemEventDAO;
+import org.lenskit.data.dao.ItemDAO;
+import org.lenskit.data.dao.ItemEventDAO;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.Ratings;
-import org.grouplens.lenskit.data.history.ItemEventCollection;
+import org.lenskit.data.history.ItemEventCollection;
 import org.grouplens.lenskit.transform.normalize.ItemVectorNormalizer;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -64,7 +65,7 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
      * @param norm The item vector normalizer.  This is applied to item rating vectors.  You should
      *             take care to use a compatible normalizer for the item scorer (e.g. if this uses
      *             a {@link org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer},
-     *             then you should use {@link org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer}
+     *             then you should use {@link ItemMeanRatingItemScorer}
      *             for the user vector normalization in the scorer).
      */
     @Inject
@@ -98,7 +99,7 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
                 List<Rating> ratings = FluentIterable.from(item)
                                                      .filter(Rating.class)
                                                      .toList();
-                MutableSparseVector vector = Ratings.itemRatingVector(ratings);
+                MutableSparseVector vector = MutableSparseVector.create(Ratings.itemRatingVector(ratings));
                 normalizer.normalize(item.getItemId(), vector, vector);
                 for (VectorEntry e: vector) {
                     long user = e.getKey();

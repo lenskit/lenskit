@@ -26,8 +26,7 @@ package org.lenskit.baseline;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
-import org.grouplens.lenskit.baseline.MeanDamping;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.inject.Shareable;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
@@ -49,11 +48,9 @@ import java.util.List;
  *
  * If the item has no ratings, the global mean rating is returned.
  *
- * This implements the baseline scorer <i>p<sub>u,i</sub> = µ + b<sub>i</sub></i>,
- * where <i>b<sub>i</sub></i> is the item's average rating (less the global
- * mean µ).
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * This implements the baseline scorer \(p_{u,i} = \mu + b_i\),
+ * where \(b_i\) is the item's average rating (less the global
+ * mean \(\mu\)).
  */
 @Shareable
 public class ItemMeanRatingItemScorer extends AbstractItemScorer implements Serializable {

@@ -25,7 +25,7 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.inject.Shareable;
 import org.lenskit.mf.svd.MFModel;
 import org.lenskit.util.keys.KeyIndex;
 

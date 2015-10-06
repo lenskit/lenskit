@@ -20,26 +20,25 @@
  */
 package org.lenskit.slopeone;
 
-import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.data.dao.EventCollectionDAO;
-import org.grouplens.lenskit.data.dao.EventDAO;
-import org.lenskit.data.ratings.Rating;
-import org.lenskit.data.ratings.PreferenceDomain;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.RatingPredictor;
 import org.lenskit.api.Recommender;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.baseline.BaselineScorer;
 import org.lenskit.baseline.ItemMeanRatingItemScorer;
 import org.lenskit.baseline.UserMeanBaseline;
 import org.lenskit.baseline.UserMeanItemScorer;
 import org.lenskit.basic.SimpleRatingPredictor;
 import org.lenskit.basic.TopNItemRecommender;
+import org.lenskit.data.dao.EventCollectionDAO;
+import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.ratings.PreferenceDomain;
+import org.lenskit.data.ratings.Rating;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,32 +74,31 @@ public class SlopeOneItemRecommenderTest {
 
     @SuppressWarnings("deprecation")
     @Test
-    @Ignore("will not work until moved")
     public void testSlopeOneRecommenderEngineCreate() {
-        Recommender rec = engine.createRecommender();
+        try (Recommender rec = engine.createRecommender()) {
 
-        assertThat(rec.getItemScorer(),
-                   instanceOf(SlopeOneItemScorer.class));
-        RatingPredictor rp = rec.getRatingPredictor();
-        assertThat(rp, notNullValue());
-        assertThat(rp, instanceOf(SimpleRatingPredictor.class));
-        assertThat(((SimpleRatingPredictor) rp).getItemScorer(),
-                   sameInstance(rec.getItemScorer()));
-        assertThat(rec.getItemRecommender(),
-                   instanceOf(TopNItemRecommender.class));
+            assertThat(rec.getItemScorer(),
+                       instanceOf(SlopeOneItemScorer.class));
+            RatingPredictor rp = rec.getRatingPredictor();
+            assertThat(rp, notNullValue());
+            assertThat(rp, instanceOf(SimpleRatingPredictor.class));
+            assertThat(((SimpleRatingPredictor) rp).getItemScorer(),
+                       sameInstance(rec.getItemScorer()));
+            assertThat(rec.getItemRecommender(),
+                       instanceOf(TopNItemRecommender.class));
+        }
     }
 
     @Test
     public void testConfigSeparation() {
-        LenskitRecommender rec1 = null;
-        LenskitRecommender rec2 = null;
-        rec1 = engine.createRecommender();
-        rec2 = engine.createRecommender();
+        try (LenskitRecommender rec1 = engine.createRecommender();
+             LenskitRecommender rec2 = engine.createRecommender()) {
 
-        assertThat(rec1.getItemScorer(),
-                   not(sameInstance(rec2.getItemScorer())));
-        assertThat(rec1.get(SlopeOneModel.class),
-                   allOf(not(nullValue()),
-                         sameInstance(rec2.get(SlopeOneModel.class))));
+            assertThat(rec1.getItemScorer(),
+                       not(sameInstance(rec2.getItemScorer())));
+            assertThat(rec1.get(SlopeOneModel.class),
+                       allOf(not(nullValue()),
+                             sameInstance(rec2.get(SlopeOneModel.class))));
+        }
     }
 }

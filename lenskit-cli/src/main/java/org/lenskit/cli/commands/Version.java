@@ -23,7 +23,7 @@ package org.lenskit.cli.commands;
 import com.google.auto.service.AutoService;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.grouplens.lenskit.core.LenskitInfo;
+import org.lenskit.LenskitInfo;
 import org.lenskit.cli.Command;
 
 /**

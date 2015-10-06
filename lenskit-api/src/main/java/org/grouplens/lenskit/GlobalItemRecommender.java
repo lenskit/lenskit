@@ -21,6 +21,7 @@
 package org.grouplens.lenskit;
 
 import org.grouplens.lenskit.scored.ScoredId;
+import org.lenskit.api.ItemRecommender;
 
 import javax.annotation.Nullable;
 import java.util.List;

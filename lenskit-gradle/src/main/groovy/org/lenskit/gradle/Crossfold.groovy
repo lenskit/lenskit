@@ -23,12 +23,15 @@ package org.lenskit.gradle
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
+import org.lenskit.gradle.delegates.SpecDelegate
 import org.lenskit.gradle.traits.DataBuilder
 import org.lenskit.gradle.traits.DataSources
 import org.lenskit.specs.SpecUtils
 import org.lenskit.specs.data.DataSourceSpec
 import org.lenskit.specs.data.TextDataSourceSpec
 import org.lenskit.specs.eval.CrossfoldSpec
+import org.lenskit.specs.eval.DataSetSpec
+import org.lenskit.specs.eval.PartitionMethodSpec
 
 import java.nio.file.Path
 
@@ -39,10 +42,10 @@ import java.nio.file.Path
  * In addition to the methods and properties specified in this class, the crossfolder also supports all configuration
  * directives supported by the crossfold operation.  For example, you can say:
  *
- * ```
+ * <pre>{@code
  * includeTimestamps false
  * partitions 10
- * ```
+ * }</pre>
  */
 class Crossfold extends LenskitTask implements DataSources {
     private def spec = new CrossfoldSpec();
@@ -59,10 +62,18 @@ class Crossfold extends LenskitTask implements DataSources {
         }
     }
 
+    /**
+     * Set the input source.
+     * @param src
+     */
     void input(DataSourceSpec src) {
         spec.source = src
     }
 
+    /**
+     * Set the input source.
+     * @param bld The input source.
+     */
     void input(DataBuilder bld) {
         dependsOn bld
         spec.deferredSource = bld.deferredDataSourceSpec
@@ -120,5 +131,56 @@ class Crossfold extends LenskitTask implements DataSources {
 
     Path getSpecFile() {
         return project.file(getOutputDir()).toPath().resolve("crossfold.json")
+    }
+
+    List<DataSetSpec> getDataSets() {
+        return SpecUtils.loadList(DataSetSpec, project.file(getOutputDir()).toPath().resolve("all-partitions.json"))
+    }
+
+    /**
+     * Utility method to create a holdout-N user partition method.
+     * @param n The number of ratings to hold out for each user.
+     * @return The partition method.
+     */
+    public static PartitionMethodSpec holdout(int n) {
+        def spec = new PartitionMethodSpec.Holdout()
+        spec.count = n
+        spec
+    }
+
+    public static PartitionMethodSpec holdout(Closure block) {
+        SpecDelegate.configure(PartitionMethodSpec.Holdout, block)
+    }
+
+    /**
+     * Utility method to create a retain-N user partition method.
+     * @param n The number of ratings to hold out for each user.
+     * @param order The sort order. Defaults to `random`.
+     * @return The partition method.
+     */
+    public static PartitionMethodSpec retain(int n) {
+        def spec = new PartitionMethodSpec.Retain()
+        spec.count = n
+        spec
+    }
+
+    public static PartitionMethodSpec retain(Closure block) {
+        SpecDelegate.configure(PartitionMethodSpec.Retain, block)
+    }
+
+    /**
+     * Utility method to create a holdout-fraction user partition method.
+     * @param f The fraction of ratings to hold out per user.
+     * @param order The sort order. Defaults to `random`.
+     * @return The partition method.
+     */
+    public static PartitionMethodSpec holdoutFraction(double f) {
+        def spec = new PartitionMethodSpec.HoldoutFraction()
+        spec.fraction = f
+        spec
+    }
+
+    public static PartitionMethodSpec holdoutFraction(Closure block) {
+        SpecDelegate.configure(PartitionMethodSpec.HoldoutFraction, block)
     }
 }

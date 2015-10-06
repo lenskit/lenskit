@@ -20,7 +20,7 @@
  */
 package org.grouplens.lenskit.iterative;
 
-import org.grouplens.lenskit.core.Parameter;
+import org.lenskit.inject.Parameter;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.*;

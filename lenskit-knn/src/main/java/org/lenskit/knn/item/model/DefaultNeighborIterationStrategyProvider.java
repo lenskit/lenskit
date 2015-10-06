@@ -20,7 +20,7 @@
  */
 package org.lenskit.knn.item.model;
 
-import org.grouplens.lenskit.core.Transient;
+import org.lenskit.inject.Transient;
 import org.lenskit.knn.item.ItemSimilarity;
 
 import javax.inject.Inject;

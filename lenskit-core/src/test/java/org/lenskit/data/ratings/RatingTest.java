@@ -20,6 +20,7 @@
  */
 package org.lenskit.data.ratings;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.junit.Test;
 
@@ -76,7 +77,7 @@ public class RatingTest {
     @Test
     public void testEmptyURV() {
         List<Rating> ratings = Collections.emptyList();
-        MutableSparseVector urv = Ratings.userRatingVector(ratings);
+        Long2DoubleMap urv = Ratings.userRatingVector(ratings);
         assertThat(urv.isEmpty(), equalTo(true));
         assertThat(urv.size(), equalTo(0));
     }
@@ -87,7 +88,7 @@ public class RatingTest {
         ratings.add(Rating.create(1, 2, 3.0, 3));
         ratings.add(Rating.create(1, 3, 4.5, 7));
         ratings.add(Rating.create(1, 5, 2.3, 10));
-        MutableSparseVector urv = Ratings.userRatingVector(ratings);
+        Long2DoubleMap urv = Ratings.userRatingVector(ratings);
         assertThat(urv.isEmpty(), equalTo(false));
         assertThat(urv.size(), equalTo(3));
         assertThat(urv.get(2), closeTo(3.0, 1.0e-6));
@@ -102,7 +103,7 @@ public class RatingTest {
         ratings.add(Rating.create(1, 2, 3.0, 3));
         ratings.add(Rating.create(1, 5, 2.3, 7));
         ratings.add(Rating.create(1, 3, 4.5, 10));
-        MutableSparseVector urv = Ratings.userRatingVector(ratings);
+        Long2DoubleMap urv = Ratings.userRatingVector(ratings);
         assertThat(urv.isEmpty(), equalTo(false));
         assertThat(urv.size(), equalTo(3));
         assertThat(urv.get(2), closeTo(3.0, 1.0e-6));
@@ -118,7 +119,7 @@ public class RatingTest {
         ratings.add(Rating.create(1, 5, 2.3, 4));
         ratings.add(Rating.create(1, 3, 4.5, 5));
         ratings.add(Rating.create(1, 5, 3.7, 6));
-        MutableSparseVector urv = Ratings.userRatingVector(ratings);
+        Long2DoubleMap urv = Ratings.userRatingVector(ratings);
         assertThat(urv.isEmpty(), equalTo(false));
         assertThat(urv.size(), equalTo(3));
         assertThat(urv.get(2), closeTo(3.0, 1.0e-6));
@@ -134,7 +135,7 @@ public class RatingTest {
         ratings.add(Rating.create(1, 5, 2.3, 5));
         ratings.add(Rating.createUnrate(1, 2, 7));
         ratings.add(Rating.create(1, 3, 4.5, 8));
-        MutableSparseVector urv = Ratings.userRatingVector(ratings);
+        Long2DoubleMap urv = Ratings.userRatingVector(ratings);
         assertThat(urv.isEmpty(), equalTo(false));
         assertThat(urv.size(), equalTo(2));
         assertThat(urv.get(3), closeTo(4.5, 1.0e-6));
@@ -150,7 +151,7 @@ public class RatingTest {
         ratings.add(Rating.create(1, 5, 2.3, 7));
         ratings.add(Rating.create(1, 3, 4.5, 5));
         ratings.add(Rating.create(1, 5, 3.7, 6));
-        MutableSparseVector urv = Ratings.userRatingVector(ratings);
+        Long2DoubleMap urv = Ratings.userRatingVector(ratings);
         assertThat(urv.isEmpty(), equalTo(false));
         assertThat(urv.size(), equalTo(3));
         assertThat(urv.get(2), closeTo(3.0, 1.0e-6));
@@ -162,7 +163,7 @@ public class RatingTest {
     @Test
     public void testEmptyIRV() {
         List<Rating> ratings = Collections.emptyList();
-        MutableSparseVector urv = Ratings.itemRatingVector(ratings);
+        Long2DoubleMap urv = Ratings.itemRatingVector(ratings);
         assertThat(urv.isEmpty(), equalTo(true));
         assertThat(urv.size(), equalTo(0));
     }
@@ -174,7 +175,7 @@ public class RatingTest {
         ratings.add(Rating.create(3, 2, 4.5, 2));
         ratings.add(Rating.create(2, 2, 2.3, 3));
         ratings.add(Rating.create(3, 2, 4.5, 10));
-        MutableSparseVector urv = Ratings.itemRatingVector(ratings);
+        Long2DoubleMap urv = Ratings.itemRatingVector(ratings);
         assertThat(urv.isEmpty(), equalTo(false));
         assertThat(urv.size(), equalTo(3));
         assertThat(urv.get(1), closeTo(3.0, 1.0e-6));

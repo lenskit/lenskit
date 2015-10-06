@@ -22,7 +22,7 @@ package org.grouplens.lenskit.vectors.similarity;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.tuple.Pair;
-import org.grouplens.lenskit.core.Shareable;
+import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.grouplens.lenskit.vectors.Vectors;
@@ -41,7 +41,7 @@ import static java.lang.Math.sqrt;
  *
  * <p>See Desrosiers, C. and Karypis, G., <i>A Comprehensive Survey of
  * Neighborhood-based Recommendation Methods</i>.  In Ricci, F., Rokach, L.,
- * Shapira, B., and Kantor, P. (eds.), <i>RecommenderEngine Systems Handbook</i>,
+ * Shapira, B., and Kantor, P. (eds.), <i>Recommender Systems Handbook</i>,
  * Springer. 2010, pp. 107-144.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
