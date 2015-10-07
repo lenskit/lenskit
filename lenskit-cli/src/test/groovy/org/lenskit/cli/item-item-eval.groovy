@@ -21,19 +21,9 @@
 package org.lenskit.cli
 
 
-import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
-import org.grouplens.lenskit.baseline.UserMeanBaseline
-import org.grouplens.lenskit.baseline.UserMeanItemScorer
-import org.grouplens.lenskit.eval.metrics.predict.CoveragePredictMetric
-import org.grouplens.lenskit.eval.metrics.predict.HLUtilityPredictMetric
-import org.grouplens.lenskit.eval.metrics.predict.MAEPredictMetric
-import org.grouplens.lenskit.eval.metrics.predict.NDCGPredictMetric
-import org.grouplens.lenskit.eval.metrics.predict.RMSEPredictMetric
 import org.grouplens.lenskit.transform.normalize.MeanCenteringVectorNormalizer
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer
 import org.grouplens.lenskit.transform.truncate.VectorTruncator
-import org.lenskit.api.RatingPredictor
 import org.lenskit.baseline.BaselineScorer
 import org.lenskit.knn.NeighborhoodSize
 import org.lenskit.knn.item.ItemItemScorer

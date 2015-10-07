@@ -18,18 +18,18 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.temporal;
+package org.lenskit.eval.temporal;
 
 import com.google.common.collect.ImmutableList;
-import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.data.dao.packed.BinaryFormatFlag;
-import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO;
-import org.grouplens.lenskit.data.dao.packed.BinaryRatingPacker;
+import org.lenskit.LenskitConfiguration;
 import org.lenskit.api.ItemScorer;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.baseline.ItemMeanRatingItemScorer;
 import org.lenskit.baseline.UserMeanBaseline;
 import org.lenskit.baseline.UserMeanItemScorer;
+import org.lenskit.data.packed.BinaryFormatFlag;
+import org.lenskit.data.packed.BinaryRatingDAO;
+import org.lenskit.data.packed.BinaryRatingPacker;
 import org.lenskit.data.ratings.Rating;
 import org.junit.rules.TemporaryFolder;
 
@@ -39,7 +39,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;

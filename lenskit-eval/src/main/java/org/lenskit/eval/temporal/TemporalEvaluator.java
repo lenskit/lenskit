@@ -18,25 +18,25 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.eval.temporal;
+package org.lenskit.eval.temporal;
 
 import com.google.common.base.Preconditions;
-import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.core.ModelDisposition;
-import org.grouplens.lenskit.data.dao.SortOrder;
-import org.grouplens.lenskit.data.dao.packed.BinaryRatingDAO;
-import org.grouplens.lenskit.eval.algorithm.AlgorithmInstance;
 import org.grouplens.lenskit.util.io.CompressionMode;
-import org.grouplens.lenskit.util.table.TableLayout;
-import org.grouplens.lenskit.util.table.TableLayoutBuilder;
-import org.grouplens.lenskit.util.table.writer.CSVWriter;
-import org.grouplens.lenskit.util.table.writer.TableWriter;
+import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommenderEngine;
+import org.lenskit.ModelDisposition;
 import org.lenskit.api.Recommender;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.api.Result;
+import org.lenskit.data.dao.SortOrder;
+import org.lenskit.data.packed.BinaryRatingDAO;
+import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.util.io.ObjectStreams;
 import org.lenskit.data.ratings.Rating;
+import org.lenskit.util.table.TableLayout;
+import org.lenskit.util.table.TableLayoutBuilder;
+import org.lenskit.util.table.writer.CSVWriter;
+import org.lenskit.util.table.writer.TableWriter;
 
 import java.io.File;
 import java.io.IOException;
@@ -189,10 +189,10 @@ public class TemporalEvaluator {
                 }
                 LenskitConfiguration config = new LenskitConfiguration();
                 config.addComponent(limitedDao);
-                if (r.getTimestamp() - buildTime >= rebuildPeriod ) {
+                if (r.getTimestamp() - buildTime >= rebuildPeriod) {
                     buildTime = r.getTimestamp();
                     lre = LenskitRecommenderEngine.newBuilder()
-                                                  .addConfiguration(algorithm.getConfig())
+                                                  .addConfiguration(algorithm.getConfigurations().get(0))
                                                   .addConfiguration(config, ModelDisposition.EXCLUDED)
                                                   .build();
                 }

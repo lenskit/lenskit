@@ -20,11 +20,10 @@
  */
 package org.lenskit.cli
 
-
-import org.grouplens.lenskit.ItemScorer
-import org.grouplens.lenskit.baseline.ItemMeanRatingItemScorer
-import org.grouplens.lenskit.baseline.UserMeanBaseline
-import org.grouplens.lenskit.baseline.UserMeanItemScorer
+import org.lenskit.api.ItemScorer
+import org.lenskit.baseline.ItemMeanRatingItemScorer
+import org.lenskit.baseline.UserMeanBaseline
+import org.lenskit.baseline.UserMeanItemScorer
 
 bind ItemScorer to UserMeanItemScorer
 bind(UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
