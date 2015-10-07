@@ -107,6 +107,7 @@ public class TemporalEvaluatorTest {
         config.bind(ItemScorer.class).to(UserMeanItemScorer.class);
         config.bind(UserMeanBaseline.class, ItemScorer.class).to(ItemMeanRatingItemScorer.class);
 
+        tempEval.setRebuildPeriod(1L);
         tempEval.setDataSource(file);
         tempEval.setAlgorithm("UserMeanBaseline", config);
         tempEval.setPredictOutputFile(predictOutputFile);
