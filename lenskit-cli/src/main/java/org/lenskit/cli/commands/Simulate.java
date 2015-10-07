@@ -24,9 +24,10 @@ import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.grouplens.lenskit.RecommenderBuildException;
-import org.grouplens.lenskit.core.LenskitConfiguration;
-import org.grouplens.lenskit.eval.temporal.TemporalEvaluator;
+
+import org.lenskit.eval.temporal.TemporalEvaluator;
+import org.lenskit.LenskitConfiguration;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.ScriptEnvironment;
 import org.slf4j.Logger;
