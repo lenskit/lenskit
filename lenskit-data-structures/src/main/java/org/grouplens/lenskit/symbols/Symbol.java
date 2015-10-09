@@ -43,7 +43,9 @@ import java.util.Map;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
+ * @deprecated Symbols are being removed in LensKit 3.0.
  */
+@Deprecated
 public final class Symbol implements Serializable {
     // Variables shared by all instances
     private static final Map<String, Symbol> name2SymbolMap = Maps.newHashMap();

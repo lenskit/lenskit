@@ -42,8 +42,10 @@ import java.util.*;
  * @since 2.0
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Private
+ * @deprecated Replaced by `LongKeyIndex`.
  */
 @SuppressWarnings("deprecation")
+@Deprecated
 public abstract class LongKeyDomain implements Serializable {
     /**
      * Wrap a key array (with a specified size) into a key set.

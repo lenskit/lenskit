@@ -42,7 +42,9 @@ import java.util.Set;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
  * @compat Public
+ * @deprecated Scored IDs are going away in LensKit 3.0.
  */
+@Deprecated
 public abstract class AbstractScoredId implements ScoredId {
 
     private transient volatile int hashCode;

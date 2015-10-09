@@ -67,7 +67,9 @@ import java.util.Set;
  *
  * @see <a href="http://lenskit.org/documentation/basics/sparse-vectors/">Sparse Vector tutorial</a>
  * @compat Public
+ * @deprecated Use maps instead.
  */
+@Deprecated
 public abstract class SparseVector implements Iterable<VectorEntry>, Serializable {
     private static final long serialVersionUID = 2L;
 

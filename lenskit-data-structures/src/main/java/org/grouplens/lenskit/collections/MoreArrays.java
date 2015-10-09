@@ -24,7 +24,9 @@ package org.grouplens.lenskit.collections;
  * Additional array utilities.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Methods in this class still in use will be migrated to `lenskit-core`.
  */
+@Deprecated
 public final class MoreArrays {
     private MoreArrays() {
     }

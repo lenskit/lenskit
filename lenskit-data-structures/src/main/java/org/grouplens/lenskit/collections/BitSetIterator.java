@@ -32,7 +32,9 @@ import java.util.NoSuchElementException;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 0.9
+ * @deprecated Will be moved or removed in LensKit 3.0.
  */
+@Deprecated
 public final class BitSetIterator extends AbstractIntBidirectionalIterator {
     /*
      * firstBit and lastBit mark the range of this iterator, which is the

@@ -23,7 +23,9 @@ package org.grouplens.lenskit.symbols;
 /**
  * Implementation class for {@link SymbolValue}.
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Symbols are going away in LensKit 3.0.
  */
+@Deprecated
 class TypedSymbolValue<T> extends SymbolValue<T> {
     private final TypedSymbol<T> symbol;
     private final T value;
