@@ -72,6 +72,7 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
      * @param uid The user ID.
      * @return The builder (for chaining).
      */
+    @Override
     public RatingBuilder setUserId(long uid) {
         userId = uid;
         hasUserId = true;
@@ -91,6 +92,7 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
      * @param iid The item ID.
      * @return The builder (for chaining).
      */
+    @Override
     public RatingBuilder setItemId(long iid) {
         itemId = iid;
         hasItemId = true;
@@ -154,6 +156,7 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
      * @param ts The timestamp.
      * @return The builder (for chaining).
      */
+    @Override
     public RatingBuilder setTimestamp(long ts) {
         timestamp = ts;
         return this;
