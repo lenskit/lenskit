@@ -38,7 +38,9 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
  * @compat Public
+ * @deprecated Scored IDs are going away in LensKit 3.0.
  */
+@Deprecated
 public class ScoredIdBuilder implements Builder<ScoredId> {
     private long id;
     private double score;

@@ -49,7 +49,9 @@ import java.util.*;
  * @since 1.4
  * @compat Public
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Scored IDs are going away in LensKit 3.0.
  */
+@Deprecated
 public final class PackedScoredIdList extends AbstractList<ScoredId> implements Collection<ScoredId>, Serializable {
     private static final long serialVersionUID = 1L;
     private final LongList ids;

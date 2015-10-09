@@ -42,7 +42,9 @@ import java.util.NoSuchElementException;
  *
  * @compat Public
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Use the new vector utilities and maps in `lenskit-core` instead.
  */
+@Deprecated
 public final class Vectors {
     /**
      * Private constructor. This class is meant to be used

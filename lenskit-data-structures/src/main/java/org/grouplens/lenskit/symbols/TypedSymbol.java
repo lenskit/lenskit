@@ -36,7 +36,9 @@ import java.util.Map;
  * @see Symbol
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
+ * @deprecated Symbols are going away in LensKit 3.0.
  */
+@Deprecated
 public final class TypedSymbol<K> implements Serializable {
     private static final long serialVersionUID = 1L;
     @SuppressWarnings("rawtypes")

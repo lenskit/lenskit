@@ -47,7 +47,9 @@ import java.util.Set;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
+ * @deprecated Use maps instead.
  */
+@Deprecated
 @Immutable
 public final class ImmutableSparseVector extends SparseVector implements Serializable {
     private static final long serialVersionUID = -2L;
