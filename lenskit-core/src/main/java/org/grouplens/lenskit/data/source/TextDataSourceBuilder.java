@@ -22,10 +22,10 @@ package org.grouplens.lenskit.data.source;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
-import org.lenskit.data.ratings.PreferenceDomain;
 import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
 import org.grouplens.lenskit.data.text.EventFormat;
-import org.grouplens.lenskit.data.text.RatingEventType;
+import org.lenskit.data.ratings.PreferenceDomain;
+import org.lenskit.data.ratings.RatingBuilder;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -40,7 +40,7 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
     File inputFile;
     PreferenceDomain domain;
     DelimitedColumnEventFormat dceFormat =
-            DelimitedColumnEventFormat.create(new RatingEventType())
+            DelimitedColumnEventFormat.create(RatingBuilder.class)
                                       .setDelimiter(",");
     EventFormat format = dceFormat;
     File itemFile;

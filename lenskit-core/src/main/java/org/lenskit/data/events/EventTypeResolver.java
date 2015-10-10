@@ -64,36 +64,27 @@ public class EventTypeResolver {
      */
     @Nullable
     @SuppressWarnings("unchecked")
-    public EventBuilder<?> getEventBuilder(String name) {
+    public Class<? extends EventBuilder> getEventBuilder(String name) {
         String className = typeDefs.getProperty(name);
         if (className == null) {
             className = name;
         }
 
         try {
-            Class<? extends EventBuilder<?>> cls =
-                    (Class) ClassUtils.getClass(classLoader, className).asSubclass(EventBuilder.class);
-            return cls.newInstance();
+            return ClassUtils.getClass(classLoader, className).asSubclass(EventBuilder.class);
         } catch (ClassNotFoundException e) {
             logger.debug("cannot locate class {}", className);
             return null;
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException("cannot instantiate " + className, e);
         }
     }
 
     @Nullable
     @SuppressWarnings("unchecked")
-    public <E extends Event> EventBuilder<E> getEventBuilder(Class<E> eventType) {
+    public Class<? extends EventBuilder> getEventBuilder(Class<? extends Event> eventType) {
         BuiltBy bb = eventType.getAnnotation(BuiltBy.class);
         if (bb == null) {
             return null;
         }
-        Class<? extends EventBuilder<?>> cls = bb.value();
-        try {
-            return EventBuilder.class.cast(cls.newInstance());
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException("cannot instantiate " + cls, e);
-        }
+        return bb.value();
     }
 }
