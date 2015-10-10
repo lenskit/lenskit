@@ -22,6 +22,7 @@ package org.lenskit.data.ratings;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.data.text.DefaultFields;
 import org.lenskit.data.events.EventBuilder;
 
 /**
@@ -30,6 +31,7 @@ import org.lenskit.data.events.EventBuilder;
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
+@DefaultFields({"userId", "itemId", "rating", "timestamp?"})
 public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
     private boolean hasUserId;
     private long userId;

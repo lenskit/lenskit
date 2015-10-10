@@ -1,9 +1,9 @@
 package org.grouplens.lenskit.data.text;
 
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.Rating;
-import org.grouplens.lenskit.data.event.RatingBuilder;
 import org.junit.Test;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.RatingBuilder;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
