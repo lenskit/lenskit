@@ -26,8 +26,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.text.StrTokenizer;
-import org.grouplens.lenskit.data.event.Event;
-import org.grouplens.lenskit.data.event.EventBuilder;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.events.EventBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
