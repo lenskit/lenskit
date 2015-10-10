@@ -32,7 +32,7 @@ import org.lenskit.data.events.EventBuilder;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 @DefaultFields({"userId", "itemId", "rating", "timestamp?"})
-public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
+public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating>, Cloneable {
     private boolean hasUserId;
     private long userId;
     private boolean hasItemId;
@@ -172,6 +172,15 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
             return Rating.create(userId, itemId, rating, timestamp);
         } else {
             return Rating.createUnrate(userId, itemId, timestamp);
+        }
+    }
+
+    @Override
+    public RatingBuilder clone() {
+        try {
+            return (RatingBuilder) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
         }
     }
 }

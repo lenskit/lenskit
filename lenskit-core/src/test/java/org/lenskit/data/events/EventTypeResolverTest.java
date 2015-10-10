@@ -17,31 +17,31 @@ public class EventTypeResolverTest {
 
     @Test
     public void testGetRatingBuilder() {
-        EventBuilder<?> eb = resolver.getEventBuilder("rating");
-        assertThat(eb, instanceOf(RatingBuilder.class));
+        Class<? extends EventBuilder> eb = resolver.getEventBuilder("rating");
+        assertThat(eb, equalTo((Class) RatingBuilder.class));
     }
 
     @Test
     public void testGetLikeBuilder() {
-        EventBuilder<?> eb = resolver.getEventBuilder("like");
-        assertThat(eb, instanceOf(LikeBuilder.class));
+        Class<? extends EventBuilder> eb = resolver.getEventBuilder("like");
+        assertThat(eb, equalTo((Class) LikeBuilder.class));
     }
 
     @Test
     public void testGetLikeBatchBuilder() {
-        EventBuilder<?> eb = resolver.getEventBuilder("like-batch");
-        assertThat(eb, instanceOf(LikeBatchBuilder.class));
+        Class<? extends EventBuilder> eb = resolver.getEventBuilder("like-batch");
+        assertThat(eb, equalTo((Class) LikeBatchBuilder.class));
     }
 
     @Test
     public void testGetLikeBatchBuilderFromClass() {
-        EventBuilder<LikeBatch> eb = resolver.getEventBuilder(LikeBatch.class);
-        assertThat(eb, instanceOf(LikeBatchBuilder.class));
+        Class<? extends EventBuilder> eb = resolver.getEventBuilder(LikeBatch.class);
+        assertThat(eb, equalTo((Class) LikeBatchBuilder.class));
     }
 
     @Test
     public void testGetNonexistentBuilder() {
-        EventBuilder<?> eb = resolver.getEventBuilder("foobar");
+        Class<? extends EventBuilder> eb = resolver.getEventBuilder("foobar");
         assertThat(eb, nullValue());
     }
 }

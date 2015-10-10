@@ -31,7 +31,7 @@ import org.grouplens.lenskit.data.text.DefaultFields;
  * @see LikeBatch#newBuilder()
  */
 @DefaultFields({"userId", "itemId", "count", "timestamp?"})
-public class LikeBatchBuilder implements EventBuilder<LikeBatch> {
+public class LikeBatchBuilder implements EventBuilder<LikeBatch>, Cloneable {
     private long userId;
     private long itemId;
     private int count = 1;
@@ -79,5 +79,14 @@ public class LikeBatchBuilder implements EventBuilder<LikeBatch> {
         Preconditions.checkArgument(hasUserId, "no user ID set");
         Preconditions.checkArgument(hasItemId, "no item ID set");
         return new LikeBatch(userId, itemId, count);
+    }
+
+    @Override
+    public LikeBatchBuilder clone() {
+        try {
+            return (LikeBatchBuilder) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
+        }
     }
 }

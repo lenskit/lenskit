@@ -23,6 +23,7 @@ package org.grouplens.lenskit.data.text;
 import org.lenskit.data.ratings.Rating;
 import org.junit.Before;
 import org.junit.Test;
+import org.lenskit.data.ratings.RatingBuilder;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -32,15 +33,15 @@ public class DelimitedColumnEventFormatTest {
 
     @Before
     public void createFormat() {
-        format = DelimitedColumnEventFormat.create(new RatingEventType());
+        format = DelimitedColumnEventFormat.create(RatingBuilder.class);
     }
 
     @Test
     public void testCreateForRatings() {
         DelimitedColumnEventFormat fmt =
                 DelimitedColumnEventFormat.create("rating");
-        assertThat(fmt.getEventTypeDefinition(),
-                   instanceOf(RatingEventType.class));
+        assertThat(fmt.getBuilderType(),
+                   equalTo((Class) RatingBuilder.class));
     }
 
     @Test

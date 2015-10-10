@@ -21,13 +21,14 @@
 package org.grouplens.lenskit.data.text;
 
 import com.google.common.collect.Lists;
-import org.lenskit.data.dao.DataAccessException;
-import org.lenskit.data.dao.EventDAO;
-import org.lenskit.data.dao.SortOrder;
 import org.grouplens.lenskit.util.io.CompressionMode;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
+import org.lenskit.data.dao.DataAccessException;
+import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.dao.SortOrder;
 import org.lenskit.data.events.Event;
+import org.lenskit.data.ratings.RatingBuilder;
 import org.lenskit.util.io.AbstractObjectStream;
 import org.lenskit.util.io.LineStream;
 import org.lenskit.util.io.ObjectStream;
@@ -91,7 +92,7 @@ public class TextEventDAO implements EventDAO, Describable {
      * @return A text event DAO.
      */
     public static TextEventDAO ratings(File file, String delim, CompressionMode mode) {
-        EventFormat fmt = DelimitedColumnEventFormat.create(new RatingEventType())
+        EventFormat fmt = DelimitedColumnEventFormat.create(RatingBuilder.class)
                                                     .setDelimiter(delim);
         return new TextEventDAO(file, fmt, mode);
     }
