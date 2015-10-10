@@ -32,6 +32,7 @@ import org.lenskit.data.events.EventBuilder;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.io.Serializable;
 import java.util.List;
 import java.util.ServiceLoader;
 
@@ -40,7 +41,9 @@ import java.util.ServiceLoader;
  *
  * @since 2.2
  */
-public final class DelimitedColumnEventFormat implements EventFormat {
+public final class DelimitedColumnEventFormat implements EventFormat, Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Nonnull
     private final EventTypeDefinition eventTypeDef;
 
