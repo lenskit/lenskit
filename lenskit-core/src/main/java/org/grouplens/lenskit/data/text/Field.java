@@ -51,4 +51,14 @@ public interface Field {
      * @param builder The builder into which to set the value.
      */
     void apply(String token, EventBuilder builder);
+
+    /**
+     * Get the name for this field.
+     *
+     * **Note**: If this name does not resolve back to an equivalent field when passed to
+     * {@link Fields#byName(Class, String)}, data source specification is likely to break.
+     *
+     * @return The field name.  May return `null` for an ignored field.
+     */
+    String getName();
 }
