@@ -113,7 +113,6 @@ public final class Fields {
                     annotated = m;
                 }
             } else if (m.getName().equals(setterName) && !m.isBridge()) {
-                System.out.println(m);
                 if (setter == null) {
                     setter = m;
                 } else {
