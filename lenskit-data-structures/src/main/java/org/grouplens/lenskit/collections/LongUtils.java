@@ -30,7 +30,9 @@ import java.util.*;
  * @since 2.0
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
+ * @deprecated Replaced by equivalent class in `lenskit-core`.
  */
+@Deprecated
 public final class LongUtils {
     private LongUtils() {}
 

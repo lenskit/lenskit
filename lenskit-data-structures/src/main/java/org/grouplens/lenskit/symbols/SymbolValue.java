@@ -31,7 +31,9 @@ import javax.annotation.Nullable;
  *
  * @since 2.0
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Symbols are going away in LensKit 3.0.
  */
+@Deprecated
 public abstract class SymbolValue<T> {
     /**
      * Create a typed symbol value.

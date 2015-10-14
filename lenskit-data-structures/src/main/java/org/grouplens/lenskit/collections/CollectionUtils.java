@@ -36,7 +36,9 @@ import java.util.List;
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @compat Public
+ * @deprecated Collection utils have been moved to `lenskit-core`.
  */
+@Deprecated
 public final class CollectionUtils {
     private CollectionUtils() {
     }

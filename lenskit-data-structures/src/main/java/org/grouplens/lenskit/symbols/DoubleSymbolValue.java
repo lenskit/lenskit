@@ -25,7 +25,9 @@ package org.grouplens.lenskit.symbols;
  *
  * @since 2.0
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @deprecated Symbols are going away in LensKit 3.0.
  */
+@Deprecated
 public class DoubleSymbolValue extends SymbolValue<Double> {
     private final TypedSymbol<Double> symbol;
     private final double value;
