@@ -22,9 +22,11 @@ package org.lenskit.cli.commands;
 
 import com.google.auto.service.AutoService;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 
+import org.lenskit.config.ConfigurationLoader;
 import org.lenskit.eval.temporal.TemporalEvaluator;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.api.RecommenderBuildException;
@@ -45,7 +47,7 @@ public class Simulate implements Command {
     private final Logger logger = LoggerFactory.getLogger(Simulate.class);
 
     public void configureArguments(ArgumentParser parser) {
-        parser.description("Simulates Temporal Evaluator and write item's predicted score to file.");
+        parser.description("Simulates a recommender over time");
         ScriptEnvironment.configureArguments(parser);
         parser.addArgument("-i", "--input-file")
               .type(File.class)
@@ -59,23 +61,22 @@ public class Simulate implements Command {
               .help("write predicted score to FILE");
         parser.addArgument("-r", "--rebuild-period")
               .type(Long.class)
-              .metavar("REBUILD PERIOD IN SECONDS")
+              .metavar("SECONDS")
               .help("Rebuild Period for next build");
         parser.addArgument("config")
               .type(File.class)
-              .nargs("+")
               .metavar("CONFIG")
               .help("load algorithm configuration from CONFIG");
     }
 
     @Override
     public String getName() {
-        return "simulate-temporal-evaluator";
+        return "simulate";
     }
 
     @Override
     public String getHelp() {
-        return "simulate temporal evaluator";
+        return "simulate";
     }
 
     @Override
@@ -91,10 +92,9 @@ public class Simulate implements Command {
         tempEval.setPredictOutputFile(ctx.getOutputFile());
         tempEval.setRebuildPeriod(rebuildPeriod);
 
-        //TODO change it for only one config file
-        for (LenskitConfiguration config : ctx.environment.loadConfigurations(ctx.getConfigFiles())) {
-            tempEval.setAlgorithm(config.toString(), config);
-        }
+        ConfigurationLoader loader = new ConfigurationLoader();
+        LenskitConfiguration config = loader.load(ctx.getConfigFile());
+        tempEval.setAlgorithm(config.toString(), config);
 
         tempEval.execute();
         timer.stop();
@@ -107,11 +107,9 @@ public class Simulate implements Command {
 
     private static class Context {
         private final Namespace options;
-        private final ScriptEnvironment environment;
 
         public Context(Namespace opts) {
             options = opts;
-            environment = new ScriptEnvironment(opts);
         }
 
         public File getInputFile() {
@@ -122,7 +120,7 @@ public class Simulate implements Command {
             return options.get("output_file");
         }
 
-        public List<File> getConfigFiles() {
+        public File getConfigFile() {
             return options.get("config");
         }
 

@@ -155,12 +155,10 @@ public class TemporalEvaluator {
      * @return Itself for  method chaining
      */
 
-    public TemporalEvaluator execute() throws IOException, RecommenderBuildException {
+    public void execute() throws IOException, RecommenderBuildException {
         Preconditions.checkState(algorithm != null, "no algorithm specified");
         Preconditions.checkState(dataSource != null, "no input data specified");
         Preconditions.checkState(predictOutputFile != null, "no output file specified");
-
-        TableWriter tableWriter;
         //Builds file layout
         TableLayoutBuilder tlb = new TableLayoutBuilder();
         //file headers
@@ -172,31 +170,32 @@ public class TemporalEvaluator {
            .addColumn("TARMSE");
 
         TableLayout tl = tlb.build();
-        tableWriter = CSVWriter.open(predictOutputFile, tl, CompressionMode.AUTO);
 
-        List<Rating> ratings = ObjectStreams.makeList(dataSource.streamEvents(Rating.class, SortOrder.TIMESTAMP));
-        BinaryRatingDAO limitedDao = dataSource.createWindowedView(0);
-        LenskitRecommenderEngine lre;
-        Recommender recommender;
-        double sse = 0;
-        int n = 0;
-        lre = null;
-        long buildTime = 0L;
-        try {
+        try (TableWriter tableWriter = CSVWriter.open(predictOutputFile, tl, CompressionMode.AUTO)) {
+            List<Rating> ratings = ObjectStreams.makeList(dataSource.streamEvents(Rating.class, SortOrder.TIMESTAMP));
+            BinaryRatingDAO limitedDao = dataSource.createWindowedView(0);
+
+            LenskitRecommenderEngine lre = null;
+            Recommender recommender = null;
+            double sse = 0;
+            int n = 0;
+            long buildTime = 0L;
+
             for (Rating r : ratings) {
                 if (r.getTimestamp() > 0 && limitedDao.getLimitTimestamp() < r.getTimestamp()) {
                     limitedDao = dataSource.createWindowedView(r.getTimestamp());
+                    LenskitConfiguration config = new LenskitConfiguration();
+                    config.addComponent(limitedDao);
+
+                    if ((r.getTimestamp() - buildTime >= rebuildPeriod) || lre == null) {
+                        buildTime = r.getTimestamp();
+                        lre = LenskitRecommenderEngine.newBuilder()
+                                                      .addConfiguration(algorithm.getConfigurations().get(0))
+                                                      .addConfiguration(config, ModelDisposition.EXCLUDED)
+                                                      .build();
+                    }
+                    recommender = lre.createRecommender(config);
                 }
-                LenskitConfiguration config = new LenskitConfiguration();
-                config.addComponent(limitedDao);
-                if (r.getTimestamp() - buildTime >= rebuildPeriod) {
-                    buildTime = r.getTimestamp();
-                    lre = LenskitRecommenderEngine.newBuilder()
-                                                  .addConfiguration(algorithm.getConfigurations().get(0))
-                                                  .addConfiguration(config, ModelDisposition.EXCLUDED)
-                                                  .build();
-                }
-                recommender = lre.createRecommender(config);
                 //gets prediction score
                 Result predictionResult = recommender.getRatingPredictor().predict(r.getUserId(), r.getItemId());
                 double predict = Double.NaN;
@@ -216,10 +215,7 @@ public class TemporalEvaluator {
                 //writes the Prediction Score and TARMSE on file
                 tableWriter.writeRow(r.getUserId(), r.getItemId(), r.getValue(), r.getTimestamp(), predict, rmse);
             }
-        } finally {
-            tableWriter.close();
         }
-        return this;
     }
 }
 
