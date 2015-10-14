@@ -35,14 +35,13 @@ import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
 import org.lenskit.data.dao.*;
 import org.lenskit.data.events.Event;
-import org.lenskit.data.events.Events;
 import org.lenskit.data.ratings.Rating;
-import org.lenskit.data.ratings.RatingBuilder;
 import org.lenskit.data.history.History;
 import org.lenskit.data.history.ItemEventCollection;
 import org.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
+import org.lenskit.util.BinarySearch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,24 +53,23 @@ import javax.inject.Provider;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * DAO implementation using binary-packed data.  This DAO reads ratings from a compact binary format
  * using memory-mapped IO, so the data is efficiently readable (subject to available memory and
  * operating system caching logic) without expanding the Java heap.
- * <p>
+ * <p/>
  * To create a file compatible with this DAO, use the {@link BinaryRatingPacker} class or the
  * <tt>pack</tt> command in the LensKit command line tool.
- * <p>
+ * <p/>
  * Currently, serializing a binary rating DAO puts all the rating data into the serialized output
  * stream. When deserialized, the data be written back to a direct buffer (allocated with
  * {@link ByteBuffer#allocateDirect(int)}).  When deserializing this DAO, make sure your
  * system has enough virtual memory (beyond what is allowed for Java) to contain the entire data set.
  *
- * @since 2.1
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * @since 2.1
  */
 @ThreadSafe
 @DefaultProvider(BinaryRatingDAO.Loader.class)
@@ -85,7 +83,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
     private final ByteBuffer ratingData;
     private final BinaryIndexTable userTable;
     private final BinaryIndexTable itemTable;
-    private final int  limitIndex;
+    private final int limitIndex;
     private final long limitTimestamp;
 
     private BinaryRatingDAO(@Nullable File file, BinaryHeader hdr, ByteBuffer data, BinaryIndexTable users, BinaryIndexTable items, int idx, Long timestamp) {
@@ -118,18 +116,18 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         BinaryIndexTable utbl = BinaryIndexTable.fromBuffer(header.getUserCount(), tableBuffer);
         BinaryIndexTable itbl = BinaryIndexTable.fromBuffer(header.getItemCount(), tableBuffer);
 
-        return new BinaryRatingDAO(null, header, data, utbl, itbl, header.getRatingCount(),Long.MAX_VALUE);
+        return new BinaryRatingDAO(null, header, data, utbl, itbl, header.getRatingCount(), Long.MAX_VALUE);
     }
 
     /**
      * Open a binary rating DAO.
+     *
      * @param file The file to open.
      * @return A DAO backed by {@code file}.
      * @throws IOException If there is
      */
     public static BinaryRatingDAO open(File file) throws IOException {
-        FileInputStream input = new FileInputStream(file);
-        try {
+        try (FileInputStream input = new FileInputStream(file)) {
             FileChannel channel = input.getChannel();
             BinaryHeader header = BinaryHeader.read(channel);
             logger.info("Loading DAO with {} ratings of {} items from {} users",
@@ -145,31 +143,24 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
             BinaryIndexTable utbl = BinaryIndexTable.fromBuffer(header.getUserCount(), tableBuffer);
             BinaryIndexTable itbl = BinaryIndexTable.fromBuffer(header.getItemCount(), tableBuffer);
 
-            return new BinaryRatingDAO(file, header, data, utbl, itbl,header.getRatingCount(),Long.MAX_VALUE);
-        } finally {
-            input.close();
+            return new BinaryRatingDAO(file, header, data, utbl, itbl, header.getRatingCount(), Long.MAX_VALUE);
         }
     }
-    public  BinaryRatingDAO createWindowedView(long timestamp) {
+
+    public BinaryRatingDAO createWindowedView(long timestamp) {
 
         if (timestamp >= limitTimestamp) {
             return this;
         }
 
-        Rating r = new RatingBuilder().setUserId(0).setItemId(0).setRating(0).setTimestamp(timestamp).build();
+        List<Rating> ratingsList = getRatingList();
+        SearchBinaryRating search = new SearchBinaryRating(timestamp, ratingsList);
+        int idx = search.search(0, getRatingList().size());
 
-        int idx = Collections.binarySearch(getRatingList(), r, Events.TIMESTAMP_COMPARATOR);
+        idx = BinarySearch.resultToIndex(idx);
 
-        if (idx < 0) {
-            idx = -idx - 1;
-        } else {
-            while (getRatingList().get(idx).getTimestamp() >= timestamp) {
-                idx--;//will reach the position of timestamp < limitTimestamp
-            }
-            ++idx;//position of first timestamp >= limitTimestamp
-        }
         ByteBuffer data = ratingData.duplicate();
-        data.limit(idx*header.getFormat().getRatingSize());
+        data.limit(idx * header.getFormat().getRatingSize());
 
         BinaryIndexTable utbl = userTable.createLimitedView(idx);
         BinaryIndexTable itbl = itemTable.createLimitedView(idx);
@@ -190,6 +181,10 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
 
     private BinaryRatingList getRatingList(IntList indexes) {
         return new BinaryRatingList(header.getFormat(), ratingData, indexes);
+    }
+
+    public Long getLimitTimestamp() {
+        return limitTimestamp;
     }
 
     @Override
@@ -285,7 +280,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         }
 
         LongSet users = new LongOpenHashSet(ratings.size());
-        for (Rating rating: ratings) {
+        for (Rating rating : ratings) {
             users.add(rating.getUserId());
         }
         return users;
@@ -399,7 +394,7 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         private ByteBuffer ratingData;
         private BinaryIndexTable userTable;
         private BinaryIndexTable itemTable;
-        private int  limitIndex;
+        private int limitIndex;
         private long limitTimestamp;
 
 
@@ -472,7 +467,26 @@ public class BinaryRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, Us
         }
 
         private Object readResolve() throws ObjectStreamException {
-            return new BinaryRatingDAO(null, header, ratingData, userTable, itemTable,limitIndex, limitTimestamp);
+            return new BinaryRatingDAO(null, header, ratingData, userTable, itemTable, limitIndex, limitTimestamp);
         }
     }
+
+    private class SearchBinaryRating extends BinarySearch {
+
+        Long timeStamp;
+        List<Rating> ratingsList;
+
+        SearchBinaryRating(Long timeStmp, List<Rating> ratings) {
+            timeStamp = timeStmp;
+            ratingsList = ratings;
+        }
+
+        protected int test(int pos) {
+            return timeStamp.compareTo(ratingsList.get(pos).getTimestamp());
+        }
+
+
+    }
+
 }
+
