@@ -169,8 +169,8 @@ public class TextDataSource extends AbstractDataSource {
     public static TextDataSource fromSpec(TextDataSourceSpec spec) {
         TextDataSourceBuilder bld = new TextDataSourceBuilder();
         bld.setName(spec.getName())
-                .setFile(spec.getFile().toFile())
-                .setDomain(PreferenceDomain.fromSpec(spec.getDomain()));
+           .setFile(spec.getFile().toFile())
+           .setDomain(PreferenceDomain.fromSpec(spec.getDomain()));
         DelimitedColumnEventFormat fmt = DelimitedColumnEventFormat.create(spec.getBuilderType());
         fmt.setDelimiter(spec.getDelimiter());
         List<String> fields = spec.getFields();
@@ -178,8 +178,12 @@ public class TextDataSource extends AbstractDataSource {
             fmt.setFieldsByName(fields);
         }
         bld.setFormat(fmt);
-        bld.setItemFile(spec.getItemFile().toFile());
-        bld.setItemNameFile(spec.getItemNameFile().toFile());
+        if (spec.getItemFile() != null) {
+            bld.setItemFile(spec.getItemFile().toFile());
+        }
+        if (spec.getItemNameFile() != null) {
+            bld.setItemNameFile(spec.getItemNameFile().toFile());
+        }
         return bld.build();
     }
 }
