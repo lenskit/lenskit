@@ -49,6 +49,8 @@ public class TextDataSource extends AbstractDataSource {
 
     private final Provider<ItemListItemDAO> items;
     private final Provider<MapItemNameDAO> itemNames;
+    private final File itemFile;
+    private final File itemNameFile;
 
     TextDataSource(String name, File file, EventFormat fmt, PreferenceDomain pdom,
                    File itemFile, File itemNameFile) {
@@ -61,13 +63,17 @@ public class TextDataSource extends AbstractDataSource {
 
         if (itemFile != null) {
             items = Providers.memoize(new SimpleFileItemDAOProvider(itemFile));
+            this.itemFile = itemFile;
         } else {
             items = null;
+            this.itemFile = null;
         }
         if (itemNameFile != null) {
             itemNames = Providers.memoize(new CSVFileItemNameDAOProvider(itemNameFile));
+            this.itemNameFile = itemNameFile;
         } else {
             itemNames = null;
+            this.itemNameFile = null;
         }
     }
 
@@ -146,6 +152,8 @@ public class TextDataSource extends AbstractDataSource {
             }
             spec.setFields(fieldNames);
             spec.setBuilderType(cf.getBuilderType().getName());
+            spec.setItemFile(itemFile.toPath());
+            spec.setItemNameFile(itemNameFile.toPath());
         }
         if (domain != null) {
             spec.setDomain(domain.toSpec());
@@ -170,6 +178,8 @@ public class TextDataSource extends AbstractDataSource {
             fmt.setFieldsByName(fields);
         }
         bld.setFormat(fmt);
+        bld.setItemFile(spec.getItemFile().toFile());
+        bld.setItemNameFile(spec.getItemNameFile().toFile());
         return bld.build();
     }
 }

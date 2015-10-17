@@ -45,6 +45,8 @@ public class TextDataSourceSpecTest {
         TextDataSourceSpec spec = new TextDataSourceSpec();
         spec.setName("foo");
         spec.setFile(Paths.get("wombat.csv"));
+        spec.setItemFile(Paths.get("items.csv"));
+        spec.setItemNameFile(Paths.get("item-names.csv"));
 
         String json = SpecUtils.stringify(spec);
 
@@ -57,6 +59,8 @@ public class TextDataSourceSpecTest {
         assertThat(tds2.getName(), equalTo("foo"));
         assertThat(tds2.getFile(), equalTo(Paths.get("wombat.csv")));
         assertThat(tds2.getDomain(), nullValue());
+        assertThat(tds2.getItemFile(), equalTo(Paths.get("items.csv")));
+        assertThat(tds2.getItemNameFile(), equalTo(Paths.get("item-names.csv")));
 
         assertThat(tds2, equalTo(spec));
     }
