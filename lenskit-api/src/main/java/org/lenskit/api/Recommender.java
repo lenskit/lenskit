@@ -63,6 +63,22 @@ public interface Recommender extends AutoCloseable {
     ItemScorer getItemScorer();
 
     /**
+     * Get the recommender's item-based item scorer.
+     * @return The item-based item scorer for the configured recommender, or `null` if basket-based scoring is
+     * not supported.
+     */
+    @Nullable
+    ItemBasedItemScorer getItemBasedItemScorer();
+
+    /**
+     * Get the recommender's item-based item recommender.
+     * @return The item-based item recommender for the configured recommender, or `null` if basket-based scoring is
+     * not supported.
+     */
+    @Nullable
+    ItemBasedItemRecommender getItemBasedItemRecommender();
+
+    /**
      * Close the recommender.  This closes underlying resources such as database collections. Components retrieved
      * from the recommender must be used once the recommender is closed.  Components capable of explicitly detecting
      * use-after-close will indicate such invalid use by throwing {@link IllegalStateException}, although they may
