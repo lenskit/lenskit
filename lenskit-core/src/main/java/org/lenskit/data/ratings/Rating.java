@@ -22,6 +22,7 @@ package org.lenskit.data.ratings;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.lenskit.data.events.BuiltBy;
 import org.lenskit.data.events.Event;
 
 import java.io.Serializable;
@@ -37,6 +38,7 @@ import java.io.Serializable;
  *
  * @compat Public
  */
+@BuiltBy(RatingBuilder.class)
 public final class Rating implements Event, Preference, Serializable {
     private static final long serialVersionUID = 2L;
 

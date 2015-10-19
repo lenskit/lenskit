@@ -33,6 +33,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * @since 2.2
  * @see Like
  */
+@BuiltBy(LikeBatchBuilder.class)
 public class LikeBatch implements Event {
     private final long userId;
     private final long itemId;

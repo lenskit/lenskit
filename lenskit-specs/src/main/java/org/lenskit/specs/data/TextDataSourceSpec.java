@@ -20,9 +20,9 @@
  */
 package org.lenskit.specs.data;
 
+import javax.annotation.Nullable;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Specification of a text data source.
@@ -31,6 +31,10 @@ public class TextDataSourceSpec extends DataSourceSpec {
     private Path file;
     private String delimiter = ",";
     private PrefDomainSpec domain;
+    private String builderType = "rating";
+    private List<String> fields;
+    private Path itemFile;
+    private Path itemNameFile;
 
     public Path getFile() {
         return file;
@@ -48,6 +52,54 @@ public class TextDataSourceSpec extends DataSourceSpec {
         this.delimiter = delimiter;
     }
 
+    /**
+     * Get the event type.
+     * @return The name of the event type.
+     */
+    public String getBuilderType() {
+        return builderType;
+    }
+
+    /**
+     * Set the event type.
+     * @param type The name of the event type.
+     */
+    public void setBuilderType(String type) {
+        builderType = type;
+    }
+
+    /**
+     * Get the list of fields.
+     * @return The list of fields in the data source.
+     */
+    @Nullable
+    public List<String> getFields() {
+        return fields;
+    }
+    
+    /**
+     * Set the list of fields in the data source.
+     * @param fields The list of fields.  Can be `null` to use the builder's default fields.
+     */
+    public void setFields(@Nullable List<String> fields) {
+        this.fields = fields != null ? new ArrayList<>(fields) : null;
+    }
+
+    public Path getItemFile() {
+        return itemFile;
+    }
+    public void setItemFile(Path file) {
+        itemFile = file;
+    }
+
+    public Path getItemNameFile() {
+        return itemNameFile;
+    }
+
+    public void setItemNameFile(Path file) {
+        itemNameFile = file;
+    }
+
     public PrefDomainSpec getDomain() {
         return domain;
     }
@@ -58,6 +110,14 @@ public class TextDataSourceSpec extends DataSourceSpec {
 
     @Override
     public Set<Path> getInputFiles() {
-        return Collections.singleton(file);
+        Set<Path> files = new HashSet<>();
+        files.add(file);
+        if (itemFile != null) {
+            files.add(itemFile);
+        }
+        if (itemNameFile != null) {
+            files.add(itemNameFile);
+        }
+        return files;
     }
 }
