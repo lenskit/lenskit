@@ -30,6 +30,7 @@ import org.lenskit.specs.data.TextDataSourceSpec;
 
 import javax.inject.Provider;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,11 +50,11 @@ public class TextDataSource extends AbstractDataSource {
 
     private final Provider<ItemListItemDAO> items;
     private final Provider<MapItemNameDAO> itemNames;
-    private final File itemFile;
-    private final File itemNameFile;
+    private final Path itemFile;
+    private final Path itemNameFile;
 
     TextDataSource(String name, File file, EventFormat fmt, PreferenceDomain pdom,
-                   File itemFile, File itemNameFile) {
+                   Path itemFile, Path itemNameFile) {
         this.name = name;
         sourceFile = file;
         domain = pdom;
@@ -62,14 +63,14 @@ public class TextDataSource extends AbstractDataSource {
         dao = TextEventDAO.create(file, format, CompressionMode.AUTO);
 
         if (itemFile != null) {
-            items = Providers.memoize(new SimpleFileItemDAOProvider(itemFile));
+            items = Providers.memoize(new SimpleFileItemDAOProvider(itemFile.toFile()));
             this.itemFile = itemFile;
         } else {
             items = null;
             this.itemFile = null;
         }
         if (itemNameFile != null) {
-            itemNames = Providers.memoize(new CSVFileItemNameDAOProvider(itemNameFile));
+            itemNames = Providers.memoize(new CSVFileItemNameDAOProvider(itemNameFile.toFile()));
             this.itemNameFile = itemNameFile;
         } else {
             itemNames = null;
@@ -152,8 +153,8 @@ public class TextDataSource extends AbstractDataSource {
             }
             spec.setFields(fieldNames);
             spec.setBuilderType(cf.getBuilderType().getName());
-            spec.setItemFile(itemFile.toPath());
-            spec.setItemNameFile(itemNameFile.toPath());
+            spec.setItemFile(itemFile);
+            spec.setItemNameFile(itemNameFile);
         }
         if (domain != null) {
             spec.setDomain(domain.toSpec());
@@ -178,12 +179,8 @@ public class TextDataSource extends AbstractDataSource {
             fmt.setFieldsByName(fields);
         }
         bld.setFormat(fmt);
-        if (spec.getItemFile() != null) {
-            bld.setItemFile(spec.getItemFile().toFile());
-        }
-        if (spec.getItemNameFile() != null) {
-            bld.setItemNameFile(spec.getItemNameFile().toFile());
-        }
+        bld.setItemFile(spec.getItemFile());
+        bld.setItemNameFile(spec.getItemNameFile());
         return bld.build();
     }
 }
