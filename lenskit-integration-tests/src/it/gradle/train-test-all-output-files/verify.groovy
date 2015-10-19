@@ -21,6 +21,7 @@
 
 import static com.xlson.groovycsv.CsvParser.parseCsv
 import org.lenskit.knn.item.model.SimilarityMatrixModel
+import org.lenskit.data.ratings.RatingSummary
 
 import java.util.zip.GZIPInputStream
 
@@ -75,5 +76,8 @@ cacheDir.eachFile { file ->
         objects[cls] = objects.get(cls, 0) + 1
     }
 }
-// FIXME Re-enable this assertion when sharing is fixed
-// assertThat objects[SimilarityMatrixModel.name], equalTo(5)
+
+assertThat objects[SimilarityMatrixModel.name], equalTo(5)
+
+// Verify that we only have 5 rating summaries (objects cached)
+assertThat objects[RatingSummary.name], equalTo(5)
