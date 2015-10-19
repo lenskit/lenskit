@@ -51,9 +51,7 @@ public class LenskitConfiguration extends AbstractConfigContext {
     private static final Class<?>[] INITIAL_ROOTS = {
             RatingPredictor.class,
             ItemScorer.class,
-            GlobalItemScorer.class,
             ItemRecommender.class,
-            GlobalItemRecommender.class,
             ItemBasedItemScorer.class,
             ItemBasedItemRecommender.class
     };
