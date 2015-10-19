@@ -50,7 +50,7 @@ apply plugin: 'base'
 allprojects { project ->
     group 'org.grouplens.lenskit'
     version '3.0-SNAPSHOT'
-    
+
     ext.getConfigProperty = { name, dft ->
         if (project.hasProperty(name)) {
             return project.getProperty(name)
@@ -186,6 +186,24 @@ apply from: "$rootDir/gradle/javadoc.gradle"
 
 task report(group: 'verification') {
     description 'Run all enabled quality reports.'
+}
+
+task tagsFile(type: Exec) {
+    ext.dirs = new LinkedHashSet()
+    subprojects.each { sp ->
+        sp.sourceSets.each { ss ->
+            dirs += ss.java.srcDirs
+            if (ss.hasProperty('groovy')) {
+                dirs += ss.groovy.srcDirs
+            }
+        }
+    }
+    dirs.each { inputs.dir it }
+    outputs.file 'tags'
+
+    executable 'ctags'
+    args '-R'
+    args ext.dirs
 }
 
 apply from: "$rootDir/gradle/website.gradle"
