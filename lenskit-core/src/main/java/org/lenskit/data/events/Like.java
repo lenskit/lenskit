@@ -36,6 +36,7 @@ import java.io.Serializable;
  *
  * @since 2.2
  */
+@BuiltBy(LikeBuilder.class)
 public final class Like implements Event, Serializable {
     private static final long serialVersionUID = 1L;
 

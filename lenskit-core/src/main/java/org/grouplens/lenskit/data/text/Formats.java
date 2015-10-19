@@ -20,6 +20,8 @@
  */
 package org.grouplens.lenskit.data.text;
 
+import org.lenskit.data.ratings.RatingBuilder;
+
 /**
  * Utility classes for event formats.
  *
@@ -35,7 +37,7 @@ public final class Formats {
      * @return An event format for reading ratings from a CSV file.
      */
     public static DelimitedColumnEventFormat delimitedRatings(String delim) {
-        return DelimitedColumnEventFormat.create(new RatingEventType())
+        return DelimitedColumnEventFormat.create(RatingBuilder.class)
                                          .setDelimiter(delim)
                                          .setFields(Fields.user(), Fields.item(),
                                                     Fields.rating(),
@@ -57,7 +59,7 @@ public final class Formats {
      * @return A format for using {@link TextEventDAO} to read the ML-100K data set.
      */
     public static DelimitedColumnEventFormat ml100kFormat() {
-        DelimitedColumnEventFormat fmt = new DelimitedColumnEventFormat(new RatingEventType(), "\t");
+        DelimitedColumnEventFormat fmt = DelimitedColumnEventFormat.create(RatingBuilder.class);
         fmt.setFields(Fields.user(), Fields.item(), Fields.rating(), Fields.timestamp());
         return fmt;
     }
@@ -68,7 +70,7 @@ public final class Formats {
      * @return A format for using {@link TextEventDAO} to read the ML-1M and ML-10M data sets.
      */
     public static DelimitedColumnEventFormat movieLensFormat() {
-        return DelimitedColumnEventFormat.create(new RatingEventType())
+        return DelimitedColumnEventFormat.create(RatingBuilder.class)
                                          .setDelimiter("::")
                                          .setFields(Fields.user(), Fields.item(),
                                                     Fields.rating(), Fields.timestamp());
@@ -79,7 +81,7 @@ public final class Formats {
      * @return A format for using {@link TextEventDAO} to read the ML-10M and ML-Latest data sets.
      */
     public static DelimitedColumnEventFormat movieLensLatest() {
-        return DelimitedColumnEventFormat.create(new RatingEventType())
+        return DelimitedColumnEventFormat.create(RatingBuilder.class)
                                          .setDelimiter(",")
                                          .setFields(Fields.user(), Fields.item(),
                                                     Fields.rating(), Fields.timestamp())

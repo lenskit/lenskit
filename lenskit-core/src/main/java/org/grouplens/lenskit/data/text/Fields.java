@@ -21,14 +21,17 @@
 package org.grouplens.lenskit.data.text;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.convert.StringConvert;
+import org.joda.convert.StringConverter;
 import org.lenskit.data.events.EventBuilder;
 import org.lenskit.data.events.LikeBatchBuilder;
-import org.lenskit.data.events.LikeBuilder;
 import org.lenskit.data.ratings.RatingBuilder;
 
-import java.util.Collections;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Set;
 
 @SuppressWarnings("rawtypes")
 public final class Fields {
@@ -50,7 +53,6 @@ public final class Fields {
         return CommonFields.ITEM;
     }
 
-
     /**
      * A required timestamp field.
      * @return A field definition for a required timestamp field.
@@ -60,11 +62,85 @@ public final class Fields {
     }
 
     /**
-     * The rating field.
-     * @return A field definition for a rating field.
+     * Get a common field by name.  Common fields are 'user', 'item', and 'timestamp'.
+     * @return The field, or `null` if `name` is an unknown field.
      */
-    public static Field rating() {
-        return ValueFields.RATING;
+    public static Field commonField(String name) {
+        if (name == null) {
+            return ignored();
+        }
+        switch (name) {
+        case "user":
+            return user();
+        case "item":
+            return item();
+        case "timestamp":
+            return timestamp();
+        case "timestamp?":
+            return timestamp(false);
+        default:
+            return null;
+        }
+    }
+
+    /**
+     * Get a field by name.  It first looks up the common fields, and if none of them apply, creates
+     * a reflection-based field.
+     *
+     * @param eb The event builder.
+     * @param name The field name.  The name can be suffixed with "?" to make it optional.
+     * @return The field, or `null` if no such field can be defined.
+     */
+    public static Field byName(Class<? extends EventBuilder> eb, String name) {
+        Field field = commonField(name);
+        if (field != null) {
+            return field;
+        }
+
+        boolean optional = false;
+        if (name.endsWith("?")) {
+            optional = true;
+            name = name.substring(0, name.length() - 1);
+        }
+
+        String setterName = "set" + StringUtils.capitalize(name);
+        Method setter = null;
+        Method annotated = null;
+        for (Method m: eb.getMethods()) {
+            FieldName nameAnnot = m.getAnnotation(FieldName.class);
+            if (nameAnnot != null) {
+                if (nameAnnot.value().equals(name)) {
+                    annotated = m;
+                }
+            } else if (m.getName().equals(setterName) && !m.isBridge()) {
+                if (setter == null) {
+                    setter = m;
+                } else {
+                    throw new IllegalArgumentException("Multiple methods named " + setterName);
+                }
+            }
+        }
+        if (annotated != null) {
+            setter = annotated;
+        }
+
+        if (setter == null) {
+            throw new IllegalArgumentException("No method found for field " + name);
+        }
+        Class<?>[] atypes = setter.getParameterTypes();
+        if (atypes.length != 1) {
+            throw new IllegalArgumentException("Method " + setter.getName() + " takes too many arguments");
+        }
+        final Method theSetter = setter;
+        Class<?> atype = atypes[0];
+        if (atype.isPrimitive()) {
+            atype = ClassUtils.primitiveToWrapper(atype);
+        }
+        StringConverter<Object> convert = StringConvert.INSTANCE.findConverterNoGenerics(atype);
+        if (convert == null) {
+            throw new IllegalArgumentException("Field type " + atypes[0] + " not allowed.");
+        }
+        return new ReflectionField(name, theSetter, eb, atype, convert, optional);
     }
 
     /**
@@ -86,6 +162,10 @@ public final class Fields {
         } else {
             return CommonFields.IGNORED;
         }
+    }
+
+    public static Field rating() {
+        return ValueFields.RATING;
     }
 
     /**
@@ -120,13 +200,13 @@ public final class Fields {
     }
 
     private static enum CommonFields implements Field {
-        IGNORED {
+        IGNORED(null) {
             @Override
             public void apply(String token, EventBuilder builder) {
                 /* do nothing */
             }
         },
-        OPTIONAL_IGNORE {
+        OPTIONAL_IGNORE(null) {
             @Override
             public boolean isOptional() {
                 return true;
@@ -137,26 +217,26 @@ public final class Fields {
                 /* do nothing */
             }
         },
-        USER {
+        USER("user") {
             @Override
             public void apply(String token, EventBuilder builder) {
                 builder.setUserId(Long.parseLong(token));
             }
         },
 
-        ITEM {
+        ITEM("item") {
             @Override
             public void apply(String token, EventBuilder builder) {
                 builder.setItemId(Long.parseLong(token));
             }
         },
-        TIMESTAMP {
+        TIMESTAMP("timestamp") {
             @Override
             public void apply(String token, EventBuilder builder) {
                 builder.setTimestamp(Long.parseLong(token));
             }
         },
-        OPTIONAL_TIMESTAMP {
+        OPTIONAL_TIMESTAMP("timestamp?") {
             @Override
             public void apply(String token, EventBuilder builder) {
                 if (token == null) {
@@ -172,30 +252,30 @@ public final class Fields {
             }
         };
 
+        private final String name;
+
+        CommonFields(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public Class<? extends EventBuilder> getBuilderType() {
+            return EventBuilder.class;
+        }
+
         @Override
         public boolean isOptional() {
             return false;
         }
 
         @Override
-        public Set<Class<? extends EventBuilder>> getExpectedBuilderTypes() {
-            return Collections.<Class<? extends EventBuilder>>singleton(EventBuilder.class);
+        public String getName() {
+            return name;
         }
-
     }
 
     private static enum ValueFields implements Field {
-        RATING {
-            @Override
-            public boolean isOptional() {
-                return false;
-            }
-
-            @Override
-            public Set<Class<? extends EventBuilder>> getExpectedBuilderTypes() {
-                return Collections.<Class<? extends EventBuilder>>singleton(RatingBuilder.class);
-            }
-
+        RATING(RatingBuilder.class, "rating") {
             @Override
             public void apply(String token, EventBuilder builder) {
                 RatingBuilder rb = (RatingBuilder) builder;
@@ -212,20 +292,81 @@ public final class Fields {
             }
         },
 
-        LIKE_COUNT {
-            @Override
-            public boolean isOptional() {
-                return false;
-            }
-
-            @Override
-            public Set<Class<? extends EventBuilder>> getExpectedBuilderTypes() {
-                return Collections.<Class<? extends EventBuilder>>singleton(LikeBuilder.class);
-            }
-
+        LIKE_COUNT(LikeBatchBuilder.class, "count") {
             @Override
             public void apply(String token, EventBuilder builder) {
                 ((LikeBatchBuilder) builder).setCount(Integer.parseInt(token));
+            }
+        };
+
+        private final Class<? extends EventBuilder> builderType;
+        private final String name;
+
+        ValueFields(Class<? extends EventBuilder> bt, String name) {
+            builderType = bt;
+            this.name = name;
+        }
+
+        @Override
+        public Class<? extends EventBuilder> getBuilderType() {
+            return builderType;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public boolean isOptional() {
+            return false;
+        }
+    }
+
+    private static class ReflectionField implements Field {
+        private final String fieldName;
+        private final Method setter;
+        private final Class<? extends EventBuilder> builderType;
+        private final Class<?> argType;
+        private final StringConverter<Object> converter;
+        private final boolean optional;
+
+        public ReflectionField(String name, Method theSetter, Class<? extends EventBuilder> btype, Class<?> atype, StringConverter<Object> convert, boolean optional) {
+            fieldName = name;
+            this.setter = theSetter;
+            builderType = btype;
+            this.argType = atype;
+            this.converter = convert;
+            this.optional = optional;
+        }
+
+        @Override
+        public Class<? extends EventBuilder> getBuilderType() {
+            return builderType;
+        }
+
+        @Override
+        public boolean isOptional() {
+            return optional;
+        }
+
+        @Override
+        public String getName() {
+            return fieldName;
+        }
+
+        @Override
+        public void apply(String token, EventBuilder builder) {
+            if (token == null ) {
+                if (!optional) {
+                    throw new IllegalArgumentException("null string provided for optional value");
+                }
+            } else {
+                try {
+                    setter.invoke(builder, converter.convertFromString(argType, token));
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
