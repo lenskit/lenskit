@@ -31,6 +31,11 @@ import java.util.Set;
  */
 @SuppressWarnings("rawtypes")
 public interface Field {
+    /**
+     * Get the builder type that this field operates on.
+     * @return The field's builder type.
+     */
+    Class<? extends EventBuilder> getBuilderType();
 
     /**
      * Query whether this field is optional.
@@ -48,8 +53,12 @@ public interface Field {
     void apply(String token, EventBuilder builder);
 
     /**
-     * Get the set of event builder types that this field can apply to.
-     * @return A set of classes representing event builder types to which this field can apply.”
+     * Get the name for this field.
+     *
+     * **Note**: If this name does not resolve back to an equivalent field when passed to
+     * {@link Fields#byName(Class, String)}, data source specification is likely to break.
+     *
+     * @return The field name.  May return `null` for an ignored field.
      */
-    Set<Class<? extends EventBuilder>> getExpectedBuilderTypes();
+    String getName();
 }

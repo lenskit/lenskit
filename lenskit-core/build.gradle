@@ -42,6 +42,7 @@ dependencies {
     compile project(':lenskit-specs')
     compile group: 'org.grouplens.grapht', name: 'grapht', version: '0.11.0-BETA1'
     compile group: 'com.google.guava', name: 'guava', version: '18.0'
+    compile group: 'org.joda', name: 'joda-convert', version: '1.8.1'
     compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc2'
 
     compile group:'org.apache.commons', name:'commons-math3', version:'3.5'

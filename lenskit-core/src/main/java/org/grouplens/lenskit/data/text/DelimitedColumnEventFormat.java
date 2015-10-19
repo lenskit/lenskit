@@ -20,29 +20,28 @@
  */
 package org.grouplens.lenskit.data.text;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.grouplens.grapht.util.ClassLoaders;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.events.EventBuilder;
+import org.lenskit.data.events.EventTypeResolver;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.inject.Inject;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.ServiceLoader;
 
 /**
  * Read events from delimited columns (CSV, TSV, etc.).
  *
  * @since 2.2
  */
-public final class DelimitedColumnEventFormat implements EventFormat {
-    @Nonnull
-    private final EventTypeDefinition eventTypeDef;
+public final class DelimitedColumnEventFormat implements EventFormat, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private final Class<? extends EventBuilder> builderType;
 
     @Nonnull
     private String delimiter = "\t";
@@ -52,35 +51,18 @@ public final class DelimitedColumnEventFormat implements EventFormat {
 
     /**
      * Construct a new event format.
-     * @param etd The type definition.
      * @param delim The delimiter.
+     * @param bld The builder type.
+     * @param fields The fields.
      */
-    @Inject
-    public DelimitedColumnEventFormat(@Nonnull EventTypeDefinition etd, @ColumnSeparator String delim) {
-        eventTypeDef = etd;
+    DelimitedColumnEventFormat(String delim, Class<? extends EventBuilder> bld, List<Field> fields) {
         delimiter = delim;
-        setFields(etd.getDefaultFields());
-    }
-
-    /**
-     * Construct a new event format.
-     * @param etd The type definition
-     * @deprecated Use {@link #create(EventTypeDefinition)} instead.
-     */
-    @Deprecated
-    public DelimitedColumnEventFormat(@Nonnull EventTypeDefinition etd) {
-        this(etd, "\t");
-    }
-
-    /**
-     * Create a new delimited column format.
-     * @param etd The event type definition.
-     * @return The column format.
-     */
-    @Nonnull
-    public static DelimitedColumnEventFormat create(@Nonnull EventTypeDefinition etd) {
-        Preconditions.checkNotNull(etd, "type definition");
-        return new DelimitedColumnEventFormat(etd, "\t");
+        builderType = bld;
+        if (fields == null) {
+            fieldList = Collections.emptyList();
+        } else {
+            setFields(fields);
+        }
     }
 
     /**
@@ -106,27 +88,33 @@ public final class DelimitedColumnEventFormat implements EventFormat {
     @Nonnull
     @SuppressWarnings("rawtypes")
     public static DelimitedColumnEventFormat create(String typeName, ClassLoader loader) {
-        ServiceLoader<EventTypeDefinition> sl = ServiceLoader.load(EventTypeDefinition.class, loader);
-        EventTypeDefinition typedef = null;
-        for (EventTypeDefinition etd : sl) {
-            if (etd.getName().equalsIgnoreCase(typeName)) {
-                if (typedef == null) {
-                    typedef = etd;
-                } else {
-                    throw new RuntimeException("Multiple type definitions found for " + typeName);
-                }
-            }
-        }
-        if (typedef == null) {
-            throw new IllegalArgumentException("Invalid event type " + typeName);
+        EventTypeResolver resolver = EventTypeResolver.create(loader);
+        Class<? extends EventBuilder> type = resolver.getEventBuilder(typeName);
+        if (type != null) {
+            return create(type);
         } else {
-            return create(typedef);
+            throw new IllegalArgumentException("invalid event type " + typeName);
         }
     }
 
-    @Nonnull
-    public EventTypeDefinition getEventTypeDefinition() {
-        return eventTypeDef;
+    /**
+     * Create an event format from an event builder class.
+     * @param builder The builder class.
+     * @return The event format.
+     */
+    public static DelimitedColumnEventFormat create(Class<? extends EventBuilder> builder) {
+        DefaultFields dft = builder.getAnnotation(DefaultFields.class);
+        List<Field> fields = new ArrayList<>();
+        if (dft != null) {
+            for (String name: dft.value()) {
+                Field field = Fields.byName(builder, name);
+                if (field == null) {
+                    throw new RuntimeException("cannot find field " + name);
+                }
+                fields.add(field);
+            }
+        }
+        return new DelimitedColumnEventFormat("\t", builder, fields);
     }
 
     @Nonnull
@@ -157,6 +145,33 @@ public final class DelimitedColumnEventFormat implements EventFormat {
     /**
      * Set the fields to be parsed.
      *
+     * @param fields The field names to be parsed by this format.
+     * @return The format (for chaining).
+     */
+    public DelimitedColumnEventFormat setFields(@Nonnull String... fields) {
+        return setFieldsByName(ImmutableList.copyOf(fields));
+    }
+
+    /**
+     * Set fields by string names.
+     * @param fields The fields.
+     * @return The names.
+     */
+    public DelimitedColumnEventFormat setFieldsByName(@Nonnull List<String> fields) {
+        List<Field> fieldObjs = new ArrayList<>();
+        for (String fname: fields) {
+            Field field = Fields.byName(builderType, fname);
+            if (field == null) {
+                throw new IllegalArgumentException("no field " + field);
+            }
+            fieldObjs.add(field);
+        }
+        return setFields(fieldObjs);
+    }
+
+    /**
+     * Set the fields to be parsed.
+     *
      * @param fields The fields to be parsed by this format.
      * @return The format (for chaining).
      */
@@ -171,24 +186,13 @@ public final class DelimitedColumnEventFormat implements EventFormat {
      * @return The format (for chaining).
      */
     public DelimitedColumnEventFormat setFields(@Nonnull List<Field> fields) {
-        if (!fields.containsAll(eventTypeDef.getRequiredFields())) {
-            throw new IllegalArgumentException("missing fields");
-        }
-
-        @SuppressWarnings("rawtypes")
-        Predicate<Class<? extends EventBuilder>> canConfigBuilderType = new Predicate<Class<? extends EventBuilder>>() {
-            @Override
-            public boolean apply(@Nullable Class<? extends EventBuilder> input) {
-                return input != null && input.isAssignableFrom(eventTypeDef.getBuilderType());
-            }
-        };
         boolean seenOptional = false;
         for (Field fld: fields) {
             if (fld == null) {
                 throw new NullPointerException("field is null");
             }
-            if (!Iterables.any(fld.getExpectedBuilderTypes(), canConfigBuilderType)) {
-                throw new IllegalArgumentException("Field " + fld + " cannot configure builder " + eventTypeDef.getBuilderType());
+            if (!fld.getBuilderType().isAssignableFrom(builderType)) {
+                throw new IllegalArgumentException("Field " + fld + " cannot configure builder " + builderType);
             }
             if (seenOptional && !fld.isOptional()) {
                 throw new IllegalArgumentException("Non-optional field {} after optional field {}");
@@ -214,9 +218,7 @@ public final class DelimitedColumnEventFormat implements EventFormat {
             if (token == null && !field.isOptional()) {
                 throw new InvalidRowException("Non-optional field " + field.toString() + " missing");
             }
-            if (field != null) {
-                field.apply(token, builder);
-            }
+            field.apply(token, builder);
         }
         return builder.build();
     }
@@ -224,7 +226,7 @@ public final class DelimitedColumnEventFormat implements EventFormat {
     @Override
     public Event parse(String line) throws InvalidRowException {
         StrTokenizer tok = new StrTokenizer(line, delimiter);
-        return parse(tok, eventTypeDef.newBuilder());
+        return parse(tok, newBuilder());
     }
 
     @Override
@@ -240,8 +242,20 @@ public final class DelimitedColumnEventFormat implements EventFormat {
         return parse(ctx.tokenizer, ctx.builder);
     }
 
+    private EventBuilder newBuilder() {
+        try {
+            return builderType.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException("cannot instantiate " + builderType, e);
+        }
+    }
+
+    public Class<? extends EventBuilder> getBuilderType() {
+        return builderType;
+    }
+
     private class Context {
         public final StrTokenizer tokenizer = new StrTokenizer().setDelimiterString(delimiter);
-        public final EventBuilder<?> builder = eventTypeDef.newBuilder();
+        public final EventBuilder<?> builder = newBuilder();
     }
 }

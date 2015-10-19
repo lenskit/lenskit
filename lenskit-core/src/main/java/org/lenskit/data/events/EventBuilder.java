@@ -68,4 +68,10 @@ public interface EventBuilder<E extends Event> {
      *                               needed setter has not been called).
      */
     E build();
+
+    /**
+     * Clone this event builder.  Useful to use an event builder in different threads.
+     * @return A copy of this event builder.
+     */
+    EventBuilder clone();
 }

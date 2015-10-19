@@ -22,13 +22,14 @@ package org.grouplens.lenskit.data.source;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
-import org.lenskit.data.ratings.PreferenceDomain;
 import org.grouplens.lenskit.data.text.DelimitedColumnEventFormat;
 import org.grouplens.lenskit.data.text.EventFormat;
-import org.grouplens.lenskit.data.text.RatingEventType;
+import org.lenskit.data.ratings.PreferenceDomain;
+import org.lenskit.data.ratings.RatingBuilder;
 
 import javax.annotation.Nonnull;
 import java.io.File;
+import java.nio.file.Path;
 
 /**
  * Builder for text file data sources.
@@ -40,11 +41,11 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
     File inputFile;
     PreferenceDomain domain;
     DelimitedColumnEventFormat dceFormat =
-            DelimitedColumnEventFormat.create(new RatingEventType())
+            DelimitedColumnEventFormat.create(RatingBuilder.class)
                                       .setDelimiter(",");
     EventFormat format = dceFormat;
-    File itemFile;
-    private File itemNameFile;
+    private Path itemFile;
+    private Path itemNameFile;
 
     public TextDataSourceBuilder() {}
 
@@ -188,7 +189,7 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
      * Get the item file.
      * @return The item file, if one is specified.
      */
-    public File getItemFile() {
+    public Path getItemFile() {
         return itemFile;
     }
 
@@ -196,16 +197,27 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
      * Set the item ID file.
      * @param file The item file, if one is specified.
      */
-    public TextDataSourceBuilder setItemFile(File file) {
+    public TextDataSourceBuilder setItemFile(Path file) {
         itemFile = file;
         return this;
+    }
+
+    /**
+     * Set the item ID file.
+     * @param file The item file, if one is specified.
+     * @deprecated Use {@link #setItemFile(Path)}
+     */
+    @Deprecated
+    public TextDataSourceBuilder setItemFile(File file) {
+        Path path = file != null ? file.toPath() : null;
+        return setItemFile(path);
     }
 
     /**
      * Get the item file.
      * @return The item file, if one is specified.
      */
-    public File getItemNameFile() {
+    public Path getItemNameFile() {
         return itemNameFile;
     }
 
@@ -213,9 +225,20 @@ public class TextDataSourceBuilder implements Builder<DataSource> {
      * Set the item ID to name mapping file.
      * @param file The item name file, if one is specified.
      */
-    public TextDataSourceBuilder setItemNameFile(File file) {
+    public TextDataSourceBuilder setItemNameFile(Path file) {
         itemNameFile = file;
         return this;
+    }
+
+    /**
+     * Set the item ID to name mapping file.
+     * @param file The item name file, if one is specified.
+     * @deprecated Use {@link #setItemNameFile(Path)}.
+     */
+    @Deprecated
+    public TextDataSourceBuilder setItemNameFile(File file) {
+        Path path = file != null ? file.toPath() : null;
+        return setItemNameFile(path);
     }
 
     /**

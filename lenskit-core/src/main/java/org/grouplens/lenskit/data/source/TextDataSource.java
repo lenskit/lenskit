@@ -21,15 +21,18 @@
 package org.grouplens.lenskit.data.source;
 
 import org.grouplens.grapht.util.Providers;
-import org.lenskit.data.dao.*;
-import org.lenskit.data.ratings.PreferenceDomain;
 import org.grouplens.lenskit.data.text.*;
 import org.grouplens.lenskit.util.io.CompressionMode;
+import org.lenskit.data.dao.*;
+import org.lenskit.data.ratings.PreferenceDomain;
 import org.lenskit.specs.data.DataSourceSpec;
 import org.lenskit.specs.data.TextDataSourceSpec;
 
 import javax.inject.Provider;
 import java.io.File;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Data source backed by a CSV file.  Use {@link CSVDataSourceBuilder} to configure and build one
@@ -47,9 +50,11 @@ public class TextDataSource extends AbstractDataSource {
 
     private final Provider<ItemListItemDAO> items;
     private final Provider<MapItemNameDAO> itemNames;
+    private final Path itemFile;
+    private final Path itemNameFile;
 
     TextDataSource(String name, File file, EventFormat fmt, PreferenceDomain pdom,
-                   File itemFile, File itemNameFile) {
+                   Path itemFile, Path itemNameFile) {
         this.name = name;
         sourceFile = file;
         domain = pdom;
@@ -58,14 +63,18 @@ public class TextDataSource extends AbstractDataSource {
         dao = TextEventDAO.create(file, format, CompressionMode.AUTO);
 
         if (itemFile != null) {
-            items = Providers.memoize(new SimpleFileItemDAOProvider(itemFile));
+            items = Providers.memoize(new SimpleFileItemDAOProvider(itemFile.toFile()));
+            this.itemFile = itemFile;
         } else {
             items = null;
+            this.itemFile = null;
         }
         if (itemNameFile != null) {
-            itemNames = Providers.memoize(new CSVFileItemNameDAOProvider(itemNameFile));
+            itemNames = Providers.memoize(new CSVFileItemNameDAOProvider(itemNameFile.toFile()));
+            this.itemNameFile = itemNameFile;
         } else {
             itemNames = null;
+            this.itemNameFile = null;
         }
     }
 
@@ -138,8 +147,14 @@ public class TextDataSource extends AbstractDataSource {
         if (format instanceof DelimitedColumnEventFormat) {
             DelimitedColumnEventFormat cf = (DelimitedColumnEventFormat) format;
             spec.setDelimiter(cf.getDelimiter());
-            // FIXME Serialize columns
-            logger.warn("cannot serialize columns, assuming default");
+            List<String> fieldNames = new ArrayList<>();
+            for (Field f: cf.getFields()) {
+                fieldNames.add(f.getName());
+            }
+            spec.setFields(fieldNames);
+            spec.setBuilderType(cf.getBuilderType().getName());
+            spec.setItemFile(itemFile);
+            spec.setItemNameFile(itemNameFile);
         }
         if (domain != null) {
             spec.setDomain(domain.toSpec());
@@ -155,9 +170,17 @@ public class TextDataSource extends AbstractDataSource {
     public static TextDataSource fromSpec(TextDataSourceSpec spec) {
         TextDataSourceBuilder bld = new TextDataSourceBuilder();
         bld.setName(spec.getName())
-                .setFile(spec.getFile().toFile())
-                .setDelimiter(spec.getDelimiter())
-                .setDomain(PreferenceDomain.fromSpec(spec.getDomain()));
+           .setFile(spec.getFile().toFile())
+           .setDomain(PreferenceDomain.fromSpec(spec.getDomain()));
+        DelimitedColumnEventFormat fmt = DelimitedColumnEventFormat.create(spec.getBuilderType());
+        fmt.setDelimiter(spec.getDelimiter());
+        List<String> fields = spec.getFields();
+        if (fields != null) {
+            fmt.setFieldsByName(fields);
+        }
+        bld.setFormat(fmt);
+        bld.setItemFile(spec.getItemFile());
+        bld.setItemNameFile(spec.getItemNameFile());
         return bld.build();
     }
 }

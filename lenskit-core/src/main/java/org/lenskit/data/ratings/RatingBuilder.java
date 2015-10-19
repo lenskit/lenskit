@@ -22,6 +22,7 @@ package org.lenskit.data.ratings;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
+import org.grouplens.lenskit.data.text.DefaultFields;
 import org.lenskit.data.events.EventBuilder;
 
 /**
@@ -30,7 +31,8 @@ import org.lenskit.data.events.EventBuilder;
  * @since 1.3
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
+@DefaultFields({"userId", "itemId", "rating", "timestamp?"})
+public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating>, Cloneable {
     private boolean hasUserId;
     private long userId;
     private boolean hasItemId;
@@ -72,6 +74,7 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
      * @param uid The user ID.
      * @return The builder (for chaining).
      */
+    @Override
     public RatingBuilder setUserId(long uid) {
         userId = uid;
         hasUserId = true;
@@ -91,6 +94,7 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
      * @param iid The item ID.
      * @return The builder (for chaining).
      */
+    @Override
     public RatingBuilder setItemId(long iid) {
         itemId = iid;
         hasItemId = true;
@@ -154,6 +158,7 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
      * @param ts The timestamp.
      * @return The builder (for chaining).
      */
+    @Override
     public RatingBuilder setTimestamp(long ts) {
         timestamp = ts;
         return this;
@@ -167,6 +172,15 @@ public class RatingBuilder implements EventBuilder<Rating>, Builder<Rating> {
             return Rating.create(userId, itemId, rating, timestamp);
         } else {
             return Rating.createUnrate(userId, itemId, timestamp);
+        }
+    }
+
+    @Override
+    public RatingBuilder clone() {
+        try {
+            return (RatingBuilder) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e);
         }
     }
 }
