@@ -63,6 +63,10 @@ task trainTest(type: TrainTest) {
         metric 'map'
         metric 'pr'
     }
+
+    doFirst {
+        delete 'cache'
+    }
 }
 
 task check(overwrite: true, type: JavaExec) {
