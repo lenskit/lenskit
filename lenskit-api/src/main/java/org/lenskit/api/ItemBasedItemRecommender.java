@@ -57,17 +57,6 @@ public interface ItemBasedItemRecommender {
     List<Long> recommendRelatedItems(Set<Long> basket, int n);
 
     /**
-     * Recommend all possible items for a basket of items from a set of candidates using the default
-     * exclude set.
-     *
-     * @param basket     The reference basket.
-     * @param candidates The candidate set (can be null to represent the universe).
-     * @return The recommended items.
-     * @see #recommendRelatedItems(Set, int, Set, Set)
-     */
-    List<Long> recommendRelatedItems(Set<Long> basket, @Nullable Set<Long> candidates);
-
-    /**
      * Produce a set of recommendations for the item. This is the most general recommendation
      * method, allowing the recommendations to be constrained by both a candidate set and an exclude
      * set. The exclude set is applied to the candidate set, so the final effective candidate set is
