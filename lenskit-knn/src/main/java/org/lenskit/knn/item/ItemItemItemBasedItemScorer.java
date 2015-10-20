@@ -21,28 +21,34 @@
 package org.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import org.grouplens.lenskit.basic.AbstractGlobalItemScorer;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongIterators;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.api.Result;
+import org.lenskit.api.ResultMap;
+import org.lenskit.basic.AbstractItemBasedItemScorer;
 import org.lenskit.knn.NeighborhoodSize;
 import org.lenskit.knn.item.model.ItemItemModel;
+import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Score items based on the basket of items using an item-item CF model.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class ItemItemGlobalScorer extends AbstractGlobalItemScorer {
+public class ItemItemItemBasedItemScorer extends AbstractItemBasedItemScorer {
     protected final ItemItemModel model;
     @Nonnull
     protected final
@@ -50,7 +56,7 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer {
     private final int neighborhoodSize;
 
     @Inject
-    public ItemItemGlobalScorer(ItemItemModel m, @NeighborhoodSize int nnbrs) {
+    public ItemItemItemBasedItemScorer(ItemItemModel m, @NeighborhoodSize int nnbrs) {
         model = m;
         // The global item scorer use the SimilaritySumNeighborhoodScorer for the unary ratings
         this.scorer = new SimilaritySumNeighborhoodScorer();
@@ -58,19 +64,19 @@ public class ItemItemGlobalScorer extends AbstractGlobalItemScorer {
     }
 
     @Override
-    public void globalScore(@Nonnull Collection<Long> queryItems,
-                            @Nonnull MutableSparseVector output) {
-        // create the unary rating for the items
-        LongSortedSet qItems = LongUtils.packedSet(queryItems);
-        Long2DoubleMap basket = MutableSparseVector.create(qItems, 1.0).asMap();
-
-        output.clear();
-        for (VectorEntry e: output.view(VectorEntry.State.EITHER)) {
-            ItemItemResult result = scoreItem(basket, e.getKey());
+    public ResultMap scoreRelatedItemsWithDetails(@Nonnull Collection<Long> basket, Collection<Long> items) {
+        LongSet bset = LongUtils.packedSet(basket);
+        Long2DoubleMap basketScores = LongUtils.constantDoubleMap(bset, 1.0);
+        List<Result> results = new ArrayList<>();
+        LongIterator iter = LongIterators.asLongIterator(items.iterator());
+        while (iter.hasNext()) {
+            long item = iter.nextLong();
+            ItemItemResult result = scoreItem(basketScores, item);
             if (result != null) {
-                output.set(e, result.getScore());
+                results.add(result);
             }
         }
+        return Results.newResultMap(results);
     }
 
     protected ItemItemResult scoreItem(Long2DoubleMap scores, long item) {

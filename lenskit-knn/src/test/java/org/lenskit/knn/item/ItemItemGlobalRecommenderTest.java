@@ -38,26 +38,20 @@
  */
 package org.lenskit.knn.item;
 
-import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongSets;
-import org.grouplens.lenskit.GlobalItemRecommender;
-import org.grouplens.lenskit.GlobalItemScorer;
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.scored.ScoredIds;
 import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.IdentityVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
-import org.grouplens.lenskit.vectors.SparseVector;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
+import org.lenskit.api.*;
+import org.lenskit.data.dao.EventCollectionDAO;
+import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.ratings.Rating;
 
 import java.util.ArrayList;
@@ -72,7 +66,7 @@ import static org.junit.Assert.*;
 
 public class ItemItemGlobalRecommenderTest {
     private LenskitRecommender session;
-    private GlobalItemRecommender gRecommender;
+    private ItemBasedItemRecommender gRecommender;
 
     @SuppressWarnings("deprecation")
     @Before
@@ -90,7 +84,7 @@ public class ItemItemGlobalRecommenderTest {
         EventCollectionDAO dao = new EventCollectionDAO(rs);
         LenskitConfiguration config = new LenskitConfiguration();
         config.bind(EventDAO.class).to(dao);
-        config.bind(GlobalItemScorer.class).to(ItemItemGlobalScorer.class);
+        config.bind(ItemBasedItemScorer.class).to(ItemItemItemBasedItemScorer.class);
         // this is the default
         config.bind(UserVectorNormalizer.class)
               .to(DefaultUserVectorNormalizer.class);
@@ -98,7 +92,7 @@ public class ItemItemGlobalRecommenderTest {
               .to(IdentityVectorNormalizer.class);
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         session = engine.createRecommender();
-        gRecommender = session.get(GlobalItemRecommender.class);
+        gRecommender = session.getItemBasedItemRecommender();
     }
 
     /**
@@ -109,14 +103,15 @@ public class ItemItemGlobalRecommenderTest {
     public void testGlobalItemScorerNoRating() {
         long[] queryItems = {1, 10};
         long[] items = {5, 10};
-        ItemItemGlobalScorer scorer = session.get(ItemItemGlobalScorer.class);
+        ItemItemItemBasedItemScorer scorer = session.get(ItemItemItemBasedItemScorer.class);
         assertThat(scorer, notNullValue());
-        SparseVector scores = scorer.globalScore(LongArrayList.wrap(queryItems), LongArrayList.wrap(items));
+        ResultMap scores = scorer.scoreRelatedItemsWithDetails(LongArrayList.wrap(queryItems), LongArrayList.wrap(items));
         assertThat(scores, notNullValue());
         assertThat(scores.size(), equalTo(2));
-        assertThat(scores.get(5), not(notANumber()));
+        Result r5 = scores.get(5);
+        assertThat(r5, notNullValue());
+        assertThat(r5.getScore(), not(notANumber()));
         // assertThat(scores.get(10), equalTo(0.0));
-
     }
 
     /**
@@ -125,103 +120,69 @@ public class ItemItemGlobalRecommenderTest {
     // FIXME Give the test methods for global item-item meaningful names
     @Test
     public void testGlobalItemItemRecommender1() {
-        List<ScoredId> recs = gRecommender.globalRecommend(LongSets.singleton(1));
+        List<Long> recs = gRecommender.recommendRelatedItems(LongSets.singleton(1));
         assertThat(recs.size(), notNullValue());
-        recs = gRecommender.globalRecommend(LongSets.singleton(2));
+        recs = gRecommender.recommendRelatedItems(LongSets.singleton(2));
         assertThat(recs, empty());
-        recs = gRecommender.globalRecommend(LongSets.singleton(5));
+        recs = gRecommender.recommendRelatedItems(LongSets.singleton(5));
         assertThat(recs.size(), notNullValue());
-        recs = gRecommender.globalRecommend(LongSets.singleton(1));
+        recs = gRecommender.recommendRelatedItems(LongSets.singleton(1));
         assertThat(recs.size(), notNullValue());
-        recs = gRecommender.globalRecommend(LongSets.singleton(10));
+        recs = gRecommender.recommendRelatedItems(LongSets.singleton(10));
         assertThat(recs.size(), notNullValue());
 
     }
 
     /**
-     * Tests {@code globalRecommend(long, int)}.
+     * Tests {@code recommendRelatedItems()(long, int)}.
      */
     @Test
     public void testGlobalItemItemRecommender2() {
-        List<ScoredId> recs = gRecommender.globalRecommend(LongSets.singleton(1), 2);
+        List<Long> recs = gRecommender.recommendRelatedItems(LongSets.singleton(1), 2);
         assertThat(recs, hasSize(2));
-        recs = gRecommender.globalRecommend(LongSets.singleton(2), 1);
+        recs = gRecommender.recommendRelatedItems(LongSets.singleton(2), 1);
         assertThat(recs, empty());
-        recs = gRecommender.globalRecommend(LongSets.singleton(5), 3);
+        recs = gRecommender.recommendRelatedItems(LongSets.singleton(5), 3);
         assertThat(recs, hasSize(3));
     }
 
     /**
-     * Tests {@code globalRecommend(long, Set)}.
-     */
-    @Test
-    public void testGlobalItemItemRecommender3() {
-        HashSet<Long> candidates = new HashSet<>();
-        List<ScoredId> recs = gRecommender.globalRecommend(LongSets.singleton(1), candidates);
-        assertThat(recs, hasSize(0));
-        candidates.add(1L);
-        candidates.add(5L);
-        recs = gRecommender.globalRecommend(LongSets.singleton(1), candidates);
-        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
-                   contains(5L));
-
-    }
-
-    /**
-     * Tests {@code globalRecommend(long, int, Set, Set)}.
+     * Tests {@code recommendRelatedItems()(long, int, Set, Set)}.
      */
     @Test
     public void testGlobalItemItemRecommender4() {
         HashSet<Long> candidates = new HashSet<>();
         HashSet<Long> excludes = new HashSet<>();
-        List<ScoredId> recs = gRecommender.globalRecommend(LongSets.singleton(1), 1, candidates, excludes);
+        List<Long> recs = gRecommender.recommendRelatedItems(LongSets.singleton(1), 1, candidates, excludes);
         assertThat(recs, hasSize(0));
         candidates.add(7L);
         candidates.add(5L);
         excludes.add(5L);
-        recs = gRecommender.globalRecommend(LongSets.singleton(1), 2, candidates, excludes);
+        recs = gRecommender.recommendRelatedItems(LongSets.singleton(1), 2, candidates, excludes);
         assertThat(recs, hasSize(1));
-        recs = gRecommender.globalRecommend(LongSets.singleton(1), -1, candidates, excludes);
+        assertThat(recs, contains(7L));
+        recs = gRecommender.recommendRelatedItems(LongSets.singleton(1), -1, candidates, excludes);
         assertThat(recs, hasSize(1));
+        assertThat(recs, contains(7L));
 
     }
 
     /**
-     * Tests {@code globalRecommend(Set, int)}.
+     * Tests {@code recommendRelatedItems()(Set, int)}.
      */
     @Test
     public void testGlobalItemItemRecommender5() {
         HashSet<Long> basket = new HashSet<>();
         basket.add(1L);
         basket.add(7L);
-        List<ScoredId> recs = gRecommender.globalRecommend(basket, -1);
+        List<Long> recs = gRecommender.recommendRelatedItems(basket, -1);
         assertThat(recs, hasSize(2));
-        recs = gRecommender.globalRecommend(basket, 1);
-        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
-                   contains(5L));
+        recs = gRecommender.recommendRelatedItems(basket, 1);
+        assertThat(recs, contains(5L));
     }
 
     /**
-     * Tests {@code globalRecommend(Set, Set)}.
-     */
-    @Test
-    public void testGlobalItemItemRecommender6() {
-        HashSet<Long> basket = new HashSet<>();
-        basket.add(1L);
-        HashSet<Long> candidates = new HashSet<>();
-        candidates.add(5L);
-        candidates.add(10L);
-        List<ScoredId> recs = gRecommender.globalRecommend(basket, candidates);
-        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
-                   contains(5L, 10L));
-        candidates.add(7L);
-        recs = gRecommender.globalRecommend(basket, candidates);
-        assertThat(recs, hasSize(3));
-
-    }
-
-    /**
-     * Tests {@code globalRecommend(Set, int, Set, Set)}.
+     * Tests {@code recommendRelatedItems()(Set, int, Set, Set)}.
      */
     @Test
     public void testGlobalItemItemRecommender7() {
@@ -232,16 +193,14 @@ public class ItemItemGlobalRecommenderTest {
         candidates.add(1L);
         candidates.add(7L);
         HashSet<Long> excludes = new HashSet<>();
-        List<ScoredId> recs = gRecommender.globalRecommend(basket, 1, candidates, excludes);
+        List<Long> recs = gRecommender.recommendRelatedItems(basket, 1, candidates, excludes);
         assertThat(recs, hasSize(1));
         excludes.add(5L);
-        recs = gRecommender.globalRecommend(basket, 2, candidates, excludes);
-        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
-                   contains(1L, 7L));
+        recs = gRecommender.recommendRelatedItems(basket, 2, candidates, excludes);
+        assertThat(recs, contains(1L, 7L));
         excludes.add(1L);
-        recs = gRecommender.globalRecommend(basket, 2, candidates, excludes);
-        assertThat(Lists.transform(recs, ScoredIds.idFunction()),
-                   contains(7L));
+        recs = gRecommender.recommendRelatedItems(basket, 2, candidates, excludes);
+        assertThat(recs, contains(7L));
 
     }
 }
