@@ -25,16 +25,17 @@ import com.google.common.base.Stopwatch;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.grouplens.lenskit.GlobalItemRecommender;
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.data.dao.ItemNameDAO;
-import org.grouplens.lenskit.scored.ScoredId;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
+import org.lenskit.api.ItemBasedItemRecommender;
+import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.api.Result;
+import org.lenskit.api.ResultList;
 import org.lenskit.cli.Command;
 import org.lenskit.cli.util.InputData;
 import org.lenskit.cli.util.RecommenderLoader;
 import org.lenskit.cli.util.ScriptEnvironment;
+import org.lenskit.data.dao.ItemNameDAO;
 import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +75,7 @@ public class GlobalRecommend implements Command {
         final int n = opts.getInt("num_recs");
 
         try (LenskitRecommender rec = engine.createRecommender()) {
-            GlobalItemRecommender irec = rec.get(GlobalItemRecommender.class);
+            ItemBasedItemRecommender irec = rec.getItemBasedItemRecommender();
             ItemNameDAO indao = rec.get(ItemNameDAO.class);
             if (irec == null) {
                 logger.error("recommender has no global recommender");
@@ -84,8 +85,8 @@ public class GlobalRecommend implements Command {
             logger.info("using {} reference items", items.size());
             Stopwatch timer = Stopwatch.createStarted();
 
-            List<ScoredId> recs = irec.globalRecommend(LongUtils.packedSet(items), n);
-            for (ScoredId item : recs) {
+            ResultList recs = irec.recommendRelatedItemsWithDetails(LongUtils.packedSet(items), n, null, null);
+            for (Result item : recs) {
                 System.out.format("%d", item.getId());
                 if (indao != null) {
                     System.out.format(" (%s)", indao.getItemName(item.getId()));
