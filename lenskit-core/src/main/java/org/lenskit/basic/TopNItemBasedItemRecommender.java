@@ -54,7 +54,7 @@ public class TopNItemBasedItemRecommender extends AbstractItemBasedItemRecommend
             candidates = itemDAO.getItemIds();
         }
         if (exclude == null) {
-            exclude = getDefaultExcludes(LongUtils.asLongSet(candidates));
+            exclude = getDefaultExcludes(LongUtils.asLongSet(basket));
         }
         if (!exclude.isEmpty()) {
             candidates = LongUtils.setDifference(LongUtils.asLongSet(candidates),

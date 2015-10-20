@@ -134,6 +134,20 @@ public final class LongUtils {
     }
 
     /**
+     * Create a map that maps a group of items to the same value.
+     * @param keys The keys.
+     * @param value The value.
+     * @return A map that contains all `keys`, mapping each of them to `value`.
+     */
+    public static Long2DoubleMap constantDoubleMap(Set<Long> keys, double value) {
+        // TODO Implement this using a flyweight wrapper
+        SortedKeyIndex idx = SortedKeyIndex.fromCollection(keys);
+        double[] values = new double[idx.size()];
+        Arrays.fill(values, value);
+        return Long2DoubleSortedArrayMap.wrap(idx, values);
+    }
+
+    /**
      * Get a Fastutil {@link LongSet} from a {@link java.util.Set} of longs.
      *
      * @param longs The set of longs.
