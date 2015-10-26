@@ -108,6 +108,10 @@ public class TextDataSourceSpec extends DataSourceSpec {
         this.domain = domain;
     }
 
+    public void setDomain(String domain) {
+        setDomain(PrefDomainSpec.fromString(domain));
+    }
+
     @Override
     public Set<Path> getInputFiles() {
         Set<Path> files = new HashSet<>();

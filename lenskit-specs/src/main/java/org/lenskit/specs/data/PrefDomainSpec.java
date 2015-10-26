@@ -22,6 +22,10 @@ package org.lenskit.specs.data;
 
 import org.lenskit.specs.AbstractSpec;
 
+import javax.annotation.Nonnull;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Specification for a preference domain.
  */
@@ -52,5 +56,38 @@ public class PrefDomainSpec extends AbstractSpec {
 
     public void setPrecision(double precision) {
         this.precision = precision;
+    }
+
+    private static Pattern specRE =
+            Pattern.compile("\\s*\\[\\s*((?:\\d*\\.)?\\d+)\\s*,\\s*((?:\\d*\\.)?\\d+)\\s*\\]\\s*(?:/\\s*((?:\\d*\\.)?\\d+))?\\s*");
+
+    /**
+     * Parse a preference domain from a string specification.
+     * <p>
+     * Continuous preference domains are specified as {@code [min, max]}; discrete domains
+     * as {@code min:max[/prec/}.  For example, a 0.5-5.0 half-star rating scale is represented
+     * as {@code [0.5, 5.0]/0.5}.
+     *
+     * @param spec The string specifying the preference domain.
+     * @return The preference domain represented by {@code spec}.
+     * @throws IllegalArgumentException if {@code spec} is not a valid domain specification.
+     */
+    @Nonnull
+    public static PrefDomainSpec fromString(@Nonnull String spec) {
+        Matcher m = specRE.matcher(spec);
+        if (!m.matches()) {
+            throw new IllegalArgumentException("invalid domain specification");
+        }
+        double min = Double.parseDouble(m.group(1));
+        double max = Double.parseDouble(m.group(2));
+        String precs = m.group(3);
+        PrefDomainSpec pds = new PrefDomainSpec();
+        pds.setMinimum(min);
+        pds.setMaximum(max);
+        if (precs != null) {
+            double prec = Double.parseDouble(precs);
+            pds.setPrecision(prec);
+        }
+        return pds;
     }
 }
