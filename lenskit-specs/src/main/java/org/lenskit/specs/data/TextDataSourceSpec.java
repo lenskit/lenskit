@@ -20,6 +20,8 @@
  */
 package org.lenskit.specs.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.*;
@@ -106,10 +108,6 @@ public class TextDataSourceSpec extends DataSourceSpec {
 
     public void setDomain(PrefDomainSpec domain) {
         this.domain = domain;
-    }
-
-    public void setDomain(String domain) {
-        setDomain(PrefDomainSpec.fromString(domain));
     }
 
     @Override

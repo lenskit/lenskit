@@ -80,6 +80,9 @@ class SpecDelegate {
                 } else {
                     prop.setProperty(spec, Paths.get(value))
                 }
+            } else if (Closure.isAssignableFrom(vtype) && AbstractSpec.isAssignableFrom(ptype)) {
+                def val = configure(ptype, value as Closure)
+                prop.setProperty(spec, val)
             } else {
                 throw missing(name, argArray, e);
             }

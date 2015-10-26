@@ -24,6 +24,7 @@ import org.gradle.util.ConfigureUtil
 import org.junit.Before
 import org.junit.Test
 import org.lenskit.specs.AbstractSpec
+import org.lenskit.specs.data.PrefDomainSpec
 import org.lenskit.specs.data.TextDataSourceSpec
 import org.lenskit.specs.eval.PredictEvalTaskSpec
 
@@ -45,5 +46,20 @@ class SpecDelegateTest {
             file 'data/ratings.csv'
         }
         assertThat spec.delimiter, equalTo('::')
+    }
+
+    @Test
+    public void testBlocks() {
+        def spec = configure(TextDataSourceSpec) {
+            delimiter '::'
+            file 'data/ratings.csv'
+            domain {
+                minimum 1.0
+                maximum 5.0
+                precision 1.0
+            }
+        }
+        assertThat spec.delimiter, equalTo('::')
+        assertThat spec.domain, equalTo(PrefDomainSpec.fromString("[1.0,5.0]/1.0"))
     }
 }
