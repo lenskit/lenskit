@@ -198,9 +198,6 @@ public final class PreferenceDomain implements Serializable {
         }
     }
 
-    private static Pattern specRE =
-            Pattern.compile("\\s*\\[\\s*((?:\\d*\\.)?\\d+)\\s*,\\s*((?:\\d*\\.)?\\d+)\\s*\\]\\s*(?:/\\s*((?:\\d*\\.)?\\d+))?\\s*");
-
     /**
      * Parse a preference domain from a string specification.
      * <p>
@@ -215,19 +212,7 @@ public final class PreferenceDomain implements Serializable {
     @Nonnull
     public static
     PreferenceDomain fromString(@Nonnull String spec) {
-        Matcher m = specRE.matcher(spec);
-        if (!m.matches()) {
-            throw new IllegalArgumentException("invalid domain specification");
-        }
-        double min = Double.parseDouble(m.group(1));
-        double max = Double.parseDouble(m.group(2));
-        String precs = m.group(3);
-        if (precs != null) {
-            double prec = Double.parseDouble(precs);
-            return new PreferenceDomain(min, max, prec);
-        } else {
-            return new PreferenceDomain(min, max);
-        }
+        return fromSpec(PrefDomainSpec.fromString(spec));
     }
 
     /**
