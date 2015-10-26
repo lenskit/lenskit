@@ -140,11 +140,13 @@ class Crossfold extends LenskitTask implements DataSources {
     /**
      * Utility method to create a holdout-N user partition method.
      * @param n The number of ratings to hold out for each user.
+     * @param order The sort order. Defaults to `random`.
      * @return The partition method.
      */
-    public static PartitionMethodSpec holdout(int n) {
+    public static PartitionMethodSpec holdout(int n, String order = 'random') {
         def spec = new PartitionMethodSpec.Holdout()
         spec.count = n
+        spec.order = order
         spec
     }
 
@@ -158,9 +160,10 @@ class Crossfold extends LenskitTask implements DataSources {
      * @param order The sort order. Defaults to `random`.
      * @return The partition method.
      */
-    public static PartitionMethodSpec retain(int n) {
+    public static PartitionMethodSpec retain(int n, String order = 'random') {
         def spec = new PartitionMethodSpec.Retain()
         spec.count = n
+        spec.order = order
         spec
     }
 
@@ -174,9 +177,10 @@ class Crossfold extends LenskitTask implements DataSources {
      * @param order The sort order. Defaults to `random`.
      * @return The partition method.
      */
-    public static PartitionMethodSpec holdoutFraction(double f) {
+    public static PartitionMethodSpec holdoutFraction(double f, String order = 'random') {
         def spec = new PartitionMethodSpec.HoldoutFraction()
         spec.fraction = f
+        spec.order = order
         spec
     }
 
