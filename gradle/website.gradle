@@ -102,7 +102,7 @@ task uploadWeb {
         def commit = git.headRevision.abbreviate(8).name()
         exec {
             executable 'git'
-            args 'add', '-A', 'master/apidocs'
+            args 'add', '-A', 'master/apidocs', 'master/gradle-docs'
             workingDir website.directory
         }
         exec {
