@@ -51,7 +51,8 @@ task fetchSite {
         if (!website.directory.exists()) {
             exec {
                 executable 'git'
-                args 'clone', "git@github.com:${website.repo}.git"
+                args 'clone', '--depth', '10'
+                args "git@github.com:${website.repo}.git"
                 args website.directory
             }
         } else {
