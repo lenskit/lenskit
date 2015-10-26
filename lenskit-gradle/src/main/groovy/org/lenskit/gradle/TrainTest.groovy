@@ -31,6 +31,8 @@ import org.lenskit.specs.eval.PredictEvalTaskSpec
 import org.lenskit.specs.eval.RecommendEvalTaskSpec
 import org.lenskit.specs.eval.TrainTestExperimentSpec
 
+import java.nio.file.Path
+
 /**
  * Run a train-test evaluation.
  */
@@ -115,17 +117,19 @@ class TrainTest extends LenskitTask {
     }
 
     @InputFiles
-    public void getDataInputs() {
+    public Set<File> getDataInputs() {
         runDeferredTasks()
-        def files = spec.dataSets.collectNested { ds ->
-            ds.testSource.inputFiles + ds.trainSource.inputFiles
+        Set<File> files = new HashSet<>()
+        for (ds in spec.dataSets) {
+            files.addAll(ds.testSource.inputFiles*.toFile())
+            files.addAll(ds.trainSource.inputFiles*.toFile())
         }
-        files.toSet()
+        return files
     }
 
     @OutputFiles
-    public void getOutputFiles() {
-        spec.outputFiles
+    public Set<File> getOutputFiles() {
+        spec.outputFiles*.toFile()
     }
 
     private void runDeferredTasks() {
