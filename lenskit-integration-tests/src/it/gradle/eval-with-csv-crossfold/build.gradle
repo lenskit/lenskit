@@ -41,7 +41,6 @@ task trainTest(type: TrainTest) {
     userOutputFile 'users.csv'
     algorithm 'Baseline', 'baseline.groovy'
     predict {
-        outputFile 'predictions.csv'
         metric 'coverage'
         metric 'rmse'
         metric('ndcg') {
@@ -50,9 +49,6 @@ task trainTest(type: TrainTest) {
     }
     recommend {
         listSize 10
-        outputFile 'recommendations.csv.gz'
-        candidateItems 'allItems'
-        excludeItems 'user.trainItems'
         metric 'length'
         metric 'entropy'
         metric('ndcg') {
