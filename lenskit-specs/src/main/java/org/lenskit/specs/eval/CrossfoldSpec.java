@@ -20,16 +20,25 @@
  */
 package org.lenskit.specs.eval;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import org.lenskit.specs.AbstractSpec;
 import org.lenskit.specs.data.DataSourceSpec;
+import org.lenskit.specs.data.PackedDataSourceSpec;
+import org.lenskit.specs.data.TextDataSourceSpec;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Specification for running a crossfold operation.
+ *
+ * <p>The spec class contains some of the logic for determining output file locations so that this information is
+ * available without actually running the crossfold.</p>
  */
 public class CrossfoldSpec extends AbstractSpec {
     private String name;
@@ -56,7 +65,11 @@ public class CrossfoldSpec extends AbstractSpec {
     }
 
     public String getName() {
-        return name;
+        if (name == null && source != null) {
+            return source.get().getName();
+        } else {
+            return name;
+        }
     }
 
     public void setName(String name) {
@@ -130,5 +143,53 @@ public class CrossfoldSpec extends AbstractSpec {
 
     public void setOutputDir(Path outputDir) {
         this.outputDir = outputDir;
+    }
+
+    /**
+     * Get the data sets that will be produced by the crossfold specified by this spec.
+     * @return A list of data set specifications.
+     */
+    @JsonIgnore
+    public List<DataSetSpec> getDataSets() {
+        Preconditions.checkState(outputDir != null, "No output directory specified");
+        Preconditions.checkState(source != null, "No data source specified");
+        List<DataSetSpec> specs = new ArrayList<>(partitionCount);
+        for (int i = 1; i <= partitionCount; i++) {
+            DataSetSpec dss = new DataSetSpec();
+            dss.setTrainSource(makeDataSource(String.format("part%02d.train", i)));
+            dss.setTestSource(makeDataSource(String.format("part%02d.test", i)));
+            dss.setAttribute("DataSet", getName());
+            dss.setAttribute("Partition", i);
+            specs.add(dss);
+        }
+        return specs;
+    }
+
+    private DataSourceSpec makeDataSource(String basename) {
+        switch (outputFormat) {
+        case PACK: {
+            PackedDataSourceSpec spec = new PackedDataSourceSpec();
+            spec.setDomain(getSource().getDomain());
+            spec.setFile(getOutputDir().resolve(basename + ".pack"));
+            return spec;
+        }
+        default: {
+            TextDataSourceSpec spec = new TextDataSourceSpec();
+            spec.setDomain(getSource().getDomain());
+            // the compression mode is encoded in the output format extension
+            spec.setFile(getOutputDir().resolve(basename + "." + outputFormat.getExtension()));
+            spec.setDelimiter(",");
+            return spec;
+        }
+        }
+    }
+
+    /**
+     * Get the file that the crossfold will produce containing the output partitions.
+     * @return A path to the `all-partitions.json` file that the crossfolder will produce.
+     */
+    @JsonIgnore
+    public Path getPartitionSpecFile() {
+        return getOutputDir().resolve("all-partitions.json");
     }
 }

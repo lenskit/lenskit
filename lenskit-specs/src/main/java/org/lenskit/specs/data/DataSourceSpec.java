@@ -53,4 +53,6 @@ public abstract class DataSourceSpec extends AbstractSpec {
     public Set<Path> getInputFiles() {
         return Collections.emptySet();
     }
+
+    public abstract PrefDomainSpec getDomain();
 }

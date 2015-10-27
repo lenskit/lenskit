@@ -38,6 +38,16 @@ public class TextDataSourceSpec extends DataSourceSpec {
     private Path itemFile;
     private Path itemNameFile;
 
+    @Override
+    public String getName() {
+        String name = super.getName();
+        if (name == null && file != null) {
+            return file.getFileName().toString();
+        } else {
+            return name;
+        }
+    }
+
     public Path getFile() {
         return file;
     }
@@ -102,6 +112,7 @@ public class TextDataSourceSpec extends DataSourceSpec {
         itemNameFile = file;
     }
 
+    @Override
     public PrefDomainSpec getDomain() {
         return domain;
     }

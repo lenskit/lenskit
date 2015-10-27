@@ -38,21 +38,21 @@ public class LineCountMatcher extends BaseMatcher<File> {
 
     @Override
     public boolean matches(Object o) {
-        if (!(o instanceof File)) {
-            return false;
-        }
+        return o instanceof File && lineCount.matches(getLineCount((File) o));
+    }
 
-        try (Reader reader = new FileReader((File) o);
+    private int getLineCount(File file) {
+        try (Reader reader = new FileReader(file);
              BufferedReader lines = new BufferedReader(reader)) {
             int n = 0;
             while (lines.readLine() != null) {
                 n++;
             }
-            return lineCount.matches(n);
+            return n;
         } catch (FileNotFoundException ex) {
-            return false;
+            throw new RuntimeException("file " + file + " not found", ex);
         } catch (IOException ex) {
-            throw new RuntimeException("error reading file " + o, ex);
+            throw new RuntimeException("error reading file " + file, ex);
         }
     }
 
@@ -60,5 +60,15 @@ public class LineCountMatcher extends BaseMatcher<File> {
     public void describeTo(Description description) {
         description.appendText("file with line count ")
                    .appendDescriptionOf(lineCount);
+    }
+
+    @Override
+    public void describeMismatch(Object item, Description description) {
+        if (item instanceof File) {
+            int lines = getLineCount((File) item);
+            description.appendText("had " + lines + " lines");
+        } else {
+            description.appendText("was non-file object " + item);
+        }
     }
 }
