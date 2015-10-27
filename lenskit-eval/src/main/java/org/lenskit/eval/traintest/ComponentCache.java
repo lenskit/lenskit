@@ -35,6 +35,7 @@ import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.NodeInstantiator;
 import org.lenskit.inject.NodeProcessor;
 import org.grouplens.lenskit.util.io.*;
+import org.lenskit.util.UncheckedInterruptException;
 import org.lenskit.util.io.StagedWrite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,7 @@ import javax.annotation.concurrent.ThreadSafe;
 import javax.inject.Provider;
 import java.io.*;
 import java.lang.ref.SoftReference;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -295,6 +297,10 @@ class ComponentCache implements NodeProcessor {
                  ObjectInputStream oin = new CustomClassLoaderObjectInputStream(gzin, classLoader)) {
 
                 return type.cast(oin.readObject());
+            } catch (ClosedByInterruptException | InterruptedIOException ex) {
+                logger.info("Evaluation thread interrupted, aborting");
+                Thread.currentThread().interrupt();
+                throw new UncheckedInterruptException("Evaluation thread interrupted", ex);
             } catch (IOException ex) {
                 logger.warn("ignoring cache file {} due to read error: {}",
                             cacheFile.getFileName(), ex.toString());

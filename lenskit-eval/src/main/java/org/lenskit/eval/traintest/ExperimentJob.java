@@ -38,6 +38,7 @@ import org.lenskit.data.history.UserHistory;
 import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.NodeProcessors;
 import org.lenskit.inject.RecommenderInstantiator;
+import org.lenskit.util.UncheckedInterruptException;
 import org.lenskit.util.table.RowBuilder;
 import org.lenskit.util.table.writer.TableWriter;
 import org.lenskit.LenskitRecommender;
@@ -170,9 +171,15 @@ class ExperimentJob implements Runnable {
             logger.info("Tested {} in {}", algorithm.getName(), testTimer);
             outputRow.add("BuildTime", buildTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
             outputRow.add("TestTime", testTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
-            for (ConditionEvaluator eval: accumulators) {
+            for (ConditionEvaluator eval : accumulators) {
                 outputRow.addAll(eval.finish());
             }
+        } catch (UncheckedInterruptException ex) {
+            logger.info("evaluation interrupted");
+            throw ex;
+        } catch (Throwable th) {
+            logger.error("Error occured in eval job", th);
+            throw th;
         }
 
         try {
