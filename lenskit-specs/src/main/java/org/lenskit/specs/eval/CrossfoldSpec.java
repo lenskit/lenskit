@@ -51,7 +51,7 @@ public class CrossfoldSpec extends AbstractSpec {
     private PartitionMethodSpec userPartitionMethod;
     private Integer sampleSize;
 
-    private boolean includeTimestamps = false;
+    private boolean includeTimestamps = true;
 
     private OutputFormat outputFormat = OutputFormat.CSV;
     private Path outputDir;
