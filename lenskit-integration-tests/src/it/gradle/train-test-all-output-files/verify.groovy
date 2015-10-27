@@ -42,11 +42,13 @@ File recommendFile = new File("recommendations.csv.gz")
 assertThat("output file exists",
            resultsFile, allOf(existingFile(),
                               hasLineCount(equalTo(11))));
-assertThat("output file exists",
+assertThat("log file file exists",
+           new File("train-test.log"), existingFile());
+assertThat("user file exists",
            userFile, existingFile());
-assertThat("output file exists",
+assertThat("prediction file exists",
            predictFile, existingFile());
-assertThat("output file exists",
+assertThat("recommendation file exists",
            recommendFile, existingFile());
 resultsFile.withReader { rdr ->
     def results = parseCsv(rdr)

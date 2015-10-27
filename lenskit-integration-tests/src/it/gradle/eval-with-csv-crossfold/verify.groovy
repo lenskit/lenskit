@@ -35,18 +35,12 @@ import static org.hamcrest.Matchers.equalTo
 
 File resultsFile = new File("results.csv")
 File userFile = new File("users.csv")
-File predictFile = new File("predictions.csv")
-File recommendFile = new File("recommendations.csv.gz")
 
 assertThat("output file exists",
            resultsFile, allOf(existingFile(),
                               hasLineCount(equalTo(6))));
 assertThat("output file exists",
            userFile, existingFile());
-assertThat("output file exists",
-           predictFile, existingFile());
-assertThat("output file exists",
-           recommendFile, existingFile());
 resultsFile.withReader { rdr ->
     def results = parseCsv(rdr)
     for (row in results) {

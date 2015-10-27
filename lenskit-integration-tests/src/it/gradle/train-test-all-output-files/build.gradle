@@ -35,6 +35,8 @@ task crossfold(type: Crossfold) {
 
 task trainTest(type: TrainTest) {
     maxMemory '256m'
+    logFile "train-test.log"
+    logFileLevel 'DEBUG'
     dataSet crossfold
     cacheDirectory 'cache'
     outputFile 'results.csv'
@@ -54,6 +56,22 @@ task trainTest(type: TrainTest) {
         outputFile 'recommendations.csv.gz'
         candidateItems 'allItems'
         excludeItems 'user.trainItems'
+        metric 'length'
+        metric 'entropy'
+        metric('ndcg') {
+            columnName 'nDCG'
+        }
+        metric 'popularity'
+        metric 'mrr'
+        metric 'map'
+        metric 'pr'
+    }
+    // test the top-N metrics for handling a full run with no recommendations
+    recommend {
+        candidateItems 'allItems'
+        excludeItems 'allItems'
+        listSize 10
+        labelPrefix 'NoRecs'
         metric 'length'
         metric 'entropy'
         metric('ndcg') {

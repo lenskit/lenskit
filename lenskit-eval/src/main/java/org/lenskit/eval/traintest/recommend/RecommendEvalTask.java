@@ -116,6 +116,23 @@ public class RecommendEvalTask implements EvalTask {
     }
 
     /**
+     * Get the prefix applied to column labels.
+     * @return The column label prefix.
+     */
+    public String getLabelPrefix() {
+        return spec.getLabelPrefix();
+    }
+
+    /**
+     * Set the prefix applied to column labels.  If provided, it will be prepended to column labels from this task,
+     * along with a ".".
+     * @param prefix The label prefix.
+     */
+    public void setLabelPrefix(String prefix) {
+        spec.setLabelPrefix(prefix);
+    }
+
+    /**
      * Get the list size to use.
      * @return The number of items to recommend per user.
      */
@@ -147,28 +164,28 @@ public class RecommendEvalTask implements EvalTask {
      * Set the candidate selector.
      * @param sel The candidate selector.
      */
-    public void setExcludeSelector(ItemSelector sel) {
-        excludeSelector = sel;
+    public void setCandidateSelector(ItemSelector sel) {
+        candidateSelector = sel;
     }
 
     /**
-     * Get the active candidate selector.
-     * @return The candidate selector to use.
+     * Get the active exclude selector.
+     * @return The exclude selector to use.
      */
     public ItemSelector getExcludeSelector() {
         if (excludeSelector == null) {
-            String sel = spec.getCandidateItems();
+            String sel = spec.getExcludeItems();
             excludeSelector = ItemSelector.compileSelector(sel);
         }
         return excludeSelector;
     }
 
     /**
-     * Set the candidate selector.
-     * @param sel The candidate selector.
+     * Set the exclude selector.
+     * @param sel The exclude selector.
      */
-    public void setCandidateSelector(ItemSelector sel) {
-        candidateSelector = sel;
+    public void setExcludeSelector(ItemSelector sel) {
+        excludeSelector = sel;
     }
 
     /**
@@ -213,7 +230,7 @@ public class RecommendEvalTask implements EvalTask {
     public List<String> getGlobalColumns() {
         ImmutableList.Builder<String> columns = ImmutableList.builder();
         for (Metric<?> m: getAllMetrics()) {
-            columns.addAll(m.getAggregateColumnLabels());
+            columns.addAll(Lists.transform(m.getAggregateColumnLabels(), prefixColumn()));
         }
         return columns.build();
     }
@@ -222,9 +239,29 @@ public class RecommendEvalTask implements EvalTask {
     public List<String> getUserColumns() {
         ImmutableList.Builder<String> columns = ImmutableList.builder();
         for (TopNMetric<?> pm: getTopNMetrics()) {
-            columns.addAll(pm.getColumnLabels());
+            columns.addAll(Lists.transform(pm.getColumnLabels(),
+                                           prefixColumn()));
         }
         return columns.build();
+    }
+
+    private Function<String,String> prefixColumn() {
+        return new Function<String, String>() {
+            @Nullable
+            @Override
+            public String apply(@Nullable String input) {
+                return RecommendEvalTask.this.prefixColumn(input);
+            }
+        };
+    }
+
+    private String prefixColumn(String input) {
+        String pfx = getLabelPrefix();
+        if (pfx == null) {
+            return input;
+        } else {
+            return pfx + "." + input;
+        }
     }
 
     @Override
@@ -275,6 +312,7 @@ public class RecommendEvalTask implements EvalTask {
 
         List<MetricContext<?>> contexts = new ArrayList<>(topNMetrics.size());
         for (TopNMetric<?> metric: topNMetrics) {
+            logger.debug("setting up metric {}", metric);
             contexts.add(MetricContext.create(metric, algorithm, dataSet, rec));
         }
 
@@ -359,7 +397,10 @@ public class RecommendEvalTask implements EvalTask {
         public Map<String, Object> finish() {
             Map<String,Object> results = new HashMap<>();
             for (MetricContext<?> mc: predictMetricContexts) {
-                results.putAll(mc.getAggregateMeasurements().getValues());
+                logger.debug("finishing metric {}", mc.metric);
+                results.putAll(mc.getAggregateMeasurements()
+                                 .withPrefix(getLabelPrefix())
+                                 .getValues());
             }
             return results;
         }
