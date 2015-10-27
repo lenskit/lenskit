@@ -33,6 +33,7 @@ public class RecommendEvalTaskSpec extends EvalTaskSpec {
     private Path outputFile;
     private int listSize;
     private String candidateItems;
+    private String excludeItems;
 
     /**
      * Get the recommendation output file.
@@ -90,5 +91,21 @@ public class RecommendEvalTaskSpec extends EvalTaskSpec {
      */
     public void setCandidateItems(String candidates) {
         candidateItems = candidates;
+    }
+
+    /**
+     * Get the candidate item selector.
+     * @return The selector expression for exclude items.
+     */
+    public String getExcludeItems() {
+        return excludeItems;
+    }
+
+    /**
+     * Get the exclude item selector.
+     * @param excludeItems The selector expression for exclude items.
+     */
+    public void setExcludeItems(String excludeItems) {
+        this.excludeItems = excludeItems;
     }
 }
