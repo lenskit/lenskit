@@ -31,6 +31,16 @@ public class PackedDataSourceSpec extends DataSourceSpec {
     private Path file;
     private PrefDomainSpec domain;
 
+    @Override
+    public String getName() {
+        String name = super.getName();
+        if (name == null && file != null) {
+            return file.getFileName().toString();
+        } else {
+            return name;
+        }
+    }
+
     public Path getFile() {
         return file;
     }
@@ -39,6 +49,7 @@ public class PackedDataSourceSpec extends DataSourceSpec {
         this.file = file;
     }
 
+    @Override
     public PrefDomainSpec getDomain() {
         return domain;
     }

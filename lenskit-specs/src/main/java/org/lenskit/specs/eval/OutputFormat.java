@@ -21,5 +21,19 @@
 package org.lenskit.specs.eval;
 
 public enum OutputFormat {
-    CSV, CSV_GZIP, CSV_XZ, PACK
+    CSV("csv"), CSV_GZIP("csv.gz"), CSV_XZ("csv.xz"), PACK("pack");
+
+    private String extension;
+
+    OutputFormat(String ext) {
+        extension = ext;
+    }
+
+    /**
+     * Get the file extension for the output format.
+     * @return The extension.
+     */
+    public String getExtension() {
+        return extension;
+    }
 }

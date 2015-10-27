@@ -134,7 +134,9 @@ class Crossfold extends LenskitTask implements DataSources {
     }
 
     List<DataSetSpec> getDataSets() {
-        return SpecUtils.loadList(DataSetSpec, project.file(getOutputDir()).toPath().resolve("all-partitions.json"))
+        def copy = SpecUtils.copySpec(spec)
+        copy.setOutputDir(project.file(getOutputDir()).toPath())
+        return copy.dataSets
     }
 
     /**

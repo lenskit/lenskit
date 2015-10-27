@@ -336,30 +336,15 @@ public class Crossfolder {
     }
 
     List<Path> getTrainingFiles() {
-        return getFileList("part%02d.train." + getOutputSuffix());
+        return getFileList("part%02d.train." + outputFormat.getExtension());
     }
 
     List<Path> getTestFiles() {
-        return getFileList("part%02d.test." + getOutputSuffix());
+        return getFileList("part%02d.test." + outputFormat.getExtension());
     }
 
     List<Path> getSpecFiles() {
         return getFileList("part%02d.json");
-    }
-
-    String getOutputSuffix() {
-        switch (outputFormat) {
-        case CSV:
-            return "csv";
-        case CSV_GZIP:
-            return "csv.gz";
-        case CSV_XZ:
-            return "csv.xz";
-        case PACK:
-            return "pack";
-        default:
-            throw new IllegalArgumentException("invalid output format");
-        }
     }
 
     private List<Path> getFileList(String pattern) {
