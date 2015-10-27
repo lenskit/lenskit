@@ -65,6 +65,7 @@ public class RecommendEvalTask implements EvalTask {
     private final RecommendEvalTaskSpec spec;
     private List<TopNMetric<?>> topNMetrics = Lists.newArrayList(DEFAULT_METRICS);
     private volatile ItemSelector candidateSelector;
+    private volatile ItemSelector excludeSelector;
 
     private ExperimentOutputLayout experimentOutputLayout;
     private TableWriter outputTable;
@@ -140,6 +141,26 @@ public class RecommendEvalTask implements EvalTask {
             candidateSelector = ItemSelector.compileSelector(sel);
         }
         return candidateSelector;
+    }
+
+    /**
+     * Set the candidate selector.
+     * @param sel The candidate selector.
+     */
+    public void setExcludeSelector(ItemSelector sel) {
+        excludeSelector = sel;
+    }
+
+    /**
+     * Get the active candidate selector.
+     * @return The candidate selector to use.
+     */
+    public ItemSelector getExcludeSelector() {
+        if (excludeSelector == null) {
+            String sel = spec.getCandidateItems();
+            excludeSelector = ItemSelector.compileSelector(sel);
+        }
+        return excludeSelector;
     }
 
     /**
@@ -307,7 +328,9 @@ public class RecommendEvalTask implements EvalTask {
         public Map<String, Object> measureUser(TestUser testUser) {
             // FIXME Support item selectors
             LongSet candidates = getCandidateSelector().selectItems(allItems, testUser);
-            ResultList results = recommender.recommendWithDetails(testUser.getUserId(), getListSize(), candidates, null);
+            LongSet excludes = getExcludeSelector().selectItems(allItems, testUser);
+            ResultList results = recommender.recommendWithDetails(testUser.getUserId(), getListSize(),
+                                                                  candidates, excludes);
 
             // Measure the user results
             Map<String,Object> row = new HashMap<>();
