@@ -28,8 +28,7 @@ import java.util.Set;
 /**
  * Recommends items that go with a set of reference items. This interface is distinguished from
  * {@link ItemRecommender} in that it uses a set of reference items instead
- * of a user as the basis for computing scores. This component can be used to provide a Find Similar Items
- * or People Also Liked feature.
+ * of a user as the basis for computing scores.
  *
  * @see ItemRecommender
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
