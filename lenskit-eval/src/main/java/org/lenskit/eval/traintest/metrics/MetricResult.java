@@ -20,6 +20,8 @@
  */
 package org.lenskit.eval.traintest.metrics;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,13 +34,15 @@ public abstract class MetricResult {
      * Get the column values for this metric result.
      * @return The values for the result.
      */
+    @Nonnull
     public abstract Map<String,Object> getValues();
 
     /**
-     * Add a suffix to this metric result's column names.
+     * Add a suffix to this metric result's column names.  The resulting keys are of the form "key.sfx".
      * @param sfx The suffix to add, or `null` for no change.
      * @return The converted metric.
      */
+    @Nonnull
     public MetricResult withSuffix(String sfx) {
         if (sfx == null) {
             return this;
@@ -51,18 +55,49 @@ public abstract class MetricResult {
         return fromMap(newData);
     }
 
+
     /**
-     * Create an empty metric result.
-     * @return An empty metric result.
+     * Add a prefix to this metric result's column names.  The resulting keys are of the form "pfx.key".
+     * @param pfx The prefix to add, or `null` for no change.
+     * @return The converted metric.
      */
-    public static MetricResult empty() {
-        return fromMap(Collections.<String, Object>emptyMap());
+    @Nonnull
+    public MetricResult withPrefix(String pfx) {
+        if (pfx == null) {
+            return this;
+        }
+
+        Map<String,Object> newData = new HashMap<>();
+        for (Map.Entry<String,Object> e: getValues().entrySet()) {
+            newData.put(pfx + "." + e.getKey(), e.getValue());
+        }
+        return fromMap(newData);
     }
 
     /**
      * Create an empty metric result.
      * @return An empty metric result.
      */
+    @Nonnull
+    public static MetricResult empty() {
+        return fromMap(Collections.<String, Object>emptyMap());
+    }
+
+    /**
+     * Convert a null result to an empty result.
+     * @param result The result.
+     * @return The result, or {@link #empty()} if it is null.
+     */
+    @Nonnull
+    public static MetricResult fromNullable(@Nullable MetricResult result) {
+        return result != null ? result : empty();
+    }
+
+    /**
+     * Create an empty metric result.
+     * @return An empty metric result.
+     */
+    @Nonnull
     public static MetricResult fromMap(Map<String,?> values) {
         return new MapMetricResult(values);
     }
@@ -73,6 +108,7 @@ public abstract class MetricResult {
      * @param value The column value.
      * @return The map result.
      */
+    @Nonnull
     public static MetricResult singleton(String name, Object value) {
         return fromMap(Collections.singletonMap(name, value));
     }

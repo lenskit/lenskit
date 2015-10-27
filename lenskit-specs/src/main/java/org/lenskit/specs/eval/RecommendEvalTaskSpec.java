@@ -31,9 +31,27 @@ import java.util.Set;
  */
 public class RecommendEvalTaskSpec extends EvalTaskSpec {
     private Path outputFile;
+    private String labelPrefix;
     private int listSize;
     private String candidateItems;
     private String excludeItems;
+
+    /**
+     * Get the prefix applied to column labels.
+     * @return The column label prefix.
+     */
+    public String getLabelPrefix() {
+        return labelPrefix;
+    }
+
+    /**
+     * Set the prefix applied to column labels.  If provided, it will be prepended to column labels from this task,
+     * along with a ".".
+     * @param prefix The label prefix.
+     */
+    public void setLabelPrefix(String prefix) {
+        labelPrefix = prefix;
+    }
 
     /**
      * Get the recommendation output file.

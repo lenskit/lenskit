@@ -74,7 +74,7 @@ public class TopNEntropyMetric extends TopNMetric<TopNEntropyMetric.Context> {
     @Nonnull
     @Override
     public MetricResult getAggregateMeasurements(Context context) {
-        return context.finish();
+        return MetricResult.fromNullable(context.finish());
     }
 
     public static class EntropyResult extends TypedMetricResult {
@@ -96,6 +96,7 @@ public class TopNEntropyMetric extends TopNMetric<TopNEntropyMetric.Context> {
             }
         }
 
+        @Nullable
         public EntropyResult finish() {
             if (recCount > 0) {
                 double entropy = 0;

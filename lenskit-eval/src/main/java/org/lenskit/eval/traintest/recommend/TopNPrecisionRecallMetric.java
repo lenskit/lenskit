@@ -117,7 +117,8 @@ public class TopNPrecisionRecallMetric extends TopNMetric<TopNPrecisionRecallMet
     @Nonnull
     @Override
     public MetricResult getAggregateMeasurements(Context context) {
-        return context.finish().withSuffix(suffix);
+        return MetricResult.fromNullable(context.finish())
+                           .withSuffix(suffix);
     }
 
     public static class PresRecResult extends TypedMetricResult {
@@ -159,6 +160,7 @@ public class TopNPrecisionRecallMetric extends TopNMetric<TopNPrecisionRecallMet
             nusers += 1;
         }
 
+        @Nullable
         public PresRecResult finish() {
             if (nusers > 0) {
                 return new PresRecResult(totalPrecision / nusers, totalRecall / nusers);
