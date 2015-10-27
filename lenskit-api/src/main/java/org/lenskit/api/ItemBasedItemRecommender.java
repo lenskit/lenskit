@@ -37,31 +37,49 @@ import java.util.Set;
  */
 public interface ItemBasedItemRecommender {
     /**
-     * Recommend all possible items for a basket of items using the default exclude set.
+     * Recommend all possible items for a reference item using the default exclude set.
      *
-     * @param basket The reference basket.
+     * @param reference The reference item.
+     * @return The recommended items.
+     * @see #recommendRelatedItems(Set, int, Set, Set)
+     */
+    List<Long> recommendRelatedItems(long reference);
+
+    /**
+     * Recommend up to <var>n</var> possible items for a reference item using the default exclude set.
+     *
+     * @param reference The reference item.
+     * @param n The number of items to recommend (< 0 for unlimited).
+     * @return The recommended items.
+     * @see #recommendRelatedItems(Set, int, Set, Set)
+     */
+    List<Long> recommendRelatedItems(long reference, int n);
+
+    /**
+     * Recommend all possible items for a set of reference items using the default exclude set.
+     *
+     * @param basket The reference items.
      * @return The recommended items.
      * @see #recommendRelatedItems(Set, int, Set, Set)
      */
     List<Long> recommendRelatedItems(Set<Long> basket);
 
     /**
-     * Recommend up to <var>n</var> items for a basket of items using the default exclude set.
+     * Recommend up to <var>n</var> items for a set of reference items using the default exclude set.
      *
-     * @param basket The reference basket.
-     * @param n     The number of recommendations to return.
+     * @param basket The reference items.
+     * @param n     The number of recommendations to return (< 0 for unlimited).
      * @return The recommended items.
      * @see #recommendRelatedItems(Set, int, Set, Set)
      */
     List<Long> recommendRelatedItems(Set<Long> basket, int n);
 
     /**
-     * Produce a set of recommendations for the item. This is the most general recommendation
-     * method, allowing the recommendations to be constrained by both a candidate set and an exclude
-     * set. The exclude set is applied to the candidate set, so the final effective candidate set is
-     * <var>candidates</var> minus <var>exclude</var>.
+     * Produce a set of recommendations for the item. This method allows the recommendations to be constrained
+     * by both a candidate set and an exclude set. The exclude set is applied to the candidate set, so the
+     * final effective candidate set is <var>candidates</var> minus <var>exclude</var>.
      *
-     * @param basket     The reference basket.
+     * @param basket     The reference items.
      * @param n          The number of ratings to return. If negative, no specific size is requested.
      * @param candidates A set of candidate items which can be recommended. If {@code null}, all
      *                   items are considered candidates.
@@ -75,10 +93,10 @@ public interface ItemBasedItemRecommender {
     /**
      * Produce a set of recommendations for the item, with details. This is the most general recommendation
      * method, allowing the recommendations to be constrained by both a candidate set and an exclude
-     * set. The exclude set is applied to the candidate set, so the final effective candidate set is
-     * <var>candidates</var> minus <var>exclude</var>.
+     * set and potentially providing more details on each recommendation. The exclude set is applied to the
+     * candidate set, so the final effective candidate set is <var>candidates</var> minus <var>exclude</var>.
      *
-     * @param basket     The reference basket.
+     * @param basket     The reference items.
      * @param n          The number of ratings to return. If negative, no specific size is requested.
      * @param candidates A set of candidate items which can be recommended. If {@code null}, all
      *                   items are considered candidates.
