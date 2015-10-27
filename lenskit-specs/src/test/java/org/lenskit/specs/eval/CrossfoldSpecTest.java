@@ -72,7 +72,7 @@ public class CrossfoldSpecTest {
         assertThat(sets, hasSize(5));
         for (int i = 0; i < 5; i++) {
             DataSetSpec set = sets.get(i);
-            assertThat(set.getName(), equalTo("TestData." + i+1));
+            assertThat(set.getName(), equalTo("TestData." + (i+1)));
             assertThat(set.getAttributes(), hasEntry("DataSet", (Object) "TestData"));
             assertThat(set.getAttributes(), hasEntry("Partition", (Object) (i+1)));
 
@@ -104,7 +104,7 @@ public class CrossfoldSpecTest {
         assertThat(sets, hasSize(5));
         for (int i = 0; i < 5; i++) {
             DataSetSpec set = sets.get(i);
-            assertThat(set.getName(), equalTo("TestData." + i+1));
+            assertThat(set.getName(), equalTo("TestData." + (i+1)));
             assertThat(set.getAttributes(), hasEntry("DataSet", (Object) "TestData"));
             assertThat(set.getAttributes(), hasEntry("Partition", (Object) (i+1)));
 

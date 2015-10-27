@@ -158,7 +158,7 @@ class TopNMRRMetricTest {
         def metric = SpecUtils.buildObject(TopNMetric, node)
         assertThat(metric, instanceOf(TopNMRRMetric))
         def mrr = metric as TopNMRRMetric
-        assertThat(metric.getExtension, equalTo("Good"))
+        assertThat(metric.suffix, equalTo("Good"))
         assertThat(metric.goodItems, instanceOf(ItemSelector.GroovyItemSelector))
     }
 }
