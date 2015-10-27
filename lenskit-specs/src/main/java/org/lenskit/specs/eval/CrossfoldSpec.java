@@ -66,10 +66,12 @@ public class CrossfoldSpec extends AbstractSpec {
 
     public String getName() {
         if (name == null && source != null) {
-            return source.get().getName();
-        } else {
-            return name;
+            DataSourceSpec ss = source.get();
+            if (ss != null) {
+                return ss.getName();
+            }
         }
+        return name;
     }
 
     public void setName(String name) {
