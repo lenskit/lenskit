@@ -156,6 +156,7 @@ public class CrossfoldSpec extends AbstractSpec {
         List<DataSetSpec> specs = new ArrayList<>(partitionCount);
         for (int i = 1; i <= partitionCount; i++) {
             DataSetSpec dss = new DataSetSpec();
+            dss.setName(getName() + "." + i);
             dss.setTrainSource(makeDataSource(String.format("part%02d.train", i)));
             dss.setTestSource(makeDataSource(String.format("part%02d.test", i)));
             dss.setAttribute("DataSet", getName());
