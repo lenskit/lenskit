@@ -40,7 +40,7 @@ public interface ItemBasedItemScorer {
      *
      * @param basket The objective items ID used as the query
      * @param item   The item ID to score.
-     * @return The preference, or {@code null} if no preference can be
+     * @return The relevance score, or {@code null} if no score can be
      * predicted.
      */
     Result scoreRelatedItem(@Nonnull Collection<Long> basket, long item);
@@ -50,7 +50,7 @@ public interface ItemBasedItemScorer {
      *
      * @param basket The objective items ID used as the query
      * @param items  The list of items to score.
-     * @return A mapping from item IDs to predicted preference. This mapping may
+     * @return A mapping from item IDs to relevance scores. This mapping may
      * not contain all requested items.
      */
     @Nonnull
@@ -58,10 +58,12 @@ public interface ItemBasedItemScorer {
                                         @Nonnull Collection<Long> items);
 
     /**
-     * Score items in a vector based on a collection of items (e.g. a shopping basket).
+     * Score a collection of items based on a collection of items (e.g. a shopping basket), with details.
      *
      * @param basket The items to use as the query.
      * @param items  The items to score.
+     * @return The scores for the items, possibly with additional details (will be represented as a
+     * subclass of {@link Result}.
      */
     ResultMap scoreRelatedItemsWithDetails(@Nonnull Collection<Long> basket, Collection<Long> items);
 }

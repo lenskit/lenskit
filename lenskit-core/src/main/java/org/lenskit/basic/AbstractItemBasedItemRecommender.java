@@ -20,6 +20,7 @@
  */
 package org.lenskit.basic;
 
+import it.unimi.dsi.fastutil.longs.LongSets;
 import org.lenskit.api.ItemBasedItemRecommender;
 
 import javax.annotation.Nullable;
@@ -31,6 +32,26 @@ import java.util.Set;
  * {@link #recommendRelatedItemsWithDetails(Set, int, Set, Set)}.
  */
 public abstract class AbstractItemBasedItemRecommender implements ItemBasedItemRecommender {
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation delegates to {@link #recommendRelatedItems(Set, int)}.
+     */
+    @Override
+    public List<Long> recommendRelatedItems(long reference, int n) {
+        return recommendRelatedItems(LongSets.singleton(reference), n);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation delegates to {@link #recommendRelatedItems(long, int)} with a size of -1.
+     */
+    @Override
+    public List<Long> recommendRelatedItems(long reference) {
+        return recommendRelatedItems(reference, -1);
+    }
+
     /**
      * {@inheritDoc}
      *
