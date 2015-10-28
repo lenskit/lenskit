@@ -364,7 +364,6 @@ public class RecommendEvalTask implements EvalTask {
         @Nonnull
         @Override
         public Map<String, Object> measureUser(TestUser testUser) {
-            // FIXME Support item selectors
             LongSet candidates = getCandidateSelector().selectItems(allItems, testUser);
             LongSet excludes = getExcludeSelector().selectItems(allItems, testUser);
             ResultList results = recommender.recommendWithDetails(testUser.getUserId(), getListSize(),
