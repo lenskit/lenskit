@@ -107,8 +107,14 @@ class ExperimentJob implements Runnable {
 
             List<ConditionEvaluator> accumulators = Lists.newArrayList();
 
-            for (EvalTask eval : experiment.getTasks()) {
-                accumulators.add(eval.createConditionEvaluator(algorithm, dataSet, rec));
+            for (EvalTask task : experiment.getTasks()) {
+                ConditionEvaluator ce = task.createConditionEvaluator(algorithm, dataSet, rec);
+                if (ce != null) {
+                    accumulators.add(ce);
+                } else {
+                    logger.warn("Could not instantiate task {} for algorithm {} on data set {}",
+                                task, algorithm, dataSet);
+                }
             }
 
             LongSet testUsers = dataSet.getTestData().getUserDAO().getUserIds();
