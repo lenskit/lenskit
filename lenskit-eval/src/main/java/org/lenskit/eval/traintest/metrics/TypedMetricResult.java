@@ -30,10 +30,7 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Base class for metric results that expose their values via getters.
@@ -62,41 +59,29 @@ public abstract class TypedMetricResult extends MetricResult {
             return Collections.emptyList();
         }
 
-        List<MetricColumn> columns = Lists.newArrayList();
-        for (Method m: type.getDeclaredMethods()) {
-            MetricColumn info = m.getAnnotation(MetricColumn.class);
-            if (info != null) {
-                columns.add(info);
-            }
-        }
-        for (Field f: type.getDeclaredFields()) {
-            MetricColumn info = f.getAnnotation(MetricColumn.class);
-            if (info != null) {
-                columns.add(info);
-            }
-        }
+        List<ColumnDesc> columns = getColumnInfo(type);
 
-        ImmutableList<MetricColumn> sorted =
+        ImmutableList<ColumnDesc> sorted =
                 Ordering.natural()
-                        .onResultOf(new Function<MetricColumn, Integer>() {
+                        .onResultOf(new Function<ColumnDesc, Integer>() {
                             @Override
-                            public Integer apply(@Nullable MetricColumn input) {
+                            public Integer apply(@Nullable ColumnDesc input) {
                                 assert input != null;
-                                int c = input.order();
+                                int c = input.getAnnotation().order();
                                 // negative values should sort last
                                 return c >= 0 ? c : Integer.MAX_VALUE;
                             }
                         })
                         .immutableSortedCopy(columns);
-        return Lists.transform(sorted, new Function<MetricColumn, String>() {
+        return Lists.transform(sorted, new Function<ColumnDesc, String>() {
             @Nullable
             @Override
-            public String apply(@Nullable MetricColumn input) {
+            public String apply(@Nullable ColumnDesc input) {
                 assert input != null;
                 if (suffix == null) {
-                    return input.value();
+                    return input.getName();
                 } else {
-                    return input.value() + "." + suffix;
+                    return input.getName() + "." + suffix;
                 }
             }
         });
@@ -106,30 +91,87 @@ public abstract class TypedMetricResult extends MetricResult {
     public Map<String, Object> getValues() {
         Map<String,Object> values = new HashMap<>();
 
-        for (Method m: getClass().getDeclaredMethods()) {
-            MetricColumn info = m.getAnnotation(MetricColumn.class);
-            if (info != null) {
-                try {
-                    m.setAccessible(true);
-                    values.put(info.value(), m.invoke(this));
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException("cannot invoke " + m, e);
-                }
-            }
-        }
-
-        for (Field f: getClass().getDeclaredFields()) {
-            MetricColumn info = f.getAnnotation(MetricColumn.class);
-            if (info != null) {
-                try {
-                    f.setAccessible(true);
-                    values.put(info.value(), f.get(this));
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException("cannot get " + f, e);
-                }
-            }
+        for (ColumnDesc cd: getColumnInfo(getClass())) {
+            values.put(cd.getName(), cd.getValue(this));
         }
 
         return values;
+    }
+
+    private static List<ColumnDesc> getColumnInfo(Class<?> cls) {
+        Class<?> type = cls;
+        List<ColumnDesc> columns = new ArrayList<>();
+        while (type != null) {
+            for (Field f: type.getDeclaredFields()) {
+                MetricColumn info = f.getAnnotation(MetricColumn.class);
+                if (info != null) {
+                    columns.add(new FieldColumn(info, f));
+                }
+            }
+            for (Method m: type.getDeclaredMethods()) {
+                MetricColumn info = m.getAnnotation(MetricColumn.class);
+                if (info != null) {
+                    columns.add(new MethodColumn(info, m));
+                }
+            }
+            type = type.getSuperclass();
+        }
+        return columns;
+    }
+
+    private abstract static class ColumnDesc {
+        MetricColumn annot;
+
+        public ColumnDesc(MetricColumn a) {
+            annot = a;
+        }
+
+        public MetricColumn getAnnotation() {
+            return annot;
+        }
+
+        public String getName() {
+            return annot.value();
+        }
+
+        public abstract Object getValue(Object inst);
+    }
+
+    private static class FieldColumn extends ColumnDesc {
+        private final Field field;
+
+        public FieldColumn(MetricColumn a, Field f) {
+            super(a);
+            field = f;
+        }
+
+        @Override
+        public Object getValue(Object inst) {
+            field.setAccessible(true);
+            try {
+                return field.get(inst);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("cannot get " + field, e);
+            }
+        }
+    }
+
+    private static class MethodColumn extends ColumnDesc {
+        private final Method method;
+
+        public MethodColumn(MetricColumn a, Method m) {
+            super(a);
+            method = m;
+        }
+
+        @Override
+        public Object getValue(Object inst) {
+            method.setAccessible(true);
+            try {
+                return method.invoke(inst);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException("cannot get " + method, e);
+            }
+        }
     }
 }

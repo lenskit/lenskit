@@ -21,6 +21,7 @@
 package org.lenskit.eval.traintest.metrics;
 
 import org.junit.Test;
+import sun.reflect.ReflectionFactory;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -50,6 +51,24 @@ public class TypedMetricResultTest {
                    hasEntry("foo", (Object) "bar"));
     }
 
+    @Test
+    public void testSubclassMethod() {
+        assertThat(TypedMetricResult.getColumns(SubclassGetterResult.class),
+                   containsInAnyOrder("foo", "bar"));
+        assertThat(new SubclassGetterResult("hackem", "muche").getValues(),
+                   allOf(hasEntry("foo", (Object) "hackem"),
+                         hasEntry("bar", (Object) "muche")));
+    }
+
+    @Test
+    public void testSubclassField() {
+        assertThat(TypedMetricResult.getColumns(SubclassFieldResult.class),
+                   containsInAnyOrder("foo", "bar"));
+        assertThat(new SubclassFieldResult("hackem", "muche").getValues(),
+                   allOf(hasEntry("foo", (Object) "hackem"),
+                         hasEntry("bar", (Object) "muche")));
+    }
+
     static class NoResult extends TypedMetricResult { }
 
     static class FieldResult extends TypedMetricResult {
@@ -71,6 +90,30 @@ public class TypedMetricResultTest {
         @MetricColumn("foo")
         public String getFoo() {
             return foo;
+        }
+    }
+
+    static class SubclassGetterResult extends GetterResult {
+        String bar;
+
+        public SubclassGetterResult(String v1, String v2) {
+            super(v1);
+            bar = v2;
+        }
+
+        @MetricColumn("bar")
+        public String getBar() {
+            return bar;
+        }
+    }
+
+    static class SubclassFieldResult extends FieldResult {
+        @MetricColumn("bar")
+        String bar;
+
+        public SubclassFieldResult(String v1, String v2) {
+            super(v1);
+            bar = v2;
         }
     }
 }
