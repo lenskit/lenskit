@@ -30,6 +30,8 @@ import org.grouplens.lenskit.util.io.Describable;
 import org.grouplens.lenskit.util.io.DescriptionWriter;
 import org.lenskit.specs.data.DataSourceSpec;
 import org.lenskit.specs.data.PackedDataSourceSpec;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Provider;
 import java.io.File;
@@ -42,6 +44,7 @@ import java.io.IOException;
  * @since 2.2
  */
 public class PackedDataSource implements DataSource {
+    private static final Logger logger = LoggerFactory.getLogger(PackedDataSource.class);
     private final String name;
     private final File file;
     private final PreferenceDomain domain;
@@ -105,10 +108,12 @@ public class PackedDataSource implements DataSource {
 
     @Override
     public void configure(LenskitConfiguration config) {
+        logger.debug("configuring data from pack file {}", file);
         Provider<BinaryRatingDAO> provider = new DAOProvider();
         config.bind(BinaryRatingDAO.class).toProvider(provider);
         PreferenceDomain dom = getPreferenceDomain();
         if (dom != null) {
+            logger.debug("using preference domain {}", dom);
             config.addComponent(dom);
         }
     }
