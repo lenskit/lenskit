@@ -171,6 +171,8 @@ public class ItemItemScorer extends AbstractItemScorer {
         }
         logger.trace("scoring item {} with {} of {} neighbors",
                      item, neighborhood.size(), allNeighbors.size());
-        return scorer.score(item, neighborhood, userData);
+        ItemItemResult score = scorer.score(item, neighborhood, userData);
+        logger.trace("computed score {}", score);
+        return score;
     }
 }
