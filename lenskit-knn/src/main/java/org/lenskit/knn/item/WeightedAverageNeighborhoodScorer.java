@@ -47,7 +47,7 @@ public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Se
         if (weight > 0) {
             double weightedSum = Vectors.dotProduct(neighbors, scores);
             logger.trace("scoring item {} with total weight {}", item, weight);
-            return new ItemItemResult(item, weightedSum / weight, neighbors.size());
+            return new ItemItemResult(item, weightedSum / weight, neighbors.size(), weight);
         } else {
             return null;
         }
