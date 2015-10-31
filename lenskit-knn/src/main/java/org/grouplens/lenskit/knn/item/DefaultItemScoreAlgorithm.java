@@ -52,6 +52,8 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
     public DefaultItemScoreAlgorithm(@NeighborhoodSize int n, @MinNeighbors int min) {
         neighborhoodSize = n;
         minNeighbors = min <= 0 ? 1 : min;
+        logger.debug("configured item scoring with min {}, max {} neighbors",
+                     minNeighbors, neighborhoodSize);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
