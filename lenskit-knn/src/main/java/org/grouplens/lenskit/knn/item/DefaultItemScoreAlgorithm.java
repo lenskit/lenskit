@@ -105,7 +105,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
                 for (TypedSymbol sym: score.getChannelSymbols()) {
                     scores.getOrAddChannel(sym).put(e.getKey(), score.getChannelValue(sym));
                 }
-                logger.info("score for {} is {}", item, score.getScore());
+                logger.trace("score for {} is {}", item, score.getScore());
             }
 
             sizeChannel.set(e, neighbors.size());
