@@ -91,11 +91,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
                 }
                 LongSet set = acc.finishSet();
                 // only keep the top N vectors
-                for (VectorEntry ne: neighbors.fast()) {
-                    if (!set.contains(ne.getKey())) {
-                        neighbors.unset(ne);
-                    }
-                }
+                neighbors.keySet().retainAll(set);
             }
             logger.trace("scoring item {} with {} of {} neighbors",
                          item, neighbors.size(), allNeighbors.size());
