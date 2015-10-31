@@ -61,7 +61,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
     public void scoreItems(ItemItemModel model, SparseVector userData,
                            MutableSparseVector scores,
                            NeighborhoodScorer scorer) {
-        MutableSparseVector neighbors;
+        MutableSparseVector neighbors = userData.mutableCopy();
         ScoredItemAccumulator acc = null;
         if (neighborhoodSize > 0) {
             acc = new TopNScoredItemAccumulator(neighborhoodSize);
@@ -74,9 +74,9 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
         for (VectorEntry e : scores.view(VectorEntry.State.EITHER)) {
             final long item = e.getKey();
 
+            neighbors.clear();
             // copy the neighbor vector into our work one (efficiently)
             SparseVector allNeighbors = model.getNeighbors(item);
-            neighbors = userData.mutableCopy();
             neighbors.set(allNeighbors);
 
             if (neighbors.size() < minNeighbors) {
@@ -90,8 +90,12 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
                     acc.put(ne.getKey(), ne.getValue());
                 }
                 LongSet set = acc.finishSet();
-                neighbors = MutableSparseVector.create(set);
-                neighbors.set(allNeighbors);
+                // only keep the top N vectors
+                for (VectorEntry ne: neighbors.fast()) {
+                    if (!set.contains(ne.getKey())) {
+                        neighbors.unset(ne);
+                    }
+                }
             }
             logger.trace("scoring item {} with {} of {} neighbors",
                          item, neighbors.size(), allNeighbors.size());
