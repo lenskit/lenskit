@@ -36,7 +36,6 @@ import java.io.Serializable;
  */
 @Shareable
 public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Serializable {
-    private static final Logger logger = LoggerFactory.getLogger(WeightedAverageNeighborhoodScorer.class);
     private static final long serialVersionUID = 1L;
     public static final Symbol NEIGHBORHOOD_WEIGHT_SYMBOL =
             Symbol.of("org.grouplens.lenskit.knn.item.neighborhoodWeight");
@@ -46,7 +45,6 @@ public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Se
         double weight = Vectors.sumAbs(neighbors);
         if (weight > 0) {
             double weightedSum = Vectors.dotProduct(neighbors, scores);
-            logger.trace("scoring item {} with total weight {}", item, weight);
             return new ItemItemResult(item, weightedSum / weight, neighbors.size(), weight);
         } else {
             return null;

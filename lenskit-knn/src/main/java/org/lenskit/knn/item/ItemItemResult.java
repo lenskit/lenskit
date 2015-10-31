@@ -58,6 +58,16 @@ public class ItemItemResult extends AbstractResult {
     }
 
     @Override
+    public String toString() {
+        return "ItemItemResult{" +
+                "id=" + getId() +
+                ", score=" + getScore() +
+                ", nnbrs=" + neighborhoodSize +
+                ", weight=" + neighborWeight +
+                '}';
+    }
+
+    @Override
     public int hashCode() {
         return startHashCode().append(neighborhoodSize).toHashCode();
     }
