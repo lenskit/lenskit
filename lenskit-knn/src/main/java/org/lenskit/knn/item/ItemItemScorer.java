@@ -142,7 +142,7 @@ public class ItemItemScorer extends AbstractItemScorer {
             ItemItemResult r = results.get(i);
             long item = r.getId();
             double score = vec.get(item);
-            results.set(i, new ItemItemResult(item, score, r.getNeighborhoodSize()));
+            results.set(i, new ItemItemResult(item, score, r.getNeighborhoodSize(), r.getNeighborWeight()));
         }
 
         return Results.newResultMap(results);
@@ -165,6 +165,7 @@ public class ItemItemScorer extends AbstractItemScorer {
         }
 
         Long2DoubleMap neighborhood = acc.finishMap();
+        assert neighborhoodSize <= 0 || neighborhood.size() <= neighborhoodSize;
         if (neighborhood.size() < minNeighbors) {
             return null;
         }
