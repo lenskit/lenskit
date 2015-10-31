@@ -23,10 +23,6 @@ package org.lenskit.knn.item;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
-import org.lenskit.data.dao.UserEventDAO;
-import org.lenskit.data.events.Event;
-import org.lenskit.data.history.History;
-import org.lenskit.data.history.UserHistory;
 import org.grouplens.lenskit.data.history.UserHistorySummarizer;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
@@ -39,6 +35,10 @@ import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.ResultMap;
 import org.lenskit.basic.AbstractItemScorer;
+import org.lenskit.data.dao.UserEventDAO;
+import org.lenskit.data.events.Event;
+import org.lenskit.data.history.History;
+import org.lenskit.data.history.UserHistory;
 import org.lenskit.knn.MinNeighbors;
 import org.lenskit.knn.NeighborhoodSize;
 import org.lenskit.knn.item.model.ItemItemModel;
@@ -109,11 +109,13 @@ public class ItemItemScorer extends AbstractItemScorer {
     @Nonnull
     @Override
     public ResultMap scoreWithDetails(long user, @Nonnull Collection<Long> items) {
+        logger.debug("scoring {} items for user {}", items.size(), user);
         UserHistory<? extends Event> history = dao.getEventsForUser(user, summarizer.eventTypeWanted());
         if (history == null) {
             history = History.forUser(user);
         }
         SparseVector summary = summarizer.summarize(history);
+        logger.trace("user has {} ratings", summary.size());
         VectorTransformation transform = normalizer.makeTransformation(user, summary);
         MutableSparseVector normed = summary.mutableCopy();
         transform.apply(normed);
@@ -166,6 +168,8 @@ public class ItemItemScorer extends AbstractItemScorer {
         if (neighborhood.size() < minNeighbors) {
             return null;
         }
+        logger.trace("scoring item {} with {} of {} neighbors",
+                     item, neighborhood.size(), allNeighbors.size());
         return scorer.score(item, neighborhood, userData);
     }
 }
