@@ -74,7 +74,8 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
 
             neighbors.clear();
             // copy the neighbor vector into our work one (efficiently)
-            neighbors.set(model.getNeighbors(item));
+            SparseVector allNeighbors = model.getNeighbors(item);
+            neighbors.set(allNeighbors);
 
             if (neighbors.size() < minNeighbors) {
                 continue;
@@ -89,6 +90,8 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
                 // only keep the top N vectors
                 neighbors.keySet().retainAll(set);
             }
+            logger.trace("scoring item {} with {} of {} neighbors",
+                         item, neighbors.size(), allNeighbors.size());
 
             // compute score & place in vector
             ScoredId score = scorer.score(item, neighbors, userData);
@@ -99,6 +102,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
                 for (TypedSymbol sym: score.getChannelSymbols()) {
                     scores.getOrAddChannel(sym).put(e.getKey(), score.getChannelValue(sym));
                 }
+                logger.info("score for {} is {}", item, score.getScore());
             }
 
             sizeChannel.set(e, neighbors.size());
