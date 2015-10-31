@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.util;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.scored.ScoredId;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +28,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -78,5 +80,31 @@ public class TopNScoredItemAccumulatorTest {
         assertThat(out.get(1).getScore(), equalTo(4.2));
         assertThat(out.get(2).getId(), equalTo(3L));
         assertThat(out.get(2).getScore(), equalTo(2.9));
+    }
+
+    @Test
+    public void testAccumMap() {
+        accum.put(5, 4.2);
+        accum.put(3, 2.9);
+        accum.put(2, 9.8);
+        Long2DoubleMap out = accum.finishMap();
+        assertThat(out.size(), equalTo(3));
+        assertThat(out, hasEntry(2L, 9.8));
+        assertThat(out, hasEntry(5L, 4.2));
+        assertThat(out, hasEntry(3L, 2.9));
+    }
+
+    @Test
+    public void testAccumMapLimit() {
+        accum.put(7, 1.0);
+        accum.put(5, 4.2);
+        accum.put(3, 2.9);
+        accum.put(2, 9.8);
+        accum.put(8, 2.1);
+        Long2DoubleMap out = accum.finishMap();
+        assertThat(out.size(), equalTo(3));
+        assertThat(out, hasEntry(2L, 9.8));
+        assertThat(out, hasEntry(5L, 4.2));
+        assertThat(out, hasEntry(3L, 2.9));
     }
 }
