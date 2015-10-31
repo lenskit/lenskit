@@ -83,7 +83,7 @@ public class DefaultItemScoreAlgorithm implements ItemScoreAlgorithm {
                 continue;
             }
 
-            if (acc != null && neighbors.size() < neighborhoodSize) {
+            if (acc != null && neighbors.size() > neighborhoodSize) {
                 logger.trace("compacting {} neighbors to {}", neighbors.size(), neighborhoodSize);
                 // compact the neighbors
                 for (VectorEntry ne: neighbors) {
