@@ -71,9 +71,6 @@ class TravisExtension {
         if (!isActive()) {
             return false
         }
-        if (repo != 'lensit/lenskit') {
-            return false
-        }
         if (pullRequest != null) {
             return false
         }

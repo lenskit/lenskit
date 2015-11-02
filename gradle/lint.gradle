@@ -2,6 +2,7 @@ logger.lifecycle 'Enabling lint support in LensKit build'
 
 ext.lintMode = 'disabled'
 if (travis.isReleaseBuild()) {
+    logger.lifecycle 'Travis build on release branch'
     ext.lintMode = 'enabled'
 }
 switch (getConfigProperty('lint', 'false').toLowerCase()) {
