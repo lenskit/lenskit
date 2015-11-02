@@ -102,7 +102,7 @@ public class TopNPrecisionRecallMetric extends TopNMetric<TopNPrecisionRecallMet
             double precision = (double) tp / recs.size();
             double recall = (double) tp / items.size();
             context.addUser(precision, recall);
-            return new PresRecResult(precision, recall);
+            return new PresRecResult(precision, recall).withSuffix(suffix);
         } else {
             return MetricResult.empty();
         }
