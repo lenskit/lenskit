@@ -58,6 +58,7 @@ sonarqube {
         property "sonar.host.url", "https://sonar.cs.txstate.edu"
         property "sonar.sourceEncoding", "UTF-8"
         if (System.getenv("SONAR_USER")) {
+            logger.lifecycle("using Sonar user {}", System.getenv("SONAR_USER"))
             property "sonar.login", System.getenv("SONAR_USER")
             property "sonar.forceAuthentication", true
         }
