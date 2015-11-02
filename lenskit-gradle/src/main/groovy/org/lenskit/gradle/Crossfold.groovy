@@ -50,6 +50,7 @@ import java.nio.file.Path
  *
  * @see CrossfoldSpec
  * @see DataSources
+ * @see http://mooc.lenskit.org/documentation/evaluator/data/
  */
 class Crossfold extends LenskitTask implements DataSources {
     private def spec = new CrossfoldSpec();

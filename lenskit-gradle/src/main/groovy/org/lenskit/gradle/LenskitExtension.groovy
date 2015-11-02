@@ -40,6 +40,8 @@ import org.gradle.api.file.FileCollection
  * ```
  * ./gradlew evaluate -Plenskit.threadCount=10
  * ```
+ *
+ * @see http://mooc.lenskit.org/documentation/evaluator/gradle/
  */
 public class LenskitExtension {
     /**
