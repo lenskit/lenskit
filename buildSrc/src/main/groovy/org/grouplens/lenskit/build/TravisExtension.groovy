@@ -67,6 +67,23 @@ class TravisExtension {
         return System.getenv('TRAVIS_BUILD_NUMBER')?.toInteger()
     }
 
+    boolean isReleaseBuild() {
+        if (!isActive()) {
+            return false
+        }
+        if (repo != 'lensit/lenskit') {
+            return false
+        }
+        if (pullRequest != null) {
+            return false
+        }
+        return branch =~ /^(master|release\/[0-9.]+(?:-[A-Z0-9.+]?))$/
+    }
+
+    boolean isMasterBuild() {
+        return isReleaseBuild() && branch == 'master'
+    }
+
     void call(Closure block) {
         ConfigureUtil.configure(block, this)
     }

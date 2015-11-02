@@ -4,25 +4,37 @@ jdk:
 - oraclejdk8
 branches:
   except:
-    - www
+  - www
 cache:
   directories:
-  - $HOME/.gradle/caches
-  - $HOME/.gradle/wrapper
+  - "$HOME/.gradle/caches"
+  - "$HOME/.gradle/wrapper"
 before_install:
-  - git fetch --depth=10000 origin
+- git fetch --depth=10000 origin
 install:
-  - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
-  - bash /tmp/miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  - conda env create -q -f etc/env-linux.yml
-  - source activate lenskit
-  - ./gradlew ciPrep --stacktrace
-script: ./gradlew ciTest --stacktrace --parallel
+- wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
+- bash /tmp/miniconda.sh -b -p $HOME/miniconda
+- export PATH="$HOME/miniconda/bin:$PATH"
+- conda config --set always_yes yes --set changeps1 no
+- conda update -q conda
+- conda env create -q -f etc/env-linux.yml
+- source activate lenskit
+- "./gradlew ciPrep --stacktrace"
+script: "./gradlew ciTest --stacktrace"
+deploy:
+  provider: script
+  script: etc/deploy.sh
+  on:
+    jdk: oraclejdk8
+    repo: lenskit/lenskit
 env:
   global:
-    - TERM=dumb
-    - TZ=CST6CDT
+  - TERM=dumb
+  - TZ=CST6CDT
+  # SONAR_USER
+  - secure: "lg7vgoXn7PwvW6VH5jPIQ9avyMSMjz4rZcb31HDvRkFCgP0+viUo9NWw1Wad5w2cS5WwwNdcEvmPsHHwYLk6szEhLNs7yPn/5LxUaI5ksqk++hd6m6F9L2PuzOAwPbmJsZRaRoOgiqhUa76mB6vWJNAnGDiFi8kZ54UApa3w+G0="
+  # SONAR_PASSWORD
+  - secure: "Jnb1CH82yypZMk4UdNWvu8qRXrTEVRgj7H/c/jsPXqtXWVkxexB8ehPyQL1Mkzplw9SZ270ta+42RYuuUSCUKLYsER2c4rcEwyERC6V55CYib5+NbXL98e+zyteUcs2xWi6qJNajcC+gR26I4bepXffCDEAOcrJ3ezONbT4k+gY="
 sudo: false
+SONAR_USER=lenskit-ci:
+  secure: SX5SNslSXBPUw9LOop75GGRBcbOBZUe5kngWg0agegtVtzURDn+ibO3qsSFbNOqrtpDZcv3UODhssTnF5lut4RU2BZu7K2ovYR9VvriULR5wb0kAbltsNAE/hWMphUcBVG/VCbWV56hLPXuy3rGK7BnBEUzql8rAgLMQPJS6lLs=
