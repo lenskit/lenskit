@@ -60,9 +60,6 @@ sonarqube {
         if (System.getenv("SONAR_USER")) {
             logger.lifecycle("using Sonar user {}", System.getenv("SONAR_USER"))
             property "sonar.login", System.getenv("SONAR_USER")
-            property "sonar.forceAuthentication", true
-        }
-        if (System.getenv("SONAR_PASSWORD")) {
             property "sonar.password", System.getenv("SONAR_PASSWORD")
         }
         if (lintMode == 'preview') {
