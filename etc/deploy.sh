@@ -1,3 +1,3 @@
 #!/bin/sh
 
-./gradlew ciPublish
+./gradlew ciPublish --stacktrace
