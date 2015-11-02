@@ -59,6 +59,7 @@ sonarqube {
         property "sonar.sourceEncoding", "UTF-8"
         if (System.getenv("SONAR_USER")) {
             property "sonar.login", System.getenv("SONAR_USER")
+            property "sonar.forceAuthentication", true
         }
         if (System.getenv("SONAR_PASSWORD")) {
             property "sonar.password", System.getenv("SONAR_PASSWORD")
