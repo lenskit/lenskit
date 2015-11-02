@@ -135,8 +135,8 @@ afterEvaluate {
 uploadArchives {
     configuration = configurations.mavenCentral
     repositories.mavenDeployer {
-        def user = System.getenv('DEPLOY_USER') ?: project.getConfigProperty('deploy.user', null)
-        def password = System.getenv('DEPLOY_PASSWORD') ?: project.getConfigProperty('deploy.password', null)
+        def user = System.getenv('SONATYPE_USER') ?: project.getConfigProperty('deploy.user', null)
+        def password = System.getenv('SONATYPE_PASSWORD') ?: project.getConfigProperty('deploy.password', null)
 
         def deployUrl = project.getConfigProperty('deploy.url', null)
         if (deployUrl != null) {

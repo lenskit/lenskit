@@ -36,4 +36,8 @@ env:
   - secure: "lg7vgoXn7PwvW6VH5jPIQ9avyMSMjz4rZcb31HDvRkFCgP0+viUo9NWw1Wad5w2cS5WwwNdcEvmPsHHwYLk6szEhLNs7yPn/5LxUaI5ksqk++hd6m6F9L2PuzOAwPbmJsZRaRoOgiqhUa76mB6vWJNAnGDiFi8kZ54UApa3w+G0="
   # SONAR_PASSWORD
   - secure: "Jnb1CH82yypZMk4UdNWvu8qRXrTEVRgj7H/c/jsPXqtXWVkxexB8ehPyQL1Mkzplw9SZ270ta+42RYuuUSCUKLYsER2c4rcEwyERC6V55CYib5+NbXL98e+zyteUcs2xWi6qJNajcC+gR26I4bepXffCDEAOcrJ3ezONbT4k+gY="
+  # SONATYPE_USER
+  - secure: "KZlIPTwPJwh3mbsk4M98YnY+Jf7B0on5MVK4Q+0nKR6HJS9cn5zAmO5NU7ouLfl6/HCzD7YftqQEybuV3w1S5WM2CJvSe1yS5RDilQ0cFSx8QZe6xDprcFPawMfQ+DN3fEtqXieu8lVcqGtKL+JqF7piTmrN26ojCCdC6zpiy24="
+  # SONATYPE_PASSWORD
+  - secure: "JSZlPX3fbNrbUfBRcH6OdfQfAk65G3l1diJ4vxu/VvKGsH+eAOt6gfaKVNe8JRuPyyzmArgSK4QlM2lwvxKwgSEblw2hF1VDotJwHeD//NxTQBjeeOu3dV8BtsJE7kxT66ywyLai5jcGxLgFgWEEiA1ZwZjmBaZzn1rCwJVGKHk="
 sudo: false
