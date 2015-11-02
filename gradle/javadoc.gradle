@@ -58,7 +58,7 @@ allprojects {
     tasks.withType(Javadoc) { task ->
         task.configure {
             onlyIf {
-                JavaVersion.current() >= JavaVersion.VERSION_1_7
+                !travis.isActive() || travis.activeJdk == 'oraclejdk8'
             }
             doFirst {
                 for (file in configurations.support) {
