@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory
  * ```
  *
  * This task only sets up infrastructure and configuration defaults. It does *not* create any tasks.
+ *
+ * @see http://mooc.lenskit.org/documentation/evaluator/gradle/
  */
 public class LenskitPlugin implements Plugin<Project> {
     private static final Logger logger = LoggerFactory.getLogger(LenskitPlugin.class);
