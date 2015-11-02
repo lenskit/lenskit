@@ -37,5 +37,3 @@ env:
   # SONAR_PASSWORD
   - secure: "Jnb1CH82yypZMk4UdNWvu8qRXrTEVRgj7H/c/jsPXqtXWVkxexB8ehPyQL1Mkzplw9SZ270ta+42RYuuUSCUKLYsER2c4rcEwyERC6V55CYib5+NbXL98e+zyteUcs2xWi6qJNajcC+gR26I4bepXffCDEAOcrJ3ezONbT4k+gY="
 sudo: false
-SONAR_USER=lenskit-ci:
-  secure: SX5SNslSXBPUw9LOop75GGRBcbOBZUe5kngWg0agegtVtzURDn+ibO3qsSFbNOqrtpDZcv3UODhssTnF5lut4RU2BZu7K2ovYR9VvriULR5wb0kAbltsNAE/hWMphUcBVG/VCbWV56hLPXuy3rGK7BnBEUzql8rAgLMQPJS6lLs=
