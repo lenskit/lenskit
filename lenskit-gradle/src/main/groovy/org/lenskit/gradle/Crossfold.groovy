@@ -40,7 +40,8 @@ import java.nio.file.Path
  * multiple cross-validation splits.
  *
  * In addition to the methods and properties specified in this class, the crossfolder also supports all configuration
- * directives supported by the crossfold operation.  For example, you can say:
+ * directives supported by the crossfold operation as defined by {@link CrossfoldSpec}.
+ * For example, you can say:
  *
  * <pre><code class="groovy">
  * includeTimestamps false
