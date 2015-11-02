@@ -20,5 +20,14 @@ javadoc {
 
 groovydoc {
     link 'https://docs.gradle.org/current/groovydoc/', 'org.gradle'
-    source rootProject.childProjects['lenskit-specs'].sourceSets.main.allJava
+    link '/apidocs/', 'org.lenskit.specs'
+    footer '''
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/highlight.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/languages/groovy.min.js"></script>
+      <script type="text/javascript">hljs.initHighlightingOnLoad();</script>
+    '''
+    header '''
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.9.1/styles/mono-blue.min.css" rel="stylesheet">
+    '''
+    // source rootProject.childProjects['lenskit-specs'].sourceSets.main.allJava
 }
