@@ -34,6 +34,11 @@
  */
 import org.grouplens.lenskit.build.GitExtension
 
+plugins {
+    id "org.sonarqube" version "1.0"
+}
+apply plugin: 'base'
+
 ext.webUrl = 'http://lenskit.org'
 
 configurations {
@@ -44,8 +49,6 @@ configurations {
 task ciPublish {
     description "Runs CI publication tasks (not on Travis)."
 }
-
-apply plugin: 'base'
 
 allprojects { project ->
     group 'org.grouplens.lenskit'

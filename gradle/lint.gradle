@@ -1,9 +1,5 @@
 logger.lifecycle 'Enabling lint support in LensKit build'
 
-plugins {
-    id "org.sonarqube", version: "1.0"
-}
-
 ext.lintMode = 'disabled'
 if (travis.isReleaseBuild()) {
     ext.lintMode = 'enabled'
