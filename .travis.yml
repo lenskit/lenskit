@@ -23,6 +23,7 @@ install:
 script: "./gradlew ciTest --stacktrace"
 deploy:
   provider: script
+  skip_cleanup: true
   script: etc/deploy.sh
   on:
     jdk: oraclejdk8
