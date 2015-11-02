@@ -42,10 +42,13 @@ import java.nio.file.Path
  * In addition to the methods and properties specified in this class, the crossfolder also supports all configuration
  * directives supported by the crossfold operation.  For example, you can say:
  *
- * <pre>{@code
+ * <pre><code class="groovy">
  * includeTimestamps false
  * partitions 10
- * }</pre>
+ * </code></pre>
+ *
+ * @see CrossfoldSpec
+ * @see DataSources
  */
 class Crossfold extends LenskitTask implements DataSources {
     private def spec = new CrossfoldSpec();

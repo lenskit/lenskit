@@ -34,9 +34,8 @@
  */
 
 // Aggregate documentation
-ext.masterProjects = ['lenskit-api', 'lenskit-core', 'lenskit-data-structures',
+ext.masterProjects = ['lenskit-api', 'lenskit-specs', 'lenskit-core', 'lenskit-data-structures',
                       'lenskit-groovy', 'lenskit-eval', 'lenskit-cli',
-                      'lenskit-gradle',
                       'lenskit-knn', 'lenskit-svd',
                       'lenskit-slopeone', 'lenskit-predict']
 task javadoc(type: Javadoc, group: 'build') {
