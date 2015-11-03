@@ -20,20 +20,34 @@
  */
 
 
-import static org.grouplens.lenskit.util.test.ExtraMatchers.existingFile
-import static org.grouplens.lenskit.util.test.ExtraMatchers.hasLineCount
+import javax.script.ScriptEngineManager
+import org.renjin.eval.EvalException
+
 import static org.hamcrest.MatcherAssert.assertThat
-import static org.hamcrest.Matchers.allOf
-import static org.hamcrest.Matchers.equalTo
+import static org.hamcrest.Matchers.*
 
 File resultsFile = new File("results.csv")
 File userFile = new File("users.csv")
 File predictFile = new File("predictions.csv")
 
-assertThat("output file existence",
-           resultsFile, allOf(existingFile(),
-                              hasLineCount(equalTo(11))));
-assertThat("user output file existence",
-           userFile, existingFile());
-assertThat("predict output file existence",
-           predictFile, existingFile());
+assertThat("output file exists",
+           resultsFile.exists());
+assertThat(resultsFile.readLines(), hasSize(11))
+assertThat("user output file exists",
+           userFile.exists());
+assertThat("predict output file exists",
+           predictFile.exists());
+
+def sem = new ScriptEngineManager()
+def engine = sem.getEngineByName("Renjin")
+assert engine != null
+
+def script = new File("verify.R")
+try {
+    script.withReader { rdr ->
+        engine.eval(rdr)
+    }
+} catch (EvalException ex) {
+    System.err.println("verification failed: " + ex.message)
+    System.exit(2)
+}
