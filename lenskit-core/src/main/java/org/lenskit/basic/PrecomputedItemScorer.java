@@ -24,12 +24,17 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongIterators;
+import org.apache.commons.lang3.text.StrTokenizer;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultMap;
 import org.lenskit.results.Results;
+import org.lenskit.util.io.LineStream;
+import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.keys.KeyedObjectMap;
 
 import javax.annotation.Nonnull;
+import javax.annotation.WillClose;
+import java.io.BufferedReader;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -125,6 +130,26 @@ public class PrecomputedItemScorer extends AbstractItemScorer implements Seriali
             userData.clear();
             return new PrecomputedItemScorer(vectors);
         }
+    }
+
+    /**
+     * Read predictions from a CSV file.
+     * @param buf A CSV file reader.
+     * @return The item scorer.
+     */
+    public static PrecomputedItemScorer fromCSV(@WillClose BufferedReader buf) {
+        StrTokenizer tok = new StrTokenizer((String) null, ",");
+        Builder bld = new Builder();
+        try (ObjectStream<List<String>> rows = new LineStream(buf).tokenize(tok)) {
+            for (List<String> row : rows) {
+                // FIXME Add error checking
+                long user = Long.parseLong(row.get(0));
+                long item = Long.parseLong(row.get(1));
+                double score = Double.parseDouble(row.get(2));
+                bld.addScore(user, item, score);
+            }
+        }
+        return bld.build();
     }
 
     /**
