@@ -6,6 +6,7 @@ message("Pivoting prediction frame")
 #preds.wide = reshape(predictions[c("Key", "Algorithm", "Prediction")],
 #                     timevar="Algorithm", idvar="Key",
 #                     direction="wide")
+# BEGIN manual reshape
 preds.wide = unique(predictions[c("User", "Item")])
 algos = unique(predictions$Algorithm)
 for (algo in algos) {
@@ -15,6 +16,7 @@ for (algo in algos) {
     names(algo.preds) = c("User", "Item", paste("Prediction", as.character(algo), sep="."))
     preds.wide = merge(preds.wide, algo.preds, all.x=TRUE)
 }
+# END manual reshape
 
 message("Checking predictions")
 pred.range = abs(preds.wide$Prediction.Standard - preds.wide$Prediction.Snapshotting)
