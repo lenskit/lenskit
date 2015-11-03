@@ -1,0 +1,30 @@
+message("Loading predictions")
+predictions = read.csv("predictions.csv")
+
+message("Pivoting prediction frame")
+# we should just reshape, but this is broken in Renjin
+#preds.wide = reshape(predictions[c("Key", "Algorithm", "Prediction")],
+#                     timevar="Algorithm", idvar="Key",
+#                     direction="wide")
+preds.wide = unique(predictions[c("User", "Item")])
+algos = unique(predictions$Algorithm)
+for (algo in algos) {
+    algo = algos[algo]
+    message("collecting predictions for ", algo)
+    algo.preds = predictions[predictions$Algorithm == algo, c("User", "Item", "Prediction")]
+    names(algo.preds) = c("User", "Item", paste("Prediction", as.character(algo), sep="."))
+    preds.wide = merge(preds.wide, algo.preds, all.x=TRUE)
+}
+
+message("Checking predictions")
+pred.range = abs(preds.wide$Prediction.Standard - preds.wide$Prediction.Snapshotting)
+bad.preds = pred.range > 0.001
+nbad = sum(bad.preds, na.rm=TRUE)
+
+if (nbad > 0) {
+    print(head(subset(preds.wide, bad.preds)))
+    stop("user-user had ", nbad, " bad predictions")
+} else {
+    message("Tests passed!")
+}
+

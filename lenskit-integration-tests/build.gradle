@@ -41,6 +41,7 @@ apply from: "$rootDir/gradle/test-utils.gradle"
 dependencies {
     compile project(':lenskit-all')
     compile project(':lenskit-test')
+
     testRuntime project(':lenskit-cli')
 }
 
