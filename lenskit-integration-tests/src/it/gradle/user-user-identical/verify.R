@@ -3,8 +3,8 @@ predictions = read.csv("predictions.csv")
 
 message("Pivoting prediction frame")
 # we should just reshape, but this is broken in Renjin
-#preds.wide = reshape(predictions[c("Key", "Algorithm", "Prediction")],
-#                     timevar="Algorithm", idvar="Key",
+#preds.wide = reshape(predictions[c("User", "Item", "Algorithm", "Prediction")],
+#                     timevar="Algorithm", idvar=c("User", "Item"),
 #                     direction="wide")
 # BEGIN manual reshape
 preds.wide = unique(predictions[c("User", "Item")])
