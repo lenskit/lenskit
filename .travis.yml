@@ -11,7 +11,7 @@ cache:
   - "$HOME/.gradle/wrapper"
 before_install:
 - git fetch --depth=10000 origin
-- openssl aes-256-cbc -K $encrypted_63db7f4dcbd2_key -iv $encrypted_63db7f4dcbd2_iv -in web-deploy-key.rsa.enc -out $HOME/.ssh/id_rsa -d
+- ./etc/decrypt-ssh-key.sh
 install:
 - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
 - bash /tmp/miniconda.sh -b -p $HOME/miniconda
