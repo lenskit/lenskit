@@ -19,10 +19,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-import static org.junit.Assert.assertTrue
+
+import javax.script.ScriptEngineManager
+import org.renjin.eval.EvalException
+
+import static org.hamcrest.MatcherAssert.assertThat
 
 File resultsFile = new File("results.csv")
 File predictFile = new File("predictions.csv")
 
-assertTrue("output file exists", resultsFile.exists())
-assertTrue("prediction file exists", predictFile.exists())
+assertThat("output file exists", resultsFile.exists())
+assertThat("prediction file exists", predictFile.exists())
+
+def sem = new ScriptEngineManager()
+def engine = sem.getEngineByName("Renjin")
+assert engine != null
+
+def script = new File("verify.R")
+try {
+    script.withReader { rdr ->
+        engine.eval(rdr)
+    }
+} catch (EvalException ex) {
+    System.err.println("verification failed: " + ex.message)
+    System.exit(2)
+}
+

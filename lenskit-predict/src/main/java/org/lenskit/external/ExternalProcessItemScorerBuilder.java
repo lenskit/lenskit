@@ -26,7 +26,6 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.apache.commons.lang3.text.StrTokenizer;
 import org.lenskit.data.dao.EventDAO;
 import org.lenskit.data.dao.ItemDAO;
 import org.lenskit.data.dao.UserDAO;
@@ -34,7 +33,6 @@ import org.grouplens.lenskit.util.io.LoggingStreamSlurper;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.basic.PrecomputedItemScorer;
 import org.lenskit.data.ratings.Rating;
-import org.lenskit.util.io.LineStream;
 import org.lenskit.util.io.ObjectStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -222,8 +220,6 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
         ProcessBuilder pb = new ProcessBuilder();
         pb.command(command).directory(workingDir);
 
-        PrecomputedItemScorer.Builder builder = PrecomputedItemScorer.newBuilder();
-
         Process proc = null;
         try {
             proc = pb.start();
@@ -235,17 +231,10 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
                                                 logger, "");
         slurp.start();
 
-        StrTokenizer tok = new StrTokenizer((String) null, ",");
+        PrecomputedItemScorer scorer;
         try (InputStreamReader rdr = new InputStreamReader(proc.getInputStream());
-             BufferedReader buf = new BufferedReader(rdr);
-             ObjectStream<List<String>> rows = new LineStream(buf).tokenize(tok)) {
-            for (List<String> row: rows) {
-                // FIXME Add error checking
-                long user = Long.parseLong(row.get(0));
-                long item = Long.parseLong(row.get(1));
-                double score = Double.parseDouble(row.get(2));
-                builder.addScore(user, item, score);
-            }
+             BufferedReader buf = new BufferedReader(rdr)) {
+            scorer = PrecomputedItemScorer.fromCSV(buf);
         } catch (IOException e) {
             throw new RuntimeException("cannot open output", e);
         }
@@ -258,7 +247,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
             throw new RuntimeException("external process interrupted", e);
         }
         if (ec == 0) {
-            return builder.build();
+            return scorer;
         } else {
             logger.error("{} exited with code {}", executable, ec);
             throw new RuntimeException("external process failed with code " + ec);

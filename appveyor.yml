@@ -11,11 +11,7 @@ environment:
   JAVA_HOME: C:\Program Files\Java\jdk1.7.0
 init:
 - path C:\Miniconda-x64;C:\Miniconda-x64\Scripts;%PATH%
-# update Conda so we have the right version for later
-- conda update -q -y conda
 install:
-- conda env create -q -f etc\environment.yml
-- activate lenskit
 - gradlew.bat ciPrep
 build_script:
 - gradlew.bat ciBuild --parallel

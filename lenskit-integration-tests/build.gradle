@@ -41,6 +41,7 @@ apply from: "$rootDir/gradle/test-utils.gradle"
 dependencies {
     compile project(':lenskit-all')
     compile project(':lenskit-test')
+
     testRuntime project(':lenskit-cli')
 }
 
@@ -74,42 +75,6 @@ test {
     systemProperties 'lenskit.movielens.100k': mlDataDir
     onlyIf {
         System.getenv("SONAR_BUILD") != 'true'
-    }
-}
-
-task checkPythonInstall {
-    description 'Checks whether the Python install is valid'
-    ext.isValid = false
-    ext.shouldTry = true
-    if (project.hasProperty('python.skip')) {
-        ext.shouldTry = project.getProperty('python.skip').toLowerCase() != 'true'
-    }
-
-    onlyIf {
-        shouldTry
-    }
-
-    doLast {
-        try {
-            exec {
-                executable 'python'
-                args 'check-python-deps.py'
-            }
-            logger.info 'Your Python kit seems good'
-            isValid = true
-        } catch (IOException e) {
-            logger.warn "Cannot run Python, assuming you don't have one"
-        } catch (ExecException e) {
-            logger.warn "Python starts, but is not usable"
-        }
-    }
-}
-
-ciPrep.dependsOn checkPythonInstall
-ciPrep.doFirst {
-    if (checkPythonInstall.shouldTry && !checkPythonInstall.isValid) {
-        logger.error 'Working Python install is required for CI'
-        throw new RuntimeException('Python is not working')
     }
 }
 

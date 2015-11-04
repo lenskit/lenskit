@@ -1,0 +1,12 @@
+configurations {
+    analyze
+}
+repositories {
+    maven {
+        url "https://nexus.bedatadriven.com/content/groups/public/"
+    }
+}
+dependencies {
+    analyze localGroovy()
+    analyze group: 'org.renjin', name: 'renjin-script-engine', version: '0.7.1578'
+}

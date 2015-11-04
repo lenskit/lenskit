@@ -56,7 +56,9 @@ file('src/it/gradle').eachDir { testDir ->
     task("test$tname", type: GradleBuild) {
         dependsOn makeTestRepo, fetchData
         inputs.dir testDir
-        inputs.file 'src/it/gradle/common.gradle'
+        inputs.files fileTree('src/it/gradle') {
+            include '*.gradle'
+        }
         inputs.dir "$buildDir/test-repo"
         outputs.dir workDir
 
@@ -86,7 +88,7 @@ file('src/it/gradle').eachDir { testDir ->
             copy {
                 from 'src/it/gradle'
                 into workDir
-                include 'common.gradle'
+                include '*.gradle'
             }
             println "running gradle build for $testDir"
         }
