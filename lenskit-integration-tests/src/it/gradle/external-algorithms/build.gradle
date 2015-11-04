@@ -10,6 +10,8 @@ buildscript {
     }
 }
 
+
+import org.gradle.process.internal.ExecException
 import org.lenskit.gradle.*
 
 apply plugin: 'java'
@@ -22,7 +24,40 @@ dependencies {
     analyze 'com.xlson.groovycsv:groovycsv:1.0'
 }
 
+task checkPythonInstall {
+    description 'Checks whether the Python install is valid'
+    ext.isValid = false
+    ext.shouldTry = true
+    if (project.hasProperty('python.skip')) {
+        ext.shouldTry = project.getProperty('python.skip').toLowerCase() != 'true'
+    }
+
+    onlyIf {
+        shouldTry
+    }
+
+    doLast {
+        try {
+            exec {
+                executable 'python'
+                args '-V'
+            }
+            logger.info 'Your Python kit seems good'
+            isValid = true
+        } catch (IOException e) {
+            logger.warn "Cannot run Python, assuming you don't have one"
+        } catch (ExecException e) {
+            logger.warn "Python starts, but is not usable"
+        }
+    }
+}
+
 task crossfold(type: Crossfold) {
+    dependsOn checkPythonInstall
+    onlyIf {
+        checkPythonInstall.isValid
+    }
+
     input textFile {
         file ratingsFile
         delimiter "\t"
@@ -34,6 +69,11 @@ task crossfold(type: Crossfold) {
 }
 
 task trainTest(type: TrainTest) {
+    dependsOn checkPythonInstall
+    onlyIf {
+        checkPythonInstall.isValid
+    }
+
     maxMemory '256m'
     dataSet crossfold
     cacheDirectory 'cache'
@@ -48,6 +88,10 @@ task trainTest(type: TrainTest) {
 }
 
 task checkGroovy(type: JavaExec) {
+    onlyIf {
+        checkPythonInstall.isValid
+    }
+
     dependsOn trainTest
     classpath configurations.analyze
 
