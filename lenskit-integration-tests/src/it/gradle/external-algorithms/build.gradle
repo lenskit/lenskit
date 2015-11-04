@@ -49,6 +49,10 @@ task checkPythonInstall {
         } catch (ExecException e) {
             logger.warn "Python starts, but is not usable"
         }
+        if (System.getenv("CI") == "true" && !isValid) {
+            logger.error "Python is not present, but required for CI builds"
+            throw new RuntimeException("cannot find Python")
+        }
     }
 }
 
