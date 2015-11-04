@@ -31,6 +31,8 @@ install`; it is then available to other projects by depending directly
 on it in your Maven, Gradle, Ivy, or SBT project.  The source code can
 also be checked out and used in most Java IDEs.
 
+[Gradle]: http://gradle.org
+
 ## Working with the Code
 
 To work with the LensKit code, import the Gradle project into your IDE.
