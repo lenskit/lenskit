@@ -22,3 +22,8 @@ build_script:
 test_script:
 - gradlew.bat check -Pjavadoc.skip=true
 deploy: off
+notifications:
+  - provider: Webhook
+    url: https://webhooks.gitter.im/e/77b0c14f57fd5f197f79
+    on_build_success: true
+    on_build_failure: true
