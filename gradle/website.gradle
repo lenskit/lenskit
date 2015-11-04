@@ -77,14 +77,6 @@ task copyJavadoc(type: Sync, dependsOn: [javadoc, fetchSite]) {
         into 'apidocs'
     }
 }
-rootProject.childProjects['lenskit-gradle'].afterEvaluate { gp ->
-    copyJavadoc {
-        dependsOn gp.groovydoc
-        from (gp.groovydoc.destinationDir) {
-            into 'gradle-docs'
-        }
-    }
-}
 
 project('lenskit-gradle').afterEvaluate { gprj ->
     copyJavadoc {
