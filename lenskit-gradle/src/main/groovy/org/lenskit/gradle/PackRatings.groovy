@@ -30,6 +30,8 @@ import org.lenskit.specs.data.PackedDataSourceSpec
 
 /**
  * Pack a data set.
+ *
+ * @see http://mooc.lenskit.org/documentation/evaluator/data/
  */
 class PackRatings extends LenskitTask implements DataBuilder, DataSources {
     DataSourceSpec inputSpec

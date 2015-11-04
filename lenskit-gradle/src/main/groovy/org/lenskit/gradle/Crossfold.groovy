@@ -40,12 +40,17 @@ import java.nio.file.Path
  * multiple cross-validation splits.
  *
  * In addition to the methods and properties specified in this class, the crossfolder also supports all configuration
- * directives supported by the crossfold operation.  For example, you can say:
+ * directives supported by the crossfold operation as defined by {@link CrossfoldSpec}.
+ * For example, you can say:
  *
- * <pre>{@code
+ * <pre><code class="groovy">
  * includeTimestamps false
  * partitions 10
- * }</pre>
+ * </code></pre>
+ *
+ * @see CrossfoldSpec
+ * @see DataSources
+ * @see http://mooc.lenskit.org/documentation/evaluator/data/
  */
 class Crossfold extends LenskitTask implements DataSources {
     private def spec = new CrossfoldSpec();

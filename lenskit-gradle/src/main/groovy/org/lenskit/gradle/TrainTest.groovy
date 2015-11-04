@@ -29,6 +29,8 @@ import org.lenskit.specs.eval.*
 
 /**
  * Run a train-test evaluation.
+ *
+ * @see http://mooc.lenskit.org/documentation/evaluator/train-test/
  */
 class TrainTest extends LenskitTask {
     private def spec = new TrainTestExperimentSpec()
