@@ -25,13 +25,7 @@ import org.gradle.api.tasks.OutputFiles
 import org.lenskit.gradle.delegates.EvalTaskDelegate
 import org.lenskit.gradle.delegates.SpecDelegate
 import org.lenskit.specs.SpecUtils
-import org.lenskit.specs.eval.AlgorithmSpec
-import org.lenskit.specs.eval.DataSetSpec
-import org.lenskit.specs.eval.PredictEvalTaskSpec
-import org.lenskit.specs.eval.RecommendEvalTaskSpec
-import org.lenskit.specs.eval.TrainTestExperimentSpec
-
-import java.nio.file.Path
+import org.lenskit.specs.eval.*
 
 /**
  * Run a train-test evaluation.
@@ -125,6 +119,11 @@ class TrainTest extends LenskitTask {
             files.addAll(ds.trainSource.inputFiles*.toFile())
         }
         return files
+    }
+
+    @InputFiles
+    public Set<File> getConfigInputs() {
+        return spec.algorithms*.configFile*.toFile().toSet()
     }
 
     @OutputFiles

@@ -24,6 +24,8 @@ import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.symbols.Symbol;
 import org.lenskit.util.math.Vectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
@@ -43,7 +45,7 @@ public class WeightedAverageNeighborhoodScorer implements NeighborhoodScorer, Se
         double weight = Vectors.sumAbs(neighbors);
         if (weight > 0) {
             double weightedSum = Vectors.dotProduct(neighbors, scores);
-            return new ItemItemResult(item, weightedSum / weight, neighbors.size());
+            return new ItemItemResult(item, weightedSum / weight, neighbors.size(), weight);
         } else {
             return null;
         }

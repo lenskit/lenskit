@@ -27,6 +27,7 @@ import org.lenskit.results.AbstractResult;
  */
 public class ItemItemResult extends AbstractResult {
     private final int neighborhoodSize;
+    private final double neighborWeight;
 
     /**
      * Construct a new item-item CF result.
@@ -34,9 +35,10 @@ public class ItemItemResult extends AbstractResult {
      * @param score The score.
      * @param nnbrs The neighborhood size.
      */
-    public ItemItemResult(long item, double score, int nnbrs) {
+    public ItemItemResult(long item, double score, int nnbrs, double weight) {
         super(item, score);
         neighborhoodSize = nnbrs;
+        neighborWeight = weight;
     }
 
     /**
@@ -45,6 +47,24 @@ public class ItemItemResult extends AbstractResult {
      */
     public int getNeighborhoodSize() {
         return neighborhoodSize;
+    }
+
+    /**
+     * Get the total weight of the neighborhood.
+     * @return The total weight of the neighborhood.
+     */
+    public double getNeighborWeight() {
+        return neighborWeight;
+    }
+
+    @Override
+    public String toString() {
+        return "ItemItemResult{" +
+                "id=" + getId() +
+                ", score=" + getScore() +
+                ", nnbrs=" + neighborhoodSize +
+                ", weight=" + neighborWeight +
+                '}';
     }
 
     @Override

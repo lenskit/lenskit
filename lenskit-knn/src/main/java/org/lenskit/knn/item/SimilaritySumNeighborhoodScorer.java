@@ -40,7 +40,8 @@ public class SimilaritySumNeighborhoodScorer implements NeighborhoodScorer, Seri
         if (neighbors.size() == 0) {
             return null;
         } else {
-            return new ItemItemResult(item, Vectors.sum(neighbors), neighbors.size());
+            double sum = Vectors.sum(neighbors);
+            return new ItemItemResult(item, sum, neighbors.size(), sum);
         }
     }
 
