@@ -3,7 +3,7 @@ configurations {
 }
 repositories {
     maven {
-        url "http://nexus.bedatadriven.com/content/groups/public/"
+        url "https://nexus.bedatadriven.com/content/groups/public/"
     }
 }
 dependencies {
