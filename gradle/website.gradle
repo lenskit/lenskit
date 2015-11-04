@@ -112,7 +112,7 @@ task uploadWeb {
         }
         exec {
             executable 'git'
-            args 'push'
+            args 'push', 'origin', 'master'
             workingDir website.directory
         }
     }
