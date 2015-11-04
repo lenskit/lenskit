@@ -78,7 +78,7 @@ class TravisExtension {
     }
 
     boolean isMasterBuild() {
-        return isReleaseBuild() && branch == 'master'
+        return isReleaseBuild() && branch == 'master' && repo == 'lenskit/lenskit'
     }
 
     void call(Closure block) {

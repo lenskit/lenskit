@@ -11,6 +11,7 @@ cache:
   - "$HOME/.gradle/wrapper"
 before_install:
 - git fetch --depth=10000 origin
+- openssl aes-256-cbc -K $encrypted_63db7f4dcbd2_key -iv $encrypted_63db7f4dcbd2_iv -in web-deploy-key.rsa.enc -out $HOME/.ssh/id_rsa -d
 install:
 - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
 - bash /tmp/miniconda.sh -b -p $HOME/miniconda
@@ -30,7 +31,7 @@ deploy:
     repo: lenskit/lenskit
 env:
   global:
-  - TERM=dumb
+  - TERM=dumbda
   - TZ=CST6CDT
   # SONAR_USER
   - secure: "lg7vgoXn7PwvW6VH5jPIQ9avyMSMjz4rZcb31HDvRkFCgP0+viUo9NWw1Wad5w2cS5WwwNdcEvmPsHHwYLk6szEhLNs7yPn/5LxUaI5ksqk++hd6m6F9L2PuzOAwPbmJsZRaRoOgiqhUa76mB6vWJNAnGDiFi8kZ54UApa3w+G0="
