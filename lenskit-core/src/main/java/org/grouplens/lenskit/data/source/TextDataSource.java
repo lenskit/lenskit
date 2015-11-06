@@ -147,7 +147,7 @@ public class TextDataSource extends AbstractDataSource {
         if (format instanceof DelimitedColumnEventFormat) {
             DelimitedColumnEventFormat cf = (DelimitedColumnEventFormat) format;
             spec.setDelimiter(cf.getDelimiter());
-            List<String> fieldNames = new ArrayList<>();
+            List<String> fieldNames = new ArrayList<String>();
             for (Field f: cf.getFields()) {
                 fieldNames.add(f.getName());
             }
@@ -155,6 +155,7 @@ public class TextDataSource extends AbstractDataSource {
             spec.setBuilderType(cf.getBuilderType().getName());
             spec.setItemFile(itemFile);
             spec.setItemNameFile(itemNameFile);
+            spec.setHeaderLines(cf.getHeaderLines());
         }
         if (domain != null) {
             spec.setDomain(domain.toSpec());
@@ -181,6 +182,7 @@ public class TextDataSource extends AbstractDataSource {
         bld.setFormat(fmt);
         bld.setItemFile(spec.getItemFile());
         bld.setItemNameFile(spec.getItemNameFile());
+        bld.setHeaderLines(spec.getHeaderLines());
         return bld.build();
     }
 }

@@ -37,6 +37,7 @@ public class TextDataSourceSpec extends DataSourceSpec {
     private List<String> fields;
     private Path itemFile;
     private Path itemNameFile;
+    private int headerLines;
 
     @Override
     public String getName() {
@@ -46,6 +47,22 @@ public class TextDataSourceSpec extends DataSourceSpec {
         } else {
             return name;
         }
+    }
+
+    /**
+     * Get the header Line.
+     * @return The header Line.
+     */
+    public int getHeaderLines() {
+        return headerLines;
+    }
+
+    /**
+     * Set the headerLines.
+     * @param headerLines
+     */
+    public void setHeaderLines(int headerLines) {
+        this.headerLines = headerLines;
     }
 
     public Path getFile() {
@@ -94,7 +111,7 @@ public class TextDataSourceSpec extends DataSourceSpec {
      * @param fields The list of fields.  Can be `null` to use the builder's default fields.
      */
     public void setFields(@Nullable List<String> fields) {
-        this.fields = fields != null ? new ArrayList<>(fields) : null;
+        this.fields = fields != null ? new ArrayList<String>(fields) : null;
     }
 
     public Path getItemFile() {
@@ -123,7 +140,7 @@ public class TextDataSourceSpec extends DataSourceSpec {
 
     @Override
     public Set<Path> getInputFiles() {
-        Set<Path> files = new HashSet<>();
+        Set<Path> files = new HashSet<Path>();
         files.add(file);
         if (itemFile != null) {
             files.add(itemFile);
