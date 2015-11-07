@@ -182,7 +182,7 @@ public class TextDataSource extends AbstractDataSource {
         bld.setFormat(fmt);
         bld.setItemFile(spec.getItemFile());
         bld.setItemNameFile(spec.getItemNameFile());
-        bld.setHeaderLines(spec.getHeaderLines());
+        bld.setHeaderLines(fmt.getHeaderLines());
         return bld.build();
     }
 }

@@ -61,6 +61,6 @@ public final class ExtraMatchers {
      * @return A matcher that accepts objects equivalent to `obj`.
      */
     public static <T> Matcher<T> equivalentTo(T obj, Equivalence<T> equiv) {
-        return new EquivalenceMatcher<T>(obj, equiv);
+        return new EquivalenceMatcher<>(obj, equiv);
     }
 }

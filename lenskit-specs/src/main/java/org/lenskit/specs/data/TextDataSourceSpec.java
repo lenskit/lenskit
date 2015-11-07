@@ -50,16 +50,16 @@ public class TextDataSourceSpec extends DataSourceSpec {
     }
 
     /**
-     * Get the header Line.
-     * @return The header Line.
+     * Get the number of header lines to skip.
+     * @return the number of header lines to skip.
      */
     public int getHeaderLines() {
         return headerLines;
     }
 
     /**
-     * Set the headerLines.
-     * @param headerLines
+     * Set the number of header lines to skip.
+     * @param the number of header lines to skip.
      */
     public void setHeaderLines(int headerLines) {
         this.headerLines = headerLines;
@@ -111,7 +111,7 @@ public class TextDataSourceSpec extends DataSourceSpec {
      * @param fields The list of fields.  Can be `null` to use the builder's default fields.
      */
     public void setFields(@Nullable List<String> fields) {
-        this.fields = fields != null ? new ArrayList<String>(fields) : null;
+        this.fields = fields != null ? new ArrayList<>(fields) : null;
     }
 
     public Path getItemFile() {
@@ -140,7 +140,7 @@ public class TextDataSourceSpec extends DataSourceSpec {
 
     @Override
     public Set<Path> getInputFiles() {
-        Set<Path> files = new HashSet<Path>();
+        Set<Path> files = new HashSet<>();
         files.add(file);
         if (itemFile != null) {
             files.add(itemFile);
