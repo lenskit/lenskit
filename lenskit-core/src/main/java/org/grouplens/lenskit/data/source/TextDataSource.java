@@ -179,10 +179,10 @@ public class TextDataSource extends AbstractDataSource {
         if (fields != null) {
             fmt.setFieldsByName(fields);
         }
+        fmt.setHeaderLines(spec.getHeaderLines());
         bld.setFormat(fmt);
         bld.setItemFile(spec.getItemFile());
         bld.setItemNameFile(spec.getItemNameFile());
-        bld.setHeaderLines(fmt.getHeaderLines());
         return bld.build();
     }
 }
