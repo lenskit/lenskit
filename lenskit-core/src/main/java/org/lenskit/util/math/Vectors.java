@@ -129,6 +129,9 @@ public final class Vectors {
                     e2 = it2.hasNext() ? it2.next() : null;
                 }
             }
+        } else if (v1.size() > v2.size()) {
+            // compute dot product the other way around for speed
+            return dotProduct(v2, v1);
         } else {
             Long2DoubleFunction v2d = adaptDefaultValue(v2, 0.0);
             Iterator<Long2DoubleMap.Entry> iter = fastEntryIterator(v1);
