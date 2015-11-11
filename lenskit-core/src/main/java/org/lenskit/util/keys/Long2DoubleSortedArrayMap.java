@@ -42,7 +42,7 @@ import static it.unimi.dsi.fastutil.Arrays.quickSort;
  * An immutable long-to-double map backed by a sorted key array.
  */
 @Immutable
-public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
+public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
     private static final long serialVersionUID = 1L;
 
     private final SortedKeyIndex keys;
@@ -139,6 +139,24 @@ public class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMap {
     @Override
     public LongSortedSet keySet() {
         return keys.keySet();
+    }
+
+    /**
+     * Get a key by its position in the map. Used for optimizing certain operations.
+     * @param i The index.
+     * @return The key at position {@code i}.
+     */
+    public long getKeyByIndex(int i) {
+        return keys.getKey(i);
+    }
+
+    /**
+     * Get a value by its position in the map. Used for optimizing certain operations.
+     * @param i The index.
+     * @return The value at position {@code i}.
+     */
+    public double getValueByIndex(int i) {
+        return values[i];
     }
 
     @Override
