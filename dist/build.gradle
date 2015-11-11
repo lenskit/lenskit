@@ -71,7 +71,7 @@ distTar {
     compression Compression.GZIP
 }
 
-build.dependsOn installApp
+build.dependsOn installDist
 
 if (hasProperty('lenskit.install.dir')) {
     installApp.destinationDir = rootProject.file(getProperty('lenskit.install.dir'))
