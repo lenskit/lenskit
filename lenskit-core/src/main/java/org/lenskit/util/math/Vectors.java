@@ -109,6 +109,11 @@ public final class Vectors {
      * @return The sum of the products of corresponding values in the two vectors.
      */
     public static double dotProduct(Long2DoubleMap v1, Long2DoubleMap v2) {
+        if (v1.size() > v2.size()) {
+            // compute dot product the other way around for speed
+            return dotProduct(v2, v1);
+        }
+
         double result = 0;
 
         if (v1 instanceof Long2DoubleSortedMap && v2 instanceof Long2DoubleSortedMap) {
@@ -129,9 +134,6 @@ public final class Vectors {
                     e2 = it2.hasNext() ? it2.next() : null;
                 }
             }
-        } else if (v1.size() > v2.size()) {
-            // compute dot product the other way around for speed
-            return dotProduct(v2, v1);
         } else {
             Long2DoubleFunction v2d = adaptDefaultValue(v2, 0.0);
             Iterator<Long2DoubleMap.Entry> iter = fastEntryIterator(v1);
