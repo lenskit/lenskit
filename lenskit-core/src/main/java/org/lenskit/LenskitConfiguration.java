@@ -27,11 +27,7 @@ import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.ResolutionException;
 import org.grouplens.grapht.context.ContextPattern;
 import org.grouplens.grapht.graph.DAGNode;
-import org.grouplens.lenskit.GlobalItemRecommender;
-import org.grouplens.lenskit.GlobalItemScorer;
-import org.lenskit.api.ItemRecommender;
-import org.lenskit.api.ItemScorer;
-import org.lenskit.api.RatingPredictor;
+import org.lenskit.api.*;
 import org.lenskit.inject.AbstractConfigContext;
 import org.lenskit.inject.RecommenderGraphBuilder;
 
@@ -53,12 +49,9 @@ public class LenskitConfiguration extends AbstractConfigContext {
     private static final Class<?>[] INITIAL_ROOTS = {
             RatingPredictor.class,
             ItemScorer.class,
-            GlobalItemScorer.class,
             ItemRecommender.class,
-            GlobalItemRecommender.class,
-            org.lenskit.api.ItemRecommender.class,
-            org.lenskit.api.ItemScorer.class,
-            org.lenskit.api.RatingPredictor.class
+            ItemBasedItemScorer.class,
+            ItemBasedItemRecommender.class
     };
 
     private final BindingFunctionBuilder bindings;

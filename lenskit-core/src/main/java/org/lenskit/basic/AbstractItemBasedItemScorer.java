@@ -18,41 +18,39 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.basic;
+package org.lenskit.basic;
 
-import it.unimi.dsi.fastutil.longs.LongLists;
-
-import java.util.Collection;
+import it.unimi.dsi.fastutil.longs.LongSets;
+import org.lenskit.api.ItemBasedItemScorer;
+import org.lenskit.api.Result;
 
 import javax.annotation.Nonnull;
-
-import org.grouplens.lenskit.GlobalItemScorer;
-import org.grouplens.lenskit.vectors.MutableSparseVector;
-import org.grouplens.lenskit.vectors.SparseVector;
+import java.util.Collection;
+import java.util.Map;
 
 /**
- * Base class to make global item scorers easier to implement. Delegates single=item
- * score methods to collection-based ones,
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * Base class to make it easier to implement {@link ItemBasedItemScorer}.  All methods delegate to
+ * {@link #scoreRelatedItemsWithDetails(Collection, Collection)}.
  */
-public abstract class AbstractGlobalItemScorer implements GlobalItemScorer {
+public abstract class AbstractItemBasedItemScorer implements ItemBasedItemScorer {
     /**
      * {@inheritDoc}
-     * <p>Delegate to {@link #globalScore(Collection, Collection)}.
+     *
+     * This implementation delegates to {@link #scoreRelatedItemsWithDetails(Collection, Collection)}.
      */
+    @Nonnull
     @Override
-    public double globalScore(@Nonnull Collection<Long> queryItems, long item) {
-        SparseVector v = globalScore(queryItems, LongLists.singleton(item));
-        return v.get(item, Double.NaN);
+    public Map<Long, Double> scoreRelatedItems(@Nonnull Collection<Long> basket, @Nonnull Collection<Long> items) {
+        return scoreRelatedItemsWithDetails(basket, items).scoreMap();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * This implementation delegates to {@link #scoreRelatedItemsWithDetails(Collection, Collection)}.
+     */
     @Override
-    @Nonnull
-    public MutableSparseVector globalScore(@Nonnull Collection<Long> queryItems,
-                                           @Nonnull Collection<Long> items) {
-        MutableSparseVector v = MutableSparseVector.create(items);
-        globalScore(queryItems, v);
-        return v;
+    public Result scoreRelatedItem(@Nonnull Collection<Long> basket, long item) {
+        return scoreRelatedItemsWithDetails(basket, LongSets.singleton(item)).get(item);
     }
 }
