@@ -22,6 +22,7 @@ package org.lenskit.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.joda.convert.StringConvert
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -46,11 +47,12 @@ public class LenskitPlugin implements Plugin<Project> {
         for (prop in lenskit.metaClass.properties) {
             def prjProp = "lenskit.$prop.name"
             if (project.hasProperty(prjProp)) {
-                def val = project.getProperty(prjProp)
-                logger.info 'setting property {} to {}', prjProp, val
+                String valStr = project.getProperty(prjProp)
+                def val = valStr
                 if (prop.type != String) {
-                    val = prop.type.metaClass.invokeConstructor(val)
+                    val = StringConvert.INSTANCE.convertFromString(prop.type, valStr)
                 }
+                logger.info 'setting property {} to {}', prjProp, val
                 prop.setProperty(lenskit, val)
             }
         }
