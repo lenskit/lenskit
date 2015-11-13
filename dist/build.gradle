@@ -1,6 +1,7 @@
 import java.util.zip.ZipFile
 
 apply plugin: 'application'
+apply plugin: 'maven'
 evaluationDependsOn ':lenskit-cli'
 
 dependencies {
@@ -75,4 +76,20 @@ build.dependsOn installDist
 
 if (hasProperty('lenskit.install.dir')) {
     installApp.destinationDir = rootProject.file(getProperty('lenskit.install.dir'))
+}
+
+task resolveSources << {
+    def componentIds = configurations.runtime.incoming.resolutionResult.allDependencies.collect { it.selected.id }
+
+    def result = dependencies.createArtifactResolutionQuery()
+                             .forComponents(componentIds)
+                             .withArtifacts(JvmLibrary, SourcesArtifact, JavadocArtifact)
+                             .execute()
+
+    for (component in result.resolvedComponents) {
+        println "Artifact ${component.id}"
+        println "  ID has class ${component.id.class}"
+        component.getArtifacts(SourcesArtifact).each { println "Source artifact: ${it.file}" }
+        component.getArtifacts(JavadocArtifact).each { println "Source artifact: ${it.file}" }
+    }
 }
