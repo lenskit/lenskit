@@ -10,6 +10,9 @@ task notices(group: 'build') {
     inputs.files configurations.runtime
     outputs.file noticeFile
 
+    doFirst {
+        mkdir buildDir
+    }
     doLast {
         def cfg = configurations.runtime.resolvedConfiguration
         file(noticeFile).withPrintWriter { out ->
