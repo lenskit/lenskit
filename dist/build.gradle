@@ -4,6 +4,10 @@ apply plugin: 'distribution'
 evaluationDependsOn ':lenskit-cli'
 ext.cliProject = project(':lenskit-cli')
 
+repositories {
+    mavenCentral()
+}
+
 // aggregate license info and notices from dependencies
 task notices(group: 'build') {
     ext.noticeFile = "$buildDir/NOTICE.txt"
@@ -46,6 +50,85 @@ task startScripts(type: CreateStartScripts) {
     classpath = cliProject.jar.outputs.files + cliProject.configurations.runtime
 }
 
+distTar {
+    extension 'tgz'
+    compression Compression.GZIP
+}
+
+build.dependsOn installDist
+
+if (hasProperty('lenskit.install.dir')) {
+    installDist.destinationDir = rootProject.file(getProperty('lenskit.install.dir'))
+}
+
+class MvnDep {
+    final def Project project
+    final def ComponentIdentifier id
+    final def ResolvedComponentResult dependency
+
+    public MvnDep(Project prj, ComponentIdentifier i, ResolvedComponentResult dep) {
+        project = prj;
+        id = i
+        dependency = dep
+    }
+
+    public Set<ComponentArtifactsResult> getResolvedComponents() {
+        def jvmResult = project.dependencies.createArtifactResolutionQuery()
+                               .forComponents(id)
+                               .withArtifacts(JvmLibrary, SourcesArtifact)
+                               .execute()
+        def mvnResult = project.dependencies.createArtifactResolutionQuery()
+                               .forComponents(id)
+                               .withArtifacts(MavenModule, MavenPomArtifact)
+                               .execute()
+        jvmResult.resolvedComponents + mvnResult.resolvedComponents
+    }
+
+    public List<File> getFiles() {
+        def files = []
+        files.addAll(resolvedComponents*.getArtifacts(SourcesArtifact).collectMany { it*.file })
+        files.addAll(resolvedComponents*.getArtifacts(MavenPomArtifact).collectMany { it*.file })
+        files
+    }
+}
+
+List<MvnDep> gatherDeps() {
+    def deps = cliProject.configurations.runtime.incoming.resolutionResult.allDependencies
+    def componentIds = deps.collect { it.selected.id }
+
+    deps.collect { new MvnDep(project, it.selected.id, it.selected) }
+}
+
+task makeLocalMavenDist {
+    dependsOn ':lenskit-integration-tests:makeTestRepo'
+    inputs.files {
+        gatherDeps().collectMany { it.files }
+    }
+    inputs.dir rootProject.file('build/test-repo')
+    outputs.dir "$buildDir/lenskit-repo"
+
+    doLast {
+        copy {
+            from rootProject.file('build/test-repo')
+            into "$buildDir/lenskit-repo"
+        }
+        for (dep in gatherDeps()) {
+            if (!(dep.id instanceof ModuleComponentIdentifier)) {
+                continue
+            }
+            logger.info "copying $dep.id"
+            logger.info "components $dep.resolvedComponents"
+            def gdir = dep.id.group.replace('.', '/')
+            def mvnDir = "$gdir/$dep.id.module/$dep.id.version"
+            logger.info("copying $dep.files into $mvnDir")
+            copy {
+                from files(dep.files)
+                into "$buildDir/lenskit-repo/$mvnDir"
+            }
+        }
+    }
+}
+
 distributions {
     main {
         baseName = 'lenskit'
@@ -65,31 +148,10 @@ distributions {
             }
         }
     }
-}
-
-distTar {
-    extension 'tgz'
-    compression Compression.GZIP
-}
-
-build.dependsOn installDist
-
-if (hasProperty('lenskit.install.dir')) {
-    installDist.destinationDir = rootProject.file(getProperty('lenskit.install.dir'))
-}
-
-task resolveSources << {
-    def componentIds = configurations.runtime.incoming.resolutionResult.allDependencies.collect { it.selected.id }
-
-    def result = dependencies.createArtifactResolutionQuery()
-                             .forComponents(componentIds)
-                             .withArtifacts(JvmLibrary, SourcesArtifact, JavadocArtifact)
-                             .execute()
-
-    for (component in result.resolvedComponents) {
-        println "Artifact ${component.id}"
-        println "  ID has class ${component.id.class}"
-        component.getArtifacts(SourcesArtifact).each { println "Source artifact: ${it.file}" }
-        component.getArtifacts(JavadocArtifact).each { println "Source artifact: ${it.file}" }
+    maven {
+        baseName = 'lenskit-repo'
+        contents {
+            from makeLocalMavenDist
+        }
     }
 }
