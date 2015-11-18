@@ -1,14 +1,8 @@
 import java.util.zip.ZipFile
 
-apply plugin: 'application'
+apply plugin: 'distribution'
 evaluationDependsOn ':lenskit-cli'
-
-dependencies {
-    runtime project(':lenskit-cli')
-}
-
-mainClassName = 'org.grouplens.lenskit.cli.Main'
-applicationName = 'lenskit'
+ext.cliProject = project(':lenskit-cli')
 
 // aggregate license info and notices from dependencies
 task notices(group: 'build') {
@@ -42,14 +36,32 @@ task notices(group: 'build') {
     }
 }
 
-configure(applicationDistribution) {
-    from(project(':lenskit-cli').tasks['renderManPages']) {
-        into 'man'
+task startScripts(type: CreateStartScripts) {
+    outputDir = file("$buildDir/scripts")
+    mainClassName = 'org.lenskit.cli.Main'
+    applicationName = 'lenskit'
+    classpath = cliProject.jar.outputs.files + cliProject.configurations.runtime
+}
+
+distributions {
+    main {
+        baseName = 'lenskit'
+        contents {
+            from(startScripts) {
+                into 'bin'
+            }
+            from notices
+            from(project(':lenskit-cli').tasks['renderManPages']) {
+                into 'man'
+            }
+            from(rootProject.tasks['javadoc']) {
+                into 'javadoc'
+            }
+            from(startScripts.classpath) {
+                into 'lib'
+            }
+        }
     }
-    from(rootProject.tasks['javadoc']) {
-        into 'javadoc'
-    }
-    from notices
 }
 
 distTar {
@@ -60,7 +72,7 @@ distTar {
 build.dependsOn installDist
 
 if (hasProperty('lenskit.install.dir')) {
-    installApp.destinationDir = rootProject.file(getProperty('lenskit.install.dir'))
+    installDist.destinationDir = rootProject.file(getProperty('lenskit.install.dir'))
 }
 
 task resolveSources << {
