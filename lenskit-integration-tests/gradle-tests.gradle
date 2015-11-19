@@ -37,7 +37,7 @@
  * Integration tests built with Gradle.
  */
 
-def ift = task makeTestRepo {
+def ift = task makeTestRepo(group: 'build setup') {
     for (prj in rootProject.childProjects.values()) {
         if (prj.name =~ /^lenskit-(?!integration-tests)/) {
             dependsOn "$prj.path:installForTesting"
