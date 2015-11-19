@@ -78,6 +78,7 @@ if (hasProperty('lenskit.install.dir')) {
 
 syncRemoteRepositories {
     dependsOn ':lenskit-integration-tests:makeTestRepo'
+    inputs.files project(':lenskit-integration-tests').tasks['makeTestRepo']
 
     repoRoot = "$buildDir/offline-repo"
 
@@ -129,7 +130,7 @@ task prepEvaluate(type: Copy) {
 }
 task testEvaluate(group: 'test', type: GradleBuild) {
     def itProject = project(':lenskit-integration-tests')
-    inputs.files makeLocalMavenDist
+    inputs.files syncRemoteRepositories
     inputs.files prepEvaluate
     inputs.files itProject.tasks['fetchData']
 
