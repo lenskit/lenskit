@@ -184,7 +184,7 @@ class ExperimentJob implements Runnable {
             logger.info("evaluation interrupted");
             throw ex;
         } catch (Throwable th) {
-            logger.error("Error occured in eval job", th);
+            logger.error("Error evaluating " + algorithm + " on " + dataSet, th);
             throw th;
         }
 
