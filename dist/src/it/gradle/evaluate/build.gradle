@@ -1,0 +1,64 @@
+buildscript {
+    repositories {
+        ivy {
+            url project.localRepoURI
+            layout 'ivy'
+        }
+    }
+    dependencies {
+        classpath "org.grouplens.lenskit:lenskit-gradle:$project.lenskitVersion"
+        classpath "org.hamcrest:hamcrest-library:1.3"
+    }
+}
+
+import org.lenskit.gradle.*
+import static org.hamcrest.MatcherAssert.*
+import static org.hamcrest.Matchers.*
+
+apply plugin: 'java'
+apply plugin: 'lenskit'
+
+repositories {
+    ivy {
+        url project.localRepoURI
+        layout 'ivy'
+    }
+}
+
+dependencies {
+    runtime "org.grouplens.lenskit:lenskit-cli:$lenskitVersion"
+}
+
+task crossfold(type: Crossfold) {
+    input textFile {
+        file ratingsFile
+        delimiter "\t"
+    }
+    outputFormat "PACK"
+    partitionCount 5
+    userPartitionMethod holdout(5)
+    includeTimestamps false
+}
+
+task evaluate(type: TrainTest) {
+    maxMemory '256m'
+    logFile "train-test.log"
+    logFileLevel 'DEBUG'
+    dataSet crossfold
+    outputFile 'results.csv'
+    algorithm 'Baseline', 'baseline.groovy'
+    predict {
+        outputFile 'predictions.csv'
+        metric 'coverage'
+        metric 'rmse'
+        metric('ndcg') {
+            columnName 'PredRankAcc'
+        }
+    }
+}
+
+task checkTrainTest(group: 'test', dependsOn: [evaluate]) << {
+    assertThat('results file exists',
+               file('results.csv').exists())
+}
+check.dependsOn checkTrainTest
