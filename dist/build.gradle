@@ -113,7 +113,7 @@ distributions {
     maven {
         baseName = 'lenskit-repo'
         contents {
-            from makeLocalMavenDist
+            from syncRemoteRepositories
         }
     }
 }
