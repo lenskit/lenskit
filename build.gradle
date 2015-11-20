@@ -38,12 +38,12 @@ plugins {
     id "org.sonarqube" version "1.0"
 }
 apply plugin: 'base'
+apply plugin: 'project-report'
 
 ext.webUrl = 'http://lenskit.org'
 
 configurations {
     allDeps // collect all external dependencies of all modules
-    buildTools
 }
 
 task ciPublish {
