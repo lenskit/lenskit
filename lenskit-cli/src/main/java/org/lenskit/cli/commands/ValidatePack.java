@@ -21,6 +21,7 @@
 package org.lenskit.cli.commands;
 
 import com.google.auto.service.AutoService;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.lenskit.cli.Command;
@@ -74,16 +75,27 @@ public class ValidatePack implements Command {
         }
         logger.info("Read {} ratings", count);
 
+        LongSet userIds = dao.getUserIds();
+        LongSet itemIds = dao.getItemIds();
+
         /* Check ratings by user */
         int countByUser = 0;
         int nusers = 0;
         try (ObjectStream<UserHistory<Rating>> users = dao.streamEventsByUser(Rating.class)) {
             for (UserHistory<Rating> user: users) {
+                if (!userIds.contains(user.getUserId())) {
+                    nerrors++;
+                    logger.error("User {} not in set of users", user.getUserId());
+                }
                 for (Rating r: user) {
                     long uid = r.getUserId();
                     if (uid != user.getUserId()) {
                         nerrors++;
                         logger.error("Rating {} has incorrect user ID (expected {})", r, user.getUserId());
+                    }
+                    if (!itemIds.contains(r.getItemId())) {
+                        nerrors++;
+                        logger.error("Item {} not in set of items", r.getItemId());
                     }
                     countByUser += 1;
                 }
@@ -96,17 +108,30 @@ public class ValidatePack implements Command {
             logger.error("Iteration by user found {} ratings, expected {}",
                          countByUser, count);
         }
+        if (userIds.size() != nusers) {
+            nerrors++;
+            logger.error("DAO has {} users, found ratings for {}",
+                         dao.getUserIds().size(), nusers);
+        }
 
         /* Check ratings by item */
         int countByItem = 0;
         int nitems = 0;
         try (ObjectStream<ItemEventCollection<Rating>> items = dao.streamEventsByItem(Rating.class)) {
             for (ItemEventCollection<Rating> item: items) {
+                if (!itemIds.contains(item.getItemId())) {
+                    nerrors++;
+                    logger.error("item {} not in set of item IDs", item.getItemId());
+                }
                 for (Rating r: item) {
                     long iid = r.getItemId();
                     if (iid != item.getItemId()) {
                         nerrors++;
                         logger.error("Rating {} has incorrect item ID (expected {})", r, item.getItemId());
+                    }
+                    if (!userIds.contains(r.getUserId())) {
+                        nerrors++;
+                        logger.error("user {} not in set of user IDs", r.getUserId());
                     }
                     countByItem += 1;
                 }
@@ -119,18 +144,12 @@ public class ValidatePack implements Command {
             logger.error("Iteration by item found {} ratings, expected {}",
                          countByItem, count);
         }
-
-        /* Check user and item set sizes */
-        if (dao.getItemIds().size() != nitems) {
+        if (itemIds.size() != nitems) {
             nerrors++;
             logger.error("DAO has {} items, found ratings for {}",
                          dao.getItemIds().size(), nitems);
         }
-        if (dao.getUserIds().size() != nusers) {
-            nerrors++;
-            logger.error("DAO has {} users, found ratings for {}",
-                         dao.getUserIds().size(), nusers);
-        }
+
 
         if (nerrors > 0) {
             logger.error("Found {} errors", nerrors);
