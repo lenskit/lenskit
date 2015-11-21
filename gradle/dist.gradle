@@ -42,6 +42,7 @@ import org.grouplens.lenskit.build.MavenRepublish
 import java.util.zip.ZipFile
 
 apply plugin: 'distribution'
+apply plugin: 'maven'
 
 def cliProject = project(':lenskit-cli')
 
@@ -94,6 +95,16 @@ project(':lenskit-cli').afterEvaluate { prj ->
 }
 project(':lenskit-gradle').afterEvaluate { prj ->
     copyMavenDeps.configurations << prj.configurations.runtime
+}
+
+task repoZip(type: Zip) {
+    dependsOn copyMavenDeps
+    dependsOn ':lenskit-integration-tests:makeTestRepo'
+
+    archiveName "lenskit-repo-${version}.zip"
+    from "$buildDir/test-repo"
+    from "$buildDir/offline-repo"
+    into "lenskit-repo-$version"
 }
 
 distributions {

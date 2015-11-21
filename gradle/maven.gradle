@@ -128,7 +128,7 @@ afterEvaluate {
     def pdeps = configurations.runtime.allDependencies.withType(ProjectDependency)
     def pdNames = pdeps*.dependencyProject*.path
     pdNames.each {
-        installForTesting.mustRunAfter "$it:installForTesting"
+        installForTesting.dependsOn "$it:installForTesting"
     }
 }
 
