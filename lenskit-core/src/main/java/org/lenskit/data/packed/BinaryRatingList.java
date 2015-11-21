@@ -59,9 +59,10 @@ class BinaryRatingList extends AbstractList<Rating> {
 
     private Rating getRating(int position) {
         int bidx = position * ratingSize;
-        buffer.position(bidx);
-        assert buffer.remaining() >= format.getRatingSize();
-        return format.readRating(buffer);
+        ByteBuffer buf = buffer.slice();
+        buf.position(bidx);
+        assert buf.remaining() >= format.getRatingSize();
+        return format.readRating(buf);
     }
 
     @Override
