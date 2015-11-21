@@ -96,3 +96,13 @@ file('src/it/gradle').eachDir { testDir ->
 
     gradleTests.dependsOn "test$tname"
 }
+
+task unpackOfflineRepo(type: Copy) {
+    dependsOn rootProject.repoZip
+    from zipTree(rootProject.repoZip.archivePath)
+    into "$buildDir/offline-repo"
+}
+testEvalWithOfflineRepo {
+    dependsOn unpackOfflineRepo
+    startParameter.projectProperties['offlineRepoURI'] = uri("$buildDir/offline-repo/lenskit-repo-$version")
+}
