@@ -186,8 +186,9 @@ subprojects {
 }
 
 apply from: "$rootDir/gradle/javadoc.gradle"
+apply from: "$rootDir/gradle/dist.gradle"
 
-task report(group: 'verification') {
+task report(group: 'verification', dependsOn: [projectReport]) {
     description 'Run all enabled quality reports.'
 }
 
