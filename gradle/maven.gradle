@@ -77,7 +77,8 @@ configurations {
     mavenCentral.extendsFrom archives
 }
 artifacts {
-    mavenCentral sourcesJar, javadocJar
+    archives sourcesJar
+    mavenCentral javadocJar
 }
 
 signing {
@@ -118,6 +119,7 @@ task installForTesting(type: Upload) {
     repositories {
         mavenDeployer {
             repository(url: rootProject.uri('build/test-repo'))
+            uniqueVersion = false
         }
     }
     configuration = configurations.archives
