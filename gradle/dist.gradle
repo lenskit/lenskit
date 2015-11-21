@@ -37,6 +37,8 @@
  * final distributions.
  */
 
+import org.grouplens.lenskit.build.MavenRepublish
+
 import java.util.zip.ZipFile
 
 apply plugin: 'distribution'
@@ -85,7 +87,14 @@ task startScripts(type: CreateStartScripts) {
     mainClassName = 'org.lenskit.cli.Main'
     applicationName = 'lenskit'
 }
-// grab the classpath when evaluation is done
+
+task copyMavenDeps(type: org.grouplens.lenskit.build.MavenRepublish)
+project(':lenskit-cli').afterEvaluate { prj ->
+    copyMavenDeps.configurations << prj.configurations.runtime
+}
+project(':lenskit-gradle').afterEvaluate { prj ->
+    copyMavenDeps.configurations << prj.configurations.runtime
+}
 
 distributions {
     main {
