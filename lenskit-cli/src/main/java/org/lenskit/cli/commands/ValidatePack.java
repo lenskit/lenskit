@@ -87,8 +87,8 @@ public class ValidatePack implements Command {
                     }
                     countByUser += 1;
                 }
+                nusers += 1;
             }
-            nusers += 1;
         }
         logger.info("Counted {} ratings by {} users", countByUser, nusers);
         if (countByUser != count) {
@@ -110,8 +110,8 @@ public class ValidatePack implements Command {
                     }
                     countByItem += 1;
                 }
+                nitems += 1;
             }
-            nitems += 1;
         }
         logger.info("Counted {} ratings by {} items", countByItem, nitems);
         if (countByItem != count) {
