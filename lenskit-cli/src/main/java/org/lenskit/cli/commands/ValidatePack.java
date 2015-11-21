@@ -35,6 +35,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @AutoService(Command.class)
 public class ValidatePack implements Command {
@@ -55,13 +57,30 @@ public class ValidatePack implements Command {
         parser.addArgument("pack_file")
               .type(File.class)
               .metavar("FILE")
+              .nargs("+")
               .required(true)
               .help("check ratings in FILE");
     }
 
     @Override
     public void execute(Namespace options) throws Exception {
-        File file = options.get("pack_file");
+        List<File> files = options.get("pack_file");
+        List<File> bad = new ArrayList<>();
+        for (File file: files) {
+            if (!checkFile(file)) {
+                bad.add(file);
+            }
+        }
+        if (!bad.isEmpty()) {
+            logger.error("Found {} bad files", bad.size());
+            for (File file: bad) {
+                logger.info("corrupt file: {}", file);
+            }
+            throw new IOException("Found errors in " + bad.size() + " files");
+        }
+    }
+
+    private boolean checkFile(File file) throws IOException {
         logger.info("Checking ratings in pack file {}", file);
         BinaryRatingDAO dao = BinaryRatingDAO.open(file);
         int nerrors = 0;
@@ -152,8 +171,9 @@ public class ValidatePack implements Command {
 
 
         if (nerrors > 0) {
-            logger.error("Found {} errors", nerrors);
-            throw new IOException("Rating pack file corrupted");
+            logger.error("Found {} errors in file {}", nerrors, file);
+            return false;
         }
+        return true;
     }
 }
