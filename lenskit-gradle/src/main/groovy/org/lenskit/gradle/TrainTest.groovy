@@ -54,12 +54,29 @@ class TrainTest extends LenskitTask {
 
     /**
      * Add a data sets produced by a crossfold task.
+     *
+     * <p>This method supports options for adding the crossfolded data sets:
+     *
+     * <dl>
+     *     <dt>isolate</dt>
+     *     <dd>If {@code true}, isolates each of the data sets from each other and from other data sets by assigning
+     *     each a random isolation group ID.</dd>
+     * </dl>
+     *
+     * @param options Options for adding the data sets.
      * @param ds The crossfold tasks to add.
      */
-    def dataSet(Crossfold cf) {
+    def dataSet(Map<String,Object> options, Crossfold cf) {
         inputs.files cf
         deferredInput << { spec ->
-            cf.dataSets.each { spec.addDataSet(it) }
+            cf.dataSets.each {
+                def dss = it
+                if (options.isolate) {
+                    dss = SpecUtils.copySpec(dss)
+                    dss.isolationGroup = UUID.randomUUID()
+                }
+                spec.addDataSet(dss)
+            }
         }
     }
 
