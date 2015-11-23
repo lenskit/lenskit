@@ -25,6 +25,7 @@ import org.lenskit.specs.data.DataSourceSpec;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Spec for a train-test data set.
@@ -33,10 +34,12 @@ public class DataSetSpec extends AbstractSpec {
     private String name;
     private DataSourceSpec trainSource;
     private DataSourceSpec testSource;
-    private Map<String,Object> attributes = new HashMap<>();
+    private UUID isolationGroup = new UUID(0, 0);
+    private Map<String, Object> attributes = new HashMap<>();
 
     /**
      * Get the data source name.
+     *
      * @return The data source name.
      */
     public String getName() {
@@ -45,6 +48,7 @@ public class DataSetSpec extends AbstractSpec {
 
     /**
      * Set the data source name.
+     *
      * @param name The data source name.
      */
     public void setName(String name) {
@@ -53,6 +57,7 @@ public class DataSetSpec extends AbstractSpec {
 
     /**
      * Get the training data source.
+     *
      * @return The training data source.
      */
     public DataSourceSpec getTrainSource() {
@@ -61,6 +66,7 @@ public class DataSetSpec extends AbstractSpec {
 
     /**
      * Set the training data source.
+     *
      * @param src The trainig data source.
      */
     public void setTrainSource(DataSourceSpec src) {
@@ -69,6 +75,7 @@ public class DataSetSpec extends AbstractSpec {
 
     /**
      * Get the test data source.
+     *
      * @return The test data source.
      */
     public DataSourceSpec getTestSource() {
@@ -77,6 +84,7 @@ public class DataSetSpec extends AbstractSpec {
 
     /**
      * Set the test data source.
+     *
      * @param src The test data source.
      */
     public void setTestSource(DataSourceSpec src) {
@@ -84,7 +92,29 @@ public class DataSetSpec extends AbstractSpec {
     }
 
     /**
+     * Get this data set's isolation group.
+     *
+     * @return The isolation group UUID.
+     * @see #setIsolationGroup(UUID)
+     */
+    public UUID getIsolationGroup() {
+        return isolationGroup;
+    }
+
+    /**
+     * Set this data set's isolation group.  Experiments over data sets with different isolation groups will not be
+     * allowed to run in parallel with each other.
+     *
+     * @param group The isolation group UUID.
+     * @see #getIsolationGroup()
+     */
+    public void setIsolationGroup(UUID group) {
+        isolationGroup = group;
+    }
+
+    /**
      * Get the attribute map of this data source.
+     *
      * @return The data source's attributes.
      */
     public Map<String, Object> getAttributes() {
@@ -93,6 +123,7 @@ public class DataSetSpec extends AbstractSpec {
 
     /**
      * Set the attribute map of this data source.
+     *
      * @param attributes The data source's attribute map.
      */
     public void setAttributes(Map<String, Object> attributes) {
@@ -101,7 +132,8 @@ public class DataSetSpec extends AbstractSpec {
 
     /**
      * Set an attribute for this data source.
-     * @param name The attribute name.
+     *
+     * @param name  The attribute name.
      * @param value The attribute value
      */
     public void setAttribute(String name, Object value) {

@@ -25,10 +25,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import org.grouplens.lenskit.data.source.DataSource;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.data.dao.UserDAO;
 import org.lenskit.data.dao.UserListUserDAO;
-import org.grouplens.lenskit.data.source.DataSource;
 import org.lenskit.specs.SpecUtils;
 import org.lenskit.specs.eval.DataSetSpec;
 
@@ -93,7 +93,8 @@ public class DataSet {
         // TODO support query sets
         bld.setName(spec.getName())
            .setTest(SpecUtils.buildObject(DataSource.class, spec.getTestSource()))
-           .setTrain(SpecUtils.buildObject(DataSource.class, spec.getTrainSource()));
+           .setTrain(SpecUtils.buildObject(DataSource.class, spec.getTrainSource()))
+           .setIsolationGroup(spec.getIsolationGroup());
         bld.getAttributes().putAll(spec.getAttributes());
         return bld.build();
     }
