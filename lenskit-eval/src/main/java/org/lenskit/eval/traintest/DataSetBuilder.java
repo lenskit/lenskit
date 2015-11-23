@@ -24,7 +24,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.builder.Builder;
 import org.grouplens.lenskit.data.source.DataSource;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -77,12 +77,11 @@ public class DataSetBuilder implements Builder<DataSet> {
 
     /**
      * Set the group ID for this data set.  The default is the all-0 UUID.
-     * @param group The group ID.
+     * @param group The group ID, or `null` to reset to the default group.
      * @return The builder (for chaining).
      */
-    public DataSetBuilder setIsolationGroup(@Nonnull UUID group) {
-        Preconditions.checkNotNull(group, "group ID");
-        isoGroup = group;
+    public DataSetBuilder setIsolationGroup(@Nullable UUID group) {
+        isoGroup = group != null ? group : new UUID(0,0);
         return this;
     }
 
