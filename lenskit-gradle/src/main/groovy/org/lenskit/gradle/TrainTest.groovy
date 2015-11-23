@@ -55,6 +55,15 @@ class TrainTest extends LenskitTask {
     /**
      * Add a data sets produced by a crossfold task.
      *
+     * @param ds The crossfold tasks to add.
+     */
+    def dataSet(DataSetProvider cf) {
+        dataSet(Collections.emptyMap(), cf)
+    }
+
+    /**
+     * Add a data sets produced by a crossfold task.
+     *
      * <p>This method supports options for adding the crossfolded data sets:
      *
      * <dl>
