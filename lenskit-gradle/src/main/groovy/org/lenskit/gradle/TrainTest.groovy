@@ -66,7 +66,7 @@ class TrainTest extends LenskitTask {
      * @param options Options for adding the data sets.
      * @param ds The crossfold tasks to add.
      */
-    def dataSet(Map<String,Object> options, Crossfold cf) {
+    def dataSet(Map<String,Object> options, DataSetProvider cf) {
         inputs.files cf
         deferredInput << { spec ->
             cf.dataSets.each {
