@@ -70,9 +70,8 @@ class TrainTest extends LenskitTask {
         inputs.files cf
         deferredInput << { spec ->
             cf.dataSets.each {
-                def dss = it
+                def dss = SpecUtils.copySpec(it)
                 if (options.isolate) {
-                    dss = SpecUtils.copySpec(dss)
                     dss.isolationGroup = UUID.randomUUID()
                 }
                 spec.addDataSet(dss)
