@@ -20,17 +20,12 @@
  */
 package org.grouplens.lenskit.util;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Sets;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import static com.google.common.collect.Iterables.*;
 
 /**
  * Various type utilities used in LensKit.
@@ -49,15 +44,21 @@ public class TypeUtils {
      * @param parent  The parent type of interest.
      * @return The set of types applicable to objects in <var>objects</var>.
      */
-    public static <T> Set<Class<? extends T>>
-    findTypes(Iterable<? extends T> objects, Class<T> parent) {
-        Set<Class<? extends T>> objTypes =
-                Sets.newHashSet(transform(objects, extractClass(parent)));
+    public static <T> Set<Class<? extends T>> findTypes(Iterable<? extends T> objects, Class<T> parent) {
+        // Build a set of all object classes in use
+        Set<Class<?>> objTypes = new HashSet<>();
+        for (T obj: objects) {
+            objTypes.add(obj.getClass());
+        }
 
-        Set<Class<? extends T>> allTypes = new HashSet<Class<? extends T>>();
-        for (Class<? extends T> t : objTypes) {
-            addAll(allTypes, transform(filter(typeClosure(t), isSubclass(parent)),
-                                       asSubclass(parent)));
+        // accumulate all classes reachable from an object type that are subtypes of parent
+        Set<Class<? extends T>> allTypes = new HashSet<>();
+        for (Class<?> t : objTypes) {
+            for (Class<?> type: typeClosure(t)) {
+                if (parent.isAssignableFrom(type)) {
+                    allTypes.add(type.asSubclass(parent));
+                }
+            }
         }
         return allTypes;
     }
@@ -82,79 +83,6 @@ public class TypeUtils {
         }
 
         return supertypes;
-    }
-
-    public static Predicate<Class<?>> isSubclass(final Class<?> cls) {
-        return new Predicate<Class<?>>() {
-
-            @Override
-            public boolean apply(Class<?> input) {
-                return cls.isAssignableFrom(input);
-            }
-        };
-    }
-
-    /**
-     * Function that casts classes to specified types.  This function does not accept nulls.
-     *
-     * @param supertype A class known to be a valid supertype for any argument.
-     */
-    public static <T> Function<Class<?>, Class<? extends T>> asSubclass(final Class<T> supertype) {
-        return new Function<Class<?>, Class<? extends T>>() {
-            @Override
-            @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
-            public Class<? extends T> apply(Class<?> input) {
-                if (input == null) {
-                    throw new NullPointerException("null class");
-                } else {
-                    return input.asSubclass(supertype);
-                }
-            }
-        };
-    }
-
-    /**
-     * Function that gets the class for its argument.
-     * @param supertype A class known to be a valid supertype for any argument.
-     * @param acceptNull Whether nulls are accepted &amp; passed through. If {@code false}, the function
-     *                   will never return {@code null}.
-     */
-    public static <T> Function<T, Class<? extends T>> extractClass(final Class<T> supertype, final boolean acceptNull) {
-        return new Function<T, Class<? extends T>>() {
-            @Override
-            public Class<? extends T> apply(@Nullable T input) {
-                if (input != null) {
-                    return input.getClass().asSubclass(supertype);
-                } else if (acceptNull) {
-                    return null;
-                } else {
-                    throw new NullPointerException();
-                }
-            }
-        };
-    }
-
-    /**
-     * Function that gets the class for its argument.  This function does not accept nulls.
-     *
-     * @param supertype A class known to be a valid supertype for any argument.
-     */
-    public static <T> Function<T, Class<? extends T>> extractClass(final Class<T> supertype) {
-        return extractClass(supertype, false);
-    }
-
-    /**
-     * Function that gets the class for its argument.
-     */
-    public static Function<Object, Class<?>> extractClass() {
-        return extractClass(Object.class);
-    }
-
-    /**
-     * Function that gets the class for its argument.
-     */
-    public static Function<Object, Class<?>> extractClass(boolean acceptNull) {
-        return extractClass(Object.class, acceptNull);
     }
 
     /**

@@ -20,36 +20,19 @@
  */
 package org.grouplens.lenskit.util;
 
-import static org.grouplens.lenskit.util.TypeUtils.isSubclass;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
-import java.net.URL;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 
-import org.junit.Test;
-import org.w3c.dom.Element;
-
-import com.google.common.base.Predicate;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TypeUtilsTest {
-
-    @Test
-    public void testIsSubclass() {
-        Predicate<Class<?>> p = isSubclass(Collection.class);
-        assertTrue(p.apply(Collection.class));
-        assertTrue(p.apply(List.class));
-        assertTrue(p.apply(LinkedList.class));
-        assertFalse(p.apply(URL.class));
-        assertFalse(p.apply(Element.class));
-    }
 
     @Test
     public void testTypeClosure() {
