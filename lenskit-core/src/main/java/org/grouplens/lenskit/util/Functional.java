@@ -41,50 +41,6 @@ import java.lang.reflect.Method;
 public final class Functional {
     private Functional() {}
 
-    public static <T> Function<Pair<T,?>,T> pairLeft() {
-        return new Function<Pair<T, ?>, T>() {
-            @Nullable
-            @Override
-            public T apply(@Nullable Pair<T, ?> input) {
-                if (input == null) {
-                    return null;
-                } else {
-                    return input.getLeft();
-                }
-            }
-        };
-    }
-
-    public static <T> Function<Pair<?, T>,T> pairRight() {
-        return new Function<Pair<?, T>, T>() {
-            @Nullable
-            @Override
-            public T apply(@Nullable Pair<?, T> input) {
-                if (input == null) {
-                    return null;
-                } else {
-                    return input.getRight();
-                }
-            }
-        };
-    }
-
-    public static <T> Function<T, Object> invokeMethod(final Method method, final Object target) {
-        return new Function<T, Object>() {
-            @Nullable
-            @Override
-            public Object apply(@Nullable T input) {
-                try {
-                    return method.invoke(target, input);
-                } catch (IllegalAccessException e) {
-                    throw Throwables.propagate(e);
-                } catch (InvocationTargetException e) {
-                    throw Throwables.propagate(e);
-                }
-            }
-        };
-    }
-
     /**
      * A function that wraps objects according to an equivalence relation.
      * @param equiv The equivalence.
