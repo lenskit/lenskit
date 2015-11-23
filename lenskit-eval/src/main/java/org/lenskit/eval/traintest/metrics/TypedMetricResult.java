@@ -22,7 +22,6 @@ package org.lenskit.eval.traintest.metrics;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
 import javax.annotation.Nonnull;
@@ -61,30 +60,27 @@ public abstract class TypedMetricResult extends MetricResult {
 
         List<ColumnDesc> columns = getColumnInfo(type);
 
-        ImmutableList<ColumnDesc> sorted =
-                Ordering.natural()
-                        .onResultOf(new Function<ColumnDesc, Integer>() {
-                            @Override
-                            public Integer apply(@Nullable ColumnDesc input) {
-                                assert input != null;
-                                int c = input.getAnnotation().order();
-                                // negative values should sort last
-                                return c >= 0 ? c : Integer.MAX_VALUE;
-                            }
-                        })
-                        .immutableSortedCopy(columns);
-        return Lists.transform(sorted, new Function<ColumnDesc, String>() {
-            @Nullable
-            @Override
-            public String apply(@Nullable ColumnDesc input) {
-                assert input != null;
-                if (suffix == null) {
-                    return input.getName();
-                } else {
-                    return input.getName() + "." + suffix;
-                }
+        Ordering<ColumnDesc> order = Ordering.natural()
+                                             .onResultOf(new Function<ColumnDesc, Integer>() {
+                                                 @Override
+                                                 public Integer apply(@Nullable ColumnDesc input) {
+                                                     assert input != null;
+                                                     int c = input.getAnnotation().order();
+                                                     // negative values should sort last
+                                                     return c >= 0 ? c : Integer.MAX_VALUE;
+                                                 }
+                                             });
+
+        ImmutableList.Builder<String> names = ImmutableList.builder();
+        for (ColumnDesc c: order.sortedCopy(columns)) {
+            if (suffix == null) {
+                names.add(c.getName());
+            } else {
+                names.add(c.getName() + "." + suffix);
             }
-        });
+        }
+
+        return names.build();
     }
 
     @Override

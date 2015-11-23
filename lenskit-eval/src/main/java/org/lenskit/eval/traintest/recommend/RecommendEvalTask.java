@@ -230,7 +230,9 @@ public class RecommendEvalTask implements EvalTask {
     public List<String> getGlobalColumns() {
         ImmutableList.Builder<String> columns = ImmutableList.builder();
         for (Metric<?> m: getAllMetrics()) {
-            columns.addAll(Lists.transform(m.getAggregateColumnLabels(), prefixColumn()));
+            for (String label: m.getAggregateColumnLabels()) {
+                columns.add(prefixColumn(label));
+            }
         }
         return columns.build();
     }
@@ -239,20 +241,11 @@ public class RecommendEvalTask implements EvalTask {
     public List<String> getUserColumns() {
         ImmutableList.Builder<String> columns = ImmutableList.builder();
         for (TopNMetric<?> pm: getTopNMetrics()) {
-            columns.addAll(Lists.transform(pm.getColumnLabels(),
-                                           prefixColumn()));
+            for (String label: pm.getColumnLabels()) {
+                columns.add(prefixColumn(label));
+            }
         }
         return columns.build();
-    }
-
-    private Function<String,String> prefixColumn() {
-        return new Function<String, String>() {
-            @Nullable
-            @Override
-            public String apply(@Nullable String input) {
-                return RecommendEvalTask.this.prefixColumn(input);
-            }
-        };
     }
 
     private String prefixColumn(String input) {
