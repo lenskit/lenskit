@@ -21,20 +21,21 @@
 package org.lenskit.data.ratings;
 
 import com.google.common.base.Equivalence;
+import com.google.common.base.Function;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.*;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.events.Events;
+import org.lenskit.data.history.UserHistory;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.SortedKeyIndex;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.WillClose;
 import java.util.Arrays;
 import java.util.Collection;
@@ -75,8 +76,20 @@ public final class Ratings {
      * @param ratings A collection of ratings (should all be by the same user)
      * @return A sparse vector mapping item IDs to ratings
      */
-    public static Long2DoubleMap userRatingVector(@Nonnull Collection<? extends Rating> ratings) {
-        return extractVector(ratings, IdExtractor.ITEM);
+    public static Long2DoubleMap userRatingVector(@Nonnull Collection<Rating> ratings) {
+        if (ratings instanceof UserHistory) {
+            return ((UserHistory<Rating>) ratings).memoize(RatingVectorFunction.INSTANCE);
+        } else {
+            return extractVector(ratings, IdExtractor.ITEM);
+        }
+    }
+
+    /**
+     * Obtain a function that converts a user history to a rating vector.
+     * @return A function converting a user history to a rating vector.
+     */
+    public static Function<UserHistory<? extends Event>, Long2DoubleMap> userRatingVectorFunction() {
+        return RatingVectorFunction.INSTANCE;
     }
 
     private static Long2DoubleMap extractVector(Collection<? extends Rating> ratings, IdExtractor dimension) {
@@ -174,6 +187,21 @@ public final class Ratings {
         };
         abstract long getId(Event evt);
         abstract Comparator<Event> getComparator();
+    }
+
+    private enum RatingVectorFunction implements Function<UserHistory<? extends Event>, Long2DoubleMap> {
+        INSTANCE;
+
+        @Nullable
+        @Override
+        public Long2DoubleMap apply(@Nullable UserHistory<? extends Event> input) {
+            if (input == null) {
+                return null;
+            } else {
+                // cast to Collection to force non-recursion
+                return extractVector(input.filter(Rating.class), IdExtractor.ITEM);
+            }
+        }
     }
 
     /**

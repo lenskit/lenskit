@@ -21,10 +21,13 @@
 package org.lenskit.data.history;
 
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.junit.Test;
 import org.lenskit.data.events.Event;
 import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.Ratings;
+import org.lenskit.util.math.Vectors;
 
 import java.util.List;
 
@@ -48,6 +51,21 @@ public class BasicUserHistoryTest {
         assertThat(history.isEmpty(), equalTo(false));
         assertThat(history.getUserId(), equalTo(42L));
         assertThat(history, contains(r));
+    }
+
+    @Test
+    public void testMemoize() {
+        List<Event> events = ImmutableList.of(
+                (Event) Rating.create(42, 39, 2.5),
+                Rating.create(42, 62, 3.5),
+                Rating.create(42, 22, 3));
+        UserHistory<Event> history = History.forUser(42, events);
+        assertThat(history, hasSize(3));
+        Long2DoubleMap v = history.memoize(Ratings.userRatingVectorFunction());
+        assertThat(v.size(), equalTo(3));
+        assertThat(Vectors.mean(v), equalTo(3.0));
+        assertThat(history.memoize(Ratings.userRatingVectorFunction()),
+                   sameInstance(v));
     }
 
     @Test
