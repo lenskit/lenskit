@@ -73,6 +73,23 @@ public final class Long2DoubleSortedArrayMap extends AbstractLong2DoubleSortedMa
     }
 
     /**
+     * Create a new long-to-double sorted array map from another map.
+     *
+     * Using this method instead of the constructor allows copies of immutable vectors
+     * to be skipped.
+     *
+     * @param input The vector to copy.
+     * @return A new vector with the same data as {@code input}.
+     */
+    public static Long2DoubleSortedArrayMap create(Long2DoubleMap input) {
+        if (input instanceof Long2DoubleSortedArrayMap) {
+            return (Long2DoubleSortedArrayMap) input;
+        } else {
+            return new Long2DoubleSortedArrayMap(input);
+        }
+    }
+
+    /**
      * Create a new long-to-double map backed by a key index and a corresponding value array.
      * @param keys The keys.
      * @param vs The values (the array is used as-is, it is *not* copied).

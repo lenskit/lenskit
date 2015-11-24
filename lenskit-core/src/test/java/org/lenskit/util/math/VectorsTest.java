@@ -136,4 +136,23 @@ public class VectorsTest {
             }
         }
     }
+
+    @Test
+    public void testMultiplyScalar() {
+        assertThat(Vectors.multiplyScalar(EMPTY_MAP, 2).size(),
+                   equalTo(0));
+        Long2DoubleMap result;
+
+        result = Vectors.multiplyScalar(singleton(42, 3), 2);
+        assertThat(result.keySet(), contains(42L));
+        assertThat(result, hasEntry(42L, 6.0));
+
+        Long2DoubleMap input = new Long2DoubleOpenHashMap();
+        input.put(42L, 5);
+        input.put(22L, -2);
+        result = Vectors.multiplyScalar(input, -1);
+        assertThat(result.keySet(), containsInAnyOrder(42L, 22L));
+        assertThat(result, hasEntry(42L, -5.0));
+        assertThat(result, hasEntry(22L, 2.0));
+    }
 }

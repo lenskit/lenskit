@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.SortedKeyIndex;
 
+import javax.annotation.Nonnull;
 import java.util.Iterator;
 
 /**
@@ -198,6 +199,24 @@ public final class Vectors {
         }
 
         return Long2DoubleSortedArrayMap.wrap(keys, values);
+    }
+
+    /**
+     * Multiply each element of a vector by a scalar.
+     * @param vector The vector.
+     * @param value The scalar to multiply.
+     * @return A new vector consisting of the same keys as `vector`, with `value` multipled by each.
+     */
+    @Nonnull
+    public static Long2DoubleMap multiplyScalar(Long2DoubleMap vector, double value) {
+        SortedKeyIndex idx = SortedKeyIndex.fromCollection(vector.keySet());
+        int n = idx.size();
+        double[] values = new double[n];
+        for (int i = 0; i < n; i++) {
+            values[i] = vector.get(idx.getKey(i)) * value;
+        }
+
+        return Long2DoubleSortedArrayMap.wrap(idx, values);
     }
 
     private static class DftAdaptingL2DFunction implements Long2DoubleFunction {
