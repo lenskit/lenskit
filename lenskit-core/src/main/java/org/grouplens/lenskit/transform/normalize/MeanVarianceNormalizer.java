@@ -23,6 +23,11 @@ package org.grouplens.lenskit.transform.normalize;
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import org.apache.commons.math3.analysis.FunctionUtils;
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.function.Add;
+import org.apache.commons.math3.analysis.function.Multiply;
+import org.apache.commons.math3.analysis.function.Subtract;
 import org.grouplens.grapht.annotation.DefaultProvider;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -33,8 +38,6 @@ import org.lenskit.data.ratings.Rating;
 import org.lenskit.inject.Shareable;
 import org.lenskit.inject.Transient;
 import org.lenskit.util.io.ObjectStream;
-import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
-import org.lenskit.util.keys.SortedKeyIndex;
 import org.lenskit.util.math.Scalars;
 import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
@@ -240,18 +243,14 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
         public Long2DoubleMap unapply(Long2DoubleMap input) {
             if (input == null) return null;
 
-            SortedKeyIndex idx = SortedKeyIndex.fromCollection(input.keySet());
-            int n = idx.size();
-            double[] values = new double[n];
-            for (int i = 0; i < n; i++) {
-                double val = input.get(idx.getKey(i));
-                if (!Scalars.isZero(stdev)) {
-                    val *= stdev;
-                }
-                values[i] = val + mean;
-            }
+            // add the mean
+            UnivariateFunction op = FunctionUtils.fix2ndArgument(new Add(), mean);
 
-            return Long2DoubleSortedArrayMap.wrap(idx, values);
+            if (!Scalars.isZero(stdev)) {
+                // we have a standard deviation, first multiply it
+                op = FunctionUtils.compose(op, FunctionUtils.fix2ndArgument(new Multiply(), stdev));
+            }
+            return Vectors.transform(input, op);
         }
 
         @Nullable
@@ -259,15 +258,15 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
         public Long2DoubleMap apply(@Nullable Long2DoubleMap input) {
             if (input == null) return null;
 
-            double recipSD = Scalars.isZero(stdev) ? 1 : (1 / stdev);
-            SortedKeyIndex idx = SortedKeyIndex.fromCollection(input.keySet());
-            int n = idx.size();
-            double[] values = new double[n];
-            for (int i = 0; i < n; i++) {
-                values[i] = (input.get(idx.getKey(i)) - mean) * recipSD;
+            // subtract the mean
+            UnivariateFunction op = FunctionUtils.fix2ndArgument(new Subtract(), mean);
+
+            if (!Scalars.isZero(stdev)) {
+                // we have a standard deviation, first divde by it
+                op = FunctionUtils.compose(op, FunctionUtils.fix2ndArgument(new Multiply(), 1.0 / stdev));
             }
 
-            return Long2DoubleSortedArrayMap.wrap(idx, values);
+            return Vectors.transform(input, op);
         }
 
         @Override

@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 import org.lenskit.util.keys.SortedKeyIndex;
 
@@ -209,11 +210,31 @@ public final class Vectors {
      */
     @Nonnull
     public static Long2DoubleMap multiplyScalar(Long2DoubleMap vector, double value) {
+        // TODO Consier implementing this in terms of transform
         SortedKeyIndex idx = SortedKeyIndex.fromCollection(vector.keySet());
         int n = idx.size();
         double[] values = new double[n];
         for (int i = 0; i < n; i++) {
             values[i] = vector.get(idx.getKey(i)) * value;
+        }
+
+        return Long2DoubleSortedArrayMap.wrap(idx, values);
+    }
+
+    /**
+     * Transform the values of a vector.
+     *
+     * @param input The vector to transform.
+     * @param function The transformation to apply.
+     * @return A new vector that is the result of applying `function` to each value in `input`.
+     */
+    public static Long2DoubleMap transform(Long2DoubleMap input, UnivariateFunction function) {
+        // FIXME Improve performance when input is also sorted
+        SortedKeyIndex idx = SortedKeyIndex.fromCollection(input.keySet());
+        int n = idx.size();
+        double[] values = new double[n];
+        for (int i = 0; i < n; i++) {
+            values[i] = function.value(input.get(idx.getKey(i)));
         }
 
         return Long2DoubleSortedArrayMap.wrap(idx, values);
