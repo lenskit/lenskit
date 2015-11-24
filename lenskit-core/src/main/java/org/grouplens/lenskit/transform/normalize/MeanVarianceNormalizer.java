@@ -22,20 +22,25 @@ package org.grouplens.lenskit.transform.normalize;
 
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.grapht.annotation.DefaultProvider;
-import org.lenskit.inject.Shareable;
-import org.lenskit.inject.Transient;
-import org.lenskit.baseline.MeanDamping;
-import org.lenskit.util.io.ObjectStream;
-import org.lenskit.data.dao.EventDAO;
-import org.lenskit.data.ratings.Rating;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.baseline.MeanDamping;
+import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.inject.Shareable;
+import org.lenskit.inject.Transient;
+import org.lenskit.util.io.ObjectStream;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
+import org.lenskit.util.keys.SortedKeyIndex;
 import org.lenskit.util.math.Scalars;
+import org.lenskit.util.math.Vectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.io.Serializable;
@@ -171,10 +176,15 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
 
     @Override
     public VectorTransformation makeTransformation(SparseVector reference) {
+        return makeTransformation(reference.asMap());
+    }
+
+    @Override
+    public VectorTransformation makeTransformation(Long2DoubleMap reference) {
         if (reference.isEmpty()) {
             return new IdentityVectorNormalizer().makeTransformation(reference);
         } else {
-            final double mean = reference.mean();
+            final double mean = Vectors.mean(reference);
 
             double var = 0;
             DoubleIterator iter = reference.values().iterator();
@@ -224,6 +234,40 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
                 vector.set(rating, val + mean);
             }
             return vector;
+        }
+
+        @Override
+        public Long2DoubleMap unapply(Long2DoubleMap input) {
+            if (input == null) return null;
+
+            SortedKeyIndex idx = SortedKeyIndex.fromCollection(input.keySet());
+            int n = idx.size();
+            double[] values = new double[n];
+            for (int i = 0; i < n; i++) {
+                double val = input.get(idx.getKey(i));
+                if (!Scalars.isZero(stdev)) {
+                    val *= stdev;
+                }
+                values[i] = val + mean;
+            }
+
+            return Long2DoubleSortedArrayMap.wrap(idx, values);
+        }
+
+        @Nullable
+        @Override
+        public Long2DoubleMap apply(@Nullable Long2DoubleMap input) {
+            if (input == null) return null;
+
+            double recipSD = Scalars.isZero(stdev) ? 1 : (1 / stdev);
+            SortedKeyIndex idx = SortedKeyIndex.fromCollection(input.keySet());
+            int n = idx.size();
+            double[] values = new double[n];
+            for (int i = 0; i < n; i++) {
+                values[i] = (input.get(idx.getKey(i)) - mean) * recipSD;
+            }
+
+            return Long2DoubleSortedArrayMap.wrap(idx, values);
         }
 
         @Override

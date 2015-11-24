@@ -20,10 +20,14 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
-import org.lenskit.inject.Shareable;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.inject.Shareable;
+import org.lenskit.util.InvertibleFunction;
+import org.lenskit.util.math.Vectors;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.Serializable;
 
@@ -68,6 +72,16 @@ public class UnitVectorNormalizer extends AbstractVectorNormalizer implements Se
         }
     }
 
+    @Override
+    public InvertibleFunction<Long2DoubleMap, Long2DoubleMap> makeTransformation(Long2DoubleMap reference) {
+        double s = Vectors.euclideanNorm(reference);
+        if (Math.abs(s) < tolerance) {
+            return new IdentityVectorNormalizer().makeTransformation(reference);
+        } else {
+            return new ScalingTransform(s);
+        }
+    }
+
     static class ScalingTransform implements VectorTransformation {
         final double factor;
 
@@ -87,6 +101,16 @@ public class UnitVectorNormalizer extends AbstractVectorNormalizer implements Se
             return vector;
         }
 
+        @Override
+        public Long2DoubleMap unapply(Long2DoubleMap input) {
+            return input == null ? null : Vectors.multiplyScalar(input, factor);
+        }
+
+        @Nullable
+        @Override
+        public Long2DoubleMap apply(@Nullable Long2DoubleMap input) {
+            return input == null ? null : Vectors.multiplyScalar(input, 1.0 / factor);
+        }
         @Override
         public double apply(long key, double value) {
             return value / factor;

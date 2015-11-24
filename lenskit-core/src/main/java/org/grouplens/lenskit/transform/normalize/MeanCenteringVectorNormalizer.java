@@ -20,10 +20,14 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.util.InvertibleFunction;
+import org.lenskit.util.math.Vectors;
 
+import javax.annotation.Nullable;
 import java.io.Serializable;
 
 /**
@@ -37,6 +41,11 @@ public class MeanCenteringVectorNormalizer extends AbstractVectorNormalizer impl
     @Override
     public VectorTransformation makeTransformation(SparseVector reference) {
         return new Transform(reference.mean());
+    }
+
+    @Override
+    public InvertibleFunction<Long2DoubleMap, Long2DoubleMap> makeTransformation(Long2DoubleMap reference) {
+        return new Transform(Vectors.mean(reference));
     }
 
     private static class Transform implements VectorTransformation {
@@ -57,6 +66,26 @@ public class MeanCenteringVectorNormalizer extends AbstractVectorNormalizer impl
             vector.add(mean);
             return vector;
         }
+
+        @Nullable
+        @Override
+        public Long2DoubleMap apply(@Nullable Long2DoubleMap input) {
+            if (input == null) {
+                return null;
+            }
+
+            return Vectors.addScalar(input, -mean);
+        }
+
+        @Override
+        public Long2DoubleMap unapply(Long2DoubleMap input) {
+            if (input == null) {
+                return null;
+            }
+
+            return Vectors.addScalar(input, mean);
+        }
+
 
         @Override
         public double apply(long key, double value) {

@@ -20,9 +20,12 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.util.InvertibleFunction;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 import java.io.Serializable;
 
@@ -56,10 +59,25 @@ public class IdentityVectorNormalizer extends AbstractVectorNormalizer implement
         public double unapply(long key, double value) {
             return value;
         }
+
+        @Override
+        public Long2DoubleMap apply(Long2DoubleMap vector) {
+            return Long2DoubleSortedArrayMap.create(vector);
+        }
+
+        @Override
+        public Long2DoubleMap unapply(Long2DoubleMap vector) {
+            return Long2DoubleSortedArrayMap.create(vector);
+        }
     };
 
     @Override
     public VectorTransformation makeTransformation(SparseVector ratings) {
+        return IDENTITY_TRANSFORM;
+    }
+
+    @Override
+    public VectorTransformation makeTransformation(Long2DoubleMap reference) {
         return IDENTITY_TRANSFORM;
     }
 }

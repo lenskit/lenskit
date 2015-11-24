@@ -23,13 +23,18 @@ package org.grouplens.lenskit.transform.normalize;
 import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import org.lenskit.api.Result;
 import org.lenskit.inject.Shareable;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
 import org.grouplens.lenskit.vectors.VectorEntry;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.baseline.BaselineScorer;
+import org.lenskit.inject.Shareable;
 import org.lenskit.util.collections.LongUtils;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
+import org.lenskit.util.keys.SortedKeyIndex;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.Map;
@@ -85,6 +90,45 @@ public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorN
                 vector.set(e, e.getValue() + bf.get(e.getKey()));
             }
             return vector;
+        }
+
+        @Override
+        public Long2DoubleMap unapply(Long2DoubleMap input) {
+            if (input == null) return null;
+
+            Map<Long,Double> base = baselineScorer.score(user, input.keySet());
+
+            SortedKeyIndex idx = SortedKeyIndex.fromCollection(input.keySet());
+            int n = idx.size();
+            double[] values = new double[n];
+            for (int i = 0; i < n; i++) {
+                long k = idx.getKey(i);
+                Double bp = base.get(k);
+                double bpv = bp != null ? bp : 0;
+                values[i] = input.get(idx.getKey(i)) + bpv;
+            }
+
+            return Long2DoubleSortedArrayMap.wrap(idx, values);
+        }
+
+        @Nullable
+        @Override
+        public Long2DoubleMap apply(@Nullable Long2DoubleMap input) {
+            if (input == null) return null;
+
+            Map<Long,Double> base = baselineScorer.score(user, input.keySet());
+
+            SortedKeyIndex idx = SortedKeyIndex.fromCollection(input.keySet());
+            int n = idx.size();
+            double[] values = new double[n];
+            for (int i = 0; i < n; i++) {
+                long k = idx.getKey(i);
+                Double bp = base.get(k);
+                double bpv = bp != null ? bp : 0;
+                values[i] = input.get(idx.getKey(i)) - bpv;
+            }
+
+            return Long2DoubleSortedArrayMap.wrap(idx, values);
         }
 
         @Override

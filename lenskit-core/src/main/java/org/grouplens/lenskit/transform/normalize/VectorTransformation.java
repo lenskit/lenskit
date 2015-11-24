@@ -20,14 +20,16 @@
  */
 package org.grouplens.lenskit.transform.normalize;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
+import org.lenskit.util.InvertibleFunction;
 
 /**
  * Reversible in-place vector transformations.
  *
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public interface VectorTransformation {
+public interface VectorTransformation extends InvertibleFunction<Long2DoubleMap,Long2DoubleMap> {
     /**
      * Apply the vector transformation in-place to a vector.
      *
