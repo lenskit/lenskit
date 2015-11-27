@@ -303,9 +303,7 @@ public class PredictEvalTask implements EvalTask {
                 if (measurements != null) {
                     results.putAll(measurements.getValues());
                 } else {
-                    for (String label : mc.metric.getAggregateColumnLabels()) {
-                        results.put(label, Double.NaN);
-                    }
+                    logger.warn("Metric {} returned null results", mc.metric);
                 }
             }
             return results;

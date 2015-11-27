@@ -81,7 +81,7 @@ class TrainTestDisjointExperimentTest {
         def column = result.column("RMSE.ByUser")
 
         assertThat(result, notNullValue())
-        assertTrue(column.contains(Double.NaN))
+        assertTrue(column.contains(null))
     }
 
     private List<DataSet> crossfoldRatings() {
