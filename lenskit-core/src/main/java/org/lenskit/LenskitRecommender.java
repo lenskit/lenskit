@@ -140,7 +140,7 @@ public class LenskitRecommender implements Recommender {
 
     @Override
     public void close() {
-        // TODO Implement closing
+        injector.close();
     }
 
     /**
