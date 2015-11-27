@@ -298,7 +298,15 @@ public class PredictEvalTask implements EvalTask {
         public Map<String, Object> finish() {
             Map<String,Object> results = new HashMap<>();
             for (MetricContext<?> mc: predictMetricContexts) {
-                results.putAll(mc.getAggregateMeasurements().getValues());
+                MetricResult measurements = mc.getAggregateMeasurements();
+                // if test and train tests are disjoint we can get "null"
+                if (measurements != null) {
+                    results.putAll(measurements.getValues());
+                } else {
+                    for (String label : mc.metric.getAggregateColumnLabels()) {
+                        results.put(label, Double.NaN);
+                    }
+                }
             }
             return results;
         }
