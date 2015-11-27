@@ -24,9 +24,9 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.graph.DAGNode;
-import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.RecommenderConfigurationException;
+import org.lenskit.api.RecommenderBuildException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +43,6 @@ public final class RecommenderInstantiator {
     private static final Logger logger = LoggerFactory.getLogger(RecommenderInstantiator.class);
     private final DAGNode<Component, Dependency> graph;
     private final NodeInstantiator instantiator;
-
 
     public static RecommenderInstantiator create(DAGNode<Component,Dependency> g) {
         return new RecommenderInstantiator(g, NodeInstantiator.create());
@@ -83,6 +82,7 @@ public final class RecommenderInstantiator {
      * @throws RecommenderBuildException If there is an error instantiating the graph.
      */
     public DAGNode<Component,Dependency> instantiate() throws RecommenderBuildException {
+        // TODO Integrate this with a lifecycle manager
         try {
             return replaceShareableNodes(NodeProcessors.instantiate(instantiator));
         } catch (InjectionException e) {
