@@ -22,11 +22,14 @@ package org.lenskit.inject;
 
 import org.grouplens.grapht.CachePolicy;
 import org.grouplens.grapht.Instantiator;
+import org.grouplens.grapht.LifecycleManager;
 import org.grouplens.grapht.reflect.Desire;
 import org.grouplens.grapht.reflect.Satisfaction;
 import org.grouplens.grapht.reflect.SatisfactionVisitor;
 import org.grouplens.grapht.util.ClassProxy;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -85,7 +88,7 @@ public class PlaceholderSatisfaction implements Satisfaction, Serializable {
     }
 
     @Override
-    public Instantiator makeInstantiator(Map<Desire,Instantiator> dependencies) {
+    public Instantiator makeInstantiator(@Nonnull Map<Desire, Instantiator> dependencies, @Nullable LifecycleManager lm) {
         throw new UnsupportedOperationException("placeholder node cannot create instantiators");
     }
 

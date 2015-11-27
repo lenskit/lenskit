@@ -102,4 +102,9 @@ public class StaticInjector implements Injector {
             return obj;
         }
     }
+
+    @Override
+    public void close() {
+        // TODO Close the lifecycle manager
+    }
 }
