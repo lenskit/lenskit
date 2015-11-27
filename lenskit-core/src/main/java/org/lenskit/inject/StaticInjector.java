@@ -27,6 +27,8 @@ import org.grouplens.grapht.reflect.Desire;
 import org.grouplens.grapht.reflect.Desires;
 import org.grouplens.grapht.reflect.QualifierMatcher;
 import org.grouplens.grapht.reflect.Qualifiers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
@@ -37,6 +39,10 @@ import java.lang.annotation.Annotation;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class StaticInjector implements Injector {
+    private static final Logger logger = LoggerFactory.getLogger(StaticInjector.class);
+
+    private final LifecycleManager lifecycle;
+    private boolean closed = false;
     private final NodeInstantiator instantiator;
     private DAGNode<Component, Dependency> graph;
 
@@ -47,7 +53,8 @@ public class StaticInjector implements Injector {
      */
     public StaticInjector(DAGNode<Component,Dependency> g) {
         graph = g;
-        instantiator = NodeInstantiator.create();
+        lifecycle = new LifecycleManager();
+        instantiator = NodeInstantiator.create(lifecycle);
     }
 
     @Override
@@ -105,6 +112,15 @@ public class StaticInjector implements Injector {
 
     @Override
     public void close() {
-        // TODO Close the lifecycle manager
+        lifecycle.close();
+        closed = true;
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        if (!closed) {
+            logger.warn("Injector {} was never closed", toString());
+        }
+        super.finalize();
     }
 }
