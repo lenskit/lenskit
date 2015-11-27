@@ -119,13 +119,13 @@ public class RMSEPredictMetric extends PredictMetric<RMSEPredictMetric.Context> 
             nusers += 1;
         }
 
-        public AggregateResult finish() {
+        public MetricResult finish() {
             if (nratings > 0) {
                 double v = sqrt(totalSSE / nratings);
                 logger.info("RMSE: {}", v);
                 return new AggregateResult(totalRMSE / nusers, v);
             } else {
-                return null;
+                return MetricResult.empty();
             }
         }
     }
