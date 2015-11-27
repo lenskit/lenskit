@@ -78,6 +78,7 @@ public final class RecommenderInstantiator {
     public DAGNode<Component,Dependency> instantiate() throws RecommenderBuildException {
         try (LifecycleManager lm = new LifecycleManager()) {
             NodeInstantiator instantiator = NodeInstantiator.create(lm);
+            // TODO Verify that no sharable components are lifecycle-managed
             return replaceShareableNodes(NodeProcessors.instantiate(instantiator));
         } catch (InjectionException e) {
             throw new RecommenderBuildException("Recommender instantiation failed", e);
