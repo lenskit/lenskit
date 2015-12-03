@@ -109,6 +109,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
                 if (logger.isTraceEnabled()) {
                     logger.trace("item {} has {} (< {}) users, skipping", itemId1, vec1.size(), minCommonUsers);
                 }
+                progress.advance();
                 continue OUTER;
             }
 
