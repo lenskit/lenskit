@@ -104,7 +104,9 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
             SparseVector vec1 = buildContext.itemVector(itemId1);
             if (vec1.size() < minCommonUsers) {
                 // if it doesn't have enough users, it can't have enough common users
-                logger.trace("item {} has {} (< {}) users, skipping", itemId1, vec1.size(), minCommonUsers);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("item {} has {} (< {}) users, skipping", itemId1, vec1.size(), minCommonUsers);
+                }
                 continue OUTER;
             }
 
