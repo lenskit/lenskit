@@ -20,19 +20,19 @@
  */
 package org.lenskit.knn.item.model;
 
-import com.google.common.base.Stopwatch;
 import it.unimi.dsi.fastutil.longs.*;
-import org.lenskit.inject.Transient;
-import org.lenskit.knn.item.ItemSimilarity;
-import org.lenskit.knn.item.ItemSimilarityThreshold;
-import org.lenskit.knn.item.MinCommonUsers;
-import org.lenskit.knn.item.ModelSize;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.inject.Transient;
+import org.lenskit.knn.item.ItemSimilarity;
+import org.lenskit.knn.item.ItemSimilarityThreshold;
+import org.lenskit.knn.item.MinCommonUsers;
+import org.lenskit.knn.item.ModelSize;
+import org.lenskit.util.ProgressLogger;
 import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +40,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Build an item-item CF model from rating data.
@@ -91,7 +90,10 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
         final int nitems = allItems.size();
         LongIterator outer = allItems.iterator();
 
-        Stopwatch timer = Stopwatch.createStarted();
+        ProgressLogger progress = ProgressLogger.create(logger)
+                                                .setCount(nitems)
+                                                .setLabel("item-item model build")
+                                                .start();
         int ndone = 0;
         int npairs = 0;
         OUTER: while (outer.hasNext()) {
@@ -135,15 +137,11 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
                 }
             }
 
-            if (logger.isDebugEnabled() && ndone % 100 == 0) {
-                logger.debug("computed {} of {} model rows ({}s/row)",
-                             ndone, nitems,
-                             String.format("%.3f", timer.elapsed(TimeUnit.MILLISECONDS) * 0.001 / ndone));
-            }
+            progress.advance();
         }
-        timer.stop();
+        progress.finish();
         logger.info("built model of {} similarities for {} items in {}",
-                    npairs, ndone, timer);
+                    npairs, ndone, progress.elapsedTime());
 
         return new SimilarityMatrixModel(finishRows(rows));
     }
