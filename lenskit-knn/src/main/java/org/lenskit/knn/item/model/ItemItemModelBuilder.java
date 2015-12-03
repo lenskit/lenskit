@@ -25,6 +25,7 @@ import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.inject.Transient;
 import org.lenskit.knn.item.ItemSimilarity;
 import org.lenskit.knn.item.ItemSimilarityThreshold;
+import org.lenskit.knn.item.MinCommonUsers;
 import org.lenskit.knn.item.ModelSize;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
@@ -32,6 +33,7 @@ import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +57,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
     private final ItemItemBuildContext buildContext;
     private final Threshold threshold;
     private final NeighborIterationStrategy neighborStrategy;
+    private final int minCommonUsers;
     private final int modelSize;
 
     @Inject
@@ -62,11 +65,13 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
                                 @Transient ItemItemBuildContext context,
                                 @Transient @ItemSimilarityThreshold Threshold thresh,
                                 @Transient NeighborIterationStrategy nbrStrat,
+                                @MinCommonUsers int minCU,
                                 @ModelSize int size) {
         itemSimilarity = similarity;
         buildContext = context;
         threshold = thresh;
         neighborStrategy = nbrStrat;
+        minCommonUsers = minCU;
         modelSize = size;
     }
 
@@ -88,23 +93,33 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
 
         Stopwatch timer = Stopwatch.createStarted();
         int ndone = 0;
-        while (outer.hasNext()) {
+        OUTER: while (outer.hasNext()) {
             ndone += 1;
             final long itemId1 = outer.nextLong();
             if (logger.isTraceEnabled()) {
                 logger.trace("computing similarities for item {} ({} of {})",
                              itemId1, ndone, nitems);
+                continue OUTER;
             }
             SparseVector vec1 = buildContext.itemVector(itemId1);
+            if (vec1.size() < minCommonUsers) {
+                // if it doesn't have enough users, it can't have enough common users
+                logger.trace("item {} has {} (< {}) users, skipping", itemId1, vec1.size(), minCommonUsers);
+            }
 
             LongIterator itemIter = neighborStrategy.neighborIterator(buildContext, itemId1,
                                                                       itemSimilarity.isSymmetric());
 
             ScoredItemAccumulator row = rows.get(itemId1);
-            while (itemIter.hasNext()) {
+            INNER: while (itemIter.hasNext()) {
                 long itemId2 = itemIter.nextLong();
                 if (itemId1 != itemId2) {
                     SparseVector vec2 = buildContext.itemVector(itemId2);
+                    if (LongUtils.intersectSize(vec1.keySet(), vec2.keySet()) < minCommonUsers) {
+                        // items have insufficient users in common, skip them
+                        continue INNER;
+                    }
+
                     double sim = itemSimilarity.similarity(itemId1, vec1, itemId2, vec2);
                     if (threshold.retain(sim)) {
                         row.put(itemId2, sim);

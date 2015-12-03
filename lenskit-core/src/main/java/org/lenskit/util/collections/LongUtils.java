@@ -23,8 +23,8 @@ package org.lenskit.util.collections;
 import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
-import org.lenskit.util.keys.SortedKeyIndex;
 import org.lenskit.util.keys.LongSortedArraySet;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 import java.util.*;
 
@@ -192,13 +192,12 @@ public final class LongUtils {
     }
 
     /**
-     * Compute the size of the union of two sets.
+     * Compute the size of the intersection of two sets.
      * @param a The first set.
      * @param b The second set.
-     * @return The size of the union of the two sets.
+     * @return The size of the intersection of the two sets.
      */
-    public static int unionSize(LongSortedSet a, LongSortedSet b) {
-        // we can't do fast bit operations, scan both sets instead
+    public static int intersectSize(LongSortedSet a, LongSortedSet b) {
         LongIterator ait = a.iterator();
         LongIterator bit = b.iterator();
         boolean hasA = ait.hasNext();
@@ -221,7 +220,17 @@ public final class LongUtils {
                 nextB = hasB ? bit.nextLong() : Long.MAX_VALUE;
             }
         }
-        return a.size() + b.size() - nshared;
+        return nshared;
+    }
+
+    /**
+     * Compute the size of the union of two sets.
+     * @param a The first set.
+     * @param b The second set.
+     * @return The size of the union of the two sets.
+     */
+    public static int unionSize(LongSortedSet a, LongSortedSet b) {
+        return a.size() + b.size() - intersectSize(a, b);
     }
 
     /**
