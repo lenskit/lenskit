@@ -111,8 +111,10 @@ public class ProgressLogger {
         double rate = (((double) timer.elapsed(TimeUnit.MICROSECONDS)) / ndone) * 0.000001;
         if (total >= 0) {
             double est = (total - ndone) * rate;
-            logger.info("{}: finished {} of {} ({}s/row, ETA {})",
-                        label, ndone, total, String.format("%.3f", rate),
+            logger.info("{}: finished {} of {} ({}%, {}s/row, ETA {})",
+                        label, ndone, total,
+                        String.format("%.2f", ((double) ndone) / total),
+                        String.format("%.3f", rate),
                         formatElapsedTime(est));
         } else {
             logger.info("{}: finished {} ({}s/row)",
