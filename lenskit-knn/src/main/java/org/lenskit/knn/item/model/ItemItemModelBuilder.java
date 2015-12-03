@@ -93,18 +93,19 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
 
         Stopwatch timer = Stopwatch.createStarted();
         int ndone = 0;
+        int npairs = 0;
         OUTER: while (outer.hasNext()) {
             ndone += 1;
             final long itemId1 = outer.nextLong();
             if (logger.isTraceEnabled()) {
                 logger.trace("computing similarities for item {} ({} of {})",
                              itemId1, ndone, nitems);
-                continue OUTER;
             }
             SparseVector vec1 = buildContext.itemVector(itemId1);
             if (vec1.size() < minCommonUsers) {
                 // if it doesn't have enough users, it can't have enough common users
                 logger.trace("item {} has {} (< {}) users, skipping", itemId1, vec1.size(), minCommonUsers);
+                continue OUTER;
             }
 
             LongIterator itemIter = neighborStrategy.neighborIterator(buildContext, itemId1,
@@ -123,8 +124,10 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
                     double sim = itemSimilarity.similarity(itemId1, vec1, itemId2, vec2);
                     if (threshold.retain(sim)) {
                         row.put(itemId2, sim);
+                        npairs += 1;
                         if (itemSimilarity.isSymmetric()) {
                             rows.get(itemId2).put(itemId1, sim);
+                            npairs += 1;
                         }
                     }
                 }
@@ -137,7 +140,8 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
             }
         }
         timer.stop();
-        logger.info("built model for {} items in {}", ndone, timer);
+        logger.info("built model of {} similarities for {} items in {}",
+                    npairs, ndone, timer);
 
         return new SimilarityMatrixModel(finishRows(rows));
     }
