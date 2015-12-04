@@ -65,6 +65,11 @@ public abstract class LenskitTask extends ConventionTask {
     def logbackConfiguration
 
     /**
+     * Whether this task depends on the files on its classpath.
+     */
+    def boolean dependsOnClasspath = true
+
+    /**
      * Access the underlying invoker that will be used to run the LensKit code.  Most code will not need this; it allows
      * build scripts to set additional JVM options that are not exposed as specific properties if necessary.  Properties
      * exposed by LensKit tasks (such as {@link #getMaxMemory()}) will generally override their corresponding settings
@@ -107,7 +112,11 @@ public abstract class LenskitTask extends ConventionTask {
 
     @InputFiles
     public FileCollection getClasspathFiles() {
-        return getClasspath()
+        if (dependsOnClasspath) {
+            return getClasspath()
+        } else {
+            return project.files()
+        }
     }
 
     /**
