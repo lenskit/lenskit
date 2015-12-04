@@ -127,22 +127,10 @@ public class ItemItemScorer extends AbstractItemScorer {
             final long item = iter.nextLong();
             ItemItemResult score = scoreItem(itemScores, item);
             if (score != null) {
-                results.add(score);
+                results.add(new ItemItemResult(item, transform.unapply(item, score.getScore()),
+                                               score.getNeighborhoodSize(),
+                                               score.getNeighborWeight()));
             }
-        }
-
-        // de-normalize the results
-        MutableSparseVector vec = MutableSparseVector.create(items);
-        for (ItemItemResult r: results) {
-            vec.set(r.getId(), r.getScore());
-        }
-        transform.unapply(vec);
-
-        for (int i = results.size() - 1; i >= 0; i--) {
-            ItemItemResult r = results.get(i);
-            long item = r.getId();
-            double score = vec.get(item);
-            results.set(i, new ItemItemResult(item, score, r.getNeighborhoodSize(), r.getNeighborWeight()));
         }
 
         return Results.newResultMap(results);

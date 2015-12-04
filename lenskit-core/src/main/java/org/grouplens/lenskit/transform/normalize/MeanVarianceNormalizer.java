@@ -225,5 +225,15 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
             }
             return vector;
         }
+
+        @Override
+        public double apply(long key, double value) {
+            return (value - mean) / stdev;
+        }
+
+        @Override
+        public double unapply(long key, double value) {
+            return value * stdev + mean;
+        }
     }
 }

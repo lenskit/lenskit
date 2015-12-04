@@ -87,5 +87,14 @@ public class UnitVectorNormalizer extends AbstractVectorNormalizer implements Se
             return vector;
         }
 
+        @Override
+        public double apply(long key, double value) {
+            return value / factor;
+        }
+
+        @Override
+        public double unapply(long key, double value) {
+            return value * factor;
+        }
     }
 }

@@ -46,6 +46,16 @@ public class IdentityVectorNormalizer extends AbstractVectorNormalizer implement
         public MutableSparseVector apply(MutableSparseVector vector) {
             return vector;
         }
+
+        @Override
+        public double apply(long key, double value) {
+            return value;
+        }
+
+        @Override
+        public double unapply(long key, double value) {
+            return value;
+        }
     };
 
     @Override

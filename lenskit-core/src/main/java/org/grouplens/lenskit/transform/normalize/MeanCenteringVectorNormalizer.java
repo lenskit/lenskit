@@ -57,5 +57,15 @@ public class MeanCenteringVectorNormalizer extends AbstractVectorNormalizer impl
             vector.add(mean);
             return vector;
         }
+
+        @Override
+        public double apply(long key, double value) {
+            return value - mean;
+        }
+
+        @Override
+        public double unapply(long key, double value) {
+            return value + mean;
+        }
     }
 }

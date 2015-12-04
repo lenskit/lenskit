@@ -21,6 +21,7 @@
 package org.grouplens.lenskit.transform.normalize;
 
 import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
+import org.lenskit.api.Result;
 import org.lenskit.inject.Shareable;
 import org.grouplens.lenskit.vectors.MutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
@@ -84,6 +85,18 @@ public class BaselineSubtractingUserVectorNormalizer extends AbstractUserVectorN
                 vector.set(e, e.getValue() + bf.get(e.getKey()));
             }
             return vector;
+        }
+
+        @Override
+        public double apply(long key, double value) {
+            Result res = baselineScorer.score(user, key);
+            return res != null ? value - res.getScore() : value;
+        }
+
+        @Override
+        public double unapply(long key, double value) {
+            Result res = baselineScorer.score(user, key);
+            return res != null ? value + res.getScore() : value;
         }
     }
 
