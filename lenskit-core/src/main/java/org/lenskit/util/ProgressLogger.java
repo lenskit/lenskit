@@ -36,6 +36,7 @@ public class ProgressLogger {
     private int total = -1;
     private int period = 100;
     private int prevN;
+    private long prevMicros;
     private int ndone = 0;
     private BatchedMeanSmoother smoother = new BatchedMeanSmoother(0);
 
@@ -120,7 +121,10 @@ public class ProgressLogger {
      * Log the current progress to the logger.
      */
     public void logProgress() {
-        double time = timer.elapsed(TimeUnit.MICROSECONDS) * 0.000001;
+        long micros = timer.elapsed(TimeUnit.MICROSECONDS);
+        long elapsed = micros - prevMicros;
+        prevMicros = micros;
+        double time = elapsed * 0.000001;
         int n = ndone - prevN;
         prevN = ndone;
         smoother.addBatch(n, time);
