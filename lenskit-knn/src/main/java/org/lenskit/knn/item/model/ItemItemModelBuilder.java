@@ -122,7 +122,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
                 long itemId2 = itemIter.nextLong();
                 if (itemId1 != itemId2) {
                     SparseVector vec2 = buildContext.itemVector(itemId2);
-                    if (LongUtils.intersectSize(vec1.keySet(), vec2.keySet()) < minCommonUsers) {
+                    if (!LongUtils.hasNCommonItems(vec1.keySet(), vec2.keySet(), minCommonUsers)) {
                         // items have insufficient users in common, skip them
                         continue INNER;
                     }

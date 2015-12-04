@@ -20,6 +20,7 @@
  */
 package org.lenskit.util.collections;
 
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
@@ -198,6 +199,29 @@ public final class LongUtils {
      * @return The size of the intersection of the two sets.
      */
     public static int intersectSize(LongSortedSet a, LongSortedSet b) {
+        return countCommonItems(a, b, -1);
+    }
+
+    /**
+     * Check if two sets have at least a given number of common items.
+     * @param a The first set.
+     * @param b The second set.
+     * @param n The number of common items to require.
+     * @return `true` if the two sets have at least `n` common items.
+     */
+    public static boolean hasNCommonItems(LongSortedSet a, LongSortedSet b, int n) {
+        Preconditions.checkArgument(n >= 0, "common item count must be nonnegative");
+        return n == 0 || countCommonItems(a, b, n) >= n;
+    }
+
+    /**
+     * Count the common items in two sets.
+     * @param a The first set.
+     * @param b The second set.
+     * @param max The maximum number of common items to count; nonpositive values mean no limit.
+     * @return The number of common items, or `max` if there are at least `max` common items.
+     */
+    private static int countCommonItems(LongSortedSet a, LongSortedSet b, int max) {
         LongIterator ait = a.iterator();
         LongIterator bit = b.iterator();
         boolean hasA = ait.hasNext();
@@ -205,7 +229,7 @@ public final class LongUtils {
         long nextA = hasA ? ait.nextLong() : Long.MAX_VALUE;
         long nextB = hasB ? bit.nextLong() : Long.MAX_VALUE;
         int nshared = 0;
-        while (hasA && hasB) {
+        while (hasA && hasB && (max < 0 || nshared < max)) {
             if (nextA < nextB) {
                 hasA = ait.hasNext();
                 nextA = hasA ? ait.nextLong() : Long.MAX_VALUE;
