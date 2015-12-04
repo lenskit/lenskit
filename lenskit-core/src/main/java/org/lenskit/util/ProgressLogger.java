@@ -152,10 +152,10 @@ public class ProgressLogger {
             logger.warn("{}: only performed {} of {} actions", label, ndone, total);
         }
         double time = timer.elapsed(TimeUnit.MILLISECONDS) * 0.001;
-        logger.info("{}: finished {} in {} ({}s/item)",
-                    label, ndone,
-                    formatElapsedTime(time),
-                    String.format("%.3f", time / ndone));
+        logger.debug("{}: finished {} in {} ({}s/item)",
+                     label, ndone,
+                     formatElapsedTime(time),
+                     String.format("%.3f", time / ndone));
         return time;
     }
 
