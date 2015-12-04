@@ -35,7 +35,9 @@ public class ProgressLogger {
     private String label = "unspecified";
     private int total = -1;
     private int period = 100;
+    private int prevN;
     private int ndone = 0;
+    private BatchedMeanSmoother smoother = new BatchedMeanSmoother(0);
 
     ProgressLogger(Logger log) {
         logger = log;
@@ -82,6 +84,16 @@ public class ProgressLogger {
     }
 
     /**
+     * Set the window to use for smoothing averages.
+     * @param w The window size, in number of periods.
+     * @return The progress logger (for chaining).
+     */
+    public ProgressLogger setWindow(int w) {
+        smoother = new BatchedMeanSmoother(w);
+        return this;
+    }
+
+    /**
      * Start the progress logger's timer.
      * @return The progress logger (for chaining).
      */
@@ -108,7 +120,11 @@ public class ProgressLogger {
      * Log the current progress to the logger.
      */
     public void logProgress() {
-        double rate = (((double) timer.elapsed(TimeUnit.MICROSECONDS)) / ndone) * 0.000001;
+        double time = timer.elapsed(TimeUnit.MICROSECONDS) * 0.000001;
+        int n = ndone - prevN;
+        prevN = ndone;
+        smoother.addBatch(n, time);
+        double rate = smoother.currentAverage();
         if (total >= 0) {
             double est = (total - ndone) * rate;
             logger.info("{}: finished {} of {} ({}%, {}s/row, ETA {})",
