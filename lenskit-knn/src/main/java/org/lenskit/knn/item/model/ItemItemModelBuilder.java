@@ -93,6 +93,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
         ProgressLogger progress = ProgressLogger.create(logger)
                                                 .setCount(nitems)
                                                 .setLabel("item-item model build")
+                                                .setWindow(20)
                                                 .start();
         int ndone = 0;
         int npairs = 0;
