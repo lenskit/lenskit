@@ -46,10 +46,7 @@ class ResultSetRatingObjectStream extends AbstractObjectStream<Rating> {
         try {
             // SUPPRESS CHECKSTYLE MagicNumber
             hasTimestampColumn = resultSet.getMetaData().getColumnCount() >= JDBCRatingDAO.COL_TIMESTAMP;
-        } catch (SQLException e) {
-            resultSet.close();
-            throw e;
-        } catch (RuntimeException e) {
+        } catch (SQLException | RuntimeException e) {
             resultSet.close();
             throw e;
         }
