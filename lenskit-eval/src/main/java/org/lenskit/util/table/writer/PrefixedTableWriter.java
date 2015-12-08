@@ -55,7 +55,7 @@ class PrefixedTableWriter extends AbstractTableWriter {
             throw new IllegalArgumentException("Value array too wide");
         }
 
-        rowData = new ObjectArrayList<Object>(writer.getLayout().getColumnCount());
+        rowData = new ObjectArrayList<>(writer.getLayout().getColumnCount());
         rowData.addAll(values);
 
         fixedColumns = values.size();

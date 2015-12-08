@@ -69,9 +69,9 @@ public class GraphDumper {
         unsharedNodes = Sets.newHashSet(unshared);
         unsharedNodes.retainAll(g.getReachableNodes());
         logger.debug("{} shared nodes", unsharedNodes.size());
-        nodeIds = new HashMap<DAGNode<Component, Dependency>, String>();
-        nodeTargets = new HashMap<String, String>();
-        edgeQueue = new LinkedList<GVEdge>();
+        nodeIds = new HashMap<>();
+        nodeTargets = new HashMap<>();
+        edgeQueue = new LinkedList<>();
     }
 
     /**

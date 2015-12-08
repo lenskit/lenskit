@@ -238,7 +238,7 @@ public class BitSetIteratorTest {
         BitSet bset = new BitSet();
         for (int n : inList) bset.set(n);
         List<Integer> outList = Lists.newArrayList(new BitSetIterator(bset, 9, 13));
-        assertThat(new ArrayList<Integer>(outList), equalTo(new ArrayList<Integer>()));
+        assertThat(new ArrayList<>(outList), equalTo(new ArrayList<Integer>()));
         
         assertFalse(new BitSetIterator(bset, 35, 100).hasPrevious());
         assertFalse(new BitSetIterator(bset, 35, 100).hasNext());

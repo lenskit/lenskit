@@ -73,9 +73,9 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
      */
     @Override
     public TypedSideChannel<V> immutable() {
-         return new TypedSideChannel<V>(keys.clone(),
-                                        Arrays.copyOf(values, keys.domainSize()),
-                                        defaultReturnValue());
+         return new TypedSideChannel<>(keys.clone(),
+                                       Arrays.copyOf(values, keys.domainSize()),
+                                       defaultReturnValue());
     }
 
     /**
@@ -92,7 +92,7 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
         V[] nvs;
         nvs = adjustStorage(nks, freeze);
         frozen |= freeze;
-        return new TypedSideChannel<V>(nks, nvs, defaultReturnValue());
+        return new TypedSideChannel<>(nks, nvs, defaultReturnValue());
     }
 
     /**
@@ -104,7 +104,7 @@ class MutableTypedSideChannel<V> extends TypedSideChannel<V> {
     public MutableTypedSideChannel<V> withDomain(LongKeyDomain domain) {
         LongKeyDomain nks = domain.clone();
         V[] nvs = adjustStorage(nks, false);
-        MutableTypedSideChannel<V> copy = new MutableTypedSideChannel<V>(nks, nvs, defaultReturnValue());
+        MutableTypedSideChannel<V> copy = new MutableTypedSideChannel<>(nks, nvs, defaultReturnValue());
         copy.defaultReturnValue(defaultReturnValue());
         return copy;
     }

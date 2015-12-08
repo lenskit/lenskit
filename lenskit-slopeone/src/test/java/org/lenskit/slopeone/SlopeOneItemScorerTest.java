@@ -44,7 +44,7 @@ public class SlopeOneItemScorerTest {
     @Test
     public void testPredict1() throws RecommenderBuildException {
 
-        List<Rating> rs = new ArrayList<Rating>();
+        List<Rating> rs = new ArrayList<>();
         rs.add(Rating.create(1, 6, 4));
         rs.add(Rating.create(2, 6, 2));
         rs.add(Rating.create(1, 7, 3));
@@ -85,7 +85,7 @@ public class SlopeOneItemScorerTest {
 
     @Test
     public void testPredict2() throws RecommenderBuildException {
-        List<Rating> rs = new ArrayList<Rating>();
+        List<Rating> rs = new ArrayList<>();
         rs.add(Rating.create(1, 4, 3.5));
         rs.add(Rating.create(2, 4, 5));
         rs.add(Rating.create(3, 5, 4.25));

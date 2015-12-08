@@ -147,7 +147,7 @@ public class TextDataSource extends AbstractDataSource {
         if (format instanceof DelimitedColumnEventFormat) {
             DelimitedColumnEventFormat cf = (DelimitedColumnEventFormat) format;
             spec.setDelimiter(cf.getDelimiter());
-            List<String> fieldNames = new ArrayList<String>();
+            List<String> fieldNames = new ArrayList<>();
             for (Field f: cf.getFields()) {
                 fieldNames.add(f.getName());
             }

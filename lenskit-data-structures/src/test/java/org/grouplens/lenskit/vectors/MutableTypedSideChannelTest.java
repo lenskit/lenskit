@@ -34,45 +34,45 @@ public class MutableTypedSideChannelTest {
     private final String c = "c";
     
     protected MutableTypedSideChannel<String> emptyDomainSideChannel() {
-        return new MutableTypedSideChannel<String>(LongKeyDomain.empty());
+        return new MutableTypedSideChannel<>(LongKeyDomain.empty());
     }
     
     protected MutableTypedSideChannel<String> emptySideChannel() {
         LongKeyDomain keys = LongKeyDomain.create(1, 2, 4);
-        return new MutableTypedSideChannel<String>(keys);
+        return new MutableTypedSideChannel<>(keys);
     }
     
     protected MutableTypedSideChannel<String> simpleSideChannel() {
         LongKeyDomain keys = LongKeyDomain.create(1, 2, 4);
         String[] values = {a,b,a};
-        return new MutableTypedSideChannel<String>(keys,values);
+        return new MutableTypedSideChannel<>(keys, values);
     }
     
     protected MutableTypedSideChannel<String> singletonSideChannel() {
         LongKeyDomain keys = LongKeyDomain.create(1);
         String[] values = {a};
-        return new MutableTypedSideChannel<String>(keys,values);
+        return new MutableTypedSideChannel<>(keys, values);
     }
     
     @Test 
     public void testConstructors() {
         LongKeyDomain keys = LongKeyDomain.create(1, 2);
-        MutableTypedSideChannel<String> channel = new MutableTypedSideChannel<String>(keys.clone());
+        MutableTypedSideChannel<String> channel = new MutableTypedSideChannel<>(keys.clone());
         assertTrue(channel.isEmpty());
         
-        channel = new MutableTypedSideChannel<String>(keys.clone(), new String[]{a,b});
+        channel = new MutableTypedSideChannel<>(keys.clone(), new String[]{a, b});
         assertFalse(channel.isEmpty());
         assertEquals(a, channel.get(1));
         assertEquals(b, channel.get(2));
 
         keys.setActive(0, false);
-        channel = new MutableTypedSideChannel<String>(keys.clone(), new String[]{null,b});
+        channel = new MutableTypedSideChannel<>(keys.clone(), new String[]{null, b});
         assertFalse(channel.isEmpty());
         assertEquals(b,channel.get(2));
         assertNull(channel.get(1));
         channel.put(1, a); //check if this is in domain.
 
-        channel = new MutableTypedSideChannel<String>(keys.clone(), new String[]{null,b,c});
+        channel = new MutableTypedSideChannel<>(keys.clone(), new String[]{null, b, c});
         assertFalse(channel.isEmpty());
         assertEquals(b,channel.get(2));
         assertNull(channel.get(1));

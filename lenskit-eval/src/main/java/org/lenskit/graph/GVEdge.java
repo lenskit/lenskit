@@ -41,7 +41,7 @@ class GVEdge {
     public GVEdge(String src, String tgt, Map<String, Object> attrs) {
         source = src;
         target = tgt;
-        attributes = Collections.unmodifiableMap(new LinkedHashMap<String, Object>(attrs));
+        attributes = Collections.unmodifiableMap(new LinkedHashMap<>(attrs));
     }
 
     public String getSource() {

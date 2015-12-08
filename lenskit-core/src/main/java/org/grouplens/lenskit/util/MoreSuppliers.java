@@ -46,7 +46,7 @@ public final class MoreSuppliers {
      * @return A supplier that memoizes {@code supplier} with a weak reference.
      */
     public static <T> Supplier<T> weakMemoize(Supplier<T> supplier) {
-        return new WeakMemoizingSupplier<T>(supplier);
+        return new WeakMemoizingSupplier<>(supplier);
     }
 
     /**
@@ -56,7 +56,7 @@ public final class MoreSuppliers {
      * @return A supplier that memoizes {@code supplier} with a soft reference.
      */
     public static <T> Supplier<T> softMemoize(Supplier<T> supplier) {
-        return new SoftMemoizingSupplier<T>(supplier);
+        return new SoftMemoizingSupplier<>(supplier);
     }
 
     public static <X,T> Supplier<T> curry(Function<? super X,T> func, X arg) {
@@ -116,7 +116,7 @@ public final class MoreSuppliers {
 
         @Override
         protected Reference<T> makeReference(T obj) {
-            return new WeakReference<T>(obj);
+            return new WeakReference<>(obj);
         }
     }
 
@@ -129,7 +129,7 @@ public final class MoreSuppliers {
 
         @Override
         protected Reference<T> makeReference(T obj) {
-            return new SoftReference<T>(obj);
+            return new SoftReference<>(obj);
         }
     }
 }

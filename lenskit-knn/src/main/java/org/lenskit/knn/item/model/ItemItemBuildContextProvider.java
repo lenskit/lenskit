@@ -77,8 +77,8 @@ public class ItemItemBuildContextProvider implements Provider<ItemItemBuildConte
         logger.debug("using summarizer {}", userSummarizer);
 
         logger.debug("Building item data");
-        Long2ObjectMap<ScoredIdListBuilder> itemRatingData = new Long2ObjectOpenHashMap<ScoredIdListBuilder>(1000);
-        Long2ObjectMap<LongSortedSet> userItems = new Long2ObjectOpenHashMap<LongSortedSet>(1000);
+        Long2ObjectMap<ScoredIdListBuilder> itemRatingData = new Long2ObjectOpenHashMap<>(1000);
+        Long2ObjectMap<LongSortedSet> userItems = new Long2ObjectOpenHashMap<>(1000);
         buildItemRatings(itemRatingData, userItems);
 
         SortedKeyIndex items = SortedKeyIndex.fromCollection(itemRatingData.keySet());

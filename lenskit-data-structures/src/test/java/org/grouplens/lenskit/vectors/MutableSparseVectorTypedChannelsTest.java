@@ -104,7 +104,7 @@ public class MutableSparseVectorTypedChannelsTest {
     @Test
     public void testAddTypedSideChannel() {
         LongKeyDomain domain = LongKeyDomain.create(1, 2, 4);
-        MutableTypedSideChannel<String> ts = new MutableTypedSideChannel<String>(domain);
+        MutableTypedSideChannel<String> ts = new MutableTypedSideChannel<>(domain);
         MutableSparseVector sv = new MutableSparseVector(domain);
         ts.put(1, "a");
         

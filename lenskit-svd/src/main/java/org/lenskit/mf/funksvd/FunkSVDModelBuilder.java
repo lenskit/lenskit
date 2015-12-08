@@ -88,7 +88,7 @@ public class FunkSVDModelBuilder implements Provider<FunkSVDModel> {
 
         TrainingEstimator estimates = rule.makeEstimator(snapshot);
 
-        List<FeatureInfo> featureInfo = new ArrayList<FeatureInfo>(featureCount);
+        List<FeatureInfo> featureInfo = new ArrayList<>(featureCount);
 
         // Use scratch vectors for each feature for better cache locality
         // Per-feature vectors are strided in the output matrices

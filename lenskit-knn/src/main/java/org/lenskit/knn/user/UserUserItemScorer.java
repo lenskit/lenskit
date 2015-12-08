@@ -92,7 +92,7 @@ public class UserUserItemScorer extends AbstractItemScorer {
      */
     protected Long2ObjectMap<SparseVector> normalizeNeighborRatings(Collection<? extends Collection<Neighbor>> neighborhoods) {
         Long2ObjectMap<SparseVector> normedVectors =
-                new Long2ObjectOpenHashMap<SparseVector>();
+                new Long2ObjectOpenHashMap<>();
         for (Neighbor n : Iterables.concat(neighborhoods)) {
             if (!normedVectors.containsKey(n.user)) {
                 normedVectors.put(n.user, normalizer.normalize(n.user, n.vector, null));
@@ -181,11 +181,11 @@ public class UserUserItemScorer extends AbstractItemScorer {
         Preconditions.checkNotNull(user, "user profile");
         Preconditions.checkNotNull(user, "item set");
 
-        Long2ObjectMap<PriorityQueue<Neighbor>> heaps = new Long2ObjectOpenHashMap<PriorityQueue<Neighbor>>(items.size());
+        Long2ObjectMap<PriorityQueue<Neighbor>> heaps = new Long2ObjectOpenHashMap<>(items.size());
         for (LongIterator iter = items.iterator(); iter.hasNext();) {
             long item = iter.nextLong();
-            heaps.put(item, new PriorityQueue<Neighbor>(neighborhoodSize + 1,
-                                                        Neighbor.SIMILARITY_COMPARATOR));
+            heaps.put(item, new PriorityQueue<>(neighborhoodSize + 1,
+                                                Neighbor.SIMILARITY_COMPARATOR));
         }
 
         int neighborsUsed = 0;

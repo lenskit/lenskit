@@ -51,7 +51,7 @@ public class OrdRecRatingPredictorTest {
     public void setup() throws RecommenderBuildException {
 
 //      build ratings
-        List<Rating> rs = new ArrayList<Rating>();
+        List<Rating> rs = new ArrayList<>();
         rs.add(Rating.create(42, 1, 2));
         rs.add(Rating.create(42, 2, 1));
         rs.add(Rating.create(42, 3, 3));

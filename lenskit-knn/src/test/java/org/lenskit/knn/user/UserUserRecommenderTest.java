@@ -48,7 +48,7 @@ public class UserUserRecommenderTest {
     @SuppressWarnings("deprecation")
     @Before
     public void setup() throws RecommenderBuildException {
-        List<Rating> rs = new ArrayList<Rating>();
+        List<Rating> rs = new ArrayList<>();
         rs.add(Rating.create(1, 6, 4));
         rs.add(Rating.create(2, 6, 2));
         rs.add(Rating.create(4, 6, 3));

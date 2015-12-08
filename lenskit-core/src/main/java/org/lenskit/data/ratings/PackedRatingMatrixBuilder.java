@@ -59,7 +59,7 @@ public class PackedRatingMatrixBuilder implements Provider<PackedRatingMatrix> {
         // Track the indices where everything appears for finding previous
         // rating info for a user-item pair
         Long2ObjectMap<Long2IntMap> uiIndexes =
-                new Long2ObjectOpenHashMap<Long2IntMap>(2000);
+                new Long2ObjectOpenHashMap<>(2000);
 
         // Since we iterate in timestamp order, we can just overwrite
         // old data for a user-item pair with new data.

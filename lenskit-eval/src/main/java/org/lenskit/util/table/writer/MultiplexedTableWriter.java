@@ -62,7 +62,7 @@ public class MultiplexedTableWriter implements TableWriter {
 
     @Override
     public void close() throws IOException {
-        ArrayList<IOException> closeExceptions = new ArrayList<IOException>(writers.size());
+        ArrayList<IOException> closeExceptions = new ArrayList<>(writers.size());
         for (TableWriter w : writers) {
             try {
                 w.close();

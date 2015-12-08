@@ -55,7 +55,7 @@ public abstract class AbstractUserHistory<E extends Event> extends AbstractList<
             synchronized (this) {
                 table = memTable;
                 if (table == null) {
-                    memTable = table = new ConcurrentHashMap<Function, Object>();
+                    memTable = table = new ConcurrentHashMap<>();
                 }
             }
         }

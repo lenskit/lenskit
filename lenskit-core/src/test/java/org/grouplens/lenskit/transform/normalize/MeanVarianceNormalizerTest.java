@@ -57,7 +57,7 @@ public class MeanVarianceNormalizerTest {
         userRatings = MutableSparseVector.wrap(keys, values).freeze();
         double[] uniformValues = {2., 2., 2.};
         uniformUserRatings = MutableSparseVector.wrap(keys, uniformValues).freeze();
-        List<Rating> ratings = new ArrayList<Rating>();
+        List<Rating> ratings = new ArrayList<>();
         addRating(ratings, 0, 0, 0);
         addRating(ratings, 0, 1, 1);
         addRating(ratings, 0, 2, 2);

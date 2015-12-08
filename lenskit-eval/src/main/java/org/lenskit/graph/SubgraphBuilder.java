@@ -40,9 +40,9 @@ class SubgraphBuilder implements Builder<GVSubgraph> {
      * Construct a subgraph builder.
      */
     public SubgraphBuilder() {
-        nodes = new ArrayList<GVNode>();
-        edges = new ArrayList<GVEdge>();
-        attributes = new LinkedHashMap<String, Object>();
+        nodes = new ArrayList<>();
+        edges = new ArrayList<>();
+        attributes = new LinkedHashMap<>();
     }
 
     public SubgraphBuilder setName(String name) {

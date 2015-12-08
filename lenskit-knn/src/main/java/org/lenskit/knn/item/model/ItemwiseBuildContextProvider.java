@@ -88,8 +88,8 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
         logger.debug("using normalizer {}", normalizer);
 
         logger.debug("Building item data");
-        Long2ObjectMap<LongList> userItems = new Long2ObjectOpenHashMap<LongList>(1000);
-        Long2ObjectMap<SparseVector> itemVectors = new Long2ObjectOpenHashMap<SparseVector>(1000);
+        Long2ObjectMap<LongList> userItems = new Long2ObjectOpenHashMap<>(1000);
+        Long2ObjectMap<SparseVector> itemVectors = new Long2ObjectOpenHashMap<>(1000);
         ObjectStream<ItemEventCollection<Event>> itemObjectStream = itemEventDAO.streamEventsByItem();
         try {
             for (ItemEventCollection<Event> item: itemObjectStream) {
@@ -117,7 +117,7 @@ public class ItemwiseBuildContextProvider implements Provider<ItemItemBuildConte
             itemObjectStream.close();
         }
 
-        Long2ObjectMap<LongSortedSet> userItemSets = new Long2ObjectOpenHashMap<LongSortedSet>();
+        Long2ObjectMap<LongSortedSet> userItemSets = new Long2ObjectOpenHashMap<>();
         for (Long2ObjectMap.Entry<LongList> entry: userItems.long2ObjectEntrySet()) {
             userItemSets.put(entry.getLongKey(), LongUtils.packedSet(entry.getValue()));
         }

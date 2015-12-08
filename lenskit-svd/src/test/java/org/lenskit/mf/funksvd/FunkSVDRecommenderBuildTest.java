@@ -56,7 +56,7 @@ public class FunkSVDRecommenderBuildTest {
 
     @Before
     public void setup() throws RecommenderBuildException {
-        List<Rating> rs = new ArrayList<Rating>();
+        List<Rating> rs = new ArrayList<>();
         rs.add(Rating.create(1, 5, 2));
         rs.add(Rating.create(1, 7, 4));
         rs.add(Rating.create(8, 4, 5));

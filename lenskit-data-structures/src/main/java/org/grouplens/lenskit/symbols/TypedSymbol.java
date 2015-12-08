@@ -83,7 +83,7 @@ public final class TypedSymbol<K> implements Serializable {
             if (type.isPrimitive()) {
                 type = (Class<T>) ClassUtils.primitiveToWrapper(type);
             }
-            tsym = new TypedSymbol<T>(type, sym);
+            tsym = new TypedSymbol<>(type, sym);
             symbolCache.put(key, tsym);
         }
         return tsym;

@@ -47,8 +47,8 @@ class ComponentNodeBuilder implements Builder<GVNode> {
 
     private final String nodeId;
     private final String label;
-    private final List<String> dependencies = new ArrayList<String>();
-    private final List<String> parameters = new ArrayList<String>();
+    private final List<String> dependencies = new ArrayList<>();
+    private final List<String> parameters = new ArrayList<>();
     private boolean shareable = false;
     private boolean isShared = false;
     private boolean isProvider = false;

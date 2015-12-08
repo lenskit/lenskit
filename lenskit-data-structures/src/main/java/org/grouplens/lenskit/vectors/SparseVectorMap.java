@@ -117,7 +117,7 @@ class SparseVectorMap extends AbstractLong2ObjectMap<Double> {
         @Override
         public Entry<Double> next() {
             VectorEntry e = delegate.next();
-            return new BasicEntry<Double>(e.getKey(), (Double) e.getValue());
+            return new BasicEntry<>(e.getKey(), (Double) e.getValue());
         }
     }
 

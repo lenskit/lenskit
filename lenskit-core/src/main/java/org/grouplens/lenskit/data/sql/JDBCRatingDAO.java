@@ -84,7 +84,7 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
     private final CachedPreparedStatement userStatement;
     private final CachedPreparedStatement itemStatement;
     private final Map<SortOrder,CachedPreparedStatement> eventStatements =
-            new EnumMap<SortOrder,CachedPreparedStatement>(SortOrder.class);
+            new EnumMap<>(SortOrder.class);
     private final CachedPreparedStatement userEventStatement;
     private final CachedPreparedStatement itemEventStatement;
     private final CachedPreparedStatement itemUserStatement;
@@ -350,7 +350,7 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
 
     @Override
     public <E extends Event> ObjectStream<UserHistory<E>> streamEventsByUser(Class<E> type) {
-        return new UserHistoryObjectStream<E>(streamEvents(type, SortOrder.USER));
+        return new UserHistoryObjectStream<>(streamEvents(type, SortOrder.USER));
     }
 
     @Override
@@ -360,7 +360,7 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
 
     @Override
     public <E extends Event> ObjectStream<ItemEventCollection<E>> streamEventsByItem(Class<E> type) {
-        return new ItemCollectionObjectStream<E>(streamEvents(type, SortOrder.USER));
+        return new ItemCollectionObjectStream<>(streamEvents(type, SortOrder.USER));
     }
 
 }

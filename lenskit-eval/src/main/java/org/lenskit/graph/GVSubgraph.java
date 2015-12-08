@@ -44,7 +44,7 @@ class GVSubgraph {
      */
     GVSubgraph(String name, Map<String,Object> attrs, List<GVNode> ns, List<GVEdge> es) {
         this.name = name;
-        attributes = Collections.unmodifiableMap(new LinkedHashMap<String,Object>(attrs));
+        attributes = Collections.unmodifiableMap(new LinkedHashMap<>(attrs));
         nodes = ImmutableList.copyOf(ns);
         edges = ImmutableList.copyOf(es);
     }

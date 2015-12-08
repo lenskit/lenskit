@@ -35,39 +35,39 @@ public class TypedSideChannelTest {
     private final String c = "c";
     
     protected TypedSideChannel<String> emptyDomainSideChannel() {
-        return new TypedSideChannel<String>(LongKeyDomain.empty());
+        return new TypedSideChannel<>(LongKeyDomain.empty());
     }
     
     protected TypedSideChannel<String> emptySideChannel() {
         LongKeyDomain keys = LongKeyDomain.create(1, 2, 4);
-        return new TypedSideChannel<String>(keys);
+        return new TypedSideChannel<>(keys);
     }
     
     protected TypedSideChannel<String> simpleSideChannel() {
         LongKeyDomain keys = LongKeyDomain.create(1, 2, 4);
         String[] values = {a,b,a};
-        return new TypedSideChannel<String>(keys,values);
+        return new TypedSideChannel<>(keys, values);
     }
     
     protected TypedSideChannel<String> singletonSideChannel() {
         LongKeyDomain keys = LongKeyDomain.create(1);
         String[] values = {a};
-        return new TypedSideChannel<String>(keys,values);
+        return new TypedSideChannel<>(keys, values);
     }
     
     @Test 
     public void testConstructors() {
         LongKeyDomain keys = LongKeyDomain.create(1, 2);
-        TypedSideChannel<String> channel = new TypedSideChannel<String>(keys.clone());
+        TypedSideChannel<String> channel = new TypedSideChannel<>(keys.clone());
         assertTrue(channel.isEmpty());
         
-        channel = new TypedSideChannel<String>(keys ,new String[]{a,b});
+        channel = new TypedSideChannel<>(keys, new String[]{a, b});
         assertFalse(channel.isEmpty());
         assertEquals(a, channel.get(1));
         assertEquals(b, channel.get(2));
 
         keys.setActive(0, false);
-        channel = new TypedSideChannel<String>(keys, new String[]{null,b});
+        channel = new TypedSideChannel<>(keys, new String[]{null, b});
         assertFalse(channel.isEmpty());
         assertEquals(b,channel.get(2));
         assertNull(channel.get(1));

@@ -38,7 +38,7 @@ public class DataSetBuilder implements Builder<DataSet> {
     private String name;
     private DataSource trainingData;
     private DataSource testData;
-    private Map<String, Object> attributes = new LinkedHashMap<String, Object>();
+    private Map<String, Object> attributes = new LinkedHashMap<>();
     private DataSource queryData;
     private UUID isoGroup = new UUID(0, 0);
 

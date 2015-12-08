@@ -52,7 +52,7 @@ public final class CollectionUtils {
         if (objects instanceof ObjectCollection) {
             return (ObjectCollection<E>) objects;
         } else {
-            return new ObjectCollectionWrapper<E>(objects);
+            return new ObjectCollectionWrapper<>(objects);
         }
     }
 
@@ -65,7 +65,7 @@ public final class CollectionUtils {
      * @return A list containing <var>obj</var> <var>n</var> times.
      */
     public static <T> List<T> repeat(T obj, int n) {
-        return new RepeatedList<T>(obj, n);
+        return new RepeatedList<>(obj, n);
     }
 
     /**

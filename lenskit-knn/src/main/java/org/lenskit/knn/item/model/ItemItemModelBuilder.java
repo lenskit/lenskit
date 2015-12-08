@@ -149,7 +149,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
     }
 
     private Long2ObjectMap<ScoredItemAccumulator> makeAccumulators(LongSet items) {
-        Long2ObjectMap<ScoredItemAccumulator> rows = new Long2ObjectOpenHashMap<ScoredItemAccumulator>(items.size());
+        Long2ObjectMap<ScoredItemAccumulator> rows = new Long2ObjectOpenHashMap<>(items.size());
         LongIterator iter = items.iterator();
         while (iter.hasNext()) {
             long item = iter.nextLong();
@@ -165,7 +165,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
     }
 
     private Long2ObjectMap<ImmutableSparseVector> finishRows(Long2ObjectMap<ScoredItemAccumulator> rows) {
-        Long2ObjectMap<ImmutableSparseVector> results = new Long2ObjectOpenHashMap<ImmutableSparseVector>(rows.size());
+        Long2ObjectMap<ImmutableSparseVector> results = new Long2ObjectOpenHashMap<>(rows.size());
         for (Long2ObjectMap.Entry<ScoredItemAccumulator> e: rows.long2ObjectEntrySet()) {
             results.put(e.getLongKey(), e.getValue().finishVector().freeze());
         }

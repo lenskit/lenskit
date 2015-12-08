@@ -108,7 +108,7 @@ public class UserSnapshot implements Serializable {
 
         @Override
         public UserSnapshot get() {
-            Long2ObjectMap<MutableSparseVector> vectors = new Long2ObjectOpenHashMap<MutableSparseVector>();
+            Long2ObjectMap<MutableSparseVector> vectors = new Long2ObjectOpenHashMap<>();
             ObjectStream<? extends UserHistory<? extends Event>> users = userEventDAO.streamEventsByUser(summarizer.eventTypeWanted());
             try {
                 for (UserHistory<? extends Event> user: users) {
@@ -119,7 +119,7 @@ public class UserSnapshot implements Serializable {
                 users.close();
             }
 
-            Long2ObjectMap<LongList> itemUserLists = new Long2ObjectOpenHashMap<LongList>();
+            Long2ObjectMap<LongList> itemUserLists = new Long2ObjectOpenHashMap<>();
             SortedKeyIndex domain = SortedKeyIndex.fromCollection(vectors.keySet());
             ImmutableList.Builder<ImmutableSparseVector> vecs = ImmutableList.builder();
             ImmutableList.Builder<ImmutableSparseVector> nvecs = ImmutableList.builder();
@@ -144,7 +144,7 @@ public class UserSnapshot implements Serializable {
                 }
             }
 
-            Long2ObjectMap<LongSortedSet> itemUserSets = new Long2ObjectOpenHashMap<LongSortedSet>();
+            Long2ObjectMap<LongSortedSet> itemUserSets = new Long2ObjectOpenHashMap<>();
             for (Long2ObjectMap.Entry<LongList> entry: itemUserLists.long2ObjectEntrySet()) {
                 itemUserSets.put(entry.getLongKey(), LongUtils.packedSet(entry.getValue()));
             }

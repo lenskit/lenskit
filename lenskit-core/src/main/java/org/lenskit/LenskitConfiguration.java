@@ -62,7 +62,7 @@ public class LenskitConfiguration extends AbstractConfigContext {
      */
     public LenskitConfiguration() {
         bindings = new BindingFunctionBuilder(true);
-        roots = new HashSet<Class<?>>();
+        roots = new HashSet<>();
         Collections.addAll(roots, INITIAL_ROOTS);
     }
 
@@ -72,7 +72,7 @@ public class LenskitConfiguration extends AbstractConfigContext {
      */
     public LenskitConfiguration(LenskitConfiguration other) {
         bindings = other.bindings.clone();
-        roots = new HashSet<Class<?>>(other.roots);
+        roots = new HashSet<>(other.roots);
     }
 
     /**

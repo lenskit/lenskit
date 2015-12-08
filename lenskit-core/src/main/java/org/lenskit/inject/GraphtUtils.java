@@ -187,7 +187,7 @@ public final class GraphtUtils {
             }
             Desire desire = input.getLabel().getInitialDesire();
             InjectionPoint ip = desire.getInjectionPoint();
-            List<String> key = new ArrayList<String>(4);
+            List<String> key = new ArrayList<>(4);
             if (ip instanceof ConstructorParameterInjectionPoint) {
                 ConstructorParameterInjectionPoint cpi = (ConstructorParameterInjectionPoint) ip;
                 key.add("0: constructor");

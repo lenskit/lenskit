@@ -75,7 +75,7 @@ public class TypeUtils {
             return Collections.emptySet();
         }
 
-        Set<Class<?>> supertypes = new HashSet<Class<?>>();
+        Set<Class<?>> supertypes = new HashSet<>();
         supertypes.add(type);
         supertypes.addAll(typeClosure(type.getSuperclass()));
         for (Class<?> iface : type.getInterfaces()) {

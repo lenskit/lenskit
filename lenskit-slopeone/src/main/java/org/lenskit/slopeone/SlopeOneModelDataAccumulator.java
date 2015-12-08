@@ -46,7 +46,7 @@ public class SlopeOneModelDataAccumulator {
         this.damping = damping;
         LongSet items = dao.getItemIds();
 
-        workMatrix = new Long2ObjectOpenHashMap<MutableSparseVector>(items.size());
+        workMatrix = new Long2ObjectOpenHashMap<>(items.size());
         LongIterator iter = items.iterator();
         while (iter.hasNext()) {
             long item = iter.nextLong();
@@ -93,7 +93,7 @@ public class SlopeOneModelDataAccumulator {
         }
 
         Long2ObjectMap<ImmutableSparseVector> matrix =
-                new Long2ObjectOpenHashMap<ImmutableSparseVector>(workMatrix.size());
+                new Long2ObjectOpenHashMap<>(workMatrix.size());
 
         for (MutableSparseVector vec : workMatrix.values()) {
             for (VectorEntry e : vec) {
