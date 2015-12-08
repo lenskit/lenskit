@@ -20,7 +20,6 @@ test_script:
 deploy: off
 notifications:
   - provider: Webhook
-    url: http://webhooks.gitter.im/e/77b0c14f57fd5f197f79
+    url: https://webhooks.gitter.im/e/77b0c14f57fd5f197f79
     on_build_success: true
     on_build_failure: true
-    on_build_status_changed: true
