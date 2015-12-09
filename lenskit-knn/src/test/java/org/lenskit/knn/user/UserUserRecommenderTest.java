@@ -22,6 +22,7 @@ package org.lenskit.knn.user;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
+import org.junit.After;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.data.dao.EventCollectionDAO;
@@ -81,6 +82,11 @@ public class UserUserRecommenderTest {
                              IdentityVectorNormalizer.class);*/
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         rec = engine.createRecommender();
+    }
+
+    @After
+    public void teardown() {
+        rec.close();
     }
 
     /**

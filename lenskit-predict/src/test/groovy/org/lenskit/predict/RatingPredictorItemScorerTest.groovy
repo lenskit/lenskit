@@ -62,22 +62,26 @@ class RatingPredictorItemScorerTest {
             }
         }
         def rec = LenskitRecommender.build config
-        assertThat(rec.itemRecommender,
-                   instanceOf(RescoringItemRecommender))
-        assertThat(rec.itemScorer, instanceOf(ItemMeanRatingItemScorer))
-        assertThat(rec.ratingPredictor, instanceOf(QuantizedRatingPredictor))
+        try {
+            assertThat(rec.itemRecommender,
+                       instanceOf(RescoringItemRecommender))
+            assertThat(rec.itemScorer, instanceOf(ItemMeanRatingItemScorer))
+            assertThat(rec.ratingPredictor, instanceOf(QuantizedRatingPredictor))
 
-        def irec = rec.itemRecommender
-        def recs = irec.recommendWithDetails(3, -1, null, null)
-        assertThat(recs, hasSize(2))
-        for (sid in recs) {
-            if (sid.id == 11) {
-                assertThat(sid.score, closeTo(3.0d, 1.0e-6d))
-            } else if (sid.id == 12) {
-                assertThat(sid.score, closeTo(4.0d, 1.0e-6d))
-            } else {
-                fail "unexpected item $sid.id"
+            def irec = rec.itemRecommender
+            def recs = irec.recommendWithDetails(3, -1, null, null)
+            assertThat(recs, hasSize(2))
+            for (sid in recs) {
+                if (sid.id == 11) {
+                    assertThat(sid.score, closeTo(3.0d, 1.0e-6d))
+                } else if (sid.id == 12) {
+                    assertThat(sid.score, closeTo(4.0d, 1.0e-6d))
+                } else {
+                    fail "unexpected item $sid.id"
+                }
             }
+        } finally {
+            rec.close()
         }
     }
 }

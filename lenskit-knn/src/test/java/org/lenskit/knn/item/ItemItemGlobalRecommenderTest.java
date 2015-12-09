@@ -44,6 +44,7 @@ import org.grouplens.lenskit.transform.normalize.DefaultUserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.IdentityVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.UserVectorNormalizer;
 import org.grouplens.lenskit.transform.normalize.VectorNormalizer;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.lenskit.LenskitConfiguration;
@@ -93,6 +94,11 @@ public class ItemItemGlobalRecommenderTest {
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         session = engine.createRecommender();
         gRecommender = session.getItemBasedItemRecommender();
+    }
+
+    @After
+    public void teardown() {
+        session.close();
     }
 
     /**
