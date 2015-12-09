@@ -42,6 +42,7 @@ public class StaticInjector implements Injector {
     private static final Logger logger = LoggerFactory.getLogger(StaticInjector.class);
 
     private final LifecycleManager lifecycle;
+    private RuntimeException capture;
     private boolean closed = false;
     private final NodeInstantiator instantiator;
     private DAGNode<Component, Dependency> graph;
@@ -55,6 +56,7 @@ public class StaticInjector implements Injector {
         graph = g;
         lifecycle = new LifecycleManager();
         instantiator = NodeInstantiator.create(lifecycle);
+        capture = new RuntimeException("Static injector instantiated (backtrace shows instantiation point)");
     }
 
     @Override
@@ -119,7 +121,7 @@ public class StaticInjector implements Injector {
     @Override
     protected void finalize() throws Throwable {
         if (!closed) {
-            logger.warn("Injector {} was never closed", toString());
+            logger.warn("Injector " + this + " was never closed", capture);
         }
         super.finalize();
     }
