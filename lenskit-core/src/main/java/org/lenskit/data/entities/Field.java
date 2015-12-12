@@ -111,7 +111,7 @@ public final class Field<T> implements Serializable {
         if (type.isPrimitive()) {
             type = (Class<T>) ClassUtils.primitiveToWrapper(type);
         }
-        Field<T> field = new Field<>(name, type);
+        Field<T> field = new Field<>(name.intern(), type);
         return (Field<T>) FIELD_CACHE.intern(field);
     }
 
