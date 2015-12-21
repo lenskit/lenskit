@@ -20,7 +20,9 @@
  */
 package org.lenskit.data.entities;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -51,12 +53,18 @@ public interface Entity {
     /**
      * Get the names of the fields in this entity.
      */
-    Set<String> getFieldNames();
+    Set<String> getAttributeNames();
 
     /**
      * Get the fields in this entity.
      */
-    Set<Attribute<?>> getFields();
+    Set<Attribute<?>> getAttributes();
+
+    /**
+     * View this entity as a map.
+     * @return A map reflecting the entity's data.
+     */
+    Map<String,Object> asMap();
 
     /**
      * Check if the entity has a field with a particular name.
@@ -64,7 +72,7 @@ public interface Entity {
      * @param name The field name to look for.
      * @return `true` if the entity has a field named `name`.
      */
-    boolean hasField(String name);
+    boolean hasAttribute(String name);
 
     /**
      * Check if the entity has a attribute.
@@ -72,10 +80,10 @@ public interface Entity {
      * @param attribute The attribute to look for.
      * @return `true` if the entity contains `attribute` (same name **and type**).
      */
-    boolean hasField(Attribute<?> attribute);
+    boolean hasAttribute(Attribute<?> attribute);
 
     /**
-     * Get the value of a attribute.
+     * Get the value of an attribute.
      * @param attribute The attribute.
      * @param <T> The attribute's type.
      * @return The attribute's value.
@@ -83,17 +91,17 @@ public interface Entity {
      * @throws IllegalArgumentException if a attribute with the same name as `attribute` is present, but it is of an
      *         incompatible type.
      */
-    @Nullable
+    @Nonnull
     <T> T get(Attribute<T> attribute);
 
     /**
-     * Get the value of a field by name.
-     * @param field The field name.
-     * @throws NoSuchAttributeException if the specified field is not present.
-     * @return The field value, or `null` if the field is missing.
+     * Get the value of an attribute by name.
+     * @param attr The attribute name.
+     * @throws NoSuchAttributeException if the specified attribute is not present.
+     * @return The field value, or `null` if the attribute is missing.
      */
-    @Nullable
-    Object get(String field);
+    @Nonnull
+    Object get(String attr);
 
     /**
      * Get the value of a possibly-missing attribute.
@@ -107,14 +115,14 @@ public interface Entity {
     <T> T maybeGet(Attribute<T> attribute);
 
     /**
-     * Get the value of a possibly-missing field by name.
-     * @param field The field name.
-     * @return The field's value, or `null` if it is not present.
-     * @throws IllegalArgumentException if a field with the same name as `field` is present, but it is of an
+     * Get the value of a possibly-missing attribute by name.
+     * @param attr The attribute name.
+     * @return The attribute's value, or `null` if it is not present.
+     * @throws IllegalArgumentException if an attribute with the same name as `attr` is present, but it is of an
      *         incompatible type.
      */
     @Nullable
-    Object maybeGet(String field);
+    Object maybeGet(String attr);
 
     /**
      * Get the value of a attribute that contains a long.
