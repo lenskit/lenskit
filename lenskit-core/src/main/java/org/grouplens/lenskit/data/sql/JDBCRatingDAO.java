@@ -158,15 +158,15 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
      * Close the connection and all open statements.
      */
     public void close() {
-        boolean failed = false;
+        boolean failed;
         try {
-            failed = failed || !closeStatement(userStatement);
-            failed = failed || !closeStatement(itemStatement);
+            failed = !closeStatement(userStatement);
+            failed |= !closeStatement(itemStatement);
             for (CachedPreparedStatement s : eventStatements.values()) {
-                failed = failed || !closeStatement(s);
+                failed |= !closeStatement(s);
             }
-            failed = failed || !closeStatement(userEventStatement);
-            failed = failed || !closeStatement(itemEventStatement);
+            failed |= !closeStatement(userEventStatement);
+            failed |= !closeStatement(itemEventStatement);
             if (closeConnection) {
                 connection.close();
             }
