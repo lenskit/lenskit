@@ -1,30 +1,10 @@
-/*
- * LensKit, an open source recommender systems toolkit.
- * Copyright 2010-2013 Regents of the University of Minnesota and contributors
- * Work on LensKit has been funded by the National Science Foundation under
- * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- */
 package org.grouplens.lenskit.mf.svdfeature;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.grouplens.lenskit.opt.LearningModel;
-import org.grouplens.lenskit.opt.LearningOracle;
+import org.grouplens.lenskit.solver.objective.LearningModel;
+import org.grouplens.lenskit.solver.objective.LearningOracle;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -40,17 +20,17 @@ public class SVDFeatureModel implements LearningModel {
     private int numGlobalFeas;
     private KernelFunction kernel;
 
-    public SVDFeatureModel(int outNumGlobalFeas, int outNumUserFeas, int outNumItemFeas, int dim,
-                           SVDFeatureInstanceDAO outDao, KernelFunction outKernel) {
+    public SVDFeatureModel(int inNumGlobalFeas, int inNumUserFeas, int inNumItemFeas, int dim,
+                           SVDFeatureInstanceDAO inDao, KernelFunction inKernel) {
         factDim = dim;
-        numGlobalFeas = outNumGlobalFeas;
-        numUserFeas = outNumUserFeas;
-        numItemFeas = outNumItemFeas;
+        numGlobalFeas = inNumGlobalFeas;
+        numUserFeas = inNumUserFeas;
+        numItemFeas = inNumItemFeas;
         gbiases = new DenseMatrix(numGlobalFeas, 1);
         ufacts = new DenseMatrix(numUserFeas, factDim);
         ifacts = new DenseMatrix(numItemFeas, factDim);
-        dao = outDao;
-        kernel = outKernel;
+        dao = inDao;
+        kernel = inKernel;
         //randomInitialize();
     }
 
