@@ -1,16 +1,12 @@
-package org.grouplens.lenskit.solver.method;
+package org.lenskit.solver.method;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 import java.io.IOException;
 
-import org.grouplens.lenskit.mf.svdfeature.ArrayHelper;
-import org.grouplens.lenskit.solver.objective.ObjectiveFunction;
-
-/**
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- */
+import org.lenskit.mf.svdfeature.ArrayHelper;
+import org.lenskit.solver.objective.ObjectiveFunction;
 
 // Objective function is changed from f(X) to f(X) + l1coef * |X| + l2coef * |X|^2
 public class AlternatingBatchGradientDescent extends OptimizationHelper implements OptimizationMethod {

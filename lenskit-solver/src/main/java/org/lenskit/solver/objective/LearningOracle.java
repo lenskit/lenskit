@@ -1,11 +1,8 @@
-package org.grouplens.lenskit.solver.objective;
+package org.lenskit.solver.objective;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
-/**
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
- */
 public class LearningOracle {
     private double objval;
     private double modelOutput;
