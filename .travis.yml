@@ -29,6 +29,7 @@ deploy:
   skip_cleanup: true
   script: etc/deploy.sh
   on:
+    branch: release/2.2
     jdk: oraclejdk7
     repo: lenskit/lenskit
 notifications:
