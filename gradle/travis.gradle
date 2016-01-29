@@ -55,9 +55,7 @@ tasks.all { task ->
             ciTest.dependsOn task
             break;
         case 'assemble':
-            if (travis.activeJdk != "openjdk6") {
-                ciBuild.dependsOn task
-            }
+            ciBuild.dependsOn task
             break
         case 'classes':
         case 'testClasses':
