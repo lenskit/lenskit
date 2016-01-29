@@ -1,0 +1,12 @@
+name: lenskit
+dependencies:
+- numpy=1.9.2=py27_0
+- pandas=0.16.2=np19py27_0
+- pip=7.1.0=py27_0
+- python=2.7.10=0
+- python-dateutil=2.4.2=py27_0
+- pytz=2015.4=py27_0
+- setuptools=18.0.1=py27_0
+- six=1.9.0=py27_0
+- libgfortran
+- openssl
