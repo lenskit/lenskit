@@ -6,11 +6,18 @@ jdk:
 branches:
   except:
   - www
+addons:
+  apt:
+    packages:
+    - python-dev
+    - pip
+    - gfortran
 cache:
   directories:
   - $HOME/.gradle/caches
   - $HOME/.gradle/wrapper
 before_install:
+- pip install --user pandas
 - git fetch --depth=10000 origin
 - ./etc/decrypt-ssh-key.sh
 install:
