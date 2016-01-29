@@ -129,8 +129,8 @@ task installForTesting(type: Upload) {
 uploadArchives {
     configuration = configurations.mavenCentral
     repositories.mavenDeployer {
-        def user = System.getenv('DEPLOY_USER') ?: project.getConfigProperty('deploy.user', null)
-        def password = System.getenv('DEPLOY_PASSWORD') ?: project.getConfigProperty('deploy.password', null)
+        def user = System.getenv('SONATYPE_USER') ?: project.getConfigProperty('deploy.user', null)
+        def password = System.getenv('SONATYPE_PASSWORD') ?: project.getConfigProperty('deploy.password', null)
 
         def deployUrl = project.getConfigProperty('deploy.url', null)
         if (deployUrl != null) {
@@ -169,7 +169,7 @@ afterEvaluate {
         packaging 'jar'
         // optionally artifactId can be defined here
         description meta.description
-        url 'http://lenskit.grouplens.org'
+        url 'http://lenskit.org'
 
         scm {
             connection 'scm:git:http://github.com/grouplens/lenskit.git'

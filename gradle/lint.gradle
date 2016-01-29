@@ -1,7 +1,8 @@
 logger.lifecycle 'Enabling lint support in LensKit build'
 
 ext.lintMode = 'disabled'
-if (System.getenv('SONAR_BUILD') == 'true') {
+if (travis.isReleaseBuild()) {
+    logger.lifecycle 'Travis build on release branch'
     ext.lintMode = 'enabled'
 }
 switch (getConfigProperty('lint', 'false').toLowerCase()) {
@@ -46,24 +47,20 @@ if (lintMode != 'disabled') {
     report.dependsOn jacocoMergedReport
 }
 
-apply plugin: 'sonar-runner'
-
-sonarRunner {
-    toolVersion = '2.4'
-    sonarProperties {
-        def branch = System.getenv("BRANCH")
+sonarqube {
+    properties {
+        def branch = travis.branch
         def m = branch != null ? branch =~ /release\/(.*)/ : null
         if (m) {
             def bk = m.group(1)
             property "sonar.projectKey", "$project.group:$project.name-$bk"
         }
         property "sonar.host.url", "https://sonar.cs.txstate.edu"
-        property "sonar.jdbc.driverClassName", "org.postgresql.Driver"
         property "sonar.sourceEncoding", "UTF-8"
-        for (prop in project.properties.entrySet()) {
-            if (prop.key.startsWith("sonar.")) {
-                property prop.key, prop.value
-            }
+        if (System.getenv("SONAR_USER")) {
+            logger.lifecycle("using Sonar user {}", System.getenv("SONAR_USER"))
+            property "sonar.login", System.getenv("SONAR_USER")
+            property "sonar.password", System.getenv("SONAR_PASSWORD")
         }
         if (lintMode == 'preview') {
             logger.info 'configuring Sonar for preview mode'
@@ -74,5 +71,5 @@ sonarRunner {
 }
 
 if (lintMode == 'enabled') {
-    ciPublish.dependsOn 'sonarRunner'
+    ciPublish.dependsOn 'sonarqube'
 }
