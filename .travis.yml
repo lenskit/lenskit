@@ -20,6 +20,7 @@ before_install:
 - pip install --user pandas
 - git fetch --depth=10000 origin
 - ./etc/decrypt-ssh-key.sh
+- cp etc/travis.gradle.properties gradle.properties
 install:
 - "./gradlew ciPrep --stacktrace"
 script: "./gradlew ciTest --stacktrace"

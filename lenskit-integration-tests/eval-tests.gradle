@@ -37,6 +37,9 @@ file('src/it/eval').eachDir { testDir ->
         }
 
         enableAssertions = true
+        if (project.hasProperty('lenskit.eval.maxHeapSize')) {
+            maxHeapSize = project.getProperty('lenskit.eval.maxHeapSize')
+        }
         workingDir workDir
         classpath configurations.testRuntime
         main 'org.grouplens.lenskit.cli.Main'
