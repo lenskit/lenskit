@@ -20,6 +20,8 @@
  */
 package org.lenskit.gradle
 
+import org.apache.commons.lang3.text.StrMatcher
+import org.apache.commons.lang3.text.StrTokenizer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.slf4j.Logger
@@ -51,6 +53,13 @@ public class LenskitPlugin implements Plugin<Project> {
                 if (prop.type != String) {
                     val = prop.type.metaClass.invokeConstructor(val)
                 }
+
+                // if the type is list update the val using strtokenizer
+                if (prop.type == List) {
+                    StrTokenizer tok = new StrTokenizer(val, StrMatcher.splitMatcher, StrMatcher.quoteMatcher());
+                    val = prop.type.metaClass.invokeConstructor(tok)
+                }
+
                 prop.setProperty(lenskit, val)
             }
         }
