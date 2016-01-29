@@ -34,9 +34,6 @@
  */
 import org.grouplens.lenskit.build.GitExtension
 
-plugins {
-    id "org.sonarqube" version "1.0"
-}
 apply plugin: 'base'
 apply plugin: 'project-report'
 
@@ -191,7 +188,9 @@ task report(group: 'verification') {
 }
 
 apply from: "$rootDir/gradle/website.gradle"
-apply from: "$rootDir/gradle/lint.gradle"
+if (!System.getProperty("java.version").startsWith('1.6')) {
+    apply from: "$rootDir/gradle/lint.gradle"
+}
 
 if (file('local.gradle').exists()) {
     apply from: 'local.gradle'
