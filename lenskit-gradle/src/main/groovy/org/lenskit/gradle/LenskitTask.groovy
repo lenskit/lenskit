@@ -103,7 +103,7 @@ public abstract class LenskitTask extends ConventionTask {
             invoker.systemProperties 'logback.configurationFile': project.file(logbackConfiguration)
         }
 
-        // add all the arguments in the invoker.jvmArgs
+        // add all the arguments in the invoker
         invoker.jvmArgs = getJvmArgs()
 
     }
