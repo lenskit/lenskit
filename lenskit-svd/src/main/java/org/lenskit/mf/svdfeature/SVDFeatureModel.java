@@ -1,10 +1,10 @@
-package org.grouplens.lenskit.mf.svdfeature;
+package org.lenskit.mf.svdfeature;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.grouplens.lenskit.solver.objective.LearningModel;
-import org.grouplens.lenskit.solver.objective.LearningOracle;
+import org.lenskit.solver.objective.LearningModel;
+import org.lenskit.solver.objective.LearningOracle;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

@@ -1,9 +1,9 @@
-package org.grouplens.lenskit.mf.svdfeature;
+package org.lenskit.mf.svdfeature;
 
 import java.io.IOException;
 
-import org.grouplens.lenskit.solver.objective.ObjectiveFunction;
-import org.grouplens.lenskit.solver.method.OptimizationMethod;
+import org.lenskit.solver.objective.ObjectiveFunction;
+import org.lenskit.solver.method.OptimizationMethod;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

@@ -1,4 +1,4 @@
-package org.grouplens.lenskit.mf.svdfeature;
+package org.lenskit.mf.svdfeature;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

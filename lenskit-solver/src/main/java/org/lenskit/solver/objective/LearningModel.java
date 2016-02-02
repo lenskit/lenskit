@@ -1,4 +1,4 @@
-package org.grouplens.lenskit.solver.objective;
+package org.lenskit.solver.objective;
 
 import java.io.IOException;
 

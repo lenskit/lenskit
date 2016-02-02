@@ -1,8 +1,8 @@
-package org.grouplens.lenskit.solver.method;
+package org.lenskit.solver.method;
 
 import java.io.IOException;
 
-import org.grouplens.lenskit.objective.ObjectiveFunction;
+import org.lenskit.objective.ObjectiveFunction;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
