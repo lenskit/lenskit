@@ -1,10 +1,10 @@
-package org.grouplens.lenskit.solver.method;
+package org.lenskit.solver.method;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 
 import java.io.IOException;
 
-import org.grouplens.lenskit.solver.objective.ObjectiveFunction;
+import org.lenskit.solver.objective.ObjectiveFunction;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

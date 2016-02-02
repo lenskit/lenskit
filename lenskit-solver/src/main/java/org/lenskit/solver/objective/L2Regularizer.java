@@ -1,4 +1,4 @@
-package org.grouplens.lenskit.solver.objective;
+package org.lenskit.solver.objective;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>

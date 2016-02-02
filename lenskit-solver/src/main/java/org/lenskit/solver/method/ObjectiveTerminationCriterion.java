@@ -1,4 +1,4 @@
-package org.grouplens.lenskit.solver;
+package org.lenskit.solver;
 
 import java.util.ArrayList;
 
