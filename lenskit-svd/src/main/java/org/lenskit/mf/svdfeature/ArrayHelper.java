@@ -6,6 +6,13 @@ package org.lenskit.mf.svdfeature;
  */
 public class ArrayHelper {
 
+    public static void addition(RealVector base, RealVector other) {
+        int len = base.getDimension();
+        for (int i=0; i<len; i++) {
+            base.addToEntry(i, other.getEntry(i));
+        }
+    }
+
     public static double innerProduct(double[] base, double[] other) {
         double prod = 0;
         for (int i=0; i<base.length; i++) {

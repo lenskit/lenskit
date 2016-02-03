@@ -4,8 +4,8 @@ import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 
 import org.lenskit.solver.method;
 
-public class NegativeLogLikelihoodLoss implements ObjectiveFunction {
-    public NegativeLogLikelihoodLoss() { }
+public class LogisticLoss implements ObjectiveFunction {
+    public LogisticLoss() { }
 
     public void wrapOracle(LearningOracle orc) {
         double output = orc.getModelOutput();

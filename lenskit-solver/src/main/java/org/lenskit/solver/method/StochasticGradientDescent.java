@@ -22,7 +22,7 @@ public class StochasticGradientDescent extends OptimizationHelper implements Opt
             objval = 0;
             model.startNewIteration();
             LearningOracle orc;
-            while ((orc = model.getNextOracle()) != null) {
+            while ((orc = model.getStochasticOracle()) != null) {
                 objFunc.wrapOracle(orc);
                 IntArrayList varIndList = orc.getVarIndexes();
                 DoubleArrayList varList = orc.getVariables();
@@ -40,9 +40,7 @@ public class StochasticGradientDescent extends OptimizationHelper implements Opt
                 }
                 objval += orc.getObjValue();
             }
-            //Probably we don't need calculate this, because it is used for termination decision.
-            //objval += getRegularizerObjective(model, l1coef, l2coef);
-            //We only use f(X) to decide the termination of iteration.
+            objval += getRegularizerObjective(model, l1coef, l2coef);
             termCrit.addIteration(objval);
         }
     }
