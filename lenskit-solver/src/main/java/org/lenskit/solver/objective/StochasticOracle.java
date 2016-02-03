@@ -3,21 +3,33 @@ package org.lenskit.solver.objective;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
-public class LearningOracle { 
+public class StochasticOracle { 
+    private ArrayList<String> scalarNames;
     private DoubleArrayList scalarGrad;
-    private IntArrayList scalarVarIndexes;
+    private IntArrayList scalarIndexes;
+    private ArrayList<String> 
     private ArrayList<RealVector> vectorGrads;
-    private IntArrayList vectorVarIndexes;
+    private IntArrayList vectorIndexes;
 
     private double objval;
 
     public LearningOracle() {
-        scalarVarIndexes = new IntArrayList();
-        scalarVars = new DoubleArrayList();
+        scalarIndexes = new IntArrayList();
         scalarGrad = new DoubleArrayList();
-        vectorVarIndexes = new IntArrayList();
-        vectorVars = new ArrayList<RealVector>();
+        vectorIndexes = new IntArrayList();
         vectorGrads = new ArrayList<RealVector>();
+    }
+
+    public addScalarOracle(String name, int index, double grad) {
+        scalarIndexes.add(index);
+        scalarNames.add(name);
+        scalarGrad.add(grad);
+    }
+
+    public addVectorOracle(String name, int index, RealVector grad) {
+        vectorIndexes.add(index);
+        vectorNames.add(name);
+        vectorGrad.add(grad);
     }
 
     public double getObjValue() {
@@ -29,13 +41,13 @@ public class LearningOracle {
     }
 }
 
-public class DiscriminativeOracle extends LearningOracle {
+public class DiscriminativeOracle extends StochasticOracle {
     private double modelOutput;
     private double insLabel;
 
-    public DiscriminativeOracle() {
+    public DiscriminativeOracle(double inLabel) {
         objval = 0;
-        modelOutput = 0;
+        insLabel = inLabel;
     }
 
     public double getModelOutput() {

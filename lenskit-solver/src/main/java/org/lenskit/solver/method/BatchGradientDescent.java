@@ -12,11 +12,11 @@ import org.lenskit.solver.objective.ObjectiveFunction;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 
-// Objective function is changed from f(X) to f(X) + l1coef * |X| + l2coef * |X|^2
+// Objective function is changed from f(X) to f(X) + l2coef * |X|^2
 public class BatchGradientDescent extends OptimizationHelper implements OptimizationMethod {
 
     public void minimize(LearningModel model, ObjectiveFunction objFunc, double tol, int maxIter,
-                    double l1coef, double l2coef, double learningRate) throws IOException {
+                    double l2coef, double learningRate) throws IOException {
         ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
         double objval = 0;
         int numVars = model.getNumOfVariables();
@@ -40,11 +40,8 @@ public class BatchGradientDescent extends OptimizationHelper implements Optimiza
             for (int i=0; i<numVars; i++) {
                 double var = model.getVariable(i);
                 double grad = grads[i];
-                grad += getRegularizerGradient(var, l1coef, l2coef);
+                grad += getRegularizerGradient(var, 0, l2coef);
                 double newVar = var - learningRate * grad;
-                if (var * newVar < 0 && l1coef > 0) {
-                    newVar = 0;
-                }
                 model.setVariable(i, newVar);
             }
             termCrit.addIteration(objval);
