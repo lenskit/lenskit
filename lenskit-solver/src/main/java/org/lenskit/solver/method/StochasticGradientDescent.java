@@ -11,17 +11,17 @@ import org.lenskit.solver.objective.ObjectiveFunction;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 
-// Objective function is changed from f(X) to f(X) + l1coef * |X| + l2coef * |X|^2
+// Objective function is changed from f(X) to f(X) + l2coef * |X|^2
 public class StochasticGradientDescent extends OptimizationHelper implements OptimizationMethod {
 
-    public void minimize(LearningModel model, ObjectiveFunction objFunc, double tol, int maxIter,
-                    double l1coef, double l2coef, double learningRate) throws IOException {
-        ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
+    public void minimize(LearningModel model, ObjectiveFunction objFunc, int maxIter,
+                    double l2coef, double learningRate) throws IOException {
+        ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(maxIter);
         double objval = 0;
         while (termCrit.keepIterate()) {
             objval = 0;
             model.startNewIteration();
-            LearningOracle orc;
+            StochasticOracle orc;
             while ((orc = model.getStochasticOracle()) != null) {
                 objFunc.wrapOracle(orc);
                 IntArrayList varIndList = orc.getVarIndexes();
@@ -30,17 +30,14 @@ public class StochasticGradientDescent extends OptimizationHelper implements Opt
                 for (int i=0; i<varList.size(); i++) {
                     double var = varList.get(i);
                     double grad = gradList.get(i);
-                    grad += getRegularizerGradient(var, l1coef, l2coef);
+                    grad += getRegularizerGradient(var, 0, l2coef);
                     double newVar = var - learningRate * grad;
-                    if (var * newVar < 0 && l1coef > 0) {
-                        newVar = 0;
-                    }
                     int ind = varIndList.get(i);
                     model.setVariable(ind, newVar);
                 }
                 objval += orc.getObjValue();
             }
-            objval += getRegularizerObjective(model, l1coef, l2coef);
+            objval += getRegularizerObjective(model, 0, l2coef);
             termCrit.addIteration(objval);
         }
     }

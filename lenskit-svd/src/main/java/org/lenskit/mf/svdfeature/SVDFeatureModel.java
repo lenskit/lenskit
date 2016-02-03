@@ -8,60 +8,43 @@ import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 
 import org.lenskit.solver.objective.LearningModel;
-import org.lenskit.solver.objective.LearningOracle;
+import org.lenskit.solver.objective.StochasticOracle;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class SVDFeatureModel implements LearningModel {
+public class SVDFeatureModel extends LearningModel {
     private SVDFeatureInstanceDAO dao;
-    private RealVector biases;
-    private RealMatrix factors;
     private int factDim;
     private int numFactors;
     private int numBiases;
     private KernelFunction kernel;
-    private boolean acceptOutOfRangeIdx;
 
     public SVDFeatureModel(int inNumBiases, int inNumFactors, int infactDim,
                            SVDFeatureInstanceDAO inDao, KernelFunction inKernel) {
         factDim = infactDim;
         numBiases = inNumBiases;
         numFactors = inNumFactors;
-        factors = MatrixUtils.createRealMatrix(numFactors, factDim);
-        biases = MatrixUtils.createRealVector(new double[numBiases]);
         dao = inDao;
         kernel = inKernel;
-        acceptOutOfRangeIdx = false;
     }
 
-    public void randomInitialize() {
+    public assignVariables() {
+        biases = requestScalarVar("biases", numBiases, 0, false);
+        factors = requestVectorVar("factors", numFactors, factDim, 0, true);
     }
 
-    public int getNumOfAlternation() {
-        return 2;
-    }
-
-    public int getScalarVarNum() {
-        return numBiases;
-    }
-
-    public int getVectorVarNum() {
-        return numFactors;
-    }
-
-    public double predict(SVDFeatureInstance inIns, LearningOracle outOrc,
+    public double predict(SVDFeatureInstance inIns, StochasticOracle outOrc,
                           RealVector outUfactSum, RealVector outIfactSum) {
         double pred = 0.0;
         ArrayList<Feature> gfeas = inIns.getGlobalFeas();
         for (int i=0; i<gfeas.size(); i++) {
             int ind = gfeas.get(i).getIndex();
             double val = gfeas.get(i).getValue();
-            double var = biases.getEntry(ind);
             if (outOrc != null) {
-                outOrc.addScalarVar(ind, var, val);
+                outOrc.addScalar("biases", ind, val);
             }
-            pred += var * val;
+            pred += biases.getEntry(ind) * val;
         }
 
         outUfactSum = MatrixUtils.createRealVector(new double[factDim]);
@@ -86,28 +69,31 @@ public class SVDFeatureModel implements LearningModel {
         return pred;
     }
 
-    public LearningOracle getStochasticOracle() throws IOException {
-        SVDFeatureInstance ins = dao.getNextInstance();
+    public StochasticOracle getStochasticOracle() throws IOException {
+        SVDFeatureInstance ins;
+        try {
+            ins = dao.getNextInstance();
+        } catch (IOException e) {
+            ins = null;
+        }
         if (ins == null) {
             return null;
         }
-
-        LearningOracle orc = new LearningOracle();
+        StochasticOracle orc = new StochasticOracle();
         RealVector ufactSum, ifactSum;
         double pred = predict(ins, orc, ufactSum, ifactSum);
-    
+   
         RealVector leftGrad, rightGrad;
         kernel.getGradient(ufactSum, ifactSum, leftGrad, rightGrad);
+        String name = "factors";
         ArrayList<Feature> ufeas = inIns.getUserFeas();
         for (int i=0; i<ufeas.size(); i++) {
-            int index = ufeas.get(i).getIndex();
-            orc.addVectorVar(index, factors.getRowVector(index), 
+            orc.addVector(name, ufeas.get(i).getIndex(), 
                     leftGrad.mapMultiply(ufeas.get(i).getValue()));
         }
         ArrayList<Feature> ifeas = inIns.getItemFeas();
         for (int i=0; i<ifeas.size(); i++) {
-            int index = ifeas.get(i).getIndex();
-            orc.addVectorVar(index, factors.getRowVector(index), 
+            orc.addVector(name, ifeas.get(i).getIndex(),
                     leftGrad.mapMultiply(ifeas.get(i).getValue()));
         }
 
@@ -116,17 +102,13 @@ public class SVDFeatureModel implements LearningModel {
         return orc;
     }
 
-    public LearningOracle getNextAlternatingOracle(int k) throws IOException {
-        LearningOracle orc = new LearningOracle();
+    public StochasticOracle getNextAlternatingOracle(int k) throws IOException {
+        StochasticOracle orc = new StochasticOracle();
         return orc;
     }
 
     public void startNewIteration() throws IOException {
         dao.goBackToBeginning();
-    }
-
-    public int getFactDim() {
-        return factDim;
     }
 
     public double predict(SVDFeatureInstance ins, boolean sigmoid) {
