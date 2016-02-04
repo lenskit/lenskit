@@ -1,17 +1,17 @@
-package org.lenskit.solver.objective;
+package org.lenskit.solver.method;
 
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public class StochasticOracle { 
-    private ArrayList<String> scalarNames;
-    private DoubleArrayList scalarGrad;
-    private IntArrayList scalarIndexes;
-    private ArrayList<String> 
-    private ArrayList<RealVector> vectorGrads;
-    private IntArrayList vectorIndexes;
+    protected ArrayList<String> scalarNames;
+    protected DoubleArrayList scalarGrad;
+    protected IntArrayList scalarIndexes;
+    protected ArrayList<String> vectorNames;
+    protected ArrayList<RealVector> vectorGrads;
+    protected IntArrayList vectorIndexes;
 
-    private double objval;
+    protected double objval;
 
     public LearningOracle() {
         scalarIndexes = new IntArrayList();
@@ -42,8 +42,8 @@ public class StochasticOracle {
 }
 
 public class DiscriminativeOracle extends StochasticOracle {
-    private double modelOutput;
-    private double insLabel;
+    protected double modelOutput;
+    protected double insLabel;
 
     public DiscriminativeOracle(double inLabel) {
         objval = 0;

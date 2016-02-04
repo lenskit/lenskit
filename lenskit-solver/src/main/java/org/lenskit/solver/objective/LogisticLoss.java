@@ -7,7 +7,7 @@ import org.lenskit.solver.method;
 public class LogisticLoss implements ObjectiveFunction {
     public LogisticLoss() { }
 
-    public void wrapOracle(LearningOracle orc) {
+    public void wrapOracle(DiscriminativeOracle orc) {
         double output = orc.getModelOutput();
         double label = orc.getInstanceLabel();
         orc.setObjValue(Math.log(1 + Math.exp(output)) - label * output);
