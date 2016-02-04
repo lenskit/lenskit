@@ -39,6 +39,6 @@ public abstract class LearningModel {
     }
 
     abstract void assignVariables();
-    abstract LearningOracle getStochasticOracle();
+    abstract StochasticOracle getStochasticOracle();
     abstract void startNewIteration() throws IOException;
 }
