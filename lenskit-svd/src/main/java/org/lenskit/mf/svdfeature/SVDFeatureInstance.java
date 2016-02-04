@@ -5,7 +5,7 @@ import java.util.ArrayList;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class SVDFeatureInstance {
+public class SVDFeatureInstance extends LearningInstance {
     private double label;
     private ArrayList<Feature> gfeas;
     private ArrayList<Feature> ufeas;

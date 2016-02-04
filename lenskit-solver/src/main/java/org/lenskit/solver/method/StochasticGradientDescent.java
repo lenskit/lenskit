@@ -13,32 +13,55 @@ import org.lenskit.solver.objective.ObjectiveFunction;
 
 // Objective function is changed from f(X) to f(X) + l2coef * |X|^2
 public class StochasticGradientDescent extends OptimizationHelper implements OptimizationMethod {
+    private int maxIter;
+    private double l2coef;
+    private double lr;
 
-    public void minimize(LearningModel model, ObjectiveFunction objFunc, int maxIter,
-                    double l2coef, double learningRate) throws IOException {
+    public void StochasticGradientDescent(int inMaxIter, double inL2coef, double inLearningRate) {
+        maxIter = inMaxIter;
+        l2coef = inL2coef;
+        lr = inLearningRate;
+    }
+
+    public void minimize(LearningModel model, ObjectiveFunction objFunc) {
         ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(maxIter);
-        double objval = 0;
+        HashMap<String, RealVector> scalarVars = model.getScalarVars();
+        HashMap<String, RealMatrix> vectorVars = model.getVectorVars();
+        L2Regularizer l2term = new L2Regularizer();
+        double objVal = 0;
         while (termCrit.keepIterate()) {
-            objval = 0;
+            objVal = 0;
             model.startNewIteration();
+            LearningInstance ins;
             StochasticOracle orc;
-            while ((orc = model.getStochasticOracle()) != null) {
+            while ((ins = model.getLearningInstance()) != null) {
+                orc = model.getStochasticOracle(ins);
                 objFunc.wrapOracle(orc);
-                IntArrayList varIndList = orc.getVarIndexes();
-                DoubleArrayList varList = orc.getVariables();
-                DoubleArrayList gradList = orc.getGradients();
-                for (int i=0; i<varList.size(); i++) {
-                    double var = varList.get(i);
-                    double grad = gradList.get(i);
-                    grad += getRegularizerGradient(var, 0, l2coef);
-                    double newVar = var - learningRate * grad;
-                    int ind = varIndList.get(i);
-                    model.setVariable(ind, newVar);
+                for (int i=0; i<orc.scalarNames.size(); i++) {
+                    String name = orc.scalarNames.get(i);
+                    double idx = orc.scalarIndexes.get(i);
+                    double grad = orc.scalarGrads.get(i);
+                    double var = scalarVars[name].get(idx);
+                    scalarVars[name].setEntry(idx, var - lr * (grad + l2coef * l2term.getGradient(var)));
                 }
-                objval += orc.getObjValue();
+                for (int i=0; i<orc.vectorNames.size(); i++) {
+                    String name = orc.vectorNames.get(i);
+                    double idx = orc.vectorIndexes.get(i);
+                    RealVector grad = orc.vectorGrads.get(i);
+                    RealVector var = vectorVars[name].getRowVector(idx);
+                    var.combineToSelf(1.0, -lr, l2term.addGradient(grad, var, l2coef));
+                }
+                objVal += orc.objVal;
             }
-            objval += getRegularizerObjective(model, 0, l2coef);
-            termCrit.addIteration(objval);
+            for (RealVector var : scalarVars.values()) {
+                double l2norm = var.getNorm();
+                objVal += (l2coef * l2norm * l2norm);
+            }
+            for (RealMatrix var : vectorVars.values()) {
+                double fnorm = var.getFrobeniusNorm();
+                objVal += (l2coef * fnorm * fnorm);
+            }
+            termCrit.addIteration(objVal);
         }
     }
 }
