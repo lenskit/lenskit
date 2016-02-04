@@ -53,7 +53,7 @@ public class SVDFeatureModel extends LearningModel {
         for (int i=0; i<ufeas.size(); i++) {
             int index = ufeas.get(i).getIndex();
             outUfactSum.mapMultiplyToSelf(ufeas.get(i).getValue());
-            ArrayHelper.addition(outUfactSum, factors.getRowVector(index));
+            ArrayHelper.addTo(outUfactSum, factors.getRowVector(index));
         }
 
         outIfactSum = MatrixUtils.createRealVector(new double[factDim]);
@@ -62,14 +62,14 @@ public class SVDFeatureModel extends LearningModel {
         for (int i=0; i<ifeas.size(); i++) {
             int index = ifeas.get(i).getIndex();
             outIfactSum.mapMultiplyToSelf(ifeas.get(i).getValue());
-            ArrayHelper.addition(outIfactSum, factors.getRowVector(index));
+            ArrayHelper.addTo(outIfactSum, factors.getRowVector(index));
         }
 
         pred += kernel.getValue(outUfactSum, outIfactSum);
         return pred;
     }
 
-    public StochasticOracle getStochasticOracle() throws IOException {
+    public LearningInstance getLearningInstance() {
         SVDFeatureInstance ins;
         try {
             ins = dao.getNextInstance();
@@ -79,6 +79,10 @@ public class SVDFeatureModel extends LearningModel {
         if (ins == null) {
             return null;
         }
+        return ins;
+    }
+
+    public StochasticOracle getStochasticOracle(SVDFeatureInstance ins) {
         StochasticOracle orc = new StochasticOracle();
         RealVector ufactSum, ifactSum;
         double pred = predict(ins, orc, ufactSum, ifactSum);
@@ -102,13 +106,10 @@ public class SVDFeatureModel extends LearningModel {
         return orc;
     }
 
-    public StochasticOracle getNextAlternatingOracle(int k) throws IOException {
-        StochasticOracle orc = new StochasticOracle();
-        return orc;
-    }
-
-    public void startNewIteration() throws IOException {
-        dao.goBackToBeginning();
+    public void startNewIteration() {
+        try {
+            dao.goBackToBeginning();
+        } catch (IOException e) {}
     }
 
     public double predict(SVDFeatureInstance ins, boolean sigmoid) {
