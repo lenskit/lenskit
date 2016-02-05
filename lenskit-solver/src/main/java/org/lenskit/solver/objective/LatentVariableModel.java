@@ -5,7 +5,7 @@ import java.io.IOException;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public interface LatentVariableModel implements LearningModel {
-    public void expectation();
-    public void maximization();
+public abstract class LatentVariableModel extends LearningModel {
+    public abstract void expectation();
+    public abstract void maximization();
 }

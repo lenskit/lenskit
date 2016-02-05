@@ -76,9 +76,6 @@ public class SVDFeatureModel extends LearningModel {
         } catch (IOException e) {
             ins = null;
         }
-        if (ins == null) {
-            return null;
-        }
         return ins;
     }
 

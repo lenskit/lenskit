@@ -20,7 +20,8 @@ public abstract class LearningModel {
     protected requestScalarVar(String name, int size, double initial, boolean randomize) {
         RealVector var = MatrixUtils.createRealVector(new double[size]);
         if (randomize) {
-            //do randomization for var
+            RandomInitializer randInit = new RandomInitializer();
+            randInit.randInitVector(var);
         } else {
             var.set(initial);
         }
@@ -30,7 +31,8 @@ public abstract class LearningModel {
     protected requestVectorVar(String name, int size, int dim, double initial, boolean randomize) {
         RealMatrix var = MatrixUtils.createRealMatrix(size, dim);
         if (randomize) {
-            //do randomization for var
+            RandomInitializer randInit = new RandomInitializer();
+            randInit.randInitMatrix(var);
         } else {
             var.set(initial);
         }

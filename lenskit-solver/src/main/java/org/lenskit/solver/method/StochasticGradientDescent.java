@@ -12,19 +12,28 @@ import org.lenskit.solver.objective.ObjectiveFunction;
  */
 
 // Objective function is changed from f(X) to f(X) + l2coef * |X|^2
-public class StochasticGradientDescent extends OptimizationHelper implements OptimizationMethod {
+public class StochasticGradientDescent implements OptimizationMethod {
     private int maxIter;
     private double l2coef;
     private double lr;
+    private double tol;
 
-    public void StochasticGradientDescent(int inMaxIter, double inL2coef, double inLearningRate) {
+    public StochasticGradientDescent() {
+        maxIter = 50;
+        l2coef = 0.01;
+        lr = 0.005;
+        tol = 1.0;
+    }
+
+    public StochasticGradientDescent(int inMaxIter, double inL2coef, double inLearningRate, double inTol) {
         maxIter = inMaxIter;
         l2coef = inL2coef;
         lr = inLearningRate;
+        tol = inTol;
     }
 
     public void minimize(LearningModel model, ObjectiveFunction objFunc) {
-        ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(maxIter);
+        ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
         HashMap<String, RealVector> scalarVars = model.getScalarVars();
         HashMap<String, RealMatrix> vectorVars = model.getVectorVars();
         L2Regularizer l2term = new L2Regularizer();

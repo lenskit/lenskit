@@ -8,6 +8,6 @@ import org.lenskit.solver.method;
 public class IdentityFunction {
     public IdentityFunction() {}
     public void wrapOracle(StochasticOracle orc) {
-        orc.setObjValue(orc.getModelOutput());
+        orc.objVal = orc.modelOutput;
     };
 }
