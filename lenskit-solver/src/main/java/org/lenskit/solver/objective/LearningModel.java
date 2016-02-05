@@ -12,7 +12,10 @@ public abstract class LearningModel {
     protected HashMap<String, RealVector> scalarVars;
     protected HashMap<String, RealMatrix> vectorVars;
 
-    public LearningModel() {}
+    public LearningModel() {
+        scalarVars = new HashMap<String, RealVector>();
+        vectorVars = new HashMap<String, RealMatrix>();
+    }
 
     public HashMap<String, RealVector> getScalarVars() {
         return scalarVars;
