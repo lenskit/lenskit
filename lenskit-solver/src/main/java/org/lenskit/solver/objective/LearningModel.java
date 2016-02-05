@@ -34,7 +34,11 @@ public abstract class LearningModel {
             RandomInitializer randInit = new RandomInitializer();
             randInit.randInitMatrix(var);
         } else {
-            var.set(initial);
+            if (initial != 0) {
+                for (int i=0; i<size; i++) {
+                    var.getRowVector(i).set(initial);
+                }
+            }
         }
         vectorVars[name] = var;
         return var;
