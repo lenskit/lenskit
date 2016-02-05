@@ -25,7 +25,7 @@ public class BatchGradientDescent implements OptimizationMethod {
     public BatchGradientDescent() {
         maxIter = 50;
         l2coef = 0.01;
-        lr = 0.005;
+        lr = 10e-6;
         tol = 1.0;
         scalarGrads = new HashMap<String, RealVector>();
         vectorGrads = new HashMap<String, RealMatrix>();

@@ -22,6 +22,6 @@ public class SVDFeatureModelBuildTest {
         SVDFeatureInstanceDAO dao = new SVDFeatureInstanceDAO(new File(path), " ");
         LogisticLoss loss = new LogisticLoss();
         SVDFeatureModelBuilder modelBuilder = new SVDFeatureModelBuilder(numBiases, numFactors, dim, dao, loss);
-        modelBuilder.build();
+        SVDFeatureModel model = modelBuilder.build();
     }
 }
