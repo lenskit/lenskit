@@ -1,9 +1,5 @@
 package org.lenskit.solver.objective;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-
-import org.lenskit.solver.method;
-
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */

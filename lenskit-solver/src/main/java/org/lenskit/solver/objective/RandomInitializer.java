@@ -1,5 +1,10 @@
 package org.lenskit.solver.objective;
 
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+
+import java.util.Random;
+
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
@@ -20,7 +25,7 @@ public class RandomInitializer {
     public void randInitVector(RealVector vec) {
         int len = vec.getDimension();
         for (int i=0; i<len; i++) {
-            vec.setEntry(rand.nextDouble() * multi);
+            vec.setEntry(i, rand.nextDouble() * multi);
         }
     }
 

@@ -7,6 +7,7 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 
+import org.lenskit.solver.objective.LearningInstance;
 import org.lenskit.solver.objective.LearningModel;
 import org.lenskit.solver.objective.StochasticOracle;
 
@@ -15,6 +16,8 @@ import org.lenskit.solver.objective.StochasticOracle;
  */
 public class SVDFeatureModel extends LearningModel {
     private SVDFeatureInstanceDAO dao;
+    private RealVector biases;
+    private RealMatrix factors;
     private int factDim;
     private int numFactors;
     private int numBiases;
@@ -26,7 +29,7 @@ public class SVDFeatureModel extends LearningModel {
         dao = inDao;
     }
 
-    public assignVariables() {
+    public void assignVariables() {
         biases = requestScalarVar("biases", numBiases, 0, false);
         factors = requestVectorVar("factors", numFactors, factDim, 0, true);
     }
@@ -39,12 +42,11 @@ public class SVDFeatureModel extends LearningModel {
             int ind = gfeas.get(i).getIndex();
             double val = gfeas.get(i).getValue();
             if (outOrc != null) {
-                outOrc.addScalar("biases", ind, val);
+                outOrc.addScalarOracle("biases", ind, val);
             }
             pred += biases.getEntry(ind) * val;
         }
 
-        outUfactSum = MatrixUtils.createRealVector(new double[factDim]);
         outUfactSum.set(0.0);
         ArrayList<Feature> ufeas = inIns.getUserFeas();
         for (int i=0; i<ufeas.size(); i++) {
@@ -53,7 +55,6 @@ public class SVDFeatureModel extends LearningModel {
             outUfactSum.combineToSelf(1.0, 1.0, factors.getRowVector(index));
         }
 
-        outIfactSum = MatrixUtils.createRealVector(new double[factDim]);
         outUfactSum.set(0.0);
         ArrayList<Feature> ifeas = inIns.getItemFeas();
         for (int i=0; i<ifeas.size(); i++) {
@@ -66,7 +67,7 @@ public class SVDFeatureModel extends LearningModel {
         return pred;
     }
 
-    public LearningInstance getLearningInstance() {
+    public SVDFeatureInstance getLearningInstance() {
         SVDFeatureInstance ins;
         try {
             ins = dao.getNextInstance();
@@ -76,22 +77,29 @@ public class SVDFeatureModel extends LearningModel {
         return ins;
     }
 
-    public StochasticOracle getStochasticOracle(SVDFeatureInstance ins) {
+    public StochasticOracle getStochasticOracle(LearningInstance inIns) {
+        SVDFeatureInstance ins;
+        if (inIns instanceof SVDFeatureInstance) {
+            ins = (SVDFeatureInstance) inIns;
+        } else {
+            return null;
+        }
         StochasticOracle orc = new StochasticOracle();
-        RealVector ufactSum, ifactSum;
+        RealVector ufactSum = MatrixUtils.createRealVector(new double[factDim]);
+        RealVector ifactSum = MatrixUtils.createRealVector(new double[factDim]);
         double pred = predict(ins, orc, ufactSum, ifactSum);
    
         RealVector leftGrad = ifactSum;
         RealVector rightGrad = ufactSum;
         String name = "factors";
-        ArrayList<Feature> ufeas = inIns.getUserFeas();
+        ArrayList<Feature> ufeas = ins.getUserFeas();
         for (int i=0; i<ufeas.size(); i++) {
-            orc.addVector(name, ufeas.get(i).getIndex(), 
+            orc.addVectorOracle(name, ufeas.get(i).getIndex(),
                     leftGrad.mapMultiply(ufeas.get(i).getValue()));
         }
-        ArrayList<Feature> ifeas = inIns.getItemFeas();
+        ArrayList<Feature> ifeas = ins.getItemFeas();
         for (int i=0; i<ifeas.size(); i++) {
-            orc.addVector(name, ifeas.get(i).getIndex(),
+            orc.addVectorOracle(name, ifeas.get(i).getIndex(),
                     rightGrad.mapMultiply(ifeas.get(i).getValue()));
         }
 
@@ -107,7 +115,8 @@ public class SVDFeatureModel extends LearningModel {
     }
 
     public double predict(SVDFeatureInstance ins, boolean sigmoid) {
-        RealVector ufactSum, ifactSum;
+        RealVector ufactSum = MatrixUtils.createRealVector(new double[factDim]);
+        RealVector ifactSum = MatrixUtils.createRealVector(new double[factDim]);
         double pred = predict(ins, null, ufactSum, ifactSum);
         if (sigmoid) {
             return 1 / (1 + Math.exp(-pred)); 

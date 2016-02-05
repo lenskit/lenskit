@@ -1,5 +1,7 @@
 package org.lenskit.mf.svdfeature;
 
+import org.lenskit.solver.objective.LearningInstance;
+
 import java.util.ArrayList;
 
 /**

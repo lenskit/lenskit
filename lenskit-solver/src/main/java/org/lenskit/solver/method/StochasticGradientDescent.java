@@ -1,11 +1,10 @@
 package org.lenskit.solver.method;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+import org.lenskit.solver.objective.*;
 
-import java.io.IOException;
-
-import org.lenskit.solver.objective.ObjectiveFunction;
+import java.util.HashMap;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -48,16 +47,16 @@ public class StochasticGradientDescent implements OptimizationMethod {
                 objFunc.wrapOracle(orc);
                 for (int i=0; i<orc.scalarNames.size(); i++) {
                     String name = orc.scalarNames.get(i);
-                    double idx = orc.scalarIndexes.get(i);
+                    int idx = orc.scalarIndexes.get(i);
                     double grad = orc.scalarGrads.get(i);
-                    double var = scalarVars[name].get(idx);
-                    scalarVars[name].setEntry(idx, var - lr * (grad + l2coef * l2term.getGradient(var)));
+                    double var = scalarVars.get(name).getEntry(idx);
+                    scalarVars.get(name).setEntry(idx, var - lr * (grad + l2coef * l2term.getGradient(var)));
                 }
                 for (int i=0; i<orc.vectorNames.size(); i++) {
                     String name = orc.vectorNames.get(i);
-                    double idx = orc.vectorIndexes.get(i);
+                    int idx = orc.vectorIndexes.get(i);
                     RealVector grad = orc.vectorGrads.get(i);
-                    RealVector var = vectorVars[name].getRowVector(idx);
+                    RealVector var = vectorVars.get(name).getRowVector(idx);
                     var.combineToSelf(1.0, -lr, l2term.addGradient(grad, var, l2coef));
                 }
                 objVal += orc.objVal;

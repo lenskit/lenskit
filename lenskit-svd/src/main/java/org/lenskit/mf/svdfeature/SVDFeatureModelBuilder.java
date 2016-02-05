@@ -2,6 +2,7 @@ package org.lenskit.mf.svdfeature;
 
 import java.io.IOException;
 
+import org.lenskit.solver.method.StochasticGradientDescent;
 import org.lenskit.solver.objective.ObjectiveFunction;
 import org.lenskit.solver.method.OptimizationMethod;
 

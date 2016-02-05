@@ -1,5 +1,7 @@
 package org.lenskit.solver.objective;
 
+import org.apache.commons.math3.linear.RealVector;
+
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */

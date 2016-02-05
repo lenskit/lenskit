@@ -1,6 +1,9 @@
 package org.lenskit.solver.objective;
 
-import java.io.IOException;
+import java.util.HashMap;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.linear.RealMatrix;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -17,7 +20,7 @@ public abstract class LearningModel {
     public HashMap<String, RealMatrix> getVectorVars() {
         return vectorVars;
     }
-    protected requestScalarVar(String name, int size, double initial, boolean randomize) {
+    protected RealVector requestScalarVar(String name, int size, double initial, boolean randomize) {
         RealVector var = MatrixUtils.createRealVector(new double[size]);
         if (randomize) {
             RandomInitializer randInit = new RandomInitializer();
@@ -25,10 +28,10 @@ public abstract class LearningModel {
         } else {
             var.set(initial);
         }
-        scalarVars[name] = var;
+        scalarVars.put(name, var);
         return var;
     }
-    protected requestVectorVar(String name, int size, int dim, double initial, boolean randomize) {
+    protected RealMatrix requestVectorVar(String name, int size, int dim, double initial, boolean randomize) {
         RealMatrix var = MatrixUtils.createRealMatrix(size, dim);
         if (randomize) {
             RandomInitializer randInit = new RandomInitializer();
@@ -40,16 +43,12 @@ public abstract class LearningModel {
                 }
             }
         }
-        vectorVars[name] = var;
+        vectorVars.put(name, var);
         return var;
     }
 
-    abstract LearningInstance getLearningInstance();
-    abstract void startNewIteration();
-    abstract void assignVariables();
-    abstract StochasticOracle getStochasticOracle(LearningInstance ins);
-}
-
-public abstract class LearningInstance {
-    abstract LearningInstance();
+    public abstract LearningInstance getLearningInstance();
+    public abstract void startNewIteration();
+    public abstract void assignVariables();
+    public abstract StochasticOracle getStochasticOracle(LearningInstance ins);
 }
