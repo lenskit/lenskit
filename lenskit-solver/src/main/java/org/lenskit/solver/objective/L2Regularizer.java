@@ -4,6 +4,8 @@ package org.lenskit.solver.objective;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class L2Regularizer {
+    public L2Regularizer() {}
+
     public double getValue(double var) {
         return var * var;
     }

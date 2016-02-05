@@ -10,14 +10,14 @@ import org.lenskit.solver.method;
 public class L2NormLoss implements ObjectiveFunction {
     public L2NormLoss() { }
 
-    public void wrapOracle(LearningOracle orc) {
-        double output = orc.getModelOutput();
-        double label = orc.getInstanceLabel();
-        double err = output - label;
-        orc.setObjValue(err * err);
-        DoubleArrayList gradList = orc.getGradients();
-        for (int i=0; i<gradList.size(); i++) {
-            orc.setGradient(i, err * gradList.get(i));
+    public void wrapOracle(StochasticOracle orc) {
+        double err = orc.modelOutput - orc.insLabel;
+        orc.objVal = err * err;
+        for (int i=0; i<orc.scalarGrads.size(); i++) {
+            orc.scalarGrads.set(i, orc.scalarGrads.getDouble(i) * err);
+        }
+        for (int i=0; i<orc.vectorGrads.size(); i++) {
+            orc.vectorGrads.get(i).mapMultiplyToSelf(err);
         }
     }
 }

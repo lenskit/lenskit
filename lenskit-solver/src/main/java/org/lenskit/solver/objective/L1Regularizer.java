@@ -4,6 +4,8 @@ package org.lenskit.solver.objective;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class L1Regularizer {
+    public L1Regularizer() {}
+
     public double getValue(double var) {
         return Math.abs(var);
     }

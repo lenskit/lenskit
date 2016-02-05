@@ -1,7 +1,5 @@
 package org.lenskit.solver.method;
 
-import java.io.IOException;
-
 import org.lenskit.objective.ObjectiveFunction;
 
 /**

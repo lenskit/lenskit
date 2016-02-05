@@ -10,19 +10,19 @@ import org.lenskit.solver.method;
 public class HingeLoss implements ObjectiveFunction {
     public HingeLoss() { }
 
-    public void wrapOracle(LearningOracle orc) {
-        double output = orc.getModelOutput();
-        double label = orc.getInstanceLabel();
+    public void wrapOracle(StochasticOracle orc) {
+        double label = orc.insLabel;
         if (label == 0) {
             label = -1;
         }
-        double loss = 1 - output * label;
-        loss = (loss < 0) ? 0 : loss;
-        orc.setObjValue(loss);
-        DoubleArrayList gradList = orc.getGradients();
+        double loss = 1 - orc.modelOutput * label;
+        orc.objVal = (loss < 0) ? 0 : loss;
         double hingeGrad = (loss == 0) ? 0 : -label;
-        for (int i=0; i<gradList.size(); i++) {
-            orc.setGradient(i, hingeGrad * gradList.get(i));
+        for (int i=0; i<orc.scalarGrads.size(); i++) {
+            orc.scalarGrads.set(i, orc.scalarGrads.getDouble(i) * hingeGrad);
+        }
+        for (int i=0; i<orc.vectorGrads.size(); i++) {
+            orc.vectorGrads.get(i).mapMultiplyToSelf(hingeGrad);
         }
     }
 }
