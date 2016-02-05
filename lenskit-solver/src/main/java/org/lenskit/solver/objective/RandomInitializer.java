@@ -8,7 +8,7 @@ public class RandomInitializer {
     Random rand;
 
     public RandomInitializer() {
-        multi = 1.0;
+        multi = 0.001;
         rand = new Random();
     }
 

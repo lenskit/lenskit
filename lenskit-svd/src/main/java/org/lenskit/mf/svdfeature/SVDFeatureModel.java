@@ -18,15 +18,12 @@ public class SVDFeatureModel extends LearningModel {
     private int factDim;
     private int numFactors;
     private int numBiases;
-    private KernelFunction kernel;
 
-    public SVDFeatureModel(int inNumBiases, int inNumFactors, int infactDim,
-                           SVDFeatureInstanceDAO inDao, KernelFunction inKernel) {
+    public SVDFeatureModel(int inNumBiases, int inNumFactors, int infactDim, SVDFeatureInstanceDAO inDao) {
         factDim = infactDim;
         numBiases = inNumBiases;
         numFactors = inNumFactors;
         dao = inDao;
-        kernel = inKernel;
     }
 
     public assignVariables() {
@@ -53,7 +50,7 @@ public class SVDFeatureModel extends LearningModel {
         for (int i=0; i<ufeas.size(); i++) {
             int index = ufeas.get(i).getIndex();
             outUfactSum.mapMultiplyToSelf(ufeas.get(i).getValue());
-            ArrayHelper.addTo(outUfactSum, factors.getRowVector(index));
+            outUfactSum.combineToSelf(1.0, 1.0, factors.getRowVector(index));
         }
 
         outIfactSum = MatrixUtils.createRealVector(new double[factDim]);
@@ -62,10 +59,10 @@ public class SVDFeatureModel extends LearningModel {
         for (int i=0; i<ifeas.size(); i++) {
             int index = ifeas.get(i).getIndex();
             outIfactSum.mapMultiplyToSelf(ifeas.get(i).getValue());
-            ArrayHelper.addTo(outIfactSum, factors.getRowVector(index));
+            outIfactSum.combineToSelf(1.0, 1.0, factors.getRowVector(index));
         }
 
-        pred += kernel.getValue(outUfactSum, outIfactSum);
+        pred += outUfactSum.dotProduct(outIfactSum);
         return pred;
     }
 
@@ -84,8 +81,8 @@ public class SVDFeatureModel extends LearningModel {
         RealVector ufactSum, ifactSum;
         double pred = predict(ins, orc, ufactSum, ifactSum);
    
-        RealVector leftGrad, rightGrad;
-        kernel.getGradient(ufactSum, ifactSum, leftGrad, rightGrad);
+        RealVector leftGrad = ifactSum;
+        RealVector rightGrad = ufactSum;
         String name = "factors";
         ArrayList<Feature> ufeas = inIns.getUserFeas();
         for (int i=0; i<ufeas.size(); i++) {
@@ -95,11 +92,11 @@ public class SVDFeatureModel extends LearningModel {
         ArrayList<Feature> ifeas = inIns.getItemFeas();
         for (int i=0; i<ifeas.size(); i++) {
             orc.addVector(name, ifeas.get(i).getIndex(),
-                    leftGrad.mapMultiply(ifeas.get(i).getValue()));
+                    rightGrad.mapMultiply(ifeas.get(i).getValue()));
         }
 
-        orc.setModelOutput(pred);
-        orc.setInstanceLabel(ins.getLabel());
+        orc.modelOutput = pred;
+        orc.insLabel = ins.getLabel();
         return orc;
     }
 
@@ -113,7 +110,7 @@ public class SVDFeatureModel extends LearningModel {
         RealVector ufactSum, ifactSum;
         double pred = predict(ins, null, ufactSum, ifactSum);
         if (sigmoid) {
-            return 1 / (1 + Math.exp(-pred)); //define a sigmoid function for cases pred is very big or small
+            return 1 / (1 + Math.exp(-pred)); 
         } else {
             return pred;
         }

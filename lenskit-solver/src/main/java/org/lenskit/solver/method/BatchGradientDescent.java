@@ -40,41 +40,31 @@ public class BatchGradientDescent implements OptimizationMethod {
         vectorGrads = new HashMap<String, RealMatrix>();
     }
 
-    public void minimize(LearningModel model, ObjectiveFunction objFunc, double tol, int maxIter,
-                    double l2coef, double learningRate) throws IOException {
-        ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
-        double objval = 0;
-        int numVars = model.getNumOfVariables();
-        double[] grads = new double[numVars];
-        while (termCrit.keepIterate()) {
-            objval = 0;
-            model.startNewIteration();
-            ArrayHelper.initialize(grads, 0);
-            LearningOracle orc;
-            while ((orc = model.getNextOracle()) != null) {
-                objFunc.wrapOracle(orc);
-                IntArrayList varIndList = orc.getVarIndexes();
-                DoubleArrayList gradList = orc.getGradients();
-                for (int i=0; i<varIndList.size(); i++) {
-                    double grad = gradList.get(i);
-                    int ind = varIndList.get(i);
-                    grads[ind] += grad;
-                }
-                objval += orc.getObjValue();
-            }
-            for (int i=0; i<numVars; i++) {
-                double var = model.getVariable(i);
-                double grad = grads[i];
-                grad += getRegularizerGradient(var, 0, l2coef);
-                double newVar = var - learningRate * grad;
-                model.setVariable(i, newVar);
-            }
-            termCrit.addIteration(objval);
+    private void assignGrads(HashMap<String, RealVector> scalarVars, HashMap<String, RealVector> vectorVars) {
+        for (Map.Entry<String, RealVector> entry : scalarVars.entrySet()) {
+            String name = entry.getKey();
+            RealVector var = entry.getValue();
+            scalarGrads[name] = MatrixUtils.createRealVector(new double[var.getDimension()]);
+            scalarGrads[name].set(0.0);
+        }
+        for (Map.Entry<String, RealMatrix> entry : vectorVars.entrySet()) {
+            String name = entry.getKey();
+            RealMatrix var = entry.getValue();
+            vectorGrads[name] = MatrixUtils.createRealMatrix(var.getRowDimension(), var.getColumnDimension());
         }
     }
 
-    private void assignGrads(HashMap<String, RealVector> scalarVars) {
-
+    private void updateVars(HashMap<String, RealVector> scalarVars, HashMap<String, RealVector> vectorVars) {
+        for (Map.Entry<String, RealVector> entry : scalarVars.entrySet()) {
+            String name = entry.getKey();
+            RealVector var = entry.getValue();
+            var.combineToSelf(1.0, -lr, scalarGrads[name]);
+        }
+        for (Map.Entry<String, RealMatrix> entry : vectorVars.entrySet()) {
+            String name = entry.getKey();
+            RealMatrix var = entry.getValue();
+            var.substract(vectorGrads[name].scalarMultiply(lr));
+        }
     }
 
     public void minimize(LearningModel model, ObjectiveFunction objFunc) {
@@ -97,14 +87,14 @@ public class BatchGradientDescent implements OptimizationMethod {
                     double idx = orc.scalarIndexes.get(i);
                     double grad = orc.scalarGrads.get(i);
                     double var = scalarVars[name].get(idx);
-                    scalarVars[name].setEntry(idx, var - lr * (grad + l2coef * l2term.getGradient(var)));
+                    scalarGrads[name].addToEntry(idx, grad + l2coef * l2term.getGradient(var));
                 }
                 for (int i=0; i<orc.vectorNames.size(); i++) {
                     String name = orc.vectorNames.get(i);
                     double idx = orc.vectorIndexes.get(i);
                     RealVector grad = orc.vectorGrads.get(i);
                     RealVector var = vectorVars[name].getRowVector(idx);
-                    var.combineToSelf(1.0, -lr, l2term.addGradient(grad, var, l2coef));
+                    vectorGrads[name].combineToSelf(1.0, 1.0, l2term.addGradient(grad, var, l2coef));
                 }
                 objVal += orc.objVal;
             }
@@ -116,6 +106,7 @@ public class BatchGradientDescent implements OptimizationMethod {
                 double fnorm = var.getFrobeniusNorm();
                 objVal += (l2coef * fnorm * fnorm);
             }
+            updateVars(scalarVars, vectorVars);
             termCrit.addIteration(objVal);
         }
     }
