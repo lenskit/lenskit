@@ -1,4 +1,4 @@
-package org.lenskit.solver;
+package org.lenskit.solver.method;
 
 import java.util.ArrayList;
 

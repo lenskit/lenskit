@@ -1,12 +1,12 @@
 package org.lenskit.solver.method;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+import org.lenskit.solver.objective.*;
 
-import java.io.IOException;
-
-import org.lenskit.mf.svdfeature.ArrayHelper;
-import org.lenskit.solver.objective.ObjectiveFunction;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -40,30 +40,32 @@ public class BatchGradientDescent implements OptimizationMethod {
         vectorGrads = new HashMap<String, RealMatrix>();
     }
 
-    private void assignGrads(HashMap<String, RealVector> scalarVars, HashMap<String, RealVector> vectorVars) {
+    private void assignGrads(HashMap<String, RealVector> scalarVars, HashMap<String, RealMatrix> vectorVars) {
         for (Map.Entry<String, RealVector> entry : scalarVars.entrySet()) {
             String name = entry.getKey();
             RealVector var = entry.getValue();
-            scalarGrads[name] = MatrixUtils.createRealVector(new double[var.getDimension()]);
-            scalarGrads[name].set(0.0);
+            RealVector grad = MatrixUtils.createRealVector(new double[var.getDimension()]);
+            grad.set(0.0);
+            scalarGrads.put(name, grad);
         }
         for (Map.Entry<String, RealMatrix> entry : vectorVars.entrySet()) {
             String name = entry.getKey();
             RealMatrix var = entry.getValue();
-            vectorGrads[name] = MatrixUtils.createRealMatrix(var.getRowDimension(), var.getColumnDimension());
+            RealMatrix grad = MatrixUtils.createRealMatrix(var.getRowDimension(), var.getColumnDimension());
+            vectorGrads.put(name, grad);
         }
     }
 
-    private void updateVars(HashMap<String, RealVector> scalarVars, HashMap<String, RealVector> vectorVars) {
+    private void updateVars(HashMap<String, RealVector> scalarVars, HashMap<String, RealMatrix> vectorVars) {
         for (Map.Entry<String, RealVector> entry : scalarVars.entrySet()) {
             String name = entry.getKey();
             RealVector var = entry.getValue();
-            var.combineToSelf(1.0, -lr, scalarGrads[name]);
+            var.combineToSelf(1.0, -lr, scalarGrads.get(name));
         }
         for (Map.Entry<String, RealMatrix> entry : vectorVars.entrySet()) {
             String name = entry.getKey();
             RealMatrix var = entry.getValue();
-            var.substract(vectorGrads[name].scalarMultiply(lr));
+            var.subtract(vectorGrads.get(name).scalarMultiply(lr));
         }
     }
 
@@ -84,17 +86,17 @@ public class BatchGradientDescent implements OptimizationMethod {
                 objFunc.wrapOracle(orc);
                 for (int i=0; i<orc.scalarNames.size(); i++) {
                     String name = orc.scalarNames.get(i);
-                    double idx = orc.scalarIndexes.get(i);
+                    int idx = orc.scalarIndexes.get(i);
                     double grad = orc.scalarGrads.get(i);
-                    double var = scalarVars[name].get(idx);
-                    scalarGrads[name].addToEntry(idx, grad + l2coef * l2term.getGradient(var));
+                    double var = scalarVars.get(name).getEntry(idx);
+                    scalarGrads.get(name).addToEntry(idx, grad + l2coef * l2term.getGradient(var));
                 }
                 for (int i=0; i<orc.vectorNames.size(); i++) {
                     String name = orc.vectorNames.get(i);
-                    double idx = orc.vectorIndexes.get(i);
+                    int idx = orc.vectorIndexes.get(i);
                     RealVector grad = orc.vectorGrads.get(i);
-                    RealVector var = vectorVars[name].getRowVector(idx);
-                    vectorGrads[name].combineToSelf(1.0, 1.0, l2term.addGradient(grad, var, l2coef));
+                    RealVector var = vectorVars.get(name).getRowVector(idx);
+                    vectorGrads.get(name).getRowVector(idx).combineToSelf(1.0, 1.0, l2term.addGradient(grad, var, l2coef));
                 }
                 objVal += orc.objVal;
             }

@@ -1,9 +1,5 @@
 package org.lenskit.solver.objective;
 
-import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
-
-import org.lenskit.solver.method;
-
 public class LogisticLoss implements ObjectiveFunction {
     public LogisticLoss() { }
 
@@ -14,7 +10,7 @@ public class LogisticLoss implements ObjectiveFunction {
         } else if (y > 30.0) {
             return 0.999;
         } else {
-            return 1.0 / (1.0 + math.exp(-y));
+            return 1.0 / (1.0 + Math.exp(-y));
         }
     }
 
