@@ -1,27 +1,32 @@
 package org.lenskit.solver.method;
 
+import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ObjectiveTerminationCriterion {
+    private static Logger logger = LoggerFactory.getLogger(StochasticGradientDescent.class);
     private int maxIter;
     private int curIter;
     private double tol;
-    private ArrayList<Double> objHistory;
+    private DoubleArrayList objHistory;
 
     public ObjectiveTerminationCriterion(double outTol, int outMaxIter) {
         maxIter = outMaxIter;
         tol = outTol;
         curIter = 0;
-        objHistory = new ArrayList<Double>();
+        objHistory = new DoubleArrayList();
     }
 
-    public void addIteration(double objval) {
+    public void addIteration(double objVal) {
         curIter++;
-        objHistory.add(objval);
-        System.out.println(Integer.toString(curIter) + ": " + Double.toString(objval));
+        objHistory.add(objVal);
+        logger.info("Iteration {}: objective value is {}", curIter, objVal);
     }
 
     public boolean keepIterate() {

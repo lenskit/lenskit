@@ -22,8 +22,8 @@ public class SVDFeatureModel extends LearningModel {
     private int numFactors;
     private int numBiases;
 
-    public SVDFeatureModel(int inNumBiases, int inNumFactors, int infactDim, SVDFeatureInstanceDAO inDao) {
-        factDim = infactDim;
+    public SVDFeatureModel(int inNumBiases, int inNumFactors, int inFactDim, SVDFeatureInstanceDAO inDao) {
+        factDim = inFactDim;
         numBiases = inNumBiases;
         numFactors = inNumFactors;
         dao = inDao;

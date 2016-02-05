@@ -31,6 +31,7 @@ public class SVDFeatureModelBuilder {
     }
 
     public SVDFeatureModel build() throws IOException {
+        model.assignVariables();
         method.minimize(model, loss);
         return model;
     }
