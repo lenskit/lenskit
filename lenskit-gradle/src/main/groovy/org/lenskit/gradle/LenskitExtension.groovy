@@ -78,8 +78,9 @@ public class LenskitExtension {
 * */
     def List<String> jvmArgs
 
-    def addJVMArgs(String val){
-        return val.split(" ").toList()
+    def jvmArgs(String... val){
+        jvmArgs.add(val)
+//        return val.split(" ").toList()
     }
 
 }
