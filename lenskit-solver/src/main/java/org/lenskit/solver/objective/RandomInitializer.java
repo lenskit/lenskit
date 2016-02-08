@@ -22,17 +22,25 @@ public class RandomInitializer {
         rand = new Random(seed);
     }
 
-    public void randInitVector(RealVector vec) {
+    public void randInitVector(RealVector vec, boolean normalize) {
         int len = vec.getDimension();
+        double sum = 0.0
         for (int i=0; i<len; i++) {
-            vec.setEntry(i, rand.nextDouble() * multi);
+            double val = rand.nextDouble() * multi;
+            vec.setEntry(i, val);
+            if (normalize) {
+                sum += val;
+            }
+        }
+        if (normalize) {
+            vec.mapDivideToSelf(sum);
         }
     }
 
-    public void randInitMatrix(RealMatrix mat) {
+    public void randInitMatrix(RealMatrix mat, boolean normalize) {
         int len = mat.getRowDimension();
         for (int i=0; i<len; i++) {
-            randInitVector(mat.getRowVector(i));
+            randInitVector(mat.getRowVector(i), normalize);
         }
     }
 }

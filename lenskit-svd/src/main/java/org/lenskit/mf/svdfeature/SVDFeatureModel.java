@@ -30,8 +30,8 @@ public class SVDFeatureModel extends LearningModel {
     }
 
     public void assignVariables() {
-        biases = requestScalarVar("biases", numBiases, 0, false);
-        factors = requestVectorVar("factors", numFactors, factDim, 0, true);
+        biases = requestScalarVar("biases", numBiases, 0, false, false,);
+        factors = requestVectorVar("factors", numFactors, factDim, 0, true, false);
     }
 
     public double predict(SVDFeatureInstance inIns, StochasticOracle outOrc,

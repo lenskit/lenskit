@@ -23,22 +23,24 @@ public abstract class LearningModel {
     public HashMap<String, RealMatrix> getVectorVars() {
         return vectorVars;
     }
-    protected RealVector requestScalarVar(String name, int size, double initial, boolean randomize) {
+    protected RealVector requestScalarVar(String name, int size, double initial, 
+                                          boolean randomize, boolean normalize) {
         RealVector var = MatrixUtils.createRealVector(new double[size]);
         if (randomize) {
             RandomInitializer randInit = new RandomInitializer();
-            randInit.randInitVector(var);
+            randInit.randInitVector(var, normalize);
         } else {
             var.set(initial);
         }
         scalarVars.put(name, var);
         return var;
     }
-    protected RealMatrix requestVectorVar(String name, int size, int dim, double initial, boolean randomize) {
+    protected RealMatrix requestVectorVar(String name, int size, int dim, double initial, 
+                                          boolean randomize, boolean normalize) {
         RealMatrix var = MatrixUtils.createRealMatrix(size, dim);
         if (randomize) {
             RandomInitializer randInit = new RandomInitializer();
-            randInit.randInitMatrix(var);
+            randInit.randInitMatrix(var, normalize);
         } else {
             if (initial != 0) {
                 for (int i=0; i<size; i++) {
