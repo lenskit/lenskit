@@ -30,7 +30,7 @@ public class SVDFeatureModelBuilder {
         method = new StochasticGradientDescent(inMaxIter, inL2coef, inLearningRate, inTol);
     }
 
-    public SVDFeatureModel build() throws IOException {
+    public SVDFeatureModel build() {
         model.assignVariables();
         method.minimize(model, loss);
         return model;
