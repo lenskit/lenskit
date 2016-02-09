@@ -17,6 +17,7 @@ public class StochasticOracle {
     public double objVal;
     public double modelOutput;
     public double insLabel;
+    public double insWeight;
 
     public StochasticOracle() {
         scalarNames = new ArrayList<String>();

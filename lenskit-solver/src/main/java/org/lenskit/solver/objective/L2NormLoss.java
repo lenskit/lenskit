@@ -8,7 +8,10 @@ public class L2NormLoss implements ObjectiveFunction {
 
     public void wrapOracle(StochasticOracle orc) {
         double err = orc.modelOutput - orc.insLabel;
-        orc.objVal = err * err;
+        orc.objVal = err * err * orc.insWeight;
+        if (orc.insWeight != 1.0) {
+            err *= orc.insWeight;
+        }
         for (int i=0; i<orc.scalarGrads.size(); i++) {
             orc.scalarGrads.set(i, orc.scalarGrads.getDouble(i) * err);
         }

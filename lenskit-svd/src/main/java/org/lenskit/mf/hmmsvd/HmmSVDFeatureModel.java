@@ -12,17 +12,34 @@ import org.lenskit.solver.objective.StochasticOracle;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class HmmSVDFeatureModel extends SVDFeatureModel {
+public class HmmSVDFeatureModel extends LatentVariableModel {
     private int numPos;
     private RealVector start;
     private RealMatrix trans;
+    private SVDFeatureModel svdFea;
+    private ArrayList<SVDFeatureInstance> instances;
+    private HmmSVDFeatureInstanceDAO dao;
 
-    public HmmSVDFeatureModel(int numPos, int numBiases, int numFactors, int factDim) {
+    public HmmSVDFeatureModel(int inNumPos, int numBiases, int numFactors, int factDim, 
+                              HmmSVDFeatureInstanceDAO inDao) {
+        svdFea = new SVDFeatureModel(numBiases, numFactors, factDim);
+        dao = inDao;
+        numPos = inNumPos;
     }
 
     public void assignVariables() {
-        super.assignVariables();
+        svdFea.assignVariables();
         start = requestScalarVar("start", numPos, 0.0, true, true);
         trans = requestVectorVar("trans", numPos, numPos + 1, 0.0, true, true);
+    }
+
+    public double expectation(HmmSVDFeatureInstance ins) {
+        //fill in instances
+    }
+
+    public SVDFeatureModel maximization() {
+        //update start and trans
+        svdFea.setInstances(instances);
+        return svdFea;
     }
 }

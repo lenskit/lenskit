@@ -29,6 +29,12 @@ public class ObjectiveTerminationCriterion {
         logger.info("Iteration {}: objective value is {}", curIter, objVal);
     }
 
+    public void addIteration(String step, double objVal) {
+        curIter++;
+        objHistory.add(objVal);
+        logger.info("Iteration {}: {} objective value is {}", curIter, step, objVal);
+    }
+
     public boolean keepIterate() {
         if (curIter < 2) {
             return true;
