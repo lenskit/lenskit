@@ -11,7 +11,7 @@ public class HingeLoss implements ObjectiveFunction {
         if (label == 0) {
             label = -1;
         }
-        double loss = 1 - orc.modelOutput * label;
+        double loss = (1 - orc.modelOutput * label) * orc.insWeight;
         orc.objVal = (loss < 0) ? 0 : loss;
         double hingeGrad = (loss == 0) ? 0 : -label;
         for (int i=0; i<orc.scalarGrads.size(); i++) {

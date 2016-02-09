@@ -7,18 +7,20 @@ import java.util.ArrayList;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class SVDFeatureInstance extends LearningInstance {
-    public double weight;
-    public double label;
+public class HmmSVDFeatureInstance extends LearningInstance {
     public ArrayList<Feature> gfeas;
     public ArrayList<Feature> ufeas;
-    public ArrayList<Feature> ifeas;
+    public ArrayList<ArrayList<Feature> > pos2ifeas;
+    public IntArrayList obs;
+    public int numPos;
+    public int numObs;
 
-    public SVDFeatureInstance() {
+    public HmmSVDFeatureInstance() {
         gfeas = new ArrayList<Feature>();
         ufeas = new ArrayList<Feature>();
-        ifeas = new ArrayList<Feature>();
-        weight = 1.0;
-        label = 0.0;
+        pos2ifeas = new ArrayList<ArrayList<Feature> >();
+        obs = new IntArrayList();
+        numPos = 0;
+        numObs = 0;
     }
 }

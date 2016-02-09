@@ -16,17 +16,34 @@ import org.lenskit.solver.objective.StochasticOracle;
  */
 public class SVDFeatureModel extends LearningModel {
     private SVDFeatureInstanceDAO dao;
+    private ArrayList<SVDFeatureInstance> instances;
     private RealVector biases;
     private RealMatrix factors;
     private int factDim;
     private int numFactors;
     private int numBiases;
+    private int insIdx;
 
     public SVDFeatureModel(int inNumBiases, int inNumFactors, int inFactDim, SVDFeatureInstanceDAO inDao) {
         factDim = inFactDim;
         numBiases = inNumBiases;
         numFactors = inNumFactors;
         dao = inDao;
+        instances = null;
+        insIdx = 0;
+    }
+
+    public SVDFeatureModel(int inNumBiases, int inNumFactors, int inFactDim) {
+        factDim = inFactDim;
+        numBiases = inNumBiases;
+        numFactors = inNumFactors;
+        dao = null;
+        instances = null;
+        insIdx = 0;
+    }
+
+    public setInstances(ArrayList<SVDFeatureInstance> outIns) {
+        instances = outIns;
     }
 
     public void assignVariables() {
@@ -34,13 +51,12 @@ public class SVDFeatureModel extends LearningModel {
         factors = requestVectorVar("factors", numFactors, factDim, 0, true, false);
     }
 
-    public double predict(SVDFeatureInstance inIns, StochasticOracle outOrc,
+    public double predict(SVDFeatureInstance ins, StochasticOracle outOrc,
                           RealVector outUfactSum, RealVector outIfactSum) {
         double pred = 0.0;
-        ArrayList<Feature> gfeas = inIns.getGlobalFeas();
-        for (int i=0; i<gfeas.size(); i++) {
-            int ind = gfeas.get(i).getIndex();
-            double val = gfeas.get(i).getValue();
+        for (int i=0; i<ins.gfeas.size(); i++) {
+            int ind = ins.gfeas.get(i).index;
+            double val = ins.gfeas.get(i).value;
             if (outOrc != null) {
                 outOrc.addScalarOracle("biases", ind, val);
             }
@@ -48,18 +64,16 @@ public class SVDFeatureModel extends LearningModel {
         }
 
         outUfactSum.set(0.0);
-        ArrayList<Feature> ufeas = inIns.getUserFeas();
-        for (int i=0; i<ufeas.size(); i++) {
-            int index = ufeas.get(i).getIndex();
-            outUfactSum.mapMultiplyToSelf(ufeas.get(i).getValue());
+        for (int i=0; i<ins.ufeas.size(); i++) {
+            int index = ins.ufeas.get(i).index;
+            outUfactSum.mapMultiplyToSelf(ins.ufeas.get(i).value);
             outUfactSum.combineToSelf(1.0, 1.0, factors.getRowVector(index));
         }
 
         outUfactSum.set(0.0);
-        ArrayList<Feature> ifeas = inIns.getItemFeas();
-        for (int i=0; i<ifeas.size(); i++) {
-            int index = ifeas.get(i).getIndex();
-            outIfactSum.mapMultiplyToSelf(ifeas.get(i).getValue());
+        for (int i=0; i<ins.ifeas.size(); i++) {
+            int index = ins.ifeas.get(i).index;
+            outIfactSum.mapMultiplyToSelf(ins.ifeas.get(i).value);
             outIfactSum.combineToSelf(1.0, 1.0, factors.getRowVector(index));
         }
 
@@ -68,11 +82,16 @@ public class SVDFeatureModel extends LearningModel {
     }
 
     public SVDFeatureInstance getLearningInstance() {
-        SVDFeatureInstance ins;
-        try {
-            ins = dao.getNextInstance();
-        } catch (IOException e) {
-            ins = null;
+        SVDFeatureInstance ins = null;
+        if (dao != null) {
+            try {
+                ins = dao.getNextInstance();
+            } catch (IOException e) {
+                ins = null;
+            }
+        } else if (instances.size() > insIdx) {
+            ins = instances.get(insIdx);
+            ++insIdx;
         }
         return ins;
     }
@@ -92,23 +111,23 @@ public class SVDFeatureModel extends LearningModel {
         RealVector leftGrad = ifactSum;
         RealVector rightGrad = ufactSum;
         String name = "factors";
-        ArrayList<Feature> ufeas = ins.getUserFeas();
-        for (int i=0; i<ufeas.size(); i++) {
-            orc.addVectorOracle(name, ufeas.get(i).getIndex(),
-                    leftGrad.mapMultiply(ufeas.get(i).getValue()));
+        for (int i=0; i<ins.ufeas.size(); i++) {
+            orc.addVectorOracle(name, ins.ufeas.get(i).index;
+                    leftGrad.mapMultiply(ins.ufeas.get(i).value));
         }
-        ArrayList<Feature> ifeas = ins.getItemFeas();
-        for (int i=0; i<ifeas.size(); i++) {
-            orc.addVectorOracle(name, ifeas.get(i).getIndex(),
-                    rightGrad.mapMultiply(ifeas.get(i).getValue()));
+        for (int i=0; i<ins.ifeas.size(); i++) {
+            orc.addVectorOracle(name, ins.ifeas.get(i).index;
+                    rightGrad.mapMultiply(ins.ifeas.get(i).value));
         }
 
         orc.modelOutput = pred;
-        orc.insLabel = ins.getLabel();
+        orc.insLabel = ins.label;
+        orc.insWeight = ins.weight;
         return orc;
     }
 
     public void startNewIteration() {
+        insIdx = 0;
         try {
             dao.goBackToBeginning();
         } catch (IOException e) {}
