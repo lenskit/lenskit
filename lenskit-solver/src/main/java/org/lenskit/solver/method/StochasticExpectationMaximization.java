@@ -21,8 +21,8 @@ public class StochasticExpectationMaximization {
             model.startNewIteration();
             LearningInstance ins;
             while ((ins = model.getLearningInstance()) != null) {
-                objVal += model.expectation(ins);
-                LearningModel subModel = model.maximization();
+                objVal += model.stochastic_expectation(ins);
+                LearningModel subModel = model.stochastic_maximization();
                 if (subModel != null) {
                     method.minimize(subModel, objFunc);
                 }

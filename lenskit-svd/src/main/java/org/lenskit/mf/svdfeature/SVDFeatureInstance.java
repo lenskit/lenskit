@@ -21,4 +21,13 @@ public class SVDFeatureInstance extends LearningInstance {
         weight = 1.0;
         label = 0.0;
     }
+
+    public SVDFeatureInstance(ArrayList<Feature> inGfeas, ArrayList<Feature> inUfeas, 
+                              ArrayList<Feature> inIfeas) {
+        gfeas = inGfeas;
+        ufeas = inUfeas;
+        ifeas = inIfeas;
+        label = 0.0;
+        weight = 1.0;
+    }
 }
