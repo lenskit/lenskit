@@ -42,6 +42,10 @@ public class SVDFeatureModel extends LearningModel {
         insIdx = 0;
     }
 
+    public setInstanceDAO(SVDFeatureInstanceDAO inDao) {
+        dao = inDao;
+    }
+
     public setInstances(ArrayList<SVDFeatureInstance> outIns) {
         instances = outIns;
     }
