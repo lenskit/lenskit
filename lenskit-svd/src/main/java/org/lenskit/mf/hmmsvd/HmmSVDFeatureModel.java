@@ -1,55 +1,69 @@
 package org.lenskit.mf.hmmsvd;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
+import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.function.Log;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.stat.StatUtils;
+import org.lenskit.mf.svdfeature.SVDFeatureInstance;
 import org.lenskit.mf.svdfeature.SVDFeatureModel;
-import org.lenskit.solver.objective.LatentVariableModel;
-import org.lenskit.solver.objective.StochasticOracle;
+import org.lenskit.solver.objective.LearningInstance;
+import org.lenskit.solver.objective.LearningModel;
+import org.lenskit.solver.objective.RandomInitializer;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class HmmSVDFeatureModel extends LatentVariableModel {
+public class HmmSVDFeatureModel extends LearningModel {
     private int numPos; //also represents no action
     private RealVector start;
     private RealMatrix trans;
     private SVDFeatureModel svdFea;
     private ArrayList<SVDFeatureInstance> instances;
     private HmmSVDFeatureInstanceDAO dao;
-    private RealMatrix gamma;
-    private ArrayList<RealMatrix> xi;
+    private ArrayList<RealVector> gamma;
+    private ArrayList<ArrayList<RealVector>> xi;
 
     public HmmSVDFeatureModel(int inNumPos, int numBiases, int numFactors, int factDim, 
                               HmmSVDFeatureInstanceDAO inDao) {
         svdFea = new SVDFeatureModel(numBiases, numFactors, factDim);
-        instances = new ArrayList<SVDFeatureInstance>();
+        instances = new ArrayList<>();
         dao = inDao;
         numPos = inNumPos;
     }
 
     public void assignVariables() {
         svdFea.assignVariables();
-        start = requestScalarVar("start", numPos, 0.0, true, true);
-        trans = requestVectorVar("trans", numPos, numPos, 0.0, true, true);
+        start = requestScalarVar("start", numPos, 0.0, true, true); //can initialize as trans by itself
+        trans = MatrixUtils.createRealMatrix(numPos, numPos);
+        RandomInitializer randInit = new RandomInitializer();
+        randInit.randInitMatrix(trans, true);
     }
 
-    public double stochastic_expectation(HmmSVDFeatureInstance ins) {
+    public double stochastic_expectation(LearningInstance inIns) {
+        HmmSVDFeatureInstance ins;
+        if (inIns instanceof HmmSVDFeatureInstance) {
+            ins = (HmmSVDFeatureInstance)inIns;
+        } else {
+            return 0.0;
+        }
         //make sure ins.numPos == this.numPos
         //compute p(x|z)
         RealVector probs = MatrixUtils.createRealVector(new double[ins.numPos]);
-        RealMatrix probX = MatrixUtils.createRealMatrix(ins.numObs, numPos);
         for (int i=0; i<ins.numPos; i++) {
             SVDFeatureInstance svdFeaIns = new SVDFeatureInstance(ins.gfeas, ins.ufeas, 
-                    ins.pos2ifeas[i]);
+                    ins.pos2ifeas.get(i));
             probs.setEntry(i, svdFea.predict(svdFeaIns, true));
         }
+        ArrayList<RealVector> probX = new ArrayList<>(ins.numObs);
         for (int i=0; i<ins.numObs; i++) {
             int act = ins.obs.get(i);
-            RealVector probi = probX.getRowVector(i);
+            RealVector probi = MatrixUtils.createRealVector(new double[numPos]);
             if (act == numPos) {
                 probi.set(1.0);
                 probi.combineToSelf(1.0, -1.0, probs);
@@ -57,40 +71,42 @@ public class HmmSVDFeatureModel extends LatentVariableModel {
                 probi.set(0.0);
                 probi.setEntry(act, probs.getEntry(act));
             }
+            probX.add(probi);
         }
         //initialize alpha and beta n-1
-        RealVector alpha = MatrixUtils.createRealMatrix(ins.numObs, numPos);
-        RealMatrix beta = MatrixUtils.createRealMatrix(ins.numObs, numPos);
-        beta.getRowVector(numObs - 1).set(1.0);
+        ArrayList<RealVector> alpha = new ArrayList<>(ins.numObs);
+        ArrayList<RealVector> beta = new ArrayList<>(ins.numObs);
+        for (int i=0; i<ins.numObs; i++) {
+            beta.add(MatrixUtils.createRealVector(new double[numPos]));
+        }
+        beta.get(ins.numObs - 1).set(1.0);
         //compute alpha 0 to n-1 and beta n-2 to 0
         for (int i=0; i<ins.numObs; i++) {
-            RealVector alphai = alpha.getRowVector(i);
-            RealVector probx = probX.getRowVector(i);
+            RealVector probx = probX.get(i);
             if (i == 0) {
-                alphai.setSubVector(0, probx.ebeMultiply(start));
+                alpha.add(probx.ebeMultiply(start));
                 continue;
             } else if (i > 0) {
-                alphai.setSubVector(0, probx.ebeMultiply(trans.preMultiply(alpha.getRowVector(i - 1))));
+                alpha.add(probx.ebeMultiply(trans.preMultiply(alpha.get(i - 1))));
             }
             int j = ins.numObs - 1 - i;
-            RealVector betaj = beta.getRowVector(j);
-            probx = probX.getRowVector(j + 1);
-            betaj.setSubVector(0, trans.operate(probx.ebeMultiply(beta.getRowVector(j + 1))));
+            RealVector betaj = beta.get(j);
+            probx = probX.get(j + 1);
+            betaj.setSubVector(0, trans.operate(probx.ebeMultiply(beta.get(j + 1))));
         }
-        double pX = StatUtils.sum((ArrayRealVector)(alpha.getRowVector(numObs - 1)).getDataRef());
+        double pX = StatUtils.sum(((ArrayRealVector)(alpha.get(ins.numObs - 1))).getDataRef());
         //compute gamma and xi
-        gamma = MatrixUtils.createRealMatrix(ins.numObs, numPos);
-        xi = new ArrayList<RealMatrix>(ins.numObs - 1);
+        gamma = new ArrayList<>(ins.numObs); //, numPos);
+        xi = new ArrayList<>(ins.numObs - 1);
         for (int i=0; i<ins.numObs; i++) {
-            RealVector gammai = gamma.getRowVector(i);
-            gammai.setSubVector(0, alpha.getRowVector(i).ebeMultiply(beta.getRowVector(i)));
+            gamma.add(alpha.get(i).ebeMultiply(beta.get(i)));
             if (i > 0) {
-                RealVector probx = probX.getRowVector(i);
-                RealVector betai = beta.getRowVector(i);
-                RealVector alphai = alpha.getRowVector(i - 1);
-                RealMatrix subXi = MatrixUtils.createRealMatrix(numPos, numPos);
+                RealVector probx = probX.get(i);
+                RealVector betai = beta.get(i);
+                RealVector alphai = alpha.get(i - 1);
+                ArrayList<RealVector> subXi = new ArrayList<>(numPos);
                 for (int j=0; j<numPos; j++) {
-                    subXi.getRowVector(j).setSubVector(0, probx.ebeMultiply(trans.getRowVector(j))
+                    subXi.add(probx.ebeMultiply(trans.getRowVector(j))
                             .ebeMultiply(betai).mapMultiplyToSelf(alphai.getEntry(j)));
                 }
                 xi.add(subXi);
@@ -101,10 +117,10 @@ public class HmmSVDFeatureModel extends LatentVariableModel {
         for (int i=0; i<ins.numObs; i++) {
             int act = ins.obs.get(i);
             for (int j=0; j<numPos; j++) {
-                double weight = gamma.getEntry(i, j);
+                double weight = gamma.get(i).getEntry(j);
                 if (weight != 0.0 && (j == act || act == numPos)) {
-                    SVDFeatureInstance svdFeaIns = new SVDFeatureInstance(ins.gfeas, ins.ufeas, 
-                        ins.pos2ifeas.get(i));
+                    SVDFeatureInstance svdFeaIns = new SVDFeatureInstance(ins.gfeas, ins.ufeas,
+                                                                          ins.pos2ifeas.get(j));
                     svdFeaIns.weight = weight / pX;
                     if (j == act) {
                         svdFeaIns.label = 1.0;
@@ -116,28 +132,29 @@ public class HmmSVDFeatureModel extends LatentVariableModel {
             }
         }
         //closed form stochastic maximization: update start and trans with closed formula
-        RealVector gamma0 = gamma.getRowVector(0);
+        RealVector gamma0 = gamma.get(0);
         start.setSubVector(0, gamma0);
         double sum = StatUtils.sum(((ArrayRealVector)gamma0).getDataRef());
         start.mapDivideToSelf(sum);
         int numObs = xi.size();
-        for (int i; i<numPos; i++) {
+        for (int i=0; i<numPos; i++) {
             RealVector transi = trans.getRowVector(i);
             transi.set(0.0);
             for (int j=0; j<numObs; j++) {
-                RealMatrix cxi = xi.get(j);
-                transi.combineToSelf(1.0, 1.0, cxi.getRowVector(i));
+                ArrayList<RealVector> cxi = xi.get(j);
+                transi.combineToSelf(1.0, 1.0, cxi.get(i));
             }
-            sum = StatUtils.sum((ArrayRealVector).getDataRef());
-            transi.mapDivideToSelf(sum);
+            sum = StatUtils.sum(((ArrayRealVector)transi).getDataRef());
+            trans.setRowVector(i, transi.mapDivideToSelf(sum));
         }
         //compute the objective value of the closed form part
-        double startObjVal = gamma0.dotProduct(start.mapToSelf(Log));
+        UnivariateFunction log = new Log();
+        double startObjVal = gamma0.dotProduct(start.mapToSelf(log));
         double transObjVal = 0.0;
         for (int i=0; i<numObs; i++) {
-            RealMatrix cxi = xi.get(i);
+            ArrayList<RealVector> cxi = xi.get(i);
             for (int j=0; j<numPos; j++) {
-                transObjVal += cxi.getRowVector(j).dotProduct(trans.getRowVector(j).mapToSelf(Log));
+                transObjVal += cxi.get(j).dotProduct(trans.getRowVector(j).mapToSelf(log));
             }
         }
         return (startObjVal + transObjVal) / pX;
@@ -150,5 +167,21 @@ public class HmmSVDFeatureModel extends LatentVariableModel {
 
     public SVDFeatureModel getSVDFeatureModel() {
         return svdFea;
+    }
+
+    public HmmSVDFeatureInstance getLearningInstance() {
+        HmmSVDFeatureInstance ins;
+        try {
+            ins = dao.getNextInstance();
+        } catch (IOException e) {
+            ins = null;
+        }
+        return ins;
+    }
+
+    public void startNewIteration() {
+        try {
+            dao.goBackToBeginning();
+        } catch (IOException e) { }
     }
 }

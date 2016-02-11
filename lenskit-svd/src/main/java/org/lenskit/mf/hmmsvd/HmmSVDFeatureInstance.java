@@ -1,5 +1,7 @@
-package org.lenskit.mf.svdfeature;
+package org.lenskit.mf.hmmsvd;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import org.lenskit.mf.svdfeature.Feature;
 import org.lenskit.solver.objective.LearningInstance;
 
 import java.util.ArrayList;

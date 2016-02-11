@@ -2,6 +2,9 @@ package org.lenskit.mf.hmmsvd;
 
 import java.io.IOException;
 
+import org.lenskit.solver.method.OptimizationMethod;
+import org.lenskit.solver.method.StochasticExpectationMaximization;
+import org.lenskit.solver.objective.LogisticLoss;
 import org.lenskit.solver.objective.ObjectiveFunction;
 
 /**
@@ -12,7 +15,7 @@ public class HmmSVDFeatureModelBuilder {
     private OptimizationMethod method;
     private ObjectiveFunction loss;
 
-    public HmmSVDFeatureModelBuilder(int numPos, int numBiases, int numFactors, int factDim
+    public HmmSVDFeatureModelBuilder(int numPos, int numBiases, int numFactors, int factDim,
                                      HmmSVDFeatureInstanceDAO dao) {
         model = new HmmSVDFeatureModel(numPos, numBiases, numFactors, factDim, dao);
         method = new StochasticExpectationMaximization();

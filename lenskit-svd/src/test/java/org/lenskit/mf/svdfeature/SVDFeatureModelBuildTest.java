@@ -15,9 +15,9 @@ import static org.junit.Assert.assertThat;
 public class SVDFeatureModelBuildTest {
     @Test
     public void testModelBuild() throws FileNotFoundException, IOException {
-        String path = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/explore11-clk-svdfea.te";
-        int numBiases = 38582;
-        int numFactors = 38581;
+        String path = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/svdfea11-clkrat.te";
+        int numBiases = 38529;
+        int numFactors = 38528;
         int dim = 20;
         SVDFeatureInstanceDAO dao = new SVDFeatureInstanceDAO(new File(path), " ");
         LogisticLoss loss = new LogisticLoss();

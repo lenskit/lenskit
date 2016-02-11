@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.linear.RealMatrix;
 
 import org.lenskit.solver.objective.LearningInstance;
 import org.lenskit.solver.objective.LearningModel;
@@ -18,7 +17,7 @@ public class SVDFeatureModel extends LearningModel {
     private SVDFeatureInstanceDAO dao;
     private ArrayList<SVDFeatureInstance> instances;
     private RealVector biases;
-    private RealMatrix factors;
+    private ArrayList<RealVector> factors;
     private int factDim;
     private int numFactors;
     private int numBiases;
@@ -42,16 +41,16 @@ public class SVDFeatureModel extends LearningModel {
         insIdx = 0;
     }
 
-    public setInstanceDAO(SVDFeatureInstanceDAO inDao) {
+    public void setInstanceDAO(SVDFeatureInstanceDAO inDao) {
         dao = inDao;
     }
 
-    public setInstances(ArrayList<SVDFeatureInstance> outIns) {
+    public void setInstances(ArrayList<SVDFeatureInstance> outIns) {
         instances = outIns;
     }
 
     public void assignVariables() {
-        biases = requestScalarVar("biases", numBiases, 0, false, false,);
+        biases = requestScalarVar("biases", numBiases, 0, false, false);
         factors = requestVectorVar("factors", numFactors, factDim, 0, true, false);
     }
 
@@ -71,14 +70,14 @@ public class SVDFeatureModel extends LearningModel {
         for (int i=0; i<ins.ufeas.size(); i++) {
             int index = ins.ufeas.get(i).index;
             outUfactSum.mapMultiplyToSelf(ins.ufeas.get(i).value);
-            outUfactSum.combineToSelf(1.0, 1.0, factors.getRowVector(index));
+            outUfactSum.combineToSelf(1.0, 1.0, factors.get(index));
         }
 
         outUfactSum.set(0.0);
         for (int i=0; i<ins.ifeas.size(); i++) {
             int index = ins.ifeas.get(i).index;
             outIfactSum.mapMultiplyToSelf(ins.ifeas.get(i).value);
-            outIfactSum.combineToSelf(1.0, 1.0, factors.getRowVector(index));
+            outIfactSum.combineToSelf(1.0, 1.0, factors.get(index));
         }
 
         pred += outUfactSum.dotProduct(outIfactSum);
@@ -116,11 +115,11 @@ public class SVDFeatureModel extends LearningModel {
         RealVector rightGrad = ufactSum;
         String name = "factors";
         for (int i=0; i<ins.ufeas.size(); i++) {
-            orc.addVectorOracle(name, ins.ufeas.get(i).index;
+            orc.addVectorOracle(name, ins.ufeas.get(i).index,
                     leftGrad.mapMultiply(ins.ufeas.get(i).value));
         }
         for (int i=0; i<ins.ifeas.size(); i++) {
-            orc.addVectorOracle(name, ins.ifeas.get(i).index;
+            orc.addVectorOracle(name, ins.ifeas.get(i).index,
                     rightGrad.mapMultiply(ins.ifeas.get(i).value));
         }
 
@@ -132,9 +131,11 @@ public class SVDFeatureModel extends LearningModel {
 
     public void startNewIteration() {
         insIdx = 0;
-        try {
-            dao.goBackToBeginning();
-        } catch (IOException e) {}
+        if (dao != null) {
+            try {
+                dao.goBackToBeginning();
+            } catch (IOException e) {}
+        }
     }
 
     public double predict(SVDFeatureInstance ins, boolean sigmoid) {

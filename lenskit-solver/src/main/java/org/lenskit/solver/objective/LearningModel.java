@@ -1,26 +1,26 @@
 package org.lenskit.solver.objective;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.linear.RealMatrix;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class LearningModel {
     protected HashMap<String, RealVector> scalarVars;
-    protected HashMap<String, RealMatrix> vectorVars;
+    protected HashMap<String, ArrayList<RealVector>> vectorVars;
 
     public LearningModel() {
-        scalarVars = new HashMap<String, RealVector>();
-        vectorVars = new HashMap<String, RealMatrix>();
+        scalarVars = new HashMap<>();
+        vectorVars = new HashMap<>();
     }
 
     public HashMap<String, RealVector> getScalarVars() {
         return scalarVars;
     }
-    public HashMap<String, RealMatrix> getVectorVars() {
+    public HashMap<String, ArrayList<RealVector>> getVectorVars() {
         return vectorVars;
     }
     protected RealVector requestScalarVar(String name, int size, double initial, 
@@ -35,25 +35,32 @@ public abstract class LearningModel {
         scalarVars.put(name, var);
         return var;
     }
-    protected RealMatrix requestVectorVar(String name, int size, int dim, double initial, 
+    protected ArrayList<RealVector> requestVectorVar(String name, int size, int dim, double initial,
                                           boolean randomize, boolean normalize) {
-        RealMatrix var = MatrixUtils.createRealMatrix(size, dim);
-        if (randomize) {
-            RandomInitializer randInit = new RandomInitializer();
-            randInit.randInitMatrix(var, normalize);
-        } else {
-            if (initial != 0) {
-                for (int i=0; i<size; i++) {
-                    var.getRowVector(i).set(initial);
+        ArrayList<RealVector> var = new ArrayList<>(size);
+        for (int i=0; i<size; i++) {
+            RealVector vec = MatrixUtils.createRealVector(new double[dim]);
+            if (randomize) {
+                RandomInitializer randInit = new RandomInitializer();
+                randInit.randInitVector(vec, normalize);
+            } else {
+                if (initial != 0) {
+                    vec.set(initial);
                 }
             }
+            var.add(vec);
         }
         vectorVars.put(name, var);
         return var;
     }
 
-    public abstract LearningInstance getLearningInstance();
-    public abstract void startNewIteration();
-    public abstract void assignVariables();
-    public abstract StochasticOracle getStochasticOracle(LearningInstance ins);
+    public LearningInstance getLearningInstance() { return null; }
+    public void startNewIteration() {}
+    public void assignVariables() {}
+    public StochasticOracle getStochasticOracle(LearningInstance ins) { return null; }
+
+    public double expectation(LearningInstance ins) { return 0.0; }
+    public double stochastic_expectation(LearningInstance ins) { return 0.0; }
+    public LearningModel maximization() { return null; }
+    public LearningModel stochastic_maximization() { return null; }
 }
