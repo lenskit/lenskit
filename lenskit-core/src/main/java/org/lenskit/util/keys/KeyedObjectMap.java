@@ -300,7 +300,7 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
                 throw new IllegalArgumentException();
             } else {
                 T obj = data.get(0);
-                return new BasicEntry<T>(extractor.getKey(obj), obj);
+                return new BasicEntry<>(extractor.getKey(obj), obj);
             }
         }
 
@@ -310,7 +310,7 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
                 throw new IllegalArgumentException();
             } else {
                 T obj = data.get(data.size() - 1);
-                return new BasicEntry<T>(extractor.getKey(obj), obj);
+                return new BasicEntry<>(extractor.getKey(obj), obj);
             }
         }
 
@@ -355,7 +355,7 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
         @Override
         public Entry<T> previous() {
             T obj = iter.previous();
-            return new BasicEntry<T>(extractor.getKey(obj), obj);
+            return new BasicEntry<>(extractor.getKey(obj), obj);
         }
 
         @Override
@@ -371,7 +371,7 @@ public class KeyedObjectMap<T> extends AbstractLong2ObjectSortedMap<T> implement
         @Override
         public Entry<T> next() {
             T obj = iter.next();
-            return new BasicEntry<T>(extractor.getKey(obj), obj);
+            return new BasicEntry<>(extractor.getKey(obj), obj);
         }
     }
 

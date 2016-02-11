@@ -25,15 +25,6 @@ import org.grouplens.grapht.Dependency
 import org.grouplens.grapht.graph.DAGNode
 import org.grouplens.grapht.reflect.Satisfaction
 import org.grouplens.grapht.reflect.internal.InstanceSatisfaction
-import org.lenskit.api.RecommenderBuildException
-import org.lenskit.baseline.GlobalMeanRatingItemScorer
-import org.lenskit.baseline.LeastSquaresItemScorer
-import org.lenskit.baseline.UserMeanBaseline
-import org.lenskit.baseline.UserMeanItemScorer
-import org.lenskit.data.dao.EventCollectionDAO
-import org.lenskit.data.dao.EventDAO
-import org.lenskit.data.events.Event
-import org.lenskit.data.ratings.RatingMatrix
 import org.grouplens.lenskit.iterative.StoppingThreshold
 import org.grouplens.lenskit.iterative.ThresholdStoppingCondition
 import org.grouplens.lenskit.transform.normalize.MeanVarianceNormalizer
@@ -44,8 +35,13 @@ import org.junit.Ignore
 import org.junit.Test
 import org.lenskit.api.ItemRecommender
 import org.lenskit.api.ItemScorer
-import org.lenskit.baseline.BaselineScorer
+import org.lenskit.api.RecommenderBuildException
+import org.lenskit.baseline.*
 import org.lenskit.basic.*
+import org.lenskit.data.dao.EventCollectionDAO
+import org.lenskit.data.dao.EventDAO
+import org.lenskit.data.events.Event
+import org.lenskit.data.ratings.RatingMatrix
 import org.lenskit.inject.Shareable
 
 import javax.inject.Inject
@@ -72,7 +68,12 @@ public class LenskitRecommenderEngineTest {
         LenskitConfiguration config = configureBasicRecommender(true)
 
         def engine = LenskitRecommenderEngine.build(config)
-        verifyBasicRecommender(engine.createRecommender())
+        def rec = engine.createRecommender()
+        try {
+            verifyBasicRecommender(rec)
+        } finally {
+            rec.close()
+        }
     }
 
     @Test
@@ -91,7 +92,11 @@ public class LenskitRecommenderEngineTest {
         LenskitConfiguration config = configureBasicRecommender(true)
 
         def rec = LenskitRecommender.build(config)
-        verifyBasicRecommender(rec)
+        try {
+            verifyBasicRecommender(rec)
+        } finally {
+            rec.close()
+        }
     }
 
     private LenskitConfiguration configureBasicRecommender(boolean includeData) {
@@ -133,7 +138,12 @@ public class LenskitRecommenderEngineTest {
         config.addComponent(dao)
 
         def engine = LenskitRecommenderEngine.build(config)
-        verifyBasicRecommender(engine.createRecommender())
+        def rec = engine.createRecommender()
+        try {
+            verifyBasicRecommender(rec)
+        } finally {
+            rec.close()
+        }
     }
 
     @Test
@@ -143,7 +153,12 @@ public class LenskitRecommenderEngineTest {
         makeDAOConfig(config)
 
         def engine = LenskitRecommenderEngine.build(config)
-        verifyBasicRecommender(engine.createRecommender())
+        def rec = engine.createRecommender()
+        try {
+            verifyBasicRecommender(rec)
+        } finally {
+            rec.close()
+        }
     }
 
     @Test
@@ -156,8 +171,12 @@ public class LenskitRecommenderEngineTest {
 
         def engine = LenskitRecommenderEngine.build(config)
         def rec = engine.createRecommender()
-        assertThat(rec.get(VectorNormalizer.class),
-                   instanceOf(MeanVarianceNormalizer.class))
+        try {
+            assertThat(rec.get(VectorNormalizer.class),
+                       instanceOf(MeanVarianceNormalizer.class))
+        } finally {
+            rec.close()
+        }
     }
 
     @Test
@@ -171,24 +190,32 @@ public class LenskitRecommenderEngineTest {
 
         def engine = LenskitRecommenderEngine.build(config)
 
-        LenskitRecommender rec1 = engine.createRecommender()
-        LenskitRecommender rec2 = engine.createRecommender()
-        assertThat(rec1.getItemScorer(),
-                   instanceOf(UserMeanItemScorer.class))
-        assertThat(rec2.getItemScorer(),
-                   instanceOf(UserMeanItemScorer.class))
+        LenskitRecommender rec1 = null
+        LenskitRecommender rec2 = null
+        try {
+            rec1 = engine.createRecommender()
+            rec2 = engine.createRecommender()
 
-        // verify that recommenders have different scorers
-        assertThat(rec1.getItemScorer(),
-                   not(sameInstance(rec2.getItemScorer())))
+            assertThat(rec1.getItemScorer(),
+                       instanceOf(UserMeanItemScorer.class))
+            assertThat(rec2.getItemScorer(),
+                       instanceOf(UserMeanItemScorer.class))
 
-        // verify that recommenders have different rating predictors
-        assertThat(rec1.getRatingPredictor(),
-                   not(sameInstance(rec2.getRatingPredictor())))
+            // verify that recommenders have different scorers
+            assertThat(rec1.getItemScorer(),
+                       not(sameInstance(rec2.getItemScorer())))
 
-        // verify that recommenders have same baseline
-        assertThat(rec1.get(UserMeanBaseline.class, ItemScorer.class),
-                   sameInstance(rec2.get(UserMeanBaseline.class, ItemScorer.class)))
+            // verify that recommenders have different rating predictors
+            assertThat(rec1.getRatingPredictor(),
+                       not(sameInstance(rec2.getRatingPredictor())))
+
+            // verify that recommenders have same baseline
+            assertThat(rec1.get(UserMeanBaseline.class, ItemScorer.class),
+                       sameInstance(rec2.get(UserMeanBaseline.class, ItemScorer.class)))
+        } finally {
+            rec1?.close()
+            rec2?.close()
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -201,10 +228,14 @@ public class LenskitRecommenderEngineTest {
         config.addRoot(ThresholdStoppingCondition.class)
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config)
         LenskitRecommender rec = engine.createRecommender()
-        ThresholdStoppingCondition stop = rec.get(ThresholdStoppingCondition.class)
-        assertThat(stop, notNullValue())
-        assertThat(stop.getThreshold(),
-                   closeTo(0.042d, 1.0e-6d))
+        try {
+            ThresholdStoppingCondition stop = rec.get(ThresholdStoppingCondition.class)
+            assertThat(stop, notNullValue())
+            assertThat(stop.getThreshold(),
+                       closeTo(0.042d, 1.0e-6d))
+        } finally {
+            rec.close()
+        }
     }
 
     private static void assertNodeNotEVDao(DAGNode<Component,Dependency> node) {
@@ -231,7 +262,11 @@ public class LenskitRecommenderEngineTest {
         reb.addConfiguration(daoConfig)
         LenskitRecommenderEngine engine = reb.build()
         LenskitRecommender rec = engine.createRecommender()
-        verifyBasicRecommender(rec)
+        try {
+            verifyBasicRecommender(rec)
+        } finally {
+            rec.close()
+        }
     }
 
     /**
@@ -272,7 +307,12 @@ public class LenskitRecommenderEngineTest {
                                              .addConfiguration(daoConfig)
                                              .load(tfile)
             // e2.setSymbolMapping(mapping)
-            verifyBasicRecommender(e2.createRecommender())
+            def rec = e2.createRecommender()
+            try {
+                verifyBasicRecommender(rec)
+            } finally {
+                rec.close()
+            }
         } finally {
             tfile.delete()
         }
@@ -296,7 +336,12 @@ public class LenskitRecommenderEngineTest {
                                              .addConfiguration(daoConfig)
                                              .load(tfile)
             // e2.setSymbolMapping(mapping)
-            verifyBasicRecommender(e2.createRecommender())
+            def rec = e2.createRecommender()
+            try {
+                verifyBasicRecommender(rec)
+            } finally {
+                rec.close()
+            }
         } finally {
             tfile.delete()
         }
@@ -378,15 +423,19 @@ public class LenskitRecommenderEngineTest {
 
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config)
         LenskitRecommender rec = engine.createRecommender()
-        ItemScorer scorer = rec.getItemScorer()
-        assertThat(scorer, notNullValue())
-        assert scorer != null
-        // first scorer
-        assertThat(scorer.score(42, 15).score, equalTo(3.5d))
-        // first fallback
-        assertThat(scorer.score(38, 10).score, equalTo(4.0d))
-        // second fallback
-        assertThat(scorer.score(42, 10).score, equalTo(3.0d))
+        try {
+            ItemScorer scorer = rec.getItemScorer()
+            assertThat(scorer, notNullValue())
+            assert scorer != null
+            // first scorer
+            assertThat(scorer.score(42, 15).score, equalTo(3.5d))
+            // first fallback
+            assertThat(scorer.score(38, 10).score, equalTo(4.0d))
+            // second fallback
+            assertThat(scorer.score(42, 10).score, equalTo(3.0d))
+        } finally {
+            rec.close()
+        }
     }
 
     /**
@@ -399,9 +448,13 @@ public class LenskitRecommenderEngineTest {
         config.addRoot(SubclassedDAODepComponent.class)
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config)
         LenskitRecommender rec = engine.createRecommender()
-        SubclassedDAODepComponent dep = rec.get(SubclassedDAODepComponent.class)
-        assertThat(dep, notNullValue())
-        assertThat(dep.dao, notNullValue())
+        try {
+            SubclassedDAODepComponent dep = rec.get(SubclassedDAODepComponent.class)
+            assertThat(dep, notNullValue())
+            assertThat(dep.dao, notNullValue())
+        } finally {
+            rec.close()
+        }
     }
 
     public static class SubclassedDAODepComponent {
@@ -431,13 +484,17 @@ public class LenskitRecommenderEngineTest {
         config.bind(BaselineScorer.class, ItemScorer.class)
               .to(GlobalMeanRatingItemScorer.class)
         LenskitRecommender rec = LenskitRecommender.build(config)
-        assertThat(rec.getItemScorer(), instanceOf(FallbackItemScorer.class))
-        def rp = (SimpleRatingPredictor) rec.getRatingPredictor()
-        assertThat(rp, notNullValue())
-        assert rp != null
-        assertThat(rp.itemScorer, instanceOf(ConstantItemScorer.class))
-        assertThat(((FallbackItemScorer) rec.getItemScorer()).getPrimaryScorer(),
-                   sameInstance(rp.itemScorer))
+        try {
+            assertThat(rec.getItemScorer(), instanceOf(FallbackItemScorer.class))
+            def rp = (SimpleRatingPredictor) rec.getRatingPredictor()
+            assertThat(rp, notNullValue())
+            assert rp != null
+            assertThat(rp.itemScorer, instanceOf(ConstantItemScorer.class))
+            assertThat(((FallbackItemScorer) rec.getItemScorer()).getPrimaryScorer(),
+                       sameInstance(rp.itemScorer))
+        } finally {
+            rec.close()
+        }
     }
 
     /**
@@ -468,7 +525,11 @@ public class LenskitRecommenderEngineTest {
                                              .addConfiguration(daoConfig, ModelDisposition.EXCLUDED)
                                              .build()
         def rec = engine.createRecommender(daoConfig)
-        verifyBasicRecommender(rec)
+        try {
+            verifyBasicRecommender(rec)
+        } finally {
+            rec.close()
+        }
     }
 
     //region Test shareable providers
@@ -484,16 +545,24 @@ public class LenskitRecommenderEngineTest {
               .toProvider(StreamProvider.class)
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config)
 
-        LenskitRecommender rec1 = engine.createRecommender()
-        LenskitRecommender rec2 = engine.createRecommender()
-        assertThat(rec2, not(sameInstance(rec1)))
+        LenskitRecommender rec1 = null
+        LenskitRecommender rec2 = null
+        try {
+            rec1 = engine.createRecommender()
+            rec2 = engine.createRecommender()
 
-        RootComp r1 = rec1.get(RootComp.class)
-        RootComp r2 = rec2.get(RootComp.class)
-        // byte buffers are shared
-        assertThat(r2.getBuffer(), sameInstance(r1.getBuffer()))
-        // streams are not
-        assertThat(r2.getStream(), not(sameInstance(r1.getStream())))
+            assertThat(rec2, not(sameInstance(rec1)))
+
+            RootComp r1 = rec1.get(RootComp.class)
+            RootComp r2 = rec2.get(RootComp.class)
+            // byte buffers are shared
+            assertThat(r2.getBuffer(), sameInstance(r1.getBuffer()))
+            // streams are not
+            assertThat(r2.getStream(), not(sameInstance(r1.getStream())))
+        } finally {
+            rec1?.close()
+            rec2?.close()
+        }
     }
 
     public static class RootComp {
@@ -537,7 +606,11 @@ public class LenskitRecommenderEngineTest {
         config.bind(ItemScorer).to(LeastSquaresItemScorer)
         config.bind(EventDAO).to(dao)
         LenskitRecommender rec = LenskitRecommender.build(config)
-        assertThat rec.getItemScorer(), instanceOf(LeastSquaresItemScorer)
-        assertThat rec.get(RatingMatrix), nullValue()
+        try {
+            assertThat rec.getItemScorer(), instanceOf(LeastSquaresItemScorer)
+            assertThat rec.get(RatingMatrix), nullValue()
+        } finally {
+            rec.close()
+        }
     }
 }

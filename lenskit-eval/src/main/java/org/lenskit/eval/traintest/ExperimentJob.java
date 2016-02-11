@@ -24,25 +24,25 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.graph.DAGNode;
 import org.grouplens.grapht.graph.MergePool;
-import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
+import org.lenskit.LenskitRecommender;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.data.dao.UserEventDAO;
+import org.lenskit.data.events.Event;
 import org.lenskit.data.history.History;
 import org.lenskit.data.history.UserHistory;
 import org.lenskit.inject.GraphtUtils;
 import org.lenskit.inject.NodeProcessors;
 import org.lenskit.inject.RecommenderInstantiator;
+import org.lenskit.util.ProgressLogger;
 import org.lenskit.util.UncheckedInterruptException;
 import org.lenskit.util.table.RowBuilder;
 import org.lenskit.util.table.writer.TableWriter;
-import org.lenskit.LenskitRecommender;
-import org.lenskit.data.events.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,7 +125,10 @@ class ExperimentJob implements Runnable {
             pctFormat.setMinimumFractionDigits(2);
             final int nusers = testUsers.size();
             logger.info("Testing {} on {} ({} users)", algorithm, dataSet, nusers);
-            int ndone = 0;
+            ProgressLogger progress = ProgressLogger.create(logger)
+                                                    .setCount(nusers)
+                                                    .setLabel("testing users")
+                                                    .start();
             for (LongIterator iter = testUsers.iterator(); iter.hasNext(); ) {
                 if (Thread.interrupted()) {
                     throw new RuntimeException("eval job interrupted");
@@ -162,17 +165,10 @@ class ExperimentJob implements Runnable {
                     userRow.clear();
                 }
 
-                ndone += 1;
-                if (ndone % 100 == 0) {
-                    double time = testTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001;
-                    double tpu = time / ndone;
-                    double tleft = (nusers - ndone) * tpu;
-                    logger.info("tested {} of {} users ({}), ETA {}",
-                                ndone, nusers, pctFormat.format(((double) ndone) / nusers),
-                                DurationFormatUtils.formatDurationHMS((long) tleft));
-                }
+                progress.advance();
             }
 
+            progress.finish();
             testTimer.stop();
             logger.info("Tested {} in {}", algorithm.getName(), testTimer);
             outputRow.add("BuildTime", buildTimer.elapsed(TimeUnit.MILLISECONDS) * 0.001);
@@ -184,7 +180,7 @@ class ExperimentJob implements Runnable {
             logger.info("evaluation interrupted");
             throw ex;
         } catch (Throwable th) {
-            logger.error("Error occured in eval job", th);
+            logger.error("Error evaluating " + algorithm + " on " + dataSet, th);
             throw th;
         }
 

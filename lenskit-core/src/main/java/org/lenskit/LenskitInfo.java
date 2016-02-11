@@ -77,7 +77,7 @@ public final class LenskitInfo {
         Set<String> revisions = revisionSet == null ? null : revisionSet.get();
         if (revisions == null) {
             revisions = loadRevisionSet();
-            revisionSet = new SoftReference<Set<String>>(revisions);
+            revisionSet = new SoftReference<>(revisions);
         }
         return revisions;
     }

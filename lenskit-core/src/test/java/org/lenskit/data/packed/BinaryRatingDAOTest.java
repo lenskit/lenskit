@@ -106,7 +106,7 @@ public class BinaryRatingDAOTest {
 
     @Test
     public void testOutOfOrderDAO() throws IOException {
-        List<Rating> reordered = new ArrayList<Rating>();
+        List<Rating> reordered = new ArrayList<>();
         for (int i = 0; i < ratings.size(); i++) {
             reordered.add(ratings.get((i + 1) % ratings.size()));
         }

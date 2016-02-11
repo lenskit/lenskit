@@ -18,7 +18,36 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-/**
- * Interfaces defining the LensKit API.
- */
-package org.grouplens.lenskit;
+package org.lenskit.util;
+
+import org.junit.Test;
+
+import static org.grouplens.lenskit.util.test.ExtraMatchers.notANumber;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+
+public class BatchedMeanSmootherTest {
+    @Test
+    public void testEmpty() {
+        BatchedMeanSmoother smooth = new BatchedMeanSmoother(10);
+        assertThat(smooth.currentAverage(),
+                   notANumber());
+    }
+
+    @Test
+    public void testAddOne() {
+        BatchedMeanSmoother smooth = new BatchedMeanSmoother(10);
+        smooth.addBatch(10, 5.0);
+        assertThat(smooth.currentAverage(),
+                   equalTo(0.5));
+    }
+
+    @Test
+    public void testAddTwo() {
+        BatchedMeanSmoother smooth = new BatchedMeanSmoother(10);
+        smooth.addBatch(10, 5.0);
+        smooth.addBatch(5, 5.0);
+        assertThat(smooth.currentAverage(),
+                   closeTo(0.666666667, 1.0e-6));
+    }
+}

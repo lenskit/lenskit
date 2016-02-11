@@ -23,8 +23,8 @@ package org.lenskit.util.math;
 import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.longs.Long2DoubleFunction;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
-import it.unimi.dsi.fastutil.longs.Long2DoubleSortedMap;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
 
 import java.util.Iterator;
 
@@ -109,24 +109,32 @@ public final class Vectors {
      * @return The sum of the products of corresponding values in the two vectors.
      */
     public static double dotProduct(Long2DoubleMap v1, Long2DoubleMap v2) {
+        if (v1.size() > v2.size()) {
+            // compute dot product the other way around for speed
+            return dotProduct(v2, v1);
+        }
+
         double result = 0;
 
-        if (v1 instanceof Long2DoubleSortedMap && v2 instanceof Long2DoubleSortedMap) {
-            Iterator<Long2DoubleMap.Entry> it1 = fastEntryIterator(v1);
-            Iterator<Long2DoubleMap.Entry> it2 = fastEntryIterator(v2);
-            Long2DoubleMap.Entry e1 = it1.hasNext() ? it1.next() : null;
-            Long2DoubleMap.Entry e2 = it2.hasNext() ? it2.next() : null;
-            while (e1 != null && e2 != null) {
-                long k1 = e1.getLongKey();
-                long k2 = e2.getLongKey();
-                if (k1 == k2) {
-                    result += e1.getDoubleValue() * e2.getDoubleValue();
-                    e1 = it1.hasNext() ? it1.next() : null;
-                    e2 = it2.hasNext() ? it2.next() : null;
-                } else if (k1 < k2) {
-                    e1 = it1.hasNext() ? it1.next() : null;
-                } else { // k2 < k1
-                    e2 = it2.hasNext() ? it2.next() : null;
+        if (v1 instanceof Long2DoubleSortedArrayMap && v2 instanceof Long2DoubleSortedArrayMap) {
+            Long2DoubleSortedArrayMap sv1 = (Long2DoubleSortedArrayMap) v1;
+            Long2DoubleSortedArrayMap sv2 = (Long2DoubleSortedArrayMap) v2;
+
+            final int sz1 = v1.size();
+            final int sz2 = v2.size();
+
+            int i1 = 0, i2 = 0;
+            while (i1 < sz1 && i2 < sz2) {
+                final long k1 = sv1.getKeyByIndex(i1);
+                final long k2 = sv2.getKeyByIndex(i2);
+                if (k1 < k2) {
+                    i1++;
+                } else if (k2 < k1) {
+                    i2++;
+                } else {
+                    result += sv1.getValueByIndex(i1) * sv2.getValueByIndex(i2);
+                    i1++;
+                    i2++;
                 }
             }
         } else {

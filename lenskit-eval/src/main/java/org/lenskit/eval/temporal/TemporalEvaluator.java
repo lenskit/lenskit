@@ -171,12 +171,13 @@ public class TemporalEvaluator {
 
         TableLayout tl = tlb.build();
 
+        LenskitRecommenderEngine lre = null;
+        Recommender recommender = null;
+
         try (TableWriter tableWriter = CSVWriter.open(predictOutputFile, tl, CompressionMode.AUTO)) {
             List<Rating> ratings = ObjectStreams.makeList(dataSource.streamEvents(Rating.class, SortOrder.TIMESTAMP));
             BinaryRatingDAO limitedDao = dataSource.createWindowedView(0);
 
-            LenskitRecommenderEngine lre = null;
-            Recommender recommender = null;
             double sse = 0;
             int n = 0;
             long buildTime = 0L;
@@ -194,6 +195,10 @@ public class TemporalEvaluator {
                                                       .addConfiguration(config, ModelDisposition.EXCLUDED)
                                                       .build();
                     }
+                    if (recommender != null) {
+                        recommender.close();
+                    }
+
                     recommender = lre.createRecommender(config);
                 }
                 //gets prediction score
@@ -214,6 +219,10 @@ public class TemporalEvaluator {
                 }
                 //writes the Prediction Score and TARMSE on file
                 tableWriter.writeRow(r.getUserId(), r.getItemId(), r.getValue(), r.getTimestamp(), predict, rmse);
+            }
+        } finally {
+            if (recommender != null) {
+                recommender.close();
             }
         }
     }

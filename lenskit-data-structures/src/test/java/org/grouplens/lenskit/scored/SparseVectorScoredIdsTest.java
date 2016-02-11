@@ -66,7 +66,7 @@ public class SparseVectorScoredIdsTest {
         }
         
         ScoredIdBuilder builder = new ScoredIdBuilder();
-        Set<ScoredId> expected = new HashSet<ScoredId>();
+        Set<ScoredId> expected = new HashSet<>();
         expected.add(builder.setId(1)
                             .setScore(1.0)
                             .addChannel(fooSym, 2.0)
@@ -81,6 +81,6 @@ public class SparseVectorScoredIdsTest {
                             .build());
         
         // get the scored ids and put them in a hashset (for comparison).
-        assertEquals(expected, new HashSet<ScoredId>(ScoredIds.collectionFromVector(sv)));
+        assertEquals(expected, new HashSet<>(ScoredIds.collectionFromVector(sv)));
     }
 }

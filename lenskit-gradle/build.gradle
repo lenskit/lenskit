@@ -6,6 +6,7 @@ dependencies {
     compile localGroovy()
 
     compile project(':lenskit-specs')
+    compile 'org.joda:joda-convert:1.8.1'
 }
 
 apply from: 'integration-tests.gradle'

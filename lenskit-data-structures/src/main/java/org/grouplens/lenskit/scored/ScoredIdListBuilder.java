@@ -73,8 +73,8 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
     private void initialize(int cap) {
         ids = new CompactableLongArrayList(cap);
         scores = new DoubleArrayList(cap);
-        channels = new Reference2ObjectArrayMap<Symbol, ChannelStorage>();
-        typedChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, TypedChannelStorage<?>>();
+        channels = new Reference2ObjectArrayMap<>();
+        typedChannels = new Reference2ObjectArrayMap<>();
     }
 
     @Override
@@ -354,7 +354,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         if (typedChannels.containsKey(sym)) {
             throw new IllegalArgumentException(sym + " already in the builder");
         } else {
-            typedChannels.put(sym, new TypedChannelStorage<T>(sym, dft));
+            typedChannels.put(sym, new TypedChannelStorage<>(sym, dft));
         }
         return this;
     }
@@ -494,7 +494,7 @@ public class ScoredIdListBuilder implements Builder<PackedScoredIdList> {
         private TypedChannelStorage(TypedSymbol<T> sym, T dft) {
             symbol = sym;
             defaultValue = dft;
-            values = new ArrayList<T>(scores.elements().length);
+            values = new ArrayList<>(scores.elements().length);
             for (int i = size() - 1; i >= 0; i--) {
                 values.add(defaultValue);
             }

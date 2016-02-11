@@ -84,8 +84,8 @@ public class BinaryRatingPacker implements Closeable {
         output = new RandomAccessFile(file, "rw");
         channel = output.getChannel();
 
-        userMap = new Long2ObjectOpenHashMap<IntList>();
-        itemMap = new Long2ObjectOpenHashMap<IntList>();
+        userMap = new Long2ObjectOpenHashMap<>();
+        itemMap = new Long2ObjectOpenHashMap<>();
 
         lastTimestamp = Long.MIN_VALUE;
         needsSorting = false;

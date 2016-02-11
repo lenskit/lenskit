@@ -20,32 +20,22 @@
  */
 package org.lenskit.knn.item;
 
-import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.grapht.annotation.DefaultImplementation;
-import org.grouplens.lenskit.GlobalItemScorer;
-import org.lenskit.knn.item.model.ItemItemModel;
+import org.grouplens.grapht.annotation.DefaultInteger;
+import org.lenskit.inject.Parameter;
 
-import java.util.Collection;
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
- * The  global scorer for the global recommendation backed by a item-item model.
- *
- * @author <a href="http://www.grouplens.org">GroupLens Research</a>
+ * The minimum users two items must have in common in order to be included in the similarity model.
+ * Items with fewer than this many users in common will be ignored, i.e. treated as having no similarity.
+ * A hard threshold allows for performance optimizations.
  */
-@DefaultImplementation(ItemItemGlobalScorer.class)
-public interface ItemItemModelBackedGlobalScorer extends GlobalItemScorer {
-    /**
-     * Get the item-item model backing this scorer.
-     *
-     * @return The model this scorer uses to compute scores.
-     */
-    ItemItemModel getModel();
-
-    /**
-     * Get the set of scoreable items for a basket of items.
-     *
-     * @param queryItems The basket of items to make recommendation.
-     * @return The set of items for which scores can be generated.
-     */
-    LongSet getScoreableItems(Collection<Long> queryItems);
+@Qualifier
+@Documented
+@Parameter(int.class)
+@DefaultInteger(1)
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
+public @interface MinCommonUsers {
 }

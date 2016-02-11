@@ -47,7 +47,7 @@ public abstract class SymbolValue<T> {
         if(sym.getType().equals(Double.class)) {
             return (SymbolValue<T>) new DoubleSymbolValue((TypedSymbol<Double>) sym, (Double) val);
         } else {
-            return new TypedSymbolValue<T>(sym, val);
+            return new TypedSymbolValue<>(sym, val);
         }
     }
 

@@ -143,14 +143,14 @@ public final class PrefetchingItemEventDAO implements ItemEventDAO, Describable 
         @Override
         public Long2ObjectMap<List<Event>> get() {
             Long2ObjectMap<ImmutableList.Builder<Event>> table =
-                    new Long2ObjectOpenHashMap<ImmutableList.Builder<Event>>();
+                    new Long2ObjectOpenHashMap<>();
             ObjectStream<Event> events = eventDAO.streamEvents();
             try {
                 for (Event evt: events) {
                     final long iid = evt.getItemId();
                     ImmutableList.Builder<Event> list = table.get(iid);
                     if (list == null) {
-                        list = new ImmutableList.Builder<Event>();
+                        list = new ImmutableList.Builder<>();
                         table.put(iid, list);
                     }
                     list.add(evt);
@@ -158,7 +158,7 @@ public final class PrefetchingItemEventDAO implements ItemEventDAO, Describable 
             } finally {
                 events.close();
             }
-            Long2ObjectMap<List<Event>> result = new Long2ObjectOpenHashMap<List<Event>>(table.size());
+            Long2ObjectMap<List<Event>> result = new Long2ObjectOpenHashMap<>(table.size());
             for (Long2ObjectMap.Entry<ImmutableList.Builder<Event>> evt: table.long2ObjectEntrySet()) {
                 result.put(evt.getLongKey(), evt.getValue().build());
                 evt.setValue(null);

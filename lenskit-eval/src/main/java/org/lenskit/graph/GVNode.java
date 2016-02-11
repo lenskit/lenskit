@@ -41,7 +41,7 @@ class GVNode {
      */
     public GVNode(String id, Map<String, Object> attrs, String tgt) {
         this.id = id;
-        attributes = Collections.unmodifiableMap(new LinkedHashMap<String, Object>(attrs));
+        attributes = Collections.unmodifiableMap(new LinkedHashMap<>(attrs));
         target = tgt;
     }
 

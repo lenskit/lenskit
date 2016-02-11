@@ -118,7 +118,7 @@ public final class PrefetchingUserEventDAO implements UserEventDAO, Describable 
         @Override
         public Long2ObjectMap<UserHistory<Event>> get() {
             Long2ObjectMap<List<Event>> table =
-                    new Long2ObjectOpenHashMap<List<Event>>();
+                    new Long2ObjectOpenHashMap<>();
             ObjectStream<Event> events = eventDAO.streamEvents();
             try {
                 for (Event evt: events) {
@@ -133,7 +133,7 @@ public final class PrefetchingUserEventDAO implements UserEventDAO, Describable 
             } finally {
                 events.close();
             }
-            Long2ObjectMap<UserHistory<Event>> result = new Long2ObjectOpenHashMap<UserHistory<Event>>(table.size());
+            Long2ObjectMap<UserHistory<Event>> result = new Long2ObjectOpenHashMap<>(table.size());
             for (Long2ObjectMap.Entry<List<Event>> evt: table.long2ObjectEntrySet()) {
                 long user = evt.getLongKey();
                 result.put(user, History.forUser(user, evt.getValue()));

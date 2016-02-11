@@ -21,6 +21,8 @@
 package org.lenskit.knn.item.model;
 
 import it.unimi.dsi.fastutil.longs.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.NoSuchElementException;
 
@@ -33,6 +35,7 @@ import java.util.NoSuchElementException;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 class AdaptiveSparseItemIterator extends AbstractLongIterator {
+    private static final Logger logger = LoggerFactory.getLogger(AdaptiveSparseItemIterator.class);
     private final ItemItemBuildContext context;
     private final LongSet users;
     private final long lowerBound;
@@ -84,6 +87,10 @@ class AdaptiveSparseItemIterator extends AbstractLongIterator {
                 // 50% users left to go, just use all the items
                 LongSortedSet items = null;
                 if (universeSize - seen.size() <= universeSize / 4 && usersSeen <= users.size() / 2) {
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("dropping sparsity, using full universe (saw {} of {} items, {} of {} users)",
+                                     seen.size(), universeSize, usersSeen, users.size());
+                    }
                     items = context.getItems();
                     userIter = null; // so this is the last set of items we consider
                 } else if (userIter.hasNext()) {

@@ -36,7 +36,7 @@ public class AdaptiveSparseItemIteratorTest {
     @Before
     public void createContext() {
         LongSortedSet universe = LongUtils.packedSet(1, 2, 5, 7, 9, 13, 14, 17, 68, 32, 97);
-        Long2ObjectMap<LongSortedSet> userItems = new Long2ObjectOpenHashMap<LongSortedSet>();
+        Long2ObjectMap<LongSortedSet> userItems = new Long2ObjectOpenHashMap<>();
         userItems.put(42, LongUtils.packedSet(2, 5, 9));
         userItems.put(39, LongUtils.packedSet(2, 7, 9, 13));
         userItems.put(12, universe.subSet(2, 97));

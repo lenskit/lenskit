@@ -33,7 +33,7 @@ import java.util.LinkedHashSet;
  * @since 0.10
  */
 public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
-    private LinkedHashSet<String> columns = new LinkedHashSet<String>();
+    private LinkedHashSet<String> columns = new LinkedHashSet<>();
 
     /**
      * Construct a new builder that is a copy of an existing layout.
@@ -112,7 +112,7 @@ public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new CloneFailedException(e);
         }
-        copy.columns = new LinkedHashSet<String>(columns);
+        copy.columns = new LinkedHashSet<>(columns);
         return copy;
     }
 

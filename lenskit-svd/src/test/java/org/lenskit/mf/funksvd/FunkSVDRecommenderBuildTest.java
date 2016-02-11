@@ -20,30 +20,29 @@
  */
 package org.lenskit.mf.funksvd;
 
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.LenskitConfiguration;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
-import org.lenskit.data.ratings.Rating;
-import org.lenskit.data.ratings.PackedRatingMatrix;
-import org.lenskit.data.ratings.RatingMatrix;
 import org.grouplens.lenskit.iterative.IterationCount;
 import org.grouplens.lenskit.iterative.IterationCountStoppingCondition;
 import org.grouplens.lenskit.iterative.StoppingCondition;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommender;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.ItemScorer;
 import org.lenskit.api.RatingPredictor;
 import org.lenskit.api.Recommender;
+import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.baseline.BaselineScorer;
 import org.lenskit.baseline.ItemMeanRatingItemScorer;
 import org.lenskit.baseline.UserMeanBaseline;
 import org.lenskit.baseline.UserMeanItemScorer;
 import org.lenskit.basic.SimpleRatingPredictor;
 import org.lenskit.basic.TopNItemRecommender;
+import org.lenskit.data.dao.EventCollectionDAO;
+import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.ratings.PackedRatingMatrix;
+import org.lenskit.data.ratings.Rating;
+import org.lenskit.data.ratings.RatingMatrix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +55,7 @@ public class FunkSVDRecommenderBuildTest {
 
     @Before
     public void setup() throws RecommenderBuildException {
-        List<Rating> rs = new ArrayList<Rating>();
+        List<Rating> rs = new ArrayList<>();
         rs.add(Rating.create(1, 5, 2));
         rs.add(Rating.create(1, 7, 4));
         rs.add(Rating.create(8, 4, 5));
@@ -124,14 +123,12 @@ public class FunkSVDRecommenderBuildTest {
     @Test
     public void testConfigSeparation() throws RecommenderBuildException {
         LenskitRecommenderEngine engine = makeEngine();
-        LenskitRecommender rec1 = null;
-        LenskitRecommender rec2 = null;
-        rec1 = engine.createRecommender();
-        rec2 = engine.createRecommender();
-
-        assertThat(rec1.getItemScorer(),
-                   not(sameInstance(rec2.getItemScorer())));
-        assertThat(rec1.get(FunkSVDModel.class),
-                   sameInstance(rec2.get(FunkSVDModel.class)));
+        try (LenskitRecommender rec1 = engine.createRecommender();
+             LenskitRecommender rec2 = engine.createRecommender()) {
+            assertThat(rec1.getItemScorer(),
+                       not(sameInstance(rec2.getItemScorer())));
+            assertThat(rec1.get(FunkSVDModel.class),
+                       sameInstance(rec2.get(FunkSVDModel.class)));
+        }
     }
 }

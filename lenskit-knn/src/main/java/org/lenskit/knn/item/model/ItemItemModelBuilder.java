@@ -20,25 +20,26 @@
  */
 package org.lenskit.knn.item.model;
 
-import com.google.common.base.Stopwatch;
 import it.unimi.dsi.fastutil.longs.*;
-import org.lenskit.inject.Transient;
-import org.lenskit.knn.item.ItemSimilarity;
-import org.lenskit.knn.item.ItemSimilarityThreshold;
-import org.lenskit.knn.item.ModelSize;
 import org.grouplens.lenskit.transform.threshold.Threshold;
 import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
 import org.grouplens.lenskit.util.UnlimitedScoredItemAccumulator;
 import org.grouplens.lenskit.vectors.ImmutableSparseVector;
 import org.grouplens.lenskit.vectors.SparseVector;
+import org.lenskit.inject.Transient;
+import org.lenskit.knn.item.ItemSimilarity;
+import org.lenskit.knn.item.ItemSimilarityThreshold;
+import org.lenskit.knn.item.MinCommonUsers;
+import org.lenskit.knn.item.ModelSize;
+import org.lenskit.util.ProgressLogger;
+import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Build an item-item CF model from rating data.
@@ -55,6 +56,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
     private final ItemItemBuildContext buildContext;
     private final Threshold threshold;
     private final NeighborIterationStrategy neighborStrategy;
+    private final int minCommonUsers;
     private final int modelSize;
 
     @Inject
@@ -62,11 +64,13 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
                                 @Transient ItemItemBuildContext context,
                                 @Transient @ItemSimilarityThreshold Threshold thresh,
                                 @Transient NeighborIterationStrategy nbrStrat,
+                                @MinCommonUsers int minCU,
                                 @ModelSize int size) {
         itemSimilarity = similarity;
         buildContext = context;
         threshold = thresh;
         neighborStrategy = nbrStrat;
+        minCommonUsers = minCU;
         modelSize = size;
     }
 
@@ -86,9 +90,14 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
         final int nitems = allItems.size();
         LongIterator outer = allItems.iterator();
 
-        Stopwatch timer = Stopwatch.createStarted();
+        ProgressLogger progress = ProgressLogger.create(logger)
+                                                .setCount(nitems)
+                                                .setLabel("item-item model build")
+                                                .setWindow(50)
+                                                .start();
         int ndone = 0;
-        while (outer.hasNext()) {
+        int npairs = 0;
+        OUTER: while (outer.hasNext()) {
             ndone += 1;
             final long itemId1 = outer.nextLong();
             if (logger.isTraceEnabled()) {
@@ -96,39 +105,51 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
                              itemId1, ndone, nitems);
             }
             SparseVector vec1 = buildContext.itemVector(itemId1);
+            if (vec1.size() < minCommonUsers) {
+                // if it doesn't have enough users, it can't have enough common users
+                if (logger.isTraceEnabled()) {
+                    logger.trace("item {} has {} (< {}) users, skipping", itemId1, vec1.size(), minCommonUsers);
+                }
+                progress.advance();
+                continue OUTER;
+            }
 
             LongIterator itemIter = neighborStrategy.neighborIterator(buildContext, itemId1,
                                                                       itemSimilarity.isSymmetric());
 
             ScoredItemAccumulator row = rows.get(itemId1);
-            while (itemIter.hasNext()) {
+            INNER: while (itemIter.hasNext()) {
                 long itemId2 = itemIter.nextLong();
                 if (itemId1 != itemId2) {
                     SparseVector vec2 = buildContext.itemVector(itemId2);
+                    if (!LongUtils.hasNCommonItems(vec1.keySet(), vec2.keySet(), minCommonUsers)) {
+                        // items have insufficient users in common, skip them
+                        continue INNER;
+                    }
+
                     double sim = itemSimilarity.similarity(itemId1, vec1, itemId2, vec2);
                     if (threshold.retain(sim)) {
                         row.put(itemId2, sim);
+                        npairs += 1;
                         if (itemSimilarity.isSymmetric()) {
                             rows.get(itemId2).put(itemId1, sim);
+                            npairs += 1;
                         }
                     }
                 }
             }
 
-            if (logger.isDebugEnabled() && ndone % 100 == 0) {
-                logger.debug("computed {} of {} model rows ({}s/row)",
-                             ndone, nitems,
-                             String.format("%.3f", timer.elapsed(TimeUnit.MILLISECONDS) * 0.001 / ndone));
-            }
+            progress.advance();
         }
-        timer.stop();
-        logger.info("built model for {} items in {}", ndone, timer);
+        progress.finish();
+        logger.info("built model of {} similarities for {} items in {}",
+                    npairs, ndone, progress.elapsedTime());
 
         return new SimilarityMatrixModel(finishRows(rows));
     }
 
     private Long2ObjectMap<ScoredItemAccumulator> makeAccumulators(LongSet items) {
-        Long2ObjectMap<ScoredItemAccumulator> rows = new Long2ObjectOpenHashMap<ScoredItemAccumulator>(items.size());
+        Long2ObjectMap<ScoredItemAccumulator> rows = new Long2ObjectOpenHashMap<>(items.size());
         LongIterator iter = items.iterator();
         while (iter.hasNext()) {
             long item = iter.nextLong();
@@ -144,7 +165,7 @@ public class ItemItemModelBuilder implements Provider<ItemItemModel> {
     }
 
     private Long2ObjectMap<ImmutableSparseVector> finishRows(Long2ObjectMap<ScoredItemAccumulator> rows) {
-        Long2ObjectMap<ImmutableSparseVector> results = new Long2ObjectOpenHashMap<ImmutableSparseVector>(rows.size());
+        Long2ObjectMap<ImmutableSparseVector> results = new Long2ObjectOpenHashMap<>(rows.size());
         for (Long2ObjectMap.Entry<ScoredItemAccumulator> e: rows.long2ObjectEntrySet()) {
             results.put(e.getLongKey(), e.getValue().finishVector().freeze());
         }

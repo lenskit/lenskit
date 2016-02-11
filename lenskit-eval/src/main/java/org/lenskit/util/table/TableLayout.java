@@ -40,7 +40,7 @@ public class TableLayout {
 
     TableLayout(Collection<String> colNames) {
         names = ImmutableList.copyOf(colNames);
-        indexes = new Object2IntOpenHashMap<String>(names.size());
+        indexes = new Object2IntOpenHashMap<>(names.size());
         for (String col: names) {
             indexes.put(col, indexes.size());
         }

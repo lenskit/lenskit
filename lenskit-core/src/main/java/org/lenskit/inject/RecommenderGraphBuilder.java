@@ -20,8 +20,6 @@
  */
 package org.lenskit.inject;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
 import org.grouplens.grapht.*;
 import org.grouplens.grapht.context.ContextMatcher;
@@ -30,8 +28,8 @@ import org.grouplens.grapht.reflect.Desires;
 import org.grouplens.grapht.solver.*;
 import org.lenskit.LenskitConfiguration;
 
-import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -140,19 +138,15 @@ public class RecommenderGraphBuilder {
                 if (bindFunction instanceof RuleBasedBindingFunction) {
                     RuleBasedBindingFunction rbf = (RuleBasedBindingFunction) bindFunction;
                     ListMultimap<ContextMatcher, BindRule> bindings = rbf.getRules();
-                    ListMultimap<ContextMatcher, BindRule> newBindings;
-                    newBindings = Multimaps.transformValues(bindings, new Function<BindRule, BindRule>() {
-                        @Nullable
-                        @Override
-                        public BindRule apply(@Nullable BindRule rule) {
-                            Preconditions.checkNotNull(rule, "cannot apply to null binding function");
-                            assert rule != null;
-                            BindRuleBuilder builder = rule.newCopyBuilder();
-                            Class<?> type = builder.getDependencyType();
-                            return builder.setSatisfaction(new PlaceholderSatisfaction(type))
-                                          .build();
-                        }
-                    });
+                    ListMultimap<ContextMatcher, BindRule> newBindings = ArrayListMultimap.create();
+                    for (Map.Entry<ContextMatcher, BindRule> entry: bindings.entries()) {
+                        BindRule rule = entry.getValue();
+                        BindRuleBuilder builder = rule.newCopyBuilder();
+                        Class<?> type = builder.getDependencyType();
+                        newBindings.put(entry.getKey(),
+                                        builder.setSatisfaction(new PlaceholderSatisfaction(type))
+                                               .build());
+                    }
                     return new RuleBasedBindingFunction(newBindings);
                 } else {
                     throw new IllegalArgumentException("cannot transform bind function " + bindFunction);

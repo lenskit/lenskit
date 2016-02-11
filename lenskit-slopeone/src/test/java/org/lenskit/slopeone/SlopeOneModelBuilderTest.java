@@ -51,7 +51,7 @@ public class SlopeOneModelBuilderTest {
     @Test
     public void testBuild1() {
 
-        List<Rating> rs = new ArrayList<Rating>();
+        List<Rating> rs = new ArrayList<>();
         rs.add(Rating.create(1, 5, 2));
         rs.add(Rating.create(2, 5, 4));
         rs.add(Rating.create(1, 3, 5));
@@ -68,7 +68,7 @@ public class SlopeOneModelBuilderTest {
     @Test
     public void testBuild2() {
 
-        List<Rating> rs = new ArrayList<Rating>();
+        List<Rating> rs = new ArrayList<>();
         rs.add(Rating.create(1, 4, 4));
         rs.add(Rating.create(2, 4, 5));
         rs.add(Rating.create(3, 4, 4));
@@ -98,7 +98,7 @@ public class SlopeOneModelBuilderTest {
     @Test
     public void testBuild3() {
 
-        List<Rating> rs = new ArrayList<Rating>();
+        List<Rating> rs = new ArrayList<>();
         rs.add(Rating.create(1, 6, 4));
         rs.add(Rating.create(2, 6, 2));
         rs.add(Rating.create(1, 7, 3));
@@ -144,7 +144,7 @@ public class SlopeOneModelBuilderTest {
 
     @Test
     public void testBuild4() {
-        List<Rating> rs = new ArrayList<Rating>();
+        List<Rating> rs = new ArrayList<>();
         rs.add(Rating.create(1, 4, 3.5));
         rs.add(Rating.create(2, 4, 5));
         rs.add(Rating.create(3, 5, 4.25));

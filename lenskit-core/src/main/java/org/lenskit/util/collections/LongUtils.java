@@ -20,11 +20,12 @@
  */
 package org.lenskit.util.collections;
 
+import com.google.common.base.Preconditions;
 import com.google.common.primitives.Doubles;
 import it.unimi.dsi.fastutil.longs.*;
 import org.lenskit.util.keys.Long2DoubleSortedArrayMap;
-import org.lenskit.util.keys.SortedKeyIndex;
 import org.lenskit.util.keys.LongSortedArraySet;
+import org.lenskit.util.keys.SortedKeyIndex;
 
 import java.util.*;
 
@@ -134,6 +135,20 @@ public final class LongUtils {
     }
 
     /**
+     * Create a map that maps a group of items to the same value.
+     * @param keys The keys.
+     * @param value The value.
+     * @return A map that contains all `keys`, mapping each of them to `value`.
+     */
+    public static Long2DoubleMap constantDoubleMap(Set<Long> keys, double value) {
+        // TODO Implement this using a flyweight wrapper
+        SortedKeyIndex idx = SortedKeyIndex.fromCollection(keys);
+        double[] values = new double[idx.size()];
+        Arrays.fill(values, value);
+        return Long2DoubleSortedArrayMap.wrap(idx, values);
+    }
+
+    /**
      * Get a Fastutil {@link LongSet} from a {@link java.util.Set} of longs.
      *
      * @param longs The set of longs.
@@ -178,13 +193,35 @@ public final class LongUtils {
     }
 
     /**
-     * Compute the size of the union of two sets.
+     * Compute the size of the intersection of two sets.
      * @param a The first set.
      * @param b The second set.
-     * @return The size of the union of the two sets.
+     * @return The size of the intersection of the two sets.
      */
-    public static int unionSize(LongSortedSet a, LongSortedSet b) {
-        // we can't do fast bit operations, scan both sets instead
+    public static int intersectSize(LongSortedSet a, LongSortedSet b) {
+        return countCommonItems(a, b, -1);
+    }
+
+    /**
+     * Check if two sets have at least a given number of common items.
+     * @param a The first set.
+     * @param b The second set.
+     * @param n The number of common items to require.
+     * @return `true` if the two sets have at least `n` common items.
+     */
+    public static boolean hasNCommonItems(LongSortedSet a, LongSortedSet b, int n) {
+        Preconditions.checkArgument(n >= 0, "common item count must be nonnegative");
+        return n == 0 || countCommonItems(a, b, n) >= n;
+    }
+
+    /**
+     * Count the common items in two sets.
+     * @param a The first set.
+     * @param b The second set.
+     * @param max The maximum number of common items to count; nonpositive values mean no limit.
+     * @return The number of common items, or `max` if there are at least `max` common items.
+     */
+    private static int countCommonItems(LongSortedSet a, LongSortedSet b, int max) {
         LongIterator ait = a.iterator();
         LongIterator bit = b.iterator();
         boolean hasA = ait.hasNext();
@@ -192,7 +229,7 @@ public final class LongUtils {
         long nextA = hasA ? ait.nextLong() : Long.MAX_VALUE;
         long nextB = hasB ? bit.nextLong() : Long.MAX_VALUE;
         int nshared = 0;
-        while (hasA && hasB) {
+        while (hasA && hasB && (max < 0 || nshared < max)) {
             if (nextA < nextB) {
                 hasA = ait.hasNext();
                 nextA = hasA ? ait.nextLong() : Long.MAX_VALUE;
@@ -207,7 +244,17 @@ public final class LongUtils {
                 nextB = hasB ? bit.nextLong() : Long.MAX_VALUE;
             }
         }
-        return a.size() + b.size() - nshared;
+        return nshared;
+    }
+
+    /**
+     * Compute the size of the union of two sets.
+     * @param a The first set.
+     * @param b The second set.
+     * @return The size of the union of the two sets.
+     */
+    public static int unionSize(LongSortedSet a, LongSortedSet b) {
+        return a.size() + b.size() - intersectSize(a, b);
     }
 
     /**

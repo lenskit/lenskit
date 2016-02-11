@@ -50,7 +50,7 @@ class RowImpl implements Row {
                 entries.length == layout.getColumnCount(),
                 String.format("row has incorrect length (was %d, expected %d)",
                               entries.length, layout.getColumnCount()));
-        row = new ArrayList<Object>(entries.length);
+        row = new ArrayList<>(entries.length);
         Collections.addAll(row, entries);
     }
 

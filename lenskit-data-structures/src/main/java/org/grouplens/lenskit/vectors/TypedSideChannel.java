@@ -182,8 +182,8 @@ class TypedSideChannel<V> extends AbstractLong2ObjectMap<V> {
      * this side channel.
      */
     public MutableTypedSideChannel<V> mutableCopy() {
-        return new MutableTypedSideChannel<V>(keys.clone(), Arrays.copyOf(values, keys.domainSize()),
-                                              defaultReturnValue());
+        return new MutableTypedSideChannel<>(keys.clone(), Arrays.copyOf(values, keys.domainSize()),
+                                             defaultReturnValue());
     }
     
     /**

@@ -20,16 +20,17 @@
  */
 package org.lenskit.slopeone;
 
-import org.lenskit.api.RecommenderBuildException;
-import org.lenskit.LenskitConfiguration;
-import org.lenskit.data.dao.EventCollectionDAO;
-import org.lenskit.data.dao.EventDAO;
-import org.lenskit.data.ratings.Rating;
-import org.lenskit.data.ratings.PreferenceDomain;
-import org.lenskit.data.ratings.PreferenceDomainBuilder;
 import org.junit.Test;
+import org.lenskit.LenskitConfiguration;
 import org.lenskit.LenskitRecommenderEngine;
 import org.lenskit.api.ItemScorer;
+import org.lenskit.api.Recommender;
+import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.data.dao.EventCollectionDAO;
+import org.lenskit.data.dao.EventDAO;
+import org.lenskit.data.ratings.PreferenceDomain;
+import org.lenskit.data.ratings.PreferenceDomainBuilder;
+import org.lenskit.data.ratings.Rating;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,7 @@ public class SlopeOneItemScorerTest {
     @Test
     public void testPredict1() throws RecommenderBuildException {
 
-        List<Rating> rs = new ArrayList<Rating>();
+        List<Rating> rs = new ArrayList<>();
         rs.add(Rating.create(1, 6, 4));
         rs.add(Rating.create(2, 6, 2));
         rs.add(Rating.create(1, 7, 3));
@@ -66,26 +67,27 @@ public class SlopeOneItemScorerTest {
         config.bind(PreferenceDomain.class).to(new PreferenceDomainBuilder(1, 5)
                                                        .setPrecision(1)
                                                        .build());
-        ItemScorer predictor = LenskitRecommenderEngine.build(config)
-                                                       .createRecommender()
-                                                       .getItemScorer();
+        try (Recommender rec = LenskitRecommenderEngine.build(config)
+                                                       .createRecommender()) {
+            ItemScorer predictor = rec.getItemScorer();
 
-        assertThat(predictor, notNullValue());
-        assertEquals(7 / 3.0, predictor.score(2, 9).getScore(), EPSILON);
-        assertEquals(13 / 3.0, predictor.score(3, 6).getScore(), EPSILON);
-        assertEquals(2, predictor.score(4, 6).getScore(), EPSILON);
-        assertEquals(2, predictor.score(4, 9).getScore(), EPSILON);
-        assertEquals(2.5, predictor.score(5, 6).getScore(), EPSILON);
-        assertEquals(3, predictor.score(5, 7).getScore(), EPSILON);
-        assertEquals(3.5, predictor.score(5, 9).getScore(), EPSILON);
-        assertEquals(1.5, predictor.score(6, 6).getScore(), EPSILON);
-        assertEquals(2, predictor.score(6, 7).getScore(), EPSILON);
-        assertEquals(2.5, predictor.score(6, 9).getScore(), EPSILON);
+            assertThat(predictor, notNullValue());
+            assertEquals(7 / 3.0, predictor.score(2, 9).getScore(), EPSILON);
+            assertEquals(13 / 3.0, predictor.score(3, 6).getScore(), EPSILON);
+            assertEquals(2, predictor.score(4, 6).getScore(), EPSILON);
+            assertEquals(2, predictor.score(4, 9).getScore(), EPSILON);
+            assertEquals(2.5, predictor.score(5, 6).getScore(), EPSILON);
+            assertEquals(3, predictor.score(5, 7).getScore(), EPSILON);
+            assertEquals(3.5, predictor.score(5, 9).getScore(), EPSILON);
+            assertEquals(1.5, predictor.score(6, 6).getScore(), EPSILON);
+            assertEquals(2, predictor.score(6, 7).getScore(), EPSILON);
+            assertEquals(2.5, predictor.score(6, 9).getScore(), EPSILON);
+        }
     }
 
     @Test
     public void testPredict2() throws RecommenderBuildException {
-        List<Rating> rs = new ArrayList<Rating>();
+        List<Rating> rs = new ArrayList<>();
         rs.add(Rating.create(1, 4, 3.5));
         rs.add(Rating.create(2, 4, 5));
         rs.add(Rating.create(3, 5, 4.25));
@@ -100,15 +102,16 @@ public class SlopeOneItemScorerTest {
         config.bind(PreferenceDomain.class).to(new PreferenceDomainBuilder(1, 5)
                                                        .setPrecision(1)
                                                        .build());
-        ItemScorer predictor = LenskitRecommenderEngine.build(config)
-                                                       .createRecommender()
-                                                       .getItemScorer();
+        try (Recommender rec = LenskitRecommenderEngine.build(config)
+                                                       .createRecommender()) {
+            ItemScorer predictor = rec.getItemScorer();
 
-        assertThat(predictor, notNullValue());
-        assertEquals(5, predictor.score(1, 5).getScore(), EPSILON);
-        assertEquals(2.25, predictor.score(1, 6).getScore(), EPSILON);
-        assertEquals(5, predictor.score(2, 5).getScore(), EPSILON);
-        assertEquals(1.75, predictor.score(3, 4).getScore(), EPSILON);
-        assertEquals(1, predictor.score(3, 6).getScore(), EPSILON);
+            assertThat(predictor, notNullValue());
+            assertEquals(5, predictor.score(1, 5).getScore(), EPSILON);
+            assertEquals(2.25, predictor.score(1, 6).getScore(), EPSILON);
+            assertEquals(5, predictor.score(2, 5).getScore(), EPSILON);
+            assertEquals(1.75, predictor.score(3, 4).getScore(), EPSILON);
+            assertEquals(1, predictor.score(3, 6).getScore(), EPSILON);
+        }
     }
 }

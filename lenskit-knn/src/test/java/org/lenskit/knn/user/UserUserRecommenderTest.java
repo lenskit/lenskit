@@ -22,6 +22,7 @@ package org.lenskit.knn.user;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
+import org.junit.After;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.data.dao.EventCollectionDAO;
@@ -48,7 +49,7 @@ public class UserUserRecommenderTest {
     @SuppressWarnings("deprecation")
     @Before
     public void setup() throws RecommenderBuildException {
-        List<Rating> rs = new ArrayList<Rating>();
+        List<Rating> rs = new ArrayList<>();
         rs.add(Rating.create(1, 6, 4));
         rs.add(Rating.create(2, 6, 2));
         rs.add(Rating.create(4, 6, 3));
@@ -81,6 +82,11 @@ public class UserUserRecommenderTest {
                              IdentityVectorNormalizer.class);*/
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         rec = engine.createRecommender();
+    }
+
+    @After
+    public void teardown() {
+        rec.close();
     }
 
     /**

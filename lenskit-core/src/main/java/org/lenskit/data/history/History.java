@@ -49,9 +49,9 @@ public final class History {
     public static <E extends Event> UserHistory<E> forUser(long id, List<? extends E> events) {
         Ordering<Event> ord = Ordering.from(Events.TIMESTAMP_COMPARATOR);
         if (ord.isOrdered(events)) {
-            return new BasicUserHistory<E>(id, events);
+            return new BasicUserHistory<>(id, events);
         } else {
-            return new BasicUserHistory<E>(id, ord.immutableSortedCopy(events));
+            return new BasicUserHistory<>(id, ord.immutableSortedCopy(events));
         }
     }
 
@@ -64,7 +64,7 @@ public final class History {
     @Nonnull
     public static <E extends Event> UserHistory<E> forUser(long id) {
         List<E> list = ImmutableList.of();
-        return new BasicUserHistory<E>(id, list);
+        return new BasicUserHistory<>(id, list);
     }
 
     /**
@@ -79,7 +79,7 @@ public final class History {
     @SuppressWarnings("varargs") // method is safe MDE 2015-05-08
     public static <E extends Event> UserHistory<E> forUser(long id, E... events) {
         List<E> list = ImmutableList.copyOf(events);
-        return new BasicUserHistory<E>(id, list);
+        return new BasicUserHistory<>(id, list);
     }
 
     /**
@@ -92,7 +92,7 @@ public final class History {
     @SuppressWarnings("deprecation")
     @Nonnull
     public static <E extends Event> ItemEventCollection<E> forItem(long id, Iterable<? extends E> events) {
-        return new BasicItemEventList<E>(id, events);
+        return new BasicItemEventList<>(id, events);
     }
 
     /**
@@ -104,6 +104,6 @@ public final class History {
     @Nonnull
     public static <E extends Event> ItemEventCollection<E> forItem(long id) {
         List<E> list = ImmutableList.of();
-        return new BasicItemEventList<E>(id, list);
+        return new BasicItemEventList<>(id, list);
     }
 }

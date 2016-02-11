@@ -37,7 +37,7 @@
  * Integration tests built with Gradle.
  */
 
-def ift = task makeTestRepo {
+def ift = task makeTestRepo(group: 'build setup') {
     for (prj in rootProject.childProjects.values()) {
         if (prj.name =~ /^lenskit-(?!integration-tests)/) {
             dependsOn "$prj.path:installForTesting"
@@ -95,4 +95,14 @@ file('src/it/gradle').eachDir { testDir ->
     }
 
     gradleTests.dependsOn "test$tname"
+}
+
+task unpackOfflineRepo(type: Copy) {
+    dependsOn rootProject.repoZip
+    from zipTree(rootProject.repoZip.archivePath)
+    into "$buildDir/offline-repo"
+}
+testEvalWithOfflineRepo {
+    dependsOn unpackOfflineRepo
+    startParameter.projectProperties['offlineRepoURI'] = uri("$buildDir/offline-repo/lenskit-repo-$version")
 }

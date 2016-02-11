@@ -30,7 +30,7 @@ import java.util.Map;
  */
 class NodeBuilder implements Builder<GVNode> {
     private final String nodeId;
-    private final Map<String,Object> attributes = new LinkedHashMap<String, Object>();
+    private final Map<String,Object> attributes = new LinkedHashMap<>();
     private String target;
 
     private NodeBuilder(String id) {

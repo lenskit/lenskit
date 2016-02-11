@@ -24,13 +24,10 @@ import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
 import org.grouplens.grapht.graph.DAGNode;
-import org.lenskit.api.RecommenderBuildException;
+import org.lenskit.api.*;
 import org.lenskit.inject.StaticInjector;
-import org.lenskit.api.ItemRecommender;
-import org.lenskit.api.ItemScorer;
-import org.lenskit.api.RatingPredictor;
-import org.lenskit.api.Recommender;
 
+import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 
 /**
@@ -129,9 +126,21 @@ public class LenskitRecommender implements Recommender {
         return get(ItemRecommender.class);
     }
 
+    @Nullable
+    @Override
+    public ItemBasedItemScorer getItemBasedItemScorer() {
+        return get(ItemBasedItemScorer.class);
+    }
+
+    @Nullable
+    @Override
+    public ItemBasedItemRecommender getItemBasedItemRecommender() {
+        return get(ItemBasedItemRecommender.class);
+    }
+
     @Override
     public void close() {
-        // TODO Implement closing
+        injector.close();
     }
 
     /**

@@ -23,10 +23,11 @@ package org.lenskit.inject;
 import org.grouplens.grapht.Component;
 import org.grouplens.grapht.Dependency;
 import org.grouplens.grapht.InjectionException;
+import org.grouplens.grapht.LifecycleManager;
 import org.grouplens.grapht.graph.DAGNode;
-import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.RecommenderConfigurationException;
+import org.lenskit.api.RecommenderBuildException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,16 +43,9 @@ import java.util.Set;
 public final class RecommenderInstantiator {
     private static final Logger logger = LoggerFactory.getLogger(RecommenderInstantiator.class);
     private final DAGNode<Component, Dependency> graph;
-    private final NodeInstantiator instantiator;
-
 
     public static RecommenderInstantiator create(DAGNode<Component,Dependency> g) {
-        return new RecommenderInstantiator(g, NodeInstantiator.create());
-    }
-
-    public static RecommenderInstantiator create(DAGNode<Component,Dependency> g,
-                                               NodeInstantiator instantiator) {
-        return new RecommenderInstantiator(g, instantiator);
+        return new RecommenderInstantiator(g);
     }
 
     @Deprecated
@@ -59,9 +53,8 @@ public final class RecommenderInstantiator {
         return create(config.buildGraph());
     }
 
-    private RecommenderInstantiator(DAGNode<Component, Dependency> g, NodeInstantiator inst) {
+    private RecommenderInstantiator(DAGNode<Component, Dependency> g) {
         graph = g;
-        instantiator = inst;
     }
 
     /**
@@ -83,7 +76,9 @@ public final class RecommenderInstantiator {
      * @throws RecommenderBuildException If there is an error instantiating the graph.
      */
     public DAGNode<Component,Dependency> instantiate() throws RecommenderBuildException {
-        try {
+        try (LifecycleManager lm = new LifecycleManager()) {
+            NodeInstantiator instantiator = NodeInstantiator.create(lm);
+            // TODO Verify that no sharable components are lifecycle-managed
             return replaceShareableNodes(NodeProcessors.instantiate(instantiator));
         } catch (InjectionException e) {
             throw new RecommenderBuildException("Recommender instantiation failed", e);

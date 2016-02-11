@@ -45,4 +45,18 @@ public interface VectorTransformation {
      * @return <var>vector</var> (for chaining).
      */
     MutableSparseVector unapply(MutableSparseVector vector);
+
+    /**
+     * Apply the transformation to an individual value.
+     * @param value The value.
+     * @return The transformed values.
+     */
+    double apply(long key, double value);
+
+    /**
+     * Apply the inverse of the transformation to an individual value.
+     * @param value The value.
+     * @return The untransformed value.
+     */
+    double unapply(long key, double value);
 }

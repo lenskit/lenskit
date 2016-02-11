@@ -22,6 +22,7 @@ package org.lenskit.knn.item;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import org.junit.After;
 import org.lenskit.api.RecommenderBuildException;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.data.dao.EventCollectionDAO;
@@ -84,6 +85,11 @@ public class ItemItemRecommenderTest {
         LenskitRecommenderEngine engine = LenskitRecommenderEngine.build(config);
         session = engine.createRecommender();
         recommender = session.getItemRecommender();
+    }
+
+    @After
+    public void teardown() {
+        session.close();
     }
 
     /**

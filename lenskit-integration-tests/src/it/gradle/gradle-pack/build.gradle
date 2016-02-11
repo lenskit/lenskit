@@ -27,10 +27,21 @@ task packRatings(type: PackRatings) {
     output "$buildDir/ml-100k.pack"
     includeTimestamps false
 }
+task checkRatingsFileExists(group: 'test') << {
+    assertThat "output file exists", file("$buildDir/ml-100k.pack").exists()
+}
+checkRatingsFileExists.dependsOn packRatings
+
+task testPackRatings(type: LenskitExec) {
+    dependsOn packRatings
+    mustRunAfter checkRatingsFileExists
+
+    command 'validate-pack'
+    args file("$buildDir/ml-100k.pack")
+}
+
 
 check {
-    dependsOn packRatings
-    doLast {
-        assertThat "output file exists", file("$buildDir/ml-100k.pack").exists()
-    }
+    dependsOn checkRatingsFileExists
+    dependsOn testPackRatings
 }

@@ -18,8 +18,16 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
+package org.lenskit.gradle
+
 /**
- * Basic component implementations.  Most of these won't do any good without another,
- * more sophisticated implementation of some component backing them.
+ * Execute a LensKit command.
  */
-package org.grouplens.lenskit.basic;
+class LenskitExec extends LenskitTask {
+    def String command
+    def List<String> commandArgs = []
+
+    void args(Object... args) {
+        commandArgs.addAll(args.collect {it.toString()})
+    }
+}

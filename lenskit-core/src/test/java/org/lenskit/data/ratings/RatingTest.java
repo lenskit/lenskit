@@ -84,7 +84,7 @@ public class RatingTest {
 
     @Test
     public void testURVRatingsInOrder() {
-        List<Rating> ratings = new ArrayList<Rating>();
+        List<Rating> ratings = new ArrayList<>();
         ratings.add(Rating.create(1, 2, 3.0, 3));
         ratings.add(Rating.create(1, 3, 4.5, 7));
         ratings.add(Rating.create(1, 5, 2.3, 10));
@@ -99,7 +99,7 @@ public class RatingTest {
 
     @Test
     public void testURVRatingsOutOfOrder() {
-        List<Rating> ratings = new ArrayList<Rating>();
+        List<Rating> ratings = new ArrayList<>();
         ratings.add(Rating.create(1, 2, 3.0, 3));
         ratings.add(Rating.create(1, 5, 2.3, 7));
         ratings.add(Rating.create(1, 3, 4.5, 10));
@@ -114,7 +114,7 @@ public class RatingTest {
 
     @Test
     public void testURVRatingsDup() {
-        List<Rating> ratings = new ArrayList<Rating>();
+        List<Rating> ratings = new ArrayList<>();
         ratings.add(Rating.create(1, 2, 3.0, 3));
         ratings.add(Rating.create(1, 5, 2.3, 4));
         ratings.add(Rating.create(1, 3, 4.5, 5));
@@ -130,7 +130,7 @@ public class RatingTest {
 
     @Test
     public void testURVRatingsRmv() {
-        List<Rating> ratings = new ArrayList<Rating>();
+        List<Rating> ratings = new ArrayList<>();
         ratings.add(Rating.create(1, 2, 3.0, 3));
         ratings.add(Rating.create(1, 5, 2.3, 5));
         ratings.add(Rating.createUnrate(1, 2, 7));
@@ -146,7 +146,7 @@ public class RatingTest {
 
     @Test
     public void testURVRatingsDupOutOfOrder() {
-        List<Rating> ratings = new ArrayList<Rating>();
+        List<Rating> ratings = new ArrayList<>();
         ratings.add(Rating.create(1, 2, 3.0, 3));
         ratings.add(Rating.create(1, 5, 2.3, 7));
         ratings.add(Rating.create(1, 3, 4.5, 5));
@@ -170,7 +170,7 @@ public class RatingTest {
 
     @Test
     public void testIRVRatings() {
-        List<Rating> ratings = new ArrayList<Rating>();
+        List<Rating> ratings = new ArrayList<>();
         ratings.add(Rating.create(1, 2, 3.0, 1));
         ratings.add(Rating.create(3, 2, 4.5, 2));
         ratings.add(Rating.create(2, 2, 2.3, 3));

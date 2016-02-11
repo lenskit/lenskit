@@ -18,21 +18,19 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.grouplens.lenskit.basic;
+package org.lenskit.basic;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-import org.grouplens.lenskit.GlobalItemScorer;
+import org.lenskit.api.ItemBasedItemScorer;
+import org.lenskit.api.ResultList;
+import org.lenskit.api.ResultMap;
 import org.lenskit.data.dao.ItemDAO;
-import org.grouplens.lenskit.scored.ScoredId;
-import org.grouplens.lenskit.util.ScoredItemAccumulator;
-import org.grouplens.lenskit.util.TopNScoredItemAccumulator;
-import org.grouplens.lenskit.vectors.SparseVector;
-import org.grouplens.lenskit.vectors.VectorEntry;
+import org.lenskit.results.Results;
 import org.lenskit.util.collections.LongUtils;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
-import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
 /**
  * A global item recommender that recommends the top N items from a scorer.
@@ -40,33 +38,30 @@ import java.util.List;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  * @since 1.1
  */
-public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
+public class TopNItemBasedItemRecommender extends AbstractItemBasedItemRecommender {
     protected final ItemDAO itemDAO;
-    protected final GlobalItemScorer scorer;
+    protected final ItemBasedItemScorer scorer;
 
     @Inject
-    public TopNGlobalItemRecommender(ItemDAO idao, GlobalItemScorer scorer) {
+    public TopNItemBasedItemRecommender(ItemDAO idao, ItemBasedItemScorer scorer) {
         itemDAO = idao;
         this.scorer = scorer;
     }
 
-    /**
-     * Implement the ID-based recommendation in terms of the scorer. This method
-     * uses {@link #getDefaultExcludes(LongSet)} to supply a missing exclude set.
-     */
     @Override
-    protected List<ScoredId> globalRecommend(LongSet items, int n, LongSet candidates, LongSet exclude) {
+    public ResultList recommendRelatedItemsWithDetails(Set<Long> basket, int n, @Nullable Set<Long> candidates, @Nullable Set<Long> exclude) {
         if (candidates == null) {
             candidates = itemDAO.getItemIds();
         }
         if (exclude == null) {
-            exclude = getDefaultExcludes(items);
+            exclude = getDefaultExcludes(LongUtils.asLongSet(basket));
         }
         if (!exclude.isEmpty()) {
-            candidates = LongUtils.setDifference(candidates, exclude);
+            candidates = LongUtils.setDifference(LongUtils.asLongSet(candidates),
+                                                 LongUtils.asLongSet(exclude));
         }
 
-        SparseVector scores = scorer.globalScore(items, candidates);
+        ResultMap scores = scorer.scoreRelatedItemsWithDetails(basket, candidates);
         return recommend(n, scores);
     }
 
@@ -89,21 +84,15 @@ public class TopNGlobalItemRecommender extends AbstractGlobalItemRecommender {
      * @return The top <var>n</var> items from <var>scores</var>, in descending
      *         order of score.
      */
-    protected List<ScoredId> recommend(int n, SparseVector scores) {
+    protected ResultList recommend(int n, ResultMap scores) {
         if (scores.isEmpty()) {
-            return Collections.emptyList();
+            Results.newResultList();
         }
 
         if (n < 0) {
             n = scores.size();
         }
 
-        ScoredItemAccumulator accum = new TopNScoredItemAccumulator(n);
-        for (VectorEntry pred : scores) {
-            final double v = pred.getValue();
-            accum.put(pred.getKey(), v);
-        }
-
-        return accum.finish();
+        return Results.newResultList(Results.scoreOrder().greatestOf(scores, n));
     }
 }

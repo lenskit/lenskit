@@ -102,7 +102,7 @@ public class ScoredIdImplTest {
 
     @Test
     public void testGetChannels() {
-        Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<Symbol>();
+        Reference2DoubleMap<Symbol> channels = new Reference2DoubleArrayMap<>();
         channels.put(fooSym,1.0);
         ScoredIdImpl sid = new ScoredIdImpl(1,10.5,Lists.newArrayList(SymbolValue.of(fooSym, 1.0)));
         assertEquals(Collections.singleton(fooSym),sid.getUnboxedChannelSymbols());

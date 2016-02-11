@@ -28,10 +28,10 @@ notifications:
       - https://webhooks.gitter.im/e/12b880d9f4086ef2a62c
     on_success: always
     on_failure: always
-    on_start: never
+    on_start: always
 env:
   global:
-  - TERM=dumbda
+  - TERM=dumb
   - TZ=CST6CDT
   # SONAR_USER
   - secure: "lg7vgoXn7PwvW6VH5jPIQ9avyMSMjz4rZcb31HDvRkFCgP0+viUo9NWw1Wad5w2cS5WwwNdcEvmPsHHwYLk6szEhLNs7yPn/5LxUaI5ksqk++hd6m6F9L2PuzOAwPbmJsZRaRoOgiqhUa76mB6vWJNAnGDiFi8kZ54UApa3w+G0="

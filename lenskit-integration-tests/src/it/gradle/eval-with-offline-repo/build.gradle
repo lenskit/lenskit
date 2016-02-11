@@ -1,0 +1,61 @@
+buildscript {
+    repositories {
+        maven {
+            url project.offlineRepoURI
+        }
+    }
+    dependencies {
+        classpath "org.grouplens.lenskit:lenskit-gradle:$project.lenskitVersion"
+    }
+}
+
+import org.lenskit.gradle.*
+
+apply plugin: 'java'
+apply plugin: 'lenskit'
+
+repositories {
+    maven {
+        url project.offlineRepoURI
+    }
+}
+dependencies {
+    runtime "org.grouplens.lenskit:lenskit-cli:$project.lenskitVersion"
+}
+
+task crossfold(type: Crossfold) {
+    input textFile {
+        file ratingsFile
+        delimiter "\t"
+    }
+    outputFormat "PACK"
+    partitionCount 5
+    userPartitionMethod holdout(5)
+    includeTimestamps false
+}
+
+task trainTest(type: TrainTest) {
+    maxMemory '256m'
+    logFile "train-test.log"
+    logFileLevel 'DEBUG'
+    dataSet crossfold
+    outputFile 'results.csv'
+    algorithm 'Baseline', 'baseline.groovy'
+    predict {
+        metric 'coverage'
+        metric 'rmse'
+        metric('ndcg') {
+            columnName 'PredRankAcc'
+        }
+    }
+}
+
+task check(overwrite: true) {
+    dependsOn trainTest
+
+    doLast {
+        if (!file('results.csv').exists()) {
+            throw new RuntimeException("results file does not exist")
+        }
+    }
+}

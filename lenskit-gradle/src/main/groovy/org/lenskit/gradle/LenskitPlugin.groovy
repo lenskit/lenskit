@@ -24,6 +24,7 @@ import org.apache.commons.lang3.text.StrMatcher
 import org.apache.commons.lang3.text.StrTokenizer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.joda.convert.StringConvert
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -56,7 +57,7 @@ public class LenskitPlugin implements Plugin<Project> {
                     val = prop.type.metaClass.invokeConstructor(tok)
                 }
                 if (prop.type != String) {
-                    val = prop.type.metaClass.invokeConstructor(val)
+                    val = StringConvert.INSTANCE.convertFromString(prop.type, valStr)
                 }
 
                 prop.setProperty(lenskit, val)

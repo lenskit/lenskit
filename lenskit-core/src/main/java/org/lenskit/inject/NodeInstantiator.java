@@ -27,6 +27,7 @@ import org.grouplens.grapht.graph.DAGNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.WillNotClose;
 
 /**
  * Instantiate graph nodes.
@@ -35,8 +36,21 @@ import javax.annotation.Nullable;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public abstract class NodeInstantiator implements Function<DAGNode<Component,Dependency>,Object> {
+    /**
+     * Create a node instantiator without a lifecycle manager.
+     * @return A node instantiator that does not support lifecycle management.
+     */
     public static NodeInstantiator create() {
-        return new DefaultImpl();
+        return new DefaultImpl(null);
+    }
+
+    /**
+     * Create a node instantiator with a lifecycle manager.
+     * @param mgr The lifecycle manager to use.
+     * @return A node instantiator that will register components with a lifecycle manager.
+     */
+    public static NodeInstantiator create(@WillNotClose LifecycleManager mgr) {
+        return new DefaultImpl(mgr);
     }
 
     /**
@@ -67,8 +81,8 @@ public abstract class NodeInstantiator implements Function<DAGNode<Component,Dep
     static class DefaultImpl extends NodeInstantiator {
         private final InjectionContainer container;
 
-        DefaultImpl() {
-            container = InjectionContainer.create(CachePolicy.MEMOIZE);
+        DefaultImpl(LifecycleManager mgr) {
+            container = InjectionContainer.create(CachePolicy.MEMOIZE, mgr);
         }
 
         @Override

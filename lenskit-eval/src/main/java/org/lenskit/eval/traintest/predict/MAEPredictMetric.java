@@ -115,13 +115,13 @@ public class MAEPredictMetric extends PredictMetric<MAEPredictMetric.Context> {
             nusers += 1;
         }
 
-        public AggregateResult finish() {
+        public MetricResult finish() {
             if (nratings > 0) {
                 double v = totalError / nratings;
                 logger.info("RMSE: {}", v);
                 return new AggregateResult(totalMAE / nusers, v);
             } else {
-                return null;
+                return MetricResult.empty();
             }
         }
     }

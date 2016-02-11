@@ -39,6 +39,7 @@ apply from: "$rootDir/gradle/test-utils.gradle"
 
 dependencies {
     compile project(':lenskit-core')
+    compile project(':lenskit-knn')
     compile project(':lenskit-groovy')
     compile group: 'joda-time', name: 'joda-time', version: '2.3'
     compile group: 'org.apache.ant', name: 'ant', version: '1.8.4'

@@ -20,10 +20,9 @@
  */
 
 
-import org.grouplens.lenskit.GlobalItemScorer
-
+import org.lenskit.api.ItemBasedItemScorer
 import org.lenskit.knn.NeighborhoodSize
-import org.lenskit.knn.item.ItemItemGlobalScorer
+import org.lenskit.knn.item.ItemItemItemBasedItemScorer
 import org.lenskit.knn.item.ItemItemScorer
 import org.lenskit.knn.user.UserUserItemScorer
 import org.grouplens.lenskit.transform.normalize.BaselineSubtractingUserVectorNormalizer
@@ -33,7 +32,7 @@ dumpGraph {
     output "${config.analysisDir}/item-item.dot"
     algorithm {
         bind ItemScorer to ItemItemScorer
-        bind GlobalItemScorer to ItemItemGlobalScorer
+        bind ItemBasedItemScorer to ItemItemItemBasedItemScorer
         bind (BaselineScorer, ItemScorer) to UserMeanItemScorer
         bind (UserMeanBaseline, ItemScorer) to ItemMeanRatingItemScorer
         bind UserVectorNormalizer to BaselineSubtractingUserVectorNormalizer

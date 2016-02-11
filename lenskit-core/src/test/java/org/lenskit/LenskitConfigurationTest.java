@@ -27,15 +27,14 @@ import org.grouplens.lenskit.data.text.EventFile;
 import org.grouplens.lenskit.data.text.EventFormat;
 import org.grouplens.lenskit.data.text.Formats;
 import org.grouplens.lenskit.data.text.TextEventDAO;
+import org.junit.Test;
 import org.lenskit.inject.RecommenderGraphBuilder;
 import org.lenskit.inject.StaticInjector;
-import org.junit.Test;
-import org.lenskit.LenskitConfiguration;
 
 import java.io.File;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 public class LenskitConfigurationTest {
     /**
@@ -53,8 +52,9 @@ public class LenskitConfigurationTest {
         config.bind(EventFormat.class).to(Formats.ml100kFormat());
         RecommenderGraphBuilder rgb = new RecommenderGraphBuilder();
         rgb.addConfiguration(config);
-        Injector inj = new StaticInjector(rgb.buildGraph());
-        File f = inj.getInstance(AnnotationBuilder.of(EventFile.class).build(), File.class);
-        assertThat(f.getName(), equalTo("ratings.foodat"));
+        try (Injector inj = new StaticInjector(rgb.buildGraph())) {
+            File f = inj.getInstance(AnnotationBuilder.of(EventFile.class).build(), File.class);
+            assertThat(f.getName(), equalTo("ratings.foodat"));
+        }
     }
 }

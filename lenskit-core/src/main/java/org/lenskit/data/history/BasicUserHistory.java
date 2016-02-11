@@ -106,7 +106,7 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
             return (UserHistory<T>) this;
         } else {
             List<T> evts = ImmutableList.copyOf(Iterables.filter(this, type));
-            return new BasicUserHistory<T>(getUserId(), evts);
+            return new BasicUserHistory<>(getUserId(), evts);
         }
     }
 
@@ -121,7 +121,7 @@ public class BasicUserHistory<E extends Event> extends AbstractUserHistory<E> im
             return this;
         } else {
             List<E> evts = ImmutableList.copyOf(Iterables.filter(this, pred));
-            return new BasicUserHistory<E>(getUserId(), evts);
+            return new BasicUserHistory<>(getUserId(), evts);
         }
     }
 }

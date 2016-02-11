@@ -160,4 +160,70 @@ public class LongUtilsTest {
         assertThat(setUnion(s1, s2),
                    contains(1L, 2L, 3L, 4L, 5L, 6L, Long.MAX_VALUE));
     }
+
+    @Test
+    public void testIntersectSizeEmpty() {
+        assertThat(intersectSize(LongSortedSets.EMPTY_SET, LongSortedSets.EMPTY_SET),
+                   equalTo(0));
+    }
+
+    @Test
+    public void testIntersectSizeSingleton() {
+        assertThat(intersectSize(LongSortedSets.singleton(52),
+                                 LongSortedSets.singleton(52)),
+                   equalTo(1));
+    }
+
+    @Test
+    public void testIntersectSizeDisjoint() {
+        assertThat(intersectSize(LongSortedSets.singleton(52),
+                                 LongSortedSets.singleton(30)),
+                   equalTo(0));
+        assertThat(intersectSize(LongSortedSets.singleton(30),
+                                 LongSortedSets.singleton(52)),
+                   equalTo(0));
+    }
+
+    @Test
+    public void testIntersectSizePackedSets() {
+        assertThat(intersectSize(packedSet(1L, 3L, 5L, 7L),
+                                 packedSet(2L, 3L, 4L, 5L, 6L)),
+                   equalTo(2));
+    }
+
+    @Test
+    public void testHasNCommonSingleton() {
+        assertThat(hasNCommonItems(LongSortedSets.singleton(52),
+                                   LongSortedSets.singleton(52),
+                                   1),
+                   equalTo(true));
+        assertThat(hasNCommonItems(LongSortedSets.singleton(52),
+                                   LongSortedSets.singleton(42),
+                                   1),
+                   equalTo(false));
+        assertThat(hasNCommonItems(LongSortedSets.singleton(42),
+                                   LongSortedSets.singleton(52),
+                                   1),
+                   equalTo(false));
+        assertThat(hasNCommonItems(LongSortedSets.singleton(52),
+                                   LongSortedSets.singleton(52),
+                                   2),
+                   equalTo(false));
+    }
+
+    @Test
+    public void testHasNCommonPackedSets() {
+        assertThat(hasNCommonItems(packedSet(1L, 3L, 5L, 7L),
+                                   packedSet(2L, 3L, 4L, 5L, 6L),
+                                   1),
+                   equalTo(true));
+        assertThat(hasNCommonItems(packedSet(1L, 3L, 5L, 7L),
+                                   packedSet(2L, 3L, 4L, 5L, 6L),
+                                   2),
+                   equalTo(true));
+        assertThat(hasNCommonItems(packedSet(1L, 3L, 5L, 7L),
+                                   packedSet(2L, 3L, 4L, 5L, 6L),
+                                   3),
+                   equalTo(false));
+    }
 }

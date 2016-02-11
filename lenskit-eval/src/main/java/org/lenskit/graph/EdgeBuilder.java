@@ -38,13 +38,13 @@ class EdgeBuilder implements Builder<GVEdge> {
         Preconditions.checkNotNull(tgt, "target ID must not be null");
         srcId = src;
         tgtId = tgt;
-        attributes = new LinkedHashMap<String, Object>();
+        attributes = new LinkedHashMap<>();
     }
 
     private EdgeBuilder(String src, String tgt, Map<String,Object> attrs) {
         srcId = src;
         tgtId = tgt;
-        attributes = new LinkedHashMap<String, Object>(attrs);
+        attributes = new LinkedHashMap<>(attrs);
     }
 
     /**

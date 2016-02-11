@@ -37,7 +37,7 @@
  * Integration tests built with Gradle.
  */
 
-task makeTestRepo {
+task makeTestRepo(group: 'build setup') {
     dependsOn installForTesting, ':lenskit-specs:installForTesting'
 }
 

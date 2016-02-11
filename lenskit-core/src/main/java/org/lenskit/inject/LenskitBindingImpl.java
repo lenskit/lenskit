@@ -79,7 +79,7 @@ class LenskitBindingImpl<T> implements LenskitBinding<T> {
         if (coercion == null && binding instanceof LenskitBinding) {
             return (LenskitBinding<T>) binding;
         } else {
-            return new LenskitBindingImpl<T>(binding, coercion);
+            return new LenskitBindingImpl<>(binding, coercion);
         }
     }
 

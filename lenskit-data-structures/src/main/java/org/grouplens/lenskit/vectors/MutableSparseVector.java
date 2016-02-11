@@ -614,9 +614,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
 
         // copy the channel maps
         Map<Symbol, MutableSparseVector> newChanVectors =
-                new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
+                new Reference2ObjectArrayMap<>();
         Map<TypedSymbol<?>, Long2ObjectMap<?>> newChannels =
-                new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>();
+                new Reference2ObjectArrayMap<>();
         // copy all unboxed channels into both maps
         if (channelVectors != null) {
             for (Map.Entry<Symbol, MutableSparseVector> entry : channelVectors.entrySet()) {
@@ -742,8 +742,8 @@ public final class MutableSparseVector extends SparseVector implements Serializa
             }
         }
 
-        Map<Symbol, ImmutableSparseVector> newChannelVectors = new Reference2ObjectArrayMap<Symbol, ImmutableSparseVector>();
-        Map<TypedSymbol<?>, Long2ObjectMap<?>> newChannels = new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>();
+        Map<Symbol, ImmutableSparseVector> newChannelVectors = new Reference2ObjectArrayMap<>();
+        Map<TypedSymbol<?>, Long2ObjectMap<?>> newChannels = new Reference2ObjectArrayMap<>();
         // We recursively generate immutable versions of all channels.  If freeze
         // is true, these versions will be made without copying.
         if (channelVectors != null) {
@@ -980,7 +980,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
             assert channels != null;
             return (Long2ObjectMap<K>) channels.get(channelSymbol);
         } else {
-            MutableTypedSideChannel<K> theChannel = new MutableTypedSideChannel<K>(keys.inactiveCopy());
+            MutableTypedSideChannel<K> theChannel = new MutableTypedSideChannel<>(keys.inactiveCopy());
             addChannel(channelSymbol, theChannel);
             return theChannel;
         }
@@ -1026,9 +1026,9 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         Preconditions.checkArgument(keys.isCompatibleWith(vectorEntries.keys),
                                     "vector has incompatible key domain");
         if (channelVectors == null) {
-            channelVectors = new Reference2ObjectArrayMap<Symbol, MutableSparseVector>();
+            channelVectors = new Reference2ObjectArrayMap<>();
             if (channels == null) {
-                channels = new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>();
+                channels = new Reference2ObjectArrayMap<>();
             }
         }
         channelVectors.put(key, vectorEntries);
@@ -1042,7 +1042,7 @@ public final class MutableSparseVector extends SparseVector implements Serializa
         Preconditions.checkArgument(!sym.getType().equals(Double.class),
                                     "cannot add double channel like this");
         if (channels == null) {
-            channels = new Reference2ObjectArrayMap<TypedSymbol<?>, Long2ObjectMap<?>>();
+            channels = new Reference2ObjectArrayMap<>();
         }
         channels.put(sym, chan);
     }

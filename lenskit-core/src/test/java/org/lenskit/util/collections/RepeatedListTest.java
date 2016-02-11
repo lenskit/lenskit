@@ -32,7 +32,7 @@ public class RepeatedListTest {
 
     @Test
     public void testEmpty() {
-        RepeatedList<Integer> rl = new RepeatedList<Integer>(7, 0);
+        RepeatedList<Integer> rl = new RepeatedList<>(7, 0);
         assertThat(rl.size(), equalTo(0));
         try {
             rl.get(-1);
@@ -51,7 +51,7 @@ public class RepeatedListTest {
 
     @Test
     public void testSingle() {
-        RepeatedList<Integer> rl = new RepeatedList<Integer>(7, 1);
+        RepeatedList<Integer> rl = new RepeatedList<>(7, 1);
         assertThat(rl.size(), equalTo(1));
         assertThat(rl.get(0).intValue(), equalTo(7));
         

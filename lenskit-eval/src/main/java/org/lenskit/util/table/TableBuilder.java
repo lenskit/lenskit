@@ -43,7 +43,7 @@ public class TableBuilder extends AbstractTableWriter implements Builder<Table> 
      */
     public TableBuilder(TableLayout layout) {
         this.layout = layout;
-        rows = new ArrayList<Row>();
+        rows = new ArrayList<>();
     }
 
     public TableBuilder(List<String> columns) {
@@ -53,7 +53,7 @@ public class TableBuilder extends AbstractTableWriter implements Builder<Table> 
         }
         layout = bld.build();
 
-        rows = new ArrayList<Row>();
+        rows = new ArrayList<>();
     }
 
     @Override
