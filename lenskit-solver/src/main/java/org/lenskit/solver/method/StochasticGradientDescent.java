@@ -1,9 +1,9 @@
 package org.lenskit.solver.method;
 
-import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.lenskit.solver.objective.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -31,10 +31,10 @@ public class StochasticGradientDescent implements OptimizationMethod {
         tol = inTol;
     }
 
-    public void minimize(LearningModel model, ObjectiveFunction objFunc) {
+    public double minimize(LearningModel model, ObjectiveFunction objFunc) {
         ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
         HashMap<String, RealVector> scalarVars = model.getScalarVars();
-        HashMap<String, RealMatrix> vectorVars = model.getVectorVars();
+        HashMap<String, ArrayList<RealVector>> vectorVars = model.getVectorVars();
         L2Regularizer l2term = new L2Regularizer();
         double objVal = 0;
         while (termCrit.keepIterate()) {
@@ -55,19 +55,17 @@ public class StochasticGradientDescent implements OptimizationMethod {
                 for (int i=0; i<orc.vectorNames.size(); i++) {
                     String name = orc.vectorNames.get(i);
                     int idx = orc.vectorIndexes.get(i);
+                    RealVector var = vectorVars.get(name).get(idx);
                     RealVector grad = orc.vectorGrads.get(i);
-                    RealVector var = vectorVars.get(name).getRowVector(idx);
                     var.combineToSelf(1.0, -lr, l2term.addGradient(grad, var, l2coef));
                 }
                 objVal += orc.objVal;
             }
             for (RealVector var : scalarVars.values()) {
-                double l2norm = var.getNorm();
-                objVal += (l2coef * l2norm * l2norm);
+                objVal += l2term.getObjective(l2coef, var);
             }
-            for (RealMatrix var : vectorVars.values()) {
-                double fnorm = var.getFrobeniusNorm();
-                objVal += (l2coef * fnorm * fnorm);
+            for (ArrayList<RealVector> vars : vectorVars.values()) {
+                objVal += l2term.getObjective(l2coef, vars);
             }
             termCrit.addIteration(objVal);
         }

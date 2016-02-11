@@ -1,10 +1,9 @@
 package org.lenskit.mf.hmmsvd;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import org.lenskit.mf.svdfeature.Feature;
+
+import java.io.*;
+import java.util.ArrayList;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
@@ -30,11 +29,12 @@ public class HmmSVDFeatureInstanceDAO {
             int gfeaNum = Integer.parseInt(fields[0]);
             int ufeaNum = Integer.parseInt(fields[1]);
             ins.numPos = Integer.parseInt(fields[2]);
-            int ifeaNum = Integer.parseInt(fields[3]);
-            ins.numObs = Integer.parseInt(fields[4]);
-            int meta = 5, start = 5;
+            int bifeaNum = Integer.parseInt(fields[3]);
+            int fifeaNum = Integer.parseInt(fields[4]);
+            ins.numObs = Integer.parseInt(fields[5]);
+            int meta = 6, start = 6;
             for (int i=0; i<gfeaNum; i++) {
-                Feature fea = new Feature(Integer.parseInt(fields[start + 2 * i]), 
+                Feature fea = new Feature(Integer.parseInt(fields[start + 2 * i]),
                                           Double.parseDouble(fields[start + 1 + 2 * i]));
                 ins.gfeas.add(fea);
             }
@@ -45,18 +45,24 @@ public class HmmSVDFeatureInstanceDAO {
                 ins.ufeas.add(fea);
             }
             for (int j=0; j<ins.numPos; j++) {
-                ArrayList<Feature> ifeas = new ArrayList<Feature>();
-                start = meta + 2 * gfeaNum + 2 * ufeaNum + 2 * j * ifeaNum;
-                for (int i=0; i<ifeaNum; i++) {
+                start = meta + 2 * gfeaNum + 2 * ufeaNum + 2 * j * (bifeaNum + fifeaNum);
+                for (int i=0; i<bifeaNum; i++) {
                     Feature fea = new Feature(Integer.parseInt(fields[start + 2 * i]), 
+                                              Double.parseDouble(fields[start + 1 + 2 * i]));
+                    ins.gfeas.add(fea);
+                }
+                ArrayList<Feature> ifeas = new ArrayList<Feature>();
+                start = meta + 2 * gfeaNum + 2 * ufeaNum + 2 * j * (bifeaNum + fifeaNum) + 2 * bifeaNum;
+                for (int i=0; i<fifeaNum; i++) {
+                    Feature fea = new Feature(Integer.parseInt(fields[start + 2 * i]),
                                               Double.parseDouble(fields[start + 1 + 2 * i]));
                     ifeas.add(fea);
                 }
                 ins.pos2ifeas.add(ifeas);
             }
-            start = meta + 2 * gfeaNum + 2 * ufeaNum + 2 * ins.numPos * ifeaNum;
+            start = meta + 2 * gfeaNum + 2 * ufeaNum + 2 * ins.numPos * (bifeaNum + fifeaNum);
             for (int i=0; i<ins.numObs; i++) {
-                ins.IntArrayList.add(Integer.parseInt(fields[start + i]));
+                ins.obs.add(Integer.parseInt(fields[start + i]));
             }
             return ins;
         }

@@ -1,5 +1,6 @@
 package org.lenskit.solver.objective;
 
+import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
@@ -24,7 +25,7 @@ public class RandomInitializer {
 
     public void randInitVector(RealVector vec, boolean normalize) {
         int len = vec.getDimension();
-        double sum = 0.0
+        double sum = 0.0;
         for (int i=0; i<len; i++) {
             double val = rand.nextDouble() * multi;
             vec.setEntry(i, val);
@@ -39,8 +40,10 @@ public class RandomInitializer {
 
     public void randInitMatrix(RealMatrix mat, boolean normalize) {
         int len = mat.getRowDimension();
+        RealVector vec = MatrixUtils.createRealVector(new double[mat.getColumnDimension()]);
         for (int i=0; i<len; i++) {
-            randInitVector(mat.getRowVector(i), normalize);
+            randInitVector(vec, normalize);
+            mat.setRowVector(i, vec);
         }
     }
 }

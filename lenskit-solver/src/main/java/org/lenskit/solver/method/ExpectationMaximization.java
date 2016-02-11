@@ -1,9 +1,13 @@
 package org.lenskit.solver.method;
 
+import org.lenskit.solver.objective.LearningInstance;
+import org.lenskit.solver.objective.LearningModel;
+import org.lenskit.solver.objective.ObjectiveFunction;
+
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class ExpectationMaximization {
+public class ExpectationMaximization implements OptimizationMethod {
     private int maxIter;
     private double tol;
     private OptimizationMethod method;
@@ -14,14 +18,15 @@ public class ExpectationMaximization {
         method = new BatchGradientDescent();
     }
 
-    public void minimize(LatentVariableModel model, ObjectiveFunction objFunc) {
+    public double minimize(LearningModel model, ObjectiveFunction objFunc) {
         ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
+        double objVal = 0;
         while (termCrit.keepIterate()) {
-            double objVal = 0;
+            objVal = 0;
             model.startNewIteration();
             LearningInstance ins;
             while ((ins = model.getLearningInstance()) != null) {
-                objVal += model.expection(ins);
+                objVal += model.expectation(ins);
             }
             LearningModel subModel = model.maximization();
             if (subModel != null) {
@@ -29,5 +34,6 @@ public class ExpectationMaximization {
             }
             termCrit.addIteration(objVal);
         }
+        return objVal;
     }
 }
