@@ -3,6 +3,7 @@ package org.lenskit.mf.hmmsvd;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.apache.commons.math3.analysis.function.Log;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.lenskit.mf.svdfeature.SVDFeatureModel;
@@ -33,7 +34,7 @@ public class HmmSVDFeatureModel extends LatentVariableModel {
     public void assignVariables() {
         svdFea.assignVariables();
         start = requestScalarVar("start", numPos, 0.0, true, true);
-        trans = requestVectorVar("trans", numPos, numPos + 1, 0.0, true, true);
+        trans = requestVectorVar("trans", numPos, numPos, 0.0, true, true);
     }
 
     public double stochastic_expectation(HmmSVDFeatureInstance ins) {
@@ -76,6 +77,7 @@ public class HmmSVDFeatureModel extends LatentVariableModel {
             probx = probX.getRowVector(j + 1);
             betaj.setSubVector(0, trans.operate(probx.ebeMultiply(beta.getRowVector(j + 1))));
         }
+        double pX = StatUtils.sum((ArrayRealVector)(alpha.getRowVector(numObs - 1)).getDataRef());
         //compute gamma and xi
         gamma = MatrixUtils.createRealMatrix(ins.numObs, numPos);
         xi = new ArrayList<RealMatrix>(ins.numObs - 1);
@@ -94,25 +96,59 @@ public class HmmSVDFeatureModel extends LatentVariableModel {
                 xi.add(subXi);
             }
         }
-    }
-
-    public SVDFeatureModel stochastic_maximization() {
-        //update start and trans with closed formula
+        //fill in instances
+        instances.clear();
+        for (int i=0; i<ins.numObs; i++) {
+            int act = ins.obs.get(i);
+            for (int j=0; j<numPos; j++) {
+                double weight = gamma.getEntry(i, j);
+                if (weight != 0.0 && (j == act || act == numPos)) {
+                    SVDFeatureInstance svdFeaIns = new SVDFeatureInstance(ins.gfeas, ins.ufeas, 
+                        ins.pos2ifeas.get(i));
+                    svdFeaIns.weight = weight / pX;
+                    if (j == act) {
+                        svdFeaIns.label = 1.0;
+                    } else {
+                        svdFeaIns.label = 0.0;
+                    }
+                    instances.add(svdFeaIns);
+                }
+            }
+        }
+        //closed form stochastic maximization: update start and trans with closed formula
         RealVector gamma0 = gamma.getRowVector(0);
+        start.setSubVector(0, gamma0);
         double sum = StatUtils.sum(((ArrayRealVector)gamma0).getDataRef());
-        start.setSubVector(0, gamma0.mapDivide(sum));
+        start.mapDivideToSelf(sum);
         int numObs = xi.size();
         for (int i; i<numPos; i++) {
             RealVector transi = trans.getRowVector(i);
             transi.set(0.0);
             for (int j=0; j<numObs; j++) {
-
+                RealMatrix cxi = xi.get(j);
+                transi.combineToSelf(1.0, 1.0, cxi.getRowVector(i));
+            }
+            sum = StatUtils.sum((ArrayRealVector).getDataRef());
+            transi.mapDivideToSelf(sum);
+        }
+        //compute the objective value of the closed form part
+        double startObjVal = gamma0.dotProduct(start.mapToSelf(Log));
+        double transObjVal = 0.0;
+        for (int i=0; i<numObs; i++) {
+            RealMatrix cxi = xi.get(i);
+            for (int j=0; j<numPos; j++) {
+                transObjVal += cxi.getRowVector(j).dotProduct(trans.getRowVector(j).mapToSelf(Log));
             }
         }
+        return (startObjVal + transObjVal) / pX;
+    }
 
-        instances.clear();
-        //fill in instances
+    public SVDFeatureModel stochastic_maximization() {
         svdFea.setInstances(instances);
+        return svdFea;
+    }
+
+    public SVDFeatureModel getSVDFeatureModel() {
         return svdFea;
     }
 }

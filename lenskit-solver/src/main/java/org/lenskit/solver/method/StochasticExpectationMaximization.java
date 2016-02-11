@@ -24,7 +24,7 @@ public class StochasticExpectationMaximization {
                 objVal += model.stochastic_expectation(ins);
                 LearningModel subModel = model.stochastic_maximization();
                 if (subModel != null) {
-                    method.minimize(subModel, objFunc);
+                    objVal += method.minimize(subModel, objFunc);
                 }
             }
             termCrit.addIteration(objVal);
