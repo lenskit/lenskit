@@ -113,7 +113,7 @@ public class BatchGradientDescent implements OptimizationMethod {
                 objVal += l2term.getObjective(l2coef, vars);
             }
             updateVars(scalarVars, vectorVars);
-            termCrit.addIteration(objVal);
+            termCrit.addIteration("BatchGradientDescent", objVal);
         }
         return objVal;
     }

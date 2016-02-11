@@ -10,7 +10,7 @@ import java.util.ArrayList;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ObjectiveTerminationCriterion {
-    private static Logger logger = LoggerFactory.getLogger(StochasticGradientDescent.class);
+    private static Logger logger = LoggerFactory.getLogger(ObjectiveTerminationCriterion.class);
     private int maxIter;
     private int curIter;
     private double tol;
@@ -32,7 +32,7 @@ public class ObjectiveTerminationCriterion {
     public void addIteration(String step, double objVal) {
         curIter++;
         objHistory.add(objVal);
-        logger.info("Iteration {}: {} objective value is {}", curIter, step, objVal);
+        logger.info("{}, Iteration {}: objective value is {}", step, curIter, objVal);
     }
 
     public boolean keepIterate() {

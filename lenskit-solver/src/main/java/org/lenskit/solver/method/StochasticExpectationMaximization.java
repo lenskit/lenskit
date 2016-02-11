@@ -3,11 +3,14 @@ package org.lenskit.solver.method;
 import org.lenskit.solver.objective.LearningInstance;
 import org.lenskit.solver.objective.LearningModel;
 import org.lenskit.solver.objective.ObjectiveFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class StochasticExpectationMaximization implements OptimizationMethod {
+    private static Logger logger = LoggerFactory.getLogger(StochasticExpectationMaximization.class);
     private int maxIter;
     private double tol;
     private OptimizationMethod method;
@@ -15,7 +18,7 @@ public class StochasticExpectationMaximization implements OptimizationMethod {
     public StochasticExpectationMaximization() {
         maxIter = 50;
         tol = 1.0;
-        method = new BatchGradientDescent();
+        method = new BatchGradientDescent(3, 0.0, 10e-3, 1.0);
     }
 
     public double minimize(LearningModel model, ObjectiveFunction objFunc) {
@@ -32,7 +35,8 @@ public class StochasticExpectationMaximization implements OptimizationMethod {
                     objVal += method.minimize(subModel, objFunc);
                 }
             }
-            termCrit.addIteration(objVal);
+            model.maximization();
+            termCrit.addIteration("StochasticExpectationMaximization", objVal);
         }
         return objVal;
     }

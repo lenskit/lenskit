@@ -67,7 +67,7 @@ public class StochasticGradientDescent implements OptimizationMethod {
             for (ArrayList<RealVector> vars : vectorVars.values()) {
                 objVal += l2term.getObjective(l2coef, vars);
             }
-            termCrit.addIteration(objVal);
+            termCrit.addIteration("StochasticGradientDescent", objVal);
         }
         return objVal;
     }

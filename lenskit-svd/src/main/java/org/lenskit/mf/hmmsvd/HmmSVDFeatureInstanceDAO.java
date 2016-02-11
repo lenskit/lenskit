@@ -28,7 +28,7 @@ public class HmmSVDFeatureInstanceDAO {
             String[] fields = line.split(delimiter);
             int gfeaNum = Integer.parseInt(fields[0]);
             int ufeaNum = Integer.parseInt(fields[1]);
-            ins.numPos = Integer.parseInt(fields[2]);
+            ins.setNumPos(Integer.parseInt(fields[2]));
             int bifeaNum = Integer.parseInt(fields[3]);
             int fifeaNum = Integer.parseInt(fields[4]);
             ins.numObs = Integer.parseInt(fields[5]);
@@ -36,7 +36,7 @@ public class HmmSVDFeatureInstanceDAO {
             for (int i=0; i<gfeaNum; i++) {
                 Feature fea = new Feature(Integer.parseInt(fields[start + 2 * i]),
                                           Double.parseDouble(fields[start + 1 + 2 * i]));
-                ins.gfeas.add(fea);
+                ins.addGlobalFeas(fea);
             }
             start = meta + 2 * gfeaNum;
             for (int i=0; i<ufeaNum; i++) {
@@ -49,16 +49,14 @@ public class HmmSVDFeatureInstanceDAO {
                 for (int i=0; i<bifeaNum; i++) {
                     Feature fea = new Feature(Integer.parseInt(fields[start + 2 * i]), 
                                               Double.parseDouble(fields[start + 1 + 2 * i]));
-                    ins.gfeas.add(fea);
+                    ins.pos2gfeas.get(j).add(fea);
                 }
-                ArrayList<Feature> ifeas = new ArrayList<Feature>();
                 start = meta + 2 * gfeaNum + 2 * ufeaNum + 2 * j * (bifeaNum + fifeaNum) + 2 * bifeaNum;
                 for (int i=0; i<fifeaNum; i++) {
                     Feature fea = new Feature(Integer.parseInt(fields[start + 2 * i]),
                                               Double.parseDouble(fields[start + 1 + 2 * i]));
-                    ifeas.add(fea);
+                    ins.pos2ifeas.get(j).add(fea);
                 }
-                ins.pos2ifeas.add(ifeas);
             }
             start = meta + 2 * gfeaNum + 2 * ufeaNum + 2 * ins.numPos * (bifeaNum + fifeaNum);
             for (int i=0; i<ins.numObs; i++) {
