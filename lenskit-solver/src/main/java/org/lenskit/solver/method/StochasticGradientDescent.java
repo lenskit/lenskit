@@ -71,5 +71,6 @@ public class StochasticGradientDescent implements OptimizationMethod {
             }
             termCrit.addIteration(objVal);
         }
+        return objVal;
     }
 }

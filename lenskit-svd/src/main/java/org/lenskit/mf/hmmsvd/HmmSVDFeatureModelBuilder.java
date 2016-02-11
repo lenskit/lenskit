@@ -9,13 +9,19 @@ import org.lenskit.solver.objective.ObjectiveFunction;
  */
 public class HmmSVDFeatureModelBuilder {
     private HmmSVDFeatureModel model;
+    private OptimizationMethod method;
+    private ObjectiveFunction loss;
 
-    public HmmSVDFeatureModelBuilder() {
-        model = new HmmSVDFeatureModel(numBiases, numFactors, factDim, dao);
+    public HmmSVDFeatureModelBuilder(int numPos, int numBiases, int numFactors, int factDim
+                                     HmmSVDFeatureInstanceDAO dao) {
+        model = new HmmSVDFeatureModel(numPos, numBiases, numFactors, factDim, dao);
+        method = new StochasticExpectationMaximization();
+        loss = new LogisticLoss();
     }
 
     public HmmSVDFeatureModel build() throws IOException {
         model.assignVariables();
+        method.minimize(model, loss);
         return model;
     }
 }

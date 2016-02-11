@@ -15,7 +15,7 @@ public class ExpectationMaximization {
     }
 
     public void minimize(LatentVariableModel model, ObjectiveFunction objFunc) {
-        ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter * 2);
+        ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
         while (termCrit.keepIterate()) {
             double objVal = 0;
             model.startNewIteration();
@@ -25,8 +25,9 @@ public class ExpectationMaximization {
             }
             LearningModel subModel = model.maximization();
             if (subModel != null) {
-                method.minimize(subModel, objFunc);
+                objVal += method.minimize(subModel, objFunc);
             }
+            termCrit.addIteration(objVal);
         }
     }
 }

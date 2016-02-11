@@ -111,5 +111,6 @@ public class BatchGradientDescent implements OptimizationMethod {
             updateVars(scalarVars, vectorVars);
             termCrit.addIteration(objVal);
         }
+        return objVal;
     }
 }
