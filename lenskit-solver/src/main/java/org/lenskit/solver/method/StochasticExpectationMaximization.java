@@ -16,9 +16,9 @@ public class StochasticExpectationMaximization implements OptimizationMethod {
     private OptimizationMethod method;
     
     public StochasticExpectationMaximization() {
-        maxIter = 50;
+        maxIter = 20;
         tol = 1.0;
-        method = new BatchGradientDescent(3, 0.0, 10e-3, 1.0);
+        method = new BatchGradientDescent(3, 0.0, 0.1, 1.0);
     }
 
     public double minimize(LearningModel model, ObjectiveFunction objFunc) {

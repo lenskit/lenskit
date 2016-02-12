@@ -110,7 +110,7 @@ public class HmmSVDFeatureModel extends LearningModel {
         gamma = new ArrayList<>(ins.numObs); //, numPos);
         xi = new ArrayList<>(ins.numObs - 1);
         for (int i=0; i<ins.numObs; i++) {
-            gamma.add(alpha.get(i).ebeMultiply(beta.get(i)));
+            gamma.add(alpha.get(i).ebeMultiply(beta.get(i)).mapDivideToSelf(pX));
             if (i > 0) {
                 RealVector probx = probX.get(i);
                 RealVector betai = beta.get(i);
@@ -118,7 +118,7 @@ public class HmmSVDFeatureModel extends LearningModel {
                 ArrayList<RealVector> subXi = new ArrayList<>(numPos);
                 for (int j=0; j<numPos; j++) {
                     subXi.add(probx.ebeMultiply(trans.getRowVector(j))
-                            .ebeMultiply(betai).mapMultiplyToSelf(alphai.getEntry(j)));
+                            .ebeMultiply(betai).mapMultiplyToSelf(alphai.getEntry(j) / pX));
                 }
                 xi.add(subXi);
             }
@@ -132,7 +132,7 @@ public class HmmSVDFeatureModel extends LearningModel {
                 if (weight != 0.0 && (j == act || act == numPos)) {
                     SVDFeatureInstance svdFeaIns = new SVDFeatureInstance(ins.pos2gfeas.get(j), ins.ufeas,
                                                                           ins.pos2ifeas.get(j));
-                    svdFeaIns.weight = weight / pX;
+                    svdFeaIns.weight = weight;
                     if (j == act) {
                         svdFeaIns.label = 1.0;
                     } else {
@@ -164,7 +164,7 @@ public class HmmSVDFeatureModel extends LearningModel {
                 transObjVal += cxi.get(j).dotProduct(trans.getRowVector(j).mapToSelf(log));
             }
         }
-        return -(startObjVal + transObjVal) / pX;
+        return -(startObjVal + transObjVal);
     }
 
     public SVDFeatureModel stochastic_maximization() {
@@ -196,7 +196,7 @@ public class HmmSVDFeatureModel extends LearningModel {
                 if (ins == null) {
                     return null;
                 }
-            } while (ins.numObs > 10 || ins.numObs < 2) ;
+            } while (ins.numObs > 120 || ins.numObs < 2) ;
         } catch (IOException e) {
             ins = null;
         }
