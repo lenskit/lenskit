@@ -16,8 +16,8 @@ public class SVDFeatureModelBuildTest {
     @Test
     public void testModelBuild() throws FileNotFoundException, IOException {
         String path = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/svdfea11-clkrat.te";
-        int numBiases = 38529;
-        int numFactors = 38528;
+        int numBiases = 38544;
+        int numFactors = 38543;
         int dim = 20;
         SVDFeatureInstanceDAO dao = new SVDFeatureInstanceDAO(new File(path), " ");
         LogisticLoss loss = new LogisticLoss();

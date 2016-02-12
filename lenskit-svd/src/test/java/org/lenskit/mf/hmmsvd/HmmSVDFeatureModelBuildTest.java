@@ -14,9 +14,9 @@ import static org.junit.Assert.assertThat;
 public class HmmSVDFeatureModelBuildTest {
     @Test
     public void testModelBuild() throws FileNotFoundException, IOException {
-        String path = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/hmmsvd11-clkrat.te";
-        int numBiases = 38529;
-        int numFactors = 38528;
+        String path = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/hmmsvd11-withlab-clkrat.te";
+        int numBiases = 38544;
+        int numFactors = 38543;
         int dim = 20;
         HmmSVDFeatureInstanceDAO dao = new HmmSVDFeatureInstanceDAO(new File(path), " ");
         HmmSVDFeatureModelBuilder modelBuilder = new HmmSVDFeatureModelBuilder(24, numBiases, numFactors, dim, dao);
