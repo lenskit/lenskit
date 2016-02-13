@@ -138,7 +138,7 @@ public class EntityBuilder {
         if (attributes.isEmpty()) {
             return new BareEntity(type, id);
         } else {
-            return null;
+            return new BasicEntity(type, id, attributes);
         }
     }
 }

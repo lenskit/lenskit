@@ -22,6 +22,7 @@ package org.lenskit.data.entities;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,6 +36,7 @@ import java.util.Set;
  * identifier, and they are not considered to be the same entity.  However, individual data storage facilities are free
  * to require identifiers to be disjoint.
  */
+@Immutable
 public interface Entity {
     /**
      * Get the identifier of this entity.

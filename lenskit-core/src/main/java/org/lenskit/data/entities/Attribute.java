@@ -28,11 +28,13 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.grouplens.grapht.util.ClassProxy;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 import java.io.*;
 
 /**
  * Identifier for an attribute in an entity.
  */
+@Immutable
 public final class Attribute<T> implements Serializable {
     private static final long serialVersionUID = -1L;
     private static final Interner<Attribute<?>> FIELD_CACHE = Interners.newStrongInterner();

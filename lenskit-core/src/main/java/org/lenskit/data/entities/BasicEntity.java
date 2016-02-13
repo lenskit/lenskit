@@ -20,22 +20,27 @@
  */
 package org.lenskit.data.entities;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 /**
- * Implement a bare entity that has no attributes.
+ * Implementation of an entity backed by a basic set of attributes.
  */
 @Immutable
-class BareEntity extends AbstractEntity {
+class BasicEntity extends AbstractEntity {
     private final EntityType type;
     private final long id;
+    private final Map<Attribute<?>, Object> attributes;
 
-    public BareEntity(EntityType t, long eid) {
+    public BasicEntity(EntityType t, long eid, Map<Attribute<?>, Object> attrs) {
         type = t;
         id = eid;
+        attributes = ImmutableMap.copyOf(attrs);
     }
 
     @Override
@@ -50,33 +55,43 @@ class BareEntity extends AbstractEntity {
 
     @Override
     public Set<String> getAttributeNames() {
-        return Collections.emptySet();
+        // FIXME Make this more efficient
+        ImmutableSet.Builder<String> names = ImmutableSet.builder();
+        for (Attribute<?> attr: attributes.keySet()) {
+            names.add(attr.getName());
+        }
+        return names.build();
     }
 
     @Override
     public Set<Attribute<?>> getAttributes() {
-        return Collections.emptySet();
+        return attributes.keySet();
     }
 
     @Override
     public boolean hasAttribute(String name) {
-        return false;
+        return getAttributeNames().contains(name);
     }
 
     @Override
     public boolean hasAttribute(Attribute<?> attribute) {
-        return false;
+        return attributes.containsKey(attribute);
     }
 
     @Nullable
     @Override
     public <T> T maybeGet(Attribute<T> attribute) {
-        return null;
+        return attribute.getType().cast(attributes.get(attribute));
     }
 
     @Nullable
     @Override
     public Object maybeGet(String attr) {
+        for (Map.Entry<Attribute<?>, Object> e: attributes.entrySet()) {
+            if (e.getKey().getName().equals(attr)) {
+                return e.getValue();
+            }
+        }
         return null;
     }
 }

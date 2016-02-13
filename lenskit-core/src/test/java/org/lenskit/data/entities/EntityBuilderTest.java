@@ -51,6 +51,8 @@ public class EntityBuilderTest {
         assertThat(e.getId(), equalTo(42L));
         assertThat(e.getAttributes(), hasSize(0));
         assertThat(e.getAttributeNames(), hasSize(0));
+        assertThat(e.hasAttribute("user"), equalTo(false));
+        assertThat(e.hasAttribute(CommonAttributes.USER_ID), equalTo(false));
     }
 
     @Test
@@ -65,5 +67,10 @@ public class EntityBuilderTest {
         assertThat(e.getAttributeNames(), contains("name"));
         assertThat(e.get("name"), equalTo((Object) "HACKEM MUCHE"));
         assertThat(e.get(CommonAttributes.NAME), equalTo("HACKEM MUCHE"));
+        assertThat(e.hasAttribute("name"), equalTo(true));
+        assertThat(e.hasAttribute("user"), equalTo(false));
+        assertThat(e.hasAttribute(CommonAttributes.NAME), equalTo(true));
+        assertThat(e.hasAttribute(CommonAttributes.USER_ID), equalTo(false));
+
     }
 }
