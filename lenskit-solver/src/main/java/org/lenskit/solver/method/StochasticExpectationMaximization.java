@@ -29,8 +29,8 @@ public class StochasticExpectationMaximization implements OptimizationMethod {
             model.startNewIteration();
             LearningInstance ins;
             while ((ins = model.getLearningInstance()) != null) {
-                objVal += model.stochastic_expectation(ins);
-                LearningModel subModel = model.stochastic_maximization();
+                objVal += model.stochasticExpectation(ins);
+                LearningModel subModel = model.stochasticMaximization();
                 if (subModel != null) {
                     objVal += method.minimize(subModel, objFunc);
                 }

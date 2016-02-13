@@ -8,7 +8,7 @@ import org.apache.commons.math3.linear.RealVector;
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public abstract class LearningModel {
+public abstract class LearningModel implements Serializable {
     protected HashMap<String, RealVector> scalarVars;
     protected HashMap<String, ArrayList<RealVector>> vectorVars;
 
@@ -60,7 +60,7 @@ public abstract class LearningModel {
     public StochasticOracle getStochasticOracle(LearningInstance ins) { return null; }
 
     public double expectation(LearningInstance ins) { return 0.0; }
-    public double stochastic_expectation(LearningInstance ins) { return 0.0; }
+    public double stochasticExpectation(LearningInstance ins) { return 0.0; }
     public LearningModel maximization() { return null; }
-    public LearningModel stochastic_maximization() { return null; }
+    public LearningModel stochasticMaximization() { return null; }
 }
