@@ -103,7 +103,7 @@ public class HmmSVDFeatureModel extends LearningModel {
             betaj.setSubVector(0, trans.operate(probx.ebeMultiply(beta.get(j + 1))));
         }
         double pX = StatUtils.sum(((ArrayRealVector)(alpha.get(ins.numObs - 1))).getDataRef());
-        if (alpha.get(0).getEntry(0) < 0.0 || pX == 0.0 || Double.isNaN(pX)) {
+        if (pX == 0.0 || Double.isNaN(pX) || Double.isNaN(beta.get(0).getEntry(0))) {
             int x = 1;
         }
         //compute gamma and xi
@@ -150,9 +150,6 @@ public class HmmSVDFeatureModel extends LearningModel {
                 ArrayList<RealVector> cxi = xi.get(j);
                 transUpdate.get(i).combineToSelf(1.0, 1.0, cxi.get(i));
             }
-        }
-        if (Double.isNaN(start.getEntry(0)) || Double.isNaN(trans.getEntry(0, 0)) || start.getEntry(0) == 0.0 || trans.getEntry(0, 0) == 0.0) {
-            int x = 1;
         }
         //compute the objective value of the closed form part
         UnivariateFunction log = new Log();
