@@ -14,12 +14,17 @@ import static org.junit.Assert.assertThat;
 public class HmmSVDFeatureModelBuildTest {
     @Test
     public void testModelBuild() throws FileNotFoundException, IOException {
-        String path = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/hmmsvd11-withlab-clkrat.te";
+        String train = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/hmmsvd11-withlab-clkrat.te";
         int numBiases = 38544;
         int numFactors = 38543;
         int dim = 20;
-        HmmSVDFeatureInstanceDAO dao = new HmmSVDFeatureInstanceDAO(new File(path), " ");
-        HmmSVDFeatureModelBuilder modelBuilder = new HmmSVDFeatureModelBuilder(24, numBiases, numFactors, dim, dao);
+        HmmSVDFeatureInstanceDAO trDao = new HmmSVDFeatureInstanceDAO(new File(train), " ");
+        HmmSVDFeatureModelBuilder modelBuilder = new HmmSVDFeatureModelBuilder(24, numBiases,
+                numFactors, dim, trDao);
         HmmSVDFeatureModel model = modelBuilder.build();
+        String modelFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/hmmsvd11-withlab-clkrat.model";
+        ObjectOutputStream fout = new ObjectOutputStream(new FileOutputStream(modelFile));
+        fout.writeObject(model);
+        fout.close();
     }
 }

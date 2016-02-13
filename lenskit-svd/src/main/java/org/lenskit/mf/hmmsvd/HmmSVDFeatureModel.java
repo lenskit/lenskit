@@ -47,20 +47,16 @@ public class HmmSVDFeatureModel extends LearningModel {
 
     public void assignVariables() {
         svdFea.assignVariables();
-        start = requestScalarVar("start", numPos, 0.0, true, true); //can initialize as trans by itself
-        trans = MatrixUtils.createRealMatrix(numPos, numPos);
+
         RandomInitializer randInit = new RandomInitializer();
+        start = MatrixUtils.createRealVector(new double[numPos]);
+        randInit.randInitVector(start, true);
+        trans = MatrixUtils.createRealMatrix(numPos, numPos);
         randInit.randInitMatrix(trans, true);
     }
 
-    public double stochastic_expectation(LearningInstance inIns) {
-        HmmSVDFeatureInstance ins;
-        if (inIns instanceof HmmSVDFeatureInstance) {
-            ins = (HmmSVDFeatureInstance)inIns;
-        } else {
-            return 0.0;
-        }
-        //make sure ins.numPos == this.numPos
+    public void stochasticInference(HmmSVDFeatureInstance ins, ArrayList<RealVector> outGamma,
+            ArrayList<ArrayList<RealVector>> outXi) {
         //compute p(x|z)
         RealVector probs = MatrixUtils.createRealVector(new double[ins.numPos]);
         for (int i=0; i<ins.numPos; i++) {
@@ -107,8 +103,6 @@ public class HmmSVDFeatureModel extends LearningModel {
             int x = 1;
         }
         //compute gamma and xi
-        gamma = new ArrayList<>(ins.numObs); //, numPos);
-        xi = new ArrayList<>(ins.numObs - 1);
         for (int i=0; i<ins.numObs; i++) {
             gamma.add(alpha.get(i).ebeMultiply(beta.get(i)).mapDivideToSelf(pX));
             if (i > 0) {
@@ -123,6 +117,19 @@ public class HmmSVDFeatureModel extends LearningModel {
                 xi.add(subXi);
             }
         }
+    }
+
+    public double stochasticExpectation(LearningInstance inIns) {
+        HmmSVDFeatureInstance ins;
+        if (inIns instanceof HmmSVDFeatureInstance) {
+            ins = (HmmSVDFeatureInstance)inIns;
+        } else {
+            return 0.0;
+        }
+        //make sure ins.numPos == this.numPos
+        gamma = new ArrayList<>(ins.numObs);
+        xi = new ArrayList<>(ins.numObs - 1);
+        stochasticInference(ins, gamma, xi);
         //fill in instances
         instances.clear();
         for (int i=0; i<ins.numObs; i++) {
@@ -164,7 +171,7 @@ public class HmmSVDFeatureModel extends LearningModel {
         return -(startObjVal + transObjVal);
     }
 
-    public SVDFeatureModel stochastic_maximization() {
+    public SVDFeatureModel stochasticMaximization() {
         svdFea.setInstances(instances);
         return svdFea;
     }
