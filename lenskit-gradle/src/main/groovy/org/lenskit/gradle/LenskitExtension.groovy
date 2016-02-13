@@ -79,7 +79,7 @@ public class LenskitExtension {
     def List<String> jvmArgs
 
     def jvmArgs(String... val){
-        jvmArgs.add(val)
+        jvmArgs.addAll(val)
 //        return val.split(" ").toList()
     }
 
