@@ -55,9 +55,8 @@ public class LenskitPlugin implements Plugin<Project> {
                 if (prop.type == List) {
                     StrTokenizer tok = new StrTokenizer(val, StrMatcher.splitMatcher, StrMatcher.quoteMatcher());
                     val = prop.type.metaClass.invokeConstructor(tok)
-                }
-                else if (prop.type != String) {
-                    val = StringConvert.INSTANCE.convertFromString(prop.type, valStr)
+                }else if (prop.type != String) {
+                    val = StringConvert.INSTANCE.convertFromString(prop.type, val)
                 }
 
                 prop.setProperty(lenskit, val)
