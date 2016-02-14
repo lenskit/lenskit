@@ -14,8 +14,8 @@ import org.lenskit.solver.objective.StochasticOracle;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class SVDFeatureModel extends LearningModel {
-    private SVDFeatureInstanceDAO dao;
-    private ArrayList<SVDFeatureInstance> instances;
+    private transient SVDFeatureInstanceDAO dao;
+    private transient ArrayList<SVDFeatureInstance> instances;
     private RealVector biases;
     private ArrayList<RealVector> factors;
     private int factDim;

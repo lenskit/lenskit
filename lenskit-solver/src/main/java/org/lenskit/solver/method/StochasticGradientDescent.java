@@ -31,6 +31,10 @@ public class StochasticGradientDescent implements OptimizationMethod {
         tol = inTol;
     }
 
+    public void divideLearningRate(double divider) {
+        lr /= divider;
+    }
+
     public double minimize(LearningModel model, ObjectiveFunction objFunc) {
         ObjectiveTerminationCriterion termCrit = new ObjectiveTerminationCriterion(tol, maxIter);
         HashMap<String, RealVector> scalarVars = model.getScalarVars();

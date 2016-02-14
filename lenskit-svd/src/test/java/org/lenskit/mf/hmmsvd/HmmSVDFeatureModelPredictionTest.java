@@ -1,10 +1,11 @@
 package org.lenskit.mf.hmmsvd;
 
 import org.junit.Test;
+import org.lenskit.mf.svdfeature.SVDFeatureInstance;
+import org.lenskit.mf.svdfeature.SVDFeatureInstanceDAO;
+import org.lenskit.mf.svdfeature.SVDFeatureModel;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 
 import static org.junit.Assert.assertThat;
 
@@ -13,9 +14,9 @@ import static org.junit.Assert.assertThat;
  */
 public class HmmSVDFeatureModelPredictionTest {
     @Test
-    pubic void predictionTest() throws FileNotFoundException, IOException {
-        String testFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/svdfea11-clkrat-feas.te";
-        String predFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/hmmsvd11-clkrat-feas.te.pred";
+    public void predictionTest() throws IOException, ClassNotFoundException {
+        String testFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/svdfea11-clkrat.te";
+        String predFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/hmmsvd11-clkrat.te.pred";
         String modelFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/hmmsvd11-withlab-clkrat.model";
 
         ObjectInputStream fin = new ObjectInputStream(new FileInputStream(modelFile));
@@ -26,11 +27,12 @@ public class HmmSVDFeatureModelPredictionTest {
         SVDFeatureInstanceDAO teDao = new SVDFeatureInstanceDAO(new File(testFile), " ");
         BufferedWriter fout = new BufferedWriter(new FileWriter(predFile));
         SVDFeatureInstance ins = null;
-        do {
-            ins = dao.getNextInstance();
+        ins = teDao.getNextInstance();
+        while (ins != null) {
             double prob = svdFea.predict(ins, true);
             fout.write(Double.toString(prob) + "\n");
-        } while (ins != null)
+            ins = teDao.getNextInstance();
+        }
         fout.close();
     }
 }

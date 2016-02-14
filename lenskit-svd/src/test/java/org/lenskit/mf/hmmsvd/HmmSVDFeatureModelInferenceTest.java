@@ -1,10 +1,12 @@
 package org.lenskit.mf.hmmsvd;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealVector;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.util.ArrayList;
 
 import static org.junit.Assert.assertThat;
 
@@ -14,7 +16,7 @@ import static org.junit.Assert.assertThat;
 public class HmmSVDFeatureModelInferenceTest {
 
     @Test
-    pubic void inferenceTest() throws FileNotFoundException, IOException {
+    public void inferenceTest() throws IOException, ClassNotFoundException {
         String testFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/labeled-hmmsvdfeature-input.te";
         String predFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/labeled-hmmsvdfeature-input.te.pred";
         String modelFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/hmmsvd11-withlab-clkrat.model";
@@ -26,21 +28,22 @@ public class HmmSVDFeatureModelInferenceTest {
         HmmSVDFeatureInstanceDAO teDao = new HmmSVDFeatureInstanceDAO(new File(testFile), " ");
         BufferedWriter fout = new BufferedWriter(new FileWriter(predFile));
         HmmSVDFeatureInstance ins = null;
-        do {
-            ins = dao.getNextInstance();
+        ins = teDao.getNextInstance();
+        while(ins != null) {
             ArrayList<RealVector> gamma = new ArrayList<>(ins.numObs);
             ArrayList<ArrayList<RealVector>> xi = new ArrayList<>(ins.numObs - 1);
             model.stochasticInference(ins, gamma, xi);
-            RealVector sum = MatrixUtils.createRealVector(new double[ins.numObs]);
+            RealVector sum = MatrixUtils.createRealVector(new double[ins.numPos]);
             for (int i=0; i<ins.numObs; i++) {
-                sum.combineToSelf(gamma.get(i));
+                sum.combineToSelf(1.0, 1.0, gamma.get(i));
             }
             String[] line = new String[ins.numPos];
             for (int i=0; i<ins.numPos; i++) {
                 line[i] = Double.toString(sum.getEntry(i));
             }
-            fout.write(line.join(" ") + "\n");
-        } while (ins != null)
+            fout.write(StringUtils.join(line, " ") + "\n");
+            ins = teDao.getNextInstance();
+        }
         fout.close();
     }
 }
