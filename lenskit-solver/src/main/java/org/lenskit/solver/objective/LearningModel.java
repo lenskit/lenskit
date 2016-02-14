@@ -1,5 +1,6 @@
 package org.lenskit.solver.objective;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.apache.commons.math3.linear.MatrixUtils;

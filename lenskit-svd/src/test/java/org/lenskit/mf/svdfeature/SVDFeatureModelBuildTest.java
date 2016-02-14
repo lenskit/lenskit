@@ -3,9 +3,7 @@ package org.lenskit.mf.svdfeature;
 import org.junit.Test;
 import org.lenskit.solver.objective.LogisticLoss;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 
 import static org.junit.Assert.assertThat;
 

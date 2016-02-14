@@ -25,12 +25,12 @@ public class HmmSVDFeatureModel extends LearningModel {
     private RealVector start;
     private RealMatrix trans;
     private SVDFeatureModel svdFea;
-    private ArrayList<SVDFeatureInstance> instances;
-    private HmmSVDFeatureInstanceDAO dao;
-    private ArrayList<RealVector> gamma;
-    private ArrayList<ArrayList<RealVector>> xi;
-    private RealVector startUpdate;
-    private ArrayList<RealVector> transUpdate;
+    private transient ArrayList<SVDFeatureInstance> instances;
+    private transient HmmSVDFeatureInstanceDAO dao;
+    private transient ArrayList<RealVector> gamma;
+    private transient ArrayList<ArrayList<RealVector>> xi;
+    private transient RealVector startUpdate;
+    private transient ArrayList<RealVector> transUpdate;
 
     public HmmSVDFeatureModel(int inNumPos, int numBiases, int numFactors, int factDim, 
                               HmmSVDFeatureInstanceDAO inDao) {
@@ -78,43 +78,48 @@ public class HmmSVDFeatureModel extends LearningModel {
             probX.add(probi);
         }
         //initialize alpha and beta n-1
-        ArrayList<RealVector> alpha = new ArrayList<>(ins.numObs);
-        ArrayList<RealVector> beta = new ArrayList<>(ins.numObs);
-        for (int i=0; i<ins.numObs; i++) {
-            beta.add(MatrixUtils.createRealVector(new double[numPos]));
-        }
-        beta.get(ins.numObs - 1).set(1.0);
-        //compute alpha 0 to n-1 and beta n-2 to 0
+        ArrayList<RealVector> alphaHat = new ArrayList<>(ins.numObs);
+        ArrayList<RealVector> betaHat = new ArrayList<>(ins.numObs);
+        RealVector c = MatrixUtils.createRealVector(new double[ins.numObs]);
+        //compute alphaHat 0 to n-1
         for (int i=0; i<ins.numObs; i++) {
             RealVector probx = probX.get(i);
+            RealVector alpha = null;
             if (i == 0) {
-                alpha.add(probx.ebeMultiply(start));
-                continue;
+                alpha = probx.ebeMultiply(start);
             } else if (i > 0) {
-                alpha.add(probx.ebeMultiply(trans.preMultiply(alpha.get(i - 1))));
+                alpha = probx.ebeMultiply(trans.preMultiply(alphaHat.get(i - 1)));
             }
-            int j = ins.numObs - 1 - i;
-            RealVector betaj = beta.get(j);
-            probx = probX.get(j + 1);
-            betaj.setSubVector(0, trans.operate(probx.ebeMultiply(beta.get(j + 1))));
+            c.setEntry(i, StatUtils.sum(((ArrayRealVector)alpha).getDataRef()));
+            alpha.mapDivideToSelf(c.getEntry(i));
+            alphaHat.add(alpha);
+            betaHat.add(MatrixUtils.createRealVector(new double[numPos]));
         }
-        double pX = StatUtils.sum(((ArrayRealVector)(alpha.get(ins.numObs - 1))).getDataRef());
-        if (pX == 0.0 || Double.isNaN(pX) || Double.isNaN(beta.get(0).getEntry(0))) {
+        //compute betaHat n-1 to 0
+        betaHat.get(ins.numObs - 1).set(1.0);
+        for (int j=ins.numObs - 2; j>=0; j--) {
+            RealVector betaj = betaHat.get(j);
+            RealVector probx = probX.get(j + 1);
+            double cj = c.getEntry(j + 1);
+            betaj.setSubVector(0, trans.operate(probx.ebeMultiply(betaHat.get(j + 1))).mapDivideToSelf(cj));
+        }
+        if (Double.isNaN(alphaHat.get(ins.numObs - 1).getEntry(0)) || Double.isNaN(betaHat.get(0).getEntry(0))) {
             int x = 1;
         }
         //compute gamma and xi
         for (int i=0; i<ins.numObs; i++) {
-            gamma.add(alpha.get(i).ebeMultiply(beta.get(i)).mapDivideToSelf(pX));
+            outGamma.add(alphaHat.get(i).ebeMultiply(betaHat.get(i)));
             if (i > 0) {
                 RealVector probx = probX.get(i);
-                RealVector betai = beta.get(i);
-                RealVector alphai = alpha.get(i - 1);
+                RealVector betai = betaHat.get(i);
+                RealVector alphai = alphaHat.get(i - 1);
+                double ci = c.getEntry(i);
                 ArrayList<RealVector> subXi = new ArrayList<>(numPos);
                 for (int j=0; j<numPos; j++) {
                     subXi.add(probx.ebeMultiply(trans.getRowVector(j))
-                            .ebeMultiply(betai).mapMultiplyToSelf(alphai.getEntry(j) / pX));
+                            .ebeMultiply(betai).mapMultiplyToSelf(alphai.getEntry(j) * ci));
                 }
-                xi.add(subXi);
+                outXi.add(subXi);
             }
         }
     }
@@ -157,6 +162,10 @@ public class HmmSVDFeatureModel extends LearningModel {
                 ArrayList<RealVector> cxi = xi.get(j);
                 transUpdate.get(i).combineToSelf(1.0, 1.0, cxi.get(i));
             }
+        }
+        if (Double.isNaN(startUpdate.getEntry(0)) || Double.isNaN(transUpdate.get(0).getEntry(0))
+                || Double.isNaN(transUpdate.get(ins.numPos - 1).getEntry(0))) {
+            int x = 1;
         }
         //compute the objective value of the closed form part
         UnivariateFunction log = new Log();

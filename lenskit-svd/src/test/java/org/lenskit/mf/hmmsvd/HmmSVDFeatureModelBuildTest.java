@@ -2,9 +2,7 @@ package org.lenskit.mf.hmmsvd;
 
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 
 import static org.junit.Assert.assertThat;
 
@@ -14,7 +12,7 @@ import static org.junit.Assert.assertThat;
 public class HmmSVDFeatureModelBuildTest {
     @Test
     public void testModelBuild() throws FileNotFoundException, IOException {
-        String train = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/hmmsvd11-withlab-clkrat.te";
+        String train = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/hmmsvd11-withlab-clkrat.tr";
         int numBiases = 38544;
         int numFactors = 38543;
         int dim = 20;

@@ -40,6 +40,10 @@ public class BatchGradientDescent implements OptimizationMethod {
         vectorGrads = new HashMap<>();
     }
 
+    public void divideLearningRate(double divider) {
+        lr /= divider;
+    }
+
     private void assignGrads(HashMap<String, RealVector> scalarVars, HashMap<String, ArrayList<RealVector>> vectorVars) {
         for (Map.Entry<String, RealVector> entry : scalarVars.entrySet()) {
             String name = entry.getKey();

@@ -2,9 +2,7 @@ package org.lenskit.mf.svdfeature;
 
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 
 import static org.junit.Assert.assertThat;
 
@@ -13,7 +11,7 @@ import static org.junit.Assert.assertThat;
  */
 public class SVDFeatureModelPredictionTest {
     @Test
-    pubic void predictionTest() throws FileNotFoundException, IOException {
+    public void predictionTest() throws IOException, ClassNotFoundException {
         String testFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/svdfea11-clkrat-feas.te";
         String predFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/svdfea11-clkrat-feas.te.pred";
         String modelFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/svdfea11-clkrat.model";
@@ -26,10 +24,10 @@ public class SVDFeatureModelPredictionTest {
         BufferedWriter fout = new BufferedWriter(new FileWriter(predFile));
         SVDFeatureInstance ins = null;
         do {
-            ins = dao.getNextInstance();
+            ins = teDao.getNextInstance();
             double prob = model.predict(ins, true);
             fout.write(Double.toString(prob) + "\n");
-        } while (ins != null)
+        } while (ins != null);
         fout.close();
     }
 }
