@@ -12,8 +12,8 @@ import static org.junit.Assert.assertThat;
 public class SVDFeatureModelPredictionTest {
     @Test
     public void predictionTest() throws IOException, ClassNotFoundException {
-        String testFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/svdfea11-clkrat-feas.te";
-        String predFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/svdfea11-clkrat-feas.te.pred";
+        String testFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/svdfea11-clkrat.te";
+        String predFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/svdfea11-clkrat.te.pred";
         String modelFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/svdfea11-clkrat.model";
 
         ObjectInputStream fin = new ObjectInputStream(new FileInputStream(modelFile));
@@ -23,11 +23,12 @@ public class SVDFeatureModelPredictionTest {
         SVDFeatureInstanceDAO teDao = new SVDFeatureInstanceDAO(new File(testFile), " ");
         BufferedWriter fout = new BufferedWriter(new FileWriter(predFile));
         SVDFeatureInstance ins = null;
-        do {
-            ins = teDao.getNextInstance();
+        ins = teDao.getNextInstance();
+        while (ins != null) {
             double prob = model.predict(ins, true);
             fout.write(Double.toString(prob) + "\n");
-        } while (ins != null);
+            ins = teDao.getNextInstance();
+        }
         fout.close();
     }
 }
