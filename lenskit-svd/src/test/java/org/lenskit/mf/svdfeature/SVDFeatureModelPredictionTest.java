@@ -22,8 +22,7 @@ public class SVDFeatureModelPredictionTest {
 
         SVDFeatureInstanceDAO teDao = new SVDFeatureInstanceDAO(new File(testFile), " ");
         BufferedWriter fout = new BufferedWriter(new FileWriter(predFile));
-        SVDFeatureInstance ins = null;
-        ins = teDao.getNextInstance();
+        SVDFeatureInstance ins = teDao.getNextInstance();
         while (ins != null) {
             double prob = model.predict(ins, true);
             fout.write(Double.toString(prob) + "\n");
