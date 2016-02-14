@@ -37,6 +37,7 @@ import java.util.Set;
  * to require identifiers to be disjoint.
  */
 @Immutable
+@BuiltBy(BasicEntityBuilder.class)
 public interface Entity {
     /**
      * Get the identifier of this entity.
