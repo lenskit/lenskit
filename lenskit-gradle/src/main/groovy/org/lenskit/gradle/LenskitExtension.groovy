@@ -76,7 +76,7 @@ public class LenskitExtension {
     /**
      * The list of jvm argument prroperties
     */
-    def List<String> jvmArgs
+    def List<String> jvmArgs = []
 
     def jvmArgs(String... val){
         jvmArgs.addAll(val)

@@ -58,7 +58,6 @@ public class LenskitPlugin implements Plugin<Project> {
                 }else if (prop.type != String) {
                     val = StringConvert.INSTANCE.convertFromString(prop.type, val)
                 }
-
                 prop.setProperty(lenskit, val)
             }
         }
