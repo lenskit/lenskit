@@ -20,76 +20,37 @@
  */
 package org.lenskit.data.entities;
 
-import com.google.common.base.Preconditions;
-
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * General-purpose builder for {@linkplain Entity entities}.
+ * Base class for entity builders.  The standard implementation is {@link BasicEntityBuilder}, which can be created
+ * with {@link Entities#newBuilder()}.
  */
-public class EntityBuilder {
-    private EntityType type;
-    private long id;
-    private boolean idSet;
-    private Map<Attribute<?>, Object> attributes;
+public abstract class EntityBuilder {
+    protected EntityType type;
+    protected long id;
+    protected boolean idSet;
 
     /**
-     * Create a new, empty entity builder.
+     * Construct a new entity builder.
+     *
+     * **Note:** This constructor calls {@link #setId(long)} and {@link #setType(EntityType)}, so if those methods
+     * are overloaded, they should be able to run without the derived class constructor having finished.
+     *
+     * @param initId The initial ID.
+     * @param initIdSet Whether the ID is initially set.
+     * @param typ The entity type.
      */
-    public EntityBuilder() {
-        this(null, -1, false, new HashMap<Attribute<?>, Object>());
-    }
-
-    private EntityBuilder(EntityType typ, long initId, boolean initIdSet, Map<Attribute<?>, Object> attrs) {
-        type = typ;
-        id = initId;
-        idSet = initIdSet;
-        attributes = attrs;
-    }
-
-    /**
-     * Create a new, empty entity builder.
-     * @return A new, empty entity buidler.
-     */
-    public static EntityBuilder create() {
-        return new EntityBuilder();
-    }
-
-    /**
-     * Create a new entity builder with the specified ID and type.
-     * @param type The entity type.
-     * @param id The entity ID.
-     */
-    public static EntityBuilder create(EntityType type, long id) {
-        return new EntityBuilder(type, id, true, new HashMap<Attribute<?>, Object>());
-    }
-
-    /**
-     * Create a new entity builder with a specified type.
-     * @param type The entity type.
-     */
-    public static EntityBuilder create(EntityType type) {
-        return new EntityBuilder(type, -1, false, new HashMap<Attribute<?>, Object>());
-    }
-
-    /**
-     * Create a new entity builder that is initialized with a copy of an entity.
-     * @param e The entity.
-     * @return An entity builder initialized to build a copy of {@code e}.
-     */
-    public static EntityBuilder copy(Entity e) {
-        EntityBuilder eb = create(e.getType(), e.getId());
-        for (Attribute a: e.getAttributes()) {
-            eb.setAttribute(a, e.get(a));
+    protected EntityBuilder(long initId, boolean initIdSet, EntityType typ) {
+        if (initIdSet) {
+            setId(initId);
         }
-        return eb;
+        setType(typ);
     }
 
     /**
      * Set the entity type.
      * @param typ The entity type.
      * @return The entity builder (for chaining).
+     * @throws IllegalArgumentException if the type is not valid for this builder.
      */
     public EntityBuilder setType(EntityType typ) {
         type = typ;
@@ -108,37 +69,25 @@ public class EntityBuilder {
     }
 
     /**
-     * Set an attribute for the entity.
-     * @param attr The attribute.
-     * @param val The value. Cannot be `null`.
+     * Set an attribute in the entity.
+     * @param attr The attribute to set.
+     * @param val The attribute value.
      * @param <T> The attribute type.
      * @return The entity builder (for chaining).
+     * @throws NoSuchAttributeException if the specified attribute is not supported by this entity.
      */
-    public <T> EntityBuilder setAttribute(Attribute<T> attr, T val) {
-        Preconditions.checkNotNull(attr, "attribute");
-        Preconditions.checkNotNull(val, "value");
-        attributes.put(attr, val);
-        return this;
-    }
+    public abstract <T> EntityBuilder setAttribute(Attribute<T> attr, T val);
 
     /**
-     * Clear an attribute for the entity
-     * @param attr The attribute.
+     * Clear an attribute.
+     * @param attr The attribute to clear.
      * @return The entity builder (for chaining).
      */
-    public EntityBuilder clearAttribute(Attribute<?> attr) {
-        Preconditions.checkNotNull(attr, "attribute");
-        attributes.remove(attr);
-        return this;
-    }
+    public abstract EntityBuilder clearAttribute(Attribute<?> attr);
 
-    public Entity build() {
-        Preconditions.checkState(type != null, "Entity type not set");
-        Preconditions.checkState(idSet, "ID not set");
-        if (attributes.isEmpty()) {
-            return new BareEntity(type, id);
-        } else {
-            return new BasicEntity(type, id, attributes);
-        }
-    }
+    /**
+     * Build the entity.
+     * @return The entity to build.
+     */
+    public abstract Entity build();
 }

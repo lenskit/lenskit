@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
 public class EntityBuilderTest {
     @Test
     public void testBareEntity() {
-        EntityBuilder eb = EntityBuilder.create(CommonTypes.USER, 42);
+        EntityBuilder eb = Entities.newBuilder(CommonTypes.USER, 42);
         Entity e = eb.build();
         assertThat(e, notNullValue());
         assertThat(e.getType(), equalTo(CommonTypes.USER));
@@ -42,9 +42,9 @@ public class EntityBuilderTest {
 
     @Test
     public void testBareSetters() {
-        EntityBuilder eb = EntityBuilder.create()
-                                        .setType(CommonTypes.USER)
-                                        .setId(42);
+        EntityBuilder eb = Entities.newBuilder()
+                                   .setType(CommonTypes.USER)
+                                   .setId(42);
         Entity e = eb.build();
         assertThat(e, notNullValue());
         assertThat(e.getType(), equalTo(CommonTypes.USER));
@@ -57,9 +57,9 @@ public class EntityBuilderTest {
 
     @Test
     public void testBasicEntity() {
-        Entity e = EntityBuilder.create(CommonTypes.USER, 42)
-                                .setAttribute(CommonAttributes.NAME, "HACKEM MUCHE")
-                                .build();
+        Entity e = Entities.newBuilder(CommonTypes.USER, 42)
+                           .setAttribute(CommonAttributes.NAME, "HACKEM MUCHE")
+                           .build();
         assertThat(e, notNullValue());
         assertThat(e.getType(), equalTo(CommonTypes.USER));
         assertThat(e.getId(), equalTo(42L));
