@@ -27,8 +27,7 @@ public class HmmSVDFeatureModelInferenceTest {
 
         HmmSVDFeatureInstanceDAO teDao = new HmmSVDFeatureInstanceDAO(new File(testFile), " ");
         BufferedWriter fout = new BufferedWriter(new FileWriter(predFile));
-        HmmSVDFeatureInstance ins = null;
-        ins = teDao.getNextInstance();
+        HmmSVDFeatureInstance ins = teDao.getNextInstance();
         while(ins != null) {
             ArrayList<RealVector> gamma = new ArrayList<>(ins.numObs);
             ArrayList<ArrayList<RealVector>> xi = new ArrayList<>(ins.numObs - 1);
