@@ -73,14 +73,13 @@ public class LenskitExtension {
      */
     def String logFileLevel
 
-    /*
-* The list of jvm argument prroperties
-* */
+    /**
+     * The list of jvm argument prroperties
+    */
     def List<String> jvmArgs
 
     def jvmArgs(String... val){
         jvmArgs.addAll(val)
-//        return val.split(" ").toList()
     }
 
 }
