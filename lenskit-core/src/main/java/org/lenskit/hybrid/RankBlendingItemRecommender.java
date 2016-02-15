@@ -21,16 +21,18 @@
 package org.lenskit.hybrid;
 
 import it.unimi.dsi.fastutil.longs.*;
-import org.grouplens.lenskit.util.ScoredItemAccumulator;
 import org.lenskit.api.ItemRecommender;
+import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.basic.AbstractItemRecommender;
-import org.lenskit.results.Results;
+import org.lenskit.results.ResultAccumulator;
+import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.util.ListIterator;
 
 /**
  * Hybrid item recommender that blends the *ranks* produced by two recommenders.
@@ -74,34 +76,36 @@ public class RankBlendingItemRecommender extends AbstractItemRecommender {
     }
 
     static ResultList merge(int n, ResultList left, ResultList right, double weight) {
-        Long2DoubleMap leftRanks = computeRankScore(left);
-        Long2DoubleMap rightRanks = computeRankScore(right);
+        Long2IntMap leftRanks = LongUtils.itemRanks(LongUtils.asLongList(left.idList()));
+        Long2IntMap rightRanks = LongUtils.itemRanks(LongUtils.asLongList(right.idList()));
+        int nl = left.size();
+        int nr = right.size();
         LongSet allItems = new LongOpenHashSet();
         allItems.addAll(leftRanks.keySet());
         allItems.addAll(rightRanks.keySet());
 
-        ScoredItemAccumulator accum = ScoredItemAccumulator.create(n);
+        ResultAccumulator accum = ResultAccumulator.create(n);
         for (LongIterator iter = allItems.iterator(); iter.hasNext();) {
             long item = iter.nextLong();
-            double s1 = leftRanks.get(item);
-            double s2 = rightRanks.get(item);
-            double score = weight * s1 + (1-weight) * s2;
-            accum.put(item, score);
+            int rl = leftRanks.get(item);
+            int rr = rightRanks.get(item);
+            double s1 = rankToScore(rl, nl);
+            double s2 = rankToScore(rr, nr);
+            double score = weight * s1 + (1.0-weight) * s2;
+            accum.add(new RankBlendResult(item, score,
+                                          rl >= 0 ? left.get(rl) : null, rl,
+                                          rr >= 0 ? right.get(rr) : null, rl));
         }
-        return Results.newResultList(accum.finishResults());
+        return accum.finish();
     }
 
-    static Long2DoubleMap computeRankScore(ResultList results) {
-        if (results.isEmpty()) {
-            return Long2DoubleMaps.EMPTY_MAP;
-        } else if (results.size() == 1) {
-            return Long2DoubleMaps.singleton(results.get(0).getId(), 1.0);
+    static double rankToScore(int rank, int n) {
+        if (rank < 0) {
+            return 0;
+        } else if (n == 1) {
+            return 1;
+        } else {
+            return 1.0 - rank / (n - 1.0);
         }
-        final int n = results.size();
-        Long2DoubleMap map = new Long2DoubleOpenHashMap(n);
-        for (int i = 0; i < n; i++) {
-            map.put(results.get(i).getId(), 1.0 - i/(n - 1.0));
-        }
-        return map;
     }
 }

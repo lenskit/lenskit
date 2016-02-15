@@ -20,50 +20,15 @@
  */
 package org.lenskit.hybrid;
 
-import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import org.junit.Test;
 import org.lenskit.api.ResultList;
 import org.lenskit.results.Results;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.lenskit.hybrid.RankBlendingItemRecommender.computeRankScore;
 import static org.lenskit.hybrid.RankBlendingItemRecommender.merge;
 
 public class RankBlendingItemRecommenderTest {
-    @Test
-    public void testEmptyRankScore() {
-        assertThat(computeRankScore(Results.newResultList()).size(),
-                   equalTo(0));
-    }
-
-    @Test
-    public void testSingletonRankScore() {
-        Long2DoubleMap ranks = computeRankScore(Results.newResultList(Results.create(1, 2.0)));
-        assertThat(ranks.keySet(), contains(1L));
-        assertThat(ranks, hasEntry(1L, 1.0));
-    }
-
-    @Test
-    public void testTwoItemRankScore() {
-        Long2DoubleMap ranks = computeRankScore(Results.newResultList(Results.create(1, 2.0),
-                                                                      Results.create(2, 1.5)));
-        assertThat(ranks.keySet(), containsInAnyOrder(1L, 2L));
-        assertThat(ranks, hasEntry(1L, 1.0));
-        assertThat(ranks, hasEntry(2L, 0.0));
-    }
-
-    @Test
-    public void testThreeItemRankScore() {
-        Long2DoubleMap ranks = computeRankScore(Results.newResultList(Results.create(1, 2.0),
-                                                                      Results.create(2, 1.5),
-                                                                      Results.create(3, 1.0)));
-        assertThat(ranks.keySet(), containsInAnyOrder(1L, 2L, 3L));
-        assertThat(ranks, hasEntry(1L, 1.0));
-        assertThat(ranks, hasEntry(2L, 0.5));
-        assertThat(ranks, hasEntry(3L, 0.0));
-    }
-
     @Test
     public void testBlendScores() {
         ResultList left = Results.newResultList(Results.create(1, 2.0),
@@ -86,6 +51,8 @@ public class RankBlendingItemRecommenderTest {
         // 3rd of right (1/3 * 0.3)
         assertThat(res.get(2).getScore(),
                    closeTo(0.1, 1.0e-6));
+        assertThat(res.get(2).as(RankBlendResult.class).getLeft(),
+                   nullValue());
         // last of each
         assertThat(res.get(3).getScore(),
                    closeTo(0.0, 1.0e-6));
