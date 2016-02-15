@@ -19,7 +19,7 @@ public class HmmSVDFeatureModelInferenceTest {
     public void inferenceTest() throws IOException, ClassNotFoundException {
         String testFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/labeled-hmmsvdfeature-input.te";
         String predFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/labeled-hmmsvdfeature-input.te.pred";
-        String modelFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/hmmsvd11-withlab-clkrat.model";
+        String modelFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/hmmsvd11-withlab-clkrat.model2";
 
         ObjectInputStream fin = new ObjectInputStream(new FileInputStream(modelFile));
         HmmSVDFeatureModel model = (HmmSVDFeatureModel)(fin.readObject());

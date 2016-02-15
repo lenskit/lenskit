@@ -20,7 +20,7 @@ public class HmmSVDFeatureModelBuildTest {
         HmmSVDFeatureModelBuilder modelBuilder = new HmmSVDFeatureModelBuilder(24, numBiases,
                 numFactors, dim, trDao);
         HmmSVDFeatureModel model = modelBuilder.build();
-        String modelFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/hmmsvd11-withlab-clkrat.model";
+        String modelFile = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/hmmsvd11-withlab-clkrat.model2";
         ObjectOutputStream fout = new ObjectOutputStream(new FileOutputStream(modelFile));
         fout.writeObject(model);
         fout.close();
