@@ -22,6 +22,7 @@ package org.lenskit.data.dao;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.lenskit.util.io.ObjectStream;
@@ -77,6 +78,16 @@ public class EventCollectionDAO implements EventDAO {
     public static EventDAO create(Collection<? extends Event> evts){
         EventCollectionDAO ecDAO = new EventCollectionDAO(evts);
         return ecDAO;
+    }
+
+    /**
+     * Create a new data source from an array of events.
+     *
+     * @param evts          The events to be used.
+     * @return              A EventCollectionDao generated from the events.
+     */
+    public static EventDAO create(Event... evts){
+        return create(ImmutableList.copyOf(evts));
     }
 
     /**
