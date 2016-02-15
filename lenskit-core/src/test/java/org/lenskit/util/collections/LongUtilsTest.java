@@ -20,9 +20,7 @@
  */
 package org.lenskit.util.collections;
 
-import it.unimi.dsi.fastutil.longs.LongAVLTreeSet;
-import it.unimi.dsi.fastutil.longs.LongSortedSet;
-import it.unimi.dsi.fastutil.longs.LongSortedSets;
+import it.unimi.dsi.fastutil.longs.*;
 import org.junit.Test;
 import org.lenskit.util.keys.SortedKeyIndex;
 
@@ -34,6 +32,36 @@ import static org.lenskit.util.collections.LongUtils.*;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class LongUtilsTest {
+    @Test
+    public void testEmptyRanks() {
+        assertThat(itemRanks(LongLists.EMPTY_LIST).size(),
+                   equalTo(0));
+    }
+
+    @Test
+    public void testSingletonRanks() {
+        Long2IntMap ranks = itemRanks(LongLists.singleton(1));
+        assertThat(ranks.keySet(), contains(1L));
+        assertThat(ranks, hasEntry(1L, 0));
+    }
+
+    @Test
+    public void testTwoItemRanks() {
+        Long2IntMap ranks = itemRanks(LongArrayList.wrap(new long[]{1,2}));
+        assertThat(ranks.keySet(), containsInAnyOrder(1L, 2L));
+        assertThat(ranks, hasEntry(1L, 0));
+        assertThat(ranks, hasEntry(2L, 1));
+    }
+
+    @Test
+    public void testThreeItemRanks() {
+        Long2IntMap ranks = itemRanks(LongArrayList.wrap(new long[]{1,2,3}));
+        assertThat(ranks.keySet(), containsInAnyOrder(1L, 2L, 3L));
+        assertThat(ranks, hasEntry(1L, 0));
+        assertThat(ranks, hasEntry(2L, 1));
+        assertThat(ranks, hasEntry(3L, 2));
+    }
+
     @Test
     public void testUnionSizeEmptySS() {
         assertThat(unionSize(LongSortedSets.EMPTY_SET, LongSortedSets.EMPTY_SET),

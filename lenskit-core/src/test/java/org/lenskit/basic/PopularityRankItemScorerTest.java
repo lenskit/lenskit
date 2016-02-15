@@ -20,23 +20,23 @@
  */
 package org.lenskit.basic;
 
-import it.unimi.dsi.fastutil.longs.LongSets;
 import org.junit.Before;
 import org.junit.Test;
-import org.lenskit.api.ItemRecommender;
+import org.lenskit.api.ItemScorer;
+import org.lenskit.api.ResultMap;
 import org.lenskit.data.dao.EventCollectionDAO;
 import org.lenskit.data.dao.EventDAO;
-import org.lenskit.data.dao.PrefetchingUserEventDAO;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.data.ratings.RatingSummary;
+import org.lenskit.util.collections.LongUtils;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-public class PopularItemRecommenderTest {
+public class PopularityRankItemScorerTest {
     EventDAO ratings;
     RatingSummary summary;
-    ItemRecommender recommender;
+    ItemScorer recommender;
 
     @Before
     public void setUp() {
@@ -44,33 +44,15 @@ public class PopularItemRecommenderTest {
                                             Rating.create(39, 1, 2.4),
                                             Rating.create(42, 2, 2.5));
         summary = RatingSummary.create(ratings);
-        recommender = new PopularItemRecommender(summary, new PrefetchingUserEventDAO(ratings));
+        recommender = new PopularityRankItemScorer(summary);
     }
 
     @Test
-    public void testNoCandidates() {
-        assertThat(recommender.recommend(42, 2, LongSets.EMPTY_SET, LongSets.EMPTY_SET),
-                   hasSize(0));
-    }
-
-    @Test
-    public void testDefaultAll() {
-        // unseen user, default, recommend all the items
-        assertThat(recommender.recommend(71),
-                   contains(1L, 2L));
-    }
-
-    @Test
-    public void testDefaultExcludeAll() {
-        // user rated everything user, default, recommend no items
-        assertThat(recommender.recommend(42),
-                   hasSize(0));
-    }
-
-    @Test
-    public void testDefaultExcludeOne() {
-        // user rated everything user, default, recommend no items
-        assertThat(recommender.recommend(39),
-                   contains(2L));
+    public void testScoreItems() {
+        ResultMap results = recommender.scoreWithDetails(42, LongUtils.packedSet(1, 2, 3));
+        assertThat(results.size(), equalTo(3));
+        assertThat(results.getScore(1), equalTo(1.0));
+        assertThat(results.getScore(2), equalTo(0.5));
+        assertThat(results.getScore(3), equalTo(0.0));
     }
 }
