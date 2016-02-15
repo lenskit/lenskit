@@ -173,6 +173,23 @@ public final class LongUtils {
     }
 
     /**
+     * Compute the ranks for a list of longs.
+     * @param results The list of longs.
+     * @return The map of ranks; its default return value will be -1.
+     */
+    public static Long2IntMap itemRanks(LongList results) {
+        Long2IntMap ranks = new Long2IntOpenHashMap(results.size());
+        ranks.defaultReturnValue(-1);
+        LongListIterator iter = results.listIterator();
+        while (iter.hasNext()) {
+            int i = iter.nextIndex();
+            long val = iter.nextLong();
+            ranks.put(val, i);
+        }
+        return ranks;
+    }
+
+    /**
      * Compute the set difference of two sets.
      *
      * @param items   The initial set
