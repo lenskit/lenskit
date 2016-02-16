@@ -143,7 +143,6 @@ subprojects {
 
     tasks.withType(JavaCompile).all { task ->
         task.options.encoding = 'UTF-8'
-        task.options.fork = true
     }
     compileJava {
         options.deprecation = true
