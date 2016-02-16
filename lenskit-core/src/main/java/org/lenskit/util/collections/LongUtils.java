@@ -134,6 +134,14 @@ public final class LongUtils {
         }
     }
 
+    public static LongList asLongList(List<Long> longs) {
+       if (longs instanceof  LongList) {
+           return (LongList) longs;
+       } else {
+           return new LongListWrapper(longs);
+       }
+    }
+
     /**
      * Create a map that maps a group of items to the same value.
      * @param keys The keys.
