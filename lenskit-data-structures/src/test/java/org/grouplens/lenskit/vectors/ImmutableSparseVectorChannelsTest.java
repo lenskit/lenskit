@@ -120,9 +120,9 @@ public class ImmutableSparseVectorChannelsTest {
         ImmutableSparseVector simpleImm = simple.immutable();
         Set<Symbol> channelSet = simpleImm.getChannelVectorSymbols();
         assertThat(channelSet.size(), equalTo(3));
-        assert(channelSet.contains(fooSymbol));
-        assert(channelSet.contains(barSymbol));
-        assert(channelSet.contains(foobarSymbol));
+        assert channelSet.contains(fooSymbol);
+        assert channelSet.contains(barSymbol);
+        assert channelSet.contains(foobarSymbol);
     }
 
     @Test

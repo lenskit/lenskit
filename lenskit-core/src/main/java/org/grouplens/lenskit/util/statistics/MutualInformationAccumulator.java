@@ -120,7 +120,7 @@ public class MutualInformationAccumulator {
                 acc -= m * logP;
             }
         }
-        return (acc * RECIP_LOG_2) / n;
+        return acc * RECIP_LOG_2 / n;
     }
 
     /**

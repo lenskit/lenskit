@@ -107,9 +107,9 @@ public class MutableSparseVectorChannelsTest {
         simple.addChannelVector(foobarSymbol);
         
         Set<Symbol> channelSyms = simple.getChannelVectorSymbols();
-        assert(channelSyms.contains(fooSymbol));
-        assert(channelSyms.contains(barSymbol));
-        assert(channelSyms.contains(foobarSymbol));
+        assert channelSyms.contains(fooSymbol);
+        assert channelSyms.contains(barSymbol);
+        assert channelSyms.contains(foobarSymbol);
    }
 
     @Test
