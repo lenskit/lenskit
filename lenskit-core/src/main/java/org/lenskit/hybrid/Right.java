@@ -20,6 +20,9 @@
  */
 package org.lenskit.hybrid;
 
+import org.grouplens.grapht.annotation.DefaultImplementation;
+import org.lenskit.basic.TopNItemRecommender;
+
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
@@ -28,6 +31,7 @@ import java.lang.annotation.*;
  */
 @Qualifier
 @Documented
+@DefaultImplementation(TopNItemRecommender.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 public @interface Right {
