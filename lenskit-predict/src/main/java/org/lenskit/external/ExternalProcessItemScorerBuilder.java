@@ -220,7 +220,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
         ProcessBuilder pb = new ProcessBuilder();
         pb.command(command).directory(workingDir);
 
-        Process proc = null;
+        Process proc;
         try {
             proc = pb.start();
         } catch (IOException e) {
