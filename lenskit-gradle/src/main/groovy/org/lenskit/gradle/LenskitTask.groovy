@@ -85,8 +85,7 @@ public abstract class LenskitTask extends ConventionTask {
     LenskitTask() {
         invoker = new JavaExecHandleBuilder(services.get(FileResolver))
         def ext = project.extensions.getByType(LenskitExtension)
-        // map jvmargs default to the jvmargs from the extension
-        conventionMapping.jvmArgs = { ext.jvmArgs }
+        conventionMapping.jvmArgs = { ext.jvmArgs } // map jvmargs default to the jvmargs from the extension
         conventionMapping.maxMemory = { ext.maxMemory }
         conventionMapping.logLevel = { ext.logLevel }
         conventionMapping.logFileLevel = { ext.logFileLevel }
@@ -108,8 +107,7 @@ public abstract class LenskitTask extends ConventionTask {
             invoker.systemProperties 'logback.configurationFile': project.file(logbackConfiguration)
         }
 
-        // add all the arguments in the invoker
-        invoker.jvmArgs.addAll(getJvmArgs())
+        invoker.jvmArgs.addAll(getJvmArgs()) // add all the arguments in the invoker
     }
 
     /**
