@@ -11,6 +11,7 @@ cache:
   - $HOME/.gradle/wrapper
 before_install:
   - git fetch --depth=10000 origin
+  - cp etc/gradle-ci.properties .
 install:
   - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O /tmp/miniconda.sh
   - bash /tmp/miniconda.sh -b -p $HOME/miniconda

@@ -14,6 +14,7 @@ init:
 # update Conda so we have the right version for later
 - conda update -q -y conda
 install:
+- copy etc\gradle-ci.properties gradle.properties
 - conda env create -q -f etc\environment.yml
 - activate lenskit
 - gradlew.bat ciPrep
