@@ -77,9 +77,15 @@ public abstract class LenskitTask extends ConventionTask {
      */
     final def JavaExecSpec invoker
 
+    /*
+    * The list of jvm argument prroperties
+    * */
+    def List<String> jvmArgs
+
     LenskitTask() {
         invoker = new JavaExecHandleBuilder(services.get(FileResolver))
         def ext = project.extensions.getByType(LenskitExtension)
+        conventionMapping.jvmArgs = { ext.jvmArgs } // map jvmargs default to the jvmargs from the extension
         conventionMapping.maxMemory = { ext.maxMemory }
         conventionMapping.logLevel = { ext.logLevel }
         conventionMapping.logFileLevel = { ext.logFileLevel }
@@ -100,6 +106,8 @@ public abstract class LenskitTask extends ConventionTask {
         if (logbackConfiguration) {
             invoker.systemProperties 'logback.configurationFile': project.file(logbackConfiguration)
         }
+
+        invoker.jvmArgs.addAll(getJvmArgs()) // add all the arguments in the invoker
     }
 
     /**
