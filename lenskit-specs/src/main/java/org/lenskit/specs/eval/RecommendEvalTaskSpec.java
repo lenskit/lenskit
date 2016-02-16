@@ -32,7 +32,7 @@ import java.util.Set;
 public class RecommendEvalTaskSpec extends EvalTaskSpec {
     private Path outputFile;
     private String labelPrefix;
-    private int listSize;
+    private int listSize = -1;
     private String candidateItems;
     private String excludeItems;
 
