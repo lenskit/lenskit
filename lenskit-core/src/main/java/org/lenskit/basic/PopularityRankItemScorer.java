@@ -49,7 +49,7 @@ public class PopularityRankItemScorer extends AbstractItemScorer {
         LongArrays.quickSort(items, new AbstractLongComparator() {
             @Override
             public int compare(long l1, long l2) {
-                return Double.compare(summary.getItemMean(l2), summary.getItemMean(l1));
+                return Integer.compare(summary.getItemRatingCount(l2), summary.getItemRatingCount(l1));
             }
         });
         ranks = LongUtils.itemRanks(LongArrayList.wrap(items));
