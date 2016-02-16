@@ -72,4 +72,17 @@ public class LenskitExtension {
      * and the log file.
      */
     def String logFileLevel
+
+    /**
+     * The list of jvm argument prroperties
+    */
+    def List<String> jvmArgs = []
+
+    /*
+     * The method to add all the jvm paramters in the list
+     */
+    def jvmArgs(String... val){
+        jvmArgs.addAll(val)
+    }
+
 }
