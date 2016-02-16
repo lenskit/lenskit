@@ -51,17 +51,15 @@ public class LenskitPlugin implements Plugin<Project> {
             if (project.hasProperty(prjProp)) {
                 def val = project.getProperty(prjProp)
                 logger.info 'setting property {} to {}', prjProp, val
-                // if the type is list update the val using strtokenizer
-                if (prop.type == List) {
+                if (prop.type == List) { // if the type is list update the val using strtokenizer
                     StrTokenizer tok = new StrTokenizer(val, StrMatcher.splitMatcher, StrMatcher.quoteMatcher());
                     val = prop.type.metaClass.invokeConstructor(tok)
-                }else if (prop.type != String) {
+                } else if (prop.type != String) {
                     val = StringConvert.INSTANCE.convertFromString(prop.type, val)
                 }
                 prop.setProperty(lenskit, val)
             }
         }
-
         addLenskitConfiguration(project, lenskit)
     }
 
