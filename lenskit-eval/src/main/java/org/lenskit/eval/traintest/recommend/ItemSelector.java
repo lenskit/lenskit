@@ -83,6 +83,10 @@ public abstract class ItemSelector {
         return new GroovyItemSelector((ItemSelectScript) script, expr);
     }
 
+    public static ItemSelector allItems() {
+        return compileSelector("allItems");
+    }
+
     public static ItemSelector userTestItems() {
         // FIXME Cache this selector
         return compileSelector("user.testItems");
