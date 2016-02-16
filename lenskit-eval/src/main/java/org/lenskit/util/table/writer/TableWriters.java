@@ -31,6 +31,9 @@ import java.util.List;
  * @since 0.8
  */
 public final class TableWriters {
+    private TableWriters() {
+    }
+
     /**
      * Create a table writer that writes data with common leading columns to an
      * underlying table writer.  The underlying writer will not be closed when the prefixed writer

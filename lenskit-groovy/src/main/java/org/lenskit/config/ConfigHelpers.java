@@ -39,6 +39,9 @@ import java.net.URL;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class ConfigHelpers {
+    private ConfigHelpers() {
+    }
+
     /**
      * Load a LensKit configuration from a Groovy closure.  This is useful for using the Groovy
      * DSL in unit tests.
