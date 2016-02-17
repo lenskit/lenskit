@@ -48,9 +48,8 @@ public final class LenskitInfo {
         ImmutableSet.Builder<String> revisions = ImmutableSet.builder();
         InputStream input = LenskitInfo.class.getResourceAsStream("/META-INF/lenskit/git-commits.lst");
         if (input != null) {
-            try {
-                Reader reader = new InputStreamReader(input, Charsets.UTF_8);
-                BufferedReader lines = new BufferedReader(reader);
+            try (Reader reader = new InputStreamReader(input, Charsets.UTF_8);
+                 BufferedReader lines = new BufferedReader(reader)) {
                 String line;
                 while ((line = lines.readLine()) != null) {
                     revisions.add(StringUtils.trim(line));
