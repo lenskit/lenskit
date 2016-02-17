@@ -40,6 +40,9 @@ public final class LenskitInfo {
     private static final Logger logger = LoggerFactory.getLogger(LenskitInfo.class);
     private static SoftReference<Set<String>> revisionSet;
 
+    private LenskitInfo() {
+    }
+
     private static Set<String> loadRevisionSet() {
         ImmutableSet.Builder<String> revisions = ImmutableSet.builder();
         InputStream input = LenskitInfo.class.getResourceAsStream("/META-INF/lenskit/git-commits.lst");

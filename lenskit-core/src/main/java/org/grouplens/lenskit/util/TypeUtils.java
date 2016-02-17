@@ -33,6 +33,9 @@ import java.util.Set;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class TypeUtils {
+    private TypeUtils() {
+    }
+
     /**
      * Build the set of types implemented by the objects' classes. This includes
      * all supertypes which are themselves subclasses of <var>parent</var>.  The
