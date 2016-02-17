@@ -15,7 +15,7 @@ public class ExpectationMaximization implements OptimizationMethod {
     public ExpectationMaximization() {
         maxIter = 50;
         tol = 1.0;
-        method = new BatchGradientDescent();
+        method = new StochasticGradientDescent(3, 0.0, 0.01, 10);
     }
 
     public double minimize(LearningModel model, ObjectiveFunction objFunc) {
@@ -28,11 +28,11 @@ public class ExpectationMaximization implements OptimizationMethod {
             while ((ins = model.getLearningInstance()) != null) {
                 objVal += model.expectation(ins);
             }
+            termCrit.addIteration(objVal);
             LearningModel subModel = model.maximization();
             if (subModel != null) {
-                objVal += method.minimize(subModel, objFunc);
+                method.minimize(subModel, objFunc);
             }
-            termCrit.addIteration(objVal);
         }
         return objVal;
     }

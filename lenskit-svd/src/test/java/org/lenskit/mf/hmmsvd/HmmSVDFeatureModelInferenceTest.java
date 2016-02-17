@@ -31,7 +31,8 @@ public class HmmSVDFeatureModelInferenceTest {
         while(ins != null) {
             ArrayList<RealVector> gamma = new ArrayList<>(ins.numObs);
             ArrayList<ArrayList<RealVector>> xi = new ArrayList<>(ins.numObs - 1);
-            model.stochasticInference(ins, gamma, xi);
+            ArrayList<RealVector> probX = new ArrayList<>(ins.numObs);
+            model.inference(ins, gamma, xi, probX);
             RealVector sum = MatrixUtils.createRealVector(new double[ins.numPos]);
             for (int i=0; i<ins.numObs; i++) {
                 sum.combineToSelf(1.0, 1.0, gamma.get(i));

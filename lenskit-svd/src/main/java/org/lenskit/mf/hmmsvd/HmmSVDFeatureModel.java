@@ -7,13 +7,18 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.commons.math3.util.DoubleArray;
 import org.lenskit.mf.svdfeature.SVDFeatureInstance;
+import org.lenskit.mf.svdfeature.SVDFeatureInstanceDAO;
 import org.lenskit.mf.svdfeature.SVDFeatureModel;
 import org.lenskit.solver.objective.LearningInstance;
 import org.lenskit.solver.objective.LearningModel;
 import org.lenskit.solver.objective.RandomInitializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -25,15 +30,21 @@ public class HmmSVDFeatureModel extends LearningModel {
     private RealVector start;
     private RealMatrix trans;
     private SVDFeatureModel svdFea;
+    private double startObj;
+    private double transObj;
+    private double obsObj;
+    private transient File svdFeaInsFile;
+    private transient BufferedWriter svdFeaInsWriter;
     private transient ArrayList<SVDFeatureInstance> instances;
     private transient HmmSVDFeatureInstanceDAO dao;
     private transient ArrayList<RealVector> gamma;
     private transient ArrayList<ArrayList<RealVector>> xi;
     private transient RealVector startUpdate;
     private transient ArrayList<RealVector> transUpdate;
+    private transient static Logger logger = LoggerFactory.getLogger(HmmSVDFeatureModel.class);
 
     public HmmSVDFeatureModel(int inNumPos, int numBiases, int numFactors, int factDim, 
-                              HmmSVDFeatureInstanceDAO inDao) {
+                              HmmSVDFeatureInstanceDAO inDao, String inSvdFeaInsFile) throws IOException {
         svdFea = new SVDFeatureModel(numBiases, numFactors, factDim);
         instances = new ArrayList<>();
         dao = inDao;
@@ -43,20 +54,26 @@ public class HmmSVDFeatureModel extends LearningModel {
         for (int i=0; i<numPos; i++) {
             transUpdate.add(MatrixUtils.createRealVector(new double[numPos]));
         }
+        svdFeaInsFile = new File(inSvdFeaInsFile);
+        svdFeaInsWriter = new BufferedWriter(new FileWriter(inSvdFeaInsFile));
+        startObj = 0.0;
+        transObj = 0.0;
+        obsObj = 0.0;
     }
 
     public void assignVariables() {
         svdFea.assignVariables();
-
         RandomInitializer randInit = new RandomInitializer();
         start = MatrixUtils.createRealVector(new double[numPos]);
         randInit.randInitVector(start, true);
         trans = MatrixUtils.createRealMatrix(numPos, numPos);
         randInit.randInitMatrix(trans, true);
+        logger.debug("{}", start);
+        logger.debug("{}", trans);
     }
 
-    public void stochasticInference(HmmSVDFeatureInstance ins, ArrayList<RealVector> outGamma,
-            ArrayList<ArrayList<RealVector>> outXi) {
+    public void inference(HmmSVDFeatureInstance ins, ArrayList<RealVector> outGamma,
+            ArrayList<ArrayList<RealVector>> outXi, ArrayList<RealVector> probX) {
         //compute p(x|z)
         RealVector probs = MatrixUtils.createRealVector(new double[ins.numPos]);
         for (int i=0; i<ins.numPos; i++) {
@@ -64,7 +81,6 @@ public class HmmSVDFeatureModel extends LearningModel {
                     ins.pos2ifeas.get(i));
             probs.setEntry(i, svdFea.predict(svdFeaIns, true));
         }
-        ArrayList<RealVector> probX = new ArrayList<>(ins.numObs);
         for (int i=0; i<ins.numObs; i++) {
             int act = ins.obs.get(i);
             RealVector probi = MatrixUtils.createRealVector(new double[numPos]);
@@ -124,7 +140,7 @@ public class HmmSVDFeatureModel extends LearningModel {
         }
     }
 
-    public double stochasticExpectation(LearningInstance inIns) {
+    public double expectation(LearningInstance inIns) {
         HmmSVDFeatureInstance ins;
         if (inIns instanceof HmmSVDFeatureInstance) {
             ins = (HmmSVDFeatureInstance)inIns;
@@ -134,9 +150,22 @@ public class HmmSVDFeatureModel extends LearningModel {
         //make sure ins.numPos == this.numPos
         gamma = new ArrayList<>(ins.numObs);
         xi = new ArrayList<>(ins.numObs - 1);
-        stochasticInference(ins, gamma, xi);
-        //fill in instances
-        instances.clear();
+        ArrayList<RealVector> probX = new ArrayList<>(ins.numObs);
+        inference(ins, gamma, xi, probX);
+
+        //prepare for maximization step
+        RealVector gamma0 = gamma.get(0);
+        startUpdate.combineToSelf(1.0, 1.0, gamma0);
+        for (int i=0; i<numPos; i++) {
+            for (int j=0; j<ins.numObs-1; j++) {
+                ArrayList<RealVector> cxi = xi.get(j);
+                transUpdate.get(i).combineToSelf(1.0, 1.0, cxi.get(i));
+            }
+        }
+        if (Double.isNaN(startUpdate.getEntry(0)) || Double.isNaN(transUpdate.get(0).getEntry(0))
+                || Double.isNaN(transUpdate.get(ins.numPos - 1).getEntry(0))) {
+            int x = 1;
+        }
         for (int i=0; i<ins.numObs; i++) {
             int act = ins.obs.get(i);
             for (int j=0; j<numPos; j++) {
@@ -150,24 +179,14 @@ public class HmmSVDFeatureModel extends LearningModel {
                     } else {
                         svdFeaIns.label = 0.0;
                     }
-                    instances.add(svdFeaIns);
+                    try {
+                        svdFeaInsWriter.write(svdFeaIns.toString() + "\n");
+                    } catch (IOException e) {}
                 }
             }
         }
-        //closed form stochastic maximization: update startUpdate and transUpdate with closed formula
-        RealVector gamma0 = gamma.get(0);
-        startUpdate.combineToSelf(1.0, 1.0, gamma0);
-        for (int i=0; i<numPos; i++) {
-            for (int j=0; j<ins.numObs-1; j++) {
-                ArrayList<RealVector> cxi = xi.get(j);
-                transUpdate.get(i).combineToSelf(1.0, 1.0, cxi.get(i));
-            }
-        }
-        if (Double.isNaN(startUpdate.getEntry(0)) || Double.isNaN(transUpdate.get(0).getEntry(0))
-                || Double.isNaN(transUpdate.get(ins.numPos - 1).getEntry(0))) {
-            int x = 1;
-        }
-        //compute the objective value of the closed form part
+
+        //compute the objective value after expectation
         UnivariateFunction log = new Log();
         double startObjVal = gamma0.dotProduct(start.map(log));
         double transObjVal = 0.0;
@@ -177,15 +196,29 @@ public class HmmSVDFeatureModel extends LearningModel {
                 transObjVal += cxi.get(j).dotProduct(trans.getRowVector(j).mapToSelf(log));
             }
         }
-        return -(startObjVal + transObjVal);
-    }
-
-    public SVDFeatureModel stochasticMaximization() {
-        svdFea.setInstances(instances);
-        return svdFea;
+        double obsObjVal = 0.0;
+        for (int i=0; i<ins.numObs; i++) {
+            RealVector gammai = gamma.get(i);
+            RealVector probx = probX.get(i);
+            for (int j=0; j<numPos; j++) {
+                double g = gammai.getEntry(j);
+                double p = probx.getEntry(j);
+                if (g != 0.0 && p != 0.0) {
+                    obsObjVal += (g * Math.log(p));
+                }
+            }
+        }
+        startObj -= startObjVal;
+        transObj -= transObjVal;
+        obsObj -= obsObjVal;
+        return -(startObjVal + transObjVal + obsObjVal);
     }
 
     public LearningModel maximization() { //closed form maximization
+        logger.debug("Start: {}, Trans: {}, Obs: {}", startObj, transObj, obsObj);
+        startObj = 0.0;
+        transObj = 0.0;
+        obsObj = 0.0;
         start.setSubVector(0, startUpdate);
         double sum = StatUtils.sum(((ArrayRealVector)start).getDataRef());
         start.mapDivideToSelf(sum);
@@ -194,6 +227,11 @@ public class HmmSVDFeatureModel extends LearningModel {
             sum = StatUtils.sum(((ArrayRealVector)trUp).getDataRef());
             trans.setRowVector(i, trUp.mapDivideToSelf(sum));
         }
+        try {
+            svdFeaInsWriter.close();
+            svdFea.setInstanceDAO(new SVDFeatureInstanceDAO(svdFeaInsFile, " "));
+        } catch (IOException e) {}
+        //return svdFea;
         return null;
     }
 
@@ -202,18 +240,12 @@ public class HmmSVDFeatureModel extends LearningModel {
     }
 
     public HmmSVDFeatureInstance getLearningInstance() {
-        HmmSVDFeatureInstance ins;
         try {
-            do {
-                ins = dao.getNextInstance();
-                if (ins == null) {
-                    return null;
-                }
-            } while (ins.numObs > 120 || ins.numObs < 2) ;
+            HmmSVDFeatureInstance ins = dao.getNextInstance();
+            return ins;
         } catch (IOException e) {
-            ins = null;
+            return null;
         }
-        return ins;
     }
 
     public void startNewIteration() {
@@ -223,6 +255,8 @@ public class HmmSVDFeatureModel extends LearningModel {
         }
         try {
             dao.goBackToBeginning();
+            svdFeaInsWriter.close();
+            svdFeaInsWriter = new BufferedWriter(new FileWriter(svdFeaInsFile));
         } catch (IOException e) { }
     }
 }
