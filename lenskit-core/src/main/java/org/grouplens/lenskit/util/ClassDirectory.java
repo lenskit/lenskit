@@ -55,7 +55,7 @@ public class ClassDirectory {
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
                 try (InputStream stream = url.openStream();
-                     Reader rdr = new InputStreamReader(stream);
+                     Reader rdr = new InputStreamReader(stream, "UTF-8");
                      BufferedReader buf = new BufferedReader(rdr)) {
                     String line = buf.readLine();
                     while (line != null) {

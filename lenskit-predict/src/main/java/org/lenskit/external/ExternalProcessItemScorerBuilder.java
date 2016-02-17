@@ -67,6 +67,7 @@ import java.util.UUID;
  */
 public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
     private static final Logger logger = LoggerFactory.getLogger(ExternalProcessItemScorerBuilder.class);
+    public static final String CHARSET_UTF_8 = "UTF-8";
     private File workingDir = new File(".");
     private String executable;
     private List<Supplier<String>> arguments = Lists.newArrayList();
@@ -232,7 +233,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
         slurp.start();
 
         PrecomputedItemScorer scorer;
-        try (InputStreamReader rdr = new InputStreamReader(proc.getInputStream());
+        try (InputStreamReader rdr = new InputStreamReader(proc.getInputStream(), CHARSET_UTF_8);
              BufferedReader buf = new BufferedReader(rdr)) {
             scorer = PrecomputedItemScorer.fromCSV(buf);
         } catch (IOException e) {
@@ -276,7 +277,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
             }
             logger.info("writing ratings to {}", name);
             File file = new File(workingDir, name);
-            try (PrintWriter writer = new PrintWriter(file);
+            try (PrintWriter writer = new PrintWriter(file, CHARSET_UTF_8);
                  ObjectStream<Rating> ratings = eventDAO.streamEvents(Rating.class)) {
                 for (Rating r: ratings) {
                     writer.printf("%d,%d,", r.getUserId(), r.getItemId());
@@ -316,7 +317,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
             }
             logger.info("writing {} to {}", prefix, name);
             File file = new File(workingDir, name);
-            try (PrintWriter writer = new PrintWriter(file)) {
+            try (PrintWriter writer = new PrintWriter(file, CHARSET_UTF_8)) {
                 LongSet ids = getIds();
                 LongIterator iter = ids.iterator();
                 while (iter.hasNext()) {

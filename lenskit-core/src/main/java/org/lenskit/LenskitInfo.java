@@ -48,7 +48,7 @@ public final class LenskitInfo {
         InputStream input = LenskitInfo.class.getResourceAsStream("/META-INF/lenskit/git-commits.lst");
         if (input != null) {
             try {
-                Reader reader = new InputStreamReader(input);
+                Reader reader = new InputStreamReader(input, "UTF-8");
                 BufferedReader lines = new BufferedReader(reader);
                 String line;
                 while ((line = lines.readLine()) != null) {
