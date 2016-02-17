@@ -13,7 +13,7 @@ import static org.junit.Assert.assertThat;
 public class SVDFeatureModelBuildTest {
     @Test
     public void testModelBuild() throws FileNotFoundException, IOException {
-        String train = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/svdfea11-clkrat.tr";
+        String train = "/home/qian/Study/pyml/NoisyNegativeImplicitFeedback/data/svdfea11-clkrat.te";
         int numBiases = 38544;
         int numFactors = 38543;
         int dim = 20;
