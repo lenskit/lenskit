@@ -20,6 +20,7 @@
  */
 package org.lenskit;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -48,7 +49,7 @@ public final class LenskitInfo {
         InputStream input = LenskitInfo.class.getResourceAsStream("/META-INF/lenskit/git-commits.lst");
         if (input != null) {
             try {
-                Reader reader = new InputStreamReader(input, "UTF-8");
+                Reader reader = new InputStreamReader(input, Charsets.UTF_8);
                 BufferedReader lines = new BufferedReader(reader);
                 String line;
                 while ((line = lines.readLine()) != null) {

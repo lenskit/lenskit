@@ -20,6 +20,7 @@
  */
 package org.grouplens.lenskit.util;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 
@@ -55,7 +56,7 @@ public class ClassDirectory {
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
                 try (InputStream stream = url.openStream();
-                     Reader rdr = new InputStreamReader(stream, "UTF-8");
+                     Reader rdr = new InputStreamReader(stream, Charsets.UTF_8);
                      BufferedReader buf = new BufferedReader(rdr)) {
                     String line = buf.readLine();
                     while (line != null) {

@@ -20,6 +20,7 @@
  */
 package org.lenskit.external;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -67,7 +68,7 @@ import java.util.UUID;
  */
 public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
     private static final Logger logger = LoggerFactory.getLogger(ExternalProcessItemScorerBuilder.class);
-    public static final String CHARSET_UTF_8 = "UTF-8";
+    private static final String CHARSET_UTF_8 = "UTF-8";
     private File workingDir = new File(".");
     private String executable;
     private List<Supplier<String>> arguments = Lists.newArrayList();
@@ -233,7 +234,7 @@ public class ExternalProcessItemScorerBuilder implements Provider<ItemScorer> {
         slurp.start();
 
         PrecomputedItemScorer scorer;
-        try (InputStreamReader rdr = new InputStreamReader(proc.getInputStream(), CHARSET_UTF_8);
+        try (InputStreamReader rdr = new InputStreamReader(proc.getInputStream(), Charsets.UTF_8);
              BufferedReader buf = new BufferedReader(rdr)) {
             scorer = PrecomputedItemScorer.fromCSV(buf);
         } catch (IOException e) {
