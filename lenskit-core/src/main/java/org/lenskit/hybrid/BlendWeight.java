@@ -32,8 +32,8 @@ import java.lang.annotation.*;
  * For a blending weight $0 \le 0 \le 1$, a blending hybrid will mix scores from *left* and *right* recommenders such
  * that $s = w s_l + (1-w) s_r$.
  *
- * @see Left
- * @see Right
+ * @see RankBlendingItemRecommender.Left
+ * @see RankBlendingItemRecommender.Right
  */
 @Qualifier
 @Documented

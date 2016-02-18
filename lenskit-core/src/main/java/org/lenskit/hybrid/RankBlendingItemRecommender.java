@@ -21,10 +21,11 @@
 package org.lenskit.hybrid;
 
 import it.unimi.dsi.fastutil.longs.*;
+import org.grouplens.grapht.annotation.DefaultImplementation;
 import org.lenskit.api.ItemRecommender;
-import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.basic.AbstractItemRecommender;
+import org.lenskit.basic.TopNItemRecommender;
 import org.lenskit.results.ResultAccumulator;
 import org.lenskit.util.collections.LongUtils;
 import org.slf4j.Logger;
@@ -32,7 +33,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-import java.util.ListIterator;
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
 /**
  * Hybrid item recommender that blends the *ranks* produced by two recommenders.
@@ -107,5 +109,27 @@ public class RankBlendingItemRecommender extends AbstractItemRecommender {
         } else {
             return 1.0 - rank / (n - 1.0);
         }
+    }
+
+    /**
+     * The 'left' recommender for the blending recommender.
+     */
+    @Qualifier
+    @Documented
+    @DefaultImplementation(TopNItemRecommender.class)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
+    public @interface Left {
+    }
+
+    /**
+     * The 'right' recommender for a hybrid.
+     */
+    @Qualifier
+    @Documented
+    @DefaultImplementation(TopNItemRecommender.class)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
+    public @interface Right {
     }
 }

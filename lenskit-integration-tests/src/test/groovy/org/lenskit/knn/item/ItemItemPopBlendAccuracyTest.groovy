@@ -33,16 +33,15 @@ import org.lenskit.baseline.UserMeanBaseline
 import org.lenskit.baseline.UserMeanItemScorer
 import org.lenskit.basic.PopularityRankItemScorer
 import org.lenskit.config.ConfigHelpers
-import org.lenskit.eval.traintest.EvalTask
 import org.lenskit.eval.traintest.SimpleEvaluator
 import org.lenskit.eval.traintest.recommend.ItemSelector
 import org.lenskit.eval.traintest.recommend.RecommendEvalTask
 import org.lenskit.eval.traintest.recommend.TopNMAPMetric
 import org.lenskit.eval.traintest.recommend.TopNMRRMetric
 import org.lenskit.hybrid.BlendWeight
-import org.lenskit.hybrid.Left
+
 import org.lenskit.hybrid.RankBlendingItemRecommender
-import org.lenskit.hybrid.Right
+
 import org.lenskit.knn.NeighborhoodSize
 import org.lenskit.util.table.Table
 
@@ -70,7 +69,7 @@ public class ItemItemPopBlendAccuracyTest extends CrossfoldTestSuite {
 
             // add 10% popularity rank
             bind ItemRecommender to RankBlendingItemRecommender
-            within (Right, ItemRecommender) {
+            within (RankBlendingItemRecommender.Right, ItemRecommender) {
                 bind ItemScorer to PopularityRankItemScorer
             }
             set BlendWeight to 0.9
