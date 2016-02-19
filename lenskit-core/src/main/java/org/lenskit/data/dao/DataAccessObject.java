@@ -26,6 +26,8 @@ import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.util.io.ObjectStream;
 
+import javax.annotation.Nullable;
+
 /**
  * Interface for accessing data in LensKit.
  *
@@ -38,6 +40,26 @@ public interface DataAccessObject {
      * @return The set of item IDs.
      */
     LongSet getEntityIds(EntityType type);
+
+    /**
+     * Look up an entity by ID.
+     * @param type The entity type.
+     * @param id The entity ID.
+     * @return The entity, or `null` if no such entity exists.
+     */
+    @Nullable
+    Entity lookupEntity(EntityType type, long id);
+
+    /**
+     * Look up an entity by ID and project it to a view class.
+     * @param type The entity type.
+     * @param id The entity ID.
+     * @param view The view class.
+     * @return The entity, or `null` if no such entity exists.
+     * @throws IllegalArgumentException if the entity cannot be projected to `view`.
+     */
+    @Nullable
+    <E extends Entity> E lookupEntity(EntityType type, long id, Class<E> view);
 
     /**
      * Stream all entities of a particular type.

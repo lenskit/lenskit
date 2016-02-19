@@ -20,6 +20,15 @@
  */
 package org.lenskit.data.entities;
 
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.HashMap;
+
 public final class Entities {
     private Entities() {}
 
@@ -62,5 +71,70 @@ public final class Entities {
             eb.setAttribute(a, e.get(a));
         }
         return eb;
+    }
+
+    /**
+     * Create a predicate that filters events for an entity type.
+     * @param type The entity type.
+     * @return A predicate matching entities of type `type`.
+     */
+    public static Predicate<Entity> typePredicate(final EntityType type) {
+        return new Predicate<Entity>() {
+            @Override
+            public boolean apply(@Nullable Entity input) {
+                return (input != null) && input.getType().equals(type);
+            }
+        };
+    }
+
+    /**
+     * Create a predicate that filters events for an ID.
+     * @param id The ID sought.
+     * @return A predicate matching entities with id `id`.
+     */
+    public static Predicate<Entity> idPredicate(final long id) {
+        return new Predicate<Entity>() {
+            @Override
+            public boolean apply(@Nullable Entity input) {
+                return (input != null) && input.getId() == id;
+            }
+        };
+    }
+
+    /**
+     * Project an entity to a target view type.
+     * @param e The entity to project.
+     * @param viewClass The view type.
+     * @param <E> The view type.
+     * @return The projected entity.
+     */
+    public static <E extends Entity> E project(@Nonnull Entity e, @Nonnull Class<E> viewClass) {
+        if (viewClass.isInstance(e)) {
+            return viewClass.cast(e);
+        } else {
+            throw new IllegalArgumentException("entity type " + e.getClass() + " cannot be projected to " + viewClass);
+        }
+    }
+
+    /**
+     * Create a projection function that maps entities to a new view.
+     * @param viewClass The target view class type.
+     * @param <E> The entity type.
+     * @return A function that will project entities.
+     */
+    @SuppressWarnings("unchecked")
+    public static <E extends Entity> Function<Entity,E> projection(final Class<E> viewClass) {
+        if (viewClass.equals(Entity.class)) {
+            return (Function) Functions.identity();
+        } else {
+            return new Function<Entity, E>() {
+                @Nullable
+                @Override
+                public E apply(@Nullable Entity input) {
+                    assert input != null;
+                    return project(input, viewClass);
+                }
+            };
+        }
     }
 }
