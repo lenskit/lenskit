@@ -22,12 +22,10 @@ package org.lenskit.data.entities;
 
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
 
 public final class Entities {
     private Entities() {}

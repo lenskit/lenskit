@@ -24,9 +24,11 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.data.entities.Attribute;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
+import org.lenskit.util.IdBox;
 import org.lenskit.util.io.ObjectStream;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Interface for accessing data in LensKit.
@@ -86,5 +88,5 @@ public interface DataAccessObject {
      * @return The stream of the entities.
      * @throws UnsupportedQueryException if the query cannot be satisfied
      */
-    <E extends Entity> ObjectStream<E> streamEntityGroups(EntityQuery<E> query, Attribute<Long> grpCol);
+    <E extends Entity> ObjectStream<IdBox<List<E>>> streamEntityGroups(EntityQuery<E> query, Attribute<Long> grpCol);
 }

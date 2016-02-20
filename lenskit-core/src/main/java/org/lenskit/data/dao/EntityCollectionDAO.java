@@ -29,6 +29,7 @@ import org.lenskit.data.entities.Attribute;
 import org.lenskit.data.entities.Entities;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
+import org.lenskit.util.IdBox;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
 
@@ -94,7 +95,7 @@ public class EntityCollectionDAO implements DataAccessObject {
     }
 
     @Override
-    public <E extends Entity> ObjectStream<E> streamEntityGroups(EntityQuery<E> query, Attribute<Long> grpCol) {
+    public <E extends Entity> ObjectStream<IdBox<List<E>>> streamEntityGroups(EntityQuery<E> query, Attribute<Long> grpCol) {
         // TODO Implement this method
         return null;
     }
