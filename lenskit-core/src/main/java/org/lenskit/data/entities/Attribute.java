@@ -95,7 +95,13 @@ public final class Attribute<T> implements Serializable {
 
     @Override
     public String toString() {
-        return "Attribute[" + name + ", type=" + type.getCanonicalName() + "]";
+        String tname;
+        if (ClassUtils.isPrimitiveWrapper(type)) {
+            tname = ClassUtils.wrapperToPrimitive(type).getName();
+        } else {
+            tname = type.getCanonicalName();
+        }
+        return "Attribute[" + name + ": " + tname + "]";
     }
 
     /**

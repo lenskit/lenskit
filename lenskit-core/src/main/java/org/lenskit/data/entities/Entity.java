@@ -23,6 +23,8 @@ package org.lenskit.data.entities;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -62,6 +64,11 @@ public interface Entity {
      * Get the fields in this entity.
      */
     Set<Attribute<?>> getAttributes();
+
+    /**
+     * Get the attribtue-value pairs.
+     */
+    Collection<AttributeValue<?>> getAttributeValues();
 
     /**
      * View this entity as a map.

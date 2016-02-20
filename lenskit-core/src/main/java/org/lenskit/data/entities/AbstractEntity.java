@@ -20,16 +20,26 @@
  */
 package org.lenskit.data.entities;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
  * Base class to make it easier to implement entities.
  */
 public abstract class AbstractEntity implements Entity {
+    @Override
+    public Collection<AttributeValue<?>> getAttributeValues() {
+        return new ValueCollection();
+    }
+
     @Override
     public Map<String, Object> asMap() {
         return new MapView();
@@ -108,6 +118,17 @@ public abstract class AbstractEntity implements Entity {
         return hcb.toHashCode();
     }
 
+    @Override
+    public String toString() {
+        ToStringBuilder tsb = new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
+        tsb.append("type", getType())
+           .append("id", getId());
+        for (AttributeValue<?> av: getAttributeValues()) {
+            tsb.append(av.getAttribute().toString(), av.getValue());
+        }
+        return tsb.toString();
+    }
+
     private class MapView extends AbstractMap<String,Object> {
         @Override
         public Set<Entry<String, Object>> entrySet() {
@@ -136,6 +157,26 @@ public abstract class AbstractEntity implements Entity {
         @Override
         public Set<String> keySet() {
             return getAttributeNames();
+        }
+    }
+
+    private class ValueCollection extends AbstractCollection<AttributeValue<?>> {
+        @Override
+        public Iterator<AttributeValue<?>> iterator() {
+            return Iterators.transform(getAttributes().iterator(),
+                                       new Function<Attribute<?>, AttributeValue<?>>() {
+                                           @Nullable
+                                           @Override
+                                           public AttributeValue<?> apply(@Nullable Attribute<?> input) {
+                                               assert input != null;
+                                               return AttributeValue.create((Attribute) input, get(input));
+                                           }
+                                       });
+        }
+
+        @Override
+        public int size() {
+            return getAttributes().size();
         }
     }
 

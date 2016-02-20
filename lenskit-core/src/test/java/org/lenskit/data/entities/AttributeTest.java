@@ -42,7 +42,7 @@ public class AttributeTest {
                    sameInstance(attribute));
 
         assertThat(attribute.toString(), notNullValue());
-        assertThat(attribute.toString(), matchesPattern("^Attribute\\[foo, type=.*\\]$"));
+        assertThat(attribute.toString(), matchesPattern("^Attribute\\[foo: .*\\]$"));
     }
 
     @Test
