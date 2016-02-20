@@ -23,6 +23,7 @@ package org.lenskit.data.dao;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Ordering;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.lenskit.data.entities.Attribute;
@@ -30,11 +31,15 @@ import org.lenskit.data.entities.Entities;
 import org.lenskit.data.entities.Entity;
 import org.lenskit.data.entities.EntityType;
 import org.lenskit.util.IdBox;
+import org.lenskit.util.io.GroupingObjectStream;
 import org.lenskit.util.io.ObjectStream;
 import org.lenskit.util.io.ObjectStreams;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.WillCloseWhenClosed;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -90,13 +95,72 @@ public class EntityCollectionDAO implements DataAccessObject {
 
     @Override
     public <E extends Entity> ObjectStream<E> streamEntities(EntityQuery<E> query) {
-        return ObjectStreams.transform(ObjectStreams.filter(ObjectStreams.wrap(entities), query),
-                                       Entities.projection(query.getViewType()));
+        ObjectStream<E> stream =
+                ObjectStreams.transform(ObjectStreams.filter(ObjectStreams.wrap(entities), query),
+                                        Entities.projection(query.getViewType()));
+        List<SortKey> sort = query.getSortKeys();
+        if (sort.isEmpty()) {
+            return stream;
+        }
+
+        // we must sort
+        List<E> list = ObjectStreams.makeList(stream);
+        Ordering<Entity> ord = null;
+        for (SortKey k: sort) {
+            if (ord == null) {
+                ord = k.ordering();
+            } else {
+                ord = ord.compound(k.ordering());
+            }
+        }
+        Collections.sort(list, ord);
+        return ObjectStreams.wrap(list);
     }
 
     @Override
     public <E extends Entity> ObjectStream<IdBox<List<E>>> streamEntityGroups(EntityQuery<E> query, Attribute<Long> grpCol) {
-        // TODO Implement this method
-        return null;
+        EntityQueryBuilder qb = EntityQuery.newBuilder();
+        qb.setEntityType(query.getEntityType())
+          .addFilterFields(query.getFilterFields());
+        qb.addSortKey(grpCol);
+        qb.addSortKeys(query.getSortKeys());
+        ObjectStream<E> stream = streamEntities(qb.buildWithView(query.getViewType()));
+        return new GroupStream<>(stream, grpCol);
+    }
+
+    private static class GroupStream<E extends Entity> extends GroupingObjectStream<IdBox<List<E>>, E> {
+        private final Attribute<Long> attribute;
+        private long id;
+        private ImmutableList.Builder<E> builder;
+
+        GroupStream(@WillCloseWhenClosed ObjectStream<E> base, Attribute<Long> attr) {
+            super(base);
+            attribute = attr;
+        }
+
+        @Override
+        protected void clearGroup() {
+            builder = null;
+        }
+
+        @Override
+        protected boolean handleItem(@Nonnull E item) {
+            if (builder == null) {
+                id = item.getLong(attribute);
+                builder = ImmutableList.builder();
+            } else if (id != item.getLong(attribute)) {
+                return false;
+            }
+            builder.add(item);
+            return true;
+        }
+
+        @Nonnull
+        @Override
+        protected IdBox<List<E>> finishGroup() {
+            IdBox<List<E>> box = IdBox.create(id, (List<E>) builder.build());
+            builder = null;
+            return box;
+        }
     }
 }

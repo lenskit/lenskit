@@ -99,6 +99,16 @@ public final class Entities {
         };
     }
 
+    public static <T> Function<Entity,T> attributeValueFunction(final Attribute<T> attr) {
+        return new Function<Entity, T>() {
+            @Nullable
+            @Override
+            public T apply(@Nullable Entity input) {
+                return input == null ? null : input.maybeGet(attr);
+            }
+        };
+    }
+
     /**
      * Project an entity to a target view type.
      * @param e The entity to project.

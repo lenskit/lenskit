@@ -86,7 +86,7 @@ public class EntityCollectionDAOTest {
 
         query = EntityQuery.newBuilder()
                            .setEntityType(LIKE)
-                           .addEqualsCondition(CommonAttributes.USER_ID, 42L)
+                           .addFilterField(CommonAttributes.USER_ID, 42L)
                            .build();
         results = ObjectStreams.makeList(dao.streamEntities(query));
         assertThat(results, contains(e));
@@ -102,7 +102,7 @@ public class EntityCollectionDAOTest {
 
         EntityQuery<Entity> query = EntityQuery.newBuilder()
                                                .setEntityType(LIKE)
-                                               .addEqualsCondition(CommonAttributes.USER_ID, 39L)
+                                               .addFilterField(CommonAttributes.USER_ID, 39L)
                                                .build();
         ArrayList<Entity> results = ObjectStreams.makeList(dao.streamEntities(query));
 
@@ -141,14 +141,14 @@ public class EntityCollectionDAOTest {
 
         query = EntityQuery.newBuilder()
                            .setEntityType(LIKE)
-                           .addEqualsCondition(CommonAttributes.USER_ID, 42L)
+                           .addFilterField(CommonAttributes.USER_ID, 42L)
                            .build();
         results = ObjectStreams.makeList(dao.streamEntities(query));
         assertThat(results, containsInAnyOrder(e1, e2));
 
         query = EntityQuery.newBuilder()
                            .setEntityType(LIKE)
-                           .addEqualsCondition(CommonAttributes.ITEM_ID, 39L)
+                           .addFilterField(CommonAttributes.ITEM_ID, 39L)
                            .build();
         results = ObjectStreams.makeList(dao.streamEntities(query));
         assertThat(results, contains(e1));
@@ -218,7 +218,7 @@ public class EntityCollectionDAOTest {
                 ObjectStreams.makeList(dao.streamEntityGroups(query, CommonAttributes.USER_ID));
         assertThat(results, hasSize(2));
         assertThat(results,
-                   containsInAnyOrder(IdBox.create(42L, (List) ImmutableList.of(entities.get(2), entities.get(1))),
+                   containsInAnyOrder(IdBox.create(42L, (List) ImmutableList.of(entities.get(2), entities.get(0))),
                                       IdBox.create(67L, ImmutableList.of(entities.get(1)))));
     }
 }

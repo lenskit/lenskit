@@ -41,7 +41,7 @@ public class EntityQueryTest {
     public void testSingleAttrFilter() {
         EntityQuery<Entity> q = EntityQuery.newBuilder()
                                            .setEntityType(CommonTypes.RATING)
-                                           .addEqualsCondition(CommonAttributes.ITEM_ID, 42L)
+                                           .addFilterField(CommonAttributes.ITEM_ID, 42L)
                                            .build();
         assertThat(q.getEntityType(), equalTo(CommonTypes.RATING));
         assertThat(q.getFilterFields(),
@@ -54,8 +54,8 @@ public class EntityQueryTest {
     public void testTwoAttrFilter() {
         EntityQuery<Entity> q = EntityQuery.newBuilder()
                                            .setEntityType(CommonTypes.RATING)
-                                           .addEqualsCondition(CommonAttributes.ITEM_ID, 42L)
-                                           .addEqualsCondition(CommonAttributes.USER_ID, 29L)
+                                           .addFilterField(CommonAttributes.ITEM_ID, 42L)
+                                           .addFilterField(CommonAttributes.USER_ID, 29L)
                                            .build();
         assertThat(q.getEntityType(), equalTo(CommonTypes.RATING));
         assertThat(q.getFilterFields(),
@@ -94,7 +94,7 @@ public class EntityQueryTest {
     public void testAttributeMatch() {
         EntityQuery<Entity> q = EntityQuery.newBuilder()
                                            .setEntityType(CommonTypes.RATING)
-                                           .addEqualsCondition(CommonAttributes.USER_ID, 42L)
+                                           .addFilterField(CommonAttributes.USER_ID, 42L)
                                            .build();
         assertThat(q.matches(Entities.create(CommonTypes.RATING, 42L)),
                    equalTo(false));
