@@ -61,7 +61,5 @@ public abstract class LearningModel implements Serializable {
     public StochasticOracle getStochasticOracle(LearningInstance ins) { return null; }
 
     public double expectation(LearningInstance ins) { return 0.0; }
-    public double stochasticExpectation(LearningInstance ins) { return 0.0; }
     public LearningModel maximization() { return null; }
-    public LearningModel stochasticMaximization() { return null; }
 }
