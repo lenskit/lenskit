@@ -10,8 +10,6 @@ buildscript {
     }
 }
 
-import org.lenskit.gradle.*
-
 apply plugin: 'java'
 apply plugin: 'lenskit'
 apply from: 'common.gradle'
@@ -61,6 +59,9 @@ task trainTest(type: TrainTest) {
         metric('ndcg') {
             columnName 'nDCG'
         }
+        metric('ndpm') {
+            columnName 'nDPM'
+        }
         metric 'popularity'
         metric 'mrr'
         metric 'map'
@@ -76,6 +77,9 @@ task trainTest(type: TrainTest) {
         metric 'entropy'
         metric('ndcg') {
             columnName 'nDCG'
+        }
+        metric('ndpm') {
+            columnName 'nDPM'
         }
         metric 'popularity'
         metric 'mrr'

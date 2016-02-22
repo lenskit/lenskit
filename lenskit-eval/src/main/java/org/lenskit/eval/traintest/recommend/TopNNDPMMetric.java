@@ -1,3 +1,23 @@
+/*
+ * LensKit, an open source recommender systems toolkit.
+ * Copyright 2010-2014 LensKit Contributors.  See CONTRIBUTORS.md.
+ * Work on LensKit has been funded by the National Science Foundation under
+ * grants IIS 05-34939, 08-08692, 08-12148, and 10-17697.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 package org.lenskit.eval.traintest.recommend;
 
 
@@ -21,7 +41,7 @@ import java.util.Collections;
 /**
  *Measure the nDPM of the top-N recommendations, using rankings.
 
- * This metric will be registered with the type name `ndpm`.
+ * This metric is registered with the type name `ndpm`.
 
  * Created by VaibhavMahant on 2/1/16.
  */
@@ -40,7 +60,7 @@ public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
 
 
     /**
-     * Construct a new nDCG Top-N metric.
+     * Construct a new nDPM Top-N metric.
      * @param name The column name to use.
      */
     public TopNNDPMMetric(String name) {
@@ -100,7 +120,7 @@ public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
                         valueOne = value.get(ideal_items[k]);
                         for(int l = 0; l < ideal_items.length; l++) {
                             if (actual_item[j] == ideal_items[l]) {
-                                valueTwo = ideal_items[k];
+                                valueTwo = value.get(ideal_items[k]);
                             }
                         }
                     }
@@ -128,9 +148,7 @@ public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
         public String getColumnName() {
             return name;
         }
-        public void setColumnName(String name) {
-                this.name = name;
-            }
+        public void setColumnName(String name) { this.name = name; }
     }
 }
 

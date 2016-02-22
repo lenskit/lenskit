@@ -54,11 +54,9 @@ public class TestUser {
 
     /**
      * Make a builder for test users.
-     * @return A new builder for a a test user object.
+     * @return A new builder for a test user object.
      */
-    public static TestUserBuilder newBuilder() {
-        return new TestUserBuilder();
-    }
+    public static TestUserBuilder newBuilder() { return new TestUserBuilder(); }
 
     /**
      * Get the ID of this user.
@@ -107,5 +105,12 @@ public class TestUser {
             testRatings = Ratings.userRatingVector(testHistory.filter(Rating.class));
         }
         return testRatings;
+    }
+
+    /**
+     * Method that returns all items except the ones present in the user's test
+     * or train sets.
+     */
+    public LongSet getUnseenItems() {
     }
 }

@@ -30,7 +30,7 @@ class MapMetricResult extends MetricResult {
     private final Map<String, Object> values;
 
     public MapMetricResult(Map<String,?> vals) {
-        values = new LinkedHashMap<>(vals);
+        values = new LinkedHashMap(vals);
     }
 
     @Override
