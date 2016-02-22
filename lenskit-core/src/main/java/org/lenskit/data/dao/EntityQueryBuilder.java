@@ -132,6 +132,21 @@ public class EntityQueryBuilder {
     }
 
     /**
+     * Create a new entity query builder that is a copy of this one. Future additions to either will not affect the
+     * other.
+     * @return A new query builder.
+     */
+    public EntityQueryBuilder copy() {
+        EntityQueryBuilder eqb = new EntityQueryBuilder();
+        if (entityType != null) {
+            eqb.setEntityType(entityType);
+        }
+        eqb.addFilterFields(filter.build());
+        eqb.addSortKeys(sortKey.build());
+        return eqb;
+    }
+
+    /**
      * Build the data query.
      * @return The data query.
      */
