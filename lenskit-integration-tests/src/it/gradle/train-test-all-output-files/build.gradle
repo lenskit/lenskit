@@ -9,6 +9,7 @@ buildscript {
         classpath "org.grouplens.lenskit:lenskit-gradle:$project.lenskitVersion"
     }
 }
+import org.lenskit.gradle.*
 
 apply plugin: 'java'
 apply plugin: 'lenskit'
