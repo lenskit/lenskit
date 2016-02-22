@@ -20,6 +20,8 @@
  */
 package org.lenskit.data.entities;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 /**
  * Base class for entity builders.  The standard implementation is {@link BasicEntityBuilder}, which can be created
  * with {@link Entities#newBuilder(EntityType)}.
@@ -65,6 +67,16 @@ public abstract class EntityBuilder {
      * @return The entity builder (for chaining).
      */
     public abstract EntityBuilder clearAttribute(TypedName<?> name);
+
+    /**
+     * Reset this entity builder, clearing all properties **except** the entity type.
+     * @return The builder (for chaining).
+     */
+    @OverridingMethodsMustInvokeSuper
+    public EntityBuilder reset() {
+        idSet = false;
+        return this;
+    }
 
     /**
      * Build the entity.
