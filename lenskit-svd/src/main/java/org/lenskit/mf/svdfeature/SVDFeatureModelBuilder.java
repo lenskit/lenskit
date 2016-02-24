@@ -6,14 +6,18 @@ import org.lenskit.solver.method.StochasticGradientDescent;
 import org.lenskit.solver.objective.ObjectiveFunction;
 import org.lenskit.solver.method.OptimizationMethod;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
-public class SVDFeatureModelBuilder {
+public class SVDFeatureModelBuilder implements Provider<SVDFeatureModel> {
     private SVDFeatureModel model;
     private ObjectiveFunction loss;
     private OptimizationMethod method;
 
+    @Inject
     public SVDFeatureModelBuilder(int numBiases, int numFactors, int factDim,
                                   SVDFeatureInstanceDAO dao, ObjectiveFunction inLoss) {
         loss = inLoss;
@@ -30,7 +34,7 @@ public class SVDFeatureModelBuilder {
         method = new StochasticGradientDescent(inMaxIter, inL2coef, inLearningRate, inTol);
     }
 
-    public SVDFeatureModel build() {
+    public SVDFeatureModel get() {
         model.assignVariables();
         method.minimize(model, loss);
         return model;
