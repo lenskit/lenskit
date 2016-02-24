@@ -27,6 +27,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.grouplens.lenskit.collections.LongUtils;
 import org.lenskit.eval.traintest.TestUser;
 
+
 import java.util.Random;
 import java.util.Set;
 
@@ -108,6 +109,19 @@ public abstract class ItemSelector {
 
         public LongSet pickRandom(Set<Long> items, int n) {
             return LongUtils.randomSubset(LongUtils.asLongSet(items), n, random);
+        }
+
+        /**
+         * Method that returns all items except the ones present in the user's test
+         * or train sets.
+         */
+        public LongSet getUnseenItems(TestUser user){
+            LongSet unseenItem;
+
+            unseenItem = LongUtils.setDifference(allItems, user.getTrainItems());
+            unseenItem = LongUtils.setDifference(unseenItem, user.getTestItems());
+
+            return unseenItem;
         }
     }
 
