@@ -22,12 +22,13 @@ package org.lenskit.eval.traintest.recommend
 
 import groovy.json.JsonBuilder
 import org.junit.Test
+import org.lenskit.eval.traintest.TestUser
 import org.lenskit.eval.traintest.metrics.Discounts
+import org.lenskit.results.Results
 import org.lenskit.specs.DynamicSpec
 import org.lenskit.specs.SpecUtils
 
-import static org.hamcrest.Matchers.equalTo
-import static org.hamcrest.Matchers.instanceOf
+import static org.hamcrest.Matchers.*
 import static org.junit.Assert.assertThat
 
 class TopNNDCGMetricTest {
@@ -42,6 +43,80 @@ class TopNNDCGMetricTest {
         def metric = SpecUtils.buildObject(TopNMetric, node)
         assertThat(metric, instanceOf(TopNNDCGMetric))
         def ndcg = metric as TopNNDCGMetric
-        assertThat(ndcg.discount, equalTo(Discounts.exp(5)));
+        assertThat(ndcg.discount, equalTo(Discounts.exp(5)))
+    }
+
+    @Test
+    public void testSameOrder() {
+        def metric = new TopNNDCGMetric()
+        def context = metric.createContext(null, null, null)
+        def user = TestUser.newBuilder()
+                           .addTestRating(1, 5.0)
+                           .addTestRating(2, 4.5)
+                           .build()
+        def recs = Results.newResultList(Results.create(1, 3.0),
+                                         Results.create(2, 2.5))
+        def result = metric.measureUser(user, -1, recs, context)
+        assertThat(result, notNullValue())
+        assertThat(result.values.keySet(), contains('TopN.nDCG'))
+        assertThat(result.values['TopN.nDCG'],
+                   closeTo(1.0d, 1.0e-6d))
+
+        result = metric.getAggregateMeasurements(context)
+        assertThat(result, notNullValue())
+        assertThat(result.values.keySet(), contains('TopN.nDCG'))
+        assertThat(result.values['TopN.nDCG'],
+                   closeTo(1.0d, 1.0e-6d))
+    }
+
+    @Test
+    public void testIgnoresScores() {
+        def metric = new TopNNDCGMetric()
+        def context = metric.createContext(null, null, null)
+        def user = TestUser.newBuilder()
+                           .addTestRating(1, 5.0)
+                           .addTestRating(2, 4.5)
+                           .build()
+        // the order is right, but the recommendation values are out of order
+        // this is fine, nDCG should only consider order.
+        def recs = Results.newResultList(Results.create(1, 1.0),
+                                         Results.create(2, 2.5))
+        def result = metric.measureUser(user, -1, recs, context)
+        assertThat(result, notNullValue())
+        assertThat(result.values.keySet(), contains('TopN.nDCG'))
+        assertThat(result.values['TopN.nDCG'],
+                   closeTo(1.0d, 1.0e-6d))
+
+        result = metric.getAggregateMeasurements(context)
+        assertThat(result, notNullValue())
+        assertThat(result.values.keySet(), contains('TopN.nDCG'))
+        assertThat(result.values['TopN.nDCG'],
+                   closeTo(1.0d, 1.0e-6d))
+    }
+
+    @Test
+    public void testOutOfOrder() {
+        // use half-life discounting, because log 2 doesn't change for 2 items
+        def metric = new TopNNDCGMetric(Discounts.exp(2));
+        def context = metric.createContext(null, null, null)
+        def user = TestUser.newBuilder()
+                           .addTestRating(1, 5.0)
+                           .addTestRating(2, 2.5)
+                           .build()
+        // the order is right, but the recommendation values are out of order
+        // this is fine, nDCG should only consider order.
+        def recs = Results.newResultList(Results.create(2, 3.0),
+                                         Results.create(1, 2.5))
+        def result = metric.measureUser(user, -1, recs, context)
+        assertThat(result, notNullValue())
+        assertThat(result.values.keySet(), contains('TopN.nDCG'))
+        assertThat(result.values['TopN.nDCG'],
+                   closeTo(5 / 6.25d, 1.0e-6d))
+
+        result = metric.getAggregateMeasurements(context)
+        assertThat(result, notNullValue())
+        assertThat(result.values.keySet(), contains('TopN.nDCG'))
+        assertThat(result.values['TopN.nDCG'],
+                   closeTo(5 / 6.25d, 1.0e-6d))
     }
 }
