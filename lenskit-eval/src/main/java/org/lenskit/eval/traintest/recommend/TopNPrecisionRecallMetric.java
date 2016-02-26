@@ -86,7 +86,7 @@ public class TopNPrecisionRecallMetric extends TopNMetric<TopNPrecisionRecallMet
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, ResultList recs, Context context) {
+    public MetricResult measureUser(TestUser user, int targetLength, ResultList recs, Context context) {
         int tp = 0;
 
         LongSet items = goodItems.selectItems(context.universe, user);

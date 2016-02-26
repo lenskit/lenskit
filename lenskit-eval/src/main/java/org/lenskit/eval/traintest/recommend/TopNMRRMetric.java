@@ -98,7 +98,7 @@ public class TopNMRRMetric extends TopNMetric<TopNMRRMetric.Context> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, ResultList recommendations, Context context) {
+    public MetricResult measureUser(TestUser user, int targetLength, ResultList recommendations, Context context) {
         LongSet good = goodItems.selectItems(context.universe, user);
         if (good.isEmpty()) {
             logger.warn("no good items for user {}", user.getUserId());

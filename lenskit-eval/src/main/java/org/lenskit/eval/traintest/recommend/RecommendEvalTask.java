@@ -322,8 +322,8 @@ public class RecommendEvalTask implements EvalTask {
         }
 
         @Nonnull
-        public MetricResult measureUser(TestUser user, ResultList recommendations) {
-            return metric.measureUser(user, recommendations, context);
+        public MetricResult measureUser(TestUser user, int n, ResultList recommendations) {
+            return metric.measureUser(user, n, recommendations, context);
         }
 
         @Nonnull
@@ -359,13 +359,14 @@ public class RecommendEvalTask implements EvalTask {
         public Map<String, Object> measureUser(TestUser testUser) {
             LongSet candidates = getCandidateSelector().selectItems(allItems, testUser);
             LongSet excludes = getExcludeSelector().selectItems(allItems, testUser);
-            ResultList results = recommender.recommendWithDetails(testUser.getUserId(), getListSize(),
+            int n = getListSize();
+            ResultList results = recommender.recommendWithDetails(testUser.getUserId(), n,
                                                                   candidates, excludes);
 
             // Measure the user results
             Map<String,Object> row = new HashMap<>();
             for (MetricContext<?> mc: predictMetricContexts) {
-                row.putAll(mc.measureUser(testUser, results).getValues());
+                row.putAll(mc.measureUser(testUser, n, results).getValues());
             }
 
             // Write all attempted predictions

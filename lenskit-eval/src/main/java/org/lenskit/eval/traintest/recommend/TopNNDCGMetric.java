@@ -106,7 +106,7 @@ public class TopNNDCGMetric extends TopNMetric<MeanAccumulator> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, ResultList recommendations, MeanAccumulator context) {
+    public MetricResult measureUser(TestUser user, int targetLength, ResultList recommendations, MeanAccumulator context) {
         if (recommendations == null) {
             return MetricResult.empty();
         }
