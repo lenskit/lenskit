@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -114,6 +115,9 @@ public class TopNNDCGMetric extends TopNMetric<MeanAccumulator> {
         Long2DoubleMap ratings = user.getTestRatings();
         long[] ideal = ratings.keySet().toLongArray();
         LongArrays.quickSort(ideal, LongComparators.oppositeComparator(LongUtils.keyValueComparator(ratings)));
+        if (targetLength >= 0 && ideal.length > targetLength) {
+            ideal = Arrays.copyOf(ideal, targetLength);
+        }
         double idealGain = computeDCG(ideal, ratings);
 
         long[] actual = LongUtils.asLongCollection(recommendations.idList()).toLongArray();
