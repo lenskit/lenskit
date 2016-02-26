@@ -147,4 +147,32 @@ class TopNNDCGMetricTest {
         assertThat(result.values['TopN.nDCG'],
                    closeTo(1, 1.0e-6d))
     }
+
+    @Test
+    public void testAggregate() {
+        def metric = new TopNNDCGMetric(Discounts.exp(2));
+        def context = metric.createContext(null, null, null)
+        def user = TestUser.newBuilder()
+                           .addTestRating(1, 5.0)
+                           .addTestRating(2, 4.5)
+                           .build()
+        def recs = Results.newResultList(Results.create(1, 3.0),
+                                         Results.create(2, 2.5))
+        metric.measureUser(user, -1, recs, context)
+
+        user = TestUser.newBuilder()
+                       .addTestRating(1, 5.0)
+                       .addTestRating(2, 2.5)
+                       .build()
+
+        recs = Results.newResultList(Results.create(2, 3.0),
+                                         Results.create(1, 2.5))
+        metric.measureUser(user, -1, recs, context)
+
+        def result = metric.getAggregateMeasurements(context)
+        assertThat(result, notNullValue())
+        assertThat(result.values.keySet(), contains('TopN.nDCG'))
+        assertThat(result.values['TopN.nDCG'],
+                   closeTo((1 + 5/6.25d) * 0.5, 1.0e-6d))
+    }
 }
