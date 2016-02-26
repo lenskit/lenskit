@@ -30,6 +30,10 @@ notifications:
     on_success: always
     on_failure: always
     on_start: always
+  slack:
+    rooms:
+    - secure: "ldy/nkD8cNi3nNv8g+LEDmvsPKcKrHmuwctmCfc/kbmzmvmeG3DDa5RItSXnrmPGJhzbTEKKyrNIeA7U9awA7XYcZ7gSe7S5HogfCULrak2OYvLXVs69yQAP5ZuNF3c/AnuZz8rrE2UObMU22raZYrzrHM+LR7fUnurCaFq0S9w="
+    on_pull_requests: false
 env:
   global:
   - TERM=dumb
