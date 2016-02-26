@@ -119,4 +119,32 @@ class TopNNDCGMetricTest {
         assertThat(result.values['TopN.nDCG'],
                    closeTo(5 / 6.25d, 1.0e-6d))
     }
+
+    @Test
+    public void testTooManyRatings() {
+        // test that we only consider first `n` test ratings if target rec list is shorter
+        def metric = new TopNNDCGMetric(Discounts.exp(2));
+        def context = metric.createContext(null, null, null)
+        def user = TestUser.newBuilder()
+                           .addTestRating(1, 1.0)
+                           .addTestRating(2, 5.0)
+                           .addTestRating(3, 2.5)
+                           .build()
+        // the order is right, but the recommendation values are out of order
+        // this is fine, nDCG should only consider order.
+        def recs = Results.newResultList(Results.create(2, 3.0),
+                                         Results.create(3, 2.5))
+        def result = metric.measureUser(user, 2, recs, context)
+        assertThat(result, notNullValue())
+        assertThat(result.values.keySet(), contains('TopN.nDCG'))
+        // should be 1 because only the first 2 test ratings are considered
+        assertThat(result.values['TopN.nDCG'],
+                   closeTo(1, 1.0e-6d))
+
+        result = metric.getAggregateMeasurements(context)
+        assertThat(result, notNullValue())
+        assertThat(result.values.keySet(), contains('TopN.nDCG'))
+        assertThat(result.values['TopN.nDCG'],
+                   closeTo(1, 1.0e-6d))
+    }
 }
