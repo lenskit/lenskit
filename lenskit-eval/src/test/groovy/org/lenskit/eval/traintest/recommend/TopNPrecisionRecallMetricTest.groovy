@@ -43,7 +43,7 @@ class TopNPrecisionRecallMetricTest {
     @Before
     public void createMetric() {
         metric = new TopNPrecisionRecallMetric(ItemSelector.compileSelector('user.testItems'), null)
-        accum = new TopNPrecisionRecallMetric.Context(universe, recommender)
+        accum = new TopNPrecisionRecallMetric.Context(universe, null)
         user = TestUser.newBuilder()
                        .setUserId(42)
                        .addTestEvent(Rating.create(42L, 1L, 3.5),
