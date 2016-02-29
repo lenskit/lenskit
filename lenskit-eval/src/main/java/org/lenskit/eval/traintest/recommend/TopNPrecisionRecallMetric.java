@@ -23,6 +23,7 @@ package org.lenskit.eval.traintest.recommend;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.StringUtils;
+import org.lenskit.api.Recommender;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -89,7 +90,7 @@ public class TopNPrecisionRecallMetric extends TopNMetric<TopNPrecisionRecallMet
     public MetricResult measureUser(TestUser user, ResultList recs, Context context) {
         int tp = 0;
 
-        LongSet items = goodItems.selectItems(context.universe, user);
+        LongSet items = goodItems.selectItems(context.universe, context.recommender, user);
 
         for(Result res: recs) {
             if(items.contains(res.getId())) {
@@ -111,7 +112,7 @@ public class TopNPrecisionRecallMetric extends TopNMetric<TopNPrecisionRecallMet
     @Nullable
     @Override
     public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, org.lenskit.api.Recommender recommender) {
-        return new Context(dataSet.getAllItems());
+        return new Context(dataSet.getAllItems(), recommender);
     }
 
     @Nonnull
@@ -145,13 +146,15 @@ public class TopNPrecisionRecallMetric extends TopNMetric<TopNPrecisionRecallMet
     }
 
     public static class Context {
-        LongSet universe;
+        final LongSet universe;
+        final Recommender recommender;
         double totalPrecision = 0;
         double totalRecall = 0;
         int nusers = 0;
 
-        public Context(LongSet items) {
+        public Context(LongSet items, Recommender recommender) {
             universe = items;
+            this.recommender = recommender;
         }
 
         private void addUser(double prec, double rec) {

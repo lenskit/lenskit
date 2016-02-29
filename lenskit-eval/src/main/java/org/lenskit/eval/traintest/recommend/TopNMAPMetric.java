@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
+import org.lenskit.api.Recommender;
 import org.lenskit.api.Result;
 import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
@@ -90,7 +91,7 @@ public class TopNMAPMetric extends TopNMetric<TopNMAPMetric.Context> {
     @Nullable
     @Override
     public Context createContext(AlgorithmInstance algorithm, DataSet dataSet, org.lenskit.api.Recommender recommender) {
-        return new Context(dataSet.getTestData().getItemDAO().getItemIds());
+        return new Context(dataSet.getTestData().getItemDAO().getItemIds(), recommender);
     }
 
     @Nonnull
@@ -102,7 +103,7 @@ public class TopNMAPMetric extends TopNMetric<TopNMAPMetric.Context> {
     @Nonnull
     @Override
     public MetricResult measureUser(TestUser user, ResultList recs, Context context) {
-        LongSet good = goodItems.selectItems(context.universe, user);
+        LongSet good = goodItems.selectItems(context.universe, context.recommender, user);
         if (good.isEmpty()) {
             logger.warn("no good items for user {}", user.getUserId());
             return new UserResult(0, false);
@@ -163,11 +164,13 @@ public class TopNMAPMetric extends TopNMetric<TopNMAPMetric.Context> {
 
     public static class Context {
         private final LongSet universe;
+        private final Recommender recommender;
         private final MeanAccumulator allMean = new MeanAccumulator();
         private final MeanAccumulator goodMean = new MeanAccumulator();
 
-        Context(LongSet universe) {
+        Context(LongSet universe, Recommender recommender) {
             this.universe = universe;
+            this.recommender = recommender;
         }
 
         void addUser(UserResult ur) {

@@ -33,7 +33,7 @@ public class ItemSelectorTest {
     public void testUniverse() {
         LongSet items = LongUtils.packedSet(42, 37, 39, 102);
         ItemSelector selector = ItemSelector.compileSelector("allItems");
-        LongSet selected = selector.selectItems(items, TestUser.newBuilder().setUserId(42).build());
+        LongSet selected = selector.selectItems(items, null, TestUser.newBuilder().setUserId(42).build());
         assertThat(selected, equalTo(items));
     }
 
@@ -46,7 +46,7 @@ public class ItemSelectorTest {
                                 .addTestRating(2, 4.2)
                                 .build();
         ItemSelector selector = ItemSelector.compileSelector("user.testItems");
-        LongSet selected = selector.selectItems(items, user);
+        LongSet selected = selector.selectItems(items, null, user);
         assertThat(selected, containsInAnyOrder(1L, 2L));
     }
 
@@ -59,7 +59,7 @@ public class ItemSelectorTest {
                                 .addTestRating(39, 4.2)
                                 .build();
         ItemSelector selector = ItemSelector.compileSelector("allItems - user.testItems");
-        LongSet selected = selector.selectItems(items, user);
+        LongSet selected = selector.selectItems(items, null, user);
         assertThat(selected, containsInAnyOrder(42L, 37L, 102L));
     }
 
@@ -72,7 +72,7 @@ public class ItemSelectorTest {
                                 .addTestRating(39, 4.2)
                                 .build();
         ItemSelector selector = ItemSelector.compileSelector("user.testItems + pickRandom(allItems - user.testItems, 2)");
-        LongSet selected = selector.selectItems(items, user);
+        LongSet selected = selector.selectItems(items, null, user);
         assertThat(selected, allOf(hasItem(1L), hasItem(39L)));
         assertThat(selected, hasSize(4));
     }

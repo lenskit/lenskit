@@ -50,7 +50,7 @@ class TopNMRRMetricTest {
     public void createMetric() {
         metric = new TopNMRRMetric(ItemSelector.fixed(3, 7, 9, 42), null)
 
-        accum = new TopNMRRMetric.Context(universe)
+        accum = new TopNMRRMetric.Context(universe, recommender)
     }
 
     @Test
