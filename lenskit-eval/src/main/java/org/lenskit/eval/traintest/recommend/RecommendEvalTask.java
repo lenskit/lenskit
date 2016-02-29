@@ -309,7 +309,7 @@ public class RecommendEvalTask implements EvalTask {
             contexts.add(MetricContext.create(metric, algorithm, dataSet, rec));
         }
 
-        return new TopNConditionEvaluator(tlb, irec, contexts, items);
+        return new TopNConditionEvaluator(tlb, rec, irec, contexts, items);
     }
 
     static class MetricContext<X> {
@@ -342,14 +342,16 @@ public class RecommendEvalTask implements EvalTask {
 
     class TopNConditionEvaluator implements ConditionEvaluator {
         private final TableWriter writer;
-        private final ItemRecommender recommender;
+        private final Recommender recommender;
+        private final ItemRecommender itemRecommender;
         private final UserHistorySummarizer summarizer = new RatingVectorUserHistorySummarizer();
         private final List<MetricContext<?>> predictMetricContexts;
         private final LongSet allItems;
 
-        public TopNConditionEvaluator(TableWriter tw, ItemRecommender rec, List<MetricContext<?>> mcs, LongSet items) {
+        public TopNConditionEvaluator(TableWriter tw, Recommender rec, ItemRecommender irec, List<MetricContext<?>> mcs, LongSet items) {
             writer = tw;
             recommender = rec;
+            itemRecommender = irec;
             predictMetricContexts = mcs;
             allItems = items;
         }
@@ -357,10 +359,10 @@ public class RecommendEvalTask implements EvalTask {
         @Nonnull
         @Override
         public Map<String, Object> measureUser(TestUser testUser) {
-            LongSet candidates = getCandidateSelector().selectItems(allItems, testUser);
-            LongSet excludes = getExcludeSelector().selectItems(allItems, testUser);
-            ResultList results = recommender.recommendWithDetails(testUser.getUserId(), getListSize(),
-                                                                  candidates, excludes);
+            LongSet candidates = getCandidateSelector().selectItems(allItems, recommender, testUser);
+            LongSet excludes = getExcludeSelector().selectItems(allItems, recommender, testUser);
+            ResultList results = itemRecommender.recommendWithDetails(testUser.getUserId(), getListSize(),
+                                                                      candidates, excludes);
 
             // Measure the user results
             Map<String,Object> row = new HashMap<>();
