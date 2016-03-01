@@ -21,7 +21,9 @@ install:
   - conda env create -q -f etc/env-linux.yml
   - source activate lenskit
   - ./gradlew ciPrep --stacktrace
-script: ./gradlew ciTest --stacktrace --parallel
+script: "./gradlew ciTest --stacktrace"
+before_cache:
+- rm -f $HOME/.gradle/caches/*/*.lock
 deploy:
   provider: script
   skip_cleanup: true
