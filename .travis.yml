@@ -29,6 +29,7 @@ deploy:
   on:
     jdk: oraclejdk8
     repo: lenskit/lenskit
+    branch: release/3.0-T
 notifications:
   webhooks:
     urls:
