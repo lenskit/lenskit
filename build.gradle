@@ -144,6 +144,11 @@ subprojects {
     tasks.withType(JavaCompile).all { task ->
         task.options.encoding = 'UTF-8'
         task.options.fork = true
+        task.options.forkOptions.memoryMaximumSize = '128m'
+    }
+    tasks.withType(GroovyCompile).all { task ->
+        task.groovyOptions.fork = true
+        task.groovyOptions.forkOptions.memoryMaximumSize = '128m'
     }
     compileJava {
         options.deprecation = true
