@@ -156,7 +156,7 @@ subprojects {
         options.compilerArgs << '-Xlint' << '-Xlint:-processing'
     }
     test {
-        maxHeapSize = '512m'
+        maxHeapSize = '128m'
         enableAssertions = true
         reports.junitXml.enabled = true
         reports.html.enabled = true
