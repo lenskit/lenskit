@@ -148,7 +148,19 @@ set ConstantItemScorer.Value to Math.PI""");
 
     @Test
     void testLoadBasicURL() {
-        LenskitConfiguration config = ConfigHelpers.load(getClass().getResource("test-config.groovy"))
+        LenskitConfiguration config = ConfigHelpers.load(getClass().getResource('test-config.groovy'))
+        config.bind(EventDAO).to(dao)
+        def engine = LenskitRecommenderEngine.build(config)
+        def rec = engine.createRecommender()
+        assertThat(rec.getItemScorer(), instanceOf(ConstantItemScorer))
+        assertThat(rec.getItemRecommender(), instanceOf(TopNItemRecommender))
+        assertThat(rec.getItemBasedItemRecommender(), nullValue());
+        assertThat(rec.itemScorer.fixedScore, equalTo(Math.PI))
+    }
+
+    @Test
+    void testLoadURLWithInclude() {
+        LenskitConfiguration config = ConfigHelpers.load(getClass().getResource('test-include.groovy'))
         config.bind(EventDAO).to(dao)
         def engine = LenskitRecommenderEngine.build(config)
         def rec = engine.createRecommender()
