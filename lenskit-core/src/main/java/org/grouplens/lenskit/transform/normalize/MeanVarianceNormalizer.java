@@ -207,7 +207,7 @@ public class MeanVarianceNormalizer extends AbstractVectorNormalizer implements 
 
         @Override
         public MutableSparseVector apply(MutableSparseVector vector) {
-            double recipSD = Scalars.isZero(stdev) ? 1 : (1 / stdev);
+            double recipSD = Scalars.isZero(stdev) ? 1 : 1 / stdev;
             for (VectorEntry rating : vector) {
                 vector.set(rating, (rating.getValue() - mean) * recipSD);
             }

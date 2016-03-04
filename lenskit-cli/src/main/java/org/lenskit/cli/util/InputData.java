@@ -126,7 +126,7 @@ public class InputData {
     @Nullable
     public EventDAO getEventDAO() throws IOException {
         DataSource src = getSource();
-        return (src == null) ? null : src.getEventDAO();
+        return src == null ? null : src.getEventDAO();
     }
 
     @Nonnull
@@ -142,7 +142,7 @@ public class InputData {
     @Override
     public String toString() {
         DataSource src = getSource();
-        return (src == null) ? "null" : src.toString();
+        return src == null ? "null" : src.toString();
     }
 
     public static void configureArguments(ArgumentParser parser) {

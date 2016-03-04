@@ -134,7 +134,7 @@ class BinaryIndexTable implements Serializable {
                 newKeys.setActive(i, false);
             } else {
                 //TODO following loop need to be replaced with binary rating search
-                for (int j= offsets[i];j<(offsets[i]+sizes[i]);j++) {
+                for (int j = offsets[i]; j< offsets[i]+sizes[i]; j++) {
                     /*
                     * find the new 'size' value; this is the number of indexes for this key that
                     * are less than the limit
