@@ -22,6 +22,6 @@ public class LenskitConfigDSLTest {
         LenskitConfigDSL dsl = LenskitConfigDSL.forConfig(new LenskitConfiguration());
         dsl.setBaseURI(new File("/tmp").toURI());
         assertThat(new File(dsl.getBaseURI().getPath()),
-                   equalTo(new File("/tmp")));
+                   equalTo(new File("/tmp").getAbsoluteFile()));
     }
 }
