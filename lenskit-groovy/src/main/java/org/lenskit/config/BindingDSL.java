@@ -34,9 +34,9 @@ import org.lenskit.inject.AbstractConfigContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.net.URI;
 import java.util.Map;
 
 /**
@@ -81,12 +81,12 @@ public class BindingDSL extends AbstractConfigContext {
 
     /**
      * Include another configuration file.
-     * @param file The configuration file.
+     * @param uri The URI of the configuration file.
      * @throws IOException if an error is thrown loading the script.
      * @throws RecommenderConfigurationException if there is an error running the script.
      * @throws UnsupportedOperationException if the current context does not support loading.
      */
-    public void include(File file) throws IOException, RecommenderConfigurationException {
+    public void include(URI uri) throws IOException, RecommenderConfigurationException {
         // doesn't work in nested bindings. Top-level bindings use LenskitConfigDSL, which
         // overrides it to work.
         throw new UnsupportedOperationException("cannot include a file in a nested configuration");
@@ -94,11 +94,11 @@ public class BindingDSL extends AbstractConfigContext {
 
     /**
      * Include another configuration file.
-     * @param file The configuration file.
-     * @see #include(File)
+     * @param file The configuration file name or URI.
+     * @see #include(URI)
      */
     public void include(String file) throws IOException, RecommenderConfigurationException {
-        include(new File(file));
+        include(URI.create(file));
     }
 
     /**

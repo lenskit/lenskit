@@ -20,11 +20,15 @@
  */
 package org.lenskit.config;
 
+import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.SystemUtils;
 import org.lenskit.LenskitConfiguration;
 import org.lenskit.RecommenderConfigurationException;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 
 /**
  * Methods for the LensKit configuration DSL.  This extends {@link BindingDSL} with additional
@@ -36,27 +40,47 @@ import java.io.IOException;
 public class LenskitConfigDSL extends BindingDSL {
     private final LenskitConfiguration config;
     private final ConfigurationLoader configLoader;
+    private URI baseURI;
 
     /**
      * Construct a new delegate with an empty configuration.
+     *
+     * @param loader The configuration loader.
      */
     public LenskitConfigDSL(ConfigurationLoader loader) {
-        this(loader, new LenskitConfiguration());
+        this(loader, null);
+    }
+
+    /**
+     * Construct a new delegate with an empty configuration.
+     *
+     * @param loader The configuration loader
+     * @param base   The base URL
+     */
+    public LenskitConfigDSL(ConfigurationLoader loader, URI base) {
+        this(loader, new LenskitConfiguration(), base);
     }
 
     /**
      * Construct a new delegate.
      *
-     * @param cfg The context to configure.
+     * @param loader The configuration loader.
+     * @param cfg    The context to configure.
+     * @param base   The base URL.
      */
-    protected LenskitConfigDSL(ConfigurationLoader loader, LenskitConfiguration cfg) {
+    protected LenskitConfigDSL(ConfigurationLoader loader, LenskitConfiguration cfg, URI base) {
         super(cfg);
         config = cfg;
         configLoader = loader;
+        if (base == null) {
+            baseURI = new File(System.getProperty("user.dir")).toURI();
+        } else {
+            baseURI = base;
+        }
     }
 
     static LenskitConfigDSL forConfig(LenskitConfiguration cfg) {
-        return new LenskitConfigDSL(null, cfg);
+        return new LenskitConfigDSL(null, cfg, null);
     }
 
     /**
@@ -80,6 +104,27 @@ public class LenskitConfigDSL extends BindingDSL {
     }
 
     /**
+     * Get the base URL for this configuration.
+     * @return The base URI.
+     */
+    @Nonnull
+    public URI getBaseURI() {
+        if (baseURI == null) {
+            return SystemUtils.getUserDir().toURI();
+        } else {
+            return baseURI;
+        }
+    }
+
+    /**
+     * Set the base URI for this configuration.
+     * @param base The base URI.
+     */
+    public void setBaseURI(URI base) {
+        baseURI = base;
+    }
+
+    /**
      * Add a root type.
      * @param type The type to add.
      * @see LenskitConfiguration#addRoot(Class)
@@ -90,8 +135,12 @@ public class LenskitConfigDSL extends BindingDSL {
 
     // Override to make it actually work
     @Override
-    public void include(File file) throws IOException, RecommenderConfigurationException {
-        LenskitConfigScript script = getConfigLoader().loadScript(file);
+    public void include(URI uri) throws IOException, RecommenderConfigurationException {
+        URI realURI = uri;
+        if (!realURI.isAbsolute()) {
+            realURI = getBaseURI().resolve(realURI);
+        }
+        LenskitConfigScript script = getConfigLoader().loadScript(realURI.toURL());
         script.configure(getConfig());
     }
 }
