@@ -68,6 +68,7 @@ public class MetricLoaderHelper {
      * @param name The metric name.
      * @return The metric class.
      */
+    @Nullable
     public Class<?> findClass(String name) {
         if (propFiles.containsKey(name.toLowerCase())) {
             String className = (String) propFiles.get(name.toLowerCase());
@@ -134,6 +135,10 @@ public class MetricLoaderHelper {
         }
 
         Class<?> metric = findClass(typeName);
+        if (metric == null) {
+            logger.warn("could not find metric {} for ", typeName, type);
+            return null;
+        }
         for (Constructor<?> ctor: metric.getConstructors()) {
             if (ctor.getAnnotation(JsonCreator.class) != null) {
                 return type.cast(SpecUtils.createMapper().convertValue(node, metric));
