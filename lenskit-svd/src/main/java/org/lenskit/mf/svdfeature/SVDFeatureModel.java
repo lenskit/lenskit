@@ -18,24 +18,20 @@ public class SVDFeatureModel extends LearningModel {
     private transient ArrayList<SVDFeatureInstance> instances;
     private RealVector biases;
     private ArrayList<RealVector> factors;
+    private ObjectKeyIndex<String> biasMap;
+    private ObjectKeyIndex<String> factMap;
     private int factDim;
-    private int numFactors;
-    private int numBiases;
     private int insIdx;
 
-    public SVDFeatureModel(int inNumBiases, int inNumFactors, int inFactDim, SVDFeatureInstanceDAO inDao) {
+    public SVDFeatureModel(int inFactDim, SVDFeatureInstanceDAO inDao) {
         factDim = inFactDim;
-        numBiases = inNumBiases;
-        numFactors = inNumFactors;
         dao = inDao;
         instances = null;
         insIdx = 0;
     }
 
-    public SVDFeatureModel(int inNumBiases, int inNumFactors, int inFactDim) {
+    public SVDFeatureModel(int inFactDim) {
         factDim = inFactDim;
-        numBiases = inNumBiases;
-        numFactors = inNumFactors;
         dao = null;
         instances = null;
         insIdx = 0;
@@ -50,8 +46,8 @@ public class SVDFeatureModel extends LearningModel {
     }
 
     public void assignVariables() {
-        biases = requestScalarVar("biases", numBiases, 0, false, false);
-        factors = requestVectorVar("factors", numFactors, factDim, 0, true, false);
+        biases = requestScalarVar("biases", biasMap.size(), 0, false, false);
+        factors = requestVectorVar("factors", factMap.size(), factDim, 0, true, false);
     }
 
     public double predict(SVDFeatureInstance ins, StochasticOracle outOrc,
