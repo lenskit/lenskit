@@ -49,7 +49,7 @@ apply plugin: 'base'
 
 allprojects { project ->
     group 'org.grouplens.lenskit'
-    version '3.0-T4'
+    version '3.0-T5-SNAPSHOT'
     
     ext.getConfigProperty = { name, dft ->
         if (project.hasProperty(name)) {
