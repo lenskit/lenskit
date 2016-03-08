@@ -143,14 +143,20 @@ subprojects {
 
     tasks.withType(JavaCompile).all { task ->
         task.options.encoding = 'UTF-8'
-        task.options.fork = true
+        task.options.fork = false
+        task.options.forkOptions.memoryMaximumSize = '128m'
+    }
+    tasks.withType(GroovyCompile).all { task ->
+        task.options.fork = false
+        task.groovyOptions.fork = false
+        task.groovyOptions.forkOptions.memoryMaximumSize = '128m'
     }
     compileJava {
         options.deprecation = true
         options.compilerArgs << '-Xlint' << '-Xlint:-processing'
     }
     test {
-        maxHeapSize = '512m'
+        maxHeapSize = '256m'
         enableAssertions = true
         reports.junitXml.enabled = true
         reports.html.enabled = true

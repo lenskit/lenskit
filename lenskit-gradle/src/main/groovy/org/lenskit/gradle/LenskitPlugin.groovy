@@ -20,6 +20,8 @@
  */
 package org.lenskit.gradle
 
+import org.apache.commons.lang3.text.StrMatcher
+import org.apache.commons.lang3.text.StrTokenizer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.joda.convert.StringConvert
@@ -47,16 +49,19 @@ public class LenskitPlugin implements Plugin<Project> {
         for (prop in lenskit.metaClass.properties) {
             def prjProp = "lenskit.$prop.name"
             if (project.hasProperty(prjProp)) {
-                String valStr = project.getProperty(prjProp)
-                def val = valStr
-                if (prop.type != String) {
-                    val = StringConvert.INSTANCE.convertFromString(prop.type, valStr)
-                }
+                def val = project.getProperty(prjProp)
                 logger.info 'setting property {} to {}', prjProp, val
+                if (prop.type == List) { // if the type is list update the val using strtokenizer
+                    StrTokenizer tok = new StrTokenizer(val as String,
+                                                        StrMatcher.splitMatcher(),
+                                                        StrMatcher.quoteMatcher());
+                    val = tok.toList()
+                } else if (prop.type != String) {
+                    val = StringConvert.INSTANCE.convertFromString(prop.type, val)
+                }
                 prop.setProperty(lenskit, val)
             }
         }
-
         addLenskitConfiguration(project, lenskit)
     }
 
