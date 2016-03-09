@@ -42,7 +42,7 @@ import java.util.Collections;
  * Measure the nDPM of the top-N recommendations, using rankings.
 
  * This metric is registered with the type name `ndpm`.
- * The paper used as a reference for this implementation is http://www2.cs.uregina.ca/~yyao/PAPERS/jasis_ndpm.pdf .
+ * The paper used as a reference for this implementation is http://www2.cs.uregina.ca/~yyao/PAPERS/jasis_ndpm.pdf.
 
  * Created by VaibhavMahant on 2/1/16.
  */
