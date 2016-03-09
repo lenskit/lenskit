@@ -68,7 +68,7 @@ public class InputData {
             if (environment != null) {
                 cl = environment.getClassLoader();
             }
-            DataSourceSpec spec = null;
+            DataSourceSpec spec;
             try {
                 spec = SpecUtils.load(DataSourceSpec.class, sourceFile.toPath());
             } catch (IOException e) {

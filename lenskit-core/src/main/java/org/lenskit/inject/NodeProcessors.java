@@ -33,6 +33,9 @@ import java.util.Map;
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
  */
 public class NodeProcessors {
+    private NodeProcessors() {
+    }
+
     /**
      * Create a node processor that will instantiate nodes.  It will return nodes whose satisfactions
      * have been replaced with instance satisfactions containing the instance.

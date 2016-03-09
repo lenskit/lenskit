@@ -33,7 +33,14 @@ public final class Discounts {
     private static final Pattern EXP_PAT = Pattern.compile("exp\\((\\d+)\\)", Pattern.CASE_INSENSITIVE);
 
     /**
-     * Create a log-base-2 discount.
+     * Create a log-base-2 discount.  The discount function is:
+     *
+     * \\[\\mathrm{disc}(i) =
+     * \\begin{cases}
+     * 1 & i \\le 2 \\\\
+     * (\\mathrm{log}_{2} i)^{-1} & \\mathrm{else}
+     * \\end{cases} \\]
+     *
      * @return The discount.
      */
     public static LogDiscount log2() {
@@ -41,8 +48,15 @@ public final class Discounts {
     }
 
     /**
-     * Create a new logarithmic discount.
-     * @param base The log base.
+     * Create a new logarithmic discount.  The discount function is:
+     *
+     * \\[\\mathrm{disc}(i) =
+     * \\begin{cases}
+     * 1 & i \\le b \\\\
+     * (\\mathrm{log}_{b} i)^{-1} & \\mathrm{else}
+     * \\end{cases} \\]
+     *
+     * @param base The log base $b$.
      * @return The discount.
      */
     public static LogDiscount log(double base) {
@@ -50,8 +64,11 @@ public final class Discounts {
     }
 
     /**
-     * Create a new exponential (half-life) discount.
-     * @param hl The half-life of the decay function.
+     * Create a new exponential (half-life) discount.  The discount function is:
+     *
+     * \\[\\mathrm{disc}(i) = \\left(2^{\\frac{i-1}{\\alpha-1}}\\right)^{-1}\\]
+     *
+     * @param hl The half-life $\\alpha$ of the decay function.
      * @return The discount.
      */
     public static ExponentialDiscount exp(double hl) {
