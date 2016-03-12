@@ -64,7 +64,7 @@ public class TopNPopularityMetric extends TopNMetric<TopNPopularityMetric.Contex
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, ResultList recs, Context context) {
+    public MetricResult measureUser(TestUser user, int targetLength, ResultList recs, Context context) {
         if (recs == null || recs.isEmpty()) {
             return MetricResult.empty();
         }

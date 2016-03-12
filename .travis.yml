@@ -7,7 +7,8 @@ branches:
   - www
 cache:
   directories:
-  - "$HOME/.gradle/caches"
+  - "$HOME/.gradle/caches/modules-2"
+  - "$HOME/.gradle/caches/jars-1"
   - "$HOME/.gradle/wrapper"
 before_install:
 - git fetch --depth=10000 origin
@@ -16,6 +17,8 @@ before_install:
 install:
 - "./gradlew ciPrep --stacktrace"
 script: "./gradlew ciTest --stacktrace"
+before_cache:
+- rm -f $HOME/.gradle/caches/*/*.lock
 deploy:
   provider: script
   skip_cleanup: true

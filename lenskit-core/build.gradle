@@ -64,7 +64,8 @@ task checkAnnotations(type: JavaCompile, dependsOn: classes) {
     source sourceSets.main.java
     classpath = sourceSets.main.compileClasspath
     destinationDir = file("$buildDir/check-output")
-    
+
+    options.fork = false
     options.compilerArgs << '-proc:only'
 }
 check.dependsOn checkAnnotations
