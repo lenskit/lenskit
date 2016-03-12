@@ -296,7 +296,7 @@ public class GraphDumper {
                 } else {
                     logger.debug("dumping dependency {}", dep);
                     bld.addDependency(dep);
-                    String tid = null;
+                    String tid;
                     try {
                         tid = process(targetNode);
                     } catch (IOException exc) {

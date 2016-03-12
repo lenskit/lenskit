@@ -52,8 +52,10 @@ public class LenskitPlugin implements Plugin<Project> {
                 def val = project.getProperty(prjProp)
                 logger.info 'setting property {} to {}', prjProp, val
                 if (prop.type == List) { // if the type is list update the val using strtokenizer
-                    StrTokenizer tok = new StrTokenizer(val, StrMatcher.splitMatcher, StrMatcher.quoteMatcher());
-                    val = prop.type.metaClass.invokeConstructor(tok)
+                    StrTokenizer tok = new StrTokenizer(val as String,
+                                                        StrMatcher.splitMatcher(),
+                                                        StrMatcher.quoteMatcher());
+                    val = tok.toList()
                 } else if (prop.type != String) {
                     val = StringConvert.INSTANCE.convertFromString(prop.type, val)
                 }

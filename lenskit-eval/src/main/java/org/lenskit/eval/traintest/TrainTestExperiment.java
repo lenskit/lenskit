@@ -174,6 +174,7 @@ public class TrainTestExperiment {
         MultiAlgorithmDSL dsl = new MultiAlgorithmDSL(loader, aib);
         try {
             LenskitConfigScript script = loader.loadScript(file.toFile());
+            dsl.setBaseURI(script.getDelegate().getBaseURI());
             script.setDelegate(dsl);
             script.configure();
         } catch (IOException e) {

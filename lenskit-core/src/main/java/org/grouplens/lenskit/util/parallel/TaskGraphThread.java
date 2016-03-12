@@ -41,7 +41,7 @@ class TaskGraphThread<T extends Callable<?>,E> extends Thread {
     }
 
     public void run() {
-        DAGNode<T,E> task = null;
+        DAGNode<T,E> task;
         try {
             task = manager.getRunnableTask();
         } catch (InterruptedException e) {

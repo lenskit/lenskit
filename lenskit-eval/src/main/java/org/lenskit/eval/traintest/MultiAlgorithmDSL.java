@@ -45,7 +45,7 @@ public class MultiAlgorithmDSL extends LenskitConfigDSL {
     private List<AlgorithmInstance> instances = new ArrayList<>();
 
     public MultiAlgorithmDSL(ConfigurationLoader loader, AlgorithmInstanceBuilder aib) {
-        super(loader, aib.getConfig());
+        super(loader, aib.getConfig(), null);
         builder = aib;
     }
 
@@ -73,6 +73,7 @@ public class MultiAlgorithmDSL extends LenskitConfigDSL {
             kid.setName(name);
         }
         MultiAlgorithmDSL dsl = new MultiAlgorithmDSL(getConfigLoader(), kid);
+        dsl.setBaseURI(getBaseURI());
         Closure<?> copy = (Closure<?>) block.clone();
         copy.setDelegate(dsl);
         copy.setResolveStrategy(Closure.DELEGATE_FIRST);

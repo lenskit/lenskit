@@ -18,33 +18,30 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package org.lenskit.eval.traintest.metrics;
+package org.lenskit.config;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.commons.lang3.SystemUtils;
+import org.junit.Test;
+import org.lenskit.LenskitConfiguration;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.io.File;
 
-/**
- * Metric result containing arbitrary fields in a map.
- */
-class MapMetricResult extends MetricResult {
-    private final Map<String, Object> values;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.*;
 
-    public MapMetricResult(Map<String,?> vals) {
-        values = new LinkedHashMap<>(vals);
+public class LenskitConfigDSLTest {
+    @Test
+    public void testInitialBaseURI() {
+        LenskitConfigDSL dsl = LenskitConfigDSL.forConfig(new LenskitConfiguration());
+        assertThat(new File(dsl.getBaseURI().getPath()),
+                   equalTo(SystemUtils.getUserDir()));
     }
 
-    @Override
-    public Map<String, Object> getValues() {
-        return values;
-    }
-
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("values", values)
-                .toString();
+    @Test
+    public void testConfiguredBaseURI() {
+        LenskitConfigDSL dsl = LenskitConfigDSL.forConfig(new LenskitConfiguration());
+        dsl.setBaseURI(new File("/tmp").toURI());
+        assertThat(new File(dsl.getBaseURI().getPath()),
+                   equalTo(new File("/tmp").getAbsoluteFile()));
     }
 }

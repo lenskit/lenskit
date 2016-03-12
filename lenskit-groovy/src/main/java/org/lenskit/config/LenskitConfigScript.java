@@ -96,7 +96,7 @@ public abstract class LenskitConfigScript extends Script {
      */
     public void configure(LenskitConfiguration config) throws RecommenderConfigurationException {
         LenskitConfigDSL old = getDelegate();
-        setDelegate(new LenskitConfigDSL(old.getConfigLoader(), config));
+        setDelegate(new LenskitConfigDSL(old.getConfigLoader(), config, delegate.getBaseURI()));
         try {
             run();
         } catch (MissingPropertyException e) {

@@ -74,15 +74,15 @@ public class LenskitExtension {
     def String logFileLevel
 
     /**
-     * The list of jvm argument prroperties
-    */
+     * List of JVM arguments to use for LensKit actions.
+     */
     def List<String> jvmArgs = []
 
-    /*
-     * The method to add all the jvm paramters in the list
+    /**
+     * Add JVM arguments for LensKit tasks.
+     * @param val JVM arguments to add. They are appended to the current list of arguments.
      */
     def jvmArgs(String... val){
         jvmArgs.addAll(val)
     }
-
 }
