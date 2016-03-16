@@ -83,7 +83,6 @@ task trainTest(type: TrainTest) {
         metric 'map'
         metric 'pr'
     }
-
     doFirst {
         delete 'cache'
     }
