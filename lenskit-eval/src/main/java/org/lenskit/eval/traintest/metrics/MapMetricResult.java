@@ -22,6 +22,7 @@ package org.lenskit.eval.traintest.metrics;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 /**
  * Metric result containing arbitrary fields in a map.
  */

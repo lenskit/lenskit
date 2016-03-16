@@ -96,6 +96,7 @@ public class TestUser {
     public LongSet getTestItems() {
         return testHistory.itemSet();
     }
+
     /**
      * Get the user's test ratings.
      * Summarizes the user's ratings from the history.

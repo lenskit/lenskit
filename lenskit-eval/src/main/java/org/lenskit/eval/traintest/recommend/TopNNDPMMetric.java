@@ -19,6 +19,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package org.lenskit.eval.traintest.recommend;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import it.unimi.dsi.fastutil.longs.*;
