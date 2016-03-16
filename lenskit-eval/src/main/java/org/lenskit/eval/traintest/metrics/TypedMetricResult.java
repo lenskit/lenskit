@@ -57,7 +57,6 @@ public abstract class TypedMetricResult extends MetricResult {
         if (type == null) {
             return Collections.emptyList();
         }
-
         List<ColumnDesc> columns = getColumnInfo(type);
 
         Ordering<ColumnDesc> order = Ordering.natural()
