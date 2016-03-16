@@ -99,7 +99,6 @@ public class TestUser {
 
     /**
      * Get the user's test ratings.
-     * <p/>
      * Summarizes the user's ratings from the history.
      *
      * @return The user's ratings for the test items.
@@ -111,8 +110,3 @@ public class TestUser {
         return testRatings;
     }
 }
-    /**
-     * Method that returns all items except the ones present in the user's test
-     * or train sets.
-     */
-

@@ -60,9 +60,7 @@ task trainTest(type: TrainTest) {
         metric('ndcg') {
             columnName 'nDCG'
         }
-        metric('ndpm') {
-            columnName 'nDPM'
-        }
+        metric'ndpm'
         metric 'popularity'
         metric 'mrr'
         metric 'map'
@@ -79,9 +77,7 @@ task trainTest(type: TrainTest) {
         metric('ndcg') {
             columnName 'nDCG'
         }
-        metric('ndpm') {
-            columnName 'nDPM'
-        }
+        metric'ndpm'
         metric 'popularity'
         metric 'mrr'
         metric 'map'
