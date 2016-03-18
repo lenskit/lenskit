@@ -28,6 +28,7 @@ import it.unimi.dsi.fastutil.longs.LongArrays;
 import it.unimi.dsi.fastutil.longs.LongComparators;
 import org.apache.commons.lang3.StringUtils;
 import org.grouplens.lenskit.util.statistics.MeanAccumulator;
+import org.lenskit.api.Recommender;
 import org.lenskit.api.ResultList;
 import org.lenskit.eval.traintest.AlgorithmInstance;
 import org.lenskit.eval.traintest.DataSet;
@@ -42,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -93,7 +95,7 @@ public class TopNNDCGMetric extends TopNMetric<MeanAccumulator> {
 
     @Nullable
     @Override
-    public MeanAccumulator createContext(AlgorithmInstance algorithm, DataSet dataSet, org.lenskit.api.Recommender recommender) {
+    public MeanAccumulator createContext(AlgorithmInstance algorithm, DataSet dataSet, Recommender recommender) {
         return new MeanAccumulator();
     }
 
@@ -105,7 +107,7 @@ public class TopNNDCGMetric extends TopNMetric<MeanAccumulator> {
 
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, ResultList recommendations, MeanAccumulator context) {
+    public MetricResult measureUser(TestUser user, int targetLength, ResultList recommendations, MeanAccumulator context) {
         if (recommendations == null) {
             return MetricResult.empty();
         }
@@ -113,6 +115,9 @@ public class TopNNDCGMetric extends TopNMetric<MeanAccumulator> {
         Long2DoubleMap ratings = user.getTestRatings();
         long[] ideal = ratings.keySet().toLongArray();
         LongArrays.quickSort(ideal, LongComparators.oppositeComparator(LongUtils.keyValueComparator(ratings)));
+        if (targetLength >= 0 && ideal.length > targetLength) {
+            ideal = Arrays.copyOf(ideal, targetLength);
+        }
         double idealGain = computeDCG(ideal, ratings);
 
         long[] actual = LongUtils.asLongCollection(recommendations.idList()).toLongArray();

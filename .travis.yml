@@ -7,14 +7,18 @@ branches:
   - www
 cache:
   directories:
-  - "$HOME/.gradle/caches"
+  - "$HOME/.gradle/caches/modules-2"
+  - "$HOME/.gradle/caches/jars-1"
   - "$HOME/.gradle/wrapper"
 before_install:
 - git fetch --depth=10000 origin
 - ./etc/decrypt-ssh-key.sh
+- cp etc/gradle-ci.properties .
 install:
 - "./gradlew ciPrep --stacktrace"
 script: "./gradlew ciTest --stacktrace"
+before_cache:
+- rm -f $HOME/.gradle/caches/*/*.lock
 deploy:
   provider: script
   skip_cleanup: true
@@ -28,10 +32,14 @@ notifications:
       - https://webhooks.gitter.im/e/12b880d9f4086ef2a62c
     on_success: always
     on_failure: always
-    on_start: never
+    on_start: always
+  slack:
+    rooms:
+    - secure: "ldy/nkD8cNi3nNv8g+LEDmvsPKcKrHmuwctmCfc/kbmzmvmeG3DDa5RItSXnrmPGJhzbTEKKyrNIeA7U9awA7XYcZ7gSe7S5HogfCULrak2OYvLXVs69yQAP5ZuNF3c/AnuZz8rrE2UObMU22raZYrzrHM+LR7fUnurCaFq0S9w="
+    on_pull_requests: false
 env:
   global:
-  - TERM=dumbda
+  - TERM=dumb
   - TZ=CST6CDT
   # SONAR_USER
   - secure: "lg7vgoXn7PwvW6VH5jPIQ9avyMSMjz4rZcb31HDvRkFCgP0+viUo9NWw1Wad5w2cS5WwwNdcEvmPsHHwYLk6szEhLNs7yPn/5LxUaI5ksqk++hd6m6F9L2PuzOAwPbmJsZRaRoOgiqhUa76mB6vWJNAnGDiFi8kZ54UApa3w+G0="

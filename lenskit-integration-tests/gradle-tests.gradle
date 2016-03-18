@@ -53,7 +53,8 @@ file('src/it/gradle').eachDir { testDir ->
     def tname = fname.replaceAll(/(?:^|-)(.)/) { m -> m[1].toUpperCase() }
     def workDir = file("build/gradle-tests/$fname")
 
-    task("test$tname", type: GradleBuild) {
+    task("test$tname", type: GradleBuild, group: 'test') {
+        description "Run the ${testDir.name} test."
         dependsOn makeTestRepo, fetchData
         inputs.dir testDir
         inputs.files fileTree('src/it/gradle') {

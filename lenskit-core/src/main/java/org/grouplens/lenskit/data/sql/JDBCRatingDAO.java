@@ -158,15 +158,15 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
      * Close the connection and all open statements.
      */
     public void close() {
-        boolean failed = false;
+        boolean failed;
         try {
-            failed = failed || !closeStatement(userStatement);
-            failed = failed || !closeStatement(itemStatement);
+            failed = !closeStatement(userStatement);
+            failed |= !closeStatement(itemStatement);
             for (CachedPreparedStatement s : eventStatements.values()) {
-                failed = failed || !closeStatement(s);
+                failed |= !closeStatement(s);
             }
-            failed = failed || !closeStatement(userEventStatement);
-            failed = failed || !closeStatement(itemEventStatement);
+            failed |= !closeStatement(userEventStatement);
+            failed |= !closeStatement(itemEventStatement);
             if (closeConnection) {
                 connection.close();
             }
@@ -179,15 +179,12 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
     }
 
     protected LongSet getIdSet(PreparedStatement s) throws SQLException {
-        ResultSet results = s.executeQuery();
-        try {
+        try (ResultSet results = s.executeQuery()) {
             LongSet ids = new LongOpenHashSet();
             while (results.next()) {
                 ids.add(results.getLong(1));
             }
             return ids;
-        } finally {
-            results.close();
         }
     }
 
@@ -254,11 +251,8 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
                 public List<Rating> call() throws Exception {
                     PreparedStatement s = userEventStatement.call();
                     s.setLong(1, userId);
-                    ObjectStream<Rating> ratings = new ResultSetRatingObjectStream(s);
-                    try {
+                    try (ObjectStream<Rating> ratings = new ResultSetRatingObjectStream(s)) {
                         return ImmutableList.copyOf(ratings);
-                    } finally {
-                        ratings.close();
                     }
                 }
             });
@@ -297,11 +291,8 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
                 public List<Rating> call() throws Exception {
                     PreparedStatement s = itemEventStatement.call();
                     s.setLong(1, itemId);
-                    ObjectStream<Rating> ratings = new ResultSetRatingObjectStream(s);
-                    try {
+                    try (ObjectStream<Rating> ratings = new ResultSetRatingObjectStream(s)) {
                         return ImmutableList.copyOf(ratings);
-                    } finally {
-                        ratings.close();
                     }
                 }
             });
@@ -333,9 +324,7 @@ public class JDBCRatingDAO implements EventDAO, UserEventDAO, ItemEventDAO, User
 
     @Override
     public LongSet getUsersForItem(long item) {
-        PreparedStatement s;
-        try {
-            s = itemUserStatement.call();
+        try (PreparedStatement s = itemUserStatement.call()) {
             s.setLong(1, item);
             return getIdSet(s);
         } catch (SQLException e) {

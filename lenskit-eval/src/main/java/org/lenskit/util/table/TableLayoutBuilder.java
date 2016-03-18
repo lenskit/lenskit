@@ -106,7 +106,7 @@ public class TableLayoutBuilder implements Builder<TableLayout>, Cloneable {
      */
     @Override
     public TableLayoutBuilder clone() {
-        TableLayoutBuilder copy = null;
+        TableLayoutBuilder copy;
         try {
             copy = (TableLayoutBuilder) super.clone();
         } catch (CloneNotSupportedException e) {
