@@ -9,6 +9,7 @@ import org.apache.commons.math3.linear.RealVector;
 import org.lenskit.solver.objective.LearningInstance;
 import org.lenskit.solver.objective.LearningModel;
 import org.lenskit.solver.objective.StochasticOracle;
+import org.lenskit.util.keys.ObjectKeyIndex;
 
 /**
  * @author <a href="http://www.grouplens.org">GroupLens Research</a>
