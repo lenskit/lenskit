@@ -1,3 +1,7 @@
+package org.lenskit.util.keys;
+
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public class ObjectKeyIndex<K> extends Object {
     private Object2IntOpenHashMap<K> key2idx;
@@ -8,23 +12,23 @@ public class ObjectKeyIndex<K> extends Object {
         this.keyList = new ObjectArrayList<>();
     }
 
-    int getIndex(K key) {
+    public int getIndex(K key) {
         return key2idx.get(key);
     }
 
-    K getKey(int idx) {
+    public K getKey(int idx) {
         return keyList.get(idx);
     }
 
-    boolean containsKey(K key) {
+    public boolean containsKey(K key) {
         return key2idx.containsKey(key);
     }
 
-    int size() {
+    public int size() {
         return keyList.size();
     }
 
-    int setKey(K key) {
+    public int setKey(K key) {
         if (key2idx.containsKey(key)) {
             return key2idx.get(key);
         } else {
