@@ -74,10 +74,9 @@ public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
         return MetricResult.singleton(DEFAULT_COLUMN, context.getMean());
     }
 
-
     @Nonnull
     @Override
-    public MetricResult measureUser(TestUser user, ResultList recommendations, MeanAccumulator context) {
+    public MetricResult measureUser(TestUser user, int targetLength, ResultList recommendations, MeanAccumulator context) {
         if (recommendations == null) {
             return MetricResult.empty();
         }
@@ -93,8 +92,8 @@ public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
         context.add(nDPM);
 
         return MetricResult.singleton(DEFAULT_COLUMN, nDPM);
-
     }
+
     /**
      * Compute dpm of list of items, with respect to user's ratings.
      */
@@ -126,6 +125,7 @@ public class TopNNDPMMetric extends TopNMetric<MeanAccumulator> {
 
         return dpm;
     }
+
 
     /**
      * Specification for configuring nDPM metrics.
